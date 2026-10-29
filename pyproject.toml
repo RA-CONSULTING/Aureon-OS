@@ -30,6 +30,10 @@ dependencies = [
   "requests>=2.32.0",
   "python-dotenv>=1.0.0",
   "rich>=13.7.0",
+  "numpy>=1.26",
+]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
 ]
 
 [project.optional-dependencies]

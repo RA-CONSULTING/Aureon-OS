@@ -1,0 +1,3426 @@
+{
+  "child_isolation": "child was not launched",
+  "dataset_solution_smoke": {
+    "counts_as_model_score": false,
+    "dataset": "/workspace/data/research/open_benchmarks/humaneval.jsonl",
+    "limit": 5,
+    "passed": 5,
+    "reason": "the dataset's own solutions ran in the harness; this is not a model score",
+    "results": [
+      {
+        "dataset_solution_passed": true,
+        "task_id": "HumanEval/0"
+      },
+      {
+        "dataset_solution_passed": true,
+        "task_id": "HumanEval/1"
+      },
+      {
+        "dataset_solution_passed": true,
+        "task_id": "HumanEval/2"
+      },
+      {
+        "dataset_solution_passed": true,
+        "task_id": "HumanEval/3"
+      },
+      {
+        "dataset_solution_passed": true,
+        "task_id": "HumanEval/4"
+      }
+    ],
+    "total": 5,
+    "verdict": "measured"
+  },
+  "endpoint": {
+    "api_key_configured": false,
+    "api_key_returned": false,
+    "base_url": "http://127.0.0.1:8000/v1",
+    "model": "kimi-k2.5",
+    "ollama_openai_compatible": true,
+    "wire_api": "openai-chat-completions"
+  },
+  "external_provider": {
+    "api_key_configured": false,
+    "api_key_required": false,
+    "api_key_returned": false,
+    "base_url": "http://127.0.0.1:8000/v1",
+    "called": false,
+    "counts_as_aureon_brain": false,
+    "default": "off",
+    "enabled": false,
+    "humaneval_pct": null,
+    "livecodebench_pct": null,
+    "model": "kimi-k2.5",
+    "note": "An outside provider is not Aureon's brain. The call stays off unless AUREON_SELF_CODER_ALLOW_EXTERNAL=1.",
+    "opt_in": "AUREON_SELF_CODER_ALLOW_EXTERNAL=1",
+    "swe_bench_pct": null
+  },
+  "flagship_comparison": {
+    "published_references": [
+      {
+        "livecodebench_v6_pct": 85.0,
+        "model": "Kimi K2.5",
+        "source": "published score named by the operator; not a measurement from this harness",
+        "swe_bench_verified_pct": 76.8
+      }
+    ],
+    "published_references_are_not_this_run": true,
+    "reason": "this run has no internal HumanEval score to set beside a published figure",
+    "status": "HOLD",
+    "this_run_humaneval_pct": null,
+    "this_run_livecodebench_pct": null,
+    "this_run_swe_bench_pct": null
+  },
+  "harness": "The system under test is Aureon's internal cognition: Auris nodes, the QGITA FTCP detector, and run_self_coding_task with its default lane off. No outside LLM is called unless AUREON_SELF_CODER_ALLOW_EXTERNAL=1. That opt-in is not Aureon's brain and is labelled in the report. An API key is not required. Python the internal path actually emits is executed against each row's tests field. This is not the official SWE-bench or LiveCodeBench evaluation. This is not a kernel sandbox. The child runs only inside unshare (user, pid, and net namespace) from an environment that never held the keys. Inside that namespace, home and the workspace are covered with a tmpfs when that mount works. The opt-in path does not mount over the parent. If unshare is missing or the probe fails, model code is not run unless AUREON_BENCH_ALLOW_UNSANDBOXED=1. That opt-in is unsandboxed: a same-user child can read /proc/PID/environ and can open a raw socket. Run this only on a machine with no secrets.",
+  "humaneval": {
+    "attempted": 0,
+    "authoring_note": "InternalCodingWorkforce.decide calls an adapter prompt. That step is not reached while the self-coder lane is disabled and AUREON_SELF_CODER_ALLOW_EXTERNAL is off.",
+    "counts_as_aureon_score": false,
+    "counts_as_model_score": false,
+    "dataset": "data/research/open_benchmarks/humaneval.jsonl",
+    "executed": false,
+    "external_provider_called": false,
+    "measured_pct": null,
+    "not_attempted": 164,
+    "passed": 0,
+    "per_row_auris_qgita": {
+      "ftcp_rows": null,
+      "ftcp_rows_are": "not a coding score",
+      "kind": "no_data",
+      "note": "Coding tasks are not a market. Auris and QGITA are not fed a drawn series. There is no FTCP count on these rows, and it is not a coding score.",
+      "source": null
+    },
+    "reason": "the internal path emitted no Python program, so no row was attempted",
+    "results": [
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/0"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/1"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/2"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/3"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/4"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/5"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/6"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/7"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/8"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/9"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/10"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/11"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/12"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/13"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/14"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/15"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/16"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/17"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/18"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/19"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/20"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/21"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/22"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/23"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/24"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/25"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/26"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/27"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/28"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/29"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/30"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/31"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/32"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/33"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/34"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/35"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/36"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/37"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/38"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/39"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/40"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/41"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/42"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/43"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/44"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/45"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/46"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/47"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/48"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/49"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/50"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/51"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/52"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/53"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/54"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/55"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/56"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/57"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/58"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/59"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/60"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/61"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/62"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/63"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/64"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/65"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/66"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/67"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/68"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/69"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/70"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/71"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/72"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/73"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/74"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/75"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/76"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/77"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/78"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/79"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/80"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/81"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/82"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/83"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/84"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/85"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/86"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/87"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/88"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/89"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/90"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/91"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/92"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/93"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/94"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/95"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/96"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/97"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/98"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/99"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/100"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/101"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/102"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/103"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/104"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/105"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/106"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/107"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/108"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/109"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/110"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/111"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/112"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/113"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/114"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/115"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/116"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/117"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/118"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/119"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/120"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/121"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/122"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/123"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/124"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/125"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/126"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/127"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/128"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/129"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/130"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/131"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/132"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/133"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/134"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/135"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/136"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/137"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/138"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/139"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/140"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/141"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/142"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/143"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/144"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/145"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/146"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/147"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/148"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/149"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/150"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/151"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/152"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/153"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/154"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/155"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/156"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/157"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/158"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/159"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/160"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/161"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/162"
+      },
+      {
+        "auris": {
+          "coherence": null,
+          "reason": "a coding task has no market texture",
+          "status": "no_data"
+        },
+        "external_provider_called": false,
+        "passed": false,
+        "program_emitted": false,
+        "qgita": {
+          "points": null,
+          "reason": "a coding task has no canonical price series",
+          "status": "no_data"
+        },
+        "reason": "internal_self_coder_not_enabled",
+        "sandbox": "not run",
+        "self_coder_reason": "internal_self_coder_not_enabled",
+        "self_coder_status": "internal_self_coder_disabled",
+        "task_id": "HumanEval/163"
+      }
+    ],
+    "rows": 164,
+    "seed": 20261024,
+    "self_coder_lane": "disabled; run_self_coding_task defaults to enabled=False and does not call a model",
+    "status": "not_attempted",
+    "suite": "HumanEval",
+    "system_under_test": "aureon.autonomous.aureon_self_run_coding_task.run_self_coding_task",
+    "total": 164
+  },
+  "live_trading": false,
+  "livecodebench": {
+    "counts_as_aureon_score": false,
+    "executed": false,
+    "external_provider_called": false,
+    "measured_pct": null,
+    "reason": "outside provider is off by default; this suite has no internal runner",
+    "suite": "LiveCodeBench"
+  },
+  "model_call": {
+    "attempted": false,
+    "error": "",
+    "external_provider": false,
+    "ok": false
+  },
+  "model_python_task_pass_pct": {
+    "humaneval_rows": null,
+    "livecode_rows": null,
+    "swe_rows": null
+  },
+  "offline_fixture": {
+    "counts_as_result": false,
+    "executed": false,
+    "reason": "a fixture is not a benchmark result",
+    "suite": "offline-fixture"
+  },
+  "published_reference": {
+    "livecodebench_v6_pct": 85.0,
+    "model": "Kimi K2.5",
+    "source": "published score named by the operator; not a measurement from this harness",
+    "swe_bench_verified_pct": 76.8
+  },
+  "schema": "aureon.self-coder-benchmark.v2",
+  "swe_bench": {
+    "counts_as_aureon_score": false,
+    "executed": false,
+    "external_provider_called": false,
+    "measured_pct": null,
+    "reason": "outside provider is off by default; this suite has no internal runner",
+    "suite": "SWE-bench Lite or Verified"
+  },
+  "system_under_test": "internal"
+}
