@@ -45,7 +45,7 @@ set AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1
 pytest tests/test_operator_server.py tests/test_connectome.py -q --timeout=60
 ```
 
-A passing run ends in `passed` and does not ask for a key. The longer operator preflight, containers, and the full offline suite are further down.
+A passing run prints the passed count and exits 0. It does not ask for a key. The longer operator preflight, containers, and the full offline suite are further down.
 
 ---
 
