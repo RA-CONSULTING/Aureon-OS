@@ -695,9 +695,9 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
       symbol: p.symbol,
       entryPrice: Number(p.entry_price),
       currentPrice: Number(p.current_price) || Number(p.entry_price),
-      pnlPercent: p.current_price && p.entry_price 
-        ? ((Number(p.current_price) - Number(p.entry_price)) / Number(p.entry_price)) * 100 
-        : 0,
+      pnlPercent: p.current_price != null && p.entry_price != null && Number(p.entry_price) !== 0
+        ? ((Number(p.current_price) - Number(p.entry_price)) / Number(p.entry_price)) * 100
+        : null,
       side: (p.side === 'BUY' ? 'LONG' : 'SHORT') as 'LONG' | 'SHORT',
     }));
 
@@ -714,8 +714,8 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
       maxDrawdownPercent: runtimeStats?.max_drawdown ?? null,
       
       // Trade stats from trade_records (pushed by Python)
-      totalTrades: session.total_trades || tradeStats.total,
-      winningTrades: session.winning_trades || tradeStats.wins,
+      totalTrades: session.total_trades ?? tradeStats.total ?? null,
+      winningTrades: session.winning_trades ?? tradeStats.wins ?? null,
       totalPnl: session.total_pnl_usdt ?? tradeStats.totalPnl ?? null,
       cyclePnl: session.total_pnl_usdt ?? tradeStats.totalPnl ?? null,
       cyclePnlPercent: session.total_equity_usdt > 0 && (session.total_pnl_usdt ?? tradeStats.totalPnl) != null
