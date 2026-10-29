@@ -309,6 +309,9 @@ def test_registered_names() -> None:
         "organism_replay_read",
         "qgita_analyze",
         *(fn.__name__ for fn in public_layer_tools()),
+        "body_call",
+        "body_depth",
+        "body_surface",
     }
     assert set(names) == expected
     hnc = next(item for item in tools_listed if item.name == "hnc_reality_step")
@@ -320,7 +323,8 @@ def test_registered_names() -> None:
     assert "aureon://auris/nodes" in uris
     assert "aureon://replay/auris" in uris
     assert "aureon://packages" in uris
-    assert len(uris) == 13
+    assert "aureon://body/depth" in uris
+    assert len(uris) == 14
     prompts = asyncio.run(server.list_prompts())
     prompt_names = sorted(item.name for item in prompts)
     assert "explain_auris_four_meanings" in prompt_names

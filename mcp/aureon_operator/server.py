@@ -8,6 +8,7 @@ import sys
 
 from mcp.server.fastmcp import FastMCP
 
+from aureon_public.body import body_call_operator
 from aureon_public.guard_loader import apply_space_guard
 from aureon_public.layers import PACKAGES
 from aureon_public.quiet import quiet
@@ -95,6 +96,7 @@ def build_operator_server() -> FastMCP:
     )
     server.tool()(operator_private_layers)
     server.tool()(refuse_live_order)
+    server.tool()(body_call_operator)
     return server
 
 

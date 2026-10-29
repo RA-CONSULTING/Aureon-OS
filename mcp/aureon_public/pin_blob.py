@@ -28,3 +28,34 @@ def pinned_blob_refusal(path: Path, expected: str, mismatch: str) -> str | None:
     if digest != expected:
         return mismatch
     return None
+
+
+def checkout_blob_refusal(path: Path, root: Path, commit: str) -> str | None:
+    """Refuse a checkout file whose git blob is not the blob at ``commit``.
+
+    Returns None when the bytes match. A missing pin path is a refusal.
+    The caller skips this when the import comes from an installed copy
+    outside the checkout.
+    """
+
+    if not path.is_file():
+        return f"{path} is not in this checkout"
+    try:
+        relative = path.resolve().relative_to(root.resolve()).as_posix()
+    except ValueError:
+        return None
+    import subprocess
+
+    try:
+        pin_blob = subprocess.check_output(
+            ["git", "rev-parse", f"{commit}:{relative}"],
+            cwd=root,
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except (OSError, subprocess.CalledProcessError):
+        return f"{relative} is not in pin {commit[:12]}"
+    digest = git_blob_sha1(path.read_bytes())
+    if digest != pin_blob:
+        return f"checkout {relative} differs from pin {commit[:12]}"
+    return None

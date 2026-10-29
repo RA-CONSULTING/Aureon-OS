@@ -10,7 +10,7 @@ import sys
 
 from mcp.server.fastmcp import FastMCP
 
-from aureon_public import layers, surfaces, tools
+from aureon_public import body, layers, surfaces, tools
 from aureon_public.guard_loader import PINNED_COMMIT, apply_space_guard, aureon_source
 from aureon_public.text import SERVER_PLAIN
 
@@ -66,6 +66,9 @@ def build_server(host: str = "127.0.0.1", port: int = 8077) -> FastMCP:
         tools.organism_replay_read,
         tools.organism_catalog,
         *layers.public_layer_tools(),
+        body.body_call,
+        body.body_surface,
+        body.body_depth,
     ):
         server.tool()(fn)
     server.resource("aureon://packages", mime_type="application/json")(layers.packages_resource)
@@ -89,6 +92,7 @@ def build_server(host: str = "127.0.0.1", port: int = 8077) -> FastMCP:
     server.resource("aureon://organism/seats", mime_type="application/json")(surfaces.organism_seats_resource)
     server.resource("aureon://organism/nodes", mime_type="application/json")(surfaces.organism_nodes_resource)
     server.resource("aureon://organism/systems", mime_type="application/json")(surfaces.organism_systems_resource)
+    server.resource("aureon://body/depth", mime_type="application/json")(body.body_depth)
     server.resource("aureon://holds", mime_type="application/json")(surfaces.holds_resource)
     server.resource("aureon://replay/brain", mime_type="application/json")(surfaces.replay_brain_resource)
     server.resource("aureon://replay/qgita", mime_type="application/json")(surfaces.replay_qgita_resource)
