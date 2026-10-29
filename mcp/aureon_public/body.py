@@ -26,7 +26,7 @@ from aureon_public.quiet import quiet
 from aureon_public.tools import _dumps
 
 # Stages 1-6 raise this as each stage commit lands. Stage 7 is packaging.
-ENABLED_THROUGH = 4
+ENABLED_THROUGH = 5
 
 _UNSAFE_NAME = re.compile(
     r"(run_|start_|stop_|launch_|serve|main$|^demo$|create_app|activate_|connect_|"
@@ -316,13 +316,13 @@ def _auris_field(symbol: str) -> dict[str, str]:
 
 
 def _invoke(row: dict[str, Any], arguments: dict[str, Any], timeout: float) -> str:
-    if row["kind"] in {"module", "class"}:
-        return _unavailable("use body_surface for modules and classes")
     block = _safety_block(row, allow_fetch=True)
     if block:
         if "live orders" in block:
             return _refused(block)
         return _unavailable(block)
+    if row["kind"] in {"module", "class"}:
+        return _unavailable("use body_surface for modules and classes")
     if int(row.get("stage") or 0) > ENABLED_THROUGH:
         return _unavailable(f"stage {row['stage']} is not open")
     imported, reason = _import_checked(row["module"])
@@ -709,6 +709,25 @@ def probes_for(stage: int) -> list[dict[str, Any]]:
                 "arguments": {"pair": "btcusd"},
             },
         ],
+        5: [
+            {"module": "accounting/file_drop.py", "symbol": "registered_ingestors", "server": "operator"},
+            {
+                "module": "portfolio/aureon_billion_goal_tracker.py",
+                "symbol": "get_days_remaining",
+                "server": "operator",
+            },
+            {"module": "trading/__init__.py", "symbol": "__init__", "server": "operator"},
+            {"module": "exchanges/__init__.py", "symbol": "__init__", "server": "operator"},
+            {"module": "bots/__init__.py", "symbol": "__init__", "server": "operator"},
+            {"module": "bots_intelligence/__init__.py", "symbol": "__init__", "server": "operator"},
+            {"module": "bridges/__init__.py", "symbol": "__init__", "server": "operator"},
+            {"module": "scanners/__init__.py", "symbol": "__init__", "server": "operator"},
+            {
+                "module": "unified_margin_trader/_margin_monitor.py",
+                "symbol": "_margin_monitor",
+                "server": "operator",
+            },
+        ],
     }
     return table.get(stage, [])
 
@@ -727,11 +746,15 @@ def sweep_zero_arg(stage: int, *, timeout: float = 8.0) -> list[dict[str, Any]]:
     for probe in probes_for(stage):
         key = (probe["module"], probe["symbol"])
         seen.add(key)
+        target = str(probe.get("server") or "public")
+        if target == "operator":
+            os.environ["AUREON_OPERATOR_MCP"] = "1"
+            os.environ["AUREON_DISABLE_REAL_ORDERS"] = "1"
         raw = dispatch(
             probe["module"],
             probe["symbol"],
             probe.get("arguments") or {},
-            server="public",
+            server=target,
             timeout=float(probe.get("timeout") or timeout),
         )
         calls.append(_summarize(probe["module"], probe["symbol"], raw, probe=True))

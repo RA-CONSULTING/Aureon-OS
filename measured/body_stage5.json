@@ -1,0 +1,89 @@
+{
+  "called": 2,
+  "calls": [
+    {
+      "called": true,
+      "module": "accounting/file_drop.py",
+      "package": "accounting",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "registered_ingestors"
+    },
+    {
+      "called": true,
+      "module": "portfolio/aureon_billion_goal_tracker.py",
+      "package": "portfolio",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_days_remaining"
+    },
+    {
+      "called": false,
+      "module": "trading/__init__.py",
+      "package": "trading",
+      "probe": true,
+      "reason": "live orders are refused and the blocked import was not performed",
+      "status": "unavailable",
+      "symbol": "__init__"
+    },
+    {
+      "called": false,
+      "module": "exchanges/__init__.py",
+      "package": "exchanges",
+      "probe": true,
+      "reason": "live orders are refused and the blocked import was not performed",
+      "status": "unavailable",
+      "symbol": "__init__"
+    },
+    {
+      "called": false,
+      "module": "bots/__init__.py",
+      "package": "bots",
+      "probe": true,
+      "reason": "live orders are refused and the blocked import was not performed",
+      "status": "unavailable",
+      "symbol": "__init__"
+    },
+    {
+      "called": false,
+      "module": "bots_intelligence/__init__.py",
+      "package": "bots_intelligence",
+      "probe": true,
+      "reason": "live orders are refused and the blocked import was not performed",
+      "status": "unavailable",
+      "symbol": "__init__"
+    },
+    {
+      "called": false,
+      "module": "bridges/__init__.py",
+      "package": "bridges",
+      "probe": true,
+      "reason": "live orders are refused and the blocked import was not performed",
+      "status": "unavailable",
+      "symbol": "__init__"
+    },
+    {
+      "called": false,
+      "module": "scanners/__init__.py",
+      "package": "scanners",
+      "probe": true,
+      "reason": "live orders are refused and the blocked import was not performed",
+      "status": "unavailable",
+      "symbol": "__init__"
+    },
+    {
+      "called": false,
+      "module": "unified_margin_trader/_margin_monitor.py",
+      "package": "unified_margin_trader",
+      "probe": true,
+      "reason": "live orders are refused and the blocked import was not performed",
+      "status": "unavailable",
+      "symbol": "_margin_monitor"
+    }
+  ],
+  "enabled_through": 5,
+  "stage": 5,
+  "tried": 9
+}

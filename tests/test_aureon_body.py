@@ -95,6 +95,37 @@ def test_surface_does_not_call_and_a_changed_blob_is_refused(tmp_path: Path, mon
     assert "differs from pin" in refused["reason"]
 
 
+def test_stage5_operator_refuses_blocked_imports_and_calls_two_readers(monkeypatch: pytest.MonkeyPatch) -> None:
+    assert enabled_stage() >= 5
+    monkeypatch.setenv("AUREON_OPERATOR_MCP", "1")
+    monkeypatch.setenv("AUREON_DISABLE_REAL_ORDERS", "1")
+    ingestors = _load(body_call_operator("accounting/file_drop.py", "registered_ingestors"))
+    assert ingestors["called"] is True
+    assert "bank_csv" in ingestors["result"]
+    days = _load(body_call_operator("portfolio/aureon_billion_goal_tracker.py", "get_days_remaining"))
+    assert days["called"] is True
+    assert isinstance(days["result"], float)
+    blocked = (
+        ("trading/__init__.py", "__init__"),
+        ("exchanges/__init__.py", "__init__"),
+        ("bots/__init__.py", "__init__"),
+        ("bots_intelligence/__init__.py", "__init__"),
+        ("bridges/__init__.py", "__init__"),
+        ("scanners/__init__.py", "__init__"),
+        ("unified_margin_trader/_margin_monitor.py", "_margin_monitor"),
+    )
+    for module, symbol in blocked:
+        body = _load(body_call_operator(module, symbol))
+        assert body["live_orders"] == "refused", symbol
+        assert body.get("called") is not True
+        public = _load(body_call(module, symbol))
+        assert public["live_orders"] == "refused"
+    record = json.loads((ROOT / "measured" / "body_stage5.json").read_text(encoding="utf-8"))
+    called = {item["package"] for item in record["calls"] if item["called"] is True}
+    assert {"accounting", "portfolio"} <= called
+    assert "trading" not in called
+
+
 def test_stage4_calls_feed_decoder_search_portal_analytics_atn_and_monitor() -> None:
     assert enabled_stage() >= 4
     distance = _load(
