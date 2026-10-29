@@ -546,33 +546,20 @@ def _load_phenolic_fingerprint(root: Path | None = None) -> str | None:
     A different checkout copy is refused and is not loaded.
     """
 
-    import importlib.util
-    import sys
-
     from aureon_public.pin_blob import (
         PHENOLIC_MISMATCH,
         PINNED_PHENOLIC_BLOB,
-        pinned_blob_refusal,
+        load_pinned_source,
     )
 
     base = paths.repo_root() if root is None else root
     path = base / "phenolic_fingerprint.py"
-    refusal = pinned_blob_refusal(path, PINNED_PHENOLIC_BLOB, PHENOLIC_MISMATCH)
-    if refusal:
-        return refusal
-    if "phenolic_fingerprint" in sys.modules:
-        return None
-    spec = importlib.util.spec_from_file_location("phenolic_fingerprint", path)
-    if spec is None or spec.loader is None:
-        return "phenolic_fingerprint.py could not be loaded"
-    module = importlib.util.module_from_spec(spec)
-    sys.modules["phenolic_fingerprint"] = module
-    try:
-        spec.loader.exec_module(module)
-    except Exception as exc:
-        sys.modules.pop("phenolic_fingerprint", None)
-        return f"{type(exc).__name__}: {exc}"[:240]
-    return None
+    return load_pinned_source(
+        "phenolic_fingerprint",
+        path,
+        PINNED_PHENOLIC_BLOB,
+        PHENOLIC_MISMATCH,
+    )
 
 
 def public_layer_tools() -> list[Any]:

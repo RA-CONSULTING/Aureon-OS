@@ -21,7 +21,7 @@ from typing import Any
 
 from aureon_public.guard_loader import PINNED_COMMIT, apply_space_guard, aureon_source
 from aureon_public.paths import repo_root
-from aureon_public.pin_blob import checkout_blob_refusal
+from aureon_public.pin_blob import load_checkout_module
 from aureon_public.quiet import quiet
 from aureon_public.tools import _dumps
 
@@ -268,20 +268,16 @@ def _import_checked(module: str) -> tuple[Any | None, str | None]:
         if origin_path.is_file() and _outside(origin_path, root):
             from_checkout = False
     if from_checkout:
-        refusal = checkout_blob_refusal(path, root, PINNED_COMMIT)
+        loaded, refusal = load_checkout_module(dotted, path, root, PINNED_COMMIT)
         if refusal:
             return None, refusal
+        return loaded, None
     try:
         imported = importlib.import_module(dotted)
     except SystemExit:
         return None, "import raised SystemExit"
     except Exception as exc:  # noqa: BLE001 - import failure is an unavailable tool result
         return None, f"{type(exc).__name__}: {exc}"[:240]
-    loaded = getattr(imported, "__file__", None)
-    if loaded and not _outside(Path(loaded), root):
-        refusal = checkout_blob_refusal(Path(loaded), root, PINNED_COMMIT)
-        if refusal:
-            return None, refusal
     return imported, None
 
 

@@ -437,8 +437,8 @@ def test_new_package_tools_and_membrane_paths(monkeypatch: pytest.MonkeyPatch) -
         assert str(body.get("label", "")).startswith("helper.")
     fear = _load(getattr(sys.modules["aureon_public.more_layers"], "analytics_fear_greed")())
     tick = _load(getattr(sys.modules["aureon_public.more_layers"], "data_feed_parse_tick")())
-    assert fear["label"] == "helper. The series is a fixed 40-step fixture ramp, not market data."
-    assert tick["label"] == "helper. One fixture tick, not market data. No socket was opened."
+    assert fear["label"] == "helper. inferred. The series is a fixed 40-step fixture ramp, not market data."
+    assert tick["label"] == "helper. inferred. One fixture tick, not market data. No socket was opened."
     live = _load(layers.membrane_screen("hello"))
     assert live["status"] == "cited"
     assert live["provenance"] == "cited"
@@ -486,6 +486,63 @@ def test_phenolic_blob_matches_pin_and_a_changed_copy_is_refused(
     refused = _load(layers.membrane_screen("hello"))
     assert refused["status"] == "unavailable"
     assert refused["reason"] == "checkout phenolic_fingerprint differs from pin a00f744d"
+
+
+def test_pinned_source_reads_once_and_executes_those_bytes(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import sys
+
+    from aureon_public.pin_blob import git_blob_sha1, load_pinned_source
+
+    path = tmp_path / "pinned_bytes_probe.py"
+    path.write_text("VALUE = 1\n", encoding="utf-8")
+    expected = git_blob_sha1(path.read_bytes())
+    real_read = Path.read_bytes
+    reads: list[Path] = []
+
+    def read_once(self: Path) -> bytes:
+        data = real_read(self)
+        if self == path:
+            reads.append(self)
+            path.write_text("VALUE = 2\n", encoding="utf-8")
+        return data
+
+    monkeypatch.setattr(Path, "read_bytes", read_once)
+    sys.modules.pop("pinned_bytes_probe", None)
+    assert load_pinned_source("pinned_bytes_probe", path, expected, "mismatch") is None
+    assert reads == [path]
+    assert sys.modules["pinned_bytes_probe"].VALUE == 1
+    sys.modules.pop("pinned_bytes_probe", None)
+
+    changed = tmp_path / "pinned_bytes_changed.py"
+    changed.write_bytes(path.read_bytes())
+    sys.modules.pop("pinned_bytes_changed", None)
+    refusal = load_pinned_source("pinned_bytes_changed", changed, expected, "mismatch")
+    assert refusal == "mismatch"
+    assert "pinned_bytes_changed" not in sys.modules
+    assert load_pinned_source("pinned_bytes_changed", changed, "", "mismatch") == "expected blob is required"
+
+
+def test_spec_from_file_location_is_only_the_space_guard() -> None:
+    import ast
+
+    root = ROOT / "mcp"
+    offenders: list[str] = []
+    for path in root.rglob("*.py"):
+        if path.name == "guard_loader.py":
+            continue
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            name = ""
+            if isinstance(node, ast.Name):
+                name = node.id
+            elif isinstance(node, ast.Attribute):
+                name = node.attr
+            if name == "spec_from_file_location":
+                offenders.append(f"{path.relative_to(root)}:{node.lineno}")
+    assert offenders == []
+    guard = (root / "aureon_public" / "guard_loader.py").read_text(encoding="utf-8")
+    assert "spec_from_file_location" in guard
+    assert "space_guard" in guard
 
 
 def test_space_entry_points_call_enforce_public_pin() -> None:

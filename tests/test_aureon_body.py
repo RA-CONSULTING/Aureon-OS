@@ -82,13 +82,13 @@ def test_surface_does_not_call_and_a_changed_blob_is_refused(tmp_path: Path, mon
     changed = tmp_path / "rainbow_reference.py"
     changed.write_bytes(real.read_bytes() + b"\n# changed\n")
 
-    def refuse(path: Path, root: Path, commit: str) -> str:
-        del root, commit
-        if path == real:
+    def refuse(module_name: str, file_path: Path, expected_blob: str, mismatch: str) -> str | None:
+        del module_name, expected_blob, mismatch
+        if file_path == real:
             return "checkout rainbow_reference.py differs from pin a00f744d"
         return None
 
-    monkeypatch.setattr("aureon_public.body.checkout_blob_refusal", refuse)
+    monkeypatch.setattr("aureon_public.pin_blob.load_pinned_source", refuse)
     monkeypatch.setattr("aureon_public.body._outside", lambda origin, root: False)
     refused = _load(body_call("harmonic/rainbow_reference.py", "solfeggio_ladder"))
     assert refused["status"] == "unavailable"
