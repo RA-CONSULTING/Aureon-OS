@@ -448,6 +448,30 @@ def test_new_package_tools_and_membrane_paths(monkeypatch: pytest.MonkeyPatch) -
     assert kinds["identity"] == "excluded"
 
 
+def test_phenolic_blob_matches_pin_and_a_changed_copy_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import sys
+
+    from aureon_public import layers, paths
+    from aureon_public.pin_blob import PINNED_PHENOLIC_BLOB, git_blob_sha1
+
+    original = paths.repo_root() / "phenolic_fingerprint.py"
+    assert git_blob_sha1(original.read_bytes()) == PINNED_PHENOLIC_BLOB
+    sys.modules.pop("phenolic_fingerprint", None)
+    assert layers._load_phenolic_fingerprint() is None
+    matched = _load(layers.membrane_screen("hello"))
+    assert matched["status"] == "cited"
+
+    (tmp_path / "phenolic_fingerprint.py").write_bytes(original.read_bytes() + b"\n# not the pin\n")
+    reason = layers._load_phenolic_fingerprint(tmp_path)
+    assert reason == "checkout phenolic_fingerprint differs from pin a00f744d"
+    monkeypatch.setattr(layers.paths, "repo_root", lambda: tmp_path)
+    refused = _load(layers.membrane_screen("hello"))
+    assert refused["status"] == "unavailable"
+    assert refused["reason"] == "checkout phenolic_fingerprint differs from pin a00f744d"
+
+
 def test_space_entry_points_call_enforce_public_pin() -> None:
     for name in ("hnc-field", "auris-coherence", "qgita-snr", "organism-replay"):
         text = (ROOT / "huggingface" / name / "app.py").read_text(encoding="utf-8")

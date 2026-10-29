@@ -536,21 +536,29 @@ def source_names(package: str) -> str:
     )
 
 
-def _load_phenolic_fingerprint() -> str | None:
+def _load_phenolic_fingerprint(root: Path | None = None) -> str | None:
     """Register the checkout's phenolic_fingerprint without putting the repo root on sys.path.
 
-    The pinned aureon install imports that module by name. Adding the checkout
-    root would also shadow the pin. Loading the file into sys.modules does not.
+    The file is executed only when its git blob is the blob at pin a00f744d.
+    A different checkout copy is refused and is not loaded.
     """
 
     import importlib.util
     import sys
 
+    from aureon_public.pin_blob import (
+        PHENOLIC_MISMATCH,
+        PINNED_PHENOLIC_BLOB,
+        pinned_blob_refusal,
+    )
+
+    base = paths.repo_root() if root is None else root
+    path = base / "phenolic_fingerprint.py"
+    refusal = pinned_blob_refusal(path, PINNED_PHENOLIC_BLOB, PHENOLIC_MISMATCH)
+    if refusal:
+        return refusal
     if "phenolic_fingerprint" in sys.modules:
         return None
-    path = paths.repo_root() / "phenolic_fingerprint.py"
-    if not path.is_file():
-        return "phenolic_fingerprint.py is not in this checkout"
     spec = importlib.util.spec_from_file_location("phenolic_fingerprint", path)
     if spec is None or spec.loader is None:
         return "phenolic_fingerprint.py could not be loaded"
