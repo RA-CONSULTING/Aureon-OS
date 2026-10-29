@@ -21,7 +21,7 @@ Trading research · autonomous operator · planetary/HNC research · a coding or
 
 ## Five-minute quickstart
 
-A fresh clone, Python 3.11 or newer, and no API keys. This path does not start Docker, does not read exchange keys, and does not place an order. It installs the operator extra, runs the offline operator server tests and the connectome test, then prints the HNC measurement from `aureon.evaluation.brain_proof.evaluate_brain`. That function runs `HarmonicRealityField.step` for 100 steps with the multiverse extension off. It does not draw a seed, so the same figures come back on every run.
+A fresh clone, Python 3.11 or newer, and no API keys. This path does not start Docker, does not read exchange keys, and does not place an order. It installs the operator extra, runs the offline operator server tests and the connectome test, then prints the HNC measurement from `aureon.evaluation.brain_proof.evaluate_brain`. That function runs `HarmonicRealityField.step` for 100 steps with the multiverse extension off. The class default HarmonicRealityField() has the multiverse on, which gives coherence 0.857719 and LOCKED. It is deterministic: it takes no seed, so the same figures come back on every run.
 
 Linux and macOS:
 
