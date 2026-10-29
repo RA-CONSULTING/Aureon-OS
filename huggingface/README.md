@@ -17,7 +17,7 @@ The brain runs are fixed-seed reproducible at commit `a00f744d`. Trade readiness
 Install the modules from this repo:
 
 ```bash
-pip install "git+https://github.com/RA-CONSULTING/Aureon-OS.git"
+pip install "aureon @ git+https://github.com/RA-CONSULTING/Aureon-OS.git@a00f744d2e686e916e45b81dd4222408c368e305"
 ```
 
 The git+ install brings the whole repo, trading modules included, and only the Spaces switch them off.

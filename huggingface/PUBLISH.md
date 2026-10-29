@@ -82,9 +82,7 @@ Upload only the `huggingface/` folders. Do not upload `.env`, `.git`, keys, or t
 The Space `requirements.txt` installs the package with:
 
 ```bash
-pip install "git+https://github.com/RA-CONSULTING/Aureon-OS.git"
+pip install "aureon @ git+https://github.com/RA-CONSULTING/Aureon-OS.git@a00f744d2e686e916e45b81dd4222408c368e305"
 ```
 
-The git+ install brings the whole repo, trading modules included, and only the Spaces switch them off.
-
-Merge this change to the default branch before expecting that install to include the packaging note from this branch. The field, evaluator, and adapter modules are already on the default branch.
+That pin is commit `a00f744d2e686e916e45b81dd4222408c368e305`, the commit the measured runs come from. The git+ install brings the whole repo, trading modules included, and only the Spaces switch them off.
