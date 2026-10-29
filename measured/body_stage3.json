@@ -806,16 +806,16 @@
   "enabled_through": 3,
   "entry_points": {
     "bio": {
-      "public_entry_points": 286,
-      "reachable": 234
+      "public_entry_points": 206,
+      "reachable": 96
     },
     "core": {
-      "public_entry_points": 95,
-      "reachable": 69
+      "public_entry_points": 64,
+      "reachable": 23
     },
     "evaluation": {
-      "public_entry_points": 12,
-      "reachable": 8
+      "public_entry_points": 10,
+      "reachable": 7
     },
     "identity": {
       "public_entry_points": 0,
@@ -826,8 +826,8 @@
       "reachable": 1
     },
     "vault": {
-      "public_entry_points": 267,
-      "reachable": 229
+      "public_entry_points": 195,
+      "reachable": 20
     }
   },
   "stage": 3,

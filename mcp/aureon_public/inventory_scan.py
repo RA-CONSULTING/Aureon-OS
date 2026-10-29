@@ -87,12 +87,25 @@ LAUNCH_RE = re.compile(
     r"^(main|start_|stop_|launch|serve|run_server|boot|demo)$|serve_forever|continuous|create_web",
     re.I,
 )
-WRITE_RE = re.compile(r"write_text|write_bytes|\.write\(|mkdir|open\([^)]*['\"]w", re.I)
+WRITE_RE = re.compile(r"write_text|write_bytes|\.write\(|mkdir|open\([^)]*['\"][wa]", re.I)
 KEY_RE = re.compile(
     r"api_key|secret|password|credential|dotenv|owner_address|master_key|from_env|private_key|read_identity",
     re.I,
 )
 FETCH_RE = re.compile(r"^(fetch_|download_|get_live)|requests\.|urlopen|httpx\.", re.I)
+RISKY_RE = re.compile(
+    r"(?<![\w])append(?![\w])|"
+    r"(?<![\w])publish(?![\w])|"
+    r"\bThread\b|"
+    r"\.start\s*\(|"
+    r"\bunlink\b|"
+    r"\bmkdir\b|"
+    r"(?<![\w.])eval\s*\(|"
+    r"(?<![\w.])exec\s*\(|"
+    r"\bemit_\w*|"
+    r"open\s*\([^)]*['\"][wa]",
+    re.I,
+)
 
 
 def stage_for(pkg: str, rel: str) -> int:
@@ -110,8 +123,14 @@ def stage_for(pkg: str, rel: str) -> int:
     return STAGE.get(pkg, 6)
 
 
+def source_is_risky(src: str) -> bool:
+    """True when a full function body or a class ``__init__`` has a risky token."""
+
+    return bool(src and RISKY_RE.search(src))
+
+
 def safety(pkg: str, name: str, src: str, stage: int) -> tuple[str, str]:
-    blob = name + "\n" + src[:1500]
+    blob = name + "\n" + src
     if pkg == "identity" or (pkg == "vault" and KEY_RE.search(blob)):
         return "operator", "personal or key material; operator only; never returned"
     if ORDER_RE.search(blob) or pkg in {
@@ -123,16 +142,16 @@ def safety(pkg: str, name: str, src: str, stage: int) -> tuple[str, str]:
         "scanners",
     }:
         return "operator", "order-capable path; live_orders refused; no live send"
-    if LAUNCH_RE.search(name) or "serve_forever" in src[:800] or "while True" in src[:800]:
+    if LAUNCH_RE.search(name) or "serve_forever" in src or "while True" in src:
         return "operator", "process, loop, or UI start; own flag; status and stop"
-    if WRITE_RE.search(src[:800]):
-        return "operator", "writes; operator state root only, not the repo"
+    if WRITE_RE.search(src) or source_is_risky(src):
+        return "operator", "full-body scan found a risky token; the public server refuses it"
     if KEY_RE.search(blob):
         return "operator", "reads keys from env only; never logged or returned"
-    if FETCH_RE.search(blob):
-        return "public", "live public fetch allowed; source label and timeout"
     if pkg in OPERATOR_PACKAGES and stage >= 5:
         return "operator", "package is operator-scoped; no public import"
+    if FETCH_RE.search(blob):
+        return "public", "live public fetch allowed; source label and timeout"
     server, text = "public", "runs from inputs or committed files; no keys and no repo write"
     return _honest_effect(name, server, text)
 
@@ -160,9 +179,17 @@ def required_count(node: ast.AST) -> int:
     return max(required, 0)
 
 
-def _snippet(lines: list[str], node: ast.AST) -> str:
+def _span(lines: list[str], node: ast.AST) -> str:
     start = getattr(node, "lineno", 1) - 1
-    return "\n".join(lines[start : start + 40])
+    end = getattr(node, "end_lineno", None) or getattr(node, "lineno", 1)
+    return "\n".join(lines[start:end])
+
+
+def _init_source(lines: list[str], class_node: ast.ClassDef) -> str:
+    for item in class_node.body:
+        if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)) and item.name == "__init__":
+            return _span(lines, item)
+    return ""
 
 
 def _scan_tree(pkg: str, rel: str, text: str, server_default: str | None = None) -> list[dict]:
@@ -211,7 +238,7 @@ def _scan_tree(pkg: str, rel: str, text: str, server_default: str | None = None)
             server, safe = (
                 ("operator", "live_orders refused; no live send")
                 if pkg == "unified_margin_trader"
-                else safety(pkg, node.name, _snippet(lines, node), stage)
+                else safety(pkg, node.name, _init_source(lines, node) or _span(lines, node), stage)
             )
             rows.append(
                 {
@@ -231,7 +258,12 @@ def _scan_tree(pkg: str, rel: str, text: str, server_default: str | None = None)
                     server, safe = (
                         ("operator", "live_orders refused; no live send")
                         if pkg == "unified_margin_trader"
-                        else safety(pkg, item.name, _snippet(lines, item), stage)
+                        else safety(
+                            pkg,
+                            item.name,
+                            _span(lines, item) + "\n" + _init_source(lines, node),
+                            stage,
+                        )
                     )
                     rows.append(
                         {
@@ -251,7 +283,7 @@ def _scan_tree(pkg: str, rel: str, text: str, server_default: str | None = None)
             server, safe = (
                 ("operator", "live_orders refused; no live send")
                 if pkg == "unified_margin_trader"
-                else safety(pkg, node.name, _snippet(lines, node), stage)
+                else safety(pkg, node.name, _span(lines, node), stage)
             )
             rows.append(
                 {

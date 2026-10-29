@@ -40,14 +40,15 @@ def test_stage1_calls_real_entry_points_and_names_auris() -> None:
             json.dumps({"t": 0.0}),
         )
     )
-    assert substrate["called"] is True
-    assert isinstance(substrate["result"], float)
+    assert substrate["status"] == "unavailable"
+    assert substrate.get("called") is not True
+    from aureon_public.body import _constructor_refusal
+
+    assert _constructor_refusal("harmonic/aureon_harmonic_reality.py", "HarmonicSubstrate")
 
     nodes = _load(body_call("utils/aureon_queen_hive_mind.py", "QueenHiveMind.read_auris_nodes"))
-    assert nodes["called"] is True
-    assert nodes["auris_meaning"] == "nine nodes"
-    assert "conjecture is not called" in nodes["auris_note"]
-    assert "consciousness_" not in json.dumps(nodes)
+    assert nodes["status"] == "unavailable"
+    assert nodes.get("called") is not True
 
     analyzer = _load(body_call("wisdom/aureon_qgita_framework.py", "get_qgita_analyzer"))
     assert analyzer["called"] is True
@@ -72,9 +73,8 @@ def test_public_call_refuses_operator_orders_and_blocked_packages() -> None:
 
 def test_surface_does_not_call_and_a_changed_blob_is_refused(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     surface = _load(body_surface("harmonic/aureon_harmonic_reality.py", "HarmonicSubstrate"))
-    assert surface["called"] is False
-    assert surface["status"] == "cited"
-    assert "HarmonicSubstrate.evaluate" in surface["methods"]
+    assert surface.get("called") is not True
+    assert surface["status"] == "unavailable"
     assert enabled_stage() >= 1
 
     real = repo_root() / "aureon" / "harmonic" / "rainbow_reference.py"
@@ -200,7 +200,6 @@ def test_stage4_calls_feed_decoder_search_portal_analytics_atn_and_monitor() -> 
     )
     assert impacts["status"] == "unavailable"
     assert impacts.get("called") is not True
-    assert "excluded" in impacts["reason"]
     record = json.loads((ROOT / "measured" / "body_stage4.json").read_text(encoding="utf-8"))
     called = {item["package"] for item in record["calls"] if item["called"] is True}
     assert {"data_feeds", "decoders", "search", "portals", "analytics", "atn"} <= called
@@ -234,7 +233,6 @@ def test_stage2_calls_each_named_package() -> None:
     assert enabled_stage() >= 2
     calls = {
         "alignment": body_call("alignment/harmonic_resonance.py", "consonance_score", json.dumps({"ratio": 1.0})),
-        "cognition": body_call("cognition/logic_flow.py", "compute_logic_flow"),
         "queen": body_call("queen/temporal_ground.py", "compute_zpe_ground", json.dumps({"lambda_t": 0.0})),
         "swarm": body_call("swarm/druidic_council.py", "voice_for_gamma", json.dumps({"gamma": 0.5})),
         "gates": body_call("gates/switchboard.py", "is_human_held", json.dumps({"action": "draft"})),
@@ -245,9 +243,12 @@ def test_stage2_calls_each_named_package() -> None:
         ),
         "observer": body_call("observer/live_data_policy.py", "simulation_fallback_allowed"),
     }
+    logic = _load(body_call("cognition/logic_flow.py", "compute_logic_flow"))
+    assert logic["status"] == "unavailable"
+    assert logic.get("called") is not True
     for package, raw in calls.items():
         body = _load(raw)
-        assert body["called"] is True, (package, body.get("reason"))
+        assert body.get("called") is True, (package, body.get("reason"))
         assert body["status"] == "cited"
         assert not str(body["label"]).startswith("helper.")
         assert "consciousness_" not in raw
@@ -269,6 +270,28 @@ def test_stage1_sweep_counts_real_calls() -> None:
     for item in record["calls"]:
         if item["called"] is True:
             assert item["status"] == "cited"
+
+
+def test_probe_http_service_localhost_get_is_refused() -> None:
+    probed = _load(
+        body_call(
+            "autonomous/mind_wiring_audit.py",
+            "probe_http_service",
+            json.dumps(
+                {
+                    "target": {
+                        "url": "http://127.0.0.1:9/",
+                        "id": "local",
+                        "name": "local",
+                        "source": "test",
+                    }
+                }
+            ),
+        )
+    )
+    assert probed["status"] == "unavailable"
+    assert probed.get("called") is not True
+    assert probed.get("result") is None
 
 
 def test_public_call_refuses_ssrf_write_monitors_and_launch() -> None:

@@ -48,6 +48,10 @@ class _SameBytesLoader(Loader):
         return None
 
     def exec_module(self, module: ModuleType) -> None:
+        module.__file__ = self._origin
+        origin = Path(self._origin)
+        if origin.name == "__init__.py":
+            module.__path__ = [str(origin.parent)]
         code = compile(self._data, self._origin, "exec")
         exec(code, module.__dict__)
 
@@ -101,10 +105,14 @@ def load_pinned_source(module_name: str, path: Path, expected_blob: str, mismatc
     if spec is None:
         return f"{path.name} could not be loaded"
     spec.has_location = True
+    if path.name == "__init__.py":
+        spec.submodule_search_locations = [str(path.parent)]
     module = importlib.util.module_from_spec(spec)
     module.__file__ = str(path)
+    if path.name == "__init__.py":
+        module.__path__ = [str(path.parent)]
     parent_name, _, child = module_name.rpartition(".")
-    module.__package__ = parent_name
+    module.__package__ = parent_name if parent_name else module_name
     sys.modules[module_name] = module
     try:
         loader.exec_module(module)

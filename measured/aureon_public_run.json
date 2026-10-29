@@ -17,7 +17,7 @@
         "symbol": "CausalEcho.evaluate"
       },
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. harmonic/aureon_harmonic_reality.py CausalEcho.evaluate ran.\", \"provenance\": \"cited\", \"result\": 0.0, \"status\": \"cited\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"live_orders\": \"refused\", \"provenance\": \"cited\", \"reason\": \"operator entry point is not on aureon-public\", \"status\": \"unavailable\"}"
     },
     "body_call:HarmonicSubstrate.evaluate": {
       "arguments": {
@@ -26,7 +26,7 @@
         "symbol": "HarmonicSubstrate.evaluate"
       },
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. harmonic/aureon_harmonic_reality.py HarmonicSubstrate.evaluate ran.\", \"provenance\": \"cited\", \"result\": 0.1992387112134208, \"status\": \"cited\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"live_orders\": \"refused\", \"provenance\": \"cited\", \"reason\": \"operator entry point is not on aureon-public\", \"status\": \"unavailable\"}"
     },
     "body_call:QueenHiveMind.read_auris_nodes": {
       "arguments": {
@@ -35,7 +35,7 @@
         "symbol": "QueenHiveMind.read_auris_nodes"
       },
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"auris_meaning\": \"nine nodes\", \"auris_note\": \"Four meanings stay separate. This call is only the meaning named above. The LambdaEngine conjecture is not called.\", \"called\": true, \"label\": \"cited. utils/aureon_queen_hive_mind.py QueenHiveMind.read_auris_nodes ran.\", \"provenance\": \"cited\", \"result\": {\"CargoShip\": {\"data_status\": \"no_data\", \"domain\": \"liquidity buffer\", \"emoji\": \"\ud83d\udea2\", \"freq\": 936.0, \"value\": null, \"weight\": 0.7, \"weighted_value\": null}, \"Clownfish\": {\"data_status\": \"no_data\", \"domain\": \"connection\", \"emoji\": \"\ud83d\udc20\", \"freq\": 963.0, \"value\": null, \"weight\": 1.0, \"weighted_value\": null}, \"Deer\": {\"data_status\": \"no_data\", \"domain\": \"micro-shifts\", \"emoji\": \"\ud83e\udd8c\", \"freq\": 639.0, \"value\": null, \"weight\": 0.9, \"weighted_value\": null}, \"Dolphin\": {\"data_status\": \"no_data\", \"domain\": \"waveform carrier\", \"emoji\": \"\ud83d\udc2c\", \"freq\": 528.0, \"value\": null, \"weight\": 1.5, \"weighted_value\": null}, \"Falcon\": {\"data_status\": \"no_data\", \"domain\": \"speed & attack\", \"emoji\": \"\ud83e\udd85\", \"freq\": 285.0, \"value\": null, \"weight\": 1.2, \"weighted_value\": null}, \"Hummingbird\": {\"data_status\": \"no_data\", \"domain\": \"high-freq lock\", \"emoji\": \"\ud83d\udc26\", \"freq\": 396.0, \"value\": null, \"weight\": 0.8, \"weighted_value\": null}, \"Owl\": {\"data_status\": \"no_data\", \"domain\": \"pattern memory\", \"emoji\": \"\ud83e\udd89\", \"freq\": 741.0, \"value\": null, \"weight\": 1.1, \"weighted_value\": null}, \"Panda\": {\"data_status\": \"no_data\", \"domain\": \"grounding safety\", \"emoji\": \"\ud83d\udc3c\", \"freq\": 852.0, \"value\": null, \"weight\": 1.3, \"weighted_value\": null}, \"Tiger\": {\"data_status\": \"no_data\", \"domain\": \"cuts noise\", \"emoji\": \"\ud83d\udc05\", \"freq\": 220.0, \"value\": null, \"weight\": 1.0, \"weighted_value\": null}}, \"status\": \"cited\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"live_orders\": \"refused\", \"provenance\": \"cited\", \"reason\": \"operator entry point is not on aureon-public\", \"status\": \"unavailable\"}"
     },
     "body_call:StandingWaveLoveStream.evaluate": {
       "arguments": {
@@ -44,7 +44,7 @@
         "symbol": "StandingWaveLoveStream.evaluate"
       },
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"provenance\": \"cited\", \"reason\": \"package swarm_motion is excluded\", \"status\": \"unavailable\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"live_orders\": \"refused\", \"provenance\": \"cited\", \"reason\": \"operator entry point is not on aureon-public\", \"status\": \"unavailable\"}"
     },
     "body_call:__init__": {
       "arguments": {
@@ -71,7 +71,7 @@
         "symbol": "blend_field"
       },
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. core/hnc_field.py blend_field ran.\", \"provenance\": \"cited\", \"result\": {\"available\": false, \"coherence_gamma\": null, \"contributors\": 0, \"divergence\": null, \"sources\": [], \"symbolic_life_score\": null}, \"status\": \"cited\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"live_orders\": \"refused\", \"provenance\": \"cited\", \"reason\": \"operator entry point is not on aureon-public\", \"status\": \"unavailable\"}"
     },
     "body_call:breath_interval": {
       "arguments": {
@@ -143,7 +143,7 @@
         "symbol": "compute_calibration"
       },
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"provenance\": \"cited\", \"reason\": \"name is not called on the public server\", \"status\": \"unavailable\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"live_orders\": \"refused\", \"provenance\": \"cited\", \"reason\": \"operator entry point is not on aureon-public\", \"status\": \"unavailable\"}"
     },
     "body_call:compute_impacts": {
       "arguments": {
@@ -152,7 +152,7 @@
         "symbol": "compute_impacts"
       },
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"provenance\": \"cited\", \"reason\": \"package atn is excluded\", \"status\": \"unavailable\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"live_orders\": \"refused\", \"provenance\": \"cited\", \"reason\": \"operator entry point is not on aureon-public\", \"status\": \"unavailable\"}"
     },
     "body_call:compute_logic_flow": {
       "arguments": {
@@ -161,7 +161,7 @@
         "symbol": "compute_logic_flow"
       },
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. cognition/logic_flow.py compute_logic_flow ran.\", \"provenance\": \"cited\", \"result\": {\"boundary\": \"Deterministic flow trace: on an isolated in-memory bus it publishes one canonical symbolic.life.pulse, reads it through aureon.core.hnc_field.read_canonical_field, carries it into a downstream decision, and asserts the topic sequence and a single unbroken trace_id from harmonic core to decision. It does NOT run the live daemon, does NOT trade, and is NOT a claim about any person.\", \"decision_carries_field\": true, \"field_read\": true, \"field_score\": 0.639, \"flow_intact\": true, \"out_path\": null, \"pulse_published\": true, \"single_trace_id\": true, \"topic_sequence\": [\"symbolic.life.pulse\", \"cognition.logic_flow.decision\"], \"trace_id\": \"logicflow0\", \"trace_id_propagated\": true, \"trace_signal_written\": false}, \"status\": \"cited\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"live_orders\": \"refused\", \"provenance\": \"cited\", \"reason\": \"operator entry point is not on aureon-public\", \"status\": \"unavailable\"}"
     },
     "body_call:compute_zpe_ground": {
       "arguments": {
@@ -197,7 +197,7 @@
         "symbol": "derive_fear_greed"
       },
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. analytics/backtest_sentiment_oracle.py derive_fear_greed ran.\", \"provenance\": \"cited\", \"result\": {\"components\": {}, \"fg_index\": 50, \"fg_label\": \"Neutral\"}, \"status\": \"cited\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"live_orders\": \"refused\", \"provenance\": \"cited\", \"reason\": \"operator entry point is not on aureon-public\", \"status\": \"unavailable\"}"
     },
     "body_call:evaluate_auris_nodes": {
       "arguments": {
@@ -296,7 +296,7 @@
         "symbol": "parse_binance_tick"
       },
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. data_feeds/unified_ws_feed.py parse_binance_tick ran.\", \"provenance\": \"cited\", \"result\": {\"ask\": 2.0, \"bid\": 1.0, \"change_24h\": 0.0, \"exchange\": \"binance\", \"generated_values\": false, \"last\": 1.5, \"raw_symbol\": \"BTCUSDT\", \"received_at\": 1793312317.4305682, \"source_timestamp\": null, \"symbol\": \"BTC/USDT\", \"timestamp\": null, \"volume_24h\": 3.0}, \"status\": \"cited\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. data_feeds/unified_ws_feed.py parse_binance_tick ran.\", \"provenance\": \"cited\", \"result\": {\"ask\": 2.0, \"bid\": 1.0, \"change_24h\": 0.0, \"exchange\": \"binance\", \"generated_values\": false, \"last\": 1.5, \"raw_symbol\": \"BTCUSDT\", \"received_at\": 1793312958.5000236, \"source_timestamp\": null, \"symbol\": \"BTC/USDT\", \"timestamp\": null, \"volume_24h\": 3.0}, \"status\": \"cited\"}"
     },
     "body_call:registered_ingestors": {
       "arguments": {
@@ -368,7 +368,7 @@
         "symbol": "summarize_compounding"
       },
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. s51/aureon_51_compound.py summarize_compounding ran.\", \"provenance\": \"cited\", \"result\": {\"ending_balance\": null, \"fees\": null, \"generated_at\": \"2026-10-29T22:18:37.700238+00:00\", \"loss_count\": null, \"net_pnl\": null, \"reason\": \"No provider-observed closed-trade receipts were supplied.\", \"receipt_ids\": [], \"status\": \"no_data\", \"trade_count\": 0, \"truth_status\": \"no_data\", \"win_count\": null, \"win_rate\": null}, \"status\": \"cited\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. s51/aureon_51_compound.py summarize_compounding ran.\", \"provenance\": \"cited\", \"result\": {\"ending_balance\": null, \"fees\": null, \"generated_at\": \"2026-10-29T22:29:19.313681+00:00\", \"loss_count\": null, \"net_pnl\": null, \"reason\": \"No provider-observed closed-trade receipts were supplied.\", \"receipt_ids\": [], \"status\": \"no_data\", \"trade_count\": 0, \"truth_status\": \"no_data\", \"win_count\": null, \"win_rate\": null}, \"status\": \"cited\"}"
     },
     "body_call:summarize_text": {
       "arguments": {
@@ -377,7 +377,7 @@
         "symbol": "summarize_text"
       },
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. search/online_research_cinema.py summarize_text ran.\", \"provenance\": \"cited\", \"result\": \"The field is a reading. The reading is not an order.\", \"status\": \"cited\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"live_orders\": \"refused\", \"provenance\": \"cited\", \"reason\": \"operator entry point is not on aureon-public\", \"status\": \"unavailable\"}"
     },
     "body_call:synthetic_audio": {
       "arguments": {
@@ -386,7 +386,7 @@
         "symbol": "synthetic_audio"
       },
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. bio/audio_signal_adapter.py synthetic_audio ran.\", \"provenance\": \"cited\", \"result\": [{\"type\": \"ndarray\"}, 8000.0], \"status\": \"cited\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"provenance\": \"cited\", \"reason\": \"ModuleNotFoundError: No module named 'phenolic_fingerprint'\", \"status\": \"unavailable\"}"
     },
     "body_call:ungrounded_nodes": {
       "arguments": {
@@ -417,7 +417,7 @@
         "symbol": "HarmonicSubstrate"
       },
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": false, \"form\": \"resource\", \"kind\": \"class\", \"label\": \"cited. Surface only. The entry point was not called.\", \"methods\": [\"HarmonicSubstrate.evaluate\", \"HarmonicSubstrate.get_spectrum\", \"HarmonicSubstrate.add_mode\"], \"provenance\": \"cited\", \"safety\": \"runs from inputs or committed files; no keys and no repo write\", \"server\": \"public\", \"stage\": 1, \"status\": \"cited\", \"symbol\": \"HarmonicSubstrate\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"provenance\": \"cited\", \"reason\": \"operator surface is not on aureon-public\", \"status\": \"unavailable\"}"
     },
     "evidence_predict_next": {
       "arguments": {},

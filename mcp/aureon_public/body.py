@@ -15,7 +15,9 @@ import inspect
 import json
 import os
 import re
-import threading
+import signal
+import subprocess
+import sys
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -79,11 +81,15 @@ _ROWS: list[dict[str, Any]] | None = None
 _INDEX: dict[tuple[str, str], dict[str, Any]] | None = None
 _INVENTORY_REFUSAL: str | None = None
 # sha256 of the committed docs/mcp/inventory.json. A different file is not loaded.
-INVENTORY_SHA256 = "54627df66611650622c94aa2ac256651597e650004f191e9e6d5669cf9989654"
-_STRANDED = 0
-_STRANDED_LOCK = threading.Lock()
-STRANDED_CAP = 4
+INVENTORY_SHA256 = "4bc19ea9b5444a7b8a9abbd3fabf635d083bd25bea6c1b2d6eab2605b4f5716b"
 _LEAKY_PARAMS = {"url", "path", "out", "file", "host"}
+# Operator-scoped rows are refused unless named here. No portfolio or accounting key reader.
+_OPERATOR_ALLOWLIST = {
+    ("accounting/file_drop.py", "registered_ingestors"),
+    ("portfolio/aureon_billion_goal_tracker.py", "get_days_remaining"),
+}
+# A method call constructs its class. An unlisted constructor is not run.
+_CONSTRUCTOR_ALLOWLIST: set[tuple[str, str]] = set()
 _NAME_CONTAINS = ("write", "save", "export", "dump", "start", "run")
 
 
@@ -325,43 +331,99 @@ def _required_missing(fn: Any, kwargs: dict[str, Any]) -> str | None:
     return None
 
 
-def _call_with_timeout(fn: Any, kwargs: dict[str, Any], timeout: float) -> tuple[str, Any]:
-    global _STRANDED
-    if inspect.iscoroutinefunction(fn):
-        return "async", "async entry point is not awaited"
-    with _STRANDED_LOCK:
-        if _STRANDED >= STRANDED_CAP:
-            return "capped", "stranded call cap reached"
-    box: dict[str, Any] = {}
-    state = {"counted": False}
+def _checkout_load(module: str) -> str | None:
+    """Load a checkout module through the pinned helper. None when the install is outside."""
 
-    def runner() -> None:
-        global _STRANDED
+    apply_space_guard()
+    root = repo_root()
+    path = file_for(module)
+    dotted = dotted_for(module)
+    spec = importlib.util.find_spec(dotted)
+    origin = getattr(spec, "origin", None) if spec is not None else None
+    from_checkout = True
+    if origin:
+        origin_path = Path(origin)
+        if origin_path.is_file() and _outside(origin_path, root):
+            from_checkout = False
+    if not from_checkout:
+        return None
+    from aureon_public.pin_blob import load_checkout_module
+
+    _loaded, error = load_checkout_module(dotted, path, root, PINNED_COMMIT)
+    return error
+
+
+def _call_in_subprocess(module: str, symbol: str, arguments: dict[str, Any], timeout: float) -> tuple[str, Any]:
+    """Run the entry point in a child process. A timeout kills the process group."""
+
+    if symbol.lower().endswith(".__init__") or symbol.split(".")[-1].startswith("_"):
+        return "error", "private entry point is not called"
+    checkout_error = _checkout_load(module)
+    if checkout_error:
+        return "error", checkout_error
+    payload = json.dumps(
+        {
+            "dotted": dotted_for(module),
+            "module": module,
+            "symbol": symbol,
+            "arguments": arguments,
+        }
+    ).encode("utf-8")
+    process = subprocess.Popen(
+        [sys.executable, "-m", "aureon_public.call_worker"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        start_new_session=True,
+    )
+    try:
+        stdout, _stderr = process.communicate(payload, timeout=timeout)
+    except subprocess.TimeoutExpired:
         try:
-            box["value"] = fn(**kwargs)
-        except BaseException as exc:  # noqa: BLE001 - the tool must return the failure
-            box["error"] = exc
-        finally:
-            with _STRANDED_LOCK:
-                if state["counted"]:
-                    _STRANDED -= 1
-                    state["counted"] = False
-
-    thread = threading.Thread(target=runner, daemon=True)
-    thread.start()
-    thread.join(timeout)
-    if thread.is_alive():
-        with _STRANDED_LOCK:
-            if thread.is_alive() and not state["counted"]:
-                state["counted"] = True
-                _STRANDED += 1
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        process.communicate()
         return "timeout", f"exceeded {timeout:.0f}s"
-    if "error" in box:
-        exc = box["error"]
-        if isinstance(exc, SystemExit):
-            return "error", "SystemExit"
-        return "error", f"{type(exc).__name__}: {exc}"[:240]
-    return "ok", box.get("value")
+    if process.returncode not in {0, None}:
+        text = stdout.decode("utf-8", errors="replace").strip()
+        if not text:
+            return "error", f"worker exited {process.returncode}"
+    try:
+        body = json.loads(stdout.decode("utf-8"))
+    except json.JSONDecodeError:
+        return "error", "worker result was not JSON"
+    if body.get("ok") is True:
+        return "ok", body.get("result")
+    return "error", str(body.get("error") or "worker failed")[:240]
+
+
+def _constructor_refusal(module: str, class_name: str) -> str | None:
+    from aureon_public.inventory_scan import source_is_risky
+
+    if (module, class_name) not in _CONSTRUCTOR_ALLOWLIST:
+        return "constructor is not allowlisted"
+    source = _function_source(module, f"{class_name}.__init__")
+    if source_is_risky(source):
+        return "constructor failed the risk scan"
+    return None
+
+
+def _operator_allowlist_refusal(row: dict[str, Any]) -> str | None:
+    text = str(row.get("safety") or "")
+    if "package is operator-scoped" not in text:
+        return None
+    key = (str(row["module"]), str(row["symbol"]))
+    if key not in _OPERATOR_ALLOWLIST:
+        return "operator-scoped row is not allowlisted"
+    source = _function_source(str(row["module"]), str(row["symbol"]))
+    if re.search(r"api_key|secret|password|credential|private_key", source or "", re.I):
+        return "portfolio or accounting key reader is not allowlisted"
+    if row["package"] in {"portfolio", "accounting"} and re.search(
+        r"api_key|secret|password|credential|private_key", str(row["symbol"]), re.I
+    ):
+        return "portfolio or accounting key reader is not allowlisted"
+    return None
 
 
 def _import_checked(module: str) -> tuple[Any | None, str | None]:
@@ -446,6 +508,11 @@ def _public_entry_refusal(row: dict[str, Any]) -> str | None:
         return blocked_name
     if _leaky_parameter(str(row["module"]), str(row["symbol"])):
         return "parameter can carry a url, path, file, or host"
+    if row["kind"] == "method":
+        class_name = str(row["symbol"]).rsplit(".", 1)[0]
+        constructor = _constructor_refusal(str(row["module"]), class_name)
+        if constructor:
+            return constructor
     if not _quiet_source(str(row["module"]), str(row["symbol"])):
         return "source is not a quiet read"
     return None
@@ -481,66 +548,21 @@ def _invoke(
         return _unavailable("use body_surface for modules and classes")
     if int(row.get("stage") or 0) > ENABLED_THROUGH:
         return _unavailable(f"stage {row['stage']} is not open")
-    imported, reason = _import_checked(row["module"])
-    if imported is None:
-        return _unavailable(reason or "import failed")
+    if "." in str(row["symbol"]):
+        class_name = str(row["symbol"]).rsplit(".", 1)[0]
+        constructor = _constructor_refusal(str(row["module"]), class_name)
+        if constructor:
+            return _unavailable(constructor)
     label = f"cited. {row['module']} {row['symbol']} ran."
     extra = _auris_field(row["symbol"])
-    if row["kind"] == "function":
-        fn = getattr(imported, row["symbol"], None)
-        if fn is None or not callable(fn):
-            return _unavailable(f"{row['symbol']} is not callable on the imported module")
-        arguments = _coerce(fn, arguments)
-        missing = _required_missing(fn, arguments)
-        if missing:
-            return _unavailable(missing)
-        state, value = _call_with_timeout(fn, arguments, timeout)
-        if state != "ok":
-            return _unavailable(str(value))
-        return _result(
-            {
-                "called": True,
-                "label": label,
-                "result": _plain(value),
-                "status": "cited",
-                **extra,
-            }
-        )
-    if "." not in row["symbol"]:
-        return _unavailable("method symbol has no class")
-    class_name, method_name = row["symbol"].rsplit(".", 1)
-    cls = getattr(imported, class_name, None)
-    if cls is None:
-        return _unavailable(f"{class_name} is not on the imported module")
-    init_args = arguments.get("init") if isinstance(arguments.get("init"), dict) else {}
-    method_args = {key: value for key, value in arguments.items() if key != "init"}
-    try:
-        signature = inspect.signature(cls.__init__)
-        parameters = [name for name in signature.parameters if name != "self"]
-        init_args = {key: value for key, value in init_args.items() if key in parameters}
-        missing = _required_missing(cls.__init__, {"self": None, **init_args})
-    except (TypeError, ValueError):
-        missing = None
-    if missing:
-        return _unavailable(f"constructor: {missing}")
-    state, instance = _call_with_timeout(cls, init_args, timeout)
-    if state != "ok":
-        return _unavailable(f"constructor: {instance}")
-    method = getattr(instance, method_name, None)
-    if method is None or not callable(method):
-        return _unavailable(f"{method_name} is not callable")
-    method_args = _coerce(method, method_args)
-    missing = _required_missing(method, method_args)
-    if missing:
-        return _unavailable(missing)
-    state, value = _call_with_timeout(method, method_args, timeout)
+    state, value = _call_in_subprocess(str(row["module"]), str(row["symbol"]), arguments, timeout)
     if state != "ok":
         return _unavailable(str(value))
     return _result(
         {
             "called": True,
             "label": label,
-            "result": _plain(value),
+            "result": value,
             "status": "cited",
             **extra,
         }
@@ -580,6 +602,9 @@ def dispatch(
         return _unavailable(f"stage {row['stage']} is not open")
     if row["server"] == "public":
         return _unavailable("public entry point stays on aureon-public")
+    allow = _operator_allowlist_refusal(row)
+    if allow:
+        return _unavailable(allow)
     return _invoke(row, arguments or {}, timeout, allow_fetch=True, allow_write=True)
 
 
@@ -1041,9 +1066,6 @@ def sweep_zero_arg(stage: int, *, timeout: float = 8.0) -> list[dict[str, Any]]:
         key = (probe["module"], probe["symbol"])
         seen.add(key)
         target = str(probe.get("server") or "public")
-        if target == "operator":
-            os.environ["AUREON_OPERATOR_MCP"] = "1"
-            os.environ["AUREON_DISABLE_REAL_ORDERS"] = "1"
         raw = dispatch(
             probe["module"],
             probe["symbol"],
