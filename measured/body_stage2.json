@@ -1,0 +1,341 @@
+{
+  "called": 34,
+  "calls": [
+    {
+      "called": true,
+      "module": "alignment/harmonic_resonance.py",
+      "package": "alignment",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "consonance_score"
+    },
+    {
+      "called": true,
+      "module": "cognition/logic_flow.py",
+      "package": "cognition",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "compute_logic_flow"
+    },
+    {
+      "called": true,
+      "module": "queen/temporal_ground.py",
+      "package": "queen",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "compute_zpe_ground"
+    },
+    {
+      "called": true,
+      "module": "swarm/druidic_council.py",
+      "package": "swarm",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "voice_for_gamma"
+    },
+    {
+      "called": true,
+      "module": "swarm_motion/love_stream.py",
+      "package": "swarm_motion",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "StandingWaveLoveStream.evaluate"
+    },
+    {
+      "called": true,
+      "module": "gates/switchboard.py",
+      "package": "gates",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "is_human_held"
+    },
+    {
+      "called": true,
+      "module": "gates/panel.py",
+      "package": "gates",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "ungrounded_nodes"
+    },
+    {
+      "called": true,
+      "module": "governance/celtic_voice_bank.py",
+      "package": "governance",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "seasonal_gate_for_date"
+    },
+    {
+      "called": true,
+      "module": "observer/live_data_policy.py",
+      "package": "observer",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "simulation_fallback_allowed"
+    },
+    {
+      "called": true,
+      "module": "alignment/pillar_alignment.py",
+      "package": "alignment",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_pillar_alignment"
+    },
+    {
+      "called": true,
+      "module": "alignment/unified_directive.py",
+      "package": "alignment",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_unified_directive"
+    },
+    {
+      "called": true,
+      "module": "cognition/logic_train_audit.py",
+      "package": "cognition",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "compute_logic_train"
+    },
+    {
+      "called": true,
+      "module": "gates/panel.py",
+      "package": "gates",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "build_vault"
+    },
+    {
+      "called": true,
+      "module": "gates/panel.py",
+      "package": "gates",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "auris_panel"
+    },
+    {
+      "called": true,
+      "module": "gates/switchboard.py",
+      "package": "gates",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "read_organism"
+    },
+    {
+      "called": false,
+      "module": "governance/celtic_voice_bank.py",
+      "package": "governance",
+      "probe": false,
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: '/tmp/aureon-public-venv/lib/python3.12/site-packages/wisdom_data/celtic_wisdom.json'",
+      "status": "unavailable",
+      "symbol": "read_canonical_celtic_voice_bank"
+    },
+    {
+      "called": false,
+      "module": "governance/live_workforce_calibration.py",
+      "package": "governance",
+      "probe": false,
+      "reason": "ModuleNotFoundError: No module named 'phenolic_fingerprint'",
+      "status": "unavailable",
+      "symbol": "load_latest_active_provider_pair"
+    },
+    {
+      "called": true,
+      "module": "observer/momentum.py",
+      "package": "observer",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_momentum_tracker"
+    },
+    {
+      "called": true,
+      "module": "observer/momentum.py",
+      "package": "observer",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "momentum_predict_fn"
+    },
+    {
+      "called": true,
+      "module": "observer/production_mode.py",
+      "package": "observer",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_mode"
+    },
+    {
+      "called": true,
+      "module": "observer/production_mode.py",
+      "package": "observer",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "reload_mode"
+    },
+    {
+      "called": true,
+      "module": "observer/production_mode.py",
+      "package": "observer",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "is_live"
+    },
+    {
+      "called": true,
+      "module": "observer/production_mode.py",
+      "package": "observer",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "is_shadow"
+    },
+    {
+      "called": true,
+      "module": "observer/production_mode.py",
+      "package": "observer",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "is_dry_run"
+    },
+    {
+      "called": true,
+      "module": "observer/production_mode.py",
+      "package": "observer",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "gate_buy_veto_active"
+    },
+    {
+      "called": true,
+      "module": "observer/production_mode.py",
+      "package": "observer",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "gate_sell_veto_active"
+    },
+    {
+      "called": true,
+      "module": "observer/production_mode.py",
+      "package": "observer",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "narrow_band_threshold_active"
+    },
+    {
+      "called": true,
+      "module": "observer/production_mode.py",
+      "package": "observer",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "kelly_buffer_scaling_active"
+    },
+    {
+      "called": true,
+      "module": "observer/production_mode.py",
+      "package": "observer",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "vote_addition_active"
+    },
+    {
+      "called": true,
+      "module": "observer/production_mode.py",
+      "package": "observer",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "phase_veto_active"
+    },
+    {
+      "called": true,
+      "module": "observer/production_mode.py",
+      "package": "observer",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "volatility_veto_active"
+    },
+    {
+      "called": true,
+      "module": "observer/real_data_contract.py",
+      "package": "observer",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "repo_root_from"
+    },
+    {
+      "called": true,
+      "module": "observer/real_data_contract.py",
+      "package": "observer",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "load_source_registry"
+    },
+    {
+      "called": true,
+      "module": "observer/real_data_contract.py",
+      "package": "observer",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "registered_source_ids"
+    },
+    {
+      "called": true,
+      "module": "observer/wave_predictor.py",
+      "package": "observer",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_wave_predictor"
+    },
+    {
+      "called": true,
+      "module": "observer/wave_predictor.py",
+      "package": "observer",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "wave_predictor_predict"
+    },
+    {
+      "called": false,
+      "module": "swarm_motion/swarm_hive.py",
+      "package": "swarm_motion",
+      "probe": false,
+      "reason": "exceeded 8s",
+      "status": "unavailable",
+      "symbol": "get_swarm_hive"
+    }
+  ],
+  "enabled_through": 2,
+  "stage": 2,
+  "tried": 37
+}

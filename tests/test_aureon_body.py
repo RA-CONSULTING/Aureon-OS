@@ -95,6 +95,33 @@ def test_surface_does_not_call_and_a_changed_blob_is_refused(tmp_path: Path, mon
     assert "differs from pin" in refused["reason"]
 
 
+def test_stage2_calls_each_named_package() -> None:
+    assert enabled_stage() >= 2
+    calls = {
+        "alignment": body_call("alignment/harmonic_resonance.py", "consonance_score", json.dumps({"ratio": 1.0})),
+        "cognition": body_call("cognition/logic_flow.py", "compute_logic_flow"),
+        "queen": body_call("queen/temporal_ground.py", "compute_zpe_ground", json.dumps({"lambda_t": 0.0})),
+        "swarm": body_call("swarm/druidic_council.py", "voice_for_gamma", json.dumps({"gamma": 0.5})),
+        "swarm_motion": body_call("swarm_motion/love_stream.py", "StandingWaveLoveStream.evaluate"),
+        "gates": body_call("gates/switchboard.py", "is_human_held", json.dumps({"action": "draft"})),
+        "governance": body_call(
+            "governance/celtic_voice_bank.py",
+            "seasonal_gate_for_date",
+            json.dumps({"value": "2026-10-29"}),
+        ),
+        "observer": body_call("observer/live_data_policy.py", "simulation_fallback_allowed"),
+    }
+    for package, raw in calls.items():
+        body = _load(raw)
+        assert body["called"] is True, (package, body.get("reason"))
+        assert body["status"] == "cited"
+        assert not str(body["label"]).startswith("helper.")
+        assert "consciousness_" not in raw
+    assert calls and _load(calls["gates"])["result"] is False
+    record = json.loads((ROOT / "measured" / "body_stage2.json").read_text(encoding="utf-8"))
+    assert record["called"] >= 8
+
+
 def test_stage1_sweep_counts_real_calls() -> None:
     record = json.loads((ROOT / "measured" / "body_stage1.json").read_text(encoding="utf-8"))
     assert record["stage"] == 1

@@ -7,12 +7,15 @@ of rows in the plan. A helper label is not used here.
 
 from __future__ import annotations
 
+import ast
 import importlib
 import importlib.util
 import inspect
 import json
 import os
+import re
 import threading
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -23,7 +26,31 @@ from aureon_public.quiet import quiet
 from aureon_public.tools import _dumps
 
 # Stages 1-6 raise this as each stage commit lands. Stage 7 is packaging.
-ENABLED_THROUGH = 1
+ENABLED_THROUGH = 2
+
+_UNSAFE_NAME = re.compile(
+    r"(run_|start_|stop_|launch_|serve|main$|^demo$|create_app|activate_|connect_|"
+    r"publish_|write_|save_|download_|fetch_|notify_|reset_|discover_|simulate_|"
+    r"audit_|ingest_|record_|wire_|print_|benchmark|forever|continuous)",
+    re.I,
+)
+_SKIP_WORD = re.compile(
+    r"price|live_|kraken|order|exchange|network|socket|download|schumann|biometric|trade|wallet|secret",
+    re.I,
+)
+_UNSAFE_SOURCE = (
+    "requests",
+    "urlopen",
+    "httpx",
+    "socket",
+    "subprocess",
+    "write_text",
+    "write_bytes",
+    "serve_forever",
+    "SystemExit",
+    "os._exit",
+    "open(",
+)
 
 _BLOCKED = {
     "trading",
@@ -142,6 +169,50 @@ def _refused(reason: str) -> str:
     return _unavailable(reason, live_orders="refused")
 
 
+def _function_source(module: str, symbol: str) -> str:
+    path = file_for(module)
+    if not path.is_file():
+        return ""
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+        tree = ast.parse(text)
+    except (OSError, SyntaxError):
+        return ""
+    lines = text.splitlines()
+    for node in tree.body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == symbol:
+            end = node.end_lineno or node.lineno
+            return "\n".join(lines[node.lineno - 1 : end])
+    return ""
+
+
+def _quiet_source(module: str, symbol: str) -> bool:
+    source = _function_source(module, symbol)
+    if not source:
+        return False
+    return not any(token in source for token in _UNSAFE_SOURCE)
+
+
+def _coerce(fn: Any, kwargs: dict[str, Any]) -> dict[str, Any]:
+    try:
+        signature = inspect.signature(fn)
+    except (TypeError, ValueError):
+        return kwargs
+    coerced = dict(kwargs)
+    for name, value in list(coerced.items()):
+        param = signature.parameters.get(name)
+        if param is None:
+            continue
+        annotation = param.annotation
+        origin = getattr(annotation, "__origin__", None)
+        name_of = annotation if isinstance(annotation, str) else getattr(annotation, "__name__", "")
+        if (annotation is date or name_of == "date" or str(name_of).endswith("date")) and isinstance(value, str):
+            coerced[name] = date.fromisoformat(value)
+        elif (annotation is frozenset or origin is frozenset) and isinstance(value, list):
+            coerced[name] = frozenset(value)
+    return coerced
+
+
 def _required_missing(fn: Any, kwargs: dict[str, Any]) -> str | None:
     try:
         signature = inspect.signature(fn)
@@ -257,6 +328,7 @@ def _invoke(row: dict[str, Any], arguments: dict[str, Any], timeout: float) -> s
         fn = getattr(imported, row["symbol"], None)
         if fn is None or not callable(fn):
             return _unavailable(f"{row['symbol']} is not callable on the imported module")
+        arguments = _coerce(fn, arguments)
         missing = _required_missing(fn, arguments)
         if missing:
             return _unavailable(missing)
@@ -295,6 +367,7 @@ def _invoke(row: dict[str, Any], arguments: dict[str, Any], timeout: float) -> s
     method = getattr(instance, method_name, None)
     if method is None or not callable(method):
         return _unavailable(f"{method_name} is not callable")
+    method_args = _coerce(method, method_args)
     missing = _required_missing(method, method_args)
     if missing:
         return _unavailable(missing)
@@ -520,6 +593,44 @@ def probes_for(stage: int) -> list[dict[str, Any]]:
                 "symbol": "QueenHiveMind.read_auris_nodes",
             },
         ],
+        2: [
+            {
+                "module": "alignment/harmonic_resonance.py",
+                "symbol": "consonance_score",
+                "arguments": {"ratio": 1.0},
+            },
+            {"module": "cognition/logic_flow.py", "symbol": "compute_logic_flow"},
+            {
+                "module": "queen/temporal_ground.py",
+                "symbol": "compute_zpe_ground",
+                "arguments": {"lambda_t": 0.0},
+            },
+            {
+                "module": "swarm/druidic_council.py",
+                "symbol": "voice_for_gamma",
+                "arguments": {"gamma": 0.5},
+            },
+            {
+                "module": "swarm_motion/love_stream.py",
+                "symbol": "StandingWaveLoveStream.evaluate",
+            },
+            {
+                "module": "gates/switchboard.py",
+                "symbol": "is_human_held",
+                "arguments": {"action": "draft"},
+            },
+            {
+                "module": "gates/panel.py",
+                "symbol": "ungrounded_nodes",
+                "arguments": {"grounded_slices": []},
+            },
+            {
+                "module": "governance/celtic_voice_bank.py",
+                "symbol": "seasonal_gate_for_date",
+                "arguments": {"value": "2026-10-29"},
+            },
+            {"module": "observer/live_data_policy.py", "symbol": "simulation_fallback_allowed"},
+        ],
     }
     return table.get(stage, [])
 
@@ -543,7 +654,7 @@ def sweep_zero_arg(stage: int, *, timeout: float = 8.0) -> list[dict[str, Any]]:
             probe["symbol"],
             probe.get("arguments") or {},
             server="public",
-            timeout=timeout,
+            timeout=float(probe.get("timeout") or timeout),
         )
         calls.append(_summarize(probe["module"], probe["symbol"], raw, probe=True))
     for row in rows:
@@ -553,6 +664,13 @@ def sweep_zero_arg(stage: int, *, timeout: float = 8.0) -> list[dict[str, Any]]:
             continue
         if not str(row.get("safety") or "").startswith("runs from inputs"):
             continue
+        if stage >= 2:
+            if row["package"] == "queen":
+                continue
+            if _UNSAFE_NAME.search(row["symbol"]) or _SKIP_WORD.search(row["symbol"]):
+                continue
+            if not _quiet_source(row["module"], row["symbol"]):
+                continue
         key = (row["module"], row["symbol"])
         if key in seen:
             continue
