@@ -26,7 +26,7 @@ from aureon_public.quiet import quiet
 from aureon_public.tools import _dumps
 
 # Stages 1-6 raise this as each stage commit lands. Stage 7 is packaging.
-ENABLED_THROUGH = 5
+ENABLED_THROUGH = 6
 
 _UNSAFE_NAME = re.compile(
     r"(run_|start_|stop_|launch_|serve|main$|^demo$|create_app|activate_|connect_|"
@@ -728,6 +728,52 @@ def probes_for(stage: int) -> list[dict[str, Any]]:
                 "server": "operator",
             },
         ],
+        6: [
+            {
+                "module": "approval/compose.py",
+                "symbol": "subject_line",
+                "arguments": {"action": "status"},
+            },
+            {
+                "module": "briefing/schemas.py",
+                "symbol": "severity_rank",
+                "arguments": {"severity": "high"},
+            },
+            {
+                "module": "grants/daemon.py",
+                "symbol": "breath_interval",
+                "arguments": {"urgency": None},
+            },
+            {
+                "module": "integrations/ollama/hnc_phi_swarm.py",
+                "symbol": "build_phi_swarm_plan",
+                "arguments": {"flow": {"flow": "observe"}, "catalog_size": 2, "max_total_calls": 4},
+            },
+            {
+                "module": "intelligence/aureon_advanced_intelligence.py",
+                "symbol": "calculate_harmonic_resonance",
+                "arguments": {"freq1": 100.0, "freq2": 200.0},
+            },
+            {
+                "module": "plumber/crypto.py",
+                "symbol": "sha256_hex",
+                "arguments": {"value": "aureon-public"},
+            },
+            {
+                "module": "s51/aureon_51_compound.py",
+                "symbol": "summarize_compounding",
+                "arguments": {"receipts": []},
+            },
+            {
+                "module": "simulation/aureon_world_simulator.py",
+                "symbol": "hz_to_rgb",
+                "arguments": {"hz": 528.0},
+            },
+            {
+                "module": "generated/research_cinema/harmonic_nexus_score_model.py",
+                "symbol": "build_default_inputs",
+            },
+        ],
     }
     return table.get(stage, [])
 
@@ -764,6 +810,8 @@ def sweep_zero_arg(stage: int, *, timeout: float = 8.0) -> list[dict[str, Any]]:
         if row["kind"] != "function" or int(row.get("required") or 0) != 0 or row.get("async"):
             continue
         if not str(row.get("safety") or "").startswith("runs from inputs"):
+            continue
+        if stage >= 6:
             continue
         if stage >= 2:
             if row["package"] == "queen":

@@ -1,0 +1,89 @@
+{
+  "called": 9,
+  "calls": [
+    {
+      "called": true,
+      "module": "approval/compose.py",
+      "package": "approval",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "subject_line"
+    },
+    {
+      "called": true,
+      "module": "briefing/schemas.py",
+      "package": "briefing",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "severity_rank"
+    },
+    {
+      "called": true,
+      "module": "grants/daemon.py",
+      "package": "grants",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "breath_interval"
+    },
+    {
+      "called": true,
+      "module": "integrations/ollama/hnc_phi_swarm.py",
+      "package": "integrations",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "build_phi_swarm_plan"
+    },
+    {
+      "called": true,
+      "module": "intelligence/aureon_advanced_intelligence.py",
+      "package": "intelligence",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "calculate_harmonic_resonance"
+    },
+    {
+      "called": true,
+      "module": "plumber/crypto.py",
+      "package": "plumber",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "sha256_hex"
+    },
+    {
+      "called": true,
+      "module": "s51/aureon_51_compound.py",
+      "package": "s51",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "summarize_compounding"
+    },
+    {
+      "called": true,
+      "module": "simulation/aureon_world_simulator.py",
+      "package": "simulation",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "hz_to_rgb"
+    },
+    {
+      "called": true,
+      "module": "generated/research_cinema/harmonic_nexus_score_model.py",
+      "package": "generated",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "build_default_inputs"
+    }
+  ],
+  "enabled_through": 6,
+  "stage": 6,
+  "tried": 9
+}

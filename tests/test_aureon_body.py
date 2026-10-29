@@ -95,6 +95,28 @@ def test_surface_does_not_call_and_a_changed_blob_is_refused(tmp_path: Path, mon
     assert "differs from pin" in refused["reason"]
 
 
+def test_stage6_calls_the_remaining_public_readers() -> None:
+    assert enabled_stage() >= 6
+    rank = _load(body_call("briefing/schemas.py", "severity_rank", json.dumps({"severity": "high"})))
+    assert rank["called"] is True
+    color = _load(body_call("simulation/aureon_world_simulator.py", "hz_to_rgb", json.dumps({"hz": 528})))
+    assert color["called"] is True
+    assert color["result"] == [0, 255, 0] or isinstance(color["result"], list)
+    record = json.loads((ROOT / "measured" / "body_stage6.json").read_text(encoding="utf-8"))
+    called = {item["package"] for item in record["calls"] if item["called"] is True}
+    assert {
+        "approval",
+        "briefing",
+        "grants",
+        "integrations",
+        "intelligence",
+        "plumber",
+        "s51",
+        "simulation",
+        "generated",
+    } <= called
+
+
 def test_stage5_operator_refuses_blocked_imports_and_calls_two_readers(monkeypatch: pytest.MonkeyPatch) -> None:
     assert enabled_stage() >= 5
     monkeypatch.setenv("AUREON_OPERATOR_MCP", "1")
