@@ -16,7 +16,7 @@ Licence: **MIT**, the same licence as the Aureon OS [`LICENSE`](https://github.c
 
 This Space runs `HarmonicRealityField.step`, `read_canonical_field`, and `blend_field` from the Aureon OS repo. It does not reimplement those formulas.
 
-The bundled file `replay/brain.json` is a copy of the committed brain run. That brain run is a fixed-seed reproducible run at commit `a00f744d2e686e916e45b81dd4222408c368e305`.
+The bundled file `replay/brain.json` is a copy of the committed brain run. That brain run is a deterministic run at commit `a00f744d2e686e916e45b81dd4222408c368e305`.
 
 The class default `HarmonicRealityField()` is the multiverse-on path. The other row is the multiverse-off path (`enable_multiverse=False`). Both are cited from [reports/measured/brain.json](https://github.com/RA-CONSULTING/Aureon-OS/blob/a00f744d2e686e916e45b81dd4222408c368e305/reports/measured/brain.json).
 

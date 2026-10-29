@@ -11,7 +11,7 @@ tags:
 
 Licence: **MIT**, the same licence as the Aureon OS [`LICENSE`](https://github.com/RA-CONSULTING/Aureon-OS/blob/a00f744d2e686e916e45b81dd4222408c368e305/LICENSE).
 
-These files are byte copies of `reports/measured/` at commit `a00f744d2e686e916e45b81dd4222408c368e305`. The brain runs in `brain.json` are fixed-seed reproducible runs. Commit `a00f744d` removed the unseeded noise path, and that brain run reproduces exactly.
+These files are byte copies of `reports/measured/` at commit `a00f744d2e686e916e45b81dd4222408c368e305`. The brain runs are deterministic (no seed). Only the organism fault block is seeded (20261024). Commit `a00f744d` removed the unseeded noise path, and that brain run reproduces exactly.
 
 Every claim below links to that commit.
 
