@@ -21,21 +21,24 @@ Trading research · autonomous operator · planetary/HNC research · a coding or
 
 ## Five-minute quickstart
 
-A fresh clone, Python 3.11 or newer, and no API keys. This path does not start Docker, does not read exchange keys, and does not place an order. It installs the operator extra, then runs the offline operator server tests and the connectome test.
+A fresh clone, Python 3.11 or newer, and no API keys. This path does not start Docker, does not read exchange keys, and does not place an order. It installs the operator extra, runs the offline operator server tests and the connectome test, then prints the HNC measurement from `aureon.evaluation.brain_proof.evaluate_brain`. That function runs `HarmonicRealityField.step` for 100 steps with the multiverse extension off. It does not draw a seed, so the same figures come back on every run.
 
-Linux and macOS, from the checkout:
+Linux and macOS:
 
 ```bash
+git clone https://github.com/RA-CONSULTING/Aureon-OS.git && cd Aureon-OS
 python3 -m venv .venv
 . .venv/bin/activate
 python -m pip install -U pip
 python -m pip install -e '.[operator]' 'pytest>=8' 'pytest-timeout>=2.3' 'numpy>=1.26' 'cryptography>=46'
 AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 pytest tests/test_operator_server.py tests/test_connectome.py --timeout=60
+AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 python -c "from aureon.evaluation.brain_proof import evaluate_brain, render_brain_markdown; print(render_brain_markdown(evaluate_brain()))"
 ```
 
-Windows, from the checkout:
+Windows:
 
 ```bat
+git clone https://github.com/RA-CONSULTING/Aureon-OS.git && cd Aureon-OS
 py -3 -m venv .venv
 .venv\Scripts\activate
 python -m pip install -U pip
@@ -43,9 +46,27 @@ python -m pip install -e ".[operator]" "pytest>=8" "pytest-timeout>=2.3" "numpy>
 set AUREON_LLM_OFFLINE=1
 set AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1
 pytest tests/test_operator_server.py tests/test_connectome.py --timeout=60
+python -c "from aureon.evaluation.brain_proof import evaluate_brain, render_brain_markdown; print(render_brain_markdown(evaluate_brain()))"
 ```
 
-A passing run prints the passed count and exits 0. It does not ask for a key. The longer operator preflight, containers, and the full offline suite are further down.
+Import logs print first. The measurement is the block below, from a run of that command with no keys:
+
+```text
+# HNC, Auris coherence, and QGITA
+
+These figures are the HNC master-formula path, Auris coherence, and the QGITA analyzer. They are not a claim that the system is conscious or alive.
+
+No outside model was called. Live trading stayed off. No order was placed.
+HNC formula path, multiverse off: state `unified`, coherence `0.9331334813083556`, last Λ(t) `1.409626852655939`, steps `100`.
+Multiverse extension: **measured**. project_to_3d sets noise to 0 when no observed residual is supplied. TranslationMap.noise_level is stored and is not read by that method. Three constructions of the default HarmonicRealityField returned the same series.
+Auris coherence `None` with status `no_data`. Nodes without a reading: Clownfish, Owl.
+Trade readiness: **HOLD**. no market series and no trade-outcome labels
+QGITA on the derived series `data/de440_timeseries.csv` (cited-unverified): status `complete`, FTCP count `0`, lighthouse events `0`. Detection rate **HOLD**. Clock: sample index. analyze_price_stream uses range(len(prices)) when no timestamps are passed
+QGITA on the formula series: FTCP count `0`, lighthouse events `0`. Detection rate **HOLD**. Clock: step index times HarmonicRealityField.dt
+Auris is not joined to Λ(t): **HOLD**. no function in the repo passes Λ(t) into get_auris_coherence
+```
+
+The longer operator preflight, containers, and the full offline suite are further down.
 
 ---
 
