@@ -6,7 +6,7 @@ import argparse
 import json
 from pathlib import Path
 
-from aureon_public.body import enabled_stage, sweep_zero_arg
+from aureon_public.body import enabled_stage, package_depth, sweep_zero_arg
 from aureon_public.paths import repo_root
 
 
@@ -24,6 +24,8 @@ def write_stage(stage: int, timeout: float) -> Path:
         "stage": stage,
         "tried": len(calls),
     }
+    out.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    record["entry_points"] = package_depth(stage)
     out.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return out
 

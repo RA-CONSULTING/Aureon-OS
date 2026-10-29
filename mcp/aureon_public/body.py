@@ -506,6 +506,68 @@ def body_surface(module: str, symbol: str) -> str:
     )
 
 
+_ENTRY_KINDS = {"function", "method"}
+
+
+def package_depth(stage: int | None = None) -> dict[str, dict[str, int]]:
+    """Called public functions and methods, out of those in the inventory.
+
+    A public entry point is one inventory function or method whose server is
+    public. A call counts when a stage sweep ran that same module and symbol.
+    Operator calls are not public entry points. Classes and modules are not
+    in this ratio.
+    """
+
+    rows, _ = _inventory()
+    selected = [row for row in rows if stage is None or int(row["stage"]) == stage]
+    public: dict[str, set[tuple[str, str]]] = {}
+    names: set[str] = set()
+    for row in selected:
+        names.add(str(row["package"]))
+        if row["server"] == "public" and row["kind"] in _ENTRY_KINDS:
+            public.setdefault(str(row["package"]), set()).add((str(row["module"]), str(row["symbol"])))
+    called: dict[str, set[tuple[str, str]]] = {}
+    stages = [stage] if stage is not None else list(range(1, ENABLED_THROUGH + 1))
+    root = repo_root()
+    for item_stage in stages:
+        path = root / "measured" / f"body_stage{item_stage}.json"
+        if not path.is_file():
+            continue
+        try:
+            record = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        for item in record.get("calls") or []:
+            if item.get("called") is not True:
+                continue
+            package = str(item.get("package") or "")
+            key = (str(item.get("module") or ""), str(item.get("symbol") or ""))
+            if key in public.get(package, set()):
+                called.setdefault(package, set()).add(key)
+    return {
+        package: {
+            "called": len(called.get(package, set())),
+            "public_entry_points": len(public.get(package, set())),
+        }
+        for package in sorted(names)
+    }
+
+
+def render_readme_depth() -> str:
+    """The README depth section. Tests require the file to contain this text."""
+
+    lines = [
+        "A layer counts as full depth only where its real entry points are called.",
+        "Each figure is called public functions and methods out of the public functions and methods in `docs/mcp/inventory.json`.",
+        "",
+        "| Package | Called | Public entry points |",
+        "| --- | ---: | ---: |",
+    ]
+    for package, row in package_depth().items():
+        lines.append(f"| {package} | {row['called']} | {row['public_entry_points']} |")
+    return "\n".join(lines)
+
+
 def depth_report() -> dict[str, Any]:
     """Per-package counts. ``called`` is filled from sweep files when present."""
 
@@ -523,26 +585,21 @@ def depth_report() -> dict[str, Any]:
             bucket["operator"] += 1
         if int(row["stage"]) <= ENABLED_THROUGH:
             bucket["open"] += 1
-    root = repo_root()
-    called: dict[str, int] = {}
-    for stage in range(1, ENABLED_THROUGH + 1):
-        path = root / "measured" / f"body_stage{stage}.json"
-        if not path.is_file():
-            continue
-        try:
-            record = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            continue
-        for item in record.get("calls") or []:
-            if item.get("called") is True:
-                package = str(item.get("package") or "")
-                called[package] = called.get(package, 0) + 1
-    for package, count in called.items():
-        if package in packages:
-            packages[package]["called"] = count
+    entry_points = package_depth()
+    for package, row in entry_points.items():
+        bucket = packages.setdefault(
+            package,
+            {"called": 0, "listed": 0, "open": 0, "operator": 0, "public": 0},
+        )
+        bucket["called"] = row["called"]
+        bucket["public_entry_points"] = row["public_entry_points"]
     return {
         "enabled_through": ENABLED_THROUGH,
-        "label": "cited. Depth counts calls recorded in measured/body_stageN.json. A listed row is not a call.",
+        "entry_points": entry_points,
+        "label": (
+            "cited. Depth is called public functions and methods out of the public "
+            "functions and methods in the inventory. A listed row is not a call."
+        ),
         "packages": packages,
         "provenance": "cited",
         "servers": {

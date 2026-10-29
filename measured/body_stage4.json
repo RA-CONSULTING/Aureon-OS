@@ -390,6 +390,36 @@
     }
   ],
   "enabled_through": 4,
+  "entry_points": {
+    "analytics": {
+      "called": 17,
+      "public_entry_points": 267
+    },
+    "atn": {
+      "called": 2,
+      "public_entry_points": 37
+    },
+    "data_feeds": {
+      "called": 4,
+      "public_entry_points": 159
+    },
+    "decoders": {
+      "called": 8,
+      "public_entry_points": 87
+    },
+    "monitors": {
+      "called": 2,
+      "public_entry_points": 211
+    },
+    "portals": {
+      "called": 5,
+      "public_entry_points": 58
+    },
+    "search": {
+      "called": 1,
+      "public_entry_points": 12
+    }
+  },
   "stage": 4,
   "tried": 43
 }

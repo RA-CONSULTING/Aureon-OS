@@ -12,9 +12,70 @@ The operator process is separate: `python -m aureon_operator`. It stays off unle
 
 `repo_root()` and `aureon_source()` raise `FileNotFoundError` when the process is not inside a checkout that contains `huggingface/hnc-field/guard.py` and `aureon/core/hnc_field.py`. This server needs that checkout. It does not invent a 'no checkout' status.
 
-The extra package tools are helpers. A helper call is not that layer's cognition. A layer is at full depth only where a measured run calls that entry point. Listing it in `docs/mcp/FULL_BODY_PLAN.md` is not depth.
+A layer counts as full depth only where its real entry points are called.
+Each figure is called public functions and methods out of the public functions and methods in `docs/mcp/inventory.json`.
 
-`body_call` runs one inventoried function or method. `body_surface` reads a module or class and does not construct it. `body_depth` counts calls recorded in `measured/body_stageN.json`. `body_registry` names the servers. The operator tool is `body_call_operator`. Live orders stay refused. A checkout file is imported only when its git blob matches pin `a00f744d`. The plan and the call rules are in `docs/mcp/REGISTRY.md`.
+| Package | Called | Public entry points |
+| --- | ---: | ---: |
+| accounting | 0 | 0 |
+| alignment | 3 | 26 |
+| analytics | 17 | 267 |
+| appliance | 0 | 6 |
+| approval | 1 | 47 |
+| atn | 2 | 37 |
+| autonomous | 0 | 9 |
+| bio | 54 | 286 |
+| bots | 0 | 0 |
+| bots_intelligence | 0 | 0 |
+| bridges | 0 | 0 |
+| briefing | 1 | 44 |
+| code_architect | 0 | 0 |
+| cognition | 2 | 20 |
+| command_centers | 0 | 2 |
+| connectors | 0 | 0 |
+| conversion | 0 | 5 |
+| core | 12 | 669 |
+| data_feeds | 4 | 159 |
+| decoders | 8 | 87 |
+| evaluation | 1 | 12 |
+| exchanges | 0 | 0 |
+| gates | 5 | 14 |
+| generated | 1 | 4 |
+| governance | 1 | 119 |
+| grants | 1 | 54 |
+| harmonic | 32 | 407 |
+| identity | 0 | 0 |
+| inhouse_ai | 0 | 0 |
+| integrations | 1 | 105 |
+| intelligence | 1 | 363 |
+| launch | 0 | 3 |
+| miner | 0 | 0 |
+| monitors | 2 | 211 |
+| observability | 0 | 10 |
+| observer | 20 | 73 |
+| operator | 0 | 7 |
+| organism | 1 | 1 |
+| plumber | 1 | 268 |
+| portals | 5 | 58 |
+| portfolio | 0 | 9 |
+| queen | 1 | 963 |
+| s51 | 1 | 36 |
+| saas | 0 | 2 |
+| scanners | 0 | 0 |
+| search | 1 | 12 |
+| simulation | 1 | 284 |
+| strategies | 0 | 7 |
+| swarm | 1 | 48 |
+| swarm_motion | 1 | 35 |
+| trading | 0 | 0 |
+| unified_margin_trader | 0 | 0 |
+| utils | 7 | 880 |
+| vault | 10 | 267 |
+| wisdom | 1 | 531 |
+
+The extra package tools are helpers. A helper call is not that layer's cognition.
+
+`body_call` runs one inventoried function or method. `body_surface` reads a module or class and does not construct it. `body_depth` reports the same ratio as this table. `body_registry` names the servers. The operator tool is `body_call_operator`. Live orders stay refused. A checkout file is imported only when its git blob matches pin `a00f744d`. The plan and the call rules are in `docs/mcp/REGISTRY.md`.
 
 Licence: MIT, the same licence as the repository `LICENSE`.
 

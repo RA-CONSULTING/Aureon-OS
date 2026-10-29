@@ -117,7 +117,7 @@ def analytics_fear_greed() -> str:
     closes = [100.0 + index for index in range(40)]
     volumes = [1.0 for _ in range(40)]
     result = derive_fear_greed(closes, volumes, 39)
-    result["label"] = "inferred. The series is a fixed 40-step fixture ramp, not market data."
+    result["label"] = "inferred. derive_fear_greed on a fixed 40-step fixture ramp, not market data. Not a backtest."
     result["provenance"] = "inferred"
     result["status"] = "inferred"
     result["trade_readiness"] = "HOLD"
@@ -229,7 +229,7 @@ def data_feed_parse_tick() -> str:
         received_at=1.0,
     )
     body = tick.__dict__ if tick is not None and hasattr(tick, "__dict__") else {"tick": None}
-    body["label"] = "inferred. One fixture tick, not market data. No socket was opened."
+    body["label"] = "inferred. parse_binance_tick on one fixture tick, not market data. No socket was opened."
     body["provenance"] = "inferred"
     body["status"] = "inferred" if tick is not None else "unavailable"
     body["trade_readiness"] = "HOLD"

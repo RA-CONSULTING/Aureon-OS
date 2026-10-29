@@ -417,6 +417,24 @@
     }
   ],
   "enabled_through": 1,
+  "entry_points": {
+    "core": {
+      "called": 5,
+      "public_entry_points": 31
+    },
+    "harmonic": {
+      "called": 32,
+      "public_entry_points": 407
+    },
+    "utils": {
+      "called": 7,
+      "public_entry_points": 406
+    },
+    "wisdom": {
+      "called": 1,
+      "public_entry_points": 54
+    }
+  },
   "stage": 1,
   "tried": 46
 }

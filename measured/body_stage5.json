@@ -84,6 +84,52 @@
     }
   ],
   "enabled_through": 5,
+  "entry_points": {
+    "accounting": {
+      "called": 0,
+      "public_entry_points": 0
+    },
+    "bots": {
+      "called": 0,
+      "public_entry_points": 0
+    },
+    "bots_intelligence": {
+      "called": 0,
+      "public_entry_points": 0
+    },
+    "bridges": {
+      "called": 0,
+      "public_entry_points": 0
+    },
+    "conversion": {
+      "called": 0,
+      "public_entry_points": 5
+    },
+    "exchanges": {
+      "called": 0,
+      "public_entry_points": 0
+    },
+    "portfolio": {
+      "called": 0,
+      "public_entry_points": 9
+    },
+    "scanners": {
+      "called": 0,
+      "public_entry_points": 0
+    },
+    "strategies": {
+      "called": 0,
+      "public_entry_points": 7
+    },
+    "trading": {
+      "called": 0,
+      "public_entry_points": 0
+    },
+    "unified_margin_trader": {
+      "called": 0,
+      "public_entry_points": 0
+    }
+  },
   "stage": 5,
   "tried": 9
 }

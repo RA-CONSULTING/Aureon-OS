@@ -437,8 +437,12 @@ def test_new_package_tools_and_membrane_paths(monkeypatch: pytest.MonkeyPatch) -
         assert str(body.get("label", "")).startswith("helper.")
     fear = _load(getattr(sys.modules["aureon_public.more_layers"], "analytics_fear_greed")())
     tick = _load(getattr(sys.modules["aureon_public.more_layers"], "data_feed_parse_tick")())
-    assert fear["label"] == "helper. inferred. The series is a fixed 40-step fixture ramp, not market data."
-    assert tick["label"] == "helper. inferred. One fixture tick, not market data. No socket was opened."
+    assert fear["label"] == (
+        "helper. inferred. derive_fear_greed on a fixed 40-step fixture ramp, not market data. Not a backtest."
+    )
+    assert tick["label"] == (
+        "helper. inferred. parse_binance_tick on one fixture tick, not market data. No socket was opened."
+    )
     live = _load(layers.membrane_screen("hello"))
     assert live["status"] == "cited"
     assert live["provenance"] == "cited"

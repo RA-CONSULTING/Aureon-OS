@@ -336,6 +336,40 @@
     }
   ],
   "enabled_through": 2,
+  "entry_points": {
+    "alignment": {
+      "called": 3,
+      "public_entry_points": 26
+    },
+    "cognition": {
+      "called": 2,
+      "public_entry_points": 20
+    },
+    "gates": {
+      "called": 5,
+      "public_entry_points": 14
+    },
+    "governance": {
+      "called": 1,
+      "public_entry_points": 119
+    },
+    "observer": {
+      "called": 20,
+      "public_entry_points": 73
+    },
+    "queen": {
+      "called": 1,
+      "public_entry_points": 963
+    },
+    "swarm": {
+      "called": 1,
+      "public_entry_points": 48
+    },
+    "swarm_motion": {
+      "called": 1,
+      "public_entry_points": 35
+    }
+  },
   "stage": 2,
   "tried": 37
 }

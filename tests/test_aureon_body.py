@@ -95,6 +95,22 @@ def test_surface_does_not_call_and_a_changed_blob_is_refused(tmp_path: Path, mon
     assert "differs from pin" in refused["reason"]
 
 
+def test_readme_and_stage_reports_match_the_inventory_depth() -> None:
+    from aureon_public.body import package_depth, render_readme_depth
+
+    readme = (ROOT / "mcp" / "aureon_public" / "README.md").read_text(encoding="utf-8")
+    assert render_readme_depth() in readme
+    assert readme.splitlines()[14] == (
+        "A layer counts as full depth only where its real entry points are called."
+    )
+    assert "The extra package tools are helpers." in readme
+    for stage in range(1, 7):
+        record = json.loads((ROOT / "measured" / f"body_stage{stage}.json").read_text(encoding="utf-8"))
+        assert record["entry_points"] == package_depth(stage)
+        for row in record["entry_points"].values():
+            assert row["called"] <= row["public_entry_points"]
+
+
 def test_stage7_registry_names_servers_spaces_and_the_pin() -> None:
     body = _load(body_registry())
     assert body["status"] == "cited"

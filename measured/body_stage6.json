@@ -84,6 +84,100 @@
     }
   ],
   "enabled_through": 6,
+  "entry_points": {
+    "appliance": {
+      "called": 0,
+      "public_entry_points": 6
+    },
+    "approval": {
+      "called": 1,
+      "public_entry_points": 47
+    },
+    "autonomous": {
+      "called": 0,
+      "public_entry_points": 9
+    },
+    "briefing": {
+      "called": 1,
+      "public_entry_points": 44
+    },
+    "code_architect": {
+      "called": 0,
+      "public_entry_points": 0
+    },
+    "command_centers": {
+      "called": 0,
+      "public_entry_points": 2
+    },
+    "connectors": {
+      "called": 0,
+      "public_entry_points": 0
+    },
+    "core": {
+      "called": 0,
+      "public_entry_points": 543
+    },
+    "generated": {
+      "called": 1,
+      "public_entry_points": 4
+    },
+    "grants": {
+      "called": 1,
+      "public_entry_points": 54
+    },
+    "inhouse_ai": {
+      "called": 0,
+      "public_entry_points": 0
+    },
+    "integrations": {
+      "called": 1,
+      "public_entry_points": 105
+    },
+    "intelligence": {
+      "called": 1,
+      "public_entry_points": 363
+    },
+    "launch": {
+      "called": 0,
+      "public_entry_points": 3
+    },
+    "miner": {
+      "called": 0,
+      "public_entry_points": 0
+    },
+    "observability": {
+      "called": 0,
+      "public_entry_points": 10
+    },
+    "operator": {
+      "called": 0,
+      "public_entry_points": 7
+    },
+    "plumber": {
+      "called": 1,
+      "public_entry_points": 268
+    },
+    "s51": {
+      "called": 1,
+      "public_entry_points": 36
+    },
+    "saas": {
+      "called": 0,
+      "public_entry_points": 2
+    },
+    "simulation": {
+      "called": 1,
+      "public_entry_points": 284
+    },
+    "utils": {
+      "called": 0,
+      "public_entry_points": 474
+    },
+    "wisdom": {
+      "called": 0,
+      "public_entry_points": 477
+    }
+  },
   "stage": 6,
   "tried": 9
 }
