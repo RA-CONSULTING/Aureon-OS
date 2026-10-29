@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aureon-public"
+version = "0.1.0"
+description = "Read-only MCP server. Outside models call Aureon tools. They do not become the reasoning."
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+  "mcp>=1.10,<2",
+  "numpy>=1.26",
+  "aureon @ git+https://github.com/RA-CONSULTING/Aureon-OS.git@a00f744d2e686e916e45b81dd4222408c368e305",
+]
+
+[project.scripts]
+aureon-public = "aureon_public.server:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["aureon_public*"]
