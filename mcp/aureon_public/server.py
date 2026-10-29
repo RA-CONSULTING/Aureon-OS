@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 import sys
 
 from mcp.server.fastmcp import FastMCP
 
 from aureon_public import surfaces, tools
-from aureon_public.guard_loader import apply_space_guard
+from aureon_public.guard_loader import apply_space_guard, aureon_source
 from aureon_public.text import SERVER_PLAIN
 
 SERVER_INSTRUCTIONS = (
@@ -23,9 +24,14 @@ def build_server(host: str = "127.0.0.1", port: int = 8077) -> FastMCP:
     """Register the milestone-1 tools, resources, and prompts."""
 
     apply_space_guard()
+    source = aureon_source()
+    instructions = (
+        f"{SERVER_INSTRUCTIONS} "
+        f"aureon_source={json.dumps(source, sort_keys=True)}"
+    )
     server = FastMCP(
         "aureon-public",
-        instructions=SERVER_INSTRUCTIONS,
+        instructions=instructions,
         host=host,
         port=port,
         streamable_http_path="/mcp",

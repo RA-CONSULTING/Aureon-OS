@@ -4,7 +4,7 @@ MCP lets outside models call Aureon's tools. No outside model or API becomes Aur
 
 This process is a read-only FastMCP server named `aureon-public`. It exposes the milestone-1 tools, resources, and prompts. It does not place orders, read keys, start circulation, self-code, self-repair, or write the repository or `state/`.
 
-`aureon` is pinned to commit `a00f744d2e686e916e45b81dd4222408c368e305`, the same pin as the Hugging Face Spaces. The MCP SDK pin is `mcp==1.30.0` so the server can import `FastMCP` (`mcp.server.fastmcp`). MCP 2 renamed that class.
+`aureon` is pinned to commit `a00f744d2e686e916e45b81dd4222408c368e305`, the same pin as the Hugging Face Spaces. A local checkout run uses its own commit, not the pin. The MCP SDK pin is `mcp==1.30.0` so the server can import `FastMCP` (`mcp.server.fastmcp`). MCP 2 renamed that class.
 
 Licence: MIT, the same licence as the repository `LICENSE`.
 

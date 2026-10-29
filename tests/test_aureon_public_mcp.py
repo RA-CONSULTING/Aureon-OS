@@ -14,6 +14,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "mcp"))
 
 from aureon_public import surfaces, tools  # noqa: E402
+from aureon_public.guard_loader import (  # noqa: E402
+    PINNED_COMMIT,
+    aureon_source,
+    describe_aureon_source,
+)
 from aureon_public.server import SERVER_INSTRUCTIONS, build_server  # noqa: E402
 from aureon_public.text import SERVER_PLAIN  # noqa: E402
 
@@ -30,6 +35,7 @@ def _brain() -> dict:
 
 def test_server_text_says_outside_models_do_not_become_the_reasoning() -> None:
     readme = (ROOT / "mcp" / "aureon_public" / "README.md").read_text(encoding="utf-8")
+    assert "A local checkout run uses its own commit, not the pin." in readme
     for sentence in (
         "MCP lets outside models call Aureon's tools.",
         "No outside model or API becomes Aureon's reasoning.",
@@ -194,6 +200,63 @@ def test_catalog_and_import_blocker() -> None:
 
     with pytest.raises(ImportError):
         importlib.import_module("aureon.trading")
+
+
+def test_aureon_source_pinned_commit_comes_from_direct_url(tmp_path: Path) -> None:
+    site = tmp_path / "site"
+    package = site / "aureon"
+    package.mkdir(parents=True)
+    origin = package / "__init__.py"
+    origin.write_text("", encoding="utf-8")
+    dist = site / "aureon-2.1.0.dist-info"
+    dist.mkdir()
+    (dist / "direct_url.json").write_text(
+        json.dumps({"vcs_info": {"commit_id": PINNED_COMMIT}}),
+        encoding="utf-8",
+    )
+    source = describe_aureon_source(origin, tmp_path / "checkout")
+    assert source == {"kind": "pinned", "commit": PINNED_COMMIT}
+
+    other = site / "aureon-9.9.9.dist-info"
+    other.mkdir()
+    (dist / "direct_url.json").write_text(
+        json.dumps({"vcs_info": {"commit_id": "b" * 40}}),
+        encoding="utf-8",
+    )
+    # The first dist-info in sorted order is aureon-2.1.0, now rewritten.
+    mismatched = describe_aureon_source(origin, tmp_path / "checkout")
+    assert mismatched["kind"] == "checkout"
+    assert mismatched["commit"] == "unknown"
+
+
+def test_aureon_source_checkout_uses_git_head_or_unknown(tmp_path: Path) -> None:
+    checkout = tmp_path / "tree"
+    package = checkout / "aureon"
+    package.mkdir(parents=True)
+    origin = package / "__init__.py"
+    origin.write_text("", encoding="utf-8")
+    missing = describe_aureon_source(origin, checkout)
+    assert missing == {"kind": "checkout", "commit": "unknown"}
+
+    live = describe_aureon_source(ROOT / "aureon" / "__init__.py", ROOT)
+    assert live["kind"] == "checkout"
+    assert live["commit"] != "unknown"
+    assert len(live["commit"]) == 40
+
+
+def test_tool_output_and_server_info_name_the_aureon_that_ran() -> None:
+    source = aureon_source()
+    assert source["kind"] in {"pinned", "checkout"}
+    if source["kind"] == "pinned":
+        assert source["commit"] == PINNED_COMMIT
+    else:
+        assert source["commit"] == "unknown" or len(source["commit"]) == 40
+    body = _load(tools.lambda_engine_step())
+    assert body["aureon_source"] == source
+    canonical = _load(tools.hnc_canonical_read())
+    assert canonical["aureon_source"] == source
+    server = build_server()
+    assert json.dumps(source, sort_keys=True) in (server.instructions or "")
 
 
 def test_registered_names() -> None:

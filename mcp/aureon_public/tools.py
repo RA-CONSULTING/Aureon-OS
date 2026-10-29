@@ -10,7 +10,7 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from aureon_public.guard_loader import apply_space_guard
+from aureon_public.guard_loader import apply_space_guard, aureon_source
 from aureon_public import paths
 from aureon_public.quiet import quiet
 from aureon_public.text import AURIS_FOUR, HOLD_LINE
@@ -41,7 +41,9 @@ def _plain(value: Any) -> Any:
 
 
 def _dumps(payload: dict[str, Any]) -> str:
-    return json.dumps(_plain(payload), ensure_ascii=False, allow_nan=False, sort_keys=True)
+    body = _plain(payload)
+    body["aureon_source"] = aureon_source()
+    return json.dumps(body, ensure_ascii=False, allow_nan=False, sort_keys=True)
 
 
 def _load(path: Path) -> dict[str, Any]:

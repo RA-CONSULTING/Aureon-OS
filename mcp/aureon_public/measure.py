@@ -59,7 +59,7 @@ async def _session(out_path: Path) -> dict[str, Any]:
     )
     async with stdio_client(params) as (read, write):
         async with ClientSession(read, write) as session:
-            await session.initialize()
+            initialized = await session.initialize()
             tools = await session.list_tools()
             resources = await session.list_resources()
             prompts = await session.list_prompts()
@@ -114,6 +114,7 @@ async def _session(out_path: Path) -> dict[str, Any]:
     record = {
         "environment": _environment(),
         "instructions_checked_in_process": True,
+        "server_instructions": getattr(initialized, "instructions", None),
         "prompts": [
             {"name": item.name, "description": item.description}
             for item in prompts.prompts
