@@ -40,6 +40,15 @@ def _plain(value: Any) -> Any:
     return str(value)
 
 
+_OMITTED_PUBLIC_KEYS = ("consciousness_level", "consciousness_psi")
+
+
+def _omit_public_keys(body: dict[str, Any]) -> dict[str, Any]:
+    for key in _OMITTED_PUBLIC_KEYS:
+        body.pop(key, None)
+    return body
+
+
 def _dumps(payload: dict[str, Any]) -> str:
     body = _plain(payload)
     body["aureon_source"] = aureon_source()
@@ -263,6 +272,8 @@ hnc_reality_step.__doc__ = _hnc_doc()
 def hnc_canonical_read(envelope_jsonl: str | None = None) -> str:
     """Read CanonicalField. An empty envelope does not touch state/.
 
+    The public JSON drops consciousness_level and consciousness_psi. Those fields have defaults on CanonicalField, so CanonicalField(**public_dict) still constructs and does not raise. It is not a full to_dict() round-trip: the rebuilt fields are the defaults, not whatever to_dict() would have carried.
+
     Label: inferred when an envelope was supplied and available is true. Otherwise the field is unavailable. Cited: read_canonical_field does not run unless a temp trace was set. The bundled brain replay is a formula record, not a canonical envelope.
 
     Args:
@@ -278,13 +289,15 @@ def hnc_canonical_read(envelope_jsonl: str | None = None) -> str:
             "The bundled brain replay is a formula record, not a canonical envelope."
         )
         body["status"] = "unavailable"
-        return _dumps(body)
-    return _dumps(_with_envelope(str(envelope_jsonl), blend=False))
+        return _dumps(_omit_public_keys(body))
+    return _dumps(_omit_public_keys(_with_envelope(str(envelope_jsonl), blend=False)))
 
 
 @quiet
 def hnc_blend_read(envelope_jsonl: str | None = None) -> str:
     """Read BlendedField. Does not call publish_subfield. An empty envelope does not touch state/.
+
+    BlendedField.to_dict does not include consciousness_level or consciousness_psi. The same two keys are dropped if they appear. That drop does not change a BlendedField round-trip.
 
     Label: inferred when an envelope was supplied and available is true. Otherwise unavailable.
 
@@ -298,8 +311,8 @@ def hnc_blend_read(envelope_jsonl: str | None = None) -> str:
         body = BlendedField().to_dict()
         body["label"] = "cited. No envelope was supplied, so state/ was not read."
         body["status"] = "unavailable"
-        return _dumps(body)
-    return _dumps(_with_envelope(str(envelope_jsonl), blend=True))
+        return _dumps(_omit_public_keys(body))
+    return _dumps(_omit_public_keys(_with_envelope(str(envelope_jsonl), blend=True)))
 
 
 def _with_envelope(text: str, *, blend: bool) -> dict[str, Any]:

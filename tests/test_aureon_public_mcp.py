@@ -182,6 +182,40 @@ def test_qgita_analyze_drops_signals_and_organism_fault_is_synthetic() -> None:
     assert "verdict" in organism["cited"]
 
 
+def test_canonical_and_blend_omit_consciousness_keys() -> None:
+    canonical = _load(tools.hnc_canonical_read())
+    blend = _load(tools.hnc_blend_read())
+    for body in (canonical, blend):
+        assert "consciousness_level" not in body
+        assert "consciousness_psi" not in body
+    from aureon.core.hnc_field import CanonicalField
+
+    public = {
+        key: value
+        for key, value in canonical.items()
+        if key not in {"label", "status", "aureon_source"}
+    }
+    rebuilt = CanonicalField(**public)
+    assert rebuilt.consciousness_level is None
+    assert rebuilt.consciousness_psi is None
+
+
+def test_require_pin_blocks_every_source_except_the_pin(monkeypatch: pytest.MonkeyPatch) -> None:
+    from aureon_public.server import enforce_public_pin
+
+    monkeypatch.delenv("AUREON_PUBLIC_REQUIRE_PIN", raising=False)
+    enforce_public_pin({"kind": "checkout", "commit": "a" * 40})
+    monkeypatch.setenv("AUREON_PUBLIC_REQUIRE_PIN", "1")
+    enforce_public_pin({"kind": "pinned", "commit": PINNED_COMMIT})
+    for source in (
+        {"kind": "installed", "commit": "b" * 40},
+        {"kind": "checkout", "commit": "c" * 40},
+        {"kind": "pinned", "commit": "d" * 40},
+    ):
+        with pytest.raises(SystemExit):
+            enforce_public_pin(source)
+
+
 def test_canonical_and_blend_default_do_not_require_state() -> None:
     canonical = _load(tools.hnc_canonical_read())
     blend = _load(tools.hnc_blend_read())
@@ -225,8 +259,7 @@ def test_aureon_source_pinned_commit_comes_from_direct_url(tmp_path: Path) -> No
     )
     # The first dist-info in sorted order is aureon-2.1.0, now rewritten.
     mismatched = describe_aureon_source(origin, tmp_path / "checkout")
-    assert mismatched["kind"] == "checkout"
-    assert mismatched["commit"] == "unknown"
+    assert mismatched == {"kind": "installed", "commit": "b" * 40}
 
 
 def test_aureon_source_checkout_uses_git_head_or_unknown(tmp_path: Path) -> None:
@@ -246,7 +279,7 @@ def test_aureon_source_checkout_uses_git_head_or_unknown(tmp_path: Path) -> None
 
 def test_tool_output_and_server_info_name_the_aureon_that_ran() -> None:
     source = aureon_source()
-    assert source["kind"] in {"pinned", "checkout"}
+    assert source["kind"] in {"pinned", "installed", "checkout"}
     if source["kind"] == "pinned":
         assert source["commit"] == PINNED_COMMIT
     else:

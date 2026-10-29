@@ -125,6 +125,8 @@ def describe_aureon_source(origin: Path | None, root: Path) -> dict[str, str]:
         commit = _direct_url_commit(origin)
         if commit == PINNED_COMMIT:
             return {"kind": "pinned", "commit": commit}
+        if commit:
+            return {"kind": "installed", "commit": commit}
         return {"kind": "checkout", "commit": "unknown"}
     return {"kind": "checkout", "commit": _git_commit(root)}
 

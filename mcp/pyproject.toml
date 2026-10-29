@@ -9,7 +9,7 @@ description = "Read-only MCP server. Outside models call Aureon tools. They do n
 requires-python = ">=3.11"
 license = { text = "MIT" }
 dependencies = [
-  "mcp>=1.10,<2",
+  "mcp==1.30.0",
   "numpy>=1.26",
   "aureon @ git+https://github.com/RA-CONSULTING/Aureon-OS.git@a00f744d2e686e916e45b81dd4222408c368e305",
 ]

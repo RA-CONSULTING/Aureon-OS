@@ -5,12 +5,13 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 import sys
 
 from mcp.server.fastmcp import FastMCP
 
 from aureon_public import surfaces, tools
-from aureon_public.guard_loader import apply_space_guard, aureon_source
+from aureon_public.guard_loader import PINNED_COMMIT, apply_space_guard, aureon_source
 from aureon_public.text import SERVER_PLAIN
 
 SERVER_INSTRUCTIONS = (
@@ -18,6 +19,24 @@ SERVER_INSTRUCTIONS = (
     "This server is read-only. It does not place orders, read keys, start circulation, "
     "self-code, self-repair, or write the repository or state/."
 )
+
+
+def enforce_public_pin(source: dict[str, str] | None = None) -> None:
+    """Refuse to start when public hosting requires the pinned commit.
+
+    AUREON_PUBLIC_REQUIRE_PIN=1 is unset for local runs. Those runs still
+    report aureon_source. Public hosting must set the variable.
+    """
+
+    if os.environ.get("AUREON_PUBLIC_REQUIRE_PIN") != "1":
+        return
+    current = aureon_source() if source is None else source
+    if current.get("kind") == "pinned" and current.get("commit") == PINNED_COMMIT:
+        return
+    raise SystemExit(
+        "AUREON_PUBLIC_REQUIRE_PIN=1 requires aureon_source kind pinned "
+        f"at {PINNED_COMMIT}. This process would use {current}."
+    )
 
 
 def build_server(host: str = "127.0.0.1", port: int = 8077) -> FastMCP:
@@ -96,6 +115,8 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8077)
     args = parser.parse_args(argv)
+    apply_space_guard()
+    enforce_public_pin()
     server = build_server(host=args.host, port=args.port)
     server.run(transport=args.transport)
 
