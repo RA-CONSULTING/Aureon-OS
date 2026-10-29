@@ -161,8 +161,8 @@ def _formula(record: dict | None, params: dict | None, steps: int | None) -> lis
         )
         if match:
             lines.append(
-                "The brain run is a fixed-seed reproducible run "
-                f"at commit {guard.COMMIT}."
+                "The brain runs are deterministic (no seed). "
+                "Only the organism fault block is seeded (20261024)."
             )
     return lines
 
