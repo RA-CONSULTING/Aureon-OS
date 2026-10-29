@@ -528,8 +528,10 @@ def render_organism_markdown(report: dict[str, Any]) -> str:
             f"({prediction['baseline_correct']}/{prediction['questions']})."
         ),
         (
-            f"Fault detection rate `{fault['detection_rate']}`, false-alarm rate `{fault['false_alarm_rate']}`. "
-            f"Baseline detection `{fault['baseline_detection_rate']}`, "
+            f"Synthetic fault-injection rate `{fault['detection_rate']}`, "
+            f"false-alarm rate `{fault['false_alarm_rate']}`. "
+            f"These faults are injected by the harness and are not a detection ability. "
+            f"Baseline injection rate `{fault['baseline_detection_rate']}`, "
             f"baseline false-alarm `{fault['baseline_false_alarm_rate']}`."
         ),
         f"Fault trials `{fault['trials']}`, seed `{fault['seed']}`. {fault.get('note', '')}",

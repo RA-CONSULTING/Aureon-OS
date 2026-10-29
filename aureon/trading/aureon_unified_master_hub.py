@@ -2346,7 +2346,7 @@ UNIFIED_MASTER_HTML = """
                 hivesList.innerHTML = ocean.hives.slice(0, 5).map(hive => `
                     <div class="hive-item">
                         <div class="hive-header">
-                            <span class="hive-id">🏰 ${hive.hive_id || 'HIVE-' + Math.random().toString(36).substr(2, 4).toUpperCase()}</span>
+                            <span class="hive-id">🏰 ${hive.hive_id ?? 'n/a'}</span>
                             <span class="hive-members">${hive.member_count || 0} members</span>
                         </div>
                         <div class="hive-strategy">Strategy: ${hive.strategy || 'coordinated'} | Mode: ${hive.mode || 'hunting'}</div>

@@ -72,13 +72,13 @@ const PositionLine = ({
         </span>
         {exchange && <span className="text-[10px] uppercase text-muted-foreground">{exchange}</span>}
       </div>
-      <span className={cn(pnlPercent >= 0 ? 'text-success' : 'text-destructive')}>
-        {formatSigned(pnlPercent, 2)}%
+      <span className={cn(typeof pnlPercent === 'number' && pnlPercent < 0 ? 'text-destructive' : 'text-success')}>
+        {pnlPercent == null || !Number.isFinite(pnlPercent) ? 'unavailable' : `${formatSigned(pnlPercent, 2)}%`}
       </span>
     </div>
     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] text-muted-foreground">
-      <span>Entry ${entryPrice.toFixed(4)}</span>
-      <span>Now ${currentPrice.toFixed(4)}</span>
+      <span>Entry {entryPrice == null || !Number.isFinite(entryPrice) ? 'unavailable' : `$${entryPrice.toFixed(4)}`}</span>
+      <span>Now {currentPrice == null || !Number.isFinite(currentPrice) ? 'unavailable' : `$${currentPrice.toFixed(4)}`}</span>
       <span>ID {tradeId || 'n/a'}</span>
     </div>
   </div>
@@ -115,14 +115,14 @@ const ShadowLine = ({
         {exchange && <span className="text-[10px] uppercase text-muted-foreground">{exchange}</span>}
         {validated && <span className="text-[10px] text-warning">VALID</span>}
       </div>
-      <span className={cn(movePercent >= 0 ? 'text-success' : 'text-destructive')}>
-        {formatSigned(movePercent, 3)}%
+      <span className={cn(typeof movePercent === 'number' && movePercent < 0 ? 'text-destructive' : 'text-success')}>
+        {movePercent == null || !Number.isFinite(movePercent) ? 'unavailable' : `${formatSigned(movePercent, 3)}%`}
       </span>
     </div>
     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] text-muted-foreground">
-      <span>Entry ${entryPrice.toFixed(4)}</span>
-      <span>Now ${currentPrice.toFixed(4)}</span>
-      <span>Need {targetMovePercent.toFixed(3)}%</span>
+      <span>Entry {entryPrice == null || !Number.isFinite(entryPrice) ? 'unavailable' : `$${entryPrice.toFixed(4)}`}</span>
+      <span>Now {currentPrice == null || !Number.isFinite(currentPrice) ? 'unavailable' : `$${currentPrice.toFixed(4)}`}</span>
+      <span>Need {targetMovePercent == null || !Number.isFinite(targetMovePercent) ? 'unavailable' : `${targetMovePercent.toFixed(3)}%`}</span>
       <span>Age {formatAge(ageSeconds)}</span>
     </div>
   </div>
@@ -279,8 +279,8 @@ export function LiveTerminalStats() {
     .slice(0, 5);
 
   const totalEquity = state.totalEquity;
-  const available = safeNumber(state.availableBalance);
-  const totalPnl = safeNumber(state.totalPnl);
+  const available = state.availableBalance;
+  const totalPnl = state.totalPnl;
   const krakenEquity = summary?.krakenEquity;
   const capitalEquity = summary?.capitalEquityGbp;
   const money = (value: number | null | undefined, prefix: string) => (
@@ -524,11 +524,11 @@ export function LiveTerminalStats() {
             label="Portfolio"
             value={state.equityNote ? state.equityNote : money(totalEquity, '€')}
           />
-          <ExchangeMetric label="Available" value={`€${available.toFixed(2)}`} />
+          <ExchangeMetric label="Available" value={money(available, '€')} />
           <ExchangeMetric
             label="Session"
             value={formatSigned(totalPnl, 2, '€')}
-            className={totalPnl >= 0 ? 'text-success' : 'text-destructive'}
+            className={typeof totalPnl === 'number' && totalPnl < 0 ? 'text-destructive' : 'text-success'}
           />
         </div>
         {state.latestMonitorLine && (

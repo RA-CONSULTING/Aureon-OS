@@ -100,6 +100,8 @@ def test_self_coder_offline_hold_matches_the_committed_run(monkeypatch: pytest.M
     assert committed["external_provider"]["called"] is False
     assert committed["flagship_comparison"]["this_run_humaneval_pct"] is None
     assert committed["dataset_solution_smoke"]["counts_as_model_score"] is False
+    assert committed["dataset_solution_smoke"]["dataset"] == "data/research/open_benchmarks/humaneval.jsonl"
+    assert not str(committed["dataset_solution_smoke"]["dataset"]).startswith("/")
     assert committed["live_trading"] is False
 
 
@@ -129,6 +131,10 @@ def test_organism_connectivity_and_self_model_match_the_committed_run():
     assert fresh["orders_placed"] is False
     assert fresh["self_model"]["fault"]["origin"] == "synthetic"
     assert fresh["self_model"]["fault"]["synthetic_faults"] is True
+    index = _load("index.json")
+    assert index["organism_synthetic_faults"] is True
+    assert index["organism_fault_origin"] == "synthetic"
+    assert "not a detection ability" in index["organism_fault_rates_are"]
     assert "injected by the harness" in fresh["self_model"]["fault"]["note"]
     assert fresh["self_model"]["external_llm"] is False
     prediction = fresh["self_model"]["prediction"]
