@@ -21,7 +21,7 @@ Trading research · autonomous operator · planetary/HNC research · a coding or
 
 ## Five-minute quickstart
 
-A fresh clone, Python 3.11 or newer, and no API keys. This path does not start Docker, does not read exchange keys, and does not place an order. It installs the operator extra, runs the offline operator server tests and the connectome test, then prints the HNC measurement from `aureon.evaluation.brain_proof.evaluate_brain`. That function runs `HarmonicRealityField.step` for 100 steps with the multiverse extension off. The class default HarmonicRealityField() has the multiverse on, which gives coherence 0.857719 and LOCKED. It is deterministic: it takes no seed, so the same figures come back on every run.
+A fresh clone, Python 3.11 or newer, and no API keys. This path does not start Docker, does not read exchange keys, and does not place an order. It installs the operator extra, runs the offline operator server tests, the connectome test, and the quickstart banner test, then prints the HNC measurement from `aureon.evaluation.brain_proof.evaluate_brain`. That function runs `HarmonicRealityField.step` for 100 steps with the multiverse extension off. The class default HarmonicRealityField() has the multiverse on, which gives coherence 0.857719 and LOCKED. It is deterministic: it takes no seed, so the same figures come back on every run.
 
 Linux and macOS:
 
@@ -31,7 +31,7 @@ python3 -m venv .venv
 . .venv/bin/activate
 python -m pip install -U pip
 python -m pip install -e '.[operator]' 'pytest>=8' 'pytest-timeout>=2.3' 'numpy>=1.26' 'cryptography>=46'
-AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 pytest tests/test_operator_server.py tests/test_connectome.py --timeout=60
+AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 pytest tests/test_operator_server.py tests/test_connectome.py tests/test_quickstart_brain_proof.py --timeout=60
 AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 python -c "from aureon.evaluation.brain_proof import evaluate_brain, render_brain_markdown; print(render_brain_markdown(evaluate_brain()))"
 ```
 
@@ -45,7 +45,7 @@ python -m pip install -U pip
 python -m pip install -e ".[operator]" "pytest>=8" "pytest-timeout>=2.3" "numpy>=1.26" "cryptography>=46"
 set AUREON_LLM_OFFLINE=1
 set AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1
-pytest tests/test_operator_server.py tests/test_connectome.py --timeout=60
+pytest tests/test_operator_server.py tests/test_connectome.py tests/test_quickstart_brain_proof.py --timeout=60
 python -c "from aureon.evaluation.brain_proof import evaluate_brain, render_brain_markdown; print(render_brain_markdown(evaluate_brain()))"
 ```
 

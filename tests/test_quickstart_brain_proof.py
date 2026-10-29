@@ -44,6 +44,10 @@ def test_quickstart_brain_proof_omits_unbacked_banners() -> None:
         "win rate",
         "sniper",
         "ultimate intelligence",
+        "285/285",
+        "92.4",
+        "629",
+        "6/6",
     ):
         assert banned not in lowered, output
     assert "unified" in output

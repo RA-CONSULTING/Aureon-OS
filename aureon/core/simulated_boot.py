@@ -29,10 +29,13 @@ def simulated_notice(name: str, detail: str) -> str:
 
 
 def take_simulated(name: str, detail: str) -> bool:
-    """Log the simulated label at debug. Return True only when the operator opted in."""
+    """Return True only when the operator opted in.
+
+    The opted-in notice is printed. The default-boot skip stays at debug.
+    """
     notice = simulated_notice(name, detail)
     if simulated_boot_enabled():
-        logging.debug("%s (AUREON_SIMULATED_BOOT=1)", notice)
+        print(f"{notice} (AUREON_SIMULATED_BOOT=1)")
         return True
     logging.debug("%s — skipped on the default boot", notice)
     return False

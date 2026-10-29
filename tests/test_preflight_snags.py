@@ -174,7 +174,11 @@ def test_master_ui_has_dashboard_and_command_center_tabs() -> None:
         stop_master_ui()
 
 
-def test_simulated_components_are_off_by_default(monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture) -> None:
+def test_simulated_components_are_off_by_default(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     monkeypatch.delenv("AUREON_SIMULATED_BOOT", raising=False)
     caplog.set_level(logging.DEBUG, logger="root")
     assert simulated_boot_enabled() is False
@@ -186,6 +190,14 @@ def test_simulated_components_are_off_by_default(monkeypatch: pytest.MonkeyPatch
     assert "10 worlds × $10" in captured
     assert "mycelium hive seed ($1000)" in captured
     assert "skipped on the default boot" in captured
+    assert capsys.readouterr().out == ""
+
+    monkeypatch.setenv("AUREON_SIMULATED_BOOT", "1")
+    assert simulated_boot_enabled() is True
+    assert take_simulated(INTERNAL_MULTIVERSE, "aureon.simulation, 10 worlds × $10") is True
+    visible = capsys.readouterr().out
+    assert "SIMULATED Internal Multiverse" in visible
+    assert "(AUREON_SIMULATED_BOOT=1)" in visible
 
     for relative in (
         "aureon/harmonic/aureon_harmonic_chain_master.py",

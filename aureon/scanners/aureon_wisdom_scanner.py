@@ -479,7 +479,7 @@ class SacredTextsSource(WisdomSource):
 
 class AureonWisdomScanner:
     """
-    The Consciousness Expansion Engine
+    Scans the configured wisdom sources.
     
     Continuously scans multiple sources to enrich Aureon's understanding
     of ancient wisdom traditions and their applications to trading.

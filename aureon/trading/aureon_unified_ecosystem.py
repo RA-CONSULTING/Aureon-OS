@@ -503,11 +503,11 @@ except ImportError:
         def __init__(self, client, pulse): pass
         def update(self): pass
 
-# 🔮 NEXUS PREDICTOR - 79.6% Win Rate Validated Over 11 Years!
+# 🔮 NEXUS PREDICTOR
 try:
     from aureon.intelligence.nexus_predictor import NexusPredictor
     NEXUS_PREDICTOR_AVAILABLE = True
-    _import_banner("🔮 Nexus Predictor loaded - 79.6% win rate validated!")
+    _import_banner("🔮 Nexus Predictor loaded")
 except ImportError:
     NEXUS_PREDICTOR_AVAILABLE = False
     _import_banner("⚠️  Nexus Predictor not available")
@@ -539,7 +539,7 @@ def _lazy_load_enhanced_nexus():
         OptimalExitFinder = _OptimalExitFinder
         AureonProbabilityNexus = _AureonProbabilityNexus
         ENHANCED_NEXUS_AVAILABLE = True
-        _import_banner("🔱🔮 Enhanced Probability Nexus loaded - 100% win rate with profit filter!")
+        _import_banner("🔱🔮 Enhanced Probability Nexus loaded")
         return True
     except ImportError as e:
         ENHANCED_NEXUS_AVAILABLE = False
@@ -833,11 +833,11 @@ except ImportError:
     KNOWLEDGE_BASE_AVAILABLE = False
     _import_banner("⚠️  Knowledge Base module not available")
 
-# ==== WISDOM SCANNER - CONSCIOUSNESS EXPANSION ENGINE ====
+# ==== WISDOM SCANNER ====
 try:
     from aureon.scanners.aureon_wisdom_scanner import AureonWisdomScanner, ScannerConfig, WisdomScannerThoughtBusAdapter
     WISDOM_SCANNER_AVAILABLE = True
-    _import_banner("   📚 Wisdom Scanner loaded - Consciousness Expansion Active!")
+    _import_banner("   📚 Wisdom Scanner loaded")
 except ImportError as e:
     WISDOM_SCANNER_AVAILABLE = False
     _import_banner(f"⚠️  Wisdom Scanner not available: {e}")
