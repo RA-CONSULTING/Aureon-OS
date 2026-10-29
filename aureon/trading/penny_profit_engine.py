@@ -15,12 +15,30 @@ Gary Leckey & GitHub Copilot | December 2025
 
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import json
-import os
 import logging
+import os
+import sys
 from typing import Dict, Optional, Tuple
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
+
+
+def _warn_hardcoded_thresholds() -> None:
+    """WARNING disclosure on stderr.
+
+    The unified ecosystem attaches the root handler to stdout. This
+    logger does not propagate, so the disclosure stays off that stream.
+    """
+    disclosure = logging.getLogger(f"{__name__}.thresholds")
+    if not disclosure.handlers:
+        handler = logging.StreamHandler(sys.stderr)
+        handler.setLevel(logging.WARNING)
+        handler.setFormatter(logging.Formatter("%(levelname)s %(name)s: %(message)s"))
+        disclosure.addHandler(handler)
+    disclosure.setLevel(logging.WARNING)
+    disclosure.propagate = False
+    disclosure.warning("🪙 Using hardcoded penny profit thresholds")
 
 # Sandbox learning file
 SANDBOX_LEARNING_FILE = os.path.join(os.path.dirname(__file__), "sandbox_brain_learning.json")
@@ -82,7 +100,7 @@ class PennyProfitEngine:
                     return
             
             # If no file found, use hardcoded defaults
-            logger.warning("🪙 Using hardcoded penny profit thresholds")
+            _warn_hardcoded_thresholds()
             self._use_defaults()
             self.loaded = True
             

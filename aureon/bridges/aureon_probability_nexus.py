@@ -40,6 +40,7 @@ if sys.platform == 'win32' and sys.stdout is sys.__stdout__ and sys.stdout.isatt
         pass
 
 import json
+import logging
 import math
 import random
 import numpy as np
@@ -405,7 +406,7 @@ try:
         DOB_HASH,
     )
     DECREE_AVAILABLE = True
-    print("🔱 Prime Sentinel Decree LOADED - Control reclaimed")
+    logging.debug("🔱 Prime Sentinel Decree LOADED - Control reclaimed")
 except ImportError:
     DECREE_AVAILABLE = False
     THE_DECREE = {'declaration': 'Module not loaded'}

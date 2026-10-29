@@ -170,7 +170,7 @@ try:
         EcosystemPrediction, AureonUltimateEcosystem
     )
     ECOSYSTEM_WIRING_AVAILABLE = True
-    _import_banner("🌍🍄 Ultimate Ecosystem Wiring CONNECTED! (world domination mode)")
+    _import_banner("🌍🍄 Ultimate Ecosystem Wiring CONNECTED!")
 except ImportError:
     ECOSYSTEM_WIRING_AVAILABLE = False
     _import_banner("⚠️ Ultimate Ecosystem Wiring not available")
