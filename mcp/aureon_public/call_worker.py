@@ -7,7 +7,6 @@ import inspect
 import json
 import sys
 from datetime import date
-from pathlib import Path
 from typing import Any
 
 
@@ -56,27 +55,14 @@ def _coerce(fn: Any, kwargs: dict[str, Any]) -> dict[str, Any]:
 
 
 def _load(dotted: str, module_rel: str) -> Any:
-    from aureon_public.guard_loader import PINNED_COMMIT, apply_space_guard
-    from aureon_public.paths import repo_root
-    from aureon_public.pin_blob import load_checkout_module
+    del module_rel
+    if dotted != "aureon" and not dotted.startswith("aureon."):
+        raise RuntimeError("only an aureon module can be loaded")
+    from aureon_public.guard_loader import apply_space_guard
+    from aureon_public.pin_blob import install_pinned_aureon_finder
 
     apply_space_guard()
-    root = repo_root()
-    path = root / module_rel if module_rel.startswith("unified_margin_trader/") else root / "aureon" / module_rel
-    spec = importlib.util.find_spec(dotted)
-    origin = getattr(spec, "origin", None) if spec is not None else None
-    from_checkout = True
-    if origin:
-        origin_path = Path(origin)
-        root_resolved = root.resolve()
-        resolved = origin_path.resolve()
-        if origin_path.is_file() and resolved != root_resolved and root_resolved not in resolved.parents:
-            from_checkout = False
-    if from_checkout:
-        loaded, error = load_checkout_module(dotted, path, root, PINNED_COMMIT)
-        if error or loaded is None:
-            raise RuntimeError(error or f"{path.name} could not be loaded")
-        return loaded
+    install_pinned_aureon_finder()
     return importlib.import_module(dotted)
 
 

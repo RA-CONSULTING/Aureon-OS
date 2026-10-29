@@ -272,6 +272,48 @@ def test_stage1_sweep_counts_real_calls() -> None:
             assert item["status"] == "cited"
 
 
+def test_operator_rows_outside_the_allowlist_are_refused(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("AUREON_OPERATOR_MCP", "1")
+    rows = (
+        ("analytics/benchmark_coverage.py", "write_coverage"),
+        ("analytics/open_benchmark.py", "run_humaneval"),
+        ("analytics/backtest_sentiment_oracle.py", "run_backtest"),
+        ("launch/master.py", "repo_root"),
+        ("autonomous/mind_wiring_audit.py", "probe_http_service"),
+    )
+    for module, symbol in rows:
+        body = _load(body_call_operator(module, symbol))
+        assert body["status"] == "unavailable", symbol
+        assert body.get("called") is not True
+        assert "not allowlisted" in body["reason"]
+        assert body.get("live_orders") == "refused"
+
+
+def test_tampered_aureon_dependency_fails_closed(monkeypatch: pytest.MonkeyPatch) -> None:
+    import importlib
+
+    import aureon_public.pin_blob as pin
+
+    real = pin.git_blob_sha1
+
+    def fake(data: bytes) -> str:
+        if b"def solfeggio_ladder" in data:
+            return "ab" * 20
+        return real(data)
+
+    monkeypatch.setattr(pin, "git_blob_sha1", fake)
+    finder = pin.install_pinned_aureon_finder()
+    sys.modules.pop("aureon.plumber.magic_star_v02", None)
+    sys.modules.pop("aureon.harmonic.rainbow_reference", None)
+    try:
+        with pytest.raises(ImportError, match="differs from pin"):
+            importlib.import_module("aureon.plumber.magic_star_v02")
+    finally:
+        sys.meta_path[:] = [item for item in sys.meta_path if item is not finder]
+        sys.modules.pop("aureon.plumber.magic_star_v02", None)
+        sys.modules.pop("aureon.harmonic.rainbow_reference", None)
+
+
 def test_probe_http_service_localhost_get_is_refused() -> None:
     probed = _load(
         body_call(

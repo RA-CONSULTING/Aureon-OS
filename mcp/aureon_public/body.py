@@ -369,12 +369,18 @@ def _call_in_subprocess(module: str, symbol: str, arguments: dict[str, Any], tim
             "arguments": arguments,
         }
     ).encode("utf-8")
+    package_root = str(Path(__file__).resolve().parents[1])
+    env = os.environ.copy()
+    pythonpath = env.get("PYTHONPATH", "")
+    env["PYTHONPATH"] = package_root if not pythonpath else package_root + os.pathsep + pythonpath
     process = subprocess.Popen(
         [sys.executable, "-m", "aureon_public.call_worker"],
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         start_new_session=True,
+        cwd=str(repo_root()),
+        env=env,
     )
     try:
         stdout, _stderr = process.communicate(payload, timeout=timeout)
@@ -410,12 +416,11 @@ def _constructor_refusal(module: str, class_name: str) -> str | None:
 
 
 def _operator_allowlist_refusal(row: dict[str, Any]) -> str | None:
-    text = str(row.get("safety") or "")
-    if "package is operator-scoped" not in text:
-        return None
+    """Every operator-path row must be named. Fetch and write stay closed."""
+
     key = (str(row["module"]), str(row["symbol"]))
     if key not in _OPERATOR_ALLOWLIST:
-        return "operator-scoped row is not allowlisted"
+        return "operator row is not allowlisted"
     source = _function_source(str(row["module"]), str(row["symbol"]))
     if re.search(r"api_key|secret|password|credential|private_key", source or "", re.I):
         return "portfolio or accounting key reader is not allowlisted"
@@ -604,8 +609,8 @@ def dispatch(
         return _unavailable("public entry point stays on aureon-public")
     allow = _operator_allowlist_refusal(row)
     if allow:
-        return _unavailable(allow)
-    return _invoke(row, arguments or {}, timeout, allow_fetch=True, allow_write=True)
+        return _unavailable(allow, live_orders="refused")
+    return _invoke(row, arguments or {}, timeout, allow_fetch=False, allow_write=False)
 
 
 def _parse_arguments(arguments_json: str) -> dict[str, Any] | str:

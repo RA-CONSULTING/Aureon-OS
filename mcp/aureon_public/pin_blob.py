@@ -83,6 +83,95 @@ def expected_pin_blob(path: Path, root: Path, commit: str) -> tuple[str | None, 
     return pin_blob, None
 
 
+class PinnedAureonFinder:
+    """Blob-check every ``aureon`` import against the pin. A mismatch raises."""
+
+    def __init__(self, root: Path, commit: str) -> None:
+        self.root = root
+        self.commit = commit
+
+    def find_spec(self, fullname: str, path: object, target: object = None) -> object:
+        del path, target
+        if fullname != "aureon" and not fullname.startswith("aureon."):
+            return None
+        relative = self._relative(fullname)
+        if relative is None:
+            raise ImportError(f"{fullname} is not an aureon module path")
+        expected, error = expected_pin_blob(self.root / relative, self.root, self.commit)
+        if error or not expected:
+            raise ImportError(error or "expected blob is required")
+        for candidate in self._files(fullname, relative):
+            try:
+                data = candidate.read_bytes()
+            except OSError:
+                continue
+            if git_blob_sha1(data) != expected:
+                continue
+            return self._spec(fullname, data, candidate)
+        raise ImportError(f"checkout {relative} differs from pin {self.commit[:12]}")
+
+    def _relative(self, fullname: str) -> str | None:
+        parts = fullname.split(".")
+        py_file = Path(*parts).with_suffix(".py")
+        init_file = Path(*parts) / "__init__.py"
+        for relative in (py_file, init_file):
+            expected, _error = expected_pin_blob(self.root / relative, self.root, self.commit)
+            if expected:
+                return relative.as_posix()
+        return None
+
+    def _files(self, fullname: str, relative: str) -> list[Path]:
+        files: list[Path] = []
+        checkout = self.root / relative
+        if checkout.is_file():
+            files.append(checkout)
+        installed = self._installed_origin(fullname)
+        if installed is not None and installed not in files:
+            files.append(installed)
+        return files
+
+    def _installed_origin(self, fullname: str) -> Path | None:
+        removed = [finder for finder in sys.meta_path if isinstance(finder, PinnedAureonFinder)]
+        for finder in removed:
+            sys.meta_path.remove(finder)
+        try:
+            spec = importlib.util.find_spec(fullname)
+        finally:
+            for finder in reversed(removed):
+                sys.meta_path.insert(0, finder)
+        origin = getattr(spec, "origin", None) if spec is not None else None
+        if not origin or origin == "namespace":
+            return None
+        path = Path(origin)
+        return path if path.is_file() else None
+
+    def _spec(self, fullname: str, data: bytes, path: Path) -> object:
+        loader = _SameBytesLoader(data, str(path))
+        spec = importlib.util.spec_from_loader(fullname, loader, origin=str(path))
+        if spec is None:
+            raise ImportError(f"{fullname} could not be loaded")
+        spec.has_location = True
+        if path.name == "__init__.py":
+            spec.submodule_search_locations = [str(path.parent)]
+        return spec
+
+
+def install_pinned_aureon_finder(root: Path | None = None, commit: str | None = None) -> PinnedAureonFinder:
+    """Install the finder once. Later aureon imports fail closed on a blob mismatch."""
+
+    from aureon_public.guard_loader import PINNED_COMMIT
+    from aureon_public.paths import repo_root
+
+    base = repo_root() if root is None else root
+    pin = PINNED_COMMIT if commit is None else commit
+    for finder in sys.meta_path:
+        if isinstance(finder, PinnedAureonFinder):
+            return finder
+    finder = PinnedAureonFinder(base, pin)
+    sys.meta_path.insert(0, finder)
+    return finder
+
+
 def load_pinned_source(module_name: str, path: Path, expected_blob: str, mismatch: str) -> str | None:
     """Read ``path`` once. Refuse unless those bytes are ``expected_blob``. Exec them.
 
