@@ -1,0 +1,395 @@
+{
+  "called": 39,
+  "calls": [
+    {
+      "called": true,
+      "module": "data_feeds/unified_ws_feed.py",
+      "package": "data_feeds",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "parse_binance_tick"
+    },
+    {
+      "called": true,
+      "module": "decoders/grail_convergence.py",
+      "package": "decoders",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "haversine"
+    },
+    {
+      "called": true,
+      "module": "search/online_research_cinema.py",
+      "package": "search",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "summarize_text"
+    },
+    {
+      "called": true,
+      "module": "portals/ifs.py",
+      "package": "portals",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "html_to_text"
+    },
+    {
+      "called": true,
+      "module": "analytics/backtest_sentiment_oracle.py",
+      "package": "analytics",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "derive_fear_greed"
+    },
+    {
+      "called": true,
+      "module": "atn/aureon_atn_backtest.py",
+      "package": "atn",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "compute_impacts"
+    },
+    {
+      "called": true,
+      "module": "monitors/margin_eta_predictor.py",
+      "package": "monitors",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "calc_breakeven"
+    },
+    {
+      "called": true,
+      "module": "monitors/margin_eta_predictor.py",
+      "package": "monitors",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "normalise_pair"
+    },
+    {
+      "called": true,
+      "module": "analytics/aureon_complete_profiler_integration.py",
+      "package": "analytics",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_complete_profiler"
+    },
+    {
+      "called": true,
+      "module": "analytics/aureon_deep_money_flow_analyzer.py",
+      "package": "analytics",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_money_flow_vault"
+    },
+    {
+      "called": true,
+      "module": "analytics/aureon_historical_bot_census.py",
+      "package": "analytics",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_census"
+    },
+    {
+      "called": true,
+      "module": "analytics/aureon_historical_manipulation_hunter.py",
+      "package": "analytics",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_manipulation_hunter"
+    },
+    {
+      "called": true,
+      "module": "analytics/aureon_moby_dick_whale_hunter.py",
+      "package": "analytics",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_moby_dick_hunter"
+    },
+    {
+      "called": true,
+      "module": "analytics/aureon_russian_doll_analytics.py",
+      "package": "analytics",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_analytics"
+    },
+    {
+      "called": true,
+      "module": "analytics/aureon_russian_doll_analytics.py",
+      "package": "analytics",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_snapshot"
+    },
+    {
+      "called": true,
+      "module": "analytics/aureon_russian_doll_analytics.py",
+      "package": "analytics",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_directives"
+    },
+    {
+      "called": true,
+      "module": "analytics/aureon_russian_doll_analytics.py",
+      "package": "analytics",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "broadcast_analytics"
+    },
+    {
+      "called": true,
+      "module": "analytics/aureon_whale_profiler_system.py",
+      "package": "analytics",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_whale_profiler"
+    },
+    {
+      "called": true,
+      "module": "analytics/backtest_sentiment_oracle.py",
+      "package": "analytics",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_runes_oracle"
+    },
+    {
+      "called": true,
+      "module": "analytics/benchmark_coverage.py",
+      "package": "analytics",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "build_coverage"
+    },
+    {
+      "called": true,
+      "module": "analytics/eta_verification_system.py",
+      "package": "analytics",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_eta_verifier"
+    },
+    {
+      "called": true,
+      "module": "analytics/eta_verification_system.py",
+      "package": "analytics",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "check_expired"
+    },
+    {
+      "called": true,
+      "module": "analytics/historical_replay_validation.py",
+      "package": "analytics",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "compute_replay_validation"
+    },
+    {
+      "called": false,
+      "module": "analytics/lighthouse_financial_analyzer.py",
+      "package": "analytics",
+      "probe": false,
+      "reason": "ModuleNotFoundError: No module named 'matplotlib'",
+      "status": "unavailable",
+      "symbol": "parse_args"
+    },
+    {
+      "called": true,
+      "module": "analytics/volatility_sentinel_benchmark.py",
+      "package": "analytics",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "canonical_regimes"
+    },
+    {
+      "called": true,
+      "module": "atn/aureon_atn_monitor.py",
+      "package": "atn",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_atn_monitor"
+    },
+    {
+      "called": false,
+      "module": "data_feeds/gfz_parser.py",
+      "package": "data_feeds",
+      "probe": false,
+      "reason": "ModuleNotFoundError: No module named 'pandas'",
+      "status": "unavailable",
+      "symbol": "resample_to_6h"
+    },
+    {
+      "called": true,
+      "module": "data_feeds/global_financial_feed.py",
+      "package": "data_feeds",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "integrate_with_probability_matrix"
+    },
+    {
+      "called": true,
+      "module": "data_feeds/market_data_hub.py",
+      "package": "data_feeds",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_market_data_hub"
+    },
+    {
+      "called": true,
+      "module": "data_feeds/unified_market_cache.py",
+      "package": "data_feeds",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_market_cache"
+    },
+    {
+      "called": true,
+      "module": "decoders/book_of_ur.py",
+      "package": "decoders",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_sumerian_decoder"
+    },
+    {
+      "called": true,
+      "module": "decoders/book_of_ur.py",
+      "package": "decoders",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_sumerian_geographic_vector"
+    },
+    {
+      "called": true,
+      "module": "decoders/emerald_spec.py",
+      "package": "decoders",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "compute_project_druid_manifest"
+    },
+    {
+      "called": true,
+      "module": "decoders/emerald_spec.py",
+      "package": "decoders",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "map_geometric_pattern"
+    },
+    {
+      "called": true,
+      "module": "decoders/grail_convergence.py",
+      "package": "decoders",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "build_axes"
+    },
+    {
+      "called": true,
+      "module": "decoders/iching_decoder.py",
+      "package": "decoders",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_iching_decoder"
+    },
+    {
+      "called": true,
+      "module": "decoders/iching_decoder.py",
+      "package": "decoders",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_iching_geographic_vector"
+    },
+    {
+      "called": false,
+      "module": "monitors/aureon_unified_dashboard_api.py",
+      "package": "monitors",
+      "probe": false,
+      "reason": "ModuleNotFoundError: No module named 'aiohttp'",
+      "status": "unavailable",
+      "symbol": "get_decision_engine"
+    },
+    {
+      "called": false,
+      "module": "monitors/system_efficiency_monitor.py",
+      "package": "monitors",
+      "probe": false,
+      "reason": "ModuleNotFoundError: No module named 'psutil'",
+      "status": "unavailable",
+      "symbol": "get_efficiency_metrics_json"
+    },
+    {
+      "called": true,
+      "module": "portals/actions.py",
+      "package": "portals",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "portals_dir"
+    },
+    {
+      "called": true,
+      "module": "portals/actions.py",
+      "package": "portals",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "action_log_path"
+    },
+    {
+      "called": true,
+      "module": "portals/ifs.py",
+      "package": "portals",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "resolve_cdp_url"
+    },
+    {
+      "called": true,
+      "module": "portals/ifs.py",
+      "package": "portals",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "cdp_fetcher"
+    }
+  ],
+  "enabled_through": 4,
+  "stage": 4,
+  "tried": 43
+}

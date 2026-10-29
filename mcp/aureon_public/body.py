@@ -26,17 +26,18 @@ from aureon_public.quiet import quiet
 from aureon_public.tools import _dumps
 
 # Stages 1-6 raise this as each stage commit lands. Stage 7 is packaging.
-ENABLED_THROUGH = 3
+ENABLED_THROUGH = 4
 
 _UNSAFE_NAME = re.compile(
     r"(run_|start_|stop_|launch_|serve|main$|^demo$|create_app|activate_|connect_|"
     r"publish_|write_|save_|download_|fetch_|notify_|reset_|discover_|simulate_|"
-    r"audit_|ingest_|record_|wire_|print_|benchmark|forever|continuous)",
+    r"audit_|ingest_|record_|wire_|print_|benchmark|forever|continuous|^analyze|demo_)",
     re.I,
 )
 _SKIP_WORD = re.compile(
     r"price|live_|kraken|order|exchange|network|socket|download|schumann|biometric|trade|wallet|secret|"
-    r"thought_bus|redis|postgres|sqlite|calibration|^evaluate_|^observe$",
+    r"thought_bus|redis|postgres|sqlite|calibration|^evaluate_|^observe$|"
+    r"feed_hub|ws_feed|space_weather|news_signal|coordinator|seer_vision|lyra",
     re.I,
 )
 _UNSAFE_SOURCE = (
@@ -658,6 +659,54 @@ def probes_for(stage: int) -> list[dict[str, Any]]:
                 "module": "evaluation/auris_node_eval.py",
                 "symbol": "evaluate_auris_nodes",
                 "timeout": 20,
+            },
+        ],
+        4: [
+            {
+                "module": "data_feeds/unified_ws_feed.py",
+                "symbol": "parse_binance_tick",
+                "arguments": {
+                    "data": {"s": "BTCUSDT", "b": "1", "a": "2", "c": "1.5", "v": "3", "P": "0", "E": 0}
+                },
+            },
+            {
+                "module": "decoders/grail_convergence.py",
+                "symbol": "haversine",
+                "arguments": {"lat1": 51.5, "lon1": -0.12, "lat2": 48.86, "lon2": 2.35},
+            },
+            {
+                "module": "search/online_research_cinema.py",
+                "symbol": "summarize_text",
+                "arguments": {"text": "The field is a reading. The reading is not an order.", "topic": "field"},
+            },
+            {
+                "module": "portals/ifs.py",
+                "symbol": "html_to_text",
+                "arguments": {"html": "<p>Hello field</p>"},
+            },
+            {
+                "module": "analytics/backtest_sentiment_oracle.py",
+                "symbol": "derive_fear_greed",
+                "arguments": {
+                    "closes": [1, 1.1, 1.2, 1.1, 1.3, 1.4, 1.2, 1.5],
+                    "volumes": [1, 1, 1, 1, 1, 1, 1, 1],
+                    "idx": 7,
+                },
+            },
+            {
+                "module": "atn/aureon_atn_backtest.py",
+                "symbol": "compute_impacts",
+                "arguments": {"events": [], "candles": [], "symbol": "BTC"},
+            },
+            {
+                "module": "monitors/margin_eta_predictor.py",
+                "symbol": "calc_breakeven",
+                "arguments": {"entry": 100.0},
+            },
+            {
+                "module": "monitors/margin_eta_predictor.py",
+                "symbol": "normalise_pair",
+                "arguments": {"pair": "btcusd"},
             },
         ],
     }

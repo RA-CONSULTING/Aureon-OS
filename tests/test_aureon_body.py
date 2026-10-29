@@ -95,6 +95,31 @@ def test_surface_does_not_call_and_a_changed_blob_is_refused(tmp_path: Path, mon
     assert "differs from pin" in refused["reason"]
 
 
+def test_stage4_calls_feed_decoder_search_portal_analytics_atn_and_monitor() -> None:
+    assert enabled_stage() >= 4
+    distance = _load(
+        body_call(
+            "decoders/grail_convergence.py",
+            "haversine",
+            json.dumps({"lat1": 51.5, "lon1": -0.12, "lat2": 48.86, "lon2": 2.35}),
+        )
+    )
+    assert distance["called"] is True
+    assert isinstance(distance["result"], float)
+    impacts = _load(
+        body_call(
+            "atn/aureon_atn_backtest.py",
+            "compute_impacts",
+            json.dumps({"events": [], "candles": [], "symbol": "BTC"}),
+        )
+    )
+    assert impacts["called"] is True
+    assert impacts["result"] == []
+    record = json.loads((ROOT / "measured" / "body_stage4.json").read_text(encoding="utf-8"))
+    called = {item["package"] for item in record["calls"] if item["called"] is True}
+    assert {"data_feeds", "decoders", "search", "portals", "analytics", "atn", "monitors"} <= called
+
+
 def test_stage3_calls_organism_bio_evaluation_and_vault_and_refuses_identity() -> None:
     assert enabled_stage() >= 3
     words = _load(
