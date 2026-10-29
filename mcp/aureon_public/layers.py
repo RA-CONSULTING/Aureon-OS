@@ -406,7 +406,10 @@ def membrane_screen(text: str = "") -> str:
 
     verdict = screen_ingress(str(text), source="aureon-public")
     body = asdict(verdict)
-    body["label"] = "cited. screen_ingress. Not an order."
+    body["label"] = (
+        "cited. screen_ingress. phenolic_fingerprint loaded from checkout "
+        "after the blob check for pin a00f744d. Not an order."
+    )
     body["provenance"] = "cited"
     body["status"] = "cited"
     return _dumps(body)

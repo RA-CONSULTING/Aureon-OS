@@ -132,7 +132,11 @@ def describe_aureon_source(origin: Path | None, root: Path) -> dict[str, str]:
 
 
 def aureon_source() -> dict[str, str]:
-    """The aureon import this process will use, after the guard has chosen a path."""
+    """The aureon import this process will use, after the guard has chosen a path.
+
+    Raises FileNotFoundError, via repo_root(), when there is no checkout.
+    There is no separate 'no checkout' status. The server needs the checkout.
+    """
 
     apply_space_guard()
     root = repo_root()

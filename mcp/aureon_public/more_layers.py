@@ -1,4 +1,4 @@
-"""One safe call for each catalog package that has one. No new formulas."""
+"""One helper function per package. A helper call is not that layer's cognition. No new formulas."""
 
 from __future__ import annotations
 
@@ -8,7 +8,16 @@ from pathlib import Path
 from typing import Any
 
 from aureon_public.quiet import quiet
-from aureon_public.tools import _dumps, _finite
+from aureon_public.tools import _dumps as _public_dumps
+from aureon_public.tools import _finite
+
+
+def _dumps(payload: dict[str, Any]) -> str:
+    label = payload.get("label")
+    if isinstance(label, str) and not label.startswith("helper."):
+        payload = dict(payload)
+        payload["label"] = "helper. " + label
+    return _public_dumps(payload)
 
 # package, kind, reason. kind is the tool name or "excluded".
 UPDATES: tuple[tuple[str, str, str], ...] = (
@@ -54,7 +63,7 @@ def _apply() -> None:
     for package, kind, reason in UPDATES:
         row = by_name[package]
         row["kind"] = kind
-        row["reason"] = reason
+        row["reason"] = reason if reason.startswith("Helper only.") else "Helper only. " + reason
 
 
 _apply()
@@ -100,7 +109,7 @@ def analytics_fear_greed() -> str:
     No backtest is run. Trade readiness: HOLD.
 
     Args:
-        none: The series is a fixed 40-step ramp inside this tool so the lookback is met. Label: inferred.
+        none: The series is a fixed 40-step fixture ramp, not market data. Label: inferred.
     """
 
     from aureon.analytics.backtest_sentiment_oracle import derive_fear_greed
@@ -108,7 +117,7 @@ def analytics_fear_greed() -> str:
     closes = [100.0 + index for index in range(40)]
     volumes = [1.0 for _ in range(40)]
     result = derive_fear_greed(closes, volumes, 39)
-    result["label"] = "inferred. derive_fear_greed. Not a backtest."
+    result["label"] = "The series is a fixed 40-step fixture ramp, not market data."
     result["provenance"] = "inferred"
     result["status"] = "inferred"
     result["trade_readiness"] = "HOLD"
@@ -207,10 +216,10 @@ def cognition_logic_flow() -> str:
 def data_feed_parse_tick() -> str:
     """data_feeds.unified_ws_feed.parse_binance_tick on one dict. Provenance: inferred.
 
-    No socket is opened. Trade readiness: HOLD.
+    One fixture tick, not market data. No socket was opened. Trade readiness: HOLD.
 
     Args:
-        none: The dict is a single book-ticker shape. Label: inferred.
+        none: One fixture tick, not market data. No socket was opened. Label: inferred.
     """
 
     from aureon.data_feeds.unified_ws_feed import parse_binance_tick
@@ -220,7 +229,7 @@ def data_feed_parse_tick() -> str:
         received_at=1.0,
     )
     body = tick.__dict__ if tick is not None and hasattr(tick, "__dict__") else {"tick": None}
-    body["label"] = "inferred. parse_binance_tick. No socket was opened."
+    body["label"] = "One fixture tick, not market data. No socket was opened."
     body["provenance"] = "inferred"
     body["status"] = "inferred" if tick is not None else "unavailable"
     body["trade_readiness"] = "HOLD"

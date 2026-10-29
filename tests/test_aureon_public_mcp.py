@@ -428,9 +428,16 @@ def test_new_package_tools_and_membrane_paths(monkeypatch: pytest.MonkeyPatch) -
         assert body.get("provenance") in {"cited", "inferred", "cited-unverified"}, fn.__name__
         assert "consciousness_" not in json.dumps(body)
         assert body.get("status") in {"cited", "inferred", "unavailable"}
+        assert str(body.get("label", "")).startswith("helper.")
+    fear = _load(getattr(sys.modules["aureon_public.more_layers"], "analytics_fear_greed")())
+    tick = _load(getattr(sys.modules["aureon_public.more_layers"], "data_feed_parse_tick")())
+    assert fear["label"] == "helper. The series is a fixed 40-step fixture ramp, not market data."
+    assert tick["label"] == "helper. One fixture tick, not market data. No socket was opened."
     live = _load(layers.membrane_screen("hello"))
     assert live["status"] == "cited"
     assert live["provenance"] == "cited"
+    assert "loaded from checkout" in live["label"]
+    assert "blob check" in live["label"]
     monkeypatch.setattr(layers, "_load_phenolic_fingerprint", lambda: "phenolic_fingerprint.py is not in this checkout")
     sys.modules.pop("aureon.bio.mcp_membrane", None)
     blocked = _load(layers.membrane_screen("hello"))
@@ -446,6 +453,9 @@ def test_new_package_tools_and_membrane_paths(monkeypatch: pytest.MonkeyPatch) -
     assert kinds["gates"] == "gates_reading"
     assert kinds["atn"] == "excluded"
     assert kinds["identity"] == "excluded"
+    assert all(row["reason"].startswith("Helper only.") for row in rows if row["package"] in {
+        "alignment", "atn", "cognition", "queen", "vault"
+    })
 
 
 def test_phenolic_blob_matches_pin_and_a_changed_copy_is_refused(
