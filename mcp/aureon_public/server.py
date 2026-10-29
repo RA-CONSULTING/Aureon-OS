@@ -10,7 +10,7 @@ import sys
 
 from mcp.server.fastmcp import FastMCP
 
-from aureon_public import surfaces, tools
+from aureon_public import layers, surfaces, tools
 from aureon_public.guard_loader import PINNED_COMMIT, apply_space_guard, aureon_source
 from aureon_public.text import SERVER_PLAIN
 
@@ -65,8 +65,10 @@ def build_server(host: str = "127.0.0.1", port: int = 8077) -> FastMCP:
         tools.qgita_analyze,
         tools.organism_replay_read,
         tools.organism_catalog,
+        *layers.public_layer_tools(),
     ):
         server.tool()(fn)
+    server.resource("aureon://packages", mime_type="application/json")(layers.packages_resource)
     server.resource(
         "aureon://hnc/harmonic-reality/defaults",
         mime_type="application/json",

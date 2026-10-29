@@ -299,13 +299,25 @@ def test_registered_names() -> None:
     assert names == [
         "auris_coherence",
         "auris_nodes",
+        "evidence_predict_next",
         "hnc_blend_read",
         "hnc_canonical_read",
+        "hnc_echo_eval",
+        "hnc_observer_eval",
+        "hnc_potential_eval",
         "hnc_reality_step",
+        "hnc_substrate_eval",
+        "hnc_translate_project",
         "lambda_engine_step",
+        "membrane_screen",
         "organism_catalog",
         "organism_replay_read",
+        "package_dispositions",
         "qgita_analyze",
+        "qgita_ftcp_detect",
+        "qgita_lighthouse_coherence",
+        "repository_layers_hold",
+        "source_names",
     ]
     hnc = next(item for item in tools_listed if item.name == "hnc_reality_step")
     assert hnc.description is not None
@@ -315,8 +327,108 @@ def test_registered_names() -> None:
     uris = sorted(str(item.uri) for item in resources)
     assert "aureon://auris/nodes" in uris
     assert "aureon://replay/auris" in uris
-    assert len(uris) == 12
+    assert "aureon://packages" in uris
+    assert len(uris) == 13
     prompts = asyncio.run(server.list_prompts())
     prompt_names = sorted(item.name for item in prompts)
     assert "explain_auris_four_meanings" in prompt_names
     assert len(prompt_names) == 4
+
+
+def test_each_new_layer_tool_is_labelled_and_omits_consciousness_keys() -> None:
+    calls = {
+        "package_dispositions": layers_call("package_dispositions"),
+        "hnc_substrate_eval": layers_call("hnc_substrate_eval"),
+        "hnc_echo_eval": layers_call("hnc_echo_eval"),
+        "hnc_observer_eval": layers_call("hnc_observer_eval"),
+        "hnc_potential_eval": layers_call("hnc_potential_eval"),
+        "hnc_translate_project": layers_call("hnc_translate_project"),
+        "qgita_ftcp_detect": layers_call("qgita_ftcp_detect"),
+        "qgita_lighthouse_coherence": layers_call("qgita_lighthouse_coherence"),
+        "membrane_screen": layers_call("membrane_screen"),
+        "repository_layers_hold": layers_call("repository_layers_hold"),
+        "evidence_predict_next": layers_call("evidence_predict_next"),
+        "source_names": layers_call("source_names", "core"),
+    }
+    for name, body in calls.items():
+        assert body.get("provenance") in {"cited", "inferred", "cited-unverified", "speculative"}, name
+        assert "aureon_source" in body
+        assert "consciousness_level" not in body
+        assert "consciousness_psi" not in body
+        flat = json.dumps(body)
+        assert "consciousness_" not in flat
+    assert calls["evidence_predict_next"]["human_eval"] == "not run. HOLD"
+    assert calls["qgita_ftcp_detect"]["detection_rate"] == "HOLD"
+    assert calls["repository_layers_hold"]["may_act"] is False
+    rows = calls["package_dispositions"]["packages"]
+    assert len(rows) == 54
+    assert {row["package"] for row in rows if row["kind"] == "operator"} >= {
+        "trading",
+        "exchanges",
+        "bots",
+        "bots_intelligence",
+        "bridges",
+        "scanners",
+    }
+
+
+def layers_call(name: str, package: str | None = None) -> dict:
+    from aureon_public import layers
+
+    fn = getattr(layers, name)
+    if package is None:
+        return _load(fn())
+    return _load(fn(package))
+
+
+def test_source_names_refuses_blocked_packages_and_guard_still_blocks_import() -> None:
+    from aureon_public.layers import source_names
+
+    for package in (
+        "trading",
+        "exchanges",
+        "bots",
+        "bots_intelligence",
+        "bridges",
+        "scanners",
+        "unified_margin_trader",
+    ):
+        body = _load(source_names(package))
+        assert body["status"] == "unavailable"
+    import importlib
+
+    for module in (
+        "aureon.exchanges",
+        "aureon.trading",
+        "aureon.bots",
+        "aureon.bots_intelligence",
+        "aureon.bridges",
+        "aureon.scanners",
+        "unified_margin_trader",
+    ):
+        with pytest.raises(ImportError):
+            importlib.import_module(module)
+
+
+def test_operator_server_stays_off_without_the_flag_and_is_stdio_only(monkeypatch: pytest.MonkeyPatch) -> None:
+    from aureon_operator.server import main as operator_main
+    from aureon_operator.server import refuse_live_order
+
+    monkeypatch.delenv("AUREON_OPERATOR_MCP", raising=False)
+    with pytest.raises(SystemExit):
+        operator_main([])
+    monkeypatch.setenv("AUREON_OPERATOR_MCP", "1")
+    with pytest.raises(SystemExit):
+        operator_main(["--transport", "streamable-http"])
+    body = _load(refuse_live_order("BTCUSDT"))
+    assert body["live_orders"] == "refused"
+    assert body["status"] == "unavailable"
+
+
+def test_space_entry_points_call_enforce_public_pin() -> None:
+    for name in ("hnc-field", "auris-coherence", "qgita-snr", "organism-replay"):
+        text = (ROOT / "huggingface" / name / "app.py").read_text(encoding="utf-8")
+        main_at = text.index('if __name__ == "__main__":')
+        call_at = text.index("enforce_public_pin()")
+        assert call_at > main_at
+        assert "demo.launch(" in text[call_at:]

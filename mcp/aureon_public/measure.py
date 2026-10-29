@@ -74,6 +74,18 @@ async def _session(out_path: Path) -> dict[str, Any]:
                 ("qgita_analyze", {}),
                 ("organism_replay_read", {}),
                 ("organism_catalog", {}),
+                ("package_dispositions", {}),
+                ("hnc_substrate_eval", {}),
+                ("hnc_echo_eval", {}),
+                ("hnc_observer_eval", {}),
+                ("hnc_potential_eval", {}),
+                ("hnc_translate_project", {}),
+                ("qgita_ftcp_detect", {}),
+                ("qgita_lighthouse_coherence", {}),
+                ("membrane_screen", {}),
+                ("repository_layers_hold", {}),
+                ("evidence_predict_next", {}),
+                ("source_names", {"package": "core"}),
             ):
                 result = await session.call_tool(name, arguments)
                 calls[name] = {
