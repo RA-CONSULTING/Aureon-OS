@@ -82,7 +82,7 @@ class PennyProfitEngine:
                     return
             
             # If no file found, use hardcoded defaults
-            logger.debug("🪙 Using hardcoded penny profit thresholds")
+            logger.warning("🪙 Using hardcoded penny profit thresholds")
             self._use_defaults()
             self.loaded = True
             

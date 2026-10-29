@@ -36,8 +36,16 @@ def test_quickstart_brain_proof_omits_unbacked_banners() -> None:
     )
     output = proc.stdout + proc.stderr
     assert proc.returncode == 0, output
-    assert "95%" not in output
-    assert "kills" not in output
+    lowered = output.casefold()
+    for banned in (
+        "95%",
+        "kills",
+        "accuracy",
+        "win rate",
+        "sniper",
+        "ultimate intelligence",
+    ):
+        assert banned not in lowered, output
     assert "unified" in output
     assert "0.9331334813083556" in output
     assert "1.409626852655939" in output
