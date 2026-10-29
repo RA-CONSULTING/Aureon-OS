@@ -86,96 +86,96 @@
   "enabled_through": 6,
   "entry_points": {
     "appliance": {
-      "called": 0,
-      "public_entry_points": 6
+      "public_entry_points": 6,
+      "reachable": 1
     },
     "approval": {
-      "called": 1,
-      "public_entry_points": 47
+      "public_entry_points": 47,
+      "reachable": 40
     },
     "autonomous": {
-      "called": 0,
-      "public_entry_points": 9
+      "public_entry_points": 9,
+      "reachable": 0
     },
     "briefing": {
-      "called": 1,
-      "public_entry_points": 44
+      "public_entry_points": 44,
+      "reachable": 41
     },
     "code_architect": {
-      "called": 0,
-      "public_entry_points": 0
+      "public_entry_points": 0,
+      "reachable": 0
     },
     "command_centers": {
-      "called": 0,
-      "public_entry_points": 2
+      "public_entry_points": 2,
+      "reachable": 0
     },
     "connectors": {
-      "called": 0,
-      "public_entry_points": 0
+      "public_entry_points": 0,
+      "reachable": 0
     },
     "core": {
-      "called": 0,
-      "public_entry_points": 543
+      "public_entry_points": 543,
+      "reachable": 423
     },
     "generated": {
-      "called": 1,
-      "public_entry_points": 4
+      "public_entry_points": 4,
+      "reachable": 0
     },
     "grants": {
-      "called": 1,
-      "public_entry_points": 54
+      "public_entry_points": 54,
+      "reachable": 48
     },
     "inhouse_ai": {
-      "called": 0,
-      "public_entry_points": 0
+      "public_entry_points": 0,
+      "reachable": 0
     },
     "integrations": {
-      "called": 1,
-      "public_entry_points": 105
+      "public_entry_points": 105,
+      "reachable": 72
     },
     "intelligence": {
-      "called": 1,
-      "public_entry_points": 363
+      "public_entry_points": 363,
+      "reachable": 311
     },
     "launch": {
-      "called": 0,
-      "public_entry_points": 3
+      "public_entry_points": 3,
+      "reachable": 0
     },
     "miner": {
-      "called": 0,
-      "public_entry_points": 0
+      "public_entry_points": 0,
+      "reachable": 0
     },
     "observability": {
-      "called": 0,
-      "public_entry_points": 10
+      "public_entry_points": 10,
+      "reachable": 9
     },
     "operator": {
-      "called": 0,
-      "public_entry_points": 7
+      "public_entry_points": 7,
+      "reachable": 0
     },
     "plumber": {
-      "called": 1,
-      "public_entry_points": 268
+      "public_entry_points": 268,
+      "reachable": 237
     },
     "s51": {
-      "called": 1,
-      "public_entry_points": 36
+      "public_entry_points": 36,
+      "reachable": 24
     },
     "saas": {
-      "called": 0,
-      "public_entry_points": 2
+      "public_entry_points": 2,
+      "reachable": 0
     },
     "simulation": {
-      "called": 1,
-      "public_entry_points": 284
+      "public_entry_points": 284,
+      "reachable": 196
     },
     "utils": {
-      "called": 0,
-      "public_entry_points": 474
+      "public_entry_points": 474,
+      "reachable": 399
     },
     "wisdom": {
-      "called": 0,
-      "public_entry_points": 477
+      "public_entry_points": 477,
+      "reachable": 388
     }
   },
   "stage": 6,

@@ -8,6 +8,7 @@ of rows in the plan. A helper label is not used here.
 from __future__ import annotations
 
 import ast
+import hashlib
 import importlib
 import importlib.util
 import inspect
@@ -76,6 +77,14 @@ _AURIS = {
 
 _ROWS: list[dict[str, Any]] | None = None
 _INDEX: dict[tuple[str, str], dict[str, Any]] | None = None
+_INVENTORY_REFUSAL: str | None = None
+# sha256 of the committed docs/mcp/inventory.json. A different file is not loaded.
+INVENTORY_SHA256 = "54627df66611650622c94aa2ac256651597e650004f191e9e6d5669cf9989654"
+_STRANDED = 0
+_STRANDED_LOCK = threading.Lock()
+STRANDED_CAP = 4
+_LEAKY_PARAMS = {"url", "path", "out", "file", "host"}
+_NAME_CONTAINS = ("write", "save", "export", "dump", "start", "run")
 
 
 def enabled_stage() -> int:
@@ -83,17 +92,29 @@ def enabled_stage() -> int:
 
 
 def _inventory() -> tuple[list[dict[str, Any]], dict[tuple[str, str], dict[str, Any]]]:
-    global _ROWS, _INDEX
-    if _ROWS is None or _INDEX is None:
-        path = repo_root() / "docs" / "mcp" / "inventory.json"
-        loaded = json.loads(path.read_text(encoding="utf-8"))
-        if not isinstance(loaded, list):
-            raise TypeError("inventory.json")
-        index: dict[tuple[str, str], dict[str, Any]] = {}
-        for row in loaded:
-            index.setdefault((row["module"], row["symbol"]), row)
-        _ROWS = loaded
-        _INDEX = index
+    global _ROWS, _INDEX, _INVENTORY_REFUSAL
+    if _ROWS is not None and _INDEX is not None:
+        return _ROWS, _INDEX
+    path = repo_root() / "docs" / "mcp" / "inventory.json"
+    data = path.read_bytes()
+    digest = hashlib.sha256(data).hexdigest()
+    if digest != INVENTORY_SHA256:
+        _INVENTORY_REFUSAL = "inventory hash mismatch"
+        _ROWS = []
+        _INDEX = {}
+        return _ROWS, _INDEX
+    _INVENTORY_REFUSAL = None
+    loaded = json.loads(data)
+    if not isinstance(loaded, list):
+        _INVENTORY_REFUSAL = "inventory hash mismatch"
+        _ROWS = []
+        _INDEX = {}
+        return _ROWS, _INDEX
+    index: dict[tuple[str, str], dict[str, Any]] = {}
+    for row in loaded:
+        index.setdefault((row["module"], row["symbol"]), row)
+    _ROWS = loaded
+    _INDEX = index
     return _ROWS, _INDEX
 
 
@@ -182,10 +203,86 @@ def _function_source(module: str, symbol: str) -> str:
     except (OSError, SyntaxError):
         return ""
     lines = text.splitlines()
-    for node in tree.body:
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == symbol:
+    class_name, _, method_name = symbol.partition(".")
+    nodes: list[ast.AST] = list(tree.body)
+    target = symbol
+    if method_name:
+        target = method_name
+        nodes = []
+        for node in tree.body:
+            if isinstance(node, ast.ClassDef) and node.name == class_name:
+                nodes = list(node.body)
+                break
+    for node in nodes:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == target:
             end = node.end_lineno or node.lineno
             return "\n".join(lines[node.lineno - 1 : end])
+    return ""
+
+
+def _parameter_names(module: str, symbol: str) -> list[str] | None:
+    """Named parameters from the AST. None when the function cannot be found."""
+
+    path = file_for(module)
+    if not path.is_file():
+        return None
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8", errors="replace"))
+    except (OSError, SyntaxError):
+        return None
+    class_name, _, method_name = symbol.partition(".")
+    nodes: list[ast.AST] = list(tree.body)
+    target = symbol
+    if method_name:
+        target = method_name
+        nodes = []
+        for node in tree.body:
+            if isinstance(node, ast.ClassDef) and node.name == class_name:
+                nodes = list(node.body)
+                break
+    for node in nodes:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == target:
+            names = [
+                item.arg
+                for item in (*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs)
+                if item.arg not in {"self", "cls"}
+            ]
+            return names
+    return None
+
+
+def _leaky_parameter(module: str, symbol: str) -> bool:
+    names = _parameter_names(module, symbol)
+    if names is None:
+        return True
+    for name in names:
+        parts = name.lower().split("_")
+        if any(part in _LEAKY_PARAMS for part in parts):
+            return True
+    return False
+
+
+def _name_blocked(symbol: str) -> str | None:
+    leaf = symbol.rsplit(".", 1)[-1]
+    if "run_humaneval" in symbol.lower():
+        return "run_humaneval is not called"
+    if _UNSAFE_NAME.search(leaf) or _SKIP_WORD.search(leaf):
+        return "name is not called on the public server"
+    lowered = leaf.lower()
+    for token in _NAME_CONTAINS:
+        if token in lowered:
+            return f"name contains {token}"
+    return None
+
+
+def _package_kind(package: str) -> str:
+    import aureon_public.more_layers  # noqa: F401 - applies the excluded kinds
+
+    from aureon_public.layers import PACKAGES
+
+    for row in PACKAGES:
+        if row["package"] == package:
+            return row["kind"]
     return ""
 
 
@@ -229,20 +326,35 @@ def _required_missing(fn: Any, kwargs: dict[str, Any]) -> str | None:
 
 
 def _call_with_timeout(fn: Any, kwargs: dict[str, Any], timeout: float) -> tuple[str, Any]:
+    global _STRANDED
     if inspect.iscoroutinefunction(fn):
         return "async", "async entry point is not awaited"
+    with _STRANDED_LOCK:
+        if _STRANDED >= STRANDED_CAP:
+            return "capped", "stranded call cap reached"
     box: dict[str, Any] = {}
+    state = {"counted": False}
 
     def runner() -> None:
+        global _STRANDED
         try:
             box["value"] = fn(**kwargs)
         except BaseException as exc:  # noqa: BLE001 - the tool must return the failure
             box["error"] = exc
+        finally:
+            with _STRANDED_LOCK:
+                if state["counted"]:
+                    _STRANDED -= 1
+                    state["counted"] = False
 
     thread = threading.Thread(target=runner, daemon=True)
     thread.start()
     thread.join(timeout)
     if thread.is_alive():
+        with _STRANDED_LOCK:
+            if thread.is_alive() and not state["counted"]:
+                state["counted"] = True
+                _STRANDED += 1
         return "timeout", f"exceeded {timeout:.0f}s"
     if "error" in box:
         exc = box["error"]
@@ -281,7 +393,7 @@ def _import_checked(module: str) -> tuple[Any | None, str | None]:
     return imported, None
 
 
-def _safety_block(row: dict[str, Any], *, allow_fetch: bool) -> str | None:
+def _safety_block(row: dict[str, Any], *, allow_fetch: bool, allow_write: bool) -> str | None:
     text = str(row.get("safety") or "")
     if "live_orders" in text or row["package"] in _BLOCKED:
         return "live orders are refused and the blocked import was not performed"
@@ -289,12 +401,53 @@ def _safety_block(row: dict[str, Any], *, allow_fetch: bool) -> str | None:
         return "key or personal material is not read"
     if text.startswith("process") or "UI start" in text or "loop" in text:
         return "process and loop entry points are not started"
-    if text.startswith("writes"):
+    if text.startswith("writes") and not allow_write:
         return "write entry points are not started"
+    if "write or process start" in text and not allow_write:
+        return "write or process start is refused"
     if text.startswith("live public fetch") and not allow_fetch:
         return "live fetch is not part of this call"
     if "file does not parse" in text:
         return "file does not parse"
+    return None
+
+
+_REFUSAL_CACHE: dict[tuple[str, str], str | None] = {}
+
+
+def public_entry_refusal(row: dict[str, Any]) -> str | None:
+    """Why the public server will not run this row. None when it may run."""
+
+    key = (str(row.get("module") or ""), str(row.get("symbol") or ""))
+    if key in _REFUSAL_CACHE:
+        return _REFUSAL_CACHE[key]
+    reason = _public_entry_refusal(row)
+    _REFUSAL_CACHE[key] = reason
+    return reason
+
+
+def _public_entry_refusal(row: dict[str, Any]) -> str | None:
+    if row["server"] != "public":
+        return "operator entry point is not on aureon-public"
+    if row["package"] in _BLOCKED:
+        return "blocked package is not imported on aureon-public"
+    kind = _package_kind(str(row["package"]))
+    if kind in {"operator", "excluded"}:
+        return f"package {row['package']} is {kind}"
+    if int(row.get("stage") or 0) > ENABLED_THROUGH:
+        return f"stage {row['stage']} is not open"
+    if row["kind"] not in _ENTRY_KINDS:
+        return "use body_surface for modules and classes"
+    block = _safety_block(row, allow_fetch=False, allow_write=False)
+    if block:
+        return block
+    blocked_name = _name_blocked(str(row["symbol"]))
+    if blocked_name:
+        return blocked_name
+    if _leaky_parameter(str(row["module"]), str(row["symbol"])):
+        return "parameter can carry a url, path, file, or host"
+    if not _quiet_source(str(row["module"]), str(row["symbol"])):
+        return "source is not a quiet read"
     return None
 
 
@@ -311,8 +464,15 @@ def _auris_field(symbol: str) -> dict[str, str]:
     }
 
 
-def _invoke(row: dict[str, Any], arguments: dict[str, Any], timeout: float) -> str:
-    block = _safety_block(row, allow_fetch=True)
+def _invoke(
+    row: dict[str, Any],
+    arguments: dict[str, Any],
+    timeout: float,
+    *,
+    allow_fetch: bool,
+    allow_write: bool,
+) -> str:
+    block = _safety_block(row, allow_fetch=allow_fetch, allow_write=allow_write)
     if block:
         if "live orders" in block:
             return _refused(block)
@@ -397,20 +557,30 @@ def dispatch(
 ) -> str:
     """Run one inventoried entry point, or refuse it."""
 
+    _inventory()
+    if _INVENTORY_REFUSAL:
+        return _unavailable(_INVENTORY_REFUSAL)
     row = lookup(module, symbol)
     if row is None:
         return _unavailable("symbol is not in the inventory")
-    if server == "public" and row["server"] != "public":
-        return _unavailable("operator entry point is not on aureon-public", live_orders="refused")
-    if server == "public" and row["package"] in _BLOCKED:
-        return _refused("blocked package is not imported on aureon-public")
     if server == "operator" and os.environ.get("AUREON_OPERATOR_MCP") != "1":
         return _unavailable("AUREON_OPERATOR_MCP=1 is required")
+    if server == "public":
+        reason = public_entry_refusal(row)
+        if reason:
+            if (
+                "live orders" in reason
+                or reason.startswith("blocked package")
+                or reason.startswith("operator entry point")
+            ):
+                return _refused(reason)
+            return _unavailable(reason)
+        return _invoke(row, arguments or {}, timeout, allow_fetch=False, allow_write=False)
     if int(row.get("stage") or 0) > ENABLED_THROUGH:
         return _unavailable(f"stage {row['stage']} is not open")
-    if server == "operator" and row["server"] == "public":
+    if row["server"] == "public":
         return _unavailable("public entry point stays on aureon-public")
-    return _invoke(row, arguments or {}, timeout)
+    return _invoke(row, arguments or {}, timeout, allow_fetch=True, allow_write=True)
 
 
 def _parse_arguments(arguments_json: str) -> dict[str, Any] | str:
@@ -510,44 +680,32 @@ _ENTRY_KINDS = {"function", "method"}
 
 
 def package_depth(stage: int | None = None) -> dict[str, dict[str, int]]:
-    """Called public functions and methods, out of those in the inventory.
+    """Reachable public functions and methods, out of the pinned inventory.
 
-    A public entry point is one inventory function or method whose server is
-    public. A call counts when a stage sweep ran that same module and symbol.
-    Operator calls are not public entry points. Classes and modules are not
-    in this ratio.
+    The denominator is every public function and method. The numerator is how
+    many of those the public server will still run. A listed row is not reachable.
     """
 
     rows, _ = _inventory()
     selected = [row for row in rows if stage is None or int(row["stage"]) == stage]
-    public: dict[str, set[tuple[str, str]]] = {}
+    seen: dict[str, set[tuple[str, str]]] = {}
+    reachable: dict[str, set[tuple[str, str]]] = {}
     names: set[str] = set()
     for row in selected:
         names.add(str(row["package"]))
-        if row["server"] == "public" and row["kind"] in _ENTRY_KINDS:
-            public.setdefault(str(row["package"]), set()).add((str(row["module"]), str(row["symbol"])))
-    called: dict[str, set[tuple[str, str]]] = {}
-    stages = [stage] if stage is not None else list(range(1, ENABLED_THROUGH + 1))
-    root = repo_root()
-    for item_stage in stages:
-        path = root / "measured" / f"body_stage{item_stage}.json"
-        if not path.is_file():
+        if row["server"] != "public" or row["kind"] not in _ENTRY_KINDS:
             continue
-        try:
-            record = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+        key = (str(row["module"]), str(row["symbol"]))
+        bucket = seen.setdefault(str(row["package"]), set())
+        if key in bucket:
             continue
-        for item in record.get("calls") or []:
-            if item.get("called") is not True:
-                continue
-            package = str(item.get("package") or "")
-            key = (str(item.get("module") or ""), str(item.get("symbol") or ""))
-            if key in public.get(package, set()):
-                called.setdefault(package, set()).add(key)
+        bucket.add(key)
+        if public_entry_refusal(row) is None:
+            reachable.setdefault(str(row["package"]), set()).add(key)
     return {
         package: {
-            "called": len(called.get(package, set())),
-            "public_entry_points": len(public.get(package, set())),
+            "reachable": len(reachable.get(package, set())),
+            "public_entry_points": len(seen.get(package, set())),
         }
         for package in sorted(names)
     }
@@ -558,13 +716,13 @@ def render_readme_depth() -> str:
 
     lines = [
         "A layer counts as full depth only where its real entry points are called.",
-        "Each figure is called public functions and methods out of the public functions and methods in `docs/mcp/inventory.json`.",
+        "Each figure is reachable public functions and methods out of the public functions and methods in the pinned `docs/mcp/inventory.json`.",
         "",
-        "| Package | Called | Public entry points |",
+        "| Package | Reachable | Public entry points |",
         "| --- | ---: | ---: |",
     ]
     for package, row in package_depth().items():
-        lines.append(f"| {package} | {row['called']} | {row['public_entry_points']} |")
+        lines.append(f"| {package} | {row['reachable']} | {row['public_entry_points']} |")
     return "\n".join(lines)
 
 
@@ -591,14 +749,15 @@ def depth_report() -> dict[str, Any]:
             package,
             {"called": 0, "listed": 0, "open": 0, "operator": 0, "public": 0},
         )
-        bucket["called"] = row["called"]
+        bucket["called"] = row["reachable"]
+        bucket["reachable"] = row["reachable"]
         bucket["public_entry_points"] = row["public_entry_points"]
     return {
         "enabled_through": ENABLED_THROUGH,
         "entry_points": entry_points,
         "label": (
-            "cited. Depth is called public functions and methods out of the public "
-            "functions and methods in the inventory. A listed row is not a call."
+            "cited. Depth is reachable public functions and methods out of the public "
+            "functions and methods in the pinned inventory. A listed row is not reachable."
         ),
         "packages": packages,
         "provenance": "cited",

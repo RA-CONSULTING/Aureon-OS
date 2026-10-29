@@ -13,65 +13,65 @@ The operator process is separate: `python -m aureon_operator`. It stays off unle
 `repo_root()` and `aureon_source()` raise `FileNotFoundError` when the process is not inside a checkout that contains `huggingface/hnc-field/guard.py` and `aureon/core/hnc_field.py`. This server needs that checkout. It does not invent a 'no checkout' status.
 
 A layer counts as full depth only where its real entry points are called.
-Each figure is called public functions and methods out of the public functions and methods in `docs/mcp/inventory.json`.
+Each figure is reachable public functions and methods out of the public functions and methods in the pinned `docs/mcp/inventory.json`.
 
-| Package | Called | Public entry points |
+| Package | Reachable | Public entry points |
 | --- | ---: | ---: |
 | accounting | 0 | 0 |
-| alignment | 3 | 26 |
-| analytics | 17 | 267 |
-| appliance | 0 | 6 |
-| approval | 1 | 47 |
-| atn | 2 | 37 |
+| alignment | 24 | 26 |
+| analytics | 169 | 267 |
+| appliance | 1 | 6 |
+| approval | 40 | 47 |
+| atn | 0 | 37 |
 | autonomous | 0 | 9 |
-| bio | 54 | 286 |
+| bio | 234 | 286 |
 | bots | 0 | 0 |
 | bots_intelligence | 0 | 0 |
 | bridges | 0 | 0 |
-| briefing | 1 | 44 |
+| briefing | 41 | 44 |
 | code_architect | 0 | 0 |
-| cognition | 2 | 20 |
+| cognition | 17 | 20 |
 | command_centers | 0 | 2 |
 | connectors | 0 | 0 |
 | conversion | 0 | 5 |
-| core | 12 | 669 |
-| data_feeds | 4 | 159 |
-| decoders | 8 | 87 |
-| evaluation | 1 | 12 |
+| core | 518 | 669 |
+| data_feeds | 86 | 159 |
+| decoders | 80 | 87 |
+| evaluation | 8 | 12 |
 | exchanges | 0 | 0 |
-| gates | 5 | 14 |
-| generated | 1 | 4 |
-| governance | 1 | 119 |
-| grants | 1 | 54 |
-| harmonic | 32 | 407 |
+| gates | 12 | 14 |
+| generated | 0 | 4 |
+| governance | 103 | 119 |
+| grants | 48 | 54 |
+| harmonic | 332 | 407 |
 | identity | 0 | 0 |
 | inhouse_ai | 0 | 0 |
-| integrations | 1 | 105 |
-| intelligence | 1 | 363 |
+| integrations | 72 | 105 |
+| intelligence | 311 | 363 |
 | launch | 0 | 3 |
 | miner | 0 | 0 |
-| monitors | 2 | 211 |
-| observability | 0 | 10 |
-| observer | 20 | 73 |
+| monitors | 0 | 211 |
+| observability | 9 | 10 |
+| observer | 51 | 73 |
 | operator | 0 | 7 |
 | organism | 1 | 1 |
-| plumber | 1 | 268 |
-| portals | 5 | 58 |
+| plumber | 237 | 268 |
+| portals | 52 | 58 |
 | portfolio | 0 | 9 |
-| queen | 1 | 963 |
-| s51 | 1 | 36 |
+| queen | 751 | 963 |
+| s51 | 24 | 36 |
 | saas | 0 | 2 |
 | scanners | 0 | 0 |
-| search | 1 | 12 |
-| simulation | 1 | 284 |
+| search | 4 | 12 |
+| simulation | 196 | 284 |
 | strategies | 0 | 7 |
-| swarm | 1 | 48 |
-| swarm_motion | 1 | 35 |
+| swarm | 43 | 48 |
+| swarm_motion | 0 | 35 |
 | trading | 0 | 0 |
 | unified_margin_trader | 0 | 0 |
-| utils | 7 | 880 |
-| vault | 10 | 267 |
-| wisdom | 1 | 531 |
+| utils | 703 | 880 |
+| vault | 229 | 267 |
+| wisdom | 436 | 531 |
 
 The extra package tools are helpers. A helper call is not that layer's cognition.
 

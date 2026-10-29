@@ -108,7 +108,7 @@ def test_readme_and_stage_reports_match_the_inventory_depth() -> None:
         record = json.loads((ROOT / "measured" / f"body_stage{stage}.json").read_text(encoding="utf-8"))
         assert record["entry_points"] == package_depth(stage)
         for row in record["entry_points"].values():
-            assert row["called"] <= row["public_entry_points"]
+            assert row["reachable"] <= row["public_entry_points"]
 
 
 def test_stage7_registry_names_servers_spaces_and_the_pin() -> None:
@@ -146,7 +146,6 @@ def test_stage6_calls_the_remaining_public_readers() -> None:
         "plumber",
         "s51",
         "simulation",
-        "generated",
     } <= called
 
 
@@ -199,11 +198,12 @@ def test_stage4_calls_feed_decoder_search_portal_analytics_atn_and_monitor() -> 
             json.dumps({"events": [], "candles": [], "symbol": "BTC"}),
         )
     )
-    assert impacts["called"] is True
-    assert impacts["result"] == []
+    assert impacts["status"] == "unavailable"
+    assert impacts.get("called") is not True
+    assert "excluded" in impacts["reason"]
     record = json.loads((ROOT / "measured" / "body_stage4.json").read_text(encoding="utf-8"))
     called = {item["package"] for item in record["calls"] if item["called"] is True}
-    assert {"data_feeds", "decoders", "search", "portals", "analytics", "atn", "monitors"} <= called
+    assert {"data_feeds", "decoders", "search", "portals", "analytics", "atn"} <= called
 
 
 def test_stage3_calls_organism_bio_evaluation_and_vault_and_refuses_identity() -> None:
@@ -220,8 +220,8 @@ def test_stage3_calls_organism_bio_evaluation_and_vault_and_refuses_identity() -
     layers = _load(body_call("organism/repository_layers.py", "compose_repository_layers"))
     assert layers["called"] is True
     nodes = _load(body_call("evaluation/auris_node_eval.py", "evaluate_auris_nodes"))
-    assert nodes["called"] is True
-    assert nodes["auris_meaning"].startswith("evaluation harness")
+    assert nodes["status"] == "unavailable"
+    assert nodes.get("called") is not True
     identity = _load(body_call("identity/reader.py", "read_identity"))
     assert identity["status"] == "unavailable"
     assert identity.get("called") is not True
@@ -237,7 +237,6 @@ def test_stage2_calls_each_named_package() -> None:
         "cognition": body_call("cognition/logic_flow.py", "compute_logic_flow"),
         "queen": body_call("queen/temporal_ground.py", "compute_zpe_ground", json.dumps({"lambda_t": 0.0})),
         "swarm": body_call("swarm/druidic_council.py", "voice_for_gamma", json.dumps({"gamma": 0.5})),
-        "swarm_motion": body_call("swarm_motion/love_stream.py", "StandingWaveLoveStream.evaluate"),
         "gates": body_call("gates/switchboard.py", "is_human_held", json.dumps({"action": "draft"})),
         "governance": body_call(
             "governance/celtic_voice_bank.py",
@@ -270,6 +269,78 @@ def test_stage1_sweep_counts_real_calls() -> None:
     for item in record["calls"]:
         if item["called"] is True:
             assert item["status"] == "cited"
+
+
+def test_public_call_refuses_ssrf_write_monitors_and_launch() -> None:
+    fetched = _load(
+        body_call(
+            "search/online_research_cinema.py",
+            "fetch_source",
+            json.dumps({"url": "http://127.0.0.1:8765/secret"}),
+        )
+    )
+    assert fetched["status"] == "unavailable"
+    assert fetched.get("called") is not True
+    assert "secret" not in json.dumps(fetched.get("result", ""))
+    written = _load(body_call("bio/mcp_membrane.py", "write_membrane_report"))
+    assert written["status"] == "unavailable"
+    assert written.get("called") is not True
+    monitor = _load(
+        body_call(
+            "monitors/margin_eta_predictor.py",
+            "calc_breakeven",
+            json.dumps({"entry": 100.0}),
+        )
+    )
+    assert monitor["status"] == "unavailable"
+    assert "excluded" in monitor["reason"]
+    launched = _load(body_call("launch/seat_tabs.py", "wait_for_gateway"))
+    assert launched["status"] == "unavailable"
+    assert "operator" in launched["reason"]
+
+
+def test_inventory_hash_mismatch_is_refused(monkeypatch: pytest.MonkeyPatch) -> None:
+    import aureon_public.body as body
+
+    body._ROWS = None
+    body._INDEX = None
+    monkeypatch.setattr(body, "INVENTORY_SHA256", "0" * 64)
+    try:
+        refused = _load(body_call("harmonic/rainbow_reference.py", "solfeggio_ladder"))
+        assert refused["status"] == "unavailable"
+        assert refused["reason"] == "inventory hash mismatch"
+    finally:
+        body._ROWS = None
+        body._INDEX = None
+        body._INVENTORY_REFUSAL = None
+
+
+def test_checkout_blob_refuses_an_empty_blob_and_a_path_outside_the_root(tmp_path: Path) -> None:
+    from aureon_public.pin_blob import checkout_blob_refusal, expected_pin_blob
+
+    outside = tmp_path / "outside.py"
+    outside.write_text("VALUE = 1\n", encoding="utf-8")
+    reason = checkout_blob_refusal(outside, repo_root(), PINNED_COMMIT)
+    assert reason == "path is outside the checkout"
+    inside = repo_root() / "aureon" / "harmonic" / "rainbow_reference.py"
+
+    def empty(path: Path, root: Path, commit: str) -> tuple[str | None, str | None]:
+        del path, root, commit
+        return "", None
+
+    original = expected_pin_blob
+    try:
+        import aureon_public.pin_blob as pin_blob
+
+        pin_blob.expected_pin_blob = empty  # type: ignore[assignment]
+        # checkout_blob_refusal calls the name in its module.
+        pin_blob.expected_pin_blob = empty
+        refused = pin_blob.checkout_blob_refusal(inside, repo_root(), PINNED_COMMIT)
+        assert refused == "expected blob is required"
+    finally:
+        import aureon_public.pin_blob as pin_blob
+
+        pin_blob.expected_pin_blob = original
 
 
 def test_operator_call_refuses_without_the_flag_and_refuses_live_orders(monkeypatch: pytest.MonkeyPatch) -> None:

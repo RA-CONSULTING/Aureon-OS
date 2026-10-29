@@ -100,7 +100,9 @@ def load_pinned_source(module_name: str, path: Path, expected_blob: str, mismatc
     spec = importlib.util.spec_from_loader(module_name, loader, origin=str(path))
     if spec is None:
         return f"{path.name} could not be loaded"
+    spec.has_location = True
     module = importlib.util.module_from_spec(spec)
+    module.__file__ = str(path)
     parent_name, _, child = module_name.rpartition(".")
     module.__package__ = parent_name
     sys.modules[module_name] = module
@@ -166,15 +168,15 @@ def checkout_blob_refusal(path: Path, root: Path, commit: str) -> str | None:
 
     if not path.is_file():
         return f"{path} is not in this checkout"
+    try:
+        relative = path.resolve().relative_to(root.resolve()).as_posix()
+    except ValueError:
+        return "path is outside the checkout"
     expected, error = expected_pin_blob(path, root, commit)
     if error:
         return error
     if not expected:
-        return None
-    try:
-        relative = path.resolve().relative_to(root.resolve()).as_posix()
-    except ValueError:
-        return None
+        return "expected blob is required"
     try:
         data = path.read_bytes()
     except OSError:

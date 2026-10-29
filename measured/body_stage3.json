@@ -806,28 +806,28 @@
   "enabled_through": 3,
   "entry_points": {
     "bio": {
-      "called": 54,
-      "public_entry_points": 286
+      "public_entry_points": 286,
+      "reachable": 234
     },
     "core": {
-      "called": 7,
-      "public_entry_points": 95
+      "public_entry_points": 95,
+      "reachable": 69
     },
     "evaluation": {
-      "called": 1,
-      "public_entry_points": 12
+      "public_entry_points": 12,
+      "reachable": 8
     },
     "identity": {
-      "called": 0,
-      "public_entry_points": 0
+      "public_entry_points": 0,
+      "reachable": 0
     },
     "organism": {
-      "called": 1,
-      "public_entry_points": 1
+      "public_entry_points": 1,
+      "reachable": 1
     },
     "vault": {
-      "called": 10,
-      "public_entry_points": 267
+      "public_entry_points": 267,
+      "reachable": 229
     }
   },
   "stage": 3,

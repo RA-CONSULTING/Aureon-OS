@@ -133,7 +133,18 @@ def safety(pkg: str, name: str, src: str, stage: int) -> tuple[str, str]:
         return "public", "live public fetch allowed; source label and timeout"
     if pkg in OPERATOR_PACKAGES and stage >= 5:
         return "operator", "package is operator-scoped; no public import"
-    return "public", "runs from inputs or committed files; no keys and no repo write"
+    server, text = "public", "runs from inputs or committed files; no keys and no repo write"
+    return _honest_effect(name, server, text)
+
+
+def _honest_effect(name: str, server: str, text: str) -> tuple[str, str]:
+    """Names that write or start are not 'no repo write'."""
+
+    leaf = name.split(".")[-1]
+    if re.match(r"^(write_|save_|export_|dump_)", leaf, re.I) or leaf.lower() == "start":
+        if "no repo write" in text:
+            return server, "write or process start; the public server refuses it"
+    return server, text
 
 
 def required_count(node: ast.AST) -> int:

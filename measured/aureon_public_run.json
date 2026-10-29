@@ -44,7 +44,7 @@
         "symbol": "StandingWaveLoveStream.evaluate"
       },
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. swarm_motion/love_stream.py StandingWaveLoveStream.evaluate ran.\", \"provenance\": \"cited\", \"result\": {\"contributing_agents\": 0, \"dominant_chakra\": \"intuition\", \"dominant_frequency_hz\": 852.0, \"future_coupling\": 0.0, \"gamma_coherence\": 0.2444, \"lambda_t\": 0.702983, \"past_feedback\": 0.0, \"present_term\": 0.702983, \"snapshot_count\": 0, \"standing_wave_intensity\": 0.17184, \"t\": 0.0002846717834472656, \"timestamp\": 1793311099.3910067}, \"status\": \"cited\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"provenance\": \"cited\", \"reason\": \"package swarm_motion is excluded\", \"status\": \"unavailable\"}"
     },
     "body_call:__init__": {
       "arguments": {
@@ -89,7 +89,7 @@
         "symbol": "build_default_inputs"
       },
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. generated/research_cinema/harmonic_nexus_score_model.py build_default_inputs ran.\", \"provenance\": \"cited\", \"result\": {\"fields\": {\"coherence_agreement\": 0.5, \"contradiction_handling\": 0.5, \"friction_feasibility\": 0.5, \"repeatability\": 0.0, \"source_strength\": 1.0}, \"type\": \"HarmonicNexusScoreInputs\"}, \"status\": \"cited\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"provenance\": \"cited\", \"reason\": \"package generated is excluded\", \"status\": \"unavailable\"}"
     },
     "body_call:build_organism_manifest": {
       "arguments": {
@@ -116,7 +116,7 @@
         "symbol": "calc_breakeven"
       },
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. monitors/margin_eta_predictor.py calc_breakeven ran.\", \"provenance\": \"cited\", \"result\": 100.736, \"status\": \"cited\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"provenance\": \"cited\", \"reason\": \"package monitors is excluded\", \"status\": \"unavailable\"}"
     },
     "body_call:calculate_harmonic_resonance": {
       "arguments": {
@@ -143,7 +143,7 @@
         "symbol": "compute_calibration"
       },
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. bio/calibration_curve.py compute_calibration ran.\", \"provenance\": \"cited\", \"result\": {\"accounting_eligible\": false, \"actionable\": false, \"boundary\": \"Synthetic calibration audit: it measures, across a grid of significance levels, how often the engine's tests reject on a true-null signal, and confirms the detection rule stays at or below its nominal size - statistical calibration of a detector on synthetic signals only, NOT a claim about any person, and no efficacy claim.\", \"control_only\": true, \"data_origin\": \"derived_statistical_control\", \"joint_conservative\": true, \"live_data\": false, \"max_joint_exceedance\": 0.0, \"n_points\": 5, \"nulls\": 1, \"operational_eligible\": false, \"out_path\": null, \"points\": [{\"accounting_eligible\": false, \"actionable\": false, \"alpha\": 0.01, \"control_only\": true, \"data_origin\": \"derived_statistical_control\", \"joint_conservative\": true, \"live_data\": false, \"operational_eligible\": false, \"provider_observation\": false, \"rate_A\": 0.0, \"rate_B\": 0.0, \"rate_joint\": 0.0, \"test_A_conservative\": true, \"truth_status\": \"statistical_control\"}, {\"accounting_eligible\": false, \"actionable\": false, \"alpha\": 0.02, \"control_only\": true, \"data_origin\": \"derived_statistical_control\", \"joint_conservative\": true, \"live_data\": false, \"operational_eligible\": false, \"provider_observation\": false, \"rate_A\": 0.0, \"rate_B\": 0.0, \"rate_joint\": 0.0, \"test_A_conservative\": true, \"truth_status\": \"statistical_control\"}, {\"accounting_eligible\": false, \"actionable\": false, \"alpha\": 0.05, \"control_only\": true, \"data_origin\": \"derived_statistical_control\", \"joint_conservative\": true, \"live_data\": false, \"operational_eligible\": false, \"provider_observation\": false, \"rate_A\": 0.0, \"rate_B\": 0.0, \"rate_joint\": 0.0, \"test_A_conservative\": true, \"truth_status\": \"statistical_control\"}, {\"accounting_eligible\": false, \"actionable\": false, \"alpha\": 0.1, \"control_only\": true, \"data_origin\": \"derived_statistical_control\", \"joint_conservative\": true, \"live_data\": false, \"operational_eligible\": false, \"provider_observation\": false, \"rate_A\": 0.0, \"rate_B\": 0.0, \"rate_joint\": 0.0, \"test_A_conservative\": true, \"truth_status\": \"statistical_control\"}, {\"accounting_eligible\": false, \"actionable\": false, \"alpha\": 0.2, \"control_only\": true, \"data_origin\": \"derived_statistical_control\", \"joint_conservative\": true, \"live_data\": false, \"operational_eligible\": false, \"provider_observation\": false, \"rate_A\": 0.0, \"rate_B\": 0.0, \"rate_joint\": 0.0, \"test_A_conservative\": true, \"truth_status\": \"statistical_control\"}], \"provider_observation\": false, \"test_A_conservative\": true, \"tolerance\": 0.02, \"trials\": 2, \"truth_status\": \"statistical_control\"}, \"status\": \"cited\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"provenance\": \"cited\", \"reason\": \"name is not called on the public server\", \"status\": \"unavailable\"}"
     },
     "body_call:compute_impacts": {
       "arguments": {
@@ -152,7 +152,7 @@
         "symbol": "compute_impacts"
       },
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. atn/aureon_atn_backtest.py compute_impacts ran.\", \"provenance\": \"cited\", \"result\": [], \"status\": \"cited\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"provenance\": \"cited\", \"reason\": \"package atn is excluded\", \"status\": \"unavailable\"}"
     },
     "body_call:compute_logic_flow": {
       "arguments": {
@@ -206,7 +206,7 @@
         "symbol": "evaluate_auris_nodes"
       },
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"auris_meaning\": \"evaluation harness over brain proof, not the nine-node reader and not the conjecture\", \"auris_note\": \"Four meanings stay separate. This call is only the meaning named above. The LambdaEngine conjecture is not called.\", \"called\": true, \"label\": \"cited. evaluation/auris_node_eval.py evaluate_auris_nodes ran.\", \"provenance\": \"cited\", \"result\": {\"coherence\": null, \"coherence_status\": \"no_data\", \"hold_nodes\": [\"Clownfish\", \"Owl\"], \"hold_reason\": \"these nodes have no value when volatility, momentum, volume, and spread are all present as 0; memory and symbiosis have no market input in read_auris_nodes\", \"market_data\": null, \"market_data_note\": \"no market series was supplied, so the omitted call is no_data\", \"nodes\": null, \"source\": \"aureon.utils.aureon_queen_hive_mind.QueenHiveMind.get_auris_coherence\", \"status\": \"no_data\", \"trade_readiness\": {\"reason\": \"no market series and no trade-outcome labels\", \"verdict\": \"HOLD\"}, \"zero_input_probe\": {\"inputs\": {\"momentum\": 0.0, \"spread\": 0.0, \"volatility\": 0.0, \"volume\": 0.0}, \"nodes_without_reading\": [\"Clownfish\", \"Owl\"], \"note\": \"clamp-bound probe of the existing formulas, not a market reading; node values are not published\"}}, \"status\": \"cited\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"provenance\": \"cited\", \"reason\": \"name is not called on the public server\", \"status\": \"unavailable\"}"
     },
     "body_call:get_days_remaining": {
       "arguments": {
@@ -269,7 +269,7 @@
         "symbol": "load_params"
       },
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. core/hnc_params.py load_params ran.\", \"provenance\": \"cited\", \"result\": {\"fields\": {\"alpha\": 0.35, \"beta\": 1.0, \"delta_t\": 5, \"fitted_at\": null, \"fitted_from\": null, \"g\": 2.5, \"r_squared\": null, \"tau\": 10}, \"type\": \"HNCParams\"}, \"status\": \"cited\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"provenance\": \"cited\", \"reason\": \"parameter can carry a url, path, file, or host\", \"status\": \"unavailable\"}"
     },
     "body_call:love_centrality": {
       "arguments": {
@@ -287,7 +287,7 @@
         "symbol": "normalise_pair"
       },
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. monitors/margin_eta_predictor.py normalise_pair ran.\", \"provenance\": \"cited\", \"result\": \"btcusd\", \"status\": \"cited\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"provenance\": \"cited\", \"reason\": \"package monitors is excluded\", \"status\": \"unavailable\"}"
     },
     "body_call:parse_binance_tick": {
       "arguments": {
@@ -296,7 +296,7 @@
         "symbol": "parse_binance_tick"
       },
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. data_feeds/unified_ws_feed.py parse_binance_tick ran.\", \"provenance\": \"cited\", \"result\": {\"ask\": 2.0, \"bid\": 1.0, \"change_24h\": 0.0, \"exchange\": \"binance\", \"generated_values\": false, \"last\": 1.5, \"raw_symbol\": \"BTCUSDT\", \"received_at\": 1793311099.6895194, \"source_timestamp\": null, \"symbol\": \"BTC/USDT\", \"timestamp\": null, \"volume_24h\": 3.0}, \"status\": \"cited\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. data_feeds/unified_ws_feed.py parse_binance_tick ran.\", \"provenance\": \"cited\", \"result\": {\"ask\": 2.0, \"bid\": 1.0, \"change_24h\": 0.0, \"exchange\": \"binance\", \"generated_values\": false, \"last\": 1.5, \"raw_symbol\": \"BTCUSDT\", \"received_at\": 1793312317.4305682, \"source_timestamp\": null, \"symbol\": \"BTC/USDT\", \"timestamp\": null, \"volume_24h\": 3.0}, \"status\": \"cited\"}"
     },
     "body_call:registered_ingestors": {
       "arguments": {
@@ -368,7 +368,7 @@
         "symbol": "summarize_compounding"
       },
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. s51/aureon_51_compound.py summarize_compounding ran.\", \"provenance\": \"cited\", \"result\": {\"ending_balance\": null, \"fees\": null, \"generated_at\": \"2026-10-29T21:58:19.893125+00:00\", \"loss_count\": null, \"net_pnl\": null, \"reason\": \"No provider-observed closed-trade receipts were supplied.\", \"receipt_ids\": [], \"status\": \"no_data\", \"trade_count\": 0, \"truth_status\": \"no_data\", \"win_count\": null, \"win_rate\": null}, \"status\": \"cited\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. s51/aureon_51_compound.py summarize_compounding ran.\", \"provenance\": \"cited\", \"result\": {\"ending_balance\": null, \"fees\": null, \"generated_at\": \"2026-10-29T22:18:37.700238+00:00\", \"loss_count\": null, \"net_pnl\": null, \"reason\": \"No provider-observed closed-trade receipts were supplied.\", \"receipt_ids\": [], \"status\": \"no_data\", \"trade_count\": 0, \"truth_status\": \"no_data\", \"win_count\": null, \"win_rate\": null}, \"status\": \"cited\"}"
     },
     "body_call:summarize_text": {
       "arguments": {
@@ -409,7 +409,7 @@
     "body_depth": {
       "arguments": {},
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": null, \"label\": \"cited. Depth is called public functions and methods out of the public functions and methods in the inventory. A listed row is not a call.\", \"provenance\": \"cited\", \"status\": \"cited\", \"truncated\": true}"
+      "text": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": null, \"label\": \"cited. Depth is reachable public functions and methods out of the public functions and methods in the pinned inventory. A listed row is not reachable.\", \"provenance\": \"cited\", \"status\": \"cited\", \"truncated\": true}"
     },
     "body_surface:HarmonicSubstrate": {
       "arguments": {
@@ -572,7 +572,7 @@
   ],
   "resource_bodies": {
     "aureon://auris/nodes": "{\"auris\": \"nine nodes\", \"label\": \"cited. AURIS_NODES.\", \"nodes\": {\"CargoShip\": {\"domain\": \"liquidity buffer\", \"emoji\": \"\ud83d\udea2\", \"freq\": 936.0, \"role\": \"infrastructure\", \"weight\": 0.7}, \"Clownfish\": {\"domain\": \"connection\", \"emoji\": \"\ud83d\udc20\", \"freq\": 963.0, \"role\": \"symbiosis\", \"weight\": 1.0}, \"Deer\": {\"domain\": \"micro-shifts\", \"emoji\": \"\ud83e\udd8c\", \"freq\": 639.0, \"role\": \"sensing\", \"weight\": 0.9}, \"Dolphin\": {\"domain\": \"waveform carrier\", \"emoji\": \"\ud83d\udc2c\", \"freq\": 528.0, \"role\": \"emotion\", \"weight\": 1.5}, \"Falcon\": {\"domain\": \"speed & attack\", \"emoji\": \"\ud83e\udd85\", \"freq\": 285.0, \"role\": \"momentum\", \"weight\": 1.2}, \"Hummingbird\": {\"domain\": \"high-freq lock\", \"emoji\": \"\ud83d\udc26\", \"freq\": 396.0, \"role\": \"stability\", \"weight\": 0.8}, \"Owl\": {\"domain\": \"pattern memory\", \"emoji\": \"\ud83e\udd89\", \"freq\": 741.0, \"role\": \"memory\", \"weight\": 1.1}, \"Panda\": {\"domain\": \"grounding safety\", \"emoji\": \"\ud83d\udc3c\", \"freq\": 852.0, \"role\": \"love\", \"weight\": 1.3}, \"Tiger\": {\"domain\": \"cuts noise\", \"emoji\": \"\ud83d\udc05\", \"freq\": 220.0, \"role\": \"volatility\", \"weight\": 1.0}}, \"which_auris\": \"Four meanings stay separate. The conjecture is the five symbolic-life markers in LambdaEngine and is not called. The nine nodes are QueenHiveMind.read_auris_nodes and AURIS_NODES. The persona on QueenHiveMind is not scored. The coherence evaluator is QueenHiveMind.get_auris_coherence. Only the nine nodes and get_auris_coherence are real functions exposed here.\"}",
-    "aureon://body/depth": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": null, \"label\": \"cited. Depth is called public functions and methods out of the public functions and methods in the inventory. A listed row is not a call.\", \"provenance\": \"cited\", \"status\": \"cited\", \"truncated\": true}",
+    "aureon://body/depth": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"called\": null, \"label\": \"cited. Depth is reachable public functions and methods out of the public functions and methods in the pinned inventory. A listed row is not reachable.\", \"provenance\": \"cited\", \"status\": \"cited\", \"truncated\": true}",
     "aureon://body/registry": "{\"aureon_source\": {\"commit\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"kind\": \"pinned\"}, \"blocked_imports\": [\"bots\", \"bots_intelligence\", \"bridges\", \"exchanges\", \"scanners\", \"trading\", \"unified_margin_trader\"], \"enabled_through\": 6, \"inventory\": \"docs/mcp/FULL_BODY_PLAN.md\", \"label\": \"cited. Registry only. No package entry point ran.\", \"live_orders\": \"refused\", \"operator\": {\"flag\": \"AUREON_OPERATOR_MCP=1\", \"tool\": \"body_call_operator\", \"transport\": \"stdio\"}, \"pin\": \"a00f744d2e686e916e45b81dd4222408c368e305\", \"provenance\": \"cited\", \"public_tools\": [\"body_call\", \"body_depth\", \"body_registry\", \"body_surface\"], \"spaces\": [\"huggingface/hnc-field/app.py\", \"huggingface/auris-coherence/app.py\", \"huggingface/qgita-snr/app.py\", \"huggingface/organism-replay/app.py\"], \"status\": \"cited\"}",
     "aureon://hnc/harmonic-reality/defaults": "{\"alpha\": 0.85, \"beta\": 0.9, \"class_default_enable_multiverse\": true, \"delta_t\": 0.01, \"formula\": \"\u039b(t) = \u03a3 w\u1d62sin(2\u03c0f\u1d62t + \u03c6\u1d62) + \u03b1\u00b7tanh(g\u00b7\u039b_\u2206t(t)) + \u03b2\u00b7\u039b(t-\u03c4)\", \"g\": 1.5, \"label\": \"cited. Code defaults. Not a measurement.\", \"phi_inverse\": 0.6180339887498948, \"sample_rate\": 1000.0, \"schumann_base_constant\": 7.83, \"schumann_f0\": \"null. HOLD.\", \"tau\": 0.05}",
     "aureon://hnc/lambda-engine/defaults": "{\"ALPHA\": 0.35, \"BETA\": 1.0, \"BETA_note\": \"BETA is _resolve_beta(). When AUREON_HNC_BETA is unset the function returns 1.0.\", \"DELTA_T\": 5, \"FREQUENCIES\": [7.83, 14.3, 20.8, 33.8, 528.0, 963.0], \"G\": 2.5, \"TAU\": 10, \"WEIGHTS\": [0.25, 0.15, 0.1, 0.05, 0.3, 0.15], \"label\": \"cited. Not a fitted result. state/hnc_fitted_params.json was not read.\"}",

@@ -295,7 +295,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 4 | public | tool | method | `analytics/aureon_live_whale_profiler.py` | `LiveWhaleProfiler.display_active_whales` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | method | `analytics/aureon_live_whale_profiler.py` | `LiveWhaleProfiler.display_detailed_report` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | method | `analytics/aureon_live_whale_profiler.py` | `LiveWhaleProfiler.run_live_monitoring` | runs from inputs or committed files; no keys and no repo write |
-| 4 | public | tool | method | `analytics/aureon_live_whale_profiler.py` | `LiveWhaleProfiler.export_profiles_summary` | runs from inputs or committed files; no keys and no repo write |
+| 4 | public | tool | method | `analytics/aureon_live_whale_profiler.py` | `LiveWhaleProfiler.export_profiles_summary` | write or process start; the public server refuses it |
 | 4 | operator | tool | function | `analytics/aureon_live_whale_profiler.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 4 | public | resource | module | `analytics/aureon_moby_dick_whale_hunter.py` | `aureon_moby_dick_whale_hunter` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 4 | public | resource | class | `analytics/aureon_moby_dick_whale_hunter.py` | `GamEncounter` | runs from inputs or committed files; no keys and no repo write |
@@ -368,14 +368,14 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 4 | public | resource | class | `analytics/aureon_whale_onchain_tracker.py` | `WhaleExchangeTracker` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | method | `analytics/aureon_whale_onchain_tracker.py` | `WhaleExchangeTracker.configure` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | method | `analytics/aureon_whale_onchain_tracker.py` | `WhaleExchangeTracker.configure_default_exchanges` | runs from inputs or committed files; no keys and no repo write |
-| 4 | public | tool | method | `analytics/aureon_whale_onchain_tracker.py` | `WhaleExchangeTracker.start` | runs from inputs or committed files; no keys and no repo write |
+| 4 | public | tool | method | `analytics/aureon_whale_onchain_tracker.py` | `WhaleExchangeTracker.start` | write or process start; the public server refuses it |
 | 4 | public | tool | method | `analytics/aureon_whale_onchain_tracker.py` | `WhaleExchangeTracker.stop` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | method | `analytics/aureon_whale_onchain_tracker.py` | `WhaleExchangeTracker.simulate_transfer` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | function | `analytics/aureon_whale_onchain_tracker.py` | `get_exchange_tracker` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | resource | module | `analytics/aureon_whale_orderbook_analyzer.py` | `aureon_whale_orderbook_analyzer` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 4 | public | resource | class | `analytics/aureon_whale_orderbook_analyzer.py` | `Wall` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | resource | class | `analytics/aureon_whale_orderbook_analyzer.py` | `WhaleOrderbookAnalyzer` | runs from inputs or committed files; no keys and no repo write |
-| 4 | public | tool | method | `analytics/aureon_whale_orderbook_analyzer.py` | `WhaleOrderbookAnalyzer.start` | runs from inputs or committed files; no keys and no repo write |
+| 4 | public | tool | method | `analytics/aureon_whale_orderbook_analyzer.py` | `WhaleOrderbookAnalyzer.start` | write or process start; the public server refuses it |
 | 4 | public | tool | method | `analytics/aureon_whale_orderbook_analyzer.py` | `WhaleOrderbookAnalyzer.stop` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | method | `analytics/aureon_whale_orderbook_analyzer.py` | `WhaleOrderbookAnalyzer.analyze_symbol` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | resource | module | `analytics/aureon_whale_pattern_mapper.py` | `aureon_whale_pattern_mapper` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -2563,7 +2563,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | resource | class | `bio/authenticity_discriminator.py` | `AuthenticityReport` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `bio/authenticity_discriminator.py` | `AuthenticityReport.to_dict` | runs from inputs or committed files; no keys and no repo write |
 | 3 | operator | tool | function | `bio/authenticity_discriminator.py` | `compute_authenticity` | reads keys from env only; never logged or returned |
-| 3 | public | tool | function | `bio/authenticity_discriminator.py` | `write_authenticity_report` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | function | `bio/authenticity_discriminator.py` | `write_authenticity_report` | write or process start; the public server refuses it |
 | 3 | public | tool | function | `bio/authenticity_discriminator.py` | `emit_authenticity` | runs from inputs or committed files; no keys and no repo write |
 | 3 | operator | tool | function | `bio/authenticity_discriminator.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 3 | public | resource | module | `bio/brain_reply_membrane.py` | `brain_reply_membrane` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -2573,7 +2573,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | tool | method | `bio/brain_reply_membrane.py` | `BrainReplyReport.to_dict` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/brain_reply_membrane.py` | `screen_reply` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/brain_reply_membrane.py` | `compute_brain_reply` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | function | `bio/brain_reply_membrane.py` | `write_brain_reply_report` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | function | `bio/brain_reply_membrane.py` | `write_brain_reply_report` | write or process start; the public server refuses it |
 | 3 | public | tool | function | `bio/brain_reply_membrane.py` | `emit_brain_reply` | runs from inputs or committed files; no keys and no repo write |
 | 3 | operator | tool | function | `bio/brain_reply_membrane.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 3 | public | resource | module | `bio/calibration_curve.py` | `calibration_curve` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -2582,7 +2582,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | resource | class | `bio/calibration_curve.py` | `CalibrationCurveReport` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `bio/calibration_curve.py` | `CalibrationCurveReport.to_dict` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/calibration_curve.py` | `compute_calibration` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | function | `bio/calibration_curve.py` | `write_curve_report` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | function | `bio/calibration_curve.py` | `write_curve_report` | write or process start; the public server refuses it |
 | 3 | public | tool | function | `bio/calibration_curve.py` | `emit_curve` | runs from inputs or committed files; no keys and no repo write |
 | 3 | operator | tool | function | `bio/calibration_curve.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 3 | public | resource | module | `bio/celestial_observatory.py` | `celestial_observatory` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -2592,7 +2592,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | tool | method | `bio/celestial_observatory.py` | `ObservatoryReport.to_dict` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/celestial_observatory.py` | `observe` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/celestial_observatory.py` | `render_observatory` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | function | `bio/celestial_observatory.py` | `write_observatory_report` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | function | `bio/celestial_observatory.py` | `write_observatory_report` | write or process start; the public server refuses it |
 | 3 | public | tool | function | `bio/celestial_observatory.py` | `emit_observatory` | runs from inputs or committed files; no keys and no repo write |
 | 3 | operator | tool | function | `bio/celestial_observatory.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 3 | public | resource | module | `bio/coherence_scan.py` | `coherence_scan` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -2638,7 +2638,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | resource | class | `bio/direction_runtime.py` | `DirectionRuntimeReport` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `bio/direction_runtime.py` | `DirectionRuntimeReport.to_dict` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/direction_runtime.py` | `compute_direction_runtime` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | function | `bio/direction_runtime.py` | `write_direction_runtime_report` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | function | `bio/direction_runtime.py` | `write_direction_runtime_report` | write or process start; the public server refuses it |
 | 3 | public | tool | function | `bio/direction_runtime.py` | `emit_direction_runtime` | runs from inputs or committed files; no keys and no repo write |
 | 3 | operator | tool | function | `bio/direction_runtime.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 3 | public | resource | module | `bio/false_discovery.py` | `false_discovery` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -2647,7 +2647,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | resource | class | `bio/false_discovery.py` | `FalseDiscoveryReport` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `bio/false_discovery.py` | `FalseDiscoveryReport.to_dict` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/false_discovery.py` | `compute_false_discovery` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | function | `bio/false_discovery.py` | `write_false_discovery_report` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | function | `bio/false_discovery.py` | `write_false_discovery_report` | write or process start; the public server refuses it |
 | 3 | public | tool | function | `bio/false_discovery.py` | `emit_false_discovery` | runs from inputs or committed files; no keys and no repo write |
 | 3 | operator | tool | function | `bio/false_discovery.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 3 | public | resource | module | `bio/harmonic_core_reference.py` | `harmonic_core_reference` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -2664,7 +2664,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | tool | method | `bio/hnc_direction_audit.py` | `HncDirectionReport.to_dict` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/hnc_direction_audit.py` | `direction_specs` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/hnc_direction_audit.py` | `compute_hnc_direction` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | function | `bio/hnc_direction_audit.py` | `write_hnc_direction_report` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | function | `bio/hnc_direction_audit.py` | `write_hnc_direction_report` | write or process start; the public server refuses it |
 | 3 | public | tool | function | `bio/hnc_direction_audit.py` | `emit_hnc_direction` | runs from inputs or committed files; no keys and no repo write |
 | 3 | operator | tool | function | `bio/hnc_direction_audit.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 3 | public | resource | module | `bio/human_harmonic_proxy.py` | `human_harmonic_proxy` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -2710,7 +2710,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | resource | class | `bio/immune_memory.py` | `ImmuneMemoryReport` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `bio/immune_memory.py` | `ImmuneMemoryReport.to_dict` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/immune_memory.py` | `compute_immune_memory` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | function | `bio/immune_memory.py` | `write_immune_memory_report` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | function | `bio/immune_memory.py` | `write_immune_memory_report` | write or process start; the public server refuses it |
 | 3 | public | tool | function | `bio/immune_memory.py` | `emit_immune_memory` | runs from inputs or committed files; no keys and no repo write |
 | 3 | operator | tool | function | `bio/immune_memory.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 3 | public | resource | module | `bio/immune_regulation.py` | `immune_regulation` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -2726,7 +2726,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | resource | class | `bio/immune_regulation.py` | `ImmuneRegulationReport` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `bio/immune_regulation.py` | `ImmuneRegulationReport.to_dict` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/immune_regulation.py` | `compute_immune_regulation` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | function | `bio/immune_regulation.py` | `write_immune_regulation_report` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | function | `bio/immune_regulation.py` | `write_immune_regulation_report` | write or process start; the public server refuses it |
 | 3 | public | tool | function | `bio/immune_regulation.py` | `emit_immune_regulation` | runs from inputs or committed files; no keys and no repo write |
 | 3 | operator | tool | function | `bio/immune_regulation.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 3 | public | resource | module | `bio/integrity_guard.py` | `integrity_guard` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -2741,7 +2741,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | tool | function | `bio/integrity_guard.py` | `scan_for_injection` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/integrity_guard.py` | `screen_external_text` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/integrity_guard.py` | `run_integrity_guard` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | function | `bio/integrity_guard.py` | `write_guard_report` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | function | `bio/integrity_guard.py` | `write_guard_report` | write or process start; the public server refuses it |
 | 3 | public | tool | function | `bio/integrity_guard.py` | `emit_integrity_guard` | runs from inputs or committed files; no keys and no repo write |
 | 3 | operator | tool | function | `bio/integrity_guard.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 3 | public | resource | module | `bio/market_reference.py` | `market_reference` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -2768,7 +2768,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | resource | class | `bio/mcp_membrane.py` | `MembraneResult` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `bio/mcp_membrane.py` | `MembraneResult.to_dict` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/mcp_membrane.py` | `cross_membrane` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | function | `bio/mcp_membrane.py` | `write_membrane_report` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | function | `bio/mcp_membrane.py` | `write_membrane_report` | write or process start; the public server refuses it |
 | 3 | public | tool | function | `bio/mcp_membrane.py` | `emit_membrane` | runs from inputs or committed files; no keys and no repo write |
 | 3 | operator | tool | function | `bio/mcp_membrane.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 3 | public | resource | module | `bio/mcp_transport.py` | `mcp_transport` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -2783,7 +2783,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | tool | function | `bio/mcp_transport.py` | `subscribe_membrane_topic` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/mcp_transport.py` | `register_mcp_routes` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/mcp_transport.py` | `compute_mcp_transport` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | function | `bio/mcp_transport.py` | `write_mcp_transport_report` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | function | `bio/mcp_transport.py` | `write_mcp_transport_report` | write or process start; the public server refuses it |
 | 3 | public | tool | function | `bio/mcp_transport.py` | `emit_mcp_transport` | runs from inputs or committed files; no keys and no repo write |
 | 3 | operator | tool | function | `bio/mcp_transport.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 3 | public | resource | module | `bio/multiplicity.py` | `multiplicity` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -2792,7 +2792,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | resource | class | `bio/multiplicity.py` | `MultiplicityReport` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `bio/multiplicity.py` | `MultiplicityReport.to_dict` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/multiplicity.py` | `compute_multiplicity` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | function | `bio/multiplicity.py` | `write_multiplicity_report` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | function | `bio/multiplicity.py` | `write_multiplicity_report` | write or process start; the public server refuses it |
 | 3 | public | tool | function | `bio/multiplicity.py` | `emit_multiplicity` | runs from inputs or committed files; no keys and no repo write |
 | 3 | operator | tool | function | `bio/multiplicity.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 3 | public | resource | module | `bio/null_calibration.py` | `null_calibration` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -2801,7 +2801,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | resource | class | `bio/null_calibration.py` | `CalibrationReport` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `bio/null_calibration.py` | `CalibrationReport.to_dict` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/null_calibration.py` | `calibrate_nulls` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | function | `bio/null_calibration.py` | `write_calibration_report` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | function | `bio/null_calibration.py` | `write_calibration_report` | write or process start; the public server refuses it |
 | 3 | public | tool | function | `bio/null_calibration.py` | `emit_calibration` | runs from inputs or committed files; no keys and no repo write |
 | 3 | operator | tool | function | `bio/null_calibration.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 3 | public | resource | module | `bio/plant_atlas/__init__.py` | `__init__` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -2862,7 +2862,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | tool | function | `bio/plant_atlas/models.py` | `sha256_text` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/plant_atlas/models.py` | `species_shard_from_dict` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/plant_atlas/models.py` | `load_species_shard` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | function | `bio/plant_atlas/models.py` | `write_species_shard` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | function | `bio/plant_atlas/models.py` | `write_species_shard` | write or process start; the public server refuses it |
 | 3 | public | tool | function | `bio/plant_atlas/models.py` | `inventory_summary` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | resource | module | `bio/plant_atlas/sharding.py` | `sharding` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 3 | public | resource | class | `bio/plant_atlas/sharding.py` | `WorkItem` | runs from inputs or committed files; no keys and no repo write |
@@ -2913,7 +2913,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | tool | method | `bio/plant_atlas/source_snapshot.py` | `SnapshotVerification.to_dict` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/plant_atlas/source_snapshot.py` | `source_snapshot_from_dict` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/plant_atlas/source_snapshot.py` | `load_source_snapshot` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | function | `bio/plant_atlas/source_snapshot.py` | `write_source_snapshot` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | function | `bio/plant_atlas/source_snapshot.py` | `write_source_snapshot` | write or process start; the public server refuses it |
 | 3 | public | tool | function | `bio/plant_atlas/source_snapshot.py` | `verify_source_snapshot` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/plant_atlas/source_snapshot.py` | `snapshot_files_from_paths` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | resource | module | `bio/plant_atlas/worker.py` | `worker` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -2925,7 +2925,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | resource | class | `bio/power_analysis.py` | `PowerReport` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `bio/power_analysis.py` | `PowerReport.to_dict` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/power_analysis.py` | `detection_power` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | function | `bio/power_analysis.py` | `write_power_report` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | function | `bio/power_analysis.py` | `write_power_report` | write or process start; the public server refuses it |
 | 3 | public | tool | function | `bio/power_analysis.py` | `emit_power` | runs from inputs or committed files; no keys and no repo write |
 | 3 | operator | tool | function | `bio/power_analysis.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 3 | public | resource | module | `bio/proxy_suite.py` | `proxy_suite` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -2934,7 +2934,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | resource | class | `bio/proxy_suite.py` | `SuiteReport` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `bio/proxy_suite.py` | `SuiteReport.to_dict` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/proxy_suite.py` | `run_suite` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | function | `bio/proxy_suite.py` | `write_suite_report` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | function | `bio/proxy_suite.py` | `write_suite_report` | write or process start; the public server refuses it |
 | 3 | public | tool | function | `bio/proxy_suite.py` | `emit_suite` | runs from inputs or committed files; no keys and no repo write |
 | 3 | operator | tool | function | `bio/proxy_suite.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 3 | public | resource | module | `bio/qgita_calibration.py` | `qgita_calibration` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -2991,7 +2991,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | tool | function | `bio/swarm_defense.py` | `mount_defense` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/swarm_defense.py` | `defend_from_guard_report` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `bio/swarm_defense.py` | `on_breach` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | function | `bio/swarm_defense.py` | `write_defense_report` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | function | `bio/swarm_defense.py` | `write_defense_report` | write or process start; the public server refuses it |
 | 3 | public | tool | function | `bio/swarm_defense.py` | `emit_defense` | runs from inputs or committed files; no keys and no repo write |
 | 3 | operator | tool | function | `bio/swarm_defense.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 3 | public | resource | module | `bio/upe_reference.py` | `upe_reference` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -4166,7 +4166,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | public | tool | method | `briefing/author.py` | `DraftResult.advanced` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `briefing/author.py` | `DraftResult.narrate` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `briefing/author.py` | `DraftResult.to_dict` | runs from inputs or committed files; no keys and no repo write |
-| 6 | public | tool | function | `briefing/author.py` | `export_for_stronger_model` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | function | `briefing/author.py` | `export_for_stronger_model` | write or process start; the public server refuses it |
 | 6 | public | tool | function | `briefing/author.py` | `draft` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | resource | module | `briefing/claims.py` | `claims` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 6 | public | resource | class | `briefing/claims.py` | `ClaimClass` | runs from inputs or committed files; no keys and no repo write |
@@ -4314,7 +4314,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 2 | public | resource | class | `cognition/logic_flow.py` | `LogicFlowReport` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `cognition/logic_flow.py` | `LogicFlowReport.to_dict` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | function | `cognition/logic_flow.py` | `compute_logic_flow` | runs from inputs or committed files; no keys and no repo write |
-| 2 | public | tool | function | `cognition/logic_flow.py` | `write_logic_flow_report` | runs from inputs or committed files; no keys and no repo write |
+| 2 | public | tool | function | `cognition/logic_flow.py` | `write_logic_flow_report` | write or process start; the public server refuses it |
 | 2 | public | tool | function | `cognition/logic_flow.py` | `emit_logic_flow` | runs from inputs or committed files; no keys and no repo write |
 | 2 | operator | tool | function | `cognition/logic_flow.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 2 | public | resource | module | `cognition/logic_train_audit.py` | `logic_train_audit` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -4901,7 +4901,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | public | resource | module | `core/aureon_cognitive_authoring_loop.py` | `aureon_cognitive_authoring_loop` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 6 | public | resource | class | `core/aureon_cognitive_authoring_loop.py` | `LoopStatus` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | resource | class | `core/aureon_cognitive_authoring_loop.py` | `CognitiveAuthoringLoop` | runs from inputs or committed files; no keys and no repo write |
-| 6 | public | tool | method | `core/aureon_cognitive_authoring_loop.py` | `CognitiveAuthoringLoop.start` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | method | `core/aureon_cognitive_authoring_loop.py` | `CognitiveAuthoringLoop.start` | write or process start; the public server refuses it |
 | 6 | public | tool | method | `core/aureon_cognitive_authoring_loop.py` | `CognitiveAuthoringLoop.stop` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `core/aureon_cognitive_authoring_loop.py` | `CognitiveAuthoringLoop.is_alive` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `core/aureon_cognitive_authoring_loop.py` | `CognitiveAuthoringLoop.register_handler` | runs from inputs or committed files; no keys and no repo write |
@@ -4971,7 +4971,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | public | tool | method | `core/aureon_geometric_live_chain.py` | `GeometricLiveChain.current_state` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `core/aureon_geometric_live_chain.py` | `GeometricLiveChain.edges` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `core/aureon_geometric_live_chain.py` | `GeometricLiveChain.calibrate` | runs from inputs or committed files; no keys and no repo write |
-| 6 | public | tool | method | `core/aureon_geometric_live_chain.py` | `GeometricLiveChain.start` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | method | `core/aureon_geometric_live_chain.py` | `GeometricLiveChain.start` | write or process start; the public server refuses it |
 | 6 | public | tool | method | `core/aureon_geometric_live_chain.py` | `GeometricLiveChain.stop` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `core/aureon_geometric_live_chain.py` | `GeometricLiveChain.is_alive` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | function | `core/aureon_geometric_live_chain.py` | `get_geometric_chain` | runs from inputs or committed files; no keys and no repo write |
@@ -5017,7 +5017,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | public | tool | method | `core/aureon_immune_system.py` | `ImmuneSignal.record` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `core/aureon_immune_system.py` | `ImmuneSignal.get_trend` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | resource | class | `core/aureon_immune_system.py` | `AureonImmuneSystem` | runs from inputs or committed files; no keys and no repo write |
-| 6 | public | tool | method | `core/aureon_immune_system.py` | `AureonImmuneSystem.start` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | method | `core/aureon_immune_system.py` | `AureonImmuneSystem.start` | write or process start; the public server refuses it |
 | 6 | public | tool | method | `core/aureon_immune_system.py` | `AureonImmuneSystem.stop` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `core/aureon_immune_system.py` | `AureonImmuneSystem.get_health_status` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `core/aureon_immune_system.py` | `AureonImmuneSystem.get_status_line` | runs from inputs or committed files; no keys and no repo write |
@@ -5062,7 +5062,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 1 | public | tool | method | `core/aureon_lambda_engine.py` | `LambdaEngine.history_load_status` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | tool | method | `core/aureon_lambda_engine.py` | `LambdaEngine.last_history_commit_error` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | tool | method | `core/aureon_lambda_engine.py` | `LambdaEngine.history_quarantine_path` | runs from inputs or committed files; no keys and no repo write |
-| 1 | public | tool | method | `core/aureon_lambda_engine.py` | `LambdaEngine.save_history` | runs from inputs or committed files; no keys and no repo write |
+| 1 | public | tool | method | `core/aureon_lambda_engine.py` | `LambdaEngine.save_history` | write or process start; the public server refuses it |
 | 1 | public | tool | method | `core/aureon_lambda_engine.py` | `LambdaEngine.step` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | tool | method | `core/aureon_lambda_engine.py` | `LambdaEngine.get_history` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | tool | method | `core/aureon_lambda_engine.py` | `LambdaEngine.get_step` | runs from inputs or committed files; no keys and no repo write |
@@ -5300,7 +5300,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | public | resource | class | `core/aureon_phi_calendar.py` | `BandState` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | resource | class | `core/aureon_phi_calendar.py` | `PhiCalendar` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `core/aureon_phi_calendar.py` | `PhiCalendar.on` | runs from inputs or committed files; no keys and no repo write |
-| 6 | public | tool | method | `core/aureon_phi_calendar.py` | `PhiCalendar.start` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | method | `core/aureon_phi_calendar.py` | `PhiCalendar.start` | write or process start; the public server refuses it |
 | 6 | public | tool | method | `core/aureon_phi_calendar.py` | `PhiCalendar.stop` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `core/aureon_phi_calendar.py` | `PhiCalendar.is_alive` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `core/aureon_phi_calendar.py` | `PhiCalendar.snapshot` | runs from inputs or committed files; no keys and no repo write |
@@ -5332,7 +5332,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | resource | class | `core/aureon_redis_thought_bus.py` | `RedisThoughtBus` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `core/aureon_redis_thought_bus.py` | `RedisThoughtBus.publish` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `core/aureon_redis_thought_bus.py` | `RedisThoughtBus.subscribe` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | method | `core/aureon_redis_thought_bus.py` | `RedisThoughtBus.start` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | method | `core/aureon_redis_thought_bus.py` | `RedisThoughtBus.start` | write or process start; the public server refuses it |
 | 3 | public | tool | method | `core/aureon_redis_thought_bus.py` | `RedisThoughtBus.stop` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `core/aureon_redis_thought_bus.py` | `RedisThoughtBus.get_history` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `core/aureon_redis_thought_bus.py` | `get_thought_bus` | runs from inputs or committed files; no keys and no repo write |
@@ -5344,7 +5344,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | public | resource | class | `core/aureon_repair_swarm.py` | `RepairSwarm` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `core/aureon_repair_swarm.py` | `RepairSwarm.submit` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `core/aureon_repair_swarm.py` | `RepairSwarm.dispatch_once` | runs from inputs or committed files; no keys and no repo write |
-| 6 | public | tool | method | `core/aureon_repair_swarm.py` | `RepairSwarm.start` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | method | `core/aureon_repair_swarm.py` | `RepairSwarm.start` | write or process start; the public server refuses it |
 | 6 | public | tool | method | `core/aureon_repair_swarm.py` | `RepairSwarm.stop` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `core/aureon_repair_swarm.py` | `RepairSwarm.is_alive` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `core/aureon_repair_swarm.py` | `RepairSwarm.status` | runs from inputs or committed files; no keys and no repo write |
@@ -5369,7 +5369,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | public | resource | class | `core/aureon_self_check_scanner.py` | `SelfCheckScanner` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `core/aureon_self_check_scanner.py` | `SelfCheckScanner.detect` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `core/aureon_self_check_scanner.py` | `SelfCheckScanner.scan_once` | runs from inputs or committed files; no keys and no repo write |
-| 6 | public | tool | method | `core/aureon_self_check_scanner.py` | `SelfCheckScanner.start` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | method | `core/aureon_self_check_scanner.py` | `SelfCheckScanner.start` | write or process start; the public server refuses it |
 | 6 | public | tool | method | `core/aureon_self_check_scanner.py` | `SelfCheckScanner.stop` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `core/aureon_self_check_scanner.py` | `SelfCheckScanner.is_alive` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | function | `core/aureon_self_check_scanner.py` | `get_self_check_scanner` | runs from inputs or committed files; no keys and no repo write |
@@ -5448,7 +5448,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | resource | class | `core/aureon_thought_bus.py` | `RedisThoughtBus` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `core/aureon_thought_bus.py` | `RedisThoughtBus.publish` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `core/aureon_thought_bus.py` | `RedisThoughtBus.subscribe` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | method | `core/aureon_thought_bus.py` | `RedisThoughtBus.start` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | method | `core/aureon_thought_bus.py` | `RedisThoughtBus.start` | write or process start; the public server refuses it |
 | 3 | public | tool | method | `core/aureon_thought_bus.py` | `RedisThoughtBus.stop` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `core/aureon_thought_bus.py` | `get_thought_bus` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `core/aureon_thought_bus.py` | `think` | runs from inputs or committed files; no keys and no repo write |
@@ -5535,7 +5535,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | public | resource | module | `core/baton_relay_monitor.py` | `baton_relay_monitor` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 6 | public | resource | class | `core/baton_relay_monitor.py` | `SystemState` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | resource | class | `core/baton_relay_monitor.py` | `BatonRelayMonitor` | runs from inputs or committed files; no keys and no repo write |
-| 6 | public | tool | method | `core/baton_relay_monitor.py` | `BatonRelayMonitor.start` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | method | `core/baton_relay_monitor.py` | `BatonRelayMonitor.start` | write or process start; the public server refuses it |
 | 6 | public | tool | method | `core/baton_relay_monitor.py` | `BatonRelayMonitor.stop` | runs from inputs or committed files; no keys and no repo write |
 | 6 | operator | tool | method | `core/baton_relay_monitor.py` | `BatonRelayMonitor.get_status` | process, loop, or UI start; own flag; status and stop |
 | 6 | operator | tool | function | `core/baton_relay_monitor.py` | `start_baton_monitor` | process, loop, or UI start; own flag; status and stop |
@@ -5561,7 +5561,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | public | tool | method | `core/codex_loader.py` | `CodexRegistry.load` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | resource | module | `core/cognitive_dashboard.py` | `cognitive_dashboard` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 6 | public | resource | class | `core/cognitive_dashboard.py` | `CognitiveDashboard` | runs from inputs or committed files; no keys and no repo write |
-| 6 | public | tool | method | `core/cognitive_dashboard.py` | `CognitiveDashboard.start` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | method | `core/cognitive_dashboard.py` | `CognitiveDashboard.start` | write or process start; the public server refuses it |
 | 6 | public | tool | method | `core/cognitive_dashboard.py` | `CognitiveDashboard.stop` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `core/cognitive_dashboard.py` | `CognitiveDashboard.get_state` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | resource | module | `core/deterministic_systems.py` | `deterministic_systems` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -5671,11 +5671,11 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | public | tool | method | `core/metrics.py` | `MetricGauge.get` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | function | `core/metrics.py` | `get_metric_value` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | function | `core/metrics.py` | `get_gauge_value` | runs from inputs or committed files; no keys and no repo write |
-| 6 | public | tool | function | `core/metrics.py` | `dump_metrics` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | function | `core/metrics.py` | `dump_metrics` | write or process start; the public server refuses it |
 | 6 | public | resource | module | `core/mycelium_whale_sonar.py` | `mycelium_whale_sonar` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 6 | public | resource | class | `core/mycelium_whale_sonar.py` | `WhaleSonar` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `core/mycelium_whale_sonar.py` | `WhaleSonar.enigma_integration` | runs from inputs or committed files; no keys and no repo write |
-| 6 | public | tool | method | `core/mycelium_whale_sonar.py` | `WhaleSonar.start` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | method | `core/mycelium_whale_sonar.py` | `WhaleSonar.start` | write or process start; the public server refuses it |
 | 6 | public | tool | method | `core/mycelium_whale_sonar.py` | `WhaleSonar.stop` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `core/mycelium_whale_sonar.py` | `WhaleSonar.pack_minimal` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | function | `core/mycelium_whale_sonar.py` | `create_and_start_sonar` | runs from inputs or committed files; no keys and no repo write |
@@ -5805,7 +5805,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | public | resource | class | `core/trace_pump.py` | `TracePump` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `core/trace_pump.py` | `TracePump.prime` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `core/trace_pump.py` | `TracePump.tick` | runs from inputs or committed files; no keys and no repo write |
-| 6 | public | tool | method | `core/trace_pump.py` | `TracePump.start` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | method | `core/trace_pump.py` | `TracePump.start` | write or process start; the public server refuses it |
 | 6 | public | tool | method | `core/trace_pump.py` | `TracePump.stop` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `core/trace_pump.py` | `TracePump.stats` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | function | `core/trace_pump.py` | `get_trace_pump` | runs from inputs or committed files; no keys and no repo write |
@@ -5828,7 +5828,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 4 | public | resource | class | `data_feeds/aureon_hft_websocket_order_router.py` | `HFTOrderRouter` | runs from inputs or committed files; no keys and no repo write |
 | 4 | operator | tool | method | `data_feeds/aureon_hft_websocket_order_router.py` | `HFTOrderRouter.wire_exchange_clients` | reads keys from env only; never logged or returned |
 | 4 | operator | tool | method | `data_feeds/aureon_hft_websocket_order_router.py` | `HFTOrderRouter.add_exchange` | reads keys from env only; never logged or returned |
-| 4 | public | tool | method | `data_feeds/aureon_hft_websocket_order_router.py` | `HFTOrderRouter.start` | runs from inputs or committed files; no keys and no repo write |
+| 4 | public | tool | method | `data_feeds/aureon_hft_websocket_order_router.py` | `HFTOrderRouter.start` | write or process start; the public server refuses it |
 | 4 | operator | tool | method | `data_feeds/aureon_hft_websocket_order_router.py` | `HFTOrderRouter.stop` | order-capable path; live_orders refused; no live send |
 | 4 | operator | tool | method | `data_feeds/aureon_hft_websocket_order_router.py` | `HFTOrderRouter.submit_order` | order-capable path; live_orders refused; no live send |
 | 4 | public | tool | method | `data_feeds/aureon_hft_websocket_order_router.py` | `HFTOrderRouter.register_callback` | runs from inputs or committed files; no keys and no repo write |
@@ -5843,7 +5843,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 4 | public | tool | method | `data_feeds/aureon_live_market_feed.py` | `KrakenLiveFeed.connect` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | method | `data_feeds/aureon_live_market_feed.py` | `KrakenLiveFeed.stop` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | resource | class | `data_feeds/aureon_live_market_feed.py` | `CoinGeckoFeed` | runs from inputs or committed files; no keys and no repo write |
-| 4 | public | tool | method | `data_feeds/aureon_live_market_feed.py` | `CoinGeckoFeed.start` | runs from inputs or committed files; no keys and no repo write |
+| 4 | public | tool | method | `data_feeds/aureon_live_market_feed.py` | `CoinGeckoFeed.start` | write or process start; the public server refuses it |
 | 4 | public | tool | method | `data_feeds/aureon_live_market_feed.py` | `CoinGeckoFeed.stop` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | resource | class | `data_feeds/aureon_live_market_feed.py` | `LiveFeedManager` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | method | `data_feeds/aureon_live_market_feed.py` | `LiveFeedManager.on_tick` | runs from inputs or committed files; no keys and no repo write |
@@ -5920,7 +5920,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 4 | public | resource | class | `data_feeds/crypto_market_map.py` | `ConversionPath` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | resource | class | `data_feeds/crypto_market_map.py` | `MarketPattern` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | resource | class | `data_feeds/crypto_market_map.py` | `CryptoMarketMap` | runs from inputs or committed files; no keys and no repo write |
-| 4 | public | tool | method | `data_feeds/crypto_market_map.py` | `CryptoMarketMap.save_cache` | runs from inputs or committed files; no keys and no repo write |
+| 4 | public | tool | method | `data_feeds/crypto_market_map.py` | `CryptoMarketMap.save_cache` | write or process start; the public server refuses it |
 | 4 | public | tool | method | `data_feeds/crypto_market_map.py` | `CryptoMarketMap.load_from_coinbase_historical` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | method | `data_feeds/crypto_market_map.py` | `CryptoMarketMap.load_from_kraken` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | method | `data_feeds/crypto_market_map.py` | `CryptoMarketMap.load_from_binance` | runs from inputs or committed files; no keys and no repo write |
@@ -6018,7 +6018,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 4 | public | tool | method | `data_feeds/unified_market_cache.py` | `UnifiedMarketCache.get_source_health` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | method | `data_feeds/unified_market_cache.py` | `UnifiedMarketCache.get_all_prices` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | method | `data_feeds/unified_market_cache.py` | `UnifiedMarketCache.update_ticker` | runs from inputs or committed files; no keys and no repo write |
-| 4 | public | tool | method | `data_feeds/unified_market_cache.py` | `UnifiedMarketCache.write_cache` | runs from inputs or committed files; no keys and no repo write |
+| 4 | public | tool | method | `data_feeds/unified_market_cache.py` | `UnifiedMarketCache.write_cache` | write or process start; the public server refuses it |
 | 4 | public | tool | function | `data_feeds/unified_market_cache.py` | `fetch_public_rest_prices` | live public fetch allowed; source label and timeout |
 | 4 | public | tool | function | `data_feeds/unified_market_cache.py` | `ensure_public_prices` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | function | `data_feeds/unified_market_cache.py` | `get_market_cache` | runs from inputs or committed files; no keys and no repo write |
@@ -6026,9 +6026,9 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 4 | public | tool | function | `data_feeds/unified_market_cache.py` | `get_ticker` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | function | `data_feeds/unified_market_cache.py` | `get_all_prices` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | resource | class | `data_feeds/unified_market_cache.py` | `BinanceWSFeeder` | runs from inputs or committed files; no keys and no repo write |
-| 4 | public | tool | method | `data_feeds/unified_market_cache.py` | `BinanceWSFeeder.start` | runs from inputs or committed files; no keys and no repo write |
+| 4 | public | tool | method | `data_feeds/unified_market_cache.py` | `BinanceWSFeeder.start` | write or process start; the public server refuses it |
 | 4 | public | tool | method | `data_feeds/unified_market_cache.py` | `BinanceWSFeeder.stop` | runs from inputs or committed files; no keys and no repo write |
-| 4 | public | tool | method | `data_feeds/unified_market_cache.py` | `BinanceWSFeeder.write_cache_periodically` | runs from inputs or committed files; no keys and no repo write |
+| 4 | public | tool | method | `data_feeds/unified_market_cache.py` | `BinanceWSFeeder.write_cache_periodically` | write or process start; the public server refuses it |
 | 4 | operator | tool | function | `data_feeds/unified_market_cache.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 4 | public | resource | module | `data_feeds/unified_ws_feed.py` | `unified_ws_feed` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 4 | public | resource | class | `data_feeds/unified_ws_feed.py` | `NormalizedTick` | runs from inputs or committed files; no keys and no repo write |
@@ -6048,7 +6048,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 4 | public | tool | function | `data_feeds/unified_ws_feed.py` | `denormalize_symbol` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | resource | class | `data_feeds/unified_ws_feed.py` | `UnifiedWSFeed` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | method | `data_feeds/unified_ws_feed.py` | `UnifiedWSFeed.on_tick` | runs from inputs or committed files; no keys and no repo write |
-| 4 | public | tool | method | `data_feeds/unified_ws_feed.py` | `UnifiedWSFeed.start` | runs from inputs or committed files; no keys and no repo write |
+| 4 | public | tool | method | `data_feeds/unified_ws_feed.py` | `UnifiedWSFeed.start` | write or process start; the public server refuses it |
 | 4 | public | tool | method | `data_feeds/unified_ws_feed.py` | `UnifiedWSFeed.stop` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | method | `data_feeds/unified_ws_feed.py` | `UnifiedWSFeed.get_best_tick` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | method | `data_feeds/unified_ws_feed.py` | `UnifiedWSFeed.get_health` | runs from inputs or committed files; no keys and no repo write |
@@ -7556,7 +7556,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 1 | public | tool | method | `harmonic/aureon_planetary_harmonic_sweep.py` | `PlanetaryHarmonicSweep.detect_coordination` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | tool | method | `harmonic/aureon_planetary_harmonic_sweep.py` | `PlanetaryHarmonicSweep.generate_counter_measure` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | tool | method | `harmonic/aureon_planetary_harmonic_sweep.py` | `PlanetaryHarmonicSweep.run_sweep` | runs from inputs or committed files; no keys and no repo write |
-| 1 | public | tool | method | `harmonic/aureon_planetary_harmonic_sweep.py` | `PlanetaryHarmonicSweep.save_results` | runs from inputs or committed files; no keys and no repo write |
+| 1 | public | tool | method | `harmonic/aureon_planetary_harmonic_sweep.py` | `PlanetaryHarmonicSweep.save_results` | write or process start; the public server refuses it |
 | 1 | public | tool | function | `harmonic/aureon_planetary_harmonic_sweep.py` | `get_planetary_sweep` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | resource | module | `harmonic/aureon_sacred_waveform_visualizer.py` | `aureon_sacred_waveform_visualizer` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 1 | public | resource | class | `harmonic/aureon_sacred_waveform_visualizer.py` | `WaveformPoint` | runs from inputs or committed files; no keys and no repo write |
@@ -7633,7 +7633,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 1 | public | tool | function | `harmonic/dj_resonance.py` | `load_dj_set` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | resource | class | `harmonic/dj_resonance.py` | `DJResonanceEngine` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | tool | method | `harmonic/dj_resonance.py` | `DJResonanceEngine.load` | runs from inputs or committed files; no keys and no repo write |
-| 1 | public | tool | method | `harmonic/dj_resonance.py` | `DJResonanceEngine.start` | runs from inputs or committed files; no keys and no repo write |
+| 1 | public | tool | method | `harmonic/dj_resonance.py` | `DJResonanceEngine.start` | write or process start; the public server refuses it |
 | 1 | public | tool | method | `harmonic/dj_resonance.py` | `DJResonanceEngine.stop` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | tool | method | `harmonic/dj_resonance.py` | `DJResonanceEngine.tick` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | tool | method | `harmonic/dj_resonance.py` | `DJResonanceEngine.status` | runs from inputs or committed files; no keys and no repo write |
@@ -7767,7 +7767,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 1 | public | tool | method | `harmonic/phi_bridge_discovery.py` | `UDPBroadcastTransport.recv` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | tool | method | `harmonic/phi_bridge_discovery.py` | `UDPBroadcastTransport.close` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | resource | class | `harmonic/phi_bridge_discovery.py` | `PhiBridgeDiscovery` | runs from inputs or committed files; no keys and no repo write |
-| 1 | public | tool | method | `harmonic/phi_bridge_discovery.py` | `PhiBridgeDiscovery.start` | runs from inputs or committed files; no keys and no repo write |
+| 1 | public | tool | method | `harmonic/phi_bridge_discovery.py` | `PhiBridgeDiscovery.start` | write or process start; the public server refuses it |
 | 1 | public | tool | method | `harmonic/phi_bridge_discovery.py` | `PhiBridgeDiscovery.stop` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | tool | method | `harmonic/phi_bridge_discovery.py` | `PhiBridgeDiscovery.build_announcement` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | tool | method | `harmonic/phi_bridge_discovery.py` | `PhiBridgeDiscovery.announce_once` | runs from inputs or committed files; no keys and no repo write |
@@ -7780,7 +7780,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 1 | public | resource | class | `harmonic/phi_bridge_mesh.py` | `HTTPPeerClient` | live public fetch allowed; source label and timeout |
 | 1 | public | tool | method | `harmonic/phi_bridge_mesh.py` | `HTTPPeerClient.post_json` | live public fetch allowed; source label and timeout |
 | 1 | public | resource | class | `harmonic/phi_bridge_mesh.py` | `PhiBridgeMesh` | runs from inputs or committed files; no keys and no repo write |
-| 1 | public | tool | method | `harmonic/phi_bridge_mesh.py` | `PhiBridgeMesh.start` | runs from inputs or committed files; no keys and no repo write |
+| 1 | public | tool | method | `harmonic/phi_bridge_mesh.py` | `PhiBridgeMesh.start` | write or process start; the public server refuses it |
 | 1 | public | tool | method | `harmonic/phi_bridge_mesh.py` | `PhiBridgeMesh.stop` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | tool | method | `harmonic/phi_bridge_mesh.py` | `PhiBridgeMesh.build_payload_for` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | tool | method | `harmonic/phi_bridge_mesh.py` | `PhiBridgeMesh.apply_response` | runs from inputs or committed files; no keys and no repo write |
@@ -8023,7 +8023,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | public | tool | method | `integrations/neural_pathway_mapper.py` | `PathwayGraph.neighbors` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | resource | class | `integrations/neural_pathway_mapper.py` | `NeuralPathwayMapper` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `integrations/neural_pathway_mapper.py` | `NeuralPathwayMapper.build_graph` | runs from inputs or committed files; no keys and no repo write |
-| 6 | public | tool | method | `integrations/neural_pathway_mapper.py` | `NeuralPathwayMapper.write_to_vault` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | method | `integrations/neural_pathway_mapper.py` | `NeuralPathwayMapper.write_to_vault` | write or process start; the public server refuses it |
 | 6 | public | tool | function | `integrations/neural_pathway_mapper.py` | `build_pathway_graph` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | resource | module | `integrations/obsidian/__init__.py` | `__init__` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 6 | public | resource | module | `integrations/obsidian/obsidian_bridge.py` | `obsidian_bridge` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -8032,7 +8032,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | operator | resource | class | `integrations/obsidian/obsidian_bridge.py` | `ObsidianNote` | reads keys from env only; never logged or returned |
 | 6 | operator | resource | class | `integrations/obsidian/obsidian_bridge.py` | `ObsidianBridge` | reads keys from env only; never logged or returned |
 | 6 | operator | tool | method | `integrations/obsidian/obsidian_bridge.py` | `ObsidianBridge.health_check` | reads keys from env only; never logged or returned |
-| 6 | public | tool | method | `integrations/obsidian/obsidian_bridge.py` | `ObsidianBridge.write_note` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | method | `integrations/obsidian/obsidian_bridge.py` | `ObsidianBridge.write_note` | write or process start; the public server refuses it |
 | 6 | public | tool | method | `integrations/obsidian/obsidian_bridge.py` | `ObsidianBridge.append_note` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `integrations/obsidian/obsidian_bridge.py` | `ObsidianBridge.read_note` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `integrations/obsidian/obsidian_bridge.py` | `ObsidianBridge.patch_section` | runs from inputs or committed files; no keys and no repo write |
@@ -8197,7 +8197,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | public | tool | method | `intelligence/aureon_blind_taste_trial.py` | `BlindTasteTrialEngine.run` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | resource | class | `intelligence/aureon_blind_taste_trial.py` | `BlindTasteReport` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `intelligence/aureon_blind_taste_trial.py` | `BlindTasteReport.print_summary` | runs from inputs or committed files; no keys and no repo write |
-| 6 | public | tool | method | `intelligence/aureon_blind_taste_trial.py` | `BlindTasteReport.save_json` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | method | `intelligence/aureon_blind_taste_trial.py` | `BlindTasteReport.save_json` | write or process start; the public server refuses it |
 | 6 | public | resource | module | `intelligence/aureon_brain.py` | `aureon_brain` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 6 | public | resource | class | `intelligence/aureon_brain.py` | `BrainParams` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | resource | class | `intelligence/aureon_brain.py` | `BrainDecision` | runs from inputs or committed files; no keys and no repo write |
@@ -8326,7 +8326,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | public | resource | class | `intelligence/aureon_multiversal_reality_detector.py` | `MultiversalGary` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | resource | class | `intelligence/aureon_multiversal_reality_detector.py` | `RealitySnapshot` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | resource | class | `intelligence/aureon_multiversal_reality_detector.py` | `MultiversalRealityDetector` | runs from inputs or committed files; no keys and no repo write |
-| 6 | public | tool | method | `intelligence/aureon_multiversal_reality_detector.py` | `MultiversalRealityDetector.start` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | method | `intelligence/aureon_multiversal_reality_detector.py` | `MultiversalRealityDetector.start` | write or process start; the public server refuses it |
 | 6 | public | tool | method | `intelligence/aureon_multiversal_reality_detector.py` | `MultiversalRealityDetector.stop` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `intelligence/aureon_multiversal_reality_detector.py` | `MultiversalRealityDetector.get_primary_gary` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `intelligence/aureon_multiversal_reality_detector.py` | `MultiversalRealityDetector.get_secondary_garys` | runs from inputs or committed files; no keys and no repo write |
@@ -8523,7 +8523,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | public | resource | class | `intelligence/aureon_temporal_biometric_link.py` | `QuantumLink` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `intelligence/aureon_temporal_biometric_link.py` | `QuantumLink.update_link_strength` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | resource | class | `intelligence/aureon_temporal_biometric_link.py` | `TemporalBiometricLink` | runs from inputs or committed files; no keys and no repo write |
-| 6 | public | tool | method | `intelligence/aureon_temporal_biometric_link.py` | `TemporalBiometricLink.start` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | method | `intelligence/aureon_temporal_biometric_link.py` | `TemporalBiometricLink.start` | write or process start; the public server refuses it |
 | 6 | public | tool | method | `intelligence/aureon_temporal_biometric_link.py` | `TemporalBiometricLink.stop` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `intelligence/aureon_temporal_biometric_link.py` | `TemporalBiometricLink.get_quantum_link_state` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `intelligence/aureon_temporal_biometric_link.py` | `TemporalBiometricLink.get_user_coherence_factor` | runs from inputs or committed files; no keys and no repo write |
@@ -8649,7 +8649,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | public | resource | class | `intelligence/dr_auris_throne.py` | `CosmicState` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `intelligence/dr_auris_throne.py` | `CosmicState.data_available` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | resource | class | `intelligence/dr_auris_throne.py` | `DrAurisThrone` | runs from inputs or committed files; no keys and no repo write |
-| 6 | public | tool | method | `intelligence/dr_auris_throne.py` | `DrAurisThrone.start` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | method | `intelligence/dr_auris_throne.py` | `DrAurisThrone.start` | write or process start; the public server refuses it |
 | 6 | public | tool | method | `intelligence/dr_auris_throne.py` | `DrAurisThrone.stop` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `intelligence/dr_auris_throne.py` | `DrAurisThrone.refresh_once` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `intelligence/dr_auris_throne.py` | `DrAurisThrone.get_state` | runs from inputs or committed files; no keys and no repo write |
@@ -9018,7 +9018,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 4 | public | tool | method | `monitors/aureon_queen_unified_dashboard.py` | `QueenUnifiedDashboard.queen_commentary` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | method | `monitors/aureon_queen_unified_dashboard.py` | `QueenUnifiedDashboard.aggregate_all_systems` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | method | `monitors/aureon_queen_unified_dashboard.py` | `QueenUnifiedDashboard.process_bot_data` | runs from inputs or committed files; no keys and no repo write |
-| 4 | public | tool | method | `monitors/aureon_queen_unified_dashboard.py` | `QueenUnifiedDashboard.start` | runs from inputs or committed files; no keys and no repo write |
+| 4 | public | tool | method | `monitors/aureon_queen_unified_dashboard.py` | `QueenUnifiedDashboard.start` | write or process start; the public server refuses it |
 | 4 | operator | tool | function | `monitors/aureon_queen_unified_dashboard.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 4 | public | resource | module | `monitors/aureon_realtime_surveillance.py` | `aureon_realtime_surveillance` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 4 | public | resource | class | `monitors/aureon_realtime_surveillance.py` | `MarketTick` | runs from inputs or committed files; no keys and no repo write |
@@ -9053,7 +9053,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 4 | public | tool | method | `monitors/aureon_surveillance_dashboard.py` | `SurveillanceWebServer.handle_websocket` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | method | `monitors/aureon_surveillance_dashboard.py` | `SurveillanceWebServer.handle_api_data` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | method | `monitors/aureon_surveillance_dashboard.py` | `SurveillanceWebServer.broadcast` | runs from inputs or committed files; no keys and no repo write |
-| 4 | public | tool | method | `monitors/aureon_surveillance_dashboard.py` | `SurveillanceWebServer.start` | runs from inputs or committed files; no keys and no repo write |
+| 4 | public | tool | method | `monitors/aureon_surveillance_dashboard.py` | `SurveillanceWebServer.start` | write or process start; the public server refuses it |
 | 4 | public | tool | function | `monitors/aureon_surveillance_dashboard.py` | `run_surveillance_dashboard` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | resource | module | `monitors/aureon_unified_dashboard_api.py` | `aureon_unified_dashboard_api` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 4 | public | tool | function | `monitors/aureon_unified_dashboard_api.py` | `get_coordinator` | runs from inputs or committed files; no keys and no repo write |
@@ -9093,7 +9093,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 4 | public | tool | method | `monitors/aureon_unified_live_dashboard.py` | `AureonUnifiedDashboard.handle_portfolio_api` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | method | `monitors/aureon_unified_live_dashboard.py` | `AureonUnifiedDashboard.handle_systems_api` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | method | `monitors/aureon_unified_live_dashboard.py` | `AureonUnifiedDashboard.handle_intelligence_api` | runs from inputs or committed files; no keys and no repo write |
-| 4 | public | tool | method | `monitors/aureon_unified_live_dashboard.py` | `AureonUnifiedDashboard.start` | runs from inputs or committed files; no keys and no repo write |
+| 4 | public | tool | method | `monitors/aureon_unified_live_dashboard.py` | `AureonUnifiedDashboard.start` | write or process start; the public server refuses it |
 | 4 | operator | tool | function | `monitors/aureon_unified_live_dashboard.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 4 | public | resource | module | `monitors/aureon_unified_river_consciousness.py` | `aureon_unified_river_consciousness` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 4 | public | resource | class | `monitors/aureon_unified_river_consciousness.py` | `VesselState` | runs from inputs or committed files; no keys and no repo write |
@@ -10907,7 +10907,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 4 | public | tool | method | `portals/actions.py` | `ActionState.attempted_write` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | function | `portals/actions.py` | `coerce_action_state` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | resource | class | `portals/actions.py` | `FieldWriter` | runs from inputs or committed files; no keys and no repo write |
-| 4 | public | tool | method | `portals/actions.py` | `FieldWriter.write_field` | runs from inputs or committed files; no keys and no repo write |
+| 4 | public | tool | method | `portals/actions.py` | `FieldWriter.write_field` | write or process start; the public server refuses it |
 | 4 | public | resource | class | `portals/actions.py` | `PortalAction` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | method | `portals/actions.py` | `PortalAction.wrote` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | method | `portals/actions.py` | `PortalAction.value_sha256` | runs from inputs or committed files; no keys and no repo write |
@@ -10950,7 +10950,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 4 | public | tool | function | `portals/reconcile.py` | `reconcile` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | function | `portals/reconcile.py` | `render_markdown` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | function | `portals/reconcile.py` | `report_path` | runs from inputs or committed files; no keys and no repo write |
-| 4 | public | tool | function | `portals/reconcile.py` | `write_report` | runs from inputs or committed files; no keys and no repo write |
+| 4 | public | tool | function | `portals/reconcile.py` | `write_report` | write or process start; the public server refuses it |
 | 4 | public | tool | function | `portals/reconcile.py` | `publish` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | function | `portals/reconcile.py` | `emit_reconciliation` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | resource | module | `portals/schemas.py` | `schemas` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -11478,8 +11478,8 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 2 | public | tool | method | `queen/queen_code_architect.py` | `QueenCodeArchitect.read_file` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_code_architect.py` | `QueenCodeArchitect.read_json` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_code_architect.py` | `QueenCodeArchitect.list_files` | runs from inputs or committed files; no keys and no repo write |
-| 2 | public | tool | method | `queen/queen_code_architect.py` | `QueenCodeArchitect.write_file` | runs from inputs or committed files; no keys and no repo write |
-| 2 | public | tool | method | `queen/queen_code_architect.py` | `QueenCodeArchitect.write_json` | runs from inputs or committed files; no keys and no repo write |
+| 2 | public | tool | method | `queen/queen_code_architect.py` | `QueenCodeArchitect.write_file` | write or process start; the public server refuses it |
+| 2 | public | tool | method | `queen/queen_code_architect.py` | `QueenCodeArchitect.write_json` | write or process start; the public server refuses it |
 | 2 | public | tool | method | `queen/queen_code_architect.py` | `QueenCodeArchitect.append_to_file` | runs from inputs or committed files; no keys and no repo write |
 | 2 | operator | tool | method | `queen/queen_code_architect.py` | `QueenCodeArchitect.create_directory` | writes; operator state root only, not the repo |
 | 2 | public | tool | method | `queen/queen_code_architect.py` | `QueenCodeArchitect.propose_edit` | runs from inputs or committed files; no keys and no repo write |
@@ -11492,7 +11492,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 2 | public | tool | method | `queen/queen_code_architect.py` | `QueenCodeArchitect.create_neural_subsystem` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_code_architect.py` | `QueenCodeArchitect.execute_code` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_code_architect.py` | `QueenCodeArchitect.import_and_run` | runs from inputs or committed files; no keys and no repo write |
-| 2 | public | tool | method | `queen/queen_code_architect.py` | `QueenCodeArchitect.save_config` | runs from inputs or committed files; no keys and no repo write |
+| 2 | public | tool | method | `queen/queen_code_architect.py` | `QueenCodeArchitect.save_config` | write or process start; the public server refuses it |
 | 2 | public | tool | method | `queen/queen_code_architect.py` | `QueenCodeArchitect.load_config` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_code_architect.py` | `QueenCodeArchitect.update_config` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_code_architect.py` | `QueenCodeArchitect.restore_backup` | runs from inputs or committed files; no keys and no repo write |
@@ -11502,7 +11502,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 2 | public | resource | module | `queen/queen_cognitive_action_planner.py` | `queen_cognitive_action_planner` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 2 | public | resource | class | `queen/queen_cognitive_action_planner.py` | `QueenCognitiveActionPlanner` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_cognitive_action_planner.py` | `QueenCognitiveActionPlanner.set_ollama_adapter` | runs from inputs or committed files; no keys and no repo write |
-| 2 | public | tool | method | `queen/queen_cognitive_action_planner.py` | `QueenCognitiveActionPlanner.start` | runs from inputs or committed files; no keys and no repo write |
+| 2 | public | tool | method | `queen/queen_cognitive_action_planner.py` | `QueenCognitiveActionPlanner.start` | write or process start; the public server refuses it |
 | 2 | public | tool | method | `queen/queen_cognitive_action_planner.py` | `QueenCognitiveActionPlanner.stop` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | resource | module | `queen/queen_cognitive_narrator.py` | `queen_cognitive_narrator` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 2 | public | resource | class | `queen/queen_cognitive_narrator.py` | `MarketContext` | runs from inputs or committed files; no keys and no repo write |
@@ -11595,7 +11595,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 2 | public | tool | method | `queen/queen_cortex.py` | `BandAccumulator.reset` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | function | `queen/queen_cortex.py` | `classify_topic` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | resource | class | `queen/queen_cortex.py` | `QueenCortex` | runs from inputs or committed files; no keys and no repo write |
-| 2 | public | tool | method | `queen/queen_cortex.py` | `QueenCortex.start` | runs from inputs or committed files; no keys and no repo write |
+| 2 | public | tool | method | `queen/queen_cortex.py` | `QueenCortex.start` | write or process start; the public server refuses it |
 | 2 | public | tool | method | `queen/queen_cortex.py` | `QueenCortex.stop` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_cortex.py` | `QueenCortex.get_state` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_cortex.py` | `QueenCortex.get_band` | runs from inputs or committed files; no keys and no repo write |
@@ -11751,7 +11751,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 2 | public | tool | method | `queen/queen_hive_command.py` | `WorkerBeeSwarm.update_market` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_hive_command.py` | `WorkerBeeSwarm.scan_all` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | resource | class | `queen/queen_hive_command.py` | `QueenHiveCommand` | runs from inputs or committed files; no keys and no repo write |
-| 2 | public | tool | method | `queen/queen_hive_command.py` | `QueenHiveCommand.start` | runs from inputs or committed files; no keys and no repo write |
+| 2 | public | tool | method | `queen/queen_hive_command.py` | `QueenHiveCommand.start` | write or process start; the public server refuses it |
 | 2 | public | tool | method | `queen/queen_hive_command.py` | `QueenHiveCommand.stop` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_hive_command.py` | `QueenHiveCommand.status_lines` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | resource | module | `queen/queen_inhouse_ai_bridge.py` | `queen_inhouse_ai_bridge` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -11763,7 +11763,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 2 | public | tool | method | `queen/queen_inhouse_ai_bridge.py` | `QueenAIBridge.enrich_gamma` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_inhouse_ai_bridge.py` | `QueenAIBridge.reflect` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_inhouse_ai_bridge.py` | `QueenAIBridge.reason` | runs from inputs or committed files; no keys and no repo write |
-| 2 | public | tool | method | `queen/queen_inhouse_ai_bridge.py` | `QueenAIBridge.start` | runs from inputs or committed files; no keys and no repo write |
+| 2 | public | tool | method | `queen/queen_inhouse_ai_bridge.py` | `QueenAIBridge.start` | write or process start; the public server refuses it |
 | 2 | public | tool | method | `queen/queen_inhouse_ai_bridge.py` | `QueenAIBridge.stop` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_inhouse_ai_bridge.py` | `QueenAIBridge.get_status` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | function | `queen/queen_inhouse_ai_bridge.py` | `get_queen_ai_bridge` | runs from inputs or committed files; no keys and no repo write |
@@ -11861,7 +11861,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 2 | public | resource | class | `queen/queen_metacognition.py` | `MetacognitiveInsight` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | resource | class | `queen/queen_metacognition.py` | `DormantSeed` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | resource | class | `queen/queen_metacognition.py` | `QueenMetacognition` | runs from inputs or committed files; no keys and no repo write |
-| 2 | public | tool | method | `queen/queen_metacognition.py` | `QueenMetacognition.start` | runs from inputs or committed files; no keys and no repo write |
+| 2 | public | tool | method | `queen/queen_metacognition.py` | `QueenMetacognition.start` | write or process start; the public server refuses it |
 | 2 | public | tool | method | `queen/queen_metacognition.py` | `QueenMetacognition.stop` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_metacognition.py` | `QueenMetacognition.self_backtest` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_metacognition.py` | `QueenMetacognition.get_state` | runs from inputs or committed files; no keys and no repo write |
@@ -11922,7 +11922,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 2 | public | tool | method | `queen/queen_mind.py` | `QueenMind.submit_faculty_signal` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_mind.py` | `QueenMind.submit_action_proposal` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_mind.py` | `QueenMind.think_once` | runs from inputs or committed files; no keys and no repo write |
-| 2 | public | tool | method | `queen/queen_mind.py` | `QueenMind.start` | runs from inputs or committed files; no keys and no repo write |
+| 2 | public | tool | method | `queen/queen_mind.py` | `QueenMind.start` | write or process start; the public server refuses it |
 | 2 | public | tool | method | `queen/queen_mind.py` | `QueenMind.stop` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_mind.py` | `QueenMind.recent_thoughts` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | function | `queen/queen_mind.py` | `bind_queen_mind` | runs from inputs or committed files; no keys and no repo write |
@@ -11937,7 +11937,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 2 | public | tool | method | `queen/queen_mycelium_mind.py` | `SynapticPathway.weaken` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_mycelium_mind.py` | `SynapticPathway.success_rate` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | resource | class | `queen/queen_mycelium_mind.py` | `MyceliumMind` | runs from inputs or committed files; no keys and no repo write |
-| 2 | public | tool | method | `queen/queen_mycelium_mind.py` | `MyceliumMind.start` | runs from inputs or committed files; no keys and no repo write |
+| 2 | public | tool | method | `queen/queen_mycelium_mind.py` | `MyceliumMind.start` | write or process start; the public server refuses it |
 | 2 | public | tool | method | `queen/queen_mycelium_mind.py` | `MyceliumMind.stop` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_mycelium_mind.py` | `MyceliumMind.get_mind_state` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | function | `queen/queen_mycelium_mind.py` | `get_mycelium_mind` | runs from inputs or committed files; no keys and no repo write |
@@ -11955,7 +11955,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 2 | public | tool | method | `queen/queen_neuron.py` | `QueenNeuron.train_on_example` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_neuron.py` | `QueenNeuron.train_batch` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_neuron.py` | `QueenNeuron.evolve_consciousness` | runs from inputs or committed files; no keys and no repo write |
-| 2 | public | tool | method | `queen/queen_neuron.py` | `QueenNeuron.save_weights` | runs from inputs or committed files; no keys and no repo write |
+| 2 | public | tool | method | `queen/queen_neuron.py` | `QueenNeuron.save_weights` | write or process start; the public server refuses it |
 | 2 | public | tool | method | `queen/queen_neuron.py` | `QueenNeuron.load_weights` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_neuron.py` | `QueenNeuron.get_status` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | function | `queen/queen_neuron.py` | `create_queen_neuron` | runs from inputs or committed files; no keys and no repo write |
@@ -11979,7 +11979,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 2 | public | tool | method | `queen/queen_neuron_v2.py` | `QueenNeuronV2.train_batch` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_neuron_v2.py` | `QueenNeuronV2.evolve_consciousness` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_neuron_v2.py` | `QueenNeuronV2.train_from_trade_outcome` | runs from inputs or committed files; no keys and no repo write |
-| 2 | public | tool | method | `queen/queen_neuron_v2.py` | `QueenNeuronV2.save_weights` | runs from inputs or committed files; no keys and no repo write |
+| 2 | public | tool | method | `queen/queen_neuron_v2.py` | `QueenNeuronV2.save_weights` | write or process start; the public server refuses it |
 | 2 | public | tool | method | `queen/queen_neuron_v2.py` | `QueenNeuronV2.load_weights` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_neuron_v2.py` | `QueenNeuronV2.get_status` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | function | `queen/queen_neuron_v2.py` | `create_queen_neuron_v2` | runs from inputs or committed files; no keys and no repo write |
@@ -12002,7 +12002,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 2 | public | resource | class | `queen/queen_open_source_data_engine.py` | `SentimentData` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | resource | class | `queen/queen_open_source_data_engine.py` | `NetworkData` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | resource | class | `queen/queen_open_source_data_engine.py` | `OpenSourceDataEngine` | runs from inputs or committed files; no keys and no repo write |
-| 2 | public | tool | method | `queen/queen_open_source_data_engine.py` | `OpenSourceDataEngine.start` | runs from inputs or committed files; no keys and no repo write |
+| 2 | public | tool | method | `queen/queen_open_source_data_engine.py` | `OpenSourceDataEngine.start` | write or process start; the public server refuses it |
 | 2 | public | tool | method | `queen/queen_open_source_data_engine.py` | `OpenSourceDataEngine.start_background` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_open_source_data_engine.py` | `OpenSourceDataEngine.stop` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_open_source_data_engine.py` | `OpenSourceDataEngine.get_market_data` | runs from inputs or committed files; no keys and no repo write |
@@ -12141,7 +12141,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 2 | public | tool | method | `queen/queen_pursuit_of_happiness.py` | `PursuitOfHappiness.modulate_gradient` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_pursuit_of_happiness.py` | `PursuitOfHappiness.compute_happiness_reward` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_pursuit_of_happiness.py` | `PursuitOfHappiness.get_why_vector` | runs from inputs or committed files; no keys and no repo write |
-| 2 | public | tool | method | `queen/queen_pursuit_of_happiness.py` | `PursuitOfHappiness.save_state` | runs from inputs or committed files; no keys and no repo write |
+| 2 | public | tool | method | `queen/queen_pursuit_of_happiness.py` | `PursuitOfHappiness.save_state` | write or process start; the public server refuses it |
 | 2 | public | tool | method | `queen/queen_pursuit_of_happiness.py` | `PursuitOfHappiness.get_status` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_pursuit_of_happiness.py` | `PursuitOfHappiness.print_grand_wheel` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | function | `queen/queen_pursuit_of_happiness.py` | `get_pursuit_of_happiness` | runs from inputs or committed files; no keys and no repo write |
@@ -12300,7 +12300,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 2 | public | resource | class | `queen/queen_sentient_loop.py` | `Emotion` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | resource | class | `queen/queen_sentient_loop.py` | `Thought` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | resource | class | `queen/queen_sentient_loop.py` | `QueenSentientLoop` | runs from inputs or committed files; no keys and no repo write |
-| 2 | public | tool | method | `queen/queen_sentient_loop.py` | `QueenSentientLoop.start` | runs from inputs or committed files; no keys and no repo write |
+| 2 | public | tool | method | `queen/queen_sentient_loop.py` | `QueenSentientLoop.start` | write or process start; the public server refuses it |
 | 2 | public | tool | method | `queen/queen_sentient_loop.py` | `QueenSentientLoop.stop` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_sentient_loop.py` | `QueenSentientLoop.run` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_sentient_loop.py` | `QueenSentientLoop.get_status` | runs from inputs or committed files; no keys and no repo write |
@@ -12362,7 +12362,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 2 | public | resource | class | `queen/queen_source_law.py` | `CognitionOutput` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_source_law.py` | `CognitionOutput.collapse` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | resource | class | `queen/queen_source_law.py` | `SourceLawEngine` | runs from inputs or committed files; no keys and no repo write |
-| 2 | public | tool | method | `queen/queen_source_law.py` | `SourceLawEngine.start` | runs from inputs or committed files; no keys and no repo write |
+| 2 | public | tool | method | `queen/queen_source_law.py` | `SourceLawEngine.start` | write or process start; the public server refuses it |
 | 2 | public | tool | method | `queen/queen_source_law.py` | `SourceLawEngine.stop` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_source_law.py` | `SourceLawEngine.cogitate` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/queen_source_law.py` | `SourceLawEngine.get_result` | runs from inputs or committed files; no keys and no repo write |
@@ -12556,7 +12556,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 2 | public | tool | method | `queen/self_enhancement_engine.py` | `EnhancementLog.stats` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | resource | class | `queen/self_enhancement_engine.py` | `SelfEnhancementEngine` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/self_enhancement_engine.py` | `SelfEnhancementEngine.enhance_once` | runs from inputs or committed files; no keys and no repo write |
-| 2 | public | tool | method | `queen/self_enhancement_engine.py` | `SelfEnhancementEngine.start` | runs from inputs or committed files; no keys and no repo write |
+| 2 | public | tool | method | `queen/self_enhancement_engine.py` | `SelfEnhancementEngine.start` | write or process start; the public server refuses it |
 | 2 | public | tool | method | `queen/self_enhancement_engine.py` | `SelfEnhancementEngine.stop` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/self_enhancement_engine.py` | `SelfEnhancementEngine.status` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/self_enhancement_engine.py` | `SelfEnhancementEngine.recent_log` | runs from inputs or committed files; no keys and no repo write |
@@ -12566,7 +12566,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 2 | public | tool | function | `queen/self_research_loop.py` | `fragment_to_query` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | resource | class | `queen/self_research_loop.py` | `ResearchResult` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | resource | class | `queen/self_research_loop.py` | `SelfResearchLoop` | runs from inputs or committed files; no keys and no repo write |
-| 2 | public | tool | method | `queen/self_research_loop.py` | `SelfResearchLoop.start` | runs from inputs or committed files; no keys and no repo write |
+| 2 | public | tool | method | `queen/self_research_loop.py` | `SelfResearchLoop.start` | write or process start; the public server refuses it |
 | 2 | public | tool | method | `queen/self_research_loop.py` | `SelfResearchLoop.stop` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/self_research_loop.py` | `SelfResearchLoop.find_unanswered_questions` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/self_research_loop.py` | `SelfResearchLoop.run_one_cycle` | runs from inputs or committed files; no keys and no repo write |
@@ -12628,7 +12628,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 2 | public | tool | function | `queen/unity_exchange_brain.py` | `build_queen_exchange_brains` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | resource | module | `queen/vault_knowledge_bridge.py` | `vault_knowledge_bridge` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 2 | public | resource | class | `queen/vault_knowledge_bridge.py` | `VaultKnowledgeBridge` | runs from inputs or committed files; no keys and no repo write |
-| 2 | public | tool | method | `queen/vault_knowledge_bridge.py` | `VaultKnowledgeBridge.start` | runs from inputs or committed files; no keys and no repo write |
+| 2 | public | tool | method | `queen/vault_knowledge_bridge.py` | `VaultKnowledgeBridge.start` | write or process start; the public server refuses it |
 | 2 | public | tool | method | `queen/vault_knowledge_bridge.py` | `VaultKnowledgeBridge.stop` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/vault_knowledge_bridge.py` | `VaultKnowledgeBridge.run_one_cycle` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `queen/vault_knowledge_bridge.py` | `VaultKnowledgeBridge.get_status` | runs from inputs or committed files; no keys and no repo write |
@@ -13131,7 +13131,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 4 | public | tool | function | `search/online_research_cinema.py` | `make_score_model_code` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | function | `search/online_research_cinema.py` | `make_score_model_test_code` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | tool | function | `search/online_research_cinema.py` | `make_coding_handoff` | runs from inputs or committed files; no keys and no repo write |
-| 4 | public | tool | function | `search/online_research_cinema.py` | `write_generated_code_artifacts` | runs from inputs or committed files; no keys and no repo write |
+| 4 | public | tool | function | `search/online_research_cinema.py` | `write_generated_code_artifacts` | write or process start; the public server refuses it |
 | 4 | public | tool | function | `search/online_research_cinema.py` | `build_online_research_cinema` | runs from inputs or committed files; no keys and no repo write |
 | 4 | public | resource | module | `search/research_metacognition.py` | `research_metacognition` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 4 | public | tool | function | `search/research_metacognition.py` | `build_research_metacognition` | runs from inputs or committed files; no keys and no repo write |
@@ -13146,7 +13146,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | public | tool | method | `simulation/aureon_calibration_test.py` | `CalibrationTrader.enter_position` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `simulation/aureon_calibration_test.py` | `CalibrationTrader.check_exits` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `simulation/aureon_calibration_test.py` | `CalibrationTrader.print_calibration_report` | runs from inputs or committed files; no keys and no repo write |
-| 6 | public | tool | method | `simulation/aureon_calibration_test.py` | `CalibrationTrader.save_trades_to_file` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | method | `simulation/aureon_calibration_test.py` | `CalibrationTrader.save_trades_to_file` | write or process start; the public server refuses it |
 | 6 | public | tool | function | `simulation/aureon_calibration_test.py` | `run_calibration_test` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | resource | module | `simulation/aureon_demo_quantum_telescope.py` | `aureon_demo_quantum_telescope` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 6 | public | resource | class | `simulation/aureon_demo_quantum_telescope.py` | `DemoQuantumServer` | runs from inputs or committed files; no keys and no repo write |
@@ -14139,7 +14139,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 2 | public | tool | method | `swarm_motion/as_above_so_below.py` | `AsAboveSoBelowMirror.reflect_below_to_above` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `swarm_motion/as_above_so_below.py` | `AsAboveSoBelowMirror.reflect_above_to_below` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `swarm_motion/as_above_so_below.py` | `AsAboveSoBelowMirror.reflect` | runs from inputs or committed files; no keys and no repo write |
-| 2 | public | tool | method | `swarm_motion/as_above_so_below.py` | `AsAboveSoBelowMirror.start` | runs from inputs or committed files; no keys and no repo write |
+| 2 | public | tool | method | `swarm_motion/as_above_so_below.py` | `AsAboveSoBelowMirror.start` | write or process start; the public server refuses it |
 | 2 | public | tool | method | `swarm_motion/as_above_so_below.py` | `AsAboveSoBelowMirror.stop` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `swarm_motion/as_above_so_below.py` | `AsAboveSoBelowMirror.get_readings` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `swarm_motion/as_above_so_below.py` | `AsAboveSoBelowMirror.get_last_reading` | runs from inputs or committed files; no keys and no repo write |
@@ -14148,7 +14148,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 2 | public | resource | class | `swarm_motion/fibonacci_snapper.py` | `MotionSnapshot` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `swarm_motion/fibonacci_snapper.py` | `MotionSnapshot.to_dict` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | resource | class | `swarm_motion/fibonacci_snapper.py` | `FibonacciMotionSnapper` | runs from inputs or committed files; no keys and no repo write |
-| 2 | public | tool | method | `swarm_motion/fibonacci_snapper.py` | `FibonacciMotionSnapper.start` | runs from inputs or committed files; no keys and no repo write |
+| 2 | public | tool | method | `swarm_motion/fibonacci_snapper.py` | `FibonacciMotionSnapper.start` | write or process start; the public server refuses it |
 | 2 | public | tool | method | `swarm_motion/fibonacci_snapper.py` | `FibonacciMotionSnapper.stop` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `swarm_motion/fibonacci_snapper.py` | `FibonacciMotionSnapper.take_single_snapshot` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `swarm_motion/fibonacci_snapper.py` | `FibonacciMotionSnapper.get_history` | runs from inputs or committed files; no keys and no repo write |
@@ -14159,7 +14159,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 2 | public | resource | class | `swarm_motion/love_stream.py` | `StandingWaveLoveStream` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `swarm_motion/love_stream.py` | `StandingWaveLoveStream.ingest_snapshot` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `swarm_motion/love_stream.py` | `StandingWaveLoveStream.evaluate` | runs from inputs or committed files; no keys and no repo write |
-| 2 | public | tool | method | `swarm_motion/love_stream.py` | `StandingWaveLoveStream.start` | runs from inputs or committed files; no keys and no repo write |
+| 2 | public | tool | method | `swarm_motion/love_stream.py` | `StandingWaveLoveStream.start` | write or process start; the public server refuses it |
 | 2 | public | tool | method | `swarm_motion/love_stream.py` | `StandingWaveLoveStream.stop` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `swarm_motion/love_stream.py` | `StandingWaveLoveStream.get_weights` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `swarm_motion/love_stream.py` | `StandingWaveLoveStream.get_phases` | runs from inputs or committed files; no keys and no repo write |
@@ -14171,7 +14171,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 2 | public | tool | method | `swarm_motion/swarm_hive.py` | `SwarmMotionConfig.validate` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | resource | class | `swarm_motion/swarm_hive.py` | `SwarmMotionHive` | runs from inputs or committed files; no keys and no repo write |
 | 2 | operator | tool | method | `swarm_motion/swarm_hive.py` | `SwarmMotionHive.spawn_swarm` | reads keys from env only; never logged or returned |
-| 2 | public | tool | method | `swarm_motion/swarm_hive.py` | `SwarmMotionHive.start` | runs from inputs or committed files; no keys and no repo write |
+| 2 | public | tool | method | `swarm_motion/swarm_hive.py` | `SwarmMotionHive.start` | write or process start; the public server refuses it |
 | 2 | public | tool | method | `swarm_motion/swarm_hive.py` | `SwarmMotionHive.stop` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `swarm_motion/swarm_hive.py` | `SwarmMotionHive.shutdown` | runs from inputs or committed files; no keys and no repo write |
 | 2 | public | tool | method | `swarm_motion/swarm_hive.py` | `SwarmMotionHive.take_swarm_snapshot` | runs from inputs or committed files; no keys and no repo write |
@@ -16280,7 +16280,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | public | resource | class | `utils/aureon_live_aura_location_tracker.py` | `LiveLocationSnapshot` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `utils/aureon_live_aura_location_tracker.py` | `LiveLocationSnapshot.to_dict` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | resource | class | `utils/aureon_live_aura_location_tracker.py` | `LiveAuraLocationTracker` | runs from inputs or committed files; no keys and no repo write |
-| 6 | public | tool | method | `utils/aureon_live_aura_location_tracker.py` | `LiveAuraLocationTracker.start` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | method | `utils/aureon_live_aura_location_tracker.py` | `LiveAuraLocationTracker.start` | write or process start; the public server refuses it |
 | 6 | public | tool | method | `utils/aureon_live_aura_location_tracker.py` | `LiveAuraLocationTracker.stop` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `utils/aureon_live_aura_location_tracker.py` | `LiveAuraLocationTracker.update_from_biometric` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `utils/aureon_live_aura_location_tracker.py` | `LiveAuraLocationTracker.update_from_gps` | runs from inputs or committed files; no keys and no repo write |
@@ -16521,7 +16521,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | public | tool | method | `utils/aureon_miner.py` | `HarmonicMiningOptimizer.get_astronomical_contribution` | runs from inputs or committed files; no keys and no repo write |
 | 6 | operator | tool | method | `utils/aureon_miner.py` | `HarmonicMiningOptimizer.update_lumina` | reads keys from env only; never logged or returned |
 | 6 | operator | resource | class | `utils/aureon_miner.py` | `MiningSession` | reads keys from env only; never logged or returned |
-| 6 | public | tool | method | `utils/aureon_miner.py` | `MiningSession.start` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | method | `utils/aureon_miner.py` | `MiningSession.start` | write or process start; the public server refuses it |
 | 6 | public | tool | method | `utils/aureon_miner.py` | `MiningSession.stop` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `utils/aureon_miner.py` | `MiningSession.pause` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `utils/aureon_miner.py` | `MiningSession.resume` | runs from inputs or committed files; no keys and no repo write |
@@ -16535,7 +16535,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | public | tool | method | `utils/aureon_miner.py` | `AureonMiner.route_mining_proceeds_to_v11` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `utils/aureon_miner.py` | `AureonMiner.amplify_v11_nodes_with_quantum_power` | runs from inputs or committed files; no keys and no repo write |
 | 6 | operator | tool | method | `utils/aureon_miner.py` | `AureonMiner.add_pool` | reads keys from env only; never logged or returned |
-| 6 | public | tool | method | `utils/aureon_miner.py` | `AureonMiner.start` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | method | `utils/aureon_miner.py` | `AureonMiner.start` | write or process start; the public server refuses it |
 | 6 | public | tool | method | `utils/aureon_miner.py` | `AureonMiner.stop` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `utils/aureon_miner.py` | `AureonMiner.pause` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `utils/aureon_miner.py` | `AureonMiner.resume` | runs from inputs or committed files; no keys and no repo write |
@@ -17019,13 +17019,13 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 1 | public | tool | method | `utils/aureon_queen_hive_mind.py` | `QueenHiveMind.unblock_path` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | tool | method | `utils/aureon_queen_hive_mind.py` | `QueenHiveMind.set_profit_threshold` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | tool | method | `utils/aureon_queen_hive_mind.py` | `QueenHiveMind.override_gate` | runs from inputs or committed files; no keys and no repo write |
-| 1 | public | tool | method | `utils/aureon_queen_hive_mind.py` | `QueenHiveMind.write_code` | runs from inputs or committed files; no keys and no repo write |
+| 1 | public | tool | method | `utils/aureon_queen_hive_mind.py` | `QueenHiveMind.write_code` | write or process start; the public server refuses it |
 | 1 | public | tool | method | `utils/aureon_queen_hive_mind.py` | `QueenHiveMind.create_strategy` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | tool | method | `utils/aureon_queen_hive_mind.py` | `QueenHiveMind.create_neural_subsystem` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | tool | method | `utils/aureon_queen_hive_mind.py` | `QueenHiveMind.modify_code` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | tool | method | `utils/aureon_queen_hive_mind.py` | `QueenHiveMind.read_code` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | tool | method | `utils/aureon_queen_hive_mind.py` | `QueenHiveMind.execute_code` | runs from inputs or committed files; no keys and no repo write |
-| 1 | public | tool | method | `utils/aureon_queen_hive_mind.py` | `QueenHiveMind.save_config` | runs from inputs or committed files; no keys and no repo write |
+| 1 | public | tool | method | `utils/aureon_queen_hive_mind.py` | `QueenHiveMind.save_config` | write or process start; the public server refuses it |
 | 1 | public | tool | method | `utils/aureon_queen_hive_mind.py` | `QueenHiveMind.load_config` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | tool | method | `utils/aureon_queen_hive_mind.py` | `QueenHiveMind.create_file` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | tool | method | `utils/aureon_queen_hive_mind.py` | `QueenHiveMind.list_my_creations` | runs from inputs or committed files; no keys and no repo write |
@@ -17262,7 +17262,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | public | tool | method | `utils/fetch_kraken_trades_with_decisions.py` | `KrakenTradeAnalyzer.print_trade_list` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `utils/fetch_kraken_trades_with_decisions.py` | `KrakenTradeAnalyzer.print_summary` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `utils/fetch_kraken_trades_with_decisions.py` | `KrakenTradeAnalyzer.print_decision_report` | runs from inputs or committed files; no keys and no repo write |
-| 6 | public | tool | method | `utils/fetch_kraken_trades_with_decisions.py` | `KrakenTradeAnalyzer.export_to_json` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | method | `utils/fetch_kraken_trades_with_decisions.py` | `KrakenTradeAnalyzer.export_to_json` | write or process start; the public server refuses it |
 | 6 | operator | tool | function | `utils/fetch_kraken_trades_with_decisions.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 6 | public | resource | module | `utils/find_pairs.py` | `find_pairs` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 6 | public | resource | module | `utils/fix_orca.py` | `fix_orca` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -17442,7 +17442,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | tool | method | `vault/obsidian_adapter.py` | `ObsidianVaultAdapter.sync_in` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/obsidian_adapter.py` | `ObsidianVaultAdapter.sync_out` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/obsidian_adapter.py` | `ObsidianVaultAdapter.sync_out_all` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | method | `vault/obsidian_adapter.py` | `ObsidianVaultAdapter.start` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | method | `vault/obsidian_adapter.py` | `ObsidianVaultAdapter.start` | write or process start; the public server refuses it |
 | 3 | public | tool | method | `vault/obsidian_adapter.py` | `ObsidianVaultAdapter.stop` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/obsidian_adapter.py` | `ObsidianVaultAdapter.stats` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | resource | module | `vault/rally_coordinator.py` | `rally_coordinator` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -17458,7 +17458,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | resource | class | `vault/self_feedback_loop.py` | `AureonSelfFeedbackLoop` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/self_feedback_loop.py` | `AureonSelfFeedbackLoop.tick` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/self_feedback_loop.py` | `AureonSelfFeedbackLoop.run` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | method | `vault/self_feedback_loop.py` | `AureonSelfFeedbackLoop.start` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | method | `vault/self_feedback_loop.py` | `AureonSelfFeedbackLoop.start` | write or process start; the public server refuses it |
 | 3 | public | tool | method | `vault/self_feedback_loop.py` | `AureonSelfFeedbackLoop.stop` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/self_feedback_loop.py` | `AureonSelfFeedbackLoop.get_status` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/self_feedback_loop.py` | `AureonSelfFeedbackLoop.tick_history` | runs from inputs or committed files; no keys and no repo write |
@@ -17487,7 +17487,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | resource | class | `vault/voice/affinity_chorus.py` | `AffinityContribution` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/affinity_chorus.py` | `AffinityContribution.to_payload` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | resource | class | `vault/voice/affinity_chorus.py` | `AffinityChorus` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | method | `vault/voice/affinity_chorus.py` | `AffinityChorus.start` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | method | `vault/voice/affinity_chorus.py` | `AffinityChorus.start` | write or process start; the public server refuses it |
 | 3 | public | tool | method | `vault/voice/affinity_chorus.py` | `AffinityChorus.add` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/affinity_chorus.py` | `AffinityChorus.publish` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/affinity_chorus.py` | `AffinityChorus.merged` | runs from inputs or committed files; no keys and no repo write |
@@ -17539,7 +17539,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | tool | function | `vault/voice/aureon_personas.py` | `build_aureon_personas` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | resource | module | `vault/voice/bus_flight_check.py` | `bus_flight_check` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 3 | public | resource | class | `vault/voice/bus_flight_check.py` | `BusFlightCheck` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | method | `vault/voice/bus_flight_check.py` | `BusFlightCheck.start` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | method | `vault/voice/bus_flight_check.py` | `BusFlightCheck.start` | write or process start; the public server refuses it |
 | 3 | public | tool | method | `vault/voice/bus_flight_check.py` | `BusFlightCheck.start_watching` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/bus_flight_check.py` | `BusFlightCheck.stop_watching` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/bus_flight_check.py` | `BusFlightCheck.topology` | runs from inputs or committed files; no keys and no repo write |
@@ -17572,13 +17572,13 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | operator | tool | function | `vault/voice/document_artifact_skill.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 3 | public | resource | module | `vault/voice/goal_dispatch_bridge.py` | `goal_dispatch_bridge` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 3 | public | resource | class | `vault/voice/goal_dispatch_bridge.py` | `GoalDispatchBridge` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | method | `vault/voice/goal_dispatch_bridge.py` | `GoalDispatchBridge.start` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | method | `vault/voice/goal_dispatch_bridge.py` | `GoalDispatchBridge.start` | write or process start; the public server refuses it |
 | 3 | public | tool | method | `vault/voice/goal_dispatch_bridge.py` | `GoalDispatchBridge.stats` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `vault/voice/goal_dispatch_bridge.py` | `get_goal_dispatch_bridge` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `vault/voice/goal_dispatch_bridge.py` | `reset_goal_dispatch_bridge` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | resource | module | `vault/voice/goal_skill_aligner.py` | `goal_skill_aligner` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 3 | public | resource | class | `vault/voice/goal_skill_aligner.py` | `GoalSkillAligner` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | method | `vault/voice/goal_skill_aligner.py` | `GoalSkillAligner.start` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | method | `vault/voice/goal_skill_aligner.py` | `GoalSkillAligner.start` | write or process start; the public server refuses it |
 | 3 | public | tool | method | `vault/voice/goal_skill_aligner.py` | `GoalSkillAligner.stats` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `vault/voice/goal_skill_aligner.py` | `get_goal_skill_aligner` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `vault/voice/goal_skill_aligner.py` | `reset_goal_skill_aligner` | runs from inputs or committed files; no keys and no repo write |
@@ -17588,7 +17588,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | tool | method | `vault/voice/hash_resonance_index.py` | `BondRecord.to_dict` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `vault/voice/hash_resonance_index.py` | `bond_strength` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | resource | class | `vault/voice/hash_resonance_index.py` | `HashResonanceIndex` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | method | `vault/voice/hash_resonance_index.py` | `HashResonanceIndex.start` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | method | `vault/voice/hash_resonance_index.py` | `HashResonanceIndex.start` | write or process start; the public server refuses it |
 | 3 | public | tool | method | `vault/voice/hash_resonance_index.py` | `HashResonanceIndex.rebuild_from_vault` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/hash_resonance_index.py` | `HashResonanceIndex.bond_strength` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/hash_resonance_index.py` | `HashResonanceIndex.bond_count` | runs from inputs or committed files; no keys and no repo write |
@@ -17615,7 +17615,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | resource | class | `vault/voice/meta_cognition_observer.py` | `ReflectionCard` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/meta_cognition_observer.py` | `ReflectionCard.to_dict` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | resource | class | `vault/voice/meta_cognition_observer.py` | `MetaCognitionObserver` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | method | `vault/voice/meta_cognition_observer.py` | `MetaCognitionObserver.start` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | method | `vault/voice/meta_cognition_observer.py` | `MetaCognitionObserver.start` | write or process start; the public server refuses it |
 | 3 | public | tool | method | `vault/voice/meta_cognition_observer.py` | `MetaCognitionObserver.stop` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/meta_cognition_observer.py` | `MetaCognitionObserver.close_expired` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/meta_cognition_observer.py` | `MetaCognitionObserver.closed_cards` | runs from inputs or committed files; no keys and no repo write |
@@ -17626,7 +17626,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | resource | class | `vault/voice/opportunity_scanner.py` | `OpportunityHit` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/opportunity_scanner.py` | `OpportunityHit.to_dict` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | resource | class | `vault/voice/opportunity_scanner.py` | `OpportunityScanner` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | method | `vault/voice/opportunity_scanner.py` | `OpportunityScanner.start` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | method | `vault/voice/opportunity_scanner.py` | `OpportunityScanner.start` | write or process start; the public server refuses it |
 | 3 | public | tool | method | `vault/voice/opportunity_scanner.py` | `OpportunityScanner.stop` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/opportunity_scanner.py` | `OpportunityScanner.running` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/opportunity_scanner.py` | `OpportunityScanner.scan_once` | runs from inputs or committed files; no keys and no repo write |
@@ -17656,7 +17656,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | tool | method | `vault/voice/persona_miner_bridge.py` | `IntentStats.confidence` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/persona_miner_bridge.py` | `IntentStats.to_dict` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | resource | class | `vault/voice/persona_miner_bridge.py` | `PersonaMinerBridge` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | method | `vault/voice/persona_miner_bridge.py` | `PersonaMinerBridge.start` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | method | `vault/voice/persona_miner_bridge.py` | `PersonaMinerBridge.start` | write or process start; the public server refuses it |
 | 3 | public | tool | method | `vault/voice/persona_miner_bridge.py` | `PersonaMinerBridge.ingest` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/persona_miner_bridge.py` | `PersonaMinerBridge.recommend_skill_for` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/persona_miner_bridge.py` | `PersonaMinerBridge.persona_health` | runs from inputs or committed files; no keys and no repo write |
@@ -17667,7 +17667,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | tool | function | `vault/voice/persona_miner_bridge.py` | `reset_persona_miner_bridge` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | resource | module | `vault/voice/persona_vacuum.py` | `persona_vacuum` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 3 | public | resource | class | `vault/voice/persona_vacuum.py` | `PersonaVacuum` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | method | `vault/voice/persona_vacuum.py` | `PersonaVacuum.start` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | method | `vault/voice/persona_vacuum.py` | `PersonaVacuum.start` | write or process start; the public server refuses it |
 | 3 | public | tool | method | `vault/voice/persona_vacuum.py` | `PersonaVacuum.observe` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/persona_vacuum.py` | `PersonaVacuum.contribute_affinity` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/persona_vacuum.py` | `PersonaVacuum.chorus` | runs from inputs or committed files; no keys and no repo write |
@@ -17693,14 +17693,14 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | resource | module | `vault/voice/skill_executor_bridge.py` | `skill_executor_bridge` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 3 | public | tool | function | `vault/voice/skill_executor_bridge.py` | `code_architect_adapter` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | resource | class | `vault/voice/skill_executor_bridge.py` | `SkillExecutorBridge` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | method | `vault/voice/skill_executor_bridge.py` | `SkillExecutorBridge.start` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | method | `vault/voice/skill_executor_bridge.py` | `SkillExecutorBridge.start` | write or process start; the public server refuses it |
 | 3 | public | tool | method | `vault/voice/skill_executor_bridge.py` | `SkillExecutorBridge.stats` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/skill_executor_bridge.py` | `SkillExecutorBridge.history` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `vault/voice/skill_executor_bridge.py` | `get_skill_executor_bridge` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `vault/voice/skill_executor_bridge.py` | `reset_skill_executor_bridge` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | resource | module | `vault/voice/symbolic_life_bridge.py` | `symbolic_life_bridge` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 3 | public | resource | class | `vault/voice/symbolic_life_bridge.py` | `SymbolicLifeBridge` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | method | `vault/voice/symbolic_life_bridge.py` | `SymbolicLifeBridge.start` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | method | `vault/voice/symbolic_life_bridge.py` | `SymbolicLifeBridge.start` | write or process start; the public server refuses it |
 | 3 | public | tool | method | `vault/voice/symbolic_life_bridge.py` | `SymbolicLifeBridge.stop` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/symbolic_life_bridge.py` | `SymbolicLifeBridge.pulse` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/symbolic_life_bridge.py` | `SymbolicLifeBridge.last_state` | runs from inputs or committed files; no keys and no repo write |
@@ -17712,7 +17712,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | tool | method | `vault/voice/temporal_causality.py` | `GoalEcho.to_dict` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/temporal_causality.py` | `GoalEcho.is_terminal` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | resource | class | `vault/voice/temporal_causality.py` | `TemporalCausalityLaw` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | method | `vault/voice/temporal_causality.py` | `TemporalCausalityLaw.start` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | method | `vault/voice/temporal_causality.py` | `TemporalCausalityLaw.start` | write or process start; the public server refuses it |
 | 3 | public | tool | method | `vault/voice/temporal_causality.py` | `TemporalCausalityLaw.track` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/temporal_causality.py` | `TemporalCausalityLaw.acknowledge` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/temporal_causality.py` | `TemporalCausalityLaw.update_progress` | runs from inputs or committed files; no keys and no repo write |
@@ -17728,7 +17728,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | resource | module | `vault/voice/thought_stream_loop.py` | `thought_stream_loop` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 3 | public | resource | class | `vault/voice/thought_stream_loop.py` | `ThoughtStreamStatus` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | resource | class | `vault/voice/thought_stream_loop.py` | `ThoughtStreamLoop` | runs from inputs or committed files; no keys and no repo write |
-| 3 | public | tool | method | `vault/voice/thought_stream_loop.py` | `ThoughtStreamLoop.start` | runs from inputs or committed files; no keys and no repo write |
+| 3 | public | tool | method | `vault/voice/thought_stream_loop.py` | `ThoughtStreamLoop.start` | write or process start; the public server refuses it |
 | 3 | public | tool | method | `vault/voice/thought_stream_loop.py` | `ThoughtStreamLoop.stop` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/thought_stream_loop.py` | `ThoughtStreamLoop.run_n_cycles` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | method | `vault/voice/thought_stream_loop.py` | `ThoughtStreamLoop.get_status` | runs from inputs or committed files; no keys and no repo write |
@@ -18126,7 +18126,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | public | tool | method | `wisdom/aureon_stargate_protocol.py` | `StargateProtocolEngine.attempt_mirror_pull` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `wisdom/aureon_stargate_protocol.py` | `StargateProtocolEngine.anchor_timeline` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `wisdom/aureon_stargate_protocol.py` | `StargateProtocolEngine.get_status` | runs from inputs or committed files; no keys and no repo write |
-| 6 | public | tool | method | `wisdom/aureon_stargate_protocol.py` | `StargateProtocolEngine.save_state` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | method | `wisdom/aureon_stargate_protocol.py` | `StargateProtocolEngine.save_state` | write or process start; the public server refuses it |
 | 6 | public | tool | method | `wisdom/aureon_stargate_protocol.py` | `StargateProtocolEngine.load_state` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | resource | class | `wisdom/aureon_stargate_protocol.py` | `ActivationCeremony` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `wisdom/aureon_stargate_protocol.py` | `ActivationCeremony.start_ceremony` | runs from inputs or committed files; no keys and no repo write |
@@ -18390,7 +18390,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | public | tool | method | `wisdom/multi_battlefront_coordinator.py` | `MultiBattlefrontWarRoom.scan_opportunities` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `wisdom/multi_battlefront_coordinator.py` | `MultiBattlefrontWarRoom.execute_coordinated_strike` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `wisdom/multi_battlefront_coordinator.py` | `MultiBattlefrontWarRoom.get_campaign_status` | runs from inputs or committed files; no keys and no repo write |
-| 6 | public | tool | method | `wisdom/multi_battlefront_coordinator.py` | `MultiBattlefrontWarRoom.save_state` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | method | `wisdom/multi_battlefront_coordinator.py` | `MultiBattlefrontWarRoom.save_state` | write or process start; the public server refuses it |
 | 6 | operator | tool | method | `wisdom/multi_battlefront_coordinator.py` | `MultiBattlefrontWarRoom.load_state` | writes; operator state root only, not the repo |
 | 6 | public | tool | function | `wisdom/multi_battlefront_coordinator.py` | `get_war_room` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | resource | module | `wisdom/peek_behind_the_curtain.py` | `peek_behind_the_curtain` | module surface; import is lazy and blob-checked when the file is the checkout |
@@ -18420,8 +18420,8 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 6 | public | tool | method | `wisdom/platypus.py` | `Platypus.load_horizons_r` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `wisdom/platypus.py` | `Platypus.compute_coherence` | runs from inputs or committed files; no keys and no repo write |
 | 6 | public | tool | method | `wisdom/platypus.py` | `Platypus.validate_against_index` | runs from inputs or committed files; no keys and no repo write |
-| 6 | public | tool | method | `wisdom/platypus.py` | `Platypus.save_timeseries` | runs from inputs or committed files; no keys and no repo write |
-| 6 | public | tool | method | `wisdom/platypus.py` | `Platypus.save_validation_artifacts` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | method | `wisdom/platypus.py` | `Platypus.save_timeseries` | write or process start; the public server refuses it |
+| 6 | public | tool | method | `wisdom/platypus.py` | `Platypus.save_validation_artifacts` | write or process start; the public server refuses it |
 | 6 | public | tool | method | `wisdom/platypus.py` | `Platypus.summary` | runs from inputs or committed files; no keys and no repo write |
 | 6 | operator | tool | function | `wisdom/platypus.py` | `main` | process, loop, or UI start; own flag; status and stop |
 | 6 | public | resource | module | `wisdom/platypus_presets.py` | `platypus_presets` | module surface; import is lazy and blob-checked when the file is the checkout |

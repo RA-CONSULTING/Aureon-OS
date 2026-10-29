@@ -338,36 +338,36 @@
   "enabled_through": 2,
   "entry_points": {
     "alignment": {
-      "called": 3,
-      "public_entry_points": 26
+      "public_entry_points": 26,
+      "reachable": 24
     },
     "cognition": {
-      "called": 2,
-      "public_entry_points": 20
+      "public_entry_points": 20,
+      "reachable": 17
     },
     "gates": {
-      "called": 5,
-      "public_entry_points": 14
+      "public_entry_points": 14,
+      "reachable": 12
     },
     "governance": {
-      "called": 1,
-      "public_entry_points": 119
+      "public_entry_points": 119,
+      "reachable": 103
     },
     "observer": {
-      "called": 20,
-      "public_entry_points": 73
+      "public_entry_points": 73,
+      "reachable": 51
     },
     "queen": {
-      "called": 1,
-      "public_entry_points": 963
+      "public_entry_points": 963,
+      "reachable": 751
     },
     "swarm": {
-      "called": 1,
-      "public_entry_points": 48
+      "public_entry_points": 48,
+      "reachable": 43
     },
     "swarm_motion": {
-      "called": 1,
-      "public_entry_points": 35
+      "public_entry_points": 35,
+      "reachable": 0
     }
   },
   "stage": 2,
