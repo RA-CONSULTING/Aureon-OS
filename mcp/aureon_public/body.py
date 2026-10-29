@@ -26,7 +26,7 @@ from aureon_public.quiet import quiet
 from aureon_public.tools import _dumps
 
 # Stages 1-6 raise this as each stage commit lands. Stage 7 is packaging.
-ENABLED_THROUGH = 2
+ENABLED_THROUGH = 3
 
 _UNSAFE_NAME = re.compile(
     r"(run_|start_|stop_|launch_|serve|main$|^demo$|create_app|activate_|connect_|"
@@ -35,7 +35,8 @@ _UNSAFE_NAME = re.compile(
     re.I,
 )
 _SKIP_WORD = re.compile(
-    r"price|live_|kraken|order|exchange|network|socket|download|schumann|biometric|trade|wallet|secret",
+    r"price|live_|kraken|order|exchange|network|socket|download|schumann|biometric|trade|wallet|secret|"
+    r"thought_bus|redis|postgres|sqlite|calibration|^evaluate_|^observe$",
     re.I,
 )
 _UNSAFE_SOURCE = (
@@ -65,6 +66,7 @@ _BLOCKED = {
 _AURIS = {
     "QueenHiveMind.read_auris_nodes": "nine nodes",
     "QueenHiveMind.get_auris_coherence": "coherence evaluator",
+    "evaluate_auris_nodes": "evaluation harness over brain proof, not the nine-node reader and not the conjecture",
     "get_auris_voice_filter": "harmonic AurisVoiceFilter",
     "reset_auris_voice_filter": "harmonic AurisVoiceFilter",
     "AurisVoiceFilter": "harmonic AurisVoiceFilter",
@@ -251,6 +253,9 @@ def _call_with_timeout(fn: Any, kwargs: dict[str, Any], timeout: float) -> tuple
 
 def _import_checked(module: str) -> tuple[Any | None, str | None]:
     apply_space_guard()
+    from aureon_public.layers import _load_phenolic_fingerprint
+
+    _load_phenolic_fingerprint()
     root = repo_root()
     path = file_for(module)
     dotted = dotted_for(module)
@@ -630,6 +635,30 @@ def probes_for(stage: int) -> list[dict[str, Any]]:
                 "arguments": {"value": "2026-10-29"},
             },
             {"module": "observer/live_data_policy.py", "symbol": "simulation_fallback_allowed"},
+        ],
+        3: [
+            {
+                "module": "bio/audio_signal_adapter.py",
+                "symbol": "synthetic_audio",
+                "arguments": {"kind": "noise", "n": 16},
+            },
+            {
+                "module": "bio/calibration_curve.py",
+                "symbol": "compute_calibration",
+                "arguments": {"trials": 2, "nulls": 1},
+            },
+            {"module": "organism/repository_layers.py", "symbol": "compose_repository_layers"},
+            {"module": "core/aureon_organism_spine.py", "symbol": "build_organism_manifest"},
+            {
+                "module": "vault/voice/document_artifact_skill.py",
+                "symbol": "count_words",
+                "arguments": {"text": "one two three"},
+            },
+            {
+                "module": "evaluation/auris_node_eval.py",
+                "symbol": "evaluate_auris_nodes",
+                "timeout": 20,
+            },
         ],
     }
     return table.get(stage, [])

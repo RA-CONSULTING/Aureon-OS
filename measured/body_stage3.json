@@ -1,0 +1,809 @@
+{
+  "called": 73,
+  "calls": [
+    {
+      "called": true,
+      "module": "bio/audio_signal_adapter.py",
+      "package": "bio",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "synthetic_audio"
+    },
+    {
+      "called": true,
+      "module": "bio/calibration_curve.py",
+      "package": "bio",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "compute_calibration"
+    },
+    {
+      "called": true,
+      "module": "organism/repository_layers.py",
+      "package": "organism",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "compose_repository_layers"
+    },
+    {
+      "called": true,
+      "module": "core/aureon_organism_spine.py",
+      "package": "core",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "build_organism_manifest"
+    },
+    {
+      "called": true,
+      "module": "vault/voice/document_artifact_skill.py",
+      "package": "vault",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "count_words"
+    },
+    {
+      "called": true,
+      "module": "evaluation/auris_node_eval.py",
+      "package": "evaluation",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "evaluate_auris_nodes"
+    },
+    {
+      "called": true,
+      "module": "bio/brain_reply_membrane.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "compute_brain_reply"
+    },
+    {
+      "called": true,
+      "module": "bio/coherence_scan.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "coherence_peak_tones"
+    },
+    {
+      "called": true,
+      "module": "bio/coherence_scan.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "score_coherence"
+    },
+    {
+      "called": true,
+      "module": "bio/cosmic_reference.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "space_weather_tones"
+    },
+    {
+      "called": true,
+      "module": "bio/cosmic_scan.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "score_space_weather"
+    },
+    {
+      "called": true,
+      "module": "bio/counter_frequency_reference.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "fibonacci_hz"
+    },
+    {
+      "called": true,
+      "module": "bio/counter_frequency_reference.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "phi_harmonic_hz"
+    },
+    {
+      "called": true,
+      "module": "bio/counter_frequency_scan.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "score_counter_frequency"
+    },
+    {
+      "called": true,
+      "module": "bio/derived_nulls.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "derived_null_generator"
+    },
+    {
+      "called": true,
+      "module": "bio/direction_runtime.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "deterministic_evaluators"
+    },
+    {
+      "called": true,
+      "module": "bio/direction_runtime.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "consumer_specs"
+    },
+    {
+      "called": true,
+      "module": "bio/direction_runtime.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "compute_direction_runtime"
+    },
+    {
+      "called": false,
+      "module": "bio/false_discovery.py",
+      "package": "bio",
+      "probe": false,
+      "reason": "exceeded 8s",
+      "status": "unavailable",
+      "symbol": "compute_false_discovery"
+    },
+    {
+      "called": true,
+      "module": "bio/harmonic_core_reference.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "lambda_weighted"
+    },
+    {
+      "called": true,
+      "module": "bio/harmonic_core_reference.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "ogham_feda"
+    },
+    {
+      "called": true,
+      "module": "bio/hnc_direction_audit.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "direction_specs"
+    },
+    {
+      "called": true,
+      "module": "bio/hnc_direction_audit.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "compute_hnc_direction"
+    },
+    {
+      "called": true,
+      "module": "bio/immune_memory.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "install_immune_memory"
+    },
+    {
+      "called": true,
+      "module": "bio/immune_memory.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "compute_immune_memory"
+    },
+    {
+      "called": true,
+      "module": "bio/immune_regulation.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "install_immune_regulation"
+    },
+    {
+      "called": true,
+      "module": "bio/immune_regulation.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "compute_immune_regulation"
+    },
+    {
+      "called": true,
+      "module": "bio/integrity_guard.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "capture_fingerprint"
+    },
+    {
+      "called": true,
+      "module": "bio/integrity_guard.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "verify_integrity"
+    },
+    {
+      "called": true,
+      "module": "bio/market_reference.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "available_symbols"
+    },
+    {
+      "called": true,
+      "module": "bio/market_reference.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "efficient_market_returns"
+    },
+    {
+      "called": true,
+      "module": "bio/market_reference.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "structured_returns"
+    },
+    {
+      "called": true,
+      "module": "bio/mcp_transport.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_registry"
+    },
+    {
+      "called": true,
+      "module": "bio/mcp_transport.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "list_capabilities"
+    },
+    {
+      "called": true,
+      "module": "bio/mcp_transport.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "subscribe_membrane_topic"
+    },
+    {
+      "called": true,
+      "module": "bio/mcp_transport.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "compute_mcp_transport"
+    },
+    {
+      "called": false,
+      "module": "bio/multiplicity.py",
+      "package": "bio",
+      "probe": false,
+      "reason": "exceeded 8s",
+      "status": "unavailable",
+      "symbol": "compute_multiplicity"
+    },
+    {
+      "called": false,
+      "module": "bio/null_calibration.py",
+      "package": "bio",
+      "probe": false,
+      "reason": "exceeded 8s",
+      "status": "unavailable",
+      "symbol": "calibrate_nulls"
+    },
+    {
+      "called": true,
+      "module": "bio/plant_atlas/cli.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "build_parser"
+    },
+    {
+      "called": true,
+      "module": "bio/plant_atlas/gpu_backend.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "torch_available"
+    },
+    {
+      "called": true,
+      "module": "bio/plant_atlas/gpu_backend.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "cuda_available"
+    },
+    {
+      "called": false,
+      "module": "bio/plant_atlas/source_registry.py",
+      "package": "bio",
+      "probe": false,
+      "reason": "use body_surface for modules and classes",
+      "status": "unavailable",
+      "symbol": "source_registry"
+    },
+    {
+      "called": true,
+      "module": "bio/plant_atlas/source_registry.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "source_registry_payload"
+    },
+    {
+      "called": false,
+      "module": "bio/power_analysis.py",
+      "package": "bio",
+      "probe": false,
+      "reason": "exceeded 8s",
+      "status": "unavailable",
+      "symbol": "detection_power"
+    },
+    {
+      "called": true,
+      "module": "bio/qgita_calibration.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "qgita_phi"
+    },
+    {
+      "called": true,
+      "module": "bio/qgita_calibration.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "fibonacci_lattice_numbers"
+    },
+    {
+      "called": false,
+      "module": "bio/qgita_calibration.py",
+      "package": "bio",
+      "probe": false,
+      "reason": "ImportError: Refused imports: aureon.exchanges, aureon.trading, unified_margin_trader, aureon.bots, aureon.bots_intelligence, aureon.bridges, aureon.scanners. No keys are present. Refused: aureon.exchanges",
+      "status": "unavailable",
+      "symbol": "auris_frequencies_hz"
+    },
+    {
+      "called": true,
+      "module": "bio/qgita_calibration.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "phi_lattice_tones"
+    },
+    {
+      "called": true,
+      "module": "bio/qgita_calibration.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "qgita_structured_tones"
+    },
+    {
+      "called": false,
+      "module": "bio/qgita_calibration.py",
+      "package": "bio",
+      "probe": false,
+      "reason": "exceeded 8s",
+      "status": "unavailable",
+      "symbol": "calibrate_qgita"
+    },
+    {
+      "called": false,
+      "module": "bio/qgita_calibration.py",
+      "package": "bio",
+      "probe": false,
+      "reason": "ImportError: Refused imports: aureon.exchanges, aureon.trading, unified_margin_trader, aureon.bots, aureon.bots_intelligence, aureon.bridges, aureon.scanners. No keys are present. Refused: aureon.exchanges",
+      "status": "unavailable",
+      "symbol": "score_qgita_auris"
+    },
+    {
+      "called": true,
+      "module": "bio/sacred_lattice_reference.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "stargate_positions"
+    },
+    {
+      "called": true,
+      "module": "bio/sacred_lattice_scan.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "lattice_sky_sources"
+    },
+    {
+      "called": true,
+      "module": "bio/sacred_lattice_scan.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "score_lattice_map"
+    },
+    {
+      "called": true,
+      "module": "bio/sky_map.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "stellar_sources_from_nasa"
+    },
+    {
+      "called": true,
+      "module": "bio/sky_reference.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "continuum_spectrum"
+    },
+    {
+      "called": true,
+      "module": "bio/sky_reference.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "continuum_modulation_tones"
+    },
+    {
+      "called": true,
+      "module": "bio/sky_reference.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "diffuse_night_sky_spectrum"
+    },
+    {
+      "called": true,
+      "module": "bio/sky_reference.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "structured_spectrum"
+    },
+    {
+      "called": true,
+      "module": "bio/sky_signal_adapter.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "score_diffuse"
+    },
+    {
+      "called": true,
+      "module": "bio/upe_reference.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "reference_spectrum"
+    },
+    {
+      "called": true,
+      "module": "bio/upe_reference.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "reference_modulation_tones"
+    },
+    {
+      "called": true,
+      "module": "bio/upe_signal_adapter.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "control_upe"
+    },
+    {
+      "called": true,
+      "module": "bio/upe_signal_adapter.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "synthetic_upe"
+    },
+    {
+      "called": true,
+      "module": "bio/video_signal_adapter.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "control_video"
+    },
+    {
+      "called": true,
+      "module": "bio/video_signal_adapter.py",
+      "package": "bio",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "synthetic_video"
+    },
+    {
+      "called": true,
+      "module": "core/aureon_thought_bus.py",
+      "package": "core",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "think"
+    },
+    {
+      "called": true,
+      "module": "core/organism_circulation.py",
+      "package": "core",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "deprioritised_targets"
+    },
+    {
+      "called": true,
+      "module": "core/organism_circulation.py",
+      "package": "core",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "circulation_status"
+    },
+    {
+      "called": true,
+      "module": "core/organism_composition.py",
+      "package": "core",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_canonical_organism_composition"
+    },
+    {
+      "called": true,
+      "module": "core/organism_contracts.py",
+      "package": "core",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "utc_now"
+    },
+    {
+      "called": true,
+      "module": "core/organism_contracts.py",
+      "package": "core",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "build_contract_stack_snapshot"
+    },
+    {
+      "called": true,
+      "module": "vault/hnc_repo_singularity_vault.py",
+      "package": "vault",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "utc_now"
+    },
+    {
+      "called": true,
+      "module": "vault/self_feedback_loop.py",
+      "package": "vault",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_self_feedback_loop"
+    },
+    {
+      "called": true,
+      "module": "vault/voice/aureon_personas.py",
+      "package": "vault",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "build_aureon_personas"
+    },
+    {
+      "called": false,
+      "module": "vault/voice/bus_flight_check.py",
+      "package": "vault",
+      "probe": false,
+      "reason": "RuntimeError: bus_flight_check_hold:production_magic_star_release_unavailable",
+      "status": "unavailable",
+      "symbol": "get_bus_flight_check"
+    },
+    {
+      "called": true,
+      "module": "vault/voice/document_artifact_skill.py",
+      "package": "vault",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "preflight"
+    },
+    {
+      "called": true,
+      "module": "vault/voice/document_artifact_skill.py",
+      "package": "vault",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "repo_root"
+    },
+    {
+      "called": true,
+      "module": "vault/voice/document_artifact_skill.py",
+      "package": "vault",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "desktop_dir"
+    },
+    {
+      "called": false,
+      "module": "vault/voice/document_artifact_skill.py",
+      "package": "vault",
+      "probe": false,
+      "reason": "RuntimeError: document_artifact_hold:production_magic_star_release_unavailable",
+      "status": "unavailable",
+      "symbol": "load_bhoy_voice_profile"
+    },
+    {
+      "called": false,
+      "module": "vault/voice/goal_dispatch_bridge.py",
+      "package": "vault",
+      "probe": false,
+      "reason": "RuntimeError: goal_dispatch_bridge_hold:production_magic_star_release_unavailable",
+      "status": "unavailable",
+      "symbol": "get_goal_dispatch_bridge"
+    },
+    {
+      "called": false,
+      "module": "vault/voice/goal_skill_aligner.py",
+      "package": "vault",
+      "probe": false,
+      "reason": "RuntimeError: goal_skill_aligner_hold:production_magic_star_release_unavailable",
+      "status": "unavailable",
+      "symbol": "get_goal_skill_aligner"
+    },
+    {
+      "called": false,
+      "module": "vault/voice/persona_miner_bridge.py",
+      "package": "vault",
+      "probe": false,
+      "reason": "RuntimeError: persona_miner_bridge_hold:production_magic_star_release_unavailable",
+      "status": "unavailable",
+      "symbol": "get_persona_miner_bridge"
+    },
+    {
+      "called": false,
+      "module": "vault/voice/persona_vacuum.py",
+      "package": "vault",
+      "probe": false,
+      "reason": "RuntimeError: persona_vacuum_hold:production_magic_star_release_unavailable",
+      "status": "unavailable",
+      "symbol": "get_persona_vacuum"
+    },
+    {
+      "called": false,
+      "module": "vault/voice/skill_executor_bridge.py",
+      "package": "vault",
+      "probe": false,
+      "reason": "RuntimeError: skill_executor_bridge_hold:production_magic_star_release_unavailable",
+      "status": "unavailable",
+      "symbol": "get_skill_executor_bridge"
+    },
+    {
+      "called": false,
+      "module": "vault/voice/temporal_causality.py",
+      "package": "vault",
+      "probe": false,
+      "reason": "RuntimeError: temporal_causality_hold:production_magic_star_release_unavailable",
+      "status": "unavailable",
+      "symbol": "get_temporal_causality_law"
+    },
+    {
+      "called": true,
+      "module": "vault/voice/vault_voice.py",
+      "package": "vault",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "build_all_voices"
+    },
+    {
+      "called": true,
+      "module": "vault/voice/whole_knowledge_voice.py",
+      "package": "vault",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "repo_root"
+    },
+    {
+      "called": true,
+      "module": "vault/voice/whole_knowledge_voice.py",
+      "package": "vault",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "translate_runtime_state"
+    }
+  ],
+  "enabled_through": 3,
+  "stage": 3,
+  "tried": 89
+}

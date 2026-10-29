@@ -95,6 +95,30 @@ def test_surface_does_not_call_and_a_changed_blob_is_refused(tmp_path: Path, mon
     assert "differs from pin" in refused["reason"]
 
 
+def test_stage3_calls_organism_bio_evaluation_and_vault_and_refuses_identity() -> None:
+    assert enabled_stage() >= 3
+    words = _load(
+        body_call(
+            "vault/voice/document_artifact_skill.py",
+            "count_words",
+            json.dumps({"text": "one two three"}),
+        )
+    )
+    assert words["called"] is True
+    assert words["result"] == 3
+    layers = _load(body_call("organism/repository_layers.py", "compose_repository_layers"))
+    assert layers["called"] is True
+    nodes = _load(body_call("evaluation/auris_node_eval.py", "evaluate_auris_nodes"))
+    assert nodes["called"] is True
+    assert nodes["auris_meaning"].startswith("evaluation harness")
+    identity = _load(body_call("identity/reader.py", "read_identity"))
+    assert identity["status"] == "unavailable"
+    assert identity.get("called") is not True
+    record = json.loads((ROOT / "measured" / "body_stage3.json").read_text(encoding="utf-8"))
+    called = {item["package"] for item in record["calls"] if item["called"] is True}
+    assert {"bio", "organism", "evaluation", "vault", "core"} <= called
+
+
 def test_stage2_calls_each_named_package() -> None:
     assert enabled_stage() >= 2
     calls = {
