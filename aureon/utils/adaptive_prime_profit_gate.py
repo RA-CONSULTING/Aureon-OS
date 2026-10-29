@@ -376,10 +376,10 @@ class AdaptivePrimeProfitGate:
         self.calculations_count = 0
         self.last_calculation_time = 0.0
         
-        logger.info("🌍💰 Adaptive Prime Profit Gate initialized")
-        logger.info(f"   Default prime target: ${default_prime:.6f}")
-        logger.info(f"   Default buffer: ${default_buffer:.6f}")
-        logger.info(f"   Using {'maker' if use_maker_fees else 'taker'} fees")
+        logger.debug("🌍💰 Adaptive Prime Profit Gate initialized")
+        logger.debug("   Default prime target: $%.6f", default_prime)
+        logger.debug("   Default buffer: $%.6f", default_buffer)
+        logger.debug("   Using %s fees", "maker" if use_maker_fees else "taker")
     
     def update_fee_profile(
         self,
@@ -1041,7 +1041,7 @@ def wire_to_probability_matrix():
         # Attach the factor function to the matrix
         matrix.adaptive_gate_factor = adaptive_gate_factor
         
-        logger.info("🧠🎯 Adaptive Gate WIRED to Probability Matrix!")
+        logger.debug("🧠🎯 Adaptive Gate WIRED to Probability Matrix!")
         return True
         
     except ImportError as e:
@@ -1165,9 +1165,9 @@ def wire_to_mycelium(goal_target: float = 100000.0, goal_currency: str = 'GBP'):
             'buffer': gate.default_buffer,
         })
         
-        logger.info(f"🍄🎯 Adaptive Gate WIRED to Mycelium Network!")
-        logger.info(f"   Goal: £{goal_target:,.0f} {goal_currency}")
-        logger.info(f"   Prime: ${gate.default_prime:.2f} per trade")
+        logger.debug("🍄🎯 Adaptive Gate WIRED to Mycelium Network!")
+        logger.debug("   Goal: £%s %s", f"{goal_target:,.0f}", goal_currency)
+        logger.debug("   Prime: $%.2f per trade", gate.default_prime)
         
         return gate_node
         
@@ -1195,9 +1195,9 @@ def wire_all_integrations(goal_target: float = 100000.0):
     success_count = sum(1 for v in results.values() if v)
     
     if success_count == len(results):
-        logger.info("🌍💰 ALL INTEGRATIONS WIRED! World domination mode ACTIVE!")
+        logger.debug("🌍💰 ALL INTEGRATIONS WIRED! World domination mode ACTIVE!")
     elif success_count > 0:
-        logger.info(f"🌍💰 {success_count}/{len(results)} integrations wired")
+        logger.debug("🌍💰 %s/%s integrations wired", success_count, len(results))
     else:
         logger.warning("⚠️ No integrations could be wired")
     

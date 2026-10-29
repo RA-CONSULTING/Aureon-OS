@@ -40,7 +40,7 @@ try:
     WIKIPEDIA_AVAILABLE = True
 except ImportError:
     WIKIPEDIA_AVAILABLE = False
-    print("[WISDOM SCANNER] wikipedia-api not installed - run: pip install wikipedia-api")
+    logging.debug("[WISDOM SCANNER] wikipedia-api not installed - run: pip install wikipedia-api")
 
 try:
     import requests
@@ -50,7 +50,7 @@ try:
     warnings.filterwarnings("ignore", category=GuessedAtParserWarning)
 except ImportError:
     SCRAPING_AVAILABLE = False
-    print("[WISDOM SCANNER] requests/beautifulsoup4 not installed")
+    logging.debug("[WISDOM SCANNER] requests/beautifulsoup4 not installed")
 
 try:
     import aiohttp

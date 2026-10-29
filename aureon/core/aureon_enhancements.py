@@ -22,6 +22,7 @@ from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_lin
 from dataclasses import dataclass
 from typing import Dict, Optional, List, Any, Tuple
 from datetime import datetime
+import logging
 import math
 
 # 🔱 PRIME SENTINEL DECREE INTEGRATION
@@ -37,13 +38,13 @@ try:
         SentinelPrinciple,
     )
     DECREE_AVAILABLE = True
-    print("🔱 Prime Sentinel Decree integrated into Enhancement Layer")
+    logging.debug("🔱 Prime Sentinel Decree integrated into Enhancement Layer")
 except ImportError:
     DECREE_AVAILABLE = False
     THE_DECREE = {'declaration': 'Module not loaded'}
     SACRED_NUMBERS = {'phi': 1.618, 'flame': 528, 'breath': 432}
     DOB_HASH = 2111991
-    print("⚠️ Prime Sentinel Decree not available for enhancements")
+    logging.debug("⚠️ Prime Sentinel Decree not available for enhancements")
 
 PRIME_TIER_BONUS = {
     "Heart Prime": 0.05,
@@ -94,21 +95,21 @@ try:
     RAINBOW_AVAILABLE = True
 except ImportError:
     RAINBOW_AVAILABLE = False
-    print("⚠️  Rainbow Bridge not available")
+    logging.debug("Rainbow Bridge not available")
 
 try:
     from aureon.wisdom.synchronicity_decoder import SynchronicityDecoder, detect_fibonacci_sync
     SYNC_AVAILABLE = True
 except ImportError:
     SYNC_AVAILABLE = False
-    print("⚠️  Synchronicity Decoder not available")
+    logging.debug("Synchronicity Decoder not available")
 
 try:
     from aureon.wisdom.stargate_grid import StargateGrid, get_leyline_activity
     STARGATE_AVAILABLE = True
 except ImportError:
     STARGATE_AVAILABLE = False
-    print("⚠️  Stargate Grid not available")
+    logging.debug("Stargate Grid not available")
 
 
 @dataclass

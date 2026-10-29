@@ -103,10 +103,10 @@ try:
         UltimatePrediction
     )
     ULTIMATE_INTELLIGENCE_AVAILABLE = True
-    print("💎 Mycelium: Ultimate Intelligence WIRED (accuracy requires validation receipts)")
+    logging.debug("💎 Mycelium: Ultimate Intelligence WIRED (accuracy requires validation receipts)")
 except ImportError:
     ULTIMATE_INTELLIGENCE_AVAILABLE = False
-    print("⚠️ Mycelium: Ultimate Intelligence not available")
+    logging.debug("⚠️ Mycelium: Ultimate Intelligence not available")
 
 # ⏳🔮 TIMELINE ORACLE - Lazy load to avoid circular imports
 TIMELINE_ORACLE_AVAILABLE = False

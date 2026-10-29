@@ -49,7 +49,7 @@ pytest tests/test_operator_server.py tests/test_connectome.py --timeout=60
 python -c "from aureon.evaluation.brain_proof import evaluate_brain, render_brain_markdown; print(render_brain_markdown(evaluate_brain()))"
 ```
 
-Import logs print first. The measurement is the block below, from a run of that command with no keys:
+The measurement below is from a run of that command with no keys:
 
 ```text
 # HNC, Auris coherence, and QGITA

@@ -9,6 +9,7 @@ Ultra-compact kHz-rate signaling between running components using
 from __future__ import annotations
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 
+import atexit
 import os
 import sys
 import time
@@ -131,16 +132,6 @@ class ChirpRingBuffer:
                 # Give up - shared memory not available
                 self._initialized = False
     
-    def close(self) -> None:
-        """Close and cleanup shared memory."""
-        if self.shm:
-            try:
-                self.shm.close()
-                if self.create:
-                    self.shm.unlink()
-            except Exception:
-                pass
-    
     def __del__(self) -> None:
         """Cleanup on deletion - only if initialized."""
         if getattr(self, '_initialized', False):
@@ -183,8 +174,23 @@ class ChirpRingBuffer:
         return chirp_bytes
 
     def close(self) -> None:
-        if self.shm:
-            self.shm.close()
+        """Release the segment. Unlink before close so the resource tracker drops it."""
+        shm = self.shm
+        if shm is None:
+            return
+        self.shm = None
+        self.buf = None
+        if self.create:
+            try:
+                shm.unlink()
+            except FileNotFoundError:
+                pass
+            except Exception:
+                pass
+        try:
+            shm.close()
+        except Exception:
+            pass
 
 
 try:
@@ -257,14 +263,26 @@ class ChirpBus:
 
 
 _chirp_bus: Optional[ChirpBus] = None
+_CHIRP_CLEANUP_REGISTERED = False
+
+
+def _release_chirp_bus() -> None:
+    """Drop the import-time shared-memory segment before the interpreter exits."""
+    bus = _chirp_bus
+    ring = getattr(bus, "ring", None) if bus is not None else None
+    if ring is not None:
+        ring.close()
 
 
 def get_chirp_bus(create_if_missing: bool = True) -> Optional[ChirpBus]:
-    global _chirp_bus
+    global _chirp_bus, _CHIRP_CLEANUP_REGISTERED
     if _chirp_bus is not None:
         return _chirp_bus
     try:
         _chirp_bus = ChirpBus(create=create_if_missing)
+        if not _CHIRP_CLEANUP_REGISTERED:
+            atexit.register(_release_chirp_bus)
+            _CHIRP_CLEANUP_REGISTERED = True
         return _chirp_bus
     except Exception:
         return None

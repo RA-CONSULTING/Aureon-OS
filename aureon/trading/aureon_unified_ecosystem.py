@@ -72,6 +72,11 @@ import uuid
 import asyncio
 import tempfile
 import logging
+
+def _import_banner(*args, **kwargs) -> None:
+    """Import-time status stays at debug so a measurement prints the result."""
+    logging.debug(" ".join(str(arg) for arg in args))
+
 from aureon.trading.scalper_policy import resolve_scalper_targets
 from aureon.core.aureon_memory_core import memory as spiral_memory  # 🧠 MEMORY CORE INTEGRATION
 
@@ -93,7 +98,7 @@ try:
 except ImportError:
     THOUGHT_BUS = None
     THOUGHT_BUS_AVAILABLE = False
-    print("⚠️  Thought Bus not available - Brain running in isolation")
+    _import_banner("⚠️  Thought Bus not available - Brain running in isolation")
 
 # 🛡️ IMMUNE SYSTEM - SELF-HEALING INTELLIGENCE 🛡️
 try:
@@ -104,18 +109,18 @@ except Exception as e:
     IMMUNE_SYSTEM_AVAILABLE = False
     # Note: the Unified Ecosystem also has an internal CognitiveImmuneSystem.
     # This flag refers only to the optional external module `aureon_immune_system`.
-    print(f"⚠️  External Immune System module (aureon_immune_system) not available: {e}")
+    _import_banner(f"⚠️  External Immune System module (aureon_immune_system) not available: {e}")
 
 # 🌀 PHASE TRANSITION DETECTOR - Geometric Regime Change Detection 🌀
 try:
     from aureon.intelligence.aureon_phase_transition_detector import PhaseTransitionDetector, PhaseState
     PHASE_DETECTOR = PhaseTransitionDetector()
     PHASE_DETECTOR_AVAILABLE = True
-    print("🌀 Phase Transition Detector: ONLINE (Takens embedding + Frenet-Serret curvature)")
+    _import_banner("🌀 Phase Transition Detector: ONLINE (Takens embedding + Frenet-Serret curvature)")
 except ImportError:
     PHASE_DETECTOR = None
     PHASE_DETECTOR_AVAILABLE = False
-    print("⚠️  Phase Transition Detector not available")
+    _import_banner("⚠️  Phase Transition Detector not available")
 
 # ☀️ CROSS-SUBSTRATE SOLAR MONITOR - Solar-Market Correlation Research ☀️
 try:
@@ -123,12 +128,12 @@ try:
     SOLAR_MONITOR = CrossSubstrateMonitor()
     SOLAR_ANALYZER = CrossSubstrateAnalyzer()
     SOLAR_MONITOR_AVAILABLE = True
-    print("☀️ Cross-Substrate Solar Monitor: ONLINE (NOAA + Granger causality)")
+    _import_banner("☀️ Cross-Substrate Solar Monitor: ONLINE (NOAA + Granger causality)")
 except ImportError:
     SOLAR_MONITOR = None
     SOLAR_ANALYZER = None
     SOLAR_MONITOR_AVAILABLE = False
-    print("⚠️  Cross-Substrate Solar Monitor not available")
+    _import_banner("⚠️  Cross-Substrate Solar Monitor not available")
 
 # 🔧 OPERATIONAL CORE — The 9 Surgical Fixes (Brain→Body, Circuit Breaker, etc.)
 try:
@@ -138,11 +143,11 @@ try:
         solar_monitor=SOLAR_MONITOR if SOLAR_MONITOR_AVAILABLE else None,
     )
     OPS_CORE_AVAILABLE = True
-    print("🔧 Operational Core: ONLINE (Signal Gate + Circuit Breaker + Trade Lock + Reconciler)")
+    _import_banner("🔧 Operational Core: ONLINE (Signal Gate + Circuit Breaker + Trade Lock + Reconciler)")
 except ImportError as e:
     OPS_CORE = None
     OPS_CORE_AVAILABLE = False
-    print(f"⚠️  Operational Core not available: {e}")
+    _import_banner(f"⚠️  Operational Core not available: {e}")
 
 # 💎 PROBABILITY ULTIMATE INTELLIGENCE - 95% Accuracy Pattern Learning 💎
 try:
@@ -152,11 +157,11 @@ try:
     )
     ULTIMATE_INTELLIGENCE_AVAILABLE = True
     ULTIMATE_INTEL = get_ultimate_intelligence()
-    print("💎 Unified Ecosystem: Ultimate Intelligence WIRED! (95% accuracy)")
+    _import_banner("💎 Unified Ecosystem: Ultimate Intelligence WIRED!")
 except ImportError:
     ULTIMATE_INTELLIGENCE_AVAILABLE = False
     ULTIMATE_INTEL = None
-    print("⚠️ Ultimate Intelligence not available")
+    _import_banner("⚠️ Ultimate Intelligence not available")
 
 # 🌍🍄 AUREON ULTIMATE ECOSYSTEM WIRING - Full Integration 🍄🌍
 try:
@@ -165,10 +170,10 @@ try:
         EcosystemPrediction, AureonUltimateEcosystem
     )
     ECOSYSTEM_WIRING_AVAILABLE = True
-    print("🌍🍄 Ultimate Ecosystem Wiring CONNECTED! (world domination mode)")
+    _import_banner("🌍🍄 Ultimate Ecosystem Wiring CONNECTED! (world domination mode)")
 except ImportError:
     ECOSYSTEM_WIRING_AVAILABLE = False
-    print("⚠️ Ultimate Ecosystem Wiring not available")
+    _import_banner("⚠️ Ultimate Ecosystem Wiring not available")
 
 # 💰🎯 ADAPTIVE PRIME PROFIT GATE - Dynamic Break-Even Intelligence 💰🎯
 try:
@@ -179,20 +184,20 @@ try:
     )
     ADAPTIVE_GATE_AVAILABLE = True
     _adaptive_gate = get_adaptive_gate()
-    print("💰🎯 Adaptive Prime Profit Gate ARMED! (dynamic fee adaptation)")
+    _import_banner("💰🎯 Adaptive Prime Profit Gate ARMED! (dynamic fee adaptation)")
     
     # 🧠🍄 WIRE TO PROBABILITY MATRIX & MYCELIUM FOR £100K GOAL
     _gate_integrations = wire_all_integrations(goal_target=100000.0)
     if _gate_integrations.get('probability_matrix'):
-        print("   🧠 → Probability Matrix: WIRED (gate metrics)")
+        _import_banner("   🧠 → Probability Matrix: WIRED (gate metrics)")
     if _gate_integrations.get('mycelium'):
-        print("   🍄 → Mycelium Network: WIRED (£100K goal)")
+        _import_banner("   🍄 → Mycelium Network: WIRED (£100K goal)")
         
 except ImportError as e:
     ADAPTIVE_GATE_AVAILABLE = False
     _adaptive_gate = None
     _gate_integrations = {}
-    print(f"⚠️ Adaptive Prime Profit Gate not available: {e}")
+    _import_banner(f"⚠️ Adaptive Prime Profit Gate not available: {e}")
 
 # 🌌✨ INTERNAL MULTIVERSE - 10-9-1-10 Many Worlds Architecture ✨🌌
 try:
@@ -205,15 +210,15 @@ try:
     _internal_multiverse = None
     if take_simulated(INTERNAL_MULTIVERSE, "aureon.simulation, 10 worlds × $10"):
         _internal_multiverse = get_multiverse(initial_equity=100.0)
-        print("🌌✨ Internal Multiverse ONLINE! (SIMULATED 10-9-1-10, 10 worlds × $10)")
-        print("   └─ 10 Mycelium-mapped ecosystem worlds")
-        print("   └─ 9 Processing worlds (cascade adaptation)")
-        print("   └─ 1 Fixed Omega Converter (instant profit sweep)")
-        print("   └─ 10 All together (unified consensus)")
+        _import_banner("🌌✨ Internal Multiverse ONLINE! (SIMULATED 10-9-1-10, 10 worlds × $10)")
+        _import_banner("   └─ 10 Mycelium-mapped ecosystem worlds")
+        _import_banner("   └─ 9 Processing worlds (cascade adaptation)")
+        _import_banner("   └─ 1 Fixed Omega Converter (instant profit sweep)")
+        _import_banner("   └─ 10 All together (unified consensus)")
 except ImportError as e:
     INTERNAL_MULTIVERSE_AVAILABLE = False
     _internal_multiverse = None
-    safe_print(f"⚠️ Internal Multiverse not available: {e}")
+    _import_banner(f"⚠️ Internal Multiverse not available: {e}")
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 🐦 CHIRP BUS INTEGRATION - kHz-Speed Feed Signals
@@ -382,7 +387,7 @@ try:
         UnifiedExchangeClient,
     )
 except ImportError as e:
-    print(f"⚠️  Unified Exchange Client not available: {e}")
+    _import_banner(f"⚠️  Unified Exchange Client not available: {e}")
     # Define dummy classes to prevent crash if critical module is missing
     class UnifiedExchangeClient:
         def __init__(self, *args, **kwargs): self.dry_run = True
@@ -436,7 +441,7 @@ try:
     LATTICE_AVAILABLE = True
 except ImportError:
     LATTICE_AVAILABLE = False
-    print("⚠️  Gaia Lattice Engine not available (numpy missing?): Running in degraded mode")
+    _import_banner("⚠️  Gaia Lattice Engine not available (numpy missing?): Running in degraded mode")
     class GaiaLatticeEngine:
         def __init__(self): pass
         def get_state(self): return {}
@@ -449,7 +454,7 @@ try:
     ENHANCEMENTS_AVAILABLE = True
 except ImportError:
     ENHANCEMENTS_AVAILABLE = False
-    print("⚠️  Enhancement Layer not available: Running without codex integration")
+    _import_banner("⚠️  Enhancement Layer not available: Running without codex integration")
     class EnhancementLayer:
         def __init__(self): pass
         def get_unified_modifier(self, *args, **kwargs): return type('obj', (object,), {'trading_modifier': 1.0, 'confidence': 0.5, 'reasons': []})()
@@ -478,19 +483,19 @@ try:
         DOB_HASH,
     )
     DECREE_AVAILABLE = True
-    print("🔱 Prime Sentinel Decree LOADED - Control reclaimed")
+    _import_banner("🔱 Prime Sentinel Decree LOADED - Control reclaimed")
 except ImportError:
     DECREE_AVAILABLE = False
     THE_DECREE = {'declaration': 'Module not loaded'}
     SACRED_NUMBERS = {'phi': 1.618}
     DOB_HASH = 2111991
-    print("⚠️  Prime Sentinel Decree not available")
+    _import_banner("⚠️  Prime Sentinel Decree not available")
 
 try:
     from aureon.intelligence.aureon_market_pulse import MarketPulse
     from aureon.command_centers.aureon_war_band import WarBand
 except ImportError:
-    print("⚠️  Market Pulse/War Band not available: Running in degraded mode")
+    _import_banner("⚠️  Market Pulse/War Band not available: Running in degraded mode")
     class MarketPulse:
         def __init__(self, client): pass
         def analyze_market(self): return {}
@@ -502,10 +507,10 @@ except ImportError:
 try:
     from aureon.intelligence.nexus_predictor import NexusPredictor
     NEXUS_PREDICTOR_AVAILABLE = True
-    print("🔮 Nexus Predictor loaded - 79.6% win rate validated!")
+    _import_banner("🔮 Nexus Predictor loaded - 79.6% win rate validated!")
 except ImportError:
     NEXUS_PREDICTOR_AVAILABLE = False
-    print("⚠️  Nexus Predictor not available")
+    _import_banner("⚠️  Nexus Predictor not available")
 
 # 🔱🔮 ENHANCED PROBABILITY NEXUS - Lazy load to avoid circular imports
 ENHANCED_NEXUS_AVAILABLE = False
@@ -534,7 +539,7 @@ def _lazy_load_enhanced_nexus():
         OptimalExitFinder = _OptimalExitFinder
         AureonProbabilityNexus = _AureonProbabilityNexus
         ENHANCED_NEXUS_AVAILABLE = True
-        print("🔱🔮 Enhanced Probability Nexus loaded - 100% win rate with profit filter!")
+        _import_banner("🔱🔮 Enhanced Probability Nexus loaded - 100% win rate with profit filter!")
         return True
     except ImportError as e:
         ENHANCED_NEXUS_AVAILABLE = False
@@ -544,19 +549,19 @@ def _lazy_load_enhanced_nexus():
 try:
     from aureon.utils.aureon_miner_brain import MinerBrain
     BRAIN_AVAILABLE = True
-    print("🧠 Miner Brain loaded - Cognitive Intelligence Active!")
+    _import_banner("🧠 Miner Brain loaded - Cognitive Intelligence Active!")
 except ImportError:
     BRAIN_AVAILABLE = False
-    print("⚠️  Miner Brain not available")
+    _import_banner("⚠️  Miner Brain not available")
 
 # 🌐⚡ GLOBAL HARMONIC FIELD - UNIFIED 42-SOURCE FIELD ⚡🌐
 try:
     from aureon.harmonic.global_harmonic_field import GlobalHarmonicField, get_global_field, compute_global_omega
     HARMONIC_FIELD_AVAILABLE = True
-    print("🌐⚡ Global Harmonic Field loaded - 42 sources → 7 layers → Ω")
+    _import_banner("🌐⚡ Global Harmonic Field loaded - 42 sources → 7 layers → Ω")
 except ImportError as e:
     HARMONIC_FIELD_AVAILABLE = False
-    print(f"⚠️  Global Harmonic Field not available: {e}")
+    _import_banner(f"⚠️  Global Harmonic Field not available: {e}")
 
 # 🌍⚡ HNC FREQUENCY INTEGRATION ⚡🌍
 try:
@@ -564,7 +569,7 @@ try:
     HNC_AVAILABLE = True
 except ImportError as e:
     HNC_AVAILABLE = False
-    print(f"⚠️  HNC module not available - frequency analysis disabled: {e}")
+    _import_banner(f"⚠️  HNC module not available - frequency analysis disabled: {e}")
 
 # 🌍⚡ HNC PROBABILITY MATRIX INTEGRATION ⚡🌍
 try:
@@ -572,8 +577,8 @@ try:
     PROB_MATRIX_AVAILABLE = True
 except ImportError as e:
     PROB_MATRIX_AVAILABLE = False
-    print(f"⚠️  Probability Matrix not available: {e}")
-    print(f"⚠️  HNC module not available - frequency analysis disabled: {e}")
+    _import_banner(f"⚠️  Probability Matrix not available: {e}")
+    _import_banner(f"⚠️  HNC module not available - frequency analysis disabled: {e}")
 
 # 🌍⚡ COINAPI ANOMALY DETECTION ⚡🌍
 try:
@@ -581,7 +586,7 @@ try:
     COINAPI_AVAILABLE = True
 except ImportError as e:
     COINAPI_AVAILABLE = False
-    print(f"⚠️  CoinAPI Anomaly Detector not available: {e}")
+    _import_banner(f"⚠️  CoinAPI Anomaly Detector not available: {e}")
 
 # 🌉 AUREON BRIDGE - ULTIMATE ↔ UNIFIED COMMUNICATION 🌉
 try:
@@ -589,7 +594,7 @@ try:
     BRIDGE_AVAILABLE = True
 except ImportError as e:
     BRIDGE_AVAILABLE = False
-    print(f"⚠️  Aureon Bridge not available: {e}")
+    _import_banner(f"⚠️  Aureon Bridge not available: {e}")
 
 # 🌐 AUREON UI BRIDGE - LIVE DATA VALIDATOR FROM aureoninstitute.com 🌐
 try:
@@ -602,7 +607,7 @@ try:
     UI_BRIDGE_AVAILABLE = True
 except ImportError as e:
     UI_BRIDGE_AVAILABLE = False
-    print(f"⚠️  UI Bridge not available: {e}")
+    _import_banner(f"⚠️  UI Bridge not available: {e}")
 
 # 🌌⚡ HNC IMPERIAL PREDICTABILITY ENGINE ⚡🌌
 try:
@@ -613,7 +618,7 @@ try:
     IMPERIAL_AVAILABLE = True
 except ImportError as e:
     IMPERIAL_AVAILABLE = False
-    print(f"⚠️  Imperial Predictability not available: {e}")
+    _import_banner(f"⚠️  Imperial Predictability not available: {e}")
 
 # 🔭 QUANTUM TELESCOPE & HARMONIC UNDERLAY 🔭
 try:
@@ -622,7 +627,7 @@ try:
     QUANTUM_AVAILABLE = True
 except ImportError as e:
     QUANTUM_AVAILABLE = False
-    print(f"⚠️  Quantum Telescope/Harmonic Engine not available: {e}")
+    _import_banner(f"⚠️  Quantum Telescope/Harmonic Engine not available: {e}")
 
 # 🌊 HARMONIC WAVE FUSION - 7-DAY SEED + LIVE GROWTH + LIGHTHOUSE 🌊
 try:
@@ -631,71 +636,71 @@ try:
         initialize_harmonic_fusion
     )
     HARMONIC_FUSION_AVAILABLE = True
-    print("🌊 Harmonic Wave Fusion loaded - 7-day seed + live growth + Lighthouse!")
+    _import_banner("🌊 Harmonic Wave Fusion loaded - 7-day seed + live growth + Lighthouse!")
 except ImportError as e:
     HARMONIC_FUSION_AVAILABLE = False
-    print(f"⚠️  Harmonic Wave Fusion not available: {e}")
+    _import_banner(f"⚠️  Harmonic Wave Fusion not available: {e}")
 
 # ⚡ QGITA - QUANTUM GRAVITY IN THE ACT (φ-resonant signal detection)
 try:
     from aureon.wisdom.aureon_qgita_framework import QGITAMarketAnalyzer
     QGITA_AVAILABLE = True
-    print("⚡ QGITA Framework loaded - Golden Ratio φ temporal resonance filter")
+    _import_banner("⚡ QGITA Framework loaded - Golden Ratio φ temporal resonance filter")
 except ImportError as e:
     QGITA_AVAILABLE = False
     QGITAMarketAnalyzer = None
-    print(f"⚠️  QGITA Framework not available: {e}")
+    _import_banner(f"⚠️  QGITA Framework not available: {e}")
 
 # ☉ SOURCE LAW - 10-9-1 Emerald Tablet decision funnel
 try:
     from aureon.queen.queen_source_law import SourceLawEngine, ENTRY_COHERENCE, EXIT_COHERENCE
     SOURCE_LAW_AVAILABLE = True
-    print(f"☉ Source Law Engine loaded - ENTRY={ENTRY_COHERENCE} EXIT={EXIT_COHERENCE}")
+    _import_banner(f"☉ Source Law Engine loaded - ENTRY={ENTRY_COHERENCE} EXIT={EXIT_COHERENCE}")
 except ImportError as e:
     SOURCE_LAW_AVAILABLE = False
     SourceLawEngine = None
     ENTRY_COHERENCE = 0.938
     EXIT_COHERENCE = 0.934
-    print(f"⚠️  Source Law Engine not available: {e}")
+    _import_banner(f"⚠️  Source Law Engine not available: {e}")
 
 # ⏳ TEMPORAL GROUND - Multiverse hash chain + ZPE grounding
 try:
     from aureon.queen.temporal_ground import TemporalGroundStation, get_temporal_ground_station
     TEMPORAL_GROUND_AVAILABLE = True
-    print("⏳ Temporal Ground Station loaded - ZPE + multiverse hash chain")
+    _import_banner("⏳ Temporal Ground Station loaded - ZPE + multiverse hash chain")
 except ImportError as e:
     TEMPORAL_GROUND_AVAILABLE = False
     TemporalGroundStation = None
     get_temporal_ground_station = None
-    print(f"⚠️  Temporal Ground not available: {e}")
+    _import_banner(f"⚠️  Temporal Ground not available: {e}")
 
 # 🔮 AURIS METACOGNITION - 9-node voter + lighthouse
 try:
     from aureon.vault.auris_metacognition import AurisMetacognition
     AURIS_META_AVAILABLE = True
-    print("🔮 Auris Metacognition loaded - 9-node consensus voter")
+    _import_banner("🔮 Auris Metacognition loaded - 9-node consensus voter")
 except ImportError as e:
     AURIS_META_AVAILABLE = False
     AurisMetacognition = None
-    print(f"⚠️  Auris Metacognition not available: {e}")
+    _import_banner(f"⚠️  Auris Metacognition not available: {e}")
 
 # 🪜 CONVERSION LADDER - Capital Momentum Builder (Mycelium-directed) 🪜
 try:
     from aureon.conversion.aureon_conversion_ladder import ConversionLadder
     CONVERSION_LADDER_AVAILABLE = True
-    print("🪜 Conversion Ladder loaded - capital momentum builder")
+    _import_banner("🪜 Conversion Ladder loaded - capital momentum builder")
 except ImportError as e:
     CONVERSION_LADDER_AVAILABLE = False
-    print(f"⚠️  Conversion Ladder not available: {e}")
+    _import_banner(f"⚠️  Conversion Ladder not available: {e}")
 
 # 🦅⚔️ ADAPTIVE CONVERSION COMMANDO - 1885 CAPM Game ⚔️🦅
 try:
     from aureon.conversion.aureon_conversion_commando import AdaptiveConversionCommando
     CONVERSION_COMMANDO_AVAILABLE = True
-    print("🦅⚔️ Adaptive Conversion Commando loaded - 1885 CAPM Game")
+    _import_banner("🦅⚔️ Adaptive Conversion Commando loaded - 1885 CAPM Game")
 except ImportError as e:
     CONVERSION_COMMANDO_AVAILABLE = False
-    print(f"⚠️  Conversion Commando not available: {e}")
+    _import_banner(f"⚠️  Conversion Commando not available: {e}")
 
 # 🌍⚡ EARTH RESONANCE ENGINE ⚡🌍
 try:
@@ -703,7 +708,7 @@ try:
     EARTH_RESONANCE_AVAILABLE = True
 except ImportError as e:
     EARTH_RESONANCE_AVAILABLE = False
-    print(f"⚠️  Earth Resonance Engine not available: {e}")
+    _import_banner(f"⚠️  Earth Resonance Engine not available: {e}")
 
 # 🌌⚡ AUREON NEXUS - UNIFIED NEURAL TRADING ENGINE ⚡🌌
 try:
@@ -712,11 +717,11 @@ try:
     # 🧠 UNITY: Connect Nexus to Thought Bus
     if NEXUS_BUS and THOUGHT_BUS_AVAILABLE:
         NEXUS_BUS.thought_bus = THOUGHT_BUS
-        print("   🧠 Nexus connected to Thought Bus")
+        _import_banner("   🧠 Nexus connected to Thought Bus")
 except ImportError as e:
     NEXUS_AVAILABLE = False
     NEXUS_BUS = None
-    print(f"⚠️  Aureon Nexus not available: {e}")
+    _import_banner(f"⚠️  Aureon Nexus not available: {e}")
 
 # 🎯 PROBABILITY LOADER & POSITION HYGIENE 🎯
 try:
@@ -724,7 +729,7 @@ try:
     PROBABILITY_LOADER_AVAILABLE = True
 except ImportError as e:
     PROBABILITY_LOADER_AVAILABLE = False
-    print(f"⚠️  Probability Loader not available: {e}")
+    _import_banner(f"⚠️  Probability Loader not available: {e}")
     class ProbabilityLoader:
         def __init__(self, *args, **kwargs): pass
         def load_all_reports(self): return {}
@@ -743,7 +748,7 @@ try:
 except ImportError as e:
     TRADE_LOGGER_AVAILABLE = False
     trade_logger = None
-    print(f"⚠️  Trade Logger not available: {e}")
+    _import_banner(f"⚠️  Trade Logger not available: {e}")
 
 # 💰 COST BASIS TRACKER - REAL PURCHASE PRICES 💰
 try:
@@ -751,7 +756,7 @@ try:
     COST_BASIS_AVAILABLE = True
 except ImportError as e:
     COST_BASIS_AVAILABLE = False
-    print(f"⚠️  Cost Basis Tracker not available: {e}")
+    _import_banner(f"⚠️  Cost Basis Tracker not available: {e}")
     # Fallback stub
     class CostBasisTracker:
         def __init__(self): self.positions = {}
@@ -768,10 +773,10 @@ except ImportError as e:
 try:
     from aureon.data_feeds.global_financial_feed import GlobalFinancialFeed, MacroSnapshot
     GLOBAL_FEED_AVAILABLE = True
-    print("   🌍 Global Financial Ecosystem Feed ACTIVE")
+    _import_banner("   🌍 Global Financial Ecosystem Feed ACTIVE")
 except ImportError as e:
     GLOBAL_FEED_AVAILABLE = False
-    print(f"⚠️  Global Financial Feed not available: {e}")
+    _import_banner(f"⚠️  Global Financial Feed not available: {e}")
     # Fallback stub
     class GlobalFinancialFeed:
         def get_snapshot(self): return None
@@ -783,10 +788,10 @@ except ImportError as e:
 try:
     from aureon.strategies.probability_validator import ProbabilityValidator, get_validator
     VALIDATOR_AVAILABLE = True
-    print("   📊 Probability Validation Engine ACTIVE")
+    _import_banner("   📊 Probability Validation Engine ACTIVE")
 except ImportError as e:
     VALIDATOR_AVAILABLE = False
-    print(f"⚠️  Probability Validator not available: {e}")
+    _import_banner(f"⚠️  Probability Validator not available: {e}")
     # Fallback stub
     class ProbabilityValidator:
         def record_prediction(self, **kwargs): return ""
@@ -800,11 +805,11 @@ try:
     from aureon.analytics.lighthouse_metrics import LighthouseMetricsEngine
     LIGHTHOUSE_AVAILABLE = True
     LIGHTHOUSE_ENGINE = LighthouseMetricsEngine()
-    print("   🌅 Lighthouse Metrics ACTIVE")
+    _import_banner("   🌅 Lighthouse Metrics ACTIVE")
 except Exception as e:
     LIGHTHOUSE_AVAILABLE = False
     LIGHTHOUSE_ENGINE = None
-    print(f"⚠️  Lighthouse Metrics not available: {e}")
+    _import_banner(f"⚠️  Lighthouse Metrics not available: {e}")
 
 
 
@@ -818,7 +823,7 @@ try:
     NEWS_FEED_AVAILABLE = True
 except ImportError:
     NEWS_FEED_AVAILABLE = False
-    print("⚠️  News Feed module not available")
+    _import_banner("⚠️  News Feed module not available")
 
 # ==== WIKIPEDIA KNOWLEDGE BASE (autonomous knowledge gathering) ====
 try:
@@ -826,26 +831,26 @@ try:
     KNOWLEDGE_BASE_AVAILABLE = True
 except ImportError:
     KNOWLEDGE_BASE_AVAILABLE = False
-    print("⚠️  Knowledge Base module not available")
+    _import_banner("⚠️  Knowledge Base module not available")
 
 # ==== WISDOM SCANNER - CONSCIOUSNESS EXPANSION ENGINE ====
 try:
     from aureon.scanners.aureon_wisdom_scanner import AureonWisdomScanner, ScannerConfig, WisdomScannerThoughtBusAdapter
     WISDOM_SCANNER_AVAILABLE = True
-    print("   📚 Wisdom Scanner loaded - Consciousness Expansion Active!")
+    _import_banner("   📚 Wisdom Scanner loaded - Consciousness Expansion Active!")
 except ImportError as e:
     WISDOM_SCANNER_AVAILABLE = False
-    print(f"⚠️  Wisdom Scanner not available: {e}")
+    _import_banner(f"⚠️  Wisdom Scanner not available: {e}")
 
 # ==== 🇮🇪🎯 UNIFIED SNIPER BRAIN - THE KILL SHOT ENGINE ====
 try:
     from aureon.trading.unified_sniper_brain import get_unified_brain, UnifiedSniperBrain
     SNIPER_BRAIN_AVAILABLE = True
-    print("   🎯 UNIFIED SNIPER BRAIN LOADED - Ready for kills!")
+    _import_banner("   🎯 UNIFIED SNIPER BRAIN LOADED")
 except ImportError as e:
     SNIPER_BRAIN_AVAILABLE = False
     UnifiedSniperBrain = None
-    print(f"⚠️  Sniper Brain not available: {e}")
+    _import_banner(f"⚠️  Sniper Brain not available: {e}")
 
 # ==== ⚔️ WAR STRATEGY - QUICK KILL PROBABILITY ENGINE ====
 try:
@@ -855,22 +860,22 @@ try:
         REQUIRED_R, WIN_THRESHOLD, NET_PENNY_TARGET, IDEAL_BARS, MAX_ACCEPTABLE_BARS
     )
     WAR_STRATEGY_AVAILABLE = True
-    print("   ⚔️ WAR STRATEGY LOADED - Quick Kill Probability Active!")
+    _import_banner("   ⚔️ WAR STRATEGY LOADED - Quick Kill Probability Active!")
 except ImportError as e:
     WAR_STRATEGY_AVAILABLE = False
     WAR_STRATEGIST = None
-    print(f"⚠️  War Strategy not available: {e}")
+    _import_banner(f"⚠️  War Strategy not available: {e}")
 
 # ==== 🇮🇪 BHOY'S WISDOM - STRATEGIC QUOTES ====
 try:
     from aureon.wisdom.bhoys_wisdom import celebrate_penny_profit, get_contextual_wisdom
     BHOYS_WISDOM_AVAILABLE = True
-    print("   🍀 Bhoy's Wisdom loaded - Through a Bhoy's Eyes Active!")
+    _import_banner("   🍀 Bhoy's Wisdom loaded - Through a Bhoy's Eyes Active!")
 except ImportError as e:
     BHOYS_WISDOM_AVAILABLE = False
     def celebrate_penny_profit(amount, symbol): return "Our revenge will be the laughter of our children."
     def get_contextual_wisdom(context): return "Tiocfaidh ár lá!"
-    print(f"⚠️  Bhoy's Wisdom not available: {e}")
+    _import_banner(f"⚠️  Bhoy's Wisdom not available: {e}")
 
 # ═══════════════════════════════════════════════════════════════
 # ☘️🔥 CELTIC WARFARE SYSTEMS - IRISH GUERRILLA INTELLIGENCE 🔥☘️
@@ -883,11 +888,11 @@ try:
         TacticalMode, IntelligenceReport, GUERRILLA_CONFIG, get_celtic_wisdom
     )
     GUERRILLA_ENGINE_AVAILABLE = True
-    print("   ☘️ Guerrilla Warfare Engine loaded - Flying Columns Ready!")
+    _import_banner("   ☘️ Guerrilla Warfare Engine loaded - Flying Columns Ready!")
 except ImportError as e:
     GUERRILLA_ENGINE_AVAILABLE = False
     IntelligenceNetwork = None
-    print(f"⚠️  Guerrilla Engine not available: {e}")
+    _import_banner(f"⚠️  Guerrilla Engine not available: {e}")
 
 # ==== ⚡ CELTIC PREEMPTIVE STRIKE ENGINE ====
 try:
@@ -896,11 +901,11 @@ try:
         PreemptiveSignal, PreemptiveSignalType
     )
     PREEMPTIVE_STRIKE_AVAILABLE = True
-    print("   ⚡ Preemptive Strike Engine loaded - Move Before They React!")
+    _import_banner("   ⚡ Preemptive Strike Engine loaded - Move Before They React!")
 except ImportError as e:
     PREEMPTIVE_STRIKE_AVAILABLE = False
     PreemptiveExitEngine = None
-    print(f"⚠️  Preemptive Strike not available: {e}")
+    _import_banner(f"⚠️  Preemptive Strike not available: {e}")
 
 # ==== 🌐 MULTI-BATTLEFRONT COORDINATOR ====
 try:
@@ -908,11 +913,11 @@ try:
         MultiBattlefrontWarRoom, CampaignPhase, ArbitrageOpportunity
     )
     BATTLEFRONT_COORDINATOR_AVAILABLE = True
-    print("   🌐 Multi-Battlefront Coordinator loaded - Unity of Command!")
+    _import_banner("   🌐 Multi-Battlefront Coordinator loaded - Unity of Command!")
 except ImportError as e:
     BATTLEFRONT_COORDINATOR_AVAILABLE = False
     MultiBattlefrontWarRoom = None
-    print(f"⚠️  Battlefront Coordinator not available: {e}")
+    _import_banner(f"⚠️  Battlefront Coordinator not available: {e}")
 
 # ==== 🇮🇪 IRISH PATRIOT SCOUTS ====
 try:
@@ -921,12 +926,12 @@ try:
         PATRIOT_CONFIG, get_patriot_wisdom
     )
     PATRIOT_SCOUTS_AVAILABLE = True
-    print("   🇮🇪 Irish Patriot Scouts loaded - Warriors Ready!")
+    _import_banner("   🇮🇪 Irish Patriot Scouts loaded - Warriors Ready!")
 except ImportError as e:
     PATRIOT_SCOUTS_AVAILABLE = False
     PatriotScoutNetwork = None
     PatriotScoutDeployer = None
-    print(f"⚠️  Patriot Scouts not available: {e}")
+    _import_banner(f"⚠️  Patriot Scouts not available: {e}")
 
 # ==== 🎯 IRA CELTIC SNIPER ====
 try:
@@ -936,11 +941,11 @@ try:
         get_sniper_config, map_sniper_platform_assets, apply_sniper_mode
     )
     CELTIC_SNIPER_AVAILABLE = True
-    print("   🎯 IRA Celtic Sniper loaded - Zero Loss Mode Active!")
+    _import_banner("   🎯 IRA Celtic Sniper loaded - Zero Loss Mode Active!")
 except ImportError as e:
     CELTIC_SNIPER_AVAILABLE = False
     IraCelticSniper = None
-    print(f"⚠️  Celtic Sniper not available: {e}")
+    _import_banner(f"⚠️  Celtic Sniper not available: {e}")
 
 # ═══════════════════════════════════════════════════════════════
 # 💰 PENNY PROFIT ENGINE - DYNAMIC DOLLAR-BASED EXIT THRESHOLDS 💰
@@ -987,15 +992,15 @@ def load_penny_profit_config():
             min_net, max_net = GLOBAL_NET_PROFIT_RANGE
             PENNY_TARGET_NET = max(min_net, min(max_net, loaded_target))
             if PENNY_TARGET_NET != loaded_target:
-                print(
+                _import_banner(
                     f"💰 Penny Profit Engine - DYNAMIC (target clamped: requested ${loaded_target:.2f} → ${PENNY_TARGET_NET:.2f} net per trade)"
                 )
             else:
-                print(f"💰 Penny Profit Engine - DYNAMIC (target: +${PENNY_TARGET_NET:.2f} net per trade)")
+                _import_banner(f"💰 Penny Profit Engine - DYNAMIC (target: +${PENNY_TARGET_NET:.2f} net per trade)")
         except Exception as e:
-            print(f"⚠️  Penny config load error: {e} - using dynamic defaults")
+            _import_banner(f"⚠️  Penny config load error: {e} - using dynamic defaults")
     else:
-        print(f"💰 Penny Profit Engine - DYNAMIC MODE (target: +${PENNY_TARGET_NET:.2f} net)")
+        _import_banner(f"💰 Penny Profit Engine - DYNAMIC MODE (target: +${PENNY_TARGET_NET:.2f} net)")
     
     PENNY_PROFIT_ENABLED = True  # Always enabled with dynamic calculation
 
@@ -2441,7 +2446,7 @@ class MinerStateConnector:
         self._successful_reads: int = 0
         self._failed_reads: int = 0
         
-        logger.info("🔗 Miner State Connector initialized - will auto-detect running miner")
+        logger.debug("🔗 Miner State Connector initialized - will auto-detect running miner")
         
     def _find_state_file(self) -> Optional[str]:
         """Find the miner state file from possible locations."""
@@ -2648,7 +2653,7 @@ class EcosystemBrainBridge:
         self._last_cycle_time: float = 0.0
         self._cycle_interval: float = 1.0  # Run brain EVERY SECOND
         
-        logger.info("🧠🌍 Ecosystem Brain Bridge initialized - AUTONOMOUS MODE (1s cycles)")
+        logger.debug("🧠🌍 Ecosystem Brain Bridge initialized - AUTONOMOUS MODE (1s cycles)")
         
         # Reference to global miner connector for auto-detection
         self._miner_connector = MINER_CONNECTOR
@@ -5650,7 +5655,7 @@ class UnifiedStateAggregator:
         
         self.aggregated_state['last_aggregation'] = time.time()
         
-        logger.info(f"📊 State Aggregator: Loaded {len(self.aggregated_state['sources_loaded'])} sources, "
+        logger.debug(f"📊 State Aggregator: Loaded {len(self.aggregated_state['sources_loaded'])} sources, "
                    f"{self.aggregated_state['total_historical_trades']} historical trades")
         
         return self.aggregated_state
@@ -6876,7 +6881,7 @@ class AdaptiveLearningEngine:
         if not cfg.get('enabled'):
             # Make it explicit in logs when auto-reset isn't active.
             # This is especially helpful on Windows when `.env` loading can vary.
-            logger.info(
+            logger.debug(
                 "Adaptive Learning: startup auto-reset disabled (set AUREON_AUTO_RESET_LEARNED_ANALYTICS=1 to enable)"
             )
             return
@@ -12735,7 +12740,7 @@ class Synapse:
 try:
     from aureon.core.aureon_mycelium import MyceliumNetwork as FullMyceliumNetwork, Hive, Agent, Neuron
     FULL_MYCELIUM_AVAILABLE = True
-    logger.info("🍄🧠 Full Mycelium Neural Network loaded - Hives & Queen Neuron ACTIVE")
+    logger.debug("🍄🧠 Full Mycelium Neural Network loaded - Hives & Queen Neuron ACTIVE")
 except ImportError:
     FULL_MYCELIUM_AVAILABLE = False
     logger.warning("⚠️ Full Mycelium not available, using simplified pattern network")
