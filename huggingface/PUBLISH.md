@@ -82,7 +82,7 @@ Upload only the `huggingface/` folders. Do not upload `.env`, `.git`, keys, or t
 The Space `requirements.txt` installs the package with:
 
 ```bash
-pip install "aureon @ git+https://github.com/RA-CONSULTING/Aureon-OS.git@a00f744d2e686e916e45b81dd4222408c368e305"
+pip install "aureon @ git+https://github.com/RA-CONSULTING/Aureon-OS.git@8aa6a2d971cc529484e2a5e261e28afafab4e4f4"
 ```
 
-That pin is commit `a00f744d2e686e916e45b81dd4222408c368e305`, the commit the measured runs come from. The git+ install brings the whole repo, trading modules included, and only the Spaces switch them off.
+That pin is commit `8aa6a2d971cc529484e2a5e261e28afafab4e4f4`. It is the commit the Spaces and the public server install, and it includes the organism-proof edit from #213. The recorded brain runs in this bundle were produced at `a00f744d2e686e916e45b81dd4222408c368e305`. The git+ install brings the whole repo, trading modules included, and only the Spaces switch them off.

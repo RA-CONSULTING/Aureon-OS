@@ -482,11 +482,11 @@ def test_phenolic_blob_matches_pin_and_a_changed_copy_is_refused(
 
     (tmp_path / "phenolic_fingerprint.py").write_bytes(original.read_bytes() + b"\n# not the pin\n")
     reason = layers._load_phenolic_fingerprint(tmp_path)
-    assert reason == "checkout phenolic_fingerprint differs from pin a00f744d"
+    assert reason == "checkout phenolic_fingerprint differs from pin 8aa6a2d9"
     monkeypatch.setattr(layers.paths, "repo_root", lambda: tmp_path)
     refused = _load(layers.membrane_screen("hello"))
     assert refused["status"] == "unavailable"
-    assert refused["reason"] == "checkout phenolic_fingerprint differs from pin a00f744d"
+    assert refused["reason"] == "checkout phenolic_fingerprint differs from pin 8aa6a2d9"
 
 
 def test_pinned_source_reads_once_and_executes_those_bytes(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
