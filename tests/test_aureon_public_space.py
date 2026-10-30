@@ -106,6 +106,59 @@ class _Server:
         return f"http://127.0.0.1:{self.port}/mcp"
 
 
+def test_public_bind_accepts_hf_space_host_and_locked_bind_refuses_all_interfaces(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A 0.0.0.0 bind accepts Host: *.hf.space. No key and no OPEN refuses 0.0.0.0."""
+
+    import asyncio
+
+    from mcp.server.fastmcp import FastMCP
+    from mcp.server.transport_security import TransportSecurityMiddleware
+    from starlette.requests import Request
+
+    from aureon_public.space import space_host
+
+    monkeypatch.delenv("AUREON_PUBLIC_API_KEY", raising=False)
+    monkeypatch.delenv("AUREON_PUBLIC_OPEN", raising=False)
+    monkeypatch.setenv("AUREON_PUBLIC_HOST", "0.0.0.0")
+    with pytest.raises(SystemExit, match="127.0.0.1"):
+        space_host()
+
+    async def host_status(bind: str) -> int | None:
+        server = FastMCP("aureon-public-host-check", host=bind, port=9)
+        security = TransportSecurityMiddleware(server.settings.transport_security)
+        scope = {
+            "type": "http",
+            "method": "POST",
+            "path": "/mcp",
+            "headers": [
+                (b"host", b"aureon-public.hf.space"),
+                (b"content-type", b"application/json"),
+            ],
+            "query_string": b"",
+            "scheme": "https",
+            "client": ("127.0.0.1", 1),
+            "server": ("0.0.0.0", 7860),
+        }
+
+        async def receive():
+            return {"type": "http.request", "body": b"{}", "more_body": False}
+
+        response = await security.validate_request(Request(scope, receive), is_post=True)
+        if response is None:
+            return None
+        return int(response.status_code)
+
+    assert asyncio.run(host_status("0.0.0.0")) is None
+    assert asyncio.run(host_status("127.0.0.1")) == 421
+    monkeypatch.setenv("AUREON_PUBLIC_OPEN", "1")
+    assert space_host() == "0.0.0.0"
+    monkeypatch.delenv("AUREON_PUBLIC_OPEN")
+    monkeypatch.setenv("AUREON_PUBLIC_API_KEY", "runtime-secret")
+    assert space_host() == "0.0.0.0"
+
+
 def test_locked_bind_is_localhost_only(monkeypatch: pytest.MonkeyPatch) -> None:
     from aureon_public.http_guard import resolve_http_bind
 
@@ -301,6 +354,7 @@ def _limits(**overrides: object):
         "timeout_s": 5.0,
         "trusted_hops": 1,
         "max_clients": 32,
+        "max_inflight": 8,
     }
     values.update(overrides)
     return HttpLimits(**values)
@@ -528,6 +582,37 @@ def test_spike_chunked_50000_against_2000_is_refused() -> None:
     assert called["app"] is False
 
 
+def test_inflight_cap_returns_503_busy() -> None:
+    import asyncio
+
+    from aureon_public.http_guard import PublicHttpMiddleware
+
+    release = asyncio.Event()
+    entered = asyncio.Event()
+
+    async def hold(scope, receive, send):
+        while True:
+            message = await receive()
+            if message.get("type") == "http.request" and not message.get("more_body", False):
+                break
+        entered.set()
+        await release.wait()
+        await send({"type": "http.response.start", "status": 200, "headers": []})
+        await send({"type": "http.response.body", "body": b"ok"})
+
+    middleware = PublicHttpMiddleware(hold, _limits(max_inflight=1, rate_limit=10))
+
+    async def run() -> None:
+        first = asyncio.create_task(_middleware_status(middleware, {}))
+        await asyncio.wait_for(entered.wait(), timeout=2)
+        second = await _middleware_status(middleware, {})
+        assert second == 503
+        release.set()
+        assert await first == 200
+
+    asyncio.run(run())
+
+
 def test_rate_limiter_table_stays_bounded() -> None:
     from aureon_public.http_guard import RateLimiter
 
@@ -589,6 +674,11 @@ def test_scaffold_bakes_no_key_and_quotes_the_plan() -> None:
     assert "AUREON_PUBLIC_REQUIRE_PIN=1" in dockerfile
     assert "AUREON_OBSERVER_MODE=dry_run" in dockerfile
     assert "AUREON_PUBLIC_OPEN=1" in dockerfile
+    assert "AUREON_PUBLIC_HOST=0.0.0.0" in dockerfile
+    assert "421" in readme
+    assert "*.hf.space" in readme
+    assert "503" in readme
+    assert "`busy`" in readme
     assert "mcp==1.30.0,<2" in requirements
     assert "8aa6a2d971cc529484e2a5e261e28afafab4e4f4" in requirements
     assert "partial release covering stages 1 and 2 of 4" in readme

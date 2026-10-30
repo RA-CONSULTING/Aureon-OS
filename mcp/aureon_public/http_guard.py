@@ -24,6 +24,9 @@ _DEFAULT_MAX_BODY = 1_048_576
 _DEFAULT_TIMEOUT_S = 30.0
 _DEFAULT_TRUSTED_HOPS = 1
 _DEFAULT_MAX_CLIENTS = 4096
+# The public worker pool is 4. One live session holds the SSE GET and a POST
+# at the same time, so the cap stays at that same low number.
+_DEFAULT_MAX_INFLIGHT = 4
 
 
 @dataclass(frozen=True)
@@ -37,6 +40,7 @@ class HttpLimits:
     timeout_s: float
     trusted_hops: int = _DEFAULT_TRUSTED_HOPS
     max_clients: int = _DEFAULT_MAX_CLIENTS
+    max_inflight: int = _DEFAULT_MAX_INFLIGHT
 
 
 class RateLimiter:
@@ -123,6 +127,7 @@ def load_http_limits() -> HttpLimits:
         timeout_s=_positive_float("AUREON_PUBLIC_REQUEST_TIMEOUT_S", _DEFAULT_TIMEOUT_S),
         trusted_hops=_nonnegative_int("AUREON_PUBLIC_TRUSTED_HOPS", _DEFAULT_TRUSTED_HOPS),
         max_clients=_positive_int("AUREON_PUBLIC_RATE_MAX_CLIENTS", _DEFAULT_MAX_CLIENTS),
+        max_inflight=_positive_int("AUREON_PUBLIC_MAX_INFLIGHT", _DEFAULT_MAX_INFLIGHT),
     )
 
 
@@ -267,6 +272,8 @@ class PublicHttpMiddleware:
             limits.rate_window_s,
             max_clients=limits.max_clients,
         )
+        self._inflight = 0
+        self._inflight_lock = asyncio.Lock()
 
     async def __call__(self, scope, receive, send) -> None:
         if scope.get("type") != "http":
@@ -296,26 +303,43 @@ class PublicHttpMiddleware:
             receive = await _bounded_receive(receive, self.limits.max_body_bytes, send)
             if receive is None:
                 return
-        if method != "POST":
-            await self.app(scope, receive, send)
+        if not await self._acquire_inflight():
+            await _reject(send, 503, "busy")
             return
-        started = False
-
-        async def send_wrapper(message) -> None:
-            nonlocal started
-            if message.get("type") == "http.response.start":
-                started = True
-            await send(message)
-
         try:
-            await asyncio.wait_for(
-                self.app(scope, receive, send_wrapper),
-                timeout=self.limits.timeout_s,
-            )
-        except TimeoutError:
-            if started:
-                raise
-            await _reject(send, 504, "timeout")
+            if method != "POST":
+                await self.app(scope, receive, send)
+                return
+            started = False
+
+            async def send_wrapper(message) -> None:
+                nonlocal started
+                if message.get("type") == "http.response.start":
+                    started = True
+                await send(message)
+
+            try:
+                await asyncio.wait_for(
+                    self.app(scope, receive, send_wrapper),
+                    timeout=self.limits.timeout_s,
+                )
+            except TimeoutError:
+                if started:
+                    raise
+                await _reject(send, 504, "timeout")
+        finally:
+            await self._release_inflight()
+
+    async def _acquire_inflight(self) -> bool:
+        async with self._inflight_lock:
+            if self._inflight >= self.limits.max_inflight:
+                return False
+            self._inflight += 1
+            return True
+
+    async def _release_inflight(self) -> None:
+        async with self._inflight_lock:
+            self._inflight -= 1
 
 
 async def _bounded_receive(receive, max_body: int, send):

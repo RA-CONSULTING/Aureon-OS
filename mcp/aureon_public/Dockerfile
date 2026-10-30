@@ -48,10 +48,15 @@ RUN useradd --create-home --uid 1000 aureon \
 USER aureon
 WORKDIR /tmp/aureon-public-space
 
+# Listen on 0.0.0.0. The MCP SDK turns DNS-rebinding protection on when the
+# process binds 127.0.0.1, and then answers 421 to Host: *.hf.space.
+# Open mode and keyed mode on the Space stay on 0.0.0.0. A process with
+# neither AUREON_PUBLIC_OPEN=1 nor AUREON_PUBLIC_API_KEY still refuses that bind.
 ENV AUREON_PUBLIC_REQUIRE_PIN=1 \
     AUREON_OBSERVER_MODE=dry_run \
     AUREON_PUBLIC_OPEN=1 \
     AUREON_PUBLIC_HOST=0.0.0.0 \
+    AUREON_PUBLIC_MAX_INFLIGHT=4 \
     PORT=7860 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
