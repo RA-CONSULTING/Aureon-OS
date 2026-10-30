@@ -549,6 +549,53 @@ def test_spec_from_file_location_is_only_the_space_guard() -> None:
     assert "space_guard" in guard
 
 
+def test_subprocess_body_call_ignores_stray_module_in_repo_root() -> None:
+    import importlib
+
+    from aureon_public.body import body_call
+
+    root = ROOT
+    shadow = root / "aureon.py"
+    shadow.write_text(
+        'raise ImportError("stray repo-root aureon.py was imported")\n',
+        encoding="utf-8",
+    )
+    try:
+        body = _load(body_call("harmonic/rainbow_reference.py", "solfeggio_ladder"))
+        assert body["status"] == "cited"
+        assert body.get("called") is True
+    finally:
+        shadow.unlink(missing_ok=True)
+        for name in list(sys.modules):
+            if name == "aureon" or name.startswith("aureon."):
+                sys.modules.pop(name, None)
+        importlib.invalidate_caches()
+
+
+def test_import_checked_refuses_disallowed_parent_package() -> None:
+    from aureon_public.body import _import_checked
+
+    loaded, refusal = _import_checked("exchanges/single_currency_equity.py")
+    assert loaded is None
+    assert refusal is not None
+    assert "exchanges" in refusal
+
+
+def test_import_checked_has_no_import_module_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
+    import importlib
+
+    from aureon_public.body import _import_checked
+
+    def forbidden(name: str, *args: object, **kwargs: object) -> object:
+        raise AssertionError(f"importlib.import_module must not be used; got {name!r}")
+
+    monkeypatch.setattr(importlib, "import_module", forbidden)
+    loaded, refusal = _import_checked("harmonic/rainbow_reference.py")
+    assert loaded is not None
+    assert refusal is None
+    assert hasattr(loaded, "solfeggio_ladder")
+
+
 def test_space_entry_points_call_enforce_public_pin() -> None:
     for name in ("hnc-field", "auris-coherence", "qgita-snr", "organism-replay"):
         text = (ROOT / "huggingface" / name / "app.py").read_text(encoding="utf-8")

@@ -18,6 +18,7 @@ import re
 import signal
 import subprocess
 import sys
+import tempfile
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -148,6 +149,21 @@ def _outside(origin: Path, root: Path) -> bool:
     resolved = origin.resolve()
     root_resolved = root.resolve()
     return resolved != root_resolved and root_resolved not in resolved.parents
+
+
+def _blocked_dotted_prefix(dotted: str) -> str | None:
+    parts = dotted.split(".")
+    if parts[0] in _BLOCKED:
+        return f"package {parts[0]} is not importable"
+    if parts[0] == "aureon" and len(parts) > 1 and parts[1] in _BLOCKED:
+        return f"package {parts[1]} is not importable"
+    return None
+
+
+def _isolated_worker_cwd() -> Path:
+    directory = Path(tempfile.gettempdir()) / "aureon-public-isolated-worker"
+    directory.mkdir(exist_ok=True)
+    return directory
 
 
 def _plain(value: Any, depth: int = 0) -> Any:
@@ -370,16 +386,16 @@ def _call_in_subprocess(module: str, symbol: str, arguments: dict[str, Any], tim
         }
     ).encode("utf-8")
     package_root = str(Path(__file__).resolve().parents[1])
+    worker_script = str(Path(__file__).resolve().parent / "call_worker.py")
     env = os.environ.copy()
-    pythonpath = env.get("PYTHONPATH", "")
-    env["PYTHONPATH"] = package_root if not pythonpath else package_root + os.pathsep + pythonpath
+    env["PYTHONPATH"] = package_root
     process = subprocess.Popen(
-        [sys.executable, "-m", "aureon_public.call_worker"],
+        [sys.executable, "-P", worker_script],
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         start_new_session=True,
-        cwd=str(repo_root()),
+        cwd=str(_isolated_worker_cwd()),
         env=env,
     )
     try:
@@ -439,25 +455,19 @@ def _import_checked(module: str) -> tuple[Any | None, str | None]:
     root = repo_root()
     path = file_for(module)
     dotted = dotted_for(module)
+    blocked = _blocked_dotted_prefix(dotted)
+    if blocked:
+        return None, blocked
     spec = importlib.util.find_spec(dotted)
     origin = getattr(spec, "origin", None) if spec is not None else None
-    from_checkout = True
     if origin:
         origin_path = Path(origin)
         if origin_path.is_file() and _outside(origin_path, root):
-            from_checkout = False
-    if from_checkout:
-        loaded, refusal = load_checkout_module(dotted, path, root, PINNED_COMMIT)
-        if refusal:
-            return None, refusal
-        return loaded, None
-    try:
-        imported = importlib.import_module(dotted)
-    except SystemExit:
-        return None, "import raised SystemExit"
-    except Exception as exc:  # noqa: BLE001 - import failure is an unavailable tool result
-        return None, f"{type(exc).__name__}: {exc}"[:240]
-    return imported, None
+            return None, "import without checkout pin check is refused"
+    loaded, refusal = load_checkout_module(dotted, path, root, PINNED_COMMIT)
+    if refusal:
+        return None, refusal
+    return loaded, None
 
 
 def _safety_block(row: dict[str, Any], *, allow_fetch: bool, allow_write: bool) -> str | None:
