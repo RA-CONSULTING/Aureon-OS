@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -231,9 +232,11 @@ def test_untested_stage2_entry_points_are_refused() -> None:
             assert body["reason"] == reason
 
 
-def test_observer_mode_tools_do_not_return_a_bare_live(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_production_mode_tools_return_the_dry_run_results(monkeypatch: pytest.MonkeyPatch) -> None:
+    import enum
+
+    from aureon.observer import production_mode as mode
     from aureon_public.stage2_layer import (
-        MODE_WHEN_UNSET,
         stage2_gate_buy_veto,
         stage2_gate_sell_veto,
         stage2_is_live,
@@ -247,28 +250,113 @@ def test_observer_mode_tools_do_not_return_a_bare_live(monkeypatch: pytest.Monke
         stage2_vote_addition,
     )
 
-    monkeypatch.delenv("AUREON_OBSERVER_MODE", raising=False)
-    tools = (
-        stage2_observer_mode,
-        stage2_reload_mode,
-        stage2_is_live,
-        stage2_is_shadow,
-        stage2_gate_buy_veto,
-        stage2_gate_sell_veto,
-        stage2_narrow_band,
-        stage2_kelly_buffer,
-        stage2_vote_addition,
-        stage2_phase_veto,
-        stage2_volatility_veto,
+    monkeypatch.setenv("AUREON_OBSERVER_MODE", "dry_run")
+    mode.reload_mode()
+    pairs = (
+        (stage2_observer_mode, mode.get_mode),
+        (stage2_reload_mode, mode.reload_mode),
+        (stage2_is_live, mode.is_live),
+        (stage2_is_shadow, mode.is_shadow),
+        (stage2_gate_buy_veto, mode.gate_buy_veto_active),
+        (stage2_gate_sell_veto, mode.gate_sell_veto_active),
+        (stage2_narrow_band, mode.narrow_band_threshold_active),
+        (stage2_kelly_buffer, mode.kelly_buffer_scaling_active),
+        (stage2_vote_addition, mode.vote_addition_active),
+        (stage2_phase_veto, mode.phase_veto_active),
+        (stage2_volatility_veto, mode.volatility_veto_active),
     )
-    for fn in tools:
-        raw = fn()
+    assert len(pairs) == 11
+    for tool, fn in pairs:
+        expected = fn()
+        if isinstance(expected, enum.Enum):
+            expected = expected.value
+        body = _load(tool())
+        assert body["called"] is True, tool.__name__
+        assert body["result"] == expected, tool.__name__
+        assert body["result"] != "live"
+        assert "DEFAULT_MODE = ObserverMode.LIVE" in body["input_note"]
+    assert _load(stage2_observer_mode())["result"] == "dry_run"
+    assert _load(stage2_reload_mode())["result"] == "dry_run"
+    assert _load(stage2_is_live())["result"] is False
+    assert _load(stage2_gate_buy_veto())["result"] is False
+    assert _load(stage2_gate_sell_veto())["result"] is False
+    assert _load(stage2_kelly_buffer())["result"] is False
+    assert _load(stage2_phase_veto())["result"] is False
+
+
+def test_log_blocked_fallback_is_refused() -> None:
+    from aureon_public.body import body_call, dispatch, lookup, public_entry_refusal
+    from aureon_public.stage2_layer import TOOLS
+
+    assert "stage2_log_blocked_fallback" not in {fn.__name__ for fn in TOOLS}
+    row = lookup("observer/live_data_policy.py", "log_blocked_fallback")
+    assert row is not None
+    reason = "fallback log is not emitted for an event that did not happen"
+    assert public_entry_refusal(row) == reason
+    for raw in (
+        body_call("observer/live_data_policy.py", "log_blocked_fallback"),
+        dispatch("observer/live_data_policy.py", "log_blocked_fallback", {}, server="public"),
+    ):
         body = _load(raw)
-        assert body["called"] is True, fn.__name__
-        assert body["result"] == MODE_WHEN_UNSET
-        assert body["result"]["mode_env"] is None
-        assert '"result": "live"' not in raw
-        assert '"result": true' not in raw
+        assert body.get("called") is not True
+        assert body["reason"] == reason
+
+
+def test_sweep_guard_blocks_each_extra_mutation_and_spawn(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import shutil
+
+    from aureon_public.sweep_guard import install_sweep_guard, snapshot, uninstall_sweep_guard
+
+    monkeypatch.setenv("AUREON_PUBLIC_SWEEP", "1")
+    monkeypatch.setenv("AUREON_PUBLIC_SANDBOX", str(tmp_path))
+    outside = tmp_path.parent / "aureon-stage2-guard-outside"
+    outside.mkdir(exist_ok=True)
+    target = outside / "kept.txt"
+    target.write_text("kept", encoding="utf-8")
+    folder = outside / "kept-dir"
+    folder.mkdir(exist_ok=True)
+    (folder / "child.txt").write_text("child", encoding="utf-8")
+    try:
+        install_sweep_guard()
+        with pytest.raises(OSError, match="write blocked"):
+            target.unlink()
+        assert target.is_file()
+        with pytest.raises(OSError, match="write blocked"):
+            os.remove(target)
+        assert target.is_file()
+        with pytest.raises(OSError, match="write blocked"):
+            os.rename(target, outside / "renamed.txt")
+        assert target.is_file()
+        with pytest.raises(OSError, match="write blocked"):
+            os.replace(target, outside / "replaced.txt")
+        assert target.is_file()
+        with pytest.raises(OSError, match="write blocked"):
+            shutil.rmtree(folder)
+        assert folder.is_dir()
+        with pytest.raises(OSError, match="write blocked"):
+            shutil.move(str(target), str(outside / "moved.txt"))
+        assert target.is_file()
+        with pytest.raises(OSError, match="process blocked"):
+            os.fork()
+        with pytest.raises(OSError, match="process blocked"):
+            os.posix_spawn("/bin/true", ["/bin/true"], os.environ)
+        with pytest.raises(OSError, match="process blocked"):
+            os.forkpty()
+        with pytest.raises(OSError, match="process blocked"):
+            os.posix_spawnp("true", ["true"], os.environ)
+        with pytest.raises(OSError, match="process blocked"):
+            os.spawnv(os.P_WAIT, "/bin/true", ["/bin/true"])
+        snap = snapshot()
+    finally:
+        uninstall_sweep_guard()
+        shutil.rmtree(outside, ignore_errors=True)
+    assert any("fork " in item for item in snap["processes"])
+    assert any("posix_spawn" in item for item in snap["processes"])
+    assert any("forkpty" in item for item in snap["processes"])
+    assert any("posix_spawnp" in item for item in snap["processes"])
+    assert any("spawnv" in item for item in snap["processes"])
+    assert snap["writes"]
+    assert not any(str(tmp_path) in item for item in snap["writes"])
 
 
 def test_stage1_tested_entry_points_are_still_tested() -> None:

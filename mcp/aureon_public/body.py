@@ -110,6 +110,9 @@ _ENTRY_REFUSAL = {
     ("observer/predictor.py", "make_predictor"): _UNTESTED_STAGE2,
     ("observer/wave_predictor.py", "set_wave_predictor"): _UNTESTED_STAGE2,
     ("observer/wave_predictor.py", "make_predictor"): _UNTESTED_STAGE2,
+    ("observer/live_data_policy.py", "log_blocked_fallback"): (
+        "fallback log is not emitted for an event that did not happen"
+    ),
 }
 # A method call constructs its class. An unlisted constructor is not run.
 # The risk scan still runs. PillarAlignment, UnifiedHarmonicDirective, and the
@@ -421,6 +424,7 @@ def _worker_env() -> dict[str, str]:
         "AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS": "1",
         "AUREON_ENABLE_AUTONOMOUS_CONTROL": "0",
         "AUREON_ACTIVATE_ON_IMPORT": "0",
+        "AUREON_OBSERVER_MODE": "dry_run",
     }
     for key in ("LANG", "LC_ALL", "LC_CTYPE", "PYTHONHASHSEED", "AUREON_PUBLIC_REPORT_MODULES"):
         value = os.environ.get(key)
@@ -431,6 +435,18 @@ def _worker_env() -> dict[str, str]:
         sandbox = os.environ.get("AUREON_PUBLIC_SANDBOX")
         if sandbox:
             env["AUREON_PUBLIC_SANDBOX"] = sandbox
+        for key in (
+            "HOME",
+            "USERPROFILE",
+            "XDG_CACHE_HOME",
+            "XDG_CONFIG_HOME",
+            "XDG_DATA_HOME",
+            "XDG_RUNTIME_DIR",
+            "XDG_STATE_HOME",
+        ):
+            value = os.environ.get(key)
+            if value:
+                env[key] = value
     return env
 
 

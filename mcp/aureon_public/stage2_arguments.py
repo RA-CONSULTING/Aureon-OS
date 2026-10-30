@@ -186,14 +186,6 @@ def attempts_for(module: str, symbol: str) -> list[dict[str, Any]]:
         ],
         ("observer/fitter.py", "fit_tanh"): [_de440_attempt()],
         ("observer/fitter.py", "fit_full"): [_de440_attempt()],
-        ("observer/live_data_policy.py", "log_blocked_fallback"): [
-            {
-                "arguments": {"reason": "live_unavailable", "source": "b70_probe"},
-                "label": "b70_probe",
-                "note": "The source string in tests/benchmarks/benchmark_aureon_scope.py. It logs. It does not fetch.",
-                "source": "tests/benchmarks/benchmark_aureon_scope.py",
-            }
-        ],
         ("observer/live_data_policy.py", "fallback_marker"): [
             {
                 "arguments": {"source": "b70_probe", "when": 123.0},

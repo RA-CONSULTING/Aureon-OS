@@ -19,7 +19,7 @@ That pytest command is the gate. It runs in `/tmp/aureon-public-venv`, the venv 
 
 `--write` rewrites this file from the same function. `measured/aureon_public_stage1_run.sh` installs `mcp/aureon_public/requirements.txt` and `mcp/aureon_public/test-requirements.txt`, then rewrites both `measured/aureon_public_alignment.json` and `measured/aureon_public_stage1.json`. It writes those two files under a temp directory first and copies them into `measured/` only after both stamps have finished. `measurement_stamp` raises `RuntimeError` when `git status --porcelain` is not empty, so the second stamp must not see the first file. `test-requirements.txt` is the test install: pytest, pytest-timeout, flask, pandas, and scipy. It is not the public server runtime. `measured/aureon_public_stage2_sweep.sh` and `measured/aureon_public_call_sweep.sh` copy the checkout with `cp -a` under an ordinary temp parent, place fake `NEXUS-LIVE-FEED-` and `Aureon-Trading--Project-Sero` checkouts beside that copy, block sockets, and rewrite their measured records. Each sweep record names the pin, the `aureon/` tree hash beside that pin, the `aureon_source` kind, and that temp parent. `measured/aureon_public_protocol_run.sh` starts this server over stdio and over Streamable HTTP bound to `127.0.0.1`, with `AUREON_PUBLIC_REQUIRE_PIN=1`. An MCP SDK 1.30.0 client calls `tools/list`, `resources/list`, `prompts/list`, and one `tools/call` (`alignment_consonance_read` with ratio 1.0). The raw pages are `measured/aureon_public_protocol.json`. These measured records name `code_commit`, the parent of the commit that contains the record file. A record cannot name the commit that adds the file.
 
-Listed symbols: 20083. Public entry points: 4388. Reachable now: 79. Tested: 69. Refused: 4309. The plan on main recorded 879 reachable. An earlier draft head of the stage-1 PR recorded 89 reachable, before the call sweep. Methods open because a constructor is allowlisted: 19. The refused-imports fence is unchanged.
+Listed symbols: 20083. Public entry points: 4388. Reachable now: 78. Tested: 68. Refused: 4310. The plan on main recorded 879 reachable. An earlier draft head of the stage-1 PR recorded 89 reachable, before the call sweep. Methods open because a constructor is allowlisted: 19. The refused-imports fence is unchanged.
 Reachable means `public_entry_refusal` returns None. Tested means a public tool calls that entry point and `tests/test_aureon_public_stage1.py` or `tests/test_aureon_public_stage2.py` exercises the tool. Refused means a public entry point the server will not run. Plan stages 3 and 4 stay closed. The call sweep calls every entry point that was still reachable, with no arguments, and calls each stage-2 entry point again with the real arguments in `stage2_arguments.py`. It refuses one that opens a connection, starts a process, writes outside the sandbox, or loads queen, miner, swarm_motion, inhouse_ai, ollama_config, or an HTTP client. `get_unified_directive` is refused that way. It does not build the queen and miner bridges.
 
 ## Stage order
@@ -50,7 +50,7 @@ Stage 2 is open. A stage-2 module whose import loads an adapter or an HTTP clien
 | 2 | decoders | 161 | 80 | 4 | 4 | 76 |
 | 2 | evaluation | 20 | 10 | 6 | 6 | 4 |
 | 2 | gates | 24 | 12 | 3 | 3 | 9 |
-| 2 | observer | 104 | 63 | 25 | 25 | 38 |
+| 2 | observer | 104 | 63 | 24 | 24 | 39 |
 | 2 | s51 | 55 | 24 | 1 | 1 | 23 |
 | 3 | accounting | 50 | 0 | 0 | 0 | 0 |
 | 3 | miner | 15 | 0 | 0 | 0 | 0 |
@@ -147,8 +147,8 @@ These five were reachable and had no tool. `body_call` and `dispatch` refuse the
 ## Count reconciliation
 
 Main `c1ae468d` recorded reachable 85. Stage 1 was 39 (alignment 11, generated 4, swarm 24). Stage 2 was 46 (atn 0, cognition 1, conversion 0, decoders 5, evaluation 7, gates 3, observer 29, s51 1). 39 + 46 = 85. Tested on that main was the 29 stage-1 tool entry points below. Stage 2 tested was 0. Registering a tool does not add a reachable row. The tool calls an entry point that was already reachable.
-Stage 1 reachable now: 39. Stage 2 reachable now: 40. 39 + 40 = 79.
-Stage 1 tested now: 29. Stage 2 tested now: 40. 29 + 40 = 69.
+Stage 1 reachable now: 39. Stage 2 reachable now: 39. 39 + 39 = 78.
+Stage 1 tested now: 29. Stage 2 tested now: 39. 29 + 39 = 68.
 Every stage-1 entry point that was tested on main is still tested. None dropped out:
 No stage-1 tested entry point dropped out.
 - `alignment/harmonic_resonance.py` `HarmonicAnalysis.to_dict`
@@ -191,14 +191,15 @@ Stage 1 still has reachable entry points that were not tested on main and are no
 - `swarm/druidic_council.py` `validate_council_receipt`
 - `swarm/druidic_council.py` `validate_seat_receipt`
 - `swarm/memory_bus.py` `CausalEchoBus.possibilities`
-Stage 2 reachable fell by 6, from 46 to 40. One was refused by the call sweep. Five were reachable with no tool, and `body_call` now refuses them.
+Stage 2 reachable fell by 7, from 46 to 39. The call sweep refused `self_coder_report`. Five reachable entry points had no tool. `log_blocked_fallback` would write a fallback log for an event that did not happen, so `body_call` refuses it.
 - `evaluation/measured_proof.py` `self_coder_report`: call loads a banned chain or opens a connection.
 - `decoders/book_of_ur.py` `test_phi_resonance_me`: untested stage-2 entry point is not called.
 - `observer/momentum.py` `set_momentum_tracker`: untested stage-2 entry point is not called.
 - `observer/predictor.py` `make_predictor`: untested stage-2 entry point is not called.
 - `observer/wave_predictor.py` `make_predictor`: untested stage-2 entry point is not called.
 - `observer/wave_predictor.py` `set_wave_predictor`: untested stage-2 entry point is not called.
-Those six are the only entry points that left the reachable set since main `c1ae468d`. 85 - 6 = 79. Stage 2's remaining 40 reachable entry points are the 40 tested tools. 39 + 40 = 79 reachable. 29 + 40 = 69 tested.
+- `observer/live_data_policy.py` `log_blocked_fallback`: fallback log is not emitted for an event that did not happen.
+Those seven are the only entry points that left the reachable set since main `c1ae468d`. 85 - 7 = 78. Stage 2's remaining 39 reachable entry points are the 39 tested tools. 39 + 39 = 78 reachable. 29 + 39 = 68 tested.
 
 The pin stays `8aa6a2d971cc529484e2a5e261e28afafab4e4f4`. The alignment modules at this checkout match that pin, so the tools do not need a newer commit. `GUARD_BLOB` and `INVENTORY_SHA256` are unchanged.
 

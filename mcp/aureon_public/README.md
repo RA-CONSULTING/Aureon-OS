@@ -52,7 +52,7 @@ Each figure is reachable public functions and methods out of the public function
 | miner | 0 | 0 |
 | monitors | 0 | 158 |
 | observability | 0 | 9 |
-| observer | 25 | 63 |
+| observer | 24 | 63 |
 | operator | 0 | 0 |
 | organism | 0 | 1 |
 | plumber | 0 | 271 |

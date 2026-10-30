@@ -120,6 +120,7 @@ def child_main(module: str, symbol: str, arguments_json: str = "") -> None:
             "called": body.get("called") is True,
             "process": list(report.get("processes") or []),
             "reason": body.get("reason"),
+            "sandbox_writes": list(report.get("sandbox_writes") or []),
             "socket": list(report.get("sockets") or []),
             "status": body.get("status"),
             "writes": list(report.get("writes") or []),
@@ -249,6 +250,7 @@ def build_record(timeout: float) -> dict[str, Any]:
                     "process": [str(item) for item in payload.get("process") or []],
                     "reason": payload.get("reason"),
                     "refusal": reason,
+                    "sandbox_writes": [str(item) for item in payload.get("sandbox_writes") or []],
                     "socket": [str(item) for item in payload.get("socket") or []],
                     "source": attempt.get("source"),
                     "status": payload.get("status"),
@@ -271,6 +273,9 @@ def build_record(timeout: float) -> dict[str, Any]:
                 "reason": first["reason"],
                 "refusal": refusal,
                 "refused": refusal is not None,
+                "sandbox_writes": sorted(
+                    {item for attempt in recorded for item in attempt["sandbox_writes"]}
+                ),
                 "socket": first["socket"],
                 "status": first["status"],
                 "symbol": row["symbol"],

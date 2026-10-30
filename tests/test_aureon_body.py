@@ -807,6 +807,7 @@ def test_worker_env_hides_a_server_sentinel(monkeypatch: pytest.MonkeyPatch) -> 
     assert "KRAKEN_API_KEY" not in env
     assert "do-not-leak" not in json.dumps(env)
     assert env["AUREON_DISABLE_REAL_ORDERS"] == "1"
+    assert env["AUREON_OBSERVER_MODE"] == "dry_run"
     assert "PYTHONPATH" in env
     allowed = {
         "PATH",
@@ -819,6 +820,7 @@ def test_worker_env_hides_a_server_sentinel(monkeypatch: pytest.MonkeyPatch) -> 
         "AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS",
         "AUREON_ENABLE_AUTONOMOUS_CONTROL",
         "AUREON_ACTIVATE_ON_IMPORT",
+        "AUREON_OBSERVER_MODE",
         "LANG",
         "LC_ALL",
         "LC_CTYPE",

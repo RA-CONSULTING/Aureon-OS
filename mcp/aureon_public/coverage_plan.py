@@ -311,7 +311,7 @@ def _reconciliation_lines() -> list[str]:
     for module, symbol in untested_stage1:
         lines.append(f"- `{module}` `{symbol}`")
     lines.append(
-        "Stage 2 reachable fell by 6, from 46 to 40. One was refused by the call sweep. Five were reachable with no tool, and `body_call` now refuses them."
+        "Stage 2 reachable fell by 7, from 46 to 39. The call sweep refused `self_coder_report`. Five reachable entry points had no tool. `log_blocked_fallback` would write a fallback log for an event that did not happen, so `body_call` refuses it."
     )
     calls = _read_json("aureon_public_call_sweep.json")
     self_coder = next(
@@ -334,16 +334,20 @@ def _reconciliation_lines() -> list[str]:
         )
     for key in sorted(item for item, reason in _ENTRY_REFUSAL.items() if reason == _UNTESTED_STAGE2):
         lines.append(f"- `{key[0]}` `{key[1]}`: {_UNTESTED_STAGE2}.")
+    lines.append(
+        "- `observer/live_data_policy.py` `log_blocked_fallback`: "
+        "fallback log is not emitted for an event that did not happen."
+    )
     total = len(stage1_now) + len(stage2_now)
     tested_total = len(stage1_tested) + len(stage2_tested)
     if (
         len(stage1_now) != 39
-        or len(stage2_now) != 40
+        or len(stage2_now) != 39
         or len(stage1_tested) != 29
-        or len(stage2_tested) != 40
+        or len(stage2_tested) != 39
         or dropped
-        or total != 79
-        or tested_total != 69
+        or total != 78
+        or tested_total != 68
     ):
         raise RuntimeError(
             "count reconciliation drifted: "
@@ -352,9 +356,9 @@ def _reconciliation_lines() -> list[str]:
             f"dropped {dropped}"
         )
     lines.append(
-        "Those six are the only entry points that left the reachable set since main `c1ae468d`. "
-        "85 - 6 = 79. Stage 2's remaining 40 reachable entry points are the 40 tested tools. "
-        "39 + 40 = 79 reachable. 29 + 40 = 69 tested."
+        "Those seven are the only entry points that left the reachable set since main `c1ae468d`. "
+        "85 - 7 = 78. Stage 2's remaining 39 reachable entry points are the 39 tested tools. "
+        "39 + 39 = 78 reachable. 29 + 39 = 68 tested."
     )
     return lines
 

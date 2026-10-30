@@ -17,7 +17,17 @@ _INSTALLED = False
 _SOCKETS: list[str] = []
 _PROCESSES: list[str] = []
 _WRITES: list[str] = []
+_SANDBOX_WRITES: list[str] = []
 _REAL: dict[str, Any] = {}
+_USER_DIR_NAMES = (
+    "HOME",
+    "USERPROFILE",
+    "XDG_CACHE_HOME",
+    "XDG_CONFIG_HOME",
+    "XDG_DATA_HOME",
+    "XDG_RUNTIME_DIR",
+    "XDG_STATE_HOME",
+)
 
 
 def declare_sandbox() -> Path:
@@ -32,11 +42,24 @@ def declare_sandbox() -> Path:
 
     sandbox = beside()
     scratch = sandbox / "sweep-scratch"
-    scratch.mkdir(parents=True, exist_ok=True)
+    home = sandbox / "home"
+    dirs = {
+        "HOME": home,
+        "USERPROFILE": home,
+        "XDG_CACHE_HOME": home / ".cache",
+        "XDG_CONFIG_HOME": home / ".config",
+        "XDG_DATA_HOME": home / ".local" / "share",
+        "XDG_RUNTIME_DIR": sandbox / "runtime",
+        "XDG_STATE_HOME": home / ".local" / "state",
+    }
+    for path in (scratch, *dirs.values()):
+        path.mkdir(parents=True, exist_ok=True)
     os.environ["AUREON_PUBLIC_SANDBOX"] = str(sandbox)
     os.environ["TMPDIR"] = str(scratch)
     os.environ["TEMP"] = str(scratch)
     os.environ["TMP"] = str(scratch)
+    for name, path in dirs.items():
+        os.environ[name] = str(path)
     try:
         import tempfile
 
@@ -51,6 +74,7 @@ def snapshot() -> dict[str, list[str]]:
 
     return {
         "processes": list(_PROCESSES),
+        "sandbox_writes": list(_SANDBOX_WRITES),
         "sockets": list(_SOCKETS),
         "writes": list(_WRITES),
     }
@@ -82,6 +106,36 @@ def _harmless_device(path: object) -> bool:
     except TypeError:
         return False
     return str(text) in {"/dev/null", "/dev/zero", "/dev/stdout", "/dev/stderr"}
+
+
+def _record_inside(path: object) -> None:
+    """Remember a write under the sandbox that is not the temp scratch dir."""
+
+    sandbox = _sandbox()
+    if sandbox is None or _harmless_device(path):
+        return
+    try:
+        resolved = Path(os.fspath(path)).resolve()
+    except (OSError, TypeError, ValueError):
+        return
+    scratch = (sandbox / "sweep-scratch").resolve()
+    if resolved == scratch or scratch in resolved.parents:
+        return
+    if resolved != sandbox and sandbox not in resolved.parents:
+        return
+    text = str(resolved)[:200]
+    if text not in _SANDBOX_WRITES:
+        _SANDBOX_WRITES.append(text)
+
+
+def _guard_path(path: object) -> None:
+    """Block a path outside the sandbox. Record one inside it."""
+
+    if _harmless_device(path):
+        return
+    if _outside(path):
+        _note_write(path)
+    _record_inside(path)
 
 
 def _note_write(path: object) -> None:
@@ -121,7 +175,13 @@ def install_sweep_guard() -> None:
     global _INSTALLED
     if _INSTALLED:
         return
+    import shutil
     import socket
+
+    _SOCKETS.clear()
+    _PROCESSES.clear()
+    _WRITES.clear()
+    _SANDBOX_WRITES.clear()
 
     class _Guard(socket.socket):
         def connect(self, address: object, *args: object, **kwargs: object) -> None:
@@ -142,25 +202,73 @@ def install_sweep_guard() -> None:
         raise OSError("socket blocked")
 
     def _open(file: object, mode: object = "r", *args: object, **kwargs: object) -> object:
-        if _write_mode(mode) and not _harmless_device(file) and _outside(file):
-            _note_write(file)
+        if _write_mode(mode):
+            _guard_path(file)
         return _REAL["open"](file, mode, *args, **kwargs)
 
     def _os_open(path: object, flags: int, *args: object, **kwargs: object) -> int:
         writing = flags & (os.O_WRONLY | os.O_RDWR | os.O_APPEND)
-        if writing and not _harmless_device(path) and _outside(path):
-            _note_write(path)
+        if writing:
+            _guard_path(path)
         return _REAL["os_open"](path, flags, *args, **kwargs)
 
     def _mkdir(path: object, *args: object, **kwargs: object) -> None:
-        if _outside(path):
-            _note_write(path)
+        _guard_path(path)
         return _REAL["mkdir"](path, *args, **kwargs)
 
     def _makedirs(path: object, *args: object, **kwargs: object) -> None:
-        if _outside(path):
-            _note_write(path)
+        _guard_path(path)
         return _REAL["makedirs"](path, *args, **kwargs)
+
+    def _unlink(path: object, *args: object, **kwargs: object) -> None:
+        _guard_path(path)
+        return _REAL["unlink"](path, *args, **kwargs)
+
+    def _remove(path: object, *args: object, **kwargs: object) -> None:
+        _guard_path(path)
+        return _REAL["remove"](path, *args, **kwargs)
+
+    def _rename(src: object, dst: object, *args: object, **kwargs: object) -> None:
+        _guard_path(src)
+        _guard_path(dst)
+        return _REAL["rename"](src, dst, *args, **kwargs)
+
+    def _replace(src: object, dst: object, *args: object, **kwargs: object) -> None:
+        _guard_path(src)
+        _guard_path(dst)
+        return _REAL["replace"](src, dst, *args, **kwargs)
+
+    def _rmtree(path: object, *args: object, **kwargs: object) -> None:
+        _guard_path(path)
+        return _REAL["rmtree"](path, *args, **kwargs)
+
+    def _move(src: object, dst: object, *args: object, **kwargs: object) -> object:
+        _guard_path(src)
+        _guard_path(dst)
+        return _REAL["move"](src, dst, *args, **kwargs)
+
+    def _fork(*args: object, **kwargs: object) -> int:
+        _note_process("fork", args or "fork")
+        raise AssertionError("unreachable")
+
+    def _forkpty(*args: object, **kwargs: object) -> object:
+        _note_process("forkpty", args or "forkpty")
+        raise AssertionError("unreachable")
+
+    def _posix_spawn(path: object, *args: object, **kwargs: object) -> int:
+        _note_process("posix_spawn", path)
+        raise AssertionError("unreachable")
+
+    def _posix_spawnp(path: object, *args: object, **kwargs: object) -> int:
+        _note_process("posix_spawnp", path)
+        raise AssertionError("unreachable")
+
+    def _spawn(name: str):
+        def inner(*args: object, **kwargs: object) -> int:
+            _note_process(name, args[0] if args else name)
+            raise AssertionError("unreachable")
+
+        return inner
 
     def _popen(*args: object, **kwargs: object) -> object:
         command = args[0] if args else kwargs.get("args")
@@ -188,21 +296,69 @@ def install_sweep_guard() -> None:
             "create_connection": socket.create_connection,
             "execv": os.execv,
             "execve": os.execve,
+            "fork": getattr(os, "fork", None),
+            "forkpty": getattr(os, "forkpty", None),
             "makedirs": os.makedirs,
             "mkdir": os.mkdir,
+            "move": shutil.move,
             "open": builtins.open,
             "os_open": os.open,
             "popen": os.popen,
+            "posix_spawn": getattr(os, "posix_spawn", None),
+            "posix_spawnp": getattr(os, "posix_spawnp", None),
+            "remove": os.remove,
+            "rename": os.rename,
+            "replace": os.replace,
+            "rmtree": shutil.rmtree,
             "socket": socket.socket,
             "subprocess_popen": subprocess.Popen,
             "system": os.system,
+            "unlink": os.unlink,
         }
     )
+    for name in (
+        "spawnl",
+        "spawnle",
+        "spawnlp",
+        "spawnlpe",
+        "spawnv",
+        "spawnve",
+        "spawnvp",
+        "spawnvpe",
+    ):
+        if hasattr(os, name):
+            _REAL[name] = getattr(os, name)
     builtins.open = _open  # type: ignore[assignment]
     io.open = _open  # type: ignore[assignment]
     os.open = _os_open  # type: ignore[assignment]
     os.mkdir = _mkdir  # type: ignore[assignment]
     os.makedirs = _makedirs  # type: ignore[assignment]
+    os.unlink = _unlink  # type: ignore[assignment]
+    os.remove = _remove  # type: ignore[assignment]
+    os.rename = _rename  # type: ignore[assignment]
+    os.replace = _replace  # type: ignore[assignment]
+    shutil.rmtree = _rmtree  # type: ignore[assignment]
+    shutil.move = _move  # type: ignore[assignment]
+    if _REAL.get("fork") is not None:
+        os.fork = _fork  # type: ignore[assignment]
+    if _REAL.get("forkpty") is not None:
+        os.forkpty = _forkpty  # type: ignore[assignment]
+    if _REAL.get("posix_spawn") is not None:
+        os.posix_spawn = _posix_spawn  # type: ignore[assignment]
+    if _REAL.get("posix_spawnp") is not None:
+        os.posix_spawnp = _posix_spawnp  # type: ignore[assignment]
+    for name in (
+        "spawnl",
+        "spawnle",
+        "spawnlp",
+        "spawnlpe",
+        "spawnv",
+        "spawnve",
+        "spawnvp",
+        "spawnvpe",
+    ):
+        if name in _REAL:
+            setattr(os, name, _spawn(name))
     os.system = _system  # type: ignore[assignment]
     os.popen = _popen_os  # type: ignore[assignment]
     os.execv = _exec  # type: ignore[assignment]
@@ -230,6 +386,7 @@ def uninstall_sweep_guard() -> None:
     global _INSTALLED
     if not _INSTALLED:
         return
+    import shutil
     import socket
 
     builtins.open = _REAL["open"]
@@ -237,6 +394,28 @@ def uninstall_sweep_guard() -> None:
     os.open = _REAL["os_open"]
     os.mkdir = _REAL["mkdir"]
     os.makedirs = _REAL["makedirs"]
+    os.unlink = _REAL["unlink"]
+    os.remove = _REAL["remove"]
+    os.rename = _REAL["rename"]
+    os.replace = _REAL["replace"]
+    shutil.rmtree = _REAL["rmtree"]
+    shutil.move = _REAL["move"]
+    for name in (
+        "fork",
+        "forkpty",
+        "posix_spawn",
+        "posix_spawnp",
+        "spawnl",
+        "spawnle",
+        "spawnlp",
+        "spawnlpe",
+        "spawnv",
+        "spawnve",
+        "spawnvp",
+        "spawnvpe",
+    ):
+        if _REAL.get(name) is not None:
+            setattr(os, name, _REAL[name])
     os.system = _REAL["system"]
     os.popen = _REAL["popen"]
     os.execv = _REAL["execv"]

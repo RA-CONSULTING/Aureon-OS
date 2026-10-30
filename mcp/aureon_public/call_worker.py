@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import enum
 import inspect
 import json
 import os
@@ -20,6 +21,8 @@ def _plain(value: Any, depth: int = 0) -> Any:
         if isinstance(value, str):
             return value[:500]
         return value
+    if isinstance(value, enum.Enum):
+        return _plain(value.value, depth + 1)
     if isinstance(value, dict):
         return {str(key): _plain(item, depth + 1) for key, item in list(value.items())[:30]}
     if isinstance(value, (list, tuple)):
@@ -228,6 +231,7 @@ def main() -> None:
         payload["sweep"] = {
             "modules": _sweep_modules(),
             "processes": snap["processes"],
+            "sandbox_writes": snap["sandbox_writes"],
             "sockets": snap["sockets"],
             "writes": snap["writes"],
         }

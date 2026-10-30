@@ -6,7 +6,6 @@ here. A number in the result is the function's result on the named input.
 
 from __future__ import annotations
 
-import json
 from typing import Any
 
 from aureon_public.alignment_layer import label_result
@@ -22,14 +21,14 @@ from aureon_public.stage2_arguments import (
 )
 
 _MODE = "aureon/observer/production_mode.py"
-# The worker does not receive AUREON_OBSERVER_MODE. The code default in
-# production_mode.py is the string live. The public result names that default
-# and does not return it as a bare mode word.
-MODE_WHEN_UNSET = {
-    "mode_env": None,
-    "code_default": "live",
-    "note": "code default only; no broker session, no orders",
-}
+# The public worker sets AUREON_OBSERVER_MODE=dry_run. The code default is a
+# cited source line and is not the value these tools return.
+_MODE_SOURCE = "aureon/observer/production_mode.py"
+_MODE_CITED = (
+    "The worker sets AUREON_OBSERVER_MODE=dry_run. "
+    "Cited source, aureon/observer/production_mode.py: `DEFAULT_MODE = ObserverMode.LIVE`. "
+    "That line is not this result."
+)
 
 
 def _call(module: str, symbol: str, arguments: dict[str, Any]) -> str:
@@ -339,27 +338,6 @@ def stage2_simulation_fallback() -> str:
 
 
 @quiet
-def stage2_log_blocked_fallback() -> str:
-    """Log the benchmark's blocked-fallback line for source b70_probe.
-
-    The source string is tests/benchmarks/benchmark_aureon_scope.py. This writes a log line. It does not fetch.
-
-    Args:
-        none: The source and reason are the benchmark's. Label: cited.
-    """
-
-    return label_result(
-        _call(
-            "observer/live_data_policy.py",
-            "log_blocked_fallback",
-            {"reason": "live_unavailable", "source": "b70_probe"},
-        ),
-        "tests/benchmarks/benchmark_aureon_scope.py",
-        "The source string in that benchmark. A log line. No fetch.",
-    )
-
-
-@quiet
 def stage2_fallback_marker() -> str:
     """Build the fallback audit dict from the benchmark test.
 
@@ -416,169 +394,157 @@ def stage2_momentum_predict() -> str:
     )
 
 
-def _mode(symbol: str) -> str:
-    """Call one production-mode entry point and replace its raw result.
+def _mode_call(symbol: str) -> str:
+    """Call one production-mode entry point and keep its return value."""
 
-    The worker does not receive AUREON_OBSERVER_MODE. The raw return is the
-    code default. The public result is MODE_WHEN_UNSET, not that raw value.
-    """
-
-    text = label_result(
+    return label_result(
         _call("observer/production_mode.py", symbol, {}),
-        _MODE,
-        MODE_WHEN_UNSET["note"],
+        _MODE_SOURCE,
+        _MODE_CITED,
     )
-    try:
-        body = json.loads(text)
-    except json.JSONDecodeError:
-        return text
-    if not isinstance(body, dict) or body.get("called") is not True:
-        return text
-    body["result"] = dict(MODE_WHEN_UNSET)
-    return json.dumps(body, ensure_ascii=False, allow_nan=False, sort_keys=True)
 
 
 @quiet
 def stage2_observer_mode() -> str:
-    """Read the observer mode with the variable unset.
+    """Return get_mode under AUREON_OBSERVER_MODE=dry_run.
 
-    The result names the code default. It is not a broker session and it does not place an order.
+    The result is that function's return. It is not a broker session and it does not place an order.
 
     Args:
-        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.
+        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.
     """
 
-    return _mode("get_mode")
+    return _mode_call("get_mode")
 
 
 @quiet
 def stage2_reload_mode() -> str:
-    """Drop the cached observer mode and read the environment again.
+    """Return reload_mode under AUREON_OBSERVER_MODE=dry_run.
 
-    This does not write a file and does not start a process. The result names the code default.
+    This does not write a file and does not start a process. The result is that function's return.
 
     Args:
-        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.
+        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.
     """
 
-    return _mode("reload_mode")
+    return _mode_call("reload_mode")
 
 
 @quiet
 def stage2_is_live() -> str:
-    """Ask whether the resolved observer mode equals the code default.
+    """Return is_live under AUREON_OBSERVER_MODE=dry_run.
 
-    The public result does not return that comparison as a bare word. It names the code default.
+    The result is that function's return. This call does not place an order.
 
     Args:
-        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.
+        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.
     """
 
-    return _mode("is_live")
+    return _mode_call("is_live")
 
 
 @quiet
 def stage2_is_shadow() -> str:
-    """Ask whether the resolved observer mode is the shadow setting.
+    """Return is_shadow under AUREON_OBSERVER_MODE=dry_run.
 
-    The public result names the code default. It does not describe a broker session.
+    The result is that function's return. It does not describe a broker session.
 
     Args:
-        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.
+        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.
     """
 
-    return _mode("is_shadow")
+    return _mode_call("is_shadow")
 
 
 @quiet
 def stage2_gate_buy_veto() -> str:
-    """Ask whether the buy veto flag follows the code default.
+    """Return gate_buy_veto_active under AUREON_OBSERVER_MODE=dry_run.
 
-    The public result names the code default. This call does not place an order.
+    The result is that function's return. This call does not place an order.
 
     Args:
-        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.
+        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.
     """
 
-    return _mode("gate_buy_veto_active")
+    return _mode_call("gate_buy_veto_active")
 
 
 @quiet
 def stage2_gate_sell_veto() -> str:
-    """Ask whether the sell veto flag follows the code default.
+    """Return gate_sell_veto_active under AUREON_OBSERVER_MODE=dry_run.
 
-    The public result names the code default. This call does not place an order.
+    The result is that function's return. This call does not place an order.
 
     Args:
-        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.
+        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.
     """
 
-    return _mode("gate_sell_veto_active")
+    return _mode_call("gate_sell_veto_active")
 
 
 @quiet
 def stage2_narrow_band() -> str:
-    """Ask whether the narrow-band flag follows the code default.
+    """Return narrow_band_threshold_active under AUREON_OBSERVER_MODE=dry_run.
 
-    The public result names the code default. This call does not change an order.
+    The result is that function's return. This call does not change an order.
 
     Args:
-        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.
+        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.
     """
 
-    return _mode("narrow_band_threshold_active")
+    return _mode_call("narrow_band_threshold_active")
 
 
 @quiet
 def stage2_kelly_buffer() -> str:
-    """Ask whether Kelly buffer scaling follows the code default.
+    """Return kelly_buffer_scaling_active under AUREON_OBSERVER_MODE=dry_run.
 
-    The public result names the code default. This call does not size an order.
+    The result is that function's return. This call does not size an order.
 
     Args:
-        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.
+        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.
     """
 
-    return _mode("kelly_buffer_scaling_active")
+    return _mode_call("kelly_buffer_scaling_active")
 
 
 @quiet
 def stage2_vote_addition() -> str:
-    """Ask whether the extra observer votes follow the code default.
+    """Return vote_addition_active under AUREON_OBSERVER_MODE=dry_run.
 
-    The public result names the code default. This call does not cast a vote.
+    The result is that function's return. This call does not cast a vote.
 
     Args:
-        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.
+        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.
     """
 
-    return _mode("vote_addition_active")
+    return _mode_call("vote_addition_active")
 
 
 @quiet
 def stage2_phase_veto() -> str:
-    """Ask whether the phase veto follows the code default.
+    """Return phase_veto_active under AUREON_OBSERVER_MODE=dry_run.
 
-    The public result names the code default. This call does not block an order.
+    The result is that function's return. This call does not block an order.
 
     Args:
-        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.
+        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.
     """
 
-    return _mode("phase_veto_active")
+    return _mode_call("phase_veto_active")
 
 
 @quiet
 def stage2_volatility_veto() -> str:
-    """Ask whether the volatility veto follows the code default.
+    """Return volatility_veto_active under AUREON_OBSERVER_MODE=dry_run.
 
-    The public result names the code default. This call does not block an order.
+    The result is that function's return. This call does not block an order.
 
     Args:
-        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.
+        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.
     """
 
-    return _mode("volatility_veto_active")
+    return _mode_call("volatility_veto_active")
 
 
 @quiet
@@ -749,7 +715,6 @@ TESTED: tuple[tuple[str, str], ...] = (
     ("observer/fitter.py", "fit_tanh"),
     ("observer/fitter.py", "fit_full"),
     ("observer/live_data_policy.py", "simulation_fallback_allowed"),
-    ("observer/live_data_policy.py", "log_blocked_fallback"),
     ("observer/live_data_policy.py", "fallback_marker"),
     ("observer/momentum.py", "get_momentum_tracker"),
     ("observer/momentum.py", "momentum_predict_fn"),
@@ -792,7 +757,6 @@ TOOLS: list[Any] = [
     stage2_fit_tanh,
     stage2_fit_full,
     stage2_simulation_fallback,
-    stage2_log_blocked_fallback,
     stage2_fallback_marker,
     stage2_momentum_tracker,
     stage2_momentum_predict,
