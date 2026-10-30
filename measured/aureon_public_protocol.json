@@ -14,7 +14,7 @@
       "kind": "pinned"
     },
     "aureon_tree": "8aef927b7fe6276c187e4c73c79f0de012ad980d",
-    "code_commit": "26c144744c79680ebbe91fef5a35aaeb076dfbc6",
+    "code_commit": "9da98a3c6f1538fc6ef7bd92a3e2aee96f0a7676",
     "code_commit_note": "This is the parent of the commit that contains this record. The record cannot name the commit that adds the file.",
     "mcp": "1.30.0",
     "pin": "8aa6a2d971cc529484e2a5e261e28afafab4e4f4",
@@ -3213,33 +3213,6 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Log the benchmark's blocked-fallback line for source b70_probe.\n\n    The source string is tests/benchmarks/benchmark_aureon_scope.py. This writes a log line. It does not fetch.\n\n    Args:\n        none: The source and reason are the benchmark's. Label: cited.\n    ",
-            "execution": null,
-            "icons": null,
-            "inputSchema": {
-              "properties": {},
-              "title": "stage2_log_blocked_fallbackArguments",
-              "type": "object"
-            },
-            "name": "stage2_log_blocked_fallback",
-            "outputSchema": {
-              "properties": {
-                "result": {
-                  "title": "Result",
-                  "type": "string"
-                }
-              },
-              "required": [
-                "result"
-              ],
-              "title": "stage2_log_blocked_fallbackOutput",
-              "type": "object"
-            },
-            "title": null
-          },
-          {
-            "_meta": null,
-            "annotations": null,
             "description": "Build the fallback audit dict from the benchmark test.\n\n    source is b70_probe and when is 123.0, both from tests/benchmarks/benchmark_aureon_scope.py.\n    The dict says the reading is a test fixture.\n\n    Args:\n        none: The arguments are the benchmark's. Label: cited.\n    ",
             "execution": null,
             "icons": null,
@@ -3321,7 +3294,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Read the observer mode with the variable unset.\n\n    The result names the code default. It is not a broker session and it does not place an order.\n\n    Args:\n        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.\n    ",
+            "description": "Return get_mode under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. It is not a broker session and it does not place an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -3348,7 +3321,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Drop the cached observer mode and read the environment again.\n\n    This does not write a file and does not start a process. The result names the code default.\n\n    Args:\n        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.\n    ",
+            "description": "Return reload_mode under AUREON_OBSERVER_MODE=dry_run.\n\n    This does not write a file and does not start a process. The result is that function's return.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -3375,7 +3348,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Ask whether the resolved observer mode equals the code default.\n\n    The public result does not return that comparison as a bare word. It names the code default.\n\n    Args:\n        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.\n    ",
+            "description": "Return is_live under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not place an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -3402,7 +3375,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Ask whether the resolved observer mode is the shadow setting.\n\n    The public result names the code default. It does not describe a broker session.\n\n    Args:\n        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.\n    ",
+            "description": "Return is_shadow under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. It does not describe a broker session.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -3429,7 +3402,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Ask whether the buy veto flag follows the code default.\n\n    The public result names the code default. This call does not place an order.\n\n    Args:\n        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.\n    ",
+            "description": "Return gate_buy_veto_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not place an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -3456,7 +3429,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Ask whether the sell veto flag follows the code default.\n\n    The public result names the code default. This call does not place an order.\n\n    Args:\n        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.\n    ",
+            "description": "Return gate_sell_veto_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not place an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -3483,7 +3456,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Ask whether the narrow-band flag follows the code default.\n\n    The public result names the code default. This call does not change an order.\n\n    Args:\n        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.\n    ",
+            "description": "Return narrow_band_threshold_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not change an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -3510,7 +3483,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Ask whether Kelly buffer scaling follows the code default.\n\n    The public result names the code default. This call does not size an order.\n\n    Args:\n        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.\n    ",
+            "description": "Return kelly_buffer_scaling_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not size an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -3537,7 +3510,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Ask whether the extra observer votes follow the code default.\n\n    The public result names the code default. This call does not cast a vote.\n\n    Args:\n        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.\n    ",
+            "description": "Return vote_addition_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not cast a vote.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -3564,7 +3537,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Ask whether the phase veto follows the code default.\n\n    The public result names the code default. This call does not block an order.\n\n    Args:\n        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.\n    ",
+            "description": "Return phase_veto_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not block an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -3591,7 +3564,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Ask whether the volatility veto follows the code default.\n\n    The public result names the code default. This call does not block an order.\n\n    Args:\n        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.\n    ",
+            "description": "Return volatility_veto_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not block an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -4004,7 +3977,7 @@
         "websiteUrl": null
       }
     },
-    "port": 34899,
+    "port": 34715,
     "prompts_list": [
       {
         "_meta": null,
@@ -7167,33 +7140,6 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Log the benchmark's blocked-fallback line for source b70_probe.\n\n    The source string is tests/benchmarks/benchmark_aureon_scope.py. This writes a log line. It does not fetch.\n\n    Args:\n        none: The source and reason are the benchmark's. Label: cited.\n    ",
-            "execution": null,
-            "icons": null,
-            "inputSchema": {
-              "properties": {},
-              "title": "stage2_log_blocked_fallbackArguments",
-              "type": "object"
-            },
-            "name": "stage2_log_blocked_fallback",
-            "outputSchema": {
-              "properties": {
-                "result": {
-                  "title": "Result",
-                  "type": "string"
-                }
-              },
-              "required": [
-                "result"
-              ],
-              "title": "stage2_log_blocked_fallbackOutput",
-              "type": "object"
-            },
-            "title": null
-          },
-          {
-            "_meta": null,
-            "annotations": null,
             "description": "Build the fallback audit dict from the benchmark test.\n\n    source is b70_probe and when is 123.0, both from tests/benchmarks/benchmark_aureon_scope.py.\n    The dict says the reading is a test fixture.\n\n    Args:\n        none: The arguments are the benchmark's. Label: cited.\n    ",
             "execution": null,
             "icons": null,
@@ -7275,7 +7221,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Read the observer mode with the variable unset.\n\n    The result names the code default. It is not a broker session and it does not place an order.\n\n    Args:\n        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.\n    ",
+            "description": "Return get_mode under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. It is not a broker session and it does not place an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -7302,7 +7248,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Drop the cached observer mode and read the environment again.\n\n    This does not write a file and does not start a process. The result names the code default.\n\n    Args:\n        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.\n    ",
+            "description": "Return reload_mode under AUREON_OBSERVER_MODE=dry_run.\n\n    This does not write a file and does not start a process. The result is that function's return.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -7329,7 +7275,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Ask whether the resolved observer mode equals the code default.\n\n    The public result does not return that comparison as a bare word. It names the code default.\n\n    Args:\n        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.\n    ",
+            "description": "Return is_live under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not place an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -7356,7 +7302,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Ask whether the resolved observer mode is the shadow setting.\n\n    The public result names the code default. It does not describe a broker session.\n\n    Args:\n        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.\n    ",
+            "description": "Return is_shadow under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. It does not describe a broker session.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -7383,7 +7329,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Ask whether the buy veto flag follows the code default.\n\n    The public result names the code default. This call does not place an order.\n\n    Args:\n        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.\n    ",
+            "description": "Return gate_buy_veto_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not place an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -7410,7 +7356,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Ask whether the sell veto flag follows the code default.\n\n    The public result names the code default. This call does not place an order.\n\n    Args:\n        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.\n    ",
+            "description": "Return gate_sell_veto_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not place an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -7437,7 +7383,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Ask whether the narrow-band flag follows the code default.\n\n    The public result names the code default. This call does not change an order.\n\n    Args:\n        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.\n    ",
+            "description": "Return narrow_band_threshold_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not change an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -7464,7 +7410,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Ask whether Kelly buffer scaling follows the code default.\n\n    The public result names the code default. This call does not size an order.\n\n    Args:\n        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.\n    ",
+            "description": "Return kelly_buffer_scaling_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not size an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -7491,7 +7437,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Ask whether the extra observer votes follow the code default.\n\n    The public result names the code default. This call does not cast a vote.\n\n    Args:\n        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.\n    ",
+            "description": "Return vote_addition_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not cast a vote.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -7518,7 +7464,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Ask whether the phase veto follows the code default.\n\n    The public result names the code default. This call does not block an order.\n\n    Args:\n        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.\n    ",
+            "description": "Return phase_veto_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not block an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -7545,7 +7491,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Ask whether the volatility veto follows the code default.\n\n    The public result names the code default. This call does not block an order.\n\n    Args:\n        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.\n    ",
+            "description": "Return volatility_veto_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not block an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -7927,6 +7873,6 @@
         ]
       }
     ],
-    "url": "http://127.0.0.1:34899/mcp"
+    "url": "http://127.0.0.1:34715/mcp"
   }
 }
