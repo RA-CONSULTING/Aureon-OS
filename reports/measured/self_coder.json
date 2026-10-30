@@ -2,7 +2,7 @@
   "child_isolation": "child was not launched",
   "dataset_solution_smoke": {
     "counts_as_model_score": false,
-    "dataset": "/workspace/data/research/open_benchmarks/humaneval.jsonl",
+    "dataset": "data/research/open_benchmarks/humaneval.jsonl",
     "limit": 5,
     "passed": 5,
     "reason": "the dataset's own solutions ran in the harness; this is not a model score",

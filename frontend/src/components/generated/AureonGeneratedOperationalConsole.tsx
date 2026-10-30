@@ -82,7 +82,10 @@ function asNumber(value: unknown, fallback = 0): number {
 }
 
 function compact(value: unknown): string {
-  return asNumber(value).toLocaleString();
+  if (value === null || value === undefined || value === "") return "unavailable";
+  const numeric = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(numeric)) return "unavailable";
+  return numeric.toLocaleString();
 }
 
 function percent(value: unknown): string {
@@ -349,7 +352,7 @@ export function AureonGeneratedOperationalConsole() {
                     <Datum label="data ready" value={String(Boolean(runtime?.data_ready))} />
                     <Datum label="stale" value={String(Boolean(runtime?.stale || runtime?.runtime_watchdog?.tick_stale))} />
                     <Datum label="tick age" value={runtime?.runtime_watchdog?.last_tick_age_sec !== undefined ? `${compact(runtime.runtime_watchdog.last_tick_age_sec)}s` : "unknown"} />
-                    <Datum label="positions" value={compact(runtime?.combined?.open_positions || runtime?.open_positions || 0)} />
+                    <Datum label="positions" value={compact(runtime?.combined?.open_positions ?? runtime?.open_positions ?? null)} />
                     <Datum label="runtime minutes" value={compact(runtime?.runtime_minutes)} />
                   </div>
                   <LineList items={[
@@ -394,10 +397,10 @@ export function AureonGeneratedOperationalConsole() {
                 </Panel>
                 <Panel title="Signal And Intent Path" icon={Zap}>
                   <div className="grid gap-2 sm:grid-cols-2">
-                    <Datum label="order intents" value={compact(runtime?.exchange_action_plan?.order_intents_published || runtime?.exchange_action_plan?.latest_published?.intent_count || 0)} />
-                    <Datum label="executor sent" value={compact(runtime?.exchange_action_plan?.latest_execution?.submitted_count || 0)} />
-                    <Datum label="executor held" value={compact(runtime?.exchange_action_plan?.latest_execution?.held_count ?? runtime?.exchange_action_plan?.latest_execution?.blocked_count ?? 0)} />
-                    <Datum label="shadow active" value={compact(runtime?.shadow_trading?.active_shadow_count || runtime?.exchange_action_plan?.shadow_trading?.active_shadow_count || 0)} />
+                    <Datum label="order intents" value={compact(runtime?.exchange_action_plan?.order_intents_published ?? runtime?.exchange_action_plan?.latest_published?.intent_count ?? null)} />
+                    <Datum label="executor sent" value={compact(runtime?.exchange_action_plan?.latest_execution?.submitted_count ?? null)} />
+                    <Datum label="executor held" value={compact(runtime?.exchange_action_plan?.latest_execution?.held_count ?? runtime?.exchange_action_plan?.latest_execution?.blocked_count ?? null)} />
+                    <Datum label="shadow active" value={compact(runtime?.shadow_trading?.active_shadow_count ?? runtime?.exchange_action_plan?.shadow_trading?.active_shadow_count ?? null)} />
                   </div>
                   <LineList items={[
                     `trade path: ${shortText(runtime?.exchange_action_plan?.trade_path_state, "unknown")}`,

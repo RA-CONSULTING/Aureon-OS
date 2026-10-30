@@ -29,8 +29,8 @@ export interface GlobalState {
   isAuthenticated: boolean;
   
   // Quantum state
-  coherence: number;
-  lambda: number;
+  coherence: number | null;
+  lambda: number | null;
   lighthouseSignal: number;
   dominantNode: string;
   prismLevel: number;
@@ -46,10 +46,10 @@ export interface GlobalState {
   isActive: boolean;
   totalEquity: number | null;
   equityNote: string | null;
-  availableBalance: number;
-  totalTrades: number;
-  winningTrades: number;
-  totalPnl: number;
+  availableBalance: number | null;
+  totalTrades: number | null;
+  winningTrades: number | null;
+  totalPnl: number | null;
   gasTankBalance: number;
   recentTrades: Array<{
     time: string;
@@ -157,7 +157,7 @@ export interface GlobalState {
   // HNC (Harmonic Neural Coherence)
   hncFrequency: number;              // Current HNC Hz
   hncMarketState: 'CONSOLIDATION' | 'TRENDING' | 'VOLATILE' | 'BREAKOUT';
-  hncCoherencePercent: number;       // HNC coherence %
+  hncCoherencePercent: number | null;       // HNC coherence %
   hncModifier: number;               // Position modifier (0.8x, 1.0x, etc)
   
   // Mycelium Swarm Intelligence
@@ -180,9 +180,9 @@ export interface GlobalState {
   maxPositions: number;              // Max concurrent positions
   activePositions: Array<{
     symbol: string;
-    entryPrice: number;
-    currentPrice: number;
-    pnlPercent: number;
+    entryPrice: number | null;
+    currentPrice: number | null;
+    pnlPercent: number | null;
     side: 'LONG' | 'SHORT';
     exchange?: string;
     tradeId?: string;
@@ -191,13 +191,13 @@ export interface GlobalState {
   shadowTrades?: Array<{
     symbol: string;
     side: 'LONG' | 'SHORT';
-    entryPrice: number;
-    currentPrice: number;
-    movePercent: number;
-    targetMovePercent: number;
+    entryPrice: number | null;
+    currentPrice: number | null;
+    movePercent: number | null;
+    targetMovePercent: number | null;
     exchange?: string;
     validated?: boolean;
-    ageSeconds?: number;
+    ageSeconds?: number | null;
   }>;
 
   unifiedMarketSummary?: {
@@ -733,12 +733,12 @@ class GlobalSystemsManager {
       this.updateState({ 
         exchangeState: state,
         // Sync balance to trading state
-        totalEquity: state.totalEquityUsd || 0,
-        availableBalance: state.totalEquityUsd || 0,
+        totalEquity: state.totalEquityUsd ?? null,
+        availableBalance: state.totalEquityUsd ?? null,
       });
       
       // Update Capital Pool with new equity
-      if (state.totalEquityUsd > 0) {
+      if (state.totalEquityUsd != null && state.totalEquityUsd > 0) {
         capitalPool.updateEquity(state.totalEquityUsd, 0);
         console.log(`💰 [GlobalSystems] Balance synced: $${state.totalEquityUsd.toFixed(2)}`);
       }

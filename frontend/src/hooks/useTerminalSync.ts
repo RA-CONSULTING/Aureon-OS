@@ -157,6 +157,37 @@ const firstFinite = (...values: unknown[]): number | null => {
   return null;
 };
 
+const sumFinite = (...values: Array<number | null>): number | null => {
+  const present = values.filter((value): value is number => value != null);
+  return present.length ? present.reduce((sum, value) => sum + value, 0) : null;
+};
+
+type TradeStatsSnapshot = {
+  total: number | null;
+  wins: number | null;
+  winRate: number | null;
+  totalPnl: number | null;
+};
+
+const NULL_TRADE_STATS: TradeStatsSnapshot = {
+  total: null,
+  wins: null,
+  winRate: null,
+  totalPnl: null,
+};
+
+const positionMovePercent = (
+  entryPrice: number | null,
+  currentPrice: number | null,
+  invertForShort = false,
+): number | null => {
+  if (entryPrice == null || currentPrice == null || entryPrice <= 0) return null;
+  const rawPct = ((currentPrice - entryPrice) / entryPrice) * 100;
+  return invertForShort ? -rawPct : rawPct;
+};
+
+const formatEquityLog = (value: number | null) => (value == null ? 'unavailable' : value.toFixed(2));
+
 const toStringList = (value: unknown): string[] =>
   Array.isArray(value) ? value.map((item) => String(item ?? '')).filter(Boolean) : [];
 
@@ -296,25 +327,25 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
   }, []);
 
   // Fetch trade statistics from trade_records (populated by Python)
-  const fetchTradeStats = useCallback(async () => {
+  const fetchTradeStats = useCallback(async (): Promise<TradeStatsSnapshot> => {
     try {
       const { data: trades, error } = await supabase
         .from('trade_records')
         .select('id, is_win, pnl')
         .eq('user_id', LIVE_FEED_USER_ID);
 
-      if (error || !trades) {
-        return { total: 0, wins: 0, winRate: 0, totalPnl: 0 };
+      if (error || !trades || trades.length === 0) {
+        return NULL_TRADE_STATS;
       }
 
       const total = trades.length;
       const wins = trades.filter(t => t.is_win === true).length;
-      const winRate = total > 0 ? (wins / total) * 100 : 0;
-      const totalPnl = trades.reduce((sum, t) => sum + (t.pnl || 0), 0);
+      const winRate = (wins / total) * 100;
+      const totalPnl = sumFinite(...trades.map((t) => firstFinite(t.pnl)));
 
       return { total, wins, winRate, totalPnl };
     } catch (err) {
-      return { total: 0, wins: 0, winRate: 0, totalPnl: 0 };
+      return NULL_TRADE_STATS;
     }
   }, []);
 
@@ -374,16 +405,15 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
         const unifiedStatusLines = toStringList(localState.status_lines);
 
         const krakenPositions = Array.isArray(kraken.positions) ? kraken.positions.map((p: any) => {
-          const entryPrice = toNumber(p.entry_price || 0);
-          const currentPrice = toNumber(p.current_price || entryPrice || 0);
-          const rawPct = entryPrice > 0 ? ((currentPrice - entryPrice) / entryPrice) * 100 : 0;
+          const entryPrice = firstFinite(p.entry_price);
+          const currentPrice = firstFinite(p.current_price);
           const sideRaw = String(p.side || '').toUpperCase();
           const isShort = sideRaw === 'SELL' || sideRaw === 'SHORT';
           return {
             symbol: String(p.symbol || p.pair || ''),
             entryPrice,
             currentPrice,
-            pnlPercent: isShort ? -rawPct : rawPct,
+            pnlPercent: positionMovePercent(entryPrice, currentPrice, isShort),
             side: (isShort ? 'SHORT' : 'LONG') as 'LONG' | 'SHORT',
             exchange: 'kraken',
             tradeId: String(p.trade_id || p.transaction_id || ''),
@@ -393,9 +423,9 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
 
         const capitalPositions = Array.isArray(capital.positions) ? capital.positions.map((p: any) => ({
           symbol: String(p.symbol || ''),
-          entryPrice: toNumber(p.entry_price || 0),
-          currentPrice: toNumber(p.current_price || p.entry_price || 0),
-          pnlPercent: toNumber(p.pnl_pct || 0),
+          entryPrice: firstFinite(p.entry_price),
+          currentPrice: firstFinite(p.current_price),
+          pnlPercent: firstFinite(p.pnl_pct),
           side: (String(p.direction || 'BUY').toUpperCase() === 'SELL' ? 'SHORT' : 'LONG') as 'LONG' | 'SHORT',
           exchange: 'capital',
           tradeId: String(p.deal_id || ''),
@@ -407,25 +437,25 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
         const krakenShadows = Array.isArray(kraken.shadows) ? kraken.shadows.map((s: any) => ({
           symbol: String(s.symbol || s.pair || ''),
           side: (String(s.side || s.direction || 'BUY').toUpperCase() === 'SELL' ? 'SHORT' : 'LONG') as 'LONG' | 'SHORT',
-          entryPrice: toNumber(s.entry_price || 0),
-          currentPrice: toNumber(s.current_price || s.entry_price || 0),
-          movePercent: toNumber(s.current_move_pct || 0),
-          targetMovePercent: toNumber(s.target_move_pct || 0),
+          entryPrice: firstFinite(s.entry_price),
+          currentPrice: firstFinite(s.current_price),
+          movePercent: firstFinite(s.current_move_pct),
+          targetMovePercent: firstFinite(s.target_move_pct),
           exchange: 'kraken',
           validated: Boolean(s.validated),
-          ageSeconds: toNumber(s.age_secs || 0),
+          ageSeconds: firstFinite(s.age_secs),
         })) : [];
 
         const capitalShadows = Array.isArray(capital.shadows) ? capital.shadows.map((s: any) => ({
           symbol: String(s.symbol || ''),
           side: (String(s.direction || 'BUY').toUpperCase() === 'SELL' ? 'SHORT' : 'LONG') as 'LONG' | 'SHORT',
-          entryPrice: toNumber(s.entry_price || 0),
-          currentPrice: toNumber(s.current_price || s.entry_price || 0),
-          movePercent: toNumber(s.current_move_pct || 0),
-          targetMovePercent: toNumber(s.target_move_pct || 0),
+          entryPrice: firstFinite(s.entry_price),
+          currentPrice: firstFinite(s.current_price),
+          movePercent: firstFinite(s.current_move_pct),
+          targetMovePercent: firstFinite(s.target_move_pct),
           exchange: 'capital',
           validated: Boolean(s.validated),
-          ageSeconds: toNumber(s.age_secs || 0),
+          ageSeconds: firstFinite(s.age_secs),
         })) : [];
 
         const shadowTrades = [...krakenShadows, ...capitalShadows];
@@ -476,12 +506,12 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
             : capitalEquity != null
               ? capitalEquity
               : krakenEquity;
-        const krakenFree = toNumber(kraken.pool_available || kraken.free_margin || 0);
-        const capitalFree = toNumber(capital.free_gbp || 0);
-        const availableBalance = krakenFree > 0 ? krakenFree : capitalFree;
-        const krakenPnl = toNumber(kraken.compounded || kraken.session_profit || combined.kraken_session_pnl || 0);
-        const capitalPnl = toNumber(capital.stats?.total_pnl_gbp || combined.capital_session_pnl_gbp || 0);
-        const totalPnl = krakenPnl !== 0 ? krakenPnl : capitalPnl;
+        const krakenFree = firstFinite(kraken.pool_available, kraken.free_margin);
+        const capitalFree = firstFinite(capital.free_gbp);
+        const availableBalance = krakenFree != null && krakenFree > 0 ? krakenFree : capitalFree;
+        const krakenPnl = firstFinite(kraken.compounded, kraken.session_profit, combined.kraken_session_pnl);
+        const capitalPnl = firstFinite(capital.stats?.total_pnl_gbp, combined.capital_session_pnl_gbp);
+        const totalPnl = krakenPnl != null && krakenPnl !== 0 ? krakenPnl : capitalPnl;
         const latestMonitorLine = String(
           localState.latest_monitor_line
           || capital.latest_monitor_line
@@ -491,55 +521,58 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
         const statusLines = unifiedStatusLines.length > 0
           ? unifiedStatusLines
           : [...krakenStatusLines, ...capitalStatusLines].slice(-16);
-        const totalTrades = toNumber(kraken.total_trades || 0) + toNumber(capital.stats?.trades_closed || 0);
-        const winningTrades = toNumber(kraken.wins || 0) + toNumber(capital.stats?.winning_trades || 0);
+        const totalTrades = sumFinite(firstFinite(kraken.total_trades), firstFinite(capital.stats?.trades_closed));
+        const winningTrades = sumFinite(firstFinite(kraken.wins), firstFinite(capital.stats?.winning_trades));
 
         globalSystemsManager.setPartialState({
           totalEquity,
           equityNote,
           availableBalance,
-          peakEquity: toNumber(kraken.peak_equity || totalEquity || 0),
-          currentDrawdownPercent: toNumber(kraken.current_drawdown || 0),
-          maxDrawdownPercent: toNumber(kraken.max_drawdown || 0),
+          peakEquity: firstFinite(kraken.peak_equity, totalEquity),
+          currentDrawdownPercent: firstFinite(kraken.current_drawdown),
+          maxDrawdownPercent: firstFinite(kraken.max_drawdown),
           totalTrades,
           winningTrades,
           totalPnl,
           cyclePnl: totalPnl,
-          cyclePnlPercent: (totalEquity ?? 0) > 0 ? (totalPnl / (totalEquity ?? 0)) * 100 : 0,
-          avgHoldTimeMinutes: toNumber(kraken.avg_hold_time || 0),
+          cyclePnlPercent:
+            totalEquity != null && totalEquity > 0 && totalPnl != null
+              ? (totalPnl / totalEquity) * 100
+              : null,
+          avgHoldTimeMinutes: firstFinite(kraken.avg_hold_time),
           activePositions,
           shadowTrades,
           sessionStartTime: sessionStartRef.current,
-          coherence: toNumber(kraken.coherence || 0),
-          lambda: toNumber(kraken.lambda || 0),
+          coherence: firstFinite(kraken.coherence),
+          lambda: firstFinite(kraken.lambda),
           gaiaLatticeState: ((kraken.gaia_state || 'NEUTRAL').toUpperCase()) as 'COHERENT' | 'DISTORTION' | 'NEUTRAL',
           gaiaFrequency: toNumber(kraken.gaia_frequency || 432),
-          purityPercent: toNumber(kraken.gaia_purity || 0),
-          carrierWavePhi: toNumber(kraken.gaia_carrier_phi || 0),
-          harmonicLock432: toNumber(kraken.gaia_432_lock || 0),
+          purityPercent: firstFinite(kraken.gaia_purity),
+          carrierWavePhi: firstFinite(kraken.gaia_carrier_phi),
+          harmonicLock432: firstFinite(kraken.gaia_432_lock),
           hncFrequency: toNumber(kraken.hnc_frequency || 432),
           hncMarketState: ((kraken.hnc_market_state || 'CONSOLIDATION').toUpperCase()) as 'CONSOLIDATION' | 'TRENDING' | 'VOLATILE' | 'BREAKOUT',
-          hncCoherencePercent: toNumber(kraken.hnc_coherence_percent || 0),
+          hncCoherencePercent: firstFinite(kraken.hnc_coherence_percent),
           hncModifier: toNumber(kraken.hnc_modifier || 0.8),
           tradingMode: ((kraken.trading_mode || 'BALANCED').toUpperCase()) as 'AGGRESSIVE' | 'CONSERVATIVE' | 'BALANCED',
-          entryCoherenceThreshold: toNumber(kraken.entry_threshold || 0),
-          exitCoherenceThreshold: toNumber(kraken.exit_threshold || 0),
+          entryCoherenceThreshold: firstFinite(kraken.entry_threshold),
+          exitCoherenceThreshold: firstFinite(kraken.exit_threshold),
           riskMultiplier: toNumber(kraken.risk_multiplier || 1),
           takeProfitMultiplier: toNumber(kraken.tp_multiplier || 1),
-          myceliumHives: toNumber(kraken.mycelium_hives || 0),
-          myceliumAgents: toNumber(kraken.mycelium_agents || 0),
-          myceliumGeneration: toNumber(kraken.mycelium_generation || 0),
-          maxGeneration: toNumber(kraken.max_generation || 0),
+          myceliumHives: firstFinite(kraken.mycelium_hives),
+          myceliumAgents: firstFinite(kraken.mycelium_agents),
+          myceliumGeneration: firstFinite(kraken.mycelium_generation),
+          maxGeneration: firstFinite(kraken.max_generation),
           queenState: ((kraken.queen_state || 'HOLD').toUpperCase()) as 'HOLD' | 'BUY' | 'SELL',
-          queenPnl: toNumber(kraken.queen_pnl || 0),
-          compoundedCapital: toNumber(kraken.compounded || 0),
-          harvestedCapital: toNumber(kraken.harvested || 0),
-          poolTotal: toNumber(kraken.pool_total || totalEquity || 0),
-          poolAvailable: toNumber(kraken.pool_available || availableBalance || 0),
-          scoutCount: toNumber(kraken.scout_count || 0),
-          splitCount: toNumber(kraken.split_count || 0),
+          queenPnl: firstFinite(kraken.queen_pnl),
+          compoundedCapital: firstFinite(kraken.compounded),
+          harvestedCapital: firstFinite(kraken.harvested),
+          poolTotal: firstFinite(kraken.pool_total, totalEquity),
+          poolAvailable: firstFinite(kraken.pool_available, availableBalance),
+          scoutCount: firstFinite(kraken.scout_count),
+          splitCount: firstFinite(kraken.split_count),
           wsConnected: Boolean(kraken.ws_connected || localState.ws_connected),
-          wsMessageCount: toNumber(kraken.ws_message_count || localState.ws_message_count || 0),
+          wsMessageCount: firstFinite(kraken.ws_message_count, localState.ws_message_count),
           latestMonitorLine,
           statusLines,
           recentTrades,
@@ -580,15 +613,14 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
       }
 
       const mappedPositions = (localState.positions || []).map((p) => {
-        const entryPrice = Number(p.entry_price || 0);
-        const currentPrice = Number(p.current_price || entryPrice);
-        const rawPct = entryPrice > 0 ? ((currentPrice - entryPrice) / entryPrice) * 100 : 0;
+        const entryPrice = firstFinite(p.entry_price);
+        const currentPrice = firstFinite(p.current_price);
         const isShort = String(p.side || '').toUpperCase() === 'SELL';
         return {
           symbol: p.symbol,
           entryPrice,
           currentPrice,
-          pnlPercent: isShort ? -rawPct : rawPct,
+          pnlPercent: positionMovePercent(entryPrice, currentPrice, isShort),
           side: (isShort ? 'SHORT' : 'LONG') as 'LONG' | 'SHORT',
         };
       });
@@ -597,59 +629,59 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
           time: String(trade?.time || ''),
           side: String(trade?.side || 'BUY'),
           symbol: String(trade?.symbol || ''),
-          quantity: Number(trade?.quantity || 0),
-          pnl: Number(trade?.pnl || 0),
+          quantity: firstFinite(trade?.quantity),
+          pnl: firstFinite(trade?.pnl),
           success: Boolean(trade?.success),
           exchange: undefined,
           tradeId: String(trade?.trade_id || ''),
-          holdSeconds: Number(trade?.hold_seconds || 0),
+          holdSeconds: firstFinite(trade?.hold_seconds),
           reason: String(trade?.reason || ''),
         })) : [];
 
-      const totalPnl = Number(localState.compounded || 0);
+      const totalPnl = firstFinite(localState.compounded);
       globalSystemsManager.setPartialState({
-        totalEquity: Number(localState.portfolio_value || 0),
-        peakEquity: Number(localState.peak_equity || localState.portfolio_value || 0),
-        currentDrawdownPercent: Number(localState.current_drawdown || 0),
-        maxDrawdownPercent: Number(localState.max_drawdown || 0),
-        totalTrades: Number(localState.total_trades || 0),
-        winningTrades: Number(localState.wins || 0),
+        totalEquity: firstFinite(localState.portfolio_value),
+        peakEquity: firstFinite(localState.peak_equity, localState.portfolio_value),
+        currentDrawdownPercent: firstFinite(localState.current_drawdown),
+        maxDrawdownPercent: firstFinite(localState.max_drawdown),
+        totalTrades: firstFinite(localState.total_trades),
+        winningTrades: firstFinite(localState.wins),
         totalPnl,
         cyclePnl: totalPnl,
-        cyclePnlPercent: localState.portfolio_value > 0 ? (totalPnl / localState.portfolio_value) * 100 : 0,
-        avgHoldTimeMinutes: Number(localState.avg_hold_time || 0),
+        cyclePnlPercent: localState.portfolio_value > 0 && totalPnl != null ? (totalPnl / localState.portfolio_value) * 100 : null,
+        avgHoldTimeMinutes: firstFinite(localState.avg_hold_time),
         activePositions: mappedPositions,
         sessionStartTime: sessionStartRef.current,
-        coherence: Number(localState.coherence || 0),
-        lambda: Number(localState.lambda || 0),
+        coherence: firstFinite(localState.coherence),
+        lambda: firstFinite(localState.lambda),
         gaiaLatticeState: ((localState.gaia_state || 'NEUTRAL').toUpperCase()) as 'COHERENT' | 'DISTORTION' | 'NEUTRAL',
         gaiaFrequency: Number(localState.gaia_frequency || 432),
-        purityPercent: Number(localState.gaia_purity || 0),
-        carrierWavePhi: Number(localState.gaia_carrier_phi || 0),
-        harmonicLock432: Number(localState.gaia_432_lock || 0),
+        purityPercent: firstFinite(localState.gaia_purity),
+        carrierWavePhi: firstFinite(localState.gaia_carrier_phi),
+        harmonicLock432: firstFinite(localState.gaia_432_lock),
         hncFrequency: Number(localState.hnc_frequency || 432),
         hncMarketState: ((localState.hnc_market_state || 'CONSOLIDATION').toUpperCase()) as 'CONSOLIDATION' | 'TRENDING' | 'VOLATILE' | 'BREAKOUT',
-        hncCoherencePercent: Number(localState.hnc_coherence_percent || 0),
+        hncCoherencePercent: firstFinite(localState.hnc_coherence_percent),
         hncModifier: Number(localState.hnc_modifier || 0.8),
         tradingMode: ((localState.trading_mode || 'BALANCED').toUpperCase()) as 'AGGRESSIVE' | 'CONSERVATIVE' | 'BALANCED',
-        entryCoherenceThreshold: Number(localState.entry_threshold || 0),
-        exitCoherenceThreshold: Number(localState.exit_threshold || 0),
+        entryCoherenceThreshold: firstFinite(localState.entry_threshold),
+        exitCoherenceThreshold: firstFinite(localState.exit_threshold),
         riskMultiplier: Number(localState.risk_multiplier || 1),
         takeProfitMultiplier: Number(localState.tp_multiplier || 1),
-        myceliumHives: Number(localState.mycelium_hives || 0),
-        myceliumAgents: Number(localState.mycelium_agents || 0),
-        myceliumGeneration: Number(localState.mycelium_generation || 0),
-        maxGeneration: Number(localState.max_generation || 0),
+        myceliumHives: firstFinite(localState.mycelium_hives),
+        myceliumAgents: firstFinite(localState.mycelium_agents),
+        myceliumGeneration: firstFinite(localState.mycelium_generation),
+        maxGeneration: firstFinite(localState.max_generation),
         queenState: ((localState.queen_state || 'HOLD').toUpperCase()) as 'HOLD' | 'BUY' | 'SELL',
-        queenPnl: Number(localState.queen_pnl || 0),
+        queenPnl: firstFinite(localState.queen_pnl),
         compoundedCapital: totalPnl,
-        harvestedCapital: Number(localState.harvested || 0),
-        poolTotal: Number(localState.pool_total || localState.portfolio_value || 0),
-        poolAvailable: Number(localState.pool_available || 0),
-        scoutCount: Number(localState.scout_count || 0),
-        splitCount: Number(localState.split_count || 0),
+        harvestedCapital: firstFinite(localState.harvested),
+        poolTotal: firstFinite(localState.pool_total, localState.portfolio_value),
+        poolAvailable: firstFinite(localState.pool_available),
+        scoutCount: firstFinite(localState.scout_count),
+        splitCount: firstFinite(localState.split_count),
         wsConnected: Boolean(localState.ws_connected),
-        wsMessageCount: Number(localState.ws_message_count || 0),
+        wsMessageCount: firstFinite(localState.ws_message_count),
         latestMonitorLine: localState.latest_monitor_line || '',
         statusLines: localState.status_lines || [],
         recentTrades,
@@ -663,9 +695,9 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
       });
 
       console.log('[TerminalSync] Local trader synced:', {
-        equity: Number(localState.portfolio_value || 0).toFixed(2),
-        trades: localState.total_trades || 0,
-        wins: localState.wins || 0,
+        equity: formatEquityLog(firstFinite(localState.portfolio_value)),
+        trades: localState.total_trades ?? null,
+        wins: localState.wins ?? null,
         positions: mappedPositions.length,
       });
       return;
@@ -686,43 +718,49 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
     }
 
     // Map positions to display format
-    const mappedPositions = positions.map(p => ({
-      symbol: p.symbol,
-      entryPrice: Number(p.entry_price),
-      currentPrice: Number(p.current_price) || Number(p.entry_price),
-      pnlPercent: p.current_price && p.entry_price 
-        ? ((Number(p.current_price) - Number(p.entry_price)) / Number(p.entry_price)) * 100 
-        : 0,
-      side: (p.side === 'BUY' ? 'LONG' : 'SHORT') as 'LONG' | 'SHORT',
-    }));
+    const mappedPositions = positions.map((p) => {
+      const entryPrice = firstFinite(p.entry_price);
+      const currentPrice = firstFinite(p.current_price);
+      const isShort = p.side !== 'BUY';
+      return {
+        symbol: p.symbol,
+        entryPrice,
+        currentPrice,
+        pnlPercent: positionMovePercent(entryPrice, currentPrice, isShort),
+        side: (isShort ? 'SHORT' : 'LONG') as 'LONG' | 'SHORT',
+      };
+    });
 
     // Determine Gaia state from HNC data
     const gaiaState = hncState?.distortion_power > 0 ? 'DISTORTION' : 
-                      (session.current_coherence || 0) > 0.45 ? 'COHERENT' : 'NEUTRAL';
+                      (session.current_coherence ?? -1) > 0.45 ? 'COHERENT' : 'NEUTRAL';
+
+    const cyclePnl = session.total_pnl_usdt ?? tradeStats.totalPnl;
 
     // Update global state with REAL data from Python
     globalSystemsManager.setPartialState({
       // Portfolio from session (pushed by Python)
-      totalEquity: session.total_equity_usdt || 0,
-      peakEquity: runtimeStats?.peak_equity || session.total_equity_usdt || 0,
-      currentDrawdownPercent: runtimeStats?.current_drawdown || 0,
-      maxDrawdownPercent: runtimeStats?.max_drawdown || 0,
+      totalEquity: session.total_equity_usdt ?? null,
+      peakEquity: runtimeStats?.peak_equity ?? session.total_equity_usdt ?? null,
+      currentDrawdownPercent: runtimeStats?.current_drawdown ?? null,
+      maxDrawdownPercent: runtimeStats?.max_drawdown ?? null,
       
       // Trade stats from trade_records (pushed by Python)
-      totalTrades: session.total_trades || tradeStats.total,
-      winningTrades: session.winning_trades || tradeStats.wins,
-      totalPnl: session.total_pnl_usdt || tradeStats.totalPnl || 0,
-      cyclePnl: session.total_pnl_usdt || tradeStats.totalPnl || 0,
-      cyclePnlPercent: session.total_equity_usdt > 0 
-        ? ((session.total_pnl_usdt || tradeStats.totalPnl || 0) / session.total_equity_usdt) * 100 
-        : 0,
-      avgHoldTimeMinutes: runtimeStats?.avg_hold_time_minutes || 0,
+      totalTrades: session.total_trades ?? tradeStats.total ?? null,
+      winningTrades: session.winning_trades ?? tradeStats.wins ?? null,
+      totalPnl: session.total_pnl_usdt ?? tradeStats.totalPnl ?? null,
+      cyclePnl: cyclePnl ?? null,
+      cyclePnlPercent:
+        session.total_equity_usdt > 0 && cyclePnl != null
+          ? (cyclePnl / session.total_equity_usdt) * 100
+          : null,
+      avgHoldTimeMinutes: runtimeStats?.avg_hold_time_minutes ?? null,
       recentTrades: Array.isArray(session.recent_trades) ? (session.recent_trades as Array<any>).map((trade) => ({
         time: String(trade?.time || ''),
         side: String(trade?.side || 'BUY'),
         symbol: String(trade?.symbol || ''),
-        quantity: Number(trade?.quantity || 0),
-        pnl: Number(trade?.pnl || 0),
+        quantity: firstFinite(trade?.quantity),
+        pnl: firstFinite(trade?.pnl),
         success: Boolean(trade?.success),
       })) : [],
       
@@ -734,20 +772,23 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
       lastDataReceived: Date.now(),
       
       // Coherence/Lambda from session
-      coherence: session.current_coherence || 0,
-      lambda: session.current_lambda || 0,
+      coherence: session.current_coherence ?? null,
+      lambda: session.current_lambda ?? null,
       
       // Gaia state
       gaiaLatticeState: gaiaState as 'COHERENT' | 'DISTORTION' | 'NEUTRAL',
       gaiaFrequency: hncState?.schumann_power || (session.prism_level || 440),
-      purityPercent: runtimeStats?.gaia_purity || 0,
-      carrierWavePhi: runtimeStats?.gaia_carrier_phi || 0,
-      harmonicLock432: hncState?.love_power || 0,
+      purityPercent: runtimeStats?.gaia_purity ?? null,
+      carrierWavePhi: runtimeStats?.gaia_carrier_phi ?? null,
+      harmonicLock432: hncState?.love_power ?? null,
       
       // HNC state
       hncFrequency: session.current_lighthouse_signal || 318,
       hncMarketState: (hncState?.bridge_status || 'CONSOLIDATION') as 'CONSOLIDATION' | 'TRENDING' | 'VOLATILE' | 'BREAKOUT',
-      hncCoherencePercent: hncState?.harmonic_fidelity || (session.current_coherence || 0) * 100,
+      hncCoherencePercent: firstFinite(
+        hncState?.harmonic_fidelity,
+        session.current_coherence == null ? null : Number(session.current_coherence) * 100,
+      ),
       hncModifier: hncState?.imperial_yield || 0.8,
       
       // Trading mode
@@ -760,31 +801,36 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
       // Mycelium swarm
       myceliumHives: runtimeStats?.mycelium_hives || 1,
       myceliumAgents: runtimeStats?.mycelium_agents || 5,
-      myceliumGeneration: runtimeStats?.mycelium_generation || 0,
-      maxGeneration: runtimeStats?.max_generation || 0,
+      myceliumGeneration: runtimeStats?.mycelium_generation ?? null,
+      maxGeneration: runtimeStats?.max_generation ?? null,
       queenState: (runtimeStats?.queen_state || session.dominant_node || 'HOLD') as 'HOLD' | 'BUY' | 'SELL',
-      queenPnl: runtimeStats?.queen_pnl || 0,
+      queenPnl: runtimeStats?.queen_pnl ?? null,
       
       // Capital
-      compoundedCapital: session.total_pnl_usdt || 0,
-      harvestedCapital: session.gas_tank_balance || 0,
-      poolAvailable: session.available_balance_usdt || 0,
-      scoutCount: runtimeStats?.scout_count || 0,
-      splitCount: runtimeStats?.split_count || 0,
+      compoundedCapital: session.total_pnl_usdt ?? null,
+      harvestedCapital: session.gas_tank_balance ?? null,
+      poolAvailable: session.available_balance_usdt ?? null,
+      scoutCount: runtimeStats?.scout_count ?? null,
+      splitCount: runtimeStats?.split_count ?? null,
       
       // WebSocket (from runtime stats)
       wsConnected: runtimeStats?.ws_connected || false,
-      wsMessageCount: runtimeStats?.ws_message_count || 0,
+      wsMessageCount: runtimeStats?.ws_message_count ?? null,
       latestMonitorLine: runtimeStats?.latest_monitor_line || '',
       statusLines: runtimeStats?.status_lines || [],
     });
 
+    const dbWinRate =
+      tradeStats.total != null && tradeStats.total > 0 && tradeStats.wins != null
+        ? `${((tradeStats.wins / tradeStats.total) * 100).toFixed(1)}%`
+        : 'unavailable';
+
     console.log('[TerminalSync] DB data synced:', { 
-      equity: (session.total_equity_usdt || 0).toFixed(2),
-      trades: session.total_trades || tradeStats.total,
-      wins: session.winning_trades || tradeStats.wins,
-      winRate: ((session.winning_trades || tradeStats.wins) / Math.max(1, session.total_trades || tradeStats.total) * 100).toFixed(1) + '%',
-      coherence: ((session.current_coherence || 0) * 100).toFixed(1) + '%',
+      equity: session.total_equity_usdt == null ? 'unavailable' : Number(session.total_equity_usdt).toFixed(2),
+      trades: session.total_trades ?? tradeStats.total ?? 'unavailable',
+      wins: session.winning_trades ?? tradeStats.wins ?? 'unavailable',
+      winRate: dbWinRate,
+      coherence: session.current_coherence == null ? 'unavailable' : `${(session.current_coherence * 100).toFixed(1)}%`,
       positions: positions.length,
     });
   }, [fetchLocalTerminalState, fetchSessionData, fetchHncState, fetchTradeStats, fetchPositions, fetchRuntimeStats]);

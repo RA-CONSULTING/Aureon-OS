@@ -22,6 +22,7 @@ def dataset_solution_smoke(root: Path, limit: int = 5) -> dict[str, Any]:
 
     from aureon.autonomous.self_coder_benchmark import (
         BenchmarkChildRefused,
+        _dataset_label,
         _humaneval_path,
         _load_jsonl,
         _run_python,
@@ -61,7 +62,7 @@ def dataset_solution_smoke(root: Path, limit: int = 5) -> dict[str, Any]:
         "verdict": "measured",
         "counts_as_model_score": False,
         "reason": "the dataset's own solutions ran in the harness; this is not a model score",
-        "dataset": str(path),
+        "dataset": _dataset_label(root, path),
         "limit": limit,
         "passed": passed,
         "total": len(rows),
@@ -166,6 +167,9 @@ def write_bundle(root: Path, out: Path) -> dict[str, Any]:
         "organism_fault_false_alarm_rate": fault["false_alarm_rate"],
         "organism_fault_baseline_detection_rate": fault["baseline_detection_rate"],
         "organism_fault_baseline_false_alarm_rate": fault["baseline_false_alarm_rate"],
+        "organism_synthetic_faults": fault.get("synthetic_faults"),
+        "organism_fault_origin": fault.get("origin"),
+        "organism_fault_rates_are": "synthetic harness injections, not a detection ability",
     }
     (out / "index.json").write_text(_dump(index), encoding="utf-8")
     return index

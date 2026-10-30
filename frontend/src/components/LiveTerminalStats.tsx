@@ -8,6 +8,15 @@ const safeNumber = (value: unknown, fallback = 0): number => {
   return Number.isFinite(num) ? num : fallback;
 };
 
+const finiteOrNull = (value: unknown, ...fallbacks: unknown[]): number | null => {
+  for (const candidate of [value, ...fallbacks]) {
+    if (candidate === null || candidate === undefined || candidate === '') continue;
+    const num = Number(candidate);
+    if (Number.isFinite(num)) return num;
+  }
+  return null;
+};
+
 const formatSigned = (value: unknown, digits = 2, prefix = '') => {
   if (value == null || value === '') return 'unavailable';
   const num = typeof value === 'number' ? value : Number(value);
@@ -57,9 +66,9 @@ const PositionLine = ({
 }: {
   symbol: string;
   side: 'LONG' | 'SHORT';
-  entryPrice: number;
-  currentPrice: number;
-  pnlPercent: number;
+  entryPrice: number | null;
+  currentPrice: number | null;
+  pnlPercent: number | null;
   exchange?: string;
   tradeId?: string;
 }) => (
@@ -72,13 +81,13 @@ const PositionLine = ({
         </span>
         {exchange && <span className="text-[10px] uppercase text-muted-foreground">{exchange}</span>}
       </div>
-      <span className={cn(pnlPercent >= 0 ? 'text-success' : 'text-destructive')}>
-        {formatSigned(pnlPercent, 2)}%
+      <span className={cn(typeof pnlPercent === 'number' && pnlPercent < 0 ? 'text-destructive' : 'text-success')}>
+        {pnlPercent == null || !Number.isFinite(pnlPercent) ? 'unavailable' : `${formatSigned(pnlPercent, 2)}%`}
       </span>
     </div>
     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] text-muted-foreground">
-      <span>Entry ${entryPrice.toFixed(4)}</span>
-      <span>Now ${currentPrice.toFixed(4)}</span>
+      <span>Entry {entryPrice == null || !Number.isFinite(entryPrice) ? 'unavailable' : `$${entryPrice.toFixed(4)}`}</span>
+      <span>Now {currentPrice == null || !Number.isFinite(currentPrice) ? 'unavailable' : `$${currentPrice.toFixed(4)}`}</span>
       <span>ID {tradeId || 'n/a'}</span>
     </div>
   </div>
@@ -97,13 +106,13 @@ const ShadowLine = ({
 }: {
   symbol: string;
   side: 'LONG' | 'SHORT';
-  entryPrice: number;
-  currentPrice: number;
-  movePercent: number;
-  targetMovePercent: number;
+  entryPrice: number | null;
+  currentPrice: number | null;
+  movePercent: number | null;
+  targetMovePercent: number | null;
   exchange?: string;
   validated?: boolean;
-  ageSeconds?: number;
+  ageSeconds?: number | null;
 }) => (
   <div className="rounded border border-border/40 bg-background/60 px-3 py-2">
     <div className="flex items-center justify-between gap-3 font-mono text-[11px]">
@@ -115,14 +124,14 @@ const ShadowLine = ({
         {exchange && <span className="text-[10px] uppercase text-muted-foreground">{exchange}</span>}
         {validated && <span className="text-[10px] text-warning">VALID</span>}
       </div>
-      <span className={cn(movePercent >= 0 ? 'text-success' : 'text-destructive')}>
-        {formatSigned(movePercent, 3)}%
+      <span className={cn(typeof movePercent === 'number' && movePercent < 0 ? 'text-destructive' : 'text-success')}>
+        {movePercent == null || !Number.isFinite(movePercent) ? 'unavailable' : `${formatSigned(movePercent, 3)}%`}
       </span>
     </div>
     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] text-muted-foreground">
-      <span>Entry ${entryPrice.toFixed(4)}</span>
-      <span>Now ${currentPrice.toFixed(4)}</span>
-      <span>Need {targetMovePercent.toFixed(3)}%</span>
+      <span>Entry {entryPrice == null || !Number.isFinite(entryPrice) ? 'unavailable' : `$${entryPrice.toFixed(4)}`}</span>
+      <span>Now {currentPrice == null || !Number.isFinite(currentPrice) ? 'unavailable' : `$${currentPrice.toFixed(4)}`}</span>
+      <span>Need {targetMovePercent == null || !Number.isFinite(targetMovePercent) ? 'unavailable' : `${targetMovePercent.toFixed(3)}%`}</span>
       <span>Age {formatAge(ageSeconds)}</span>
     </div>
   </div>
@@ -279,8 +288,8 @@ export function LiveTerminalStats() {
     .slice(0, 5);
 
   const totalEquity = state.totalEquity;
-  const available = safeNumber(state.availableBalance);
-  const totalPnl = safeNumber(state.totalPnl);
+  const available = state.availableBalance;
+  const totalPnl = state.totalPnl;
   const krakenEquity = summary?.krakenEquity;
   const capitalEquity = summary?.capitalEquityGbp;
   const money = (value: number | null | undefined, prefix: string) => (
@@ -294,6 +303,9 @@ export function LiveTerminalStats() {
   const capitalRatchet = summary?.capitalConfidenceRatchet || {};
   const capitalWaveform = summary?.capitalUnifiedWaveformCheck || {};
   const capitalNoLossQueue = summary?.capitalNoLossHoldQueue || {};
+  const capitalReserveGbp = finiteOrNull(capitalRisk.reserve_required_gbp);
+  const capitalStressBufferGbp = finiteOrNull(capitalRisk.stress_buffer_before_gbp);
+  const capitalLosingCount = finiteOrNull(capitalNoLossQueue.losing_position_count);
   const queenVoice = state.queenVoice;
 
   return (
@@ -368,9 +380,9 @@ export function LiveTerminalStats() {
                   key={`kraken-${pos.symbol}-${pos.tradeId || index}`}
                   symbol={pos.symbol}
                   side={pos.side}
-                  entryPrice={safeNumber(pos.entryPrice)}
-                  currentPrice={safeNumber(pos.currentPrice, safeNumber(pos.entryPrice))}
-                  pnlPercent={safeNumber(pos.pnlPercent)}
+                  entryPrice={finiteOrNull(pos.entryPrice)}
+                  currentPrice={finiteOrNull(pos.currentPrice)}
+                  pnlPercent={finiteOrNull(pos.pnlPercent)}
                   exchange={pos.exchange}
                   tradeId={pos.tradeId}
                 />
@@ -387,13 +399,13 @@ export function LiveTerminalStats() {
                   key={`kraken-shadow-${shadow.symbol}-${index}`}
                   symbol={shadow.symbol}
                   side={shadow.side}
-                  entryPrice={safeNumber(shadow.entryPrice)}
-                  currentPrice={safeNumber(shadow.currentPrice, safeNumber(shadow.entryPrice))}
-                  movePercent={safeNumber(shadow.movePercent)}
-                  targetMovePercent={safeNumber(shadow.targetMovePercent)}
+                  entryPrice={finiteOrNull(shadow.entryPrice)}
+                  currentPrice={finiteOrNull(shadow.currentPrice)}
+                  movePercent={finiteOrNull(shadow.movePercent)}
+                  targetMovePercent={finiteOrNull(shadow.targetMovePercent)}
                   exchange={shadow.exchange}
                   validated={Boolean(shadow.validated)}
-                  ageSeconds={safeNumber(shadow.ageSeconds)}
+                  ageSeconds={finiteOrNull(shadow.ageSeconds)}
                 />
               ))
             ) : (
@@ -415,12 +427,20 @@ export function LiveTerminalStats() {
             <div className="grid gap-1 text-muted-foreground">
               <div className="flex justify-between gap-2">
                 <span>Reserve</span>
-                <span className="text-foreground">GBP {safeNumber(capitalRisk.reserve_required_gbp).toFixed(2)}</span>
+                <span className="text-foreground">{money(capitalReserveGbp, 'GBP ')}</span>
               </div>
               <div className="flex justify-between gap-2">
                 <span>Stress Buffer</span>
-                <span className={safeNumber(capitalRisk.stress_buffer_before_gbp) >= 0 ? 'text-success' : 'text-destructive'}>
-                  GBP {safeNumber(capitalRisk.stress_buffer_before_gbp).toFixed(2)}
+                <span
+                  className={
+                    capitalStressBufferGbp == null
+                      ? 'text-muted-foreground'
+                      : capitalStressBufferGbp >= 0
+                        ? 'text-success'
+                        : 'text-destructive'
+                  }
+                >
+                  {money(capitalStressBufferGbp, 'GBP ')}
                 </span>
               </div>
               <div className="flex justify-between gap-2">
@@ -443,8 +463,16 @@ export function LiveTerminalStats() {
               </div>
               <div className="flex justify-between gap-2">
                 <span>No-loss queue</span>
-                <span className={safeNumber(capitalNoLossQueue.losing_position_count) > 0 ? 'text-warning' : 'text-muted-foreground'}>
-                  {safeNumber(capitalNoLossQueue.losing_position_count)} held
+                <span
+                  className={
+                    capitalLosingCount == null
+                      ? 'text-muted-foreground'
+                      : capitalLosingCount > 0
+                        ? 'text-warning'
+                        : 'text-muted-foreground'
+                  }
+                >
+                  {capitalLosingCount == null ? 'unavailable' : `${capitalLosingCount} held`}
                 </span>
               </div>
             </div>
@@ -456,9 +484,9 @@ export function LiveTerminalStats() {
                   key={`capital-${pos.symbol}-${pos.tradeId || index}`}
                   symbol={pos.symbol}
                   side={pos.side}
-                  entryPrice={safeNumber(pos.entryPrice)}
-                  currentPrice={safeNumber(pos.currentPrice, safeNumber(pos.entryPrice))}
-                  pnlPercent={safeNumber(pos.pnlPercent)}
+                  entryPrice={finiteOrNull(pos.entryPrice)}
+                  currentPrice={finiteOrNull(pos.currentPrice)}
+                  pnlPercent={finiteOrNull(pos.pnlPercent)}
                   exchange={pos.exchange}
                   tradeId={pos.tradeId}
                 />
@@ -475,13 +503,13 @@ export function LiveTerminalStats() {
                   key={`capital-shadow-${shadow.symbol}-${index}`}
                   symbol={shadow.symbol}
                   side={shadow.side}
-                  entryPrice={safeNumber(shadow.entryPrice)}
-                  currentPrice={safeNumber(shadow.currentPrice, safeNumber(shadow.entryPrice))}
-                  movePercent={safeNumber(shadow.movePercent)}
-                  targetMovePercent={safeNumber(shadow.targetMovePercent)}
+                  entryPrice={finiteOrNull(shadow.entryPrice)}
+                  currentPrice={finiteOrNull(shadow.currentPrice)}
+                  movePercent={finiteOrNull(shadow.movePercent)}
+                  targetMovePercent={finiteOrNull(shadow.targetMovePercent)}
                   exchange={shadow.exchange}
                   validated={Boolean(shadow.validated)}
-                  ageSeconds={safeNumber(shadow.ageSeconds)}
+                  ageSeconds={finiteOrNull(shadow.ageSeconds)}
                 />
               ))
             ) : (
@@ -524,11 +552,11 @@ export function LiveTerminalStats() {
             label="Portfolio"
             value={state.equityNote ? state.equityNote : money(totalEquity, '€')}
           />
-          <ExchangeMetric label="Available" value={`€${available.toFixed(2)}`} />
+          <ExchangeMetric label="Available" value={money(available, '€')} />
           <ExchangeMetric
             label="Session"
             value={formatSigned(totalPnl, 2, '€')}
-            className={totalPnl >= 0 ? 'text-success' : 'text-destructive'}
+            className={typeof totalPnl === 'number' && totalPnl < 0 ? 'text-destructive' : 'text-success'}
           />
         </div>
         {state.latestMonitorLine && (

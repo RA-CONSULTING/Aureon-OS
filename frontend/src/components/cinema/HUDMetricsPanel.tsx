@@ -4,8 +4,8 @@
  */
 
 interface HUDMetricsPanelProps {
-  coherence: number;         // 0-1
-  lambda: number;            // secondary metric
+  coherence: number | null;         // 0-1
+  lambda: number | null;            // secondary metric
   lighthouseSignal: number;  // signal strength
   prismState: string;        // FORMING, BLUE, GOLD, RED
   hncFrequency: number;      // Hz
@@ -17,15 +17,16 @@ interface HUDMetricsPanelProps {
 
 // SVG circular gauge
 function CircularGauge({ value, max = 1, label, color, size = 52 }: {
-  value: number;
+  value: number | null;
   max?: number;
   label: string;
   color: string;
   size?: number;
 }) {
+  const finiteValue = typeof value === 'number' && Number.isFinite(value) ? value : null;
   const radius = (size - 8) / 2;
   const circumference = 2 * Math.PI * radius;
-  const progress = Math.min(value / max, 1);
+  const progress = finiteValue == null ? 0 : Math.min(finiteValue / max, 1);
   const strokeDashoffset = circumference * (1 - progress);
 
   return (
@@ -58,8 +59,8 @@ function CircularGauge({ value, max = 1, label, color, size = 52 }: {
         />
       </svg>
       <div className="text-center -mt-[calc(50%-2px)]" style={{ marginTop: `-${size / 2 + 6}px` }}>
-        <div className="text-[11px] font-medium" style={{ color, lineHeight: `${size}px` }}>
-          {typeof value === 'number' ? (value < 10 ? value.toFixed(2) : value.toFixed(0)) : value}
+        <div className="text-[11px] font-medium" style={{ color: finiteValue == null ? 'rgba(255,255,255,0.35)' : color, lineHeight: `${size}px` }}>
+          {finiteValue == null ? 'unavailable' : (finiteValue < 10 ? finiteValue.toFixed(2) : finiteValue.toFixed(0))}
         </div>
       </div>
       <div className="text-[8px] text-white/30 uppercase tracking-wider mt-1">{label}</div>
@@ -87,8 +88,8 @@ function StateBadge({ label, state, colorMap }: {
 }
 
 export function HUDMetricsPanel({
-  coherence = 0.5,
-  lambda = 0.5,
+  coherence = null,
+  lambda = null,
   lighthouseSignal = 0.3,
   prismState = 'FORMING',
   hncFrequency = 432,
@@ -125,7 +126,7 @@ export function HUDMetricsPanel({
           <CircularGauge
             value={coherence}
             label="Gamma"
-            color={coherence > 0.7 ? '#00ff88' : coherence > 0.4 ? '#4488ff' : '#8844ff'}
+            color={coherence != null && coherence > 0.7 ? '#00ff88' : coherence != null && coherence > 0.4 ? '#4488ff' : '#8844ff'}
           />
           <CircularGauge
             value={lambda}

@@ -1,7 +1,7 @@
 """Bitcoin Lighthouse forensic analysis and forward projection.
 
 This module provides a full pipeline:
-1. Fetch hourly BTC market data (CoinGecko) with synthetic fallback.
+1. Fetch hourly BTC market data (CoinGecko). A failed fetch is no_data. This pipeline does not analyse a synthetic series.
 2. Compute geometric "lighthouse" signatures over rolling windows.
 3. Detect critical historical events and classify current regime.
 4. Produce probabilistic forward projections via Monte Carlo simulation.

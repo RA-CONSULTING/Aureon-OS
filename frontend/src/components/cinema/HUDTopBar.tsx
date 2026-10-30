@@ -7,11 +7,11 @@ import { useState, useEffect, useRef } from 'react';
 
 interface HUDTopBarProps {
   totalEquity: number | null;
-  totalPnl: number;
-  cyclePnlPercent: number;
-  winRate: number;
-  coherence: number;
-  totalTrades: number;
+  totalPnl: number | null;
+  cyclePnlPercent: number | null;
+  winRate: number | null;
+  coherence: number | null;
+  totalTrades: number | null;
   isActive: boolean;
   krakenConnected: boolean;
   capitalConnected: boolean;
@@ -70,16 +70,17 @@ function StatusDot({ connected, label }: { connected: boolean; label: string }) 
 
 export function HUDTopBar({
   totalEquity = null,
-  totalPnl = 0,
-  cyclePnlPercent = 0,
-  winRate = 0,
-  coherence = 0,
-  totalTrades = 0,
+  totalPnl = null,
+  cyclePnlPercent = null,
+  winRate = null,
+  coherence = null,
+  totalTrades = null,
   isActive = false,
   krakenConnected = false,
   capitalConnected = false,
   binanceConnected = false,
 }: HUDTopBarProps) {
+  const coherenceFinite = typeof coherence === 'number' && Number.isFinite(coherence);
   return (
     <div className="absolute top-0 left-0 right-0 z-10 flex justify-center pointer-events-none">
       <div className="mt-4 px-6 py-3 rounded-2xl backdrop-blur-xl bg-black/30 border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
@@ -99,10 +100,20 @@ export function HUDTopBar({
           <div className="text-center">
             <div className="text-[10px] text-white/30 uppercase tracking-widest mb-0.5">Session P&L</div>
             <div className="text-lg font-light tracking-wide">
-              <AnimatedNumber value={totalPnl} prefix="$" colorBySign />
-              <span className="text-xs text-white/30 ml-1.5">
-                <AnimatedNumber value={cyclePnlPercent} suffix="%" colorBySign />
-              </span>
+              {totalPnl == null ? (
+                <span className="text-white/50">unavailable</span>
+              ) : (
+                <>
+                  <AnimatedNumber value={totalPnl} prefix="$" colorBySign />
+                  <span className="text-xs text-white/30 ml-1.5">
+                    {cyclePnlPercent == null ? (
+                      'unavailable'
+                    ) : (
+                      <AnimatedNumber value={cyclePnlPercent} suffix="%" colorBySign />
+                    )}
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
@@ -112,9 +123,13 @@ export function HUDTopBar({
           <div className="text-center">
             <div className="text-[10px] text-white/30 uppercase tracking-widest mb-0.5">Win Rate</div>
             <div className="text-lg font-light tracking-wide text-white">
-              <AnimatedNumber value={winRate} suffix="%" decimals={1} />
+              {winRate == null ? (
+                <span className="text-white/50">unavailable</span>
+              ) : (
+                <AnimatedNumber value={winRate} suffix="%" decimals={1} />
+              )}
               <span className="text-xs text-white/30 ml-1.5">
-                {totalTrades} trades
+                {totalTrades == null ? 'unavailable' : `${totalTrades} trades`}
               </span>
             </div>
           </div>
@@ -128,18 +143,22 @@ export function HUDTopBar({
               <div
                 className="absolute inset-y-0 left-0 rounded-full transition-all duration-1000"
                 style={{
-                  width: `${coherence * 100}%`,
-                  background: coherence > 0.7
+                  width: coherenceFinite ? `${coherence * 100}%` : '0%',
+                  background: !coherenceFinite
+                    ? 'transparent'
+                    : coherence > 0.7
                     ? 'linear-gradient(90deg, #00ff88, #00ffcc)'
                     : coherence > 0.4
                     ? 'linear-gradient(90deg, #4488ff, #44ccff)'
                     : 'linear-gradient(90deg, #8844ff, #cc44ff)',
-                  boxShadow: `0 0 8px ${coherence > 0.7 ? '#00ff88' : coherence > 0.4 ? '#4488ff' : '#8844ff'}`,
+                  boxShadow: coherenceFinite
+                    ? `0 0 8px ${coherence > 0.7 ? '#00ff88' : coherence > 0.4 ? '#4488ff' : '#8844ff'}`
+                    : 'none',
                 }}
               />
             </div>
             <div className="text-[10px] text-white/40 mt-0.5">
-              {(coherence * 100).toFixed(0)}%
+              {coherenceFinite ? `${(coherence * 100).toFixed(0)}%` : 'unavailable'}
             </div>
           </div>
 

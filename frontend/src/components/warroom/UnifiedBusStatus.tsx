@@ -28,22 +28,29 @@ const SignalIcon = ({ signal }: { signal: string }) => {
 };
 
 // Animated value that pulses on change
-function AnimatedValue({ value, format = 'percent' }: { value: number; format?: 'percent' | 'number' }) {
+function AnimatedValue({ value, format = 'percent' }: { value: number | null | undefined; format?: 'percent' | 'number' }) {
   const [isAnimating, setIsAnimating] = useState(false);
-  const prevValueRef = useRef(value);
+  const prevValueRef = useRef(value ?? NaN);
+
+  const finiteValue = typeof value === 'number' && Number.isFinite(value) ? value : null;
   
   useEffect(() => {
-    if (Math.abs(value - prevValueRef.current) > 0.001) {
+    if (finiteValue == null) return;
+    if (Math.abs(finiteValue - prevValueRef.current) > 0.001) {
       setIsAnimating(true);
-      prevValueRef.current = value;
+      prevValueRef.current = finiteValue;
       const timer = setTimeout(() => setIsAnimating(false), 300);
       return () => clearTimeout(timer);
     }
-  }, [value]);
+  }, [finiteValue]);
   
+  if (finiteValue == null) {
+    return <span className="font-mono text-muted-foreground">unavailable</span>;
+  }
+
   const displayValue = format === 'percent' 
-    ? `${(value * 100).toFixed(1)}%` 
-    : value.toFixed(3);
+    ? `${(finiteValue * 100).toFixed(1)}%` 
+    : finiteValue.toFixed(3);
   
   return (
     <span className={cn(
@@ -89,7 +96,10 @@ function SystemCard({ name, state }: { name: string; state: SystemState | undefi
           <span>Coherence</span>
           <AnimatedValue value={state.coherence} format="percent" />
         </div>
-        <Progress value={state.coherence * 100} className="h-1 transition-all duration-300" />
+        <Progress
+          value={typeof state.coherence === 'number' && Number.isFinite(state.coherence) ? state.coherence * 100 : 0}
+          className="h-1 transition-all duration-300"
+        />
       </div>
       
       <div className="mt-2 flex justify-between text-xs text-muted-foreground">

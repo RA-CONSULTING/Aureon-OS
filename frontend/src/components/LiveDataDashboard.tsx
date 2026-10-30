@@ -46,9 +46,17 @@ export default function LiveDataDashboard() {
   // 🌉 AUREON LIVE BRIDGE - Real-time data from Python systems
   const bridgeData = useAureonLiveData();
 
-  const winRate = tradingState.totalTrades > 0 
-    ? ((tradingState.winningTrades / tradingState.totalTrades) * 100).toFixed(1)
-    : '0.0';
+  const winRate =
+    typeof tradingState.totalTrades === 'number' &&
+    tradingState.totalTrades > 0 &&
+    typeof tradingState.winningTrades === 'number'
+      ? ((tradingState.winningTrades / tradingState.totalTrades) * 100).toFixed(1)
+      : null;
+
+  const coherenceFinite =
+    typeof quantumState.coherence === 'number' && Number.isFinite(quantumState.coherence);
+  const lambdaFinite =
+    typeof quantumState.lambda === 'number' && Number.isFinite(quantumState.lambda);
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -97,31 +105,63 @@ export default function LiveDataDashboard() {
         />
         <StatCard 
           title="Net P&L" 
-          value={`${tradingState.totalPnl >= 0 ? '+' : ''}$${tradingState.totalPnl.toFixed(2)}`}
-          icon={tradingState.totalPnl >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-          status={tradingState.totalPnl >= 0 ? 'success' : 'error'}
+          value={
+            typeof tradingState.totalPnl === 'number' && Number.isFinite(tradingState.totalPnl)
+              ? `${tradingState.totalPnl >= 0 ? '+' : ''}$${tradingState.totalPnl.toFixed(2)}`
+              : 'unavailable'
+          }
+          icon={
+            typeof tradingState.totalPnl === 'number' && tradingState.totalPnl >= 0
+              ? <TrendingUp className="w-4 h-4" />
+              : <TrendingDown className="w-4 h-4" />
+          }
+          status={
+            typeof tradingState.totalPnl !== 'number'
+              ? 'neutral'
+              : tradingState.totalPnl >= 0
+                ? 'success'
+                : 'error'
+          }
         />
         <StatCard 
           title="Total Trades" 
-          value={tradingState.totalTrades.toString()}
+          value={
+            typeof tradingState.totalTrades === 'number' && Number.isFinite(tradingState.totalTrades)
+              ? tradingState.totalTrades.toString()
+              : 'unavailable'
+          }
           icon={<Activity className="w-4 h-4" />}
           status="neutral"
         />
         <StatCard 
           title="Win Rate" 
-          value={`${winRate}%`}
+          value={winRate != null ? `${winRate}%` : 'unavailable'}
           icon={<Zap className="w-4 h-4" />}
-          status={parseFloat(winRate) >= 51 ? 'success' : parseFloat(winRate) > 0 ? 'warning' : 'neutral'}
+          status={
+            winRate == null
+              ? 'neutral'
+              : parseFloat(winRate) >= 51
+                ? 'success'
+                : parseFloat(winRate) > 0
+                  ? 'warning'
+                  : 'neutral'
+          }
         />
         <StatCard 
           title="Coherence Γ" 
-          value={quantumState.coherence.toFixed(3)}
+          value={coherenceFinite ? quantumState.coherence.toFixed(3) : 'unavailable'}
           icon={<RefreshCw className="w-4 h-4" />}
-          status={quantumState.coherence >= 0.45 ? 'success' : 'warning'}
+          status={
+            !coherenceFinite
+              ? 'neutral'
+              : quantumState.coherence >= 0.45
+                ? 'success'
+                : 'warning'
+          }
         />
         <StatCard 
           title="Lambda Λ" 
-          value={quantumState.lambda.toFixed(2)}
+          value={lambdaFinite ? quantumState.lambda.toFixed(2) : 'unavailable'}
           icon={<Zap className="w-4 h-4" />}
           status="neutral"
         />

@@ -37,12 +37,17 @@ function SceneContent({ state, hiveMood, activeEvent }: CinematicSceneProps) {
     }
   }
 
-  const winRate = state.totalTrades > 0
-    ? (state.winningTrades / state.totalTrades) * 100
-    : 0;
+  const winRate =
+    typeof state.totalTrades === 'number' &&
+    state.totalTrades > 0 &&
+    typeof state.winningTrades === 'number'
+      ? (state.winningTrades / state.totalTrades) * 100
+      : null;
 
-  // Use consciousness psi for aurora, fall back to coherence
-  const effectiveCoherence = c.available ? c.psi : state.coherence;
+  // Use consciousness psi for aurora, fall back to coherence (0 only drives 3D visuals)
+  const rawCoherence = c.available ? c.psi : state.coherence;
+  const effectiveCoherence =
+    typeof rawCoherence === 'number' && Number.isFinite(rawCoherence) ? rawCoherence : 0;
   const hasNewThought = c.thoughtStream.length > 0 || !!(state.queenVoice?.text);
 
   return (
@@ -107,9 +112,9 @@ function SceneContent({ state, hiveMood, activeEvent }: CinematicSceneProps) {
       <MetricRings
         totalEquity={state.totalEquity ?? 0}
         coherence={effectiveCoherence}
-        totalTrades={state.totalTrades}
-        winRate={winRate}
-        totalPnl={state.totalPnl}
+        totalTrades={state.totalTrades ?? 0}
+        winRate={winRate ?? 0}
+        totalPnl={state.totalPnl ?? 0}
       />
 
       {/* Dynamic post-processing - responds to events */}
