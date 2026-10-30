@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import inspect
 import json
+import os
 import sys
 from datetime import date
 from pathlib import Path
@@ -34,6 +35,54 @@ def _plain(value: Any, depth: int = 0) -> Any:
     return {"type": type(value).__name__}
 
 
+def _inventory_path(cls: type) -> str:
+    """Inventory module path for a class. ``aureon.`` is the package prefix."""
+
+    module = cls.__module__
+    if module.startswith("aureon."):
+        module = module[len("aureon.") :]
+    return module.replace(".", "/") + ".py"
+
+
+def _post_init_defined(cls: type) -> bool:
+    """True when ``__post_init__`` is defined anywhere on the class MRO."""
+
+    return any("__post_init__" in base.__dict__ for base in cls.__mro__)
+
+
+def _dataclass_from_dict(fn: Any, annotation: Any, value: Any) -> Any | None:
+    """Build an allowlisted dataclass from a JSON object.
+
+    The class is resolved from the annotation, including a name in the
+    function's globals, then checked by its own module. A class from another
+    package is not built unless that class is on ``_CONSTRUCTOR_ALLOWLIST``.
+
+    A generated dataclass ``__init__`` has code filename ``<string>`` and
+    still calls ``__post_init__``. Any class that defines ``__post_init__``
+    on its MRO is refused and is not constructed.
+    """
+
+    if not isinstance(value, dict):
+        return None
+    cls = annotation
+    if isinstance(annotation, str):
+        cls = fn.__globals__.get(annotation) or fn.__globals__.get(annotation.split(".")[-1])
+    if not isinstance(cls, type) or not hasattr(cls, "__dataclass_fields__"):
+        return None
+    code = getattr(getattr(cls, "__init__", None), "__code__", None)
+    if code is None or code.co_filename != "<string>":
+        return None
+    from aureon_public.body import _CONSTRUCTOR_ALLOWLIST
+
+    if (_inventory_path(cls), cls.__name__) not in _CONSTRUCTOR_ALLOWLIST:
+        return None
+    if _post_init_defined(cls):
+        return None
+    if not set(value).issubset(cls.__dataclass_fields__):
+        return None
+    return cls(**value)
+
+
 def _coerce(fn: Any, kwargs: dict[str, Any]) -> dict[str, Any]:
     try:
         signature = inspect.signature(fn)
@@ -51,6 +100,10 @@ def _coerce(fn: Any, kwargs: dict[str, Any]) -> dict[str, Any]:
             coerced[name] = date.fromisoformat(value)
         elif (annotation is frozenset or origin is frozenset) and isinstance(value, list):
             coerced[name] = frozenset(value)
+        else:
+            built = _dataclass_from_dict(fn, annotation, value)
+            if built is not None:
+                coerced[name] = built
     return coerced
 
 
@@ -109,7 +162,53 @@ def _call(dotted: str, symbol: str, arguments: dict[str, Any], module_rel: str) 
     return method(**_coerce(method, method_args))
 
 
+_SWEEP_SOCKETS: list[str] = []
+
+
+def _install_sweep_guard() -> None:
+    """Block and log connections. Used only while the call sweep is measuring."""
+
+    if os.environ.get("AUREON_PUBLIC_SWEEP") != "1":
+        return
+    import socket
+
+    class _Guard(socket.socket):
+        def connect(self, address: object, *args: object, **kwargs: object) -> None:
+            _SWEEP_SOCKETS.append(str(address)[:160])
+            raise OSError("socket blocked")
+
+        def connect_ex(self, address: object, *args: object, **kwargs: object) -> int:
+            _SWEEP_SOCKETS.append(str(address)[:160])
+            raise OSError("socket blocked")
+
+    def _create_connection(*args: object, **kwargs: object) -> object:
+        _SWEEP_SOCKETS.append("create_connection")
+        raise OSError("socket blocked")
+
+    socket.socket = _Guard  # type: ignore[misc]
+    socket.create_connection = _create_connection  # type: ignore[assignment]
+
+
+def _sweep_modules() -> list[str]:
+    from aureon_public.stage2_import_sweep import is_http_client
+
+    banned = []
+    for name in sys.modules:
+        if any(marker in name for marker in ("inhouse_ai", "ollama_config")):
+            banned.append(name)
+            continue
+        if name in {"aureon.queen", "aureon.miner", "aureon.swarm_motion"} or name.startswith(
+            ("aureon.queen.", "aureon.miner.", "aureon.swarm_motion.")
+        ):
+            banned.append(name)
+            continue
+        if is_http_client(name):
+            banned.append(name)
+    return sorted(banned)
+
+
 def main() -> None:
+    _install_sweep_guard()
     real_stdout = sys.stdout
     sys.stdout = sys.stderr
     try:
@@ -125,6 +224,14 @@ def main() -> None:
         payload = {"ok": False, "error": "SystemExit"}
     except Exception as exc:
         payload = {"ok": False, "error": f"{type(exc).__name__}: {exc}"[:240]}
+    if os.environ.get("AUREON_PUBLIC_REPORT_MODULES") == "1":
+        payload["modules"] = sorted(
+            name
+            for name in sys.modules
+            if "inhouse_ai" in name or "ollama_config" in name
+        )
+    if os.environ.get("AUREON_PUBLIC_SWEEP") == "1":
+        payload["sweep"] = {"modules": _sweep_modules(), "sockets": list(_SWEEP_SOCKETS)}
     sys.stdout = real_stdout
     real_stdout.write(json.dumps(payload))
 

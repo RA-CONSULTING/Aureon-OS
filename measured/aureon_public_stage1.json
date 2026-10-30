@@ -1,0 +1,149 @@
+{
+  "calls": {
+    "generated_breakdown": {
+      "arguments": {},
+      "input_note": "Fixed fixture from that test. Not a live reading.",
+      "input_source": "tests/generated/test_harmonic_nexus_score_model.py::test_harmonic_nexus_breakdown_matches_score",
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed fixture from that test. Not a live reading.\", \"input_source\": \"tests/generated/test_harmonic_nexus_score_model.py::test_harmonic_nexus_breakdown_matches_score\", \"label\": \"cited. generated/research_cinema/harmonic_nexus_score_model.py score_breakdown ran.\", \"provenance\": \"cited\", \"result\": {\"coherence_agreement\": 12.5, \"contradiction_handling\": 10.0, \"friction_feasibility\": 7.5, \"repeatability\": 5.0, \"score\": 65.0, \"source_strength\": 30.0}, \"status\": \"cited\"}"
+    },
+    "generated_default_inputs": {
+      "arguments": {},
+      "input_note": "Fixed fixture from that test. The function builds its own defaults. Not a live reading.",
+      "input_source": "tests/generated/test_harmonic_nexus_score_model.py::test_default_inputs_are_conservative",
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed fixture from that test. The function builds its own defaults. Not a live reading.\", \"input_source\": \"tests/generated/test_harmonic_nexus_score_model.py::test_default_inputs_are_conservative\", \"label\": \"cited. generated/research_cinema/harmonic_nexus_score_model.py build_default_inputs ran.\", \"provenance\": \"cited\", \"result\": {\"fields\": {\"coherence_agreement\": 0.5, \"contradiction_handling\": 0.5, \"friction_feasibility\": 0.5, \"repeatability\": 0.0, \"source_strength\": 1.0}, \"type\": \"HarmonicNexusScoreInputs\"}, \"status\": \"cited\"}"
+    },
+    "generated_normalized": {
+      "arguments": {},
+      "input_note": "Fixed fixture from that test. Not a live reading.",
+      "input_source": "tests/generated/test_harmonic_nexus_score_model.py::test_harmonic_nexus_score_bounds_inputs",
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed fixture from that test. Not a live reading.\", \"input_source\": \"tests/generated/test_harmonic_nexus_score_model.py::test_harmonic_nexus_score_bounds_inputs\", \"label\": \"cited. generated/research_cinema/harmonic_nexus_score_model.py HarmonicNexusScoreInputs.normalized ran.\", \"provenance\": \"cited\", \"result\": {\"fields\": {\"coherence_agreement\": 0.0, \"contradiction_handling\": 0.5, \"friction_feasibility\": 0.5, \"repeatability\": 0.5, \"source_strength\": 1.0}, \"type\": \"HarmonicNexusScoreInputs\"}, \"status\": \"cited\"}"
+    },
+    "generated_score": {
+      "arguments": {},
+      "input_note": "Fixed fixture from that test. Not a live reading. This does not score any Aureon or HNC claim, so 100.0 cannot be quoted as evidence.",
+      "input_source": "tests/generated/test_harmonic_nexus_score_model.py::test_harmonic_nexus_score_full_strength_is_100",
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed fixture from that test. Not a live reading. This does not score any Aureon or HNC claim, so 100.0 cannot be quoted as evidence.\", \"input_source\": \"tests/generated/test_harmonic_nexus_score_model.py::test_harmonic_nexus_score_full_strength_is_100\", \"label\": \"cited. generated/research_cinema/harmonic_nexus_score_model.py harmonic_nexus_score ran.\", \"provenance\": \"cited\", \"result\": 100.0, \"status\": \"cited\"}"
+    },
+    "swarm_actualization_to_dict": {
+      "arguments": {},
+      "input_note": "Fixed example fields. canonical_dark is the gate's own dark-field word. Not a reading.",
+      "input_source": "aureon.swarm.queen_gate.Actualization",
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed example fields. canonical_dark is the gate's own dark-field word. Not a reading.\", \"input_source\": \"aureon.swarm.queen_gate.Actualization\", \"label\": \"cited. swarm/queen_gate.py Actualization.to_dict ran.\", \"provenance\": \"cited\", \"result\": {\"action\": null, \"actualized\": false, \"canonical_status\": \"canonical_dark\", \"gamma_cluster\": null, \"gamma_effective\": null, \"reasons\": []}, \"status\": \"cited\"}"
+    },
+    "swarm_agent_propose": {
+      "arguments": {},
+      "input_note": "Fixed example arguments, not a reading. cluster_gamma null means the method's own not-yet-measured branch.",
+      "input_source": "aureon.swarm.agent.SwarmAgent.propose",
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed example arguments, not a reading. cluster_gamma null means the method's own not-yet-measured branch.\", \"input_source\": \"aureon.swarm.agent.SwarmAgent.propose\", \"label\": \"cited. swarm/agent.py SwarmAgent.propose ran.\", \"provenance\": \"cited\", \"result\": {\"hold\": 1.0}, \"status\": \"cited\"}"
+    },
+    "swarm_agent_substrate": {
+      "arguments": {},
+      "input_note": "Fixed example arguments, not a reading.",
+      "input_source": "aureon.swarm.agent.SwarmAgent.substrate",
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed example arguments, not a reading.\", \"input_source\": \"aureon.swarm.agent.SwarmAgent.substrate\", \"label\": \"cited. swarm/agent.py SwarmAgent.substrate ran.\", \"provenance\": \"cited\", \"result\": 0.0, \"status\": \"cited\"}"
+    },
+    "swarm_agent_to_dict": {
+      "arguments": {},
+      "input_note": "Fixed example arguments, not a reading.",
+      "input_source": "aureon.swarm.agent.SwarmAgent",
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed example arguments, not a reading.\", \"input_source\": \"aureon.swarm.agent.SwarmAgent\", \"label\": \"cited. swarm/agent.py SwarmAgent.to_dict ran.\", \"provenance\": \"cited\", \"result\": {\"agent_id\": \"stage1\", \"constraint\": 1e-06, \"kappa\": 0.0, \"p\": {\"hold\": 1.0}, \"purity\": 0.0, \"resonance\": 0.0, \"role\": \"scout\"}, \"status\": \"cited\"}"
+    },
+    "swarm_build_seat": {
+      "arguments": {},
+      "input_note": "Fixed fixture from tests/test_druidic_council.py. Not a live council.",
+      "input_source": "tests/test_druidic_council.py",
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed fixture from tests/test_druidic_council.py. Not a live council.\", \"input_source\": \"tests/test_druidic_council.py\", \"label\": \"cited. swarm/druidic_council.py build_seat_receipt ran.\", \"provenance\": \"cited\", \"result\": {\"accounting_eligible\": false, \"action_eligible\": false, \"action_gate_passed\": false, \"actionable\": false, \"agent_id\": \"agent-seer\", \"auris_node_receipt_id\": \"auris:node:seer:receipt\", \"auris_receipt_id\": \"auris:cosmic_state:receipt-b\", \"data_status\": \"live\", \"decision\": \"ACCEPT\", \"eligible_for_accounting\": false, \"eligible_for_action\": false, \"equation_inputs_complete\": true, \"freshness_status\": \"fresh\", \"gamma\": 0.9, \"generated_values\": false, \"hnc_receipt_id\": \"hnc:live_field:receipt-a\", \"input_receipt_ids\": [\"auris:cosmic_state:receipt-b\", \"auris:node:seer:receipt\", \"hnc:live_field:receipt-a\"], \"learning_eligible\": false, \"operational_eligible\": false, \"prompt_digest\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\", \"proposal_digest\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"provider_eligible\": false, \"reason\": \"seer verified its discipline boundary\", \"receipt_type\": \"druidic_council_seat\", \"schema\": \"aureon.druidic_council.seat.v1\", \"seat\": \"seer\", \"source_timestamp\": 1786473595.0, \"truth_status\": \"real_derived\", \"voice_band\": \"ACTIVE\", \"voice_weight\": 0.9}, \"status\": \"cited\"}"
+    },
+    "swarm_coherence_gamma": {
+      "arguments": {},
+      "input_note": "Window 8 is the class default. An empty window is not a reading.",
+      "input_source": "aureon.swarm.coherence.ClusterCoherence",
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Window 8 is the class default. An empty window is not a reading.\", \"input_source\": \"aureon.swarm.coherence.ClusterCoherence\", \"label\": \"cited. swarm/coherence.py ClusterCoherence.gamma ran.\", \"provenance\": \"cited\", \"result\": null, \"status\": \"cited\"}"
+    },
+    "swarm_coherence_to_dict": {
+      "arguments": {},
+      "input_note": "Window 8 is the class default. Not a reading.",
+      "input_source": "aureon.swarm.coherence.ClusterCoherence",
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Window 8 is the class default. Not a reading.\", \"input_source\": \"aureon.swarm.coherence.ClusterCoherence\", \"label\": \"cited. swarm/coherence.py ClusterCoherence.to_dict ran.\", \"provenance\": \"cited\", \"result\": {\"gamma\": null, \"samples\": 0, \"warm\": false, \"window\": 8}, \"status\": \"cited\"}"
+    },
+    "swarm_council_to_dict": {
+      "arguments": {},
+      "input_note": "Fixed example payload. Not a council reading.",
+      "input_source": "aureon.swarm.druidic_council.CouncilReceipt",
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed example payload. Not a council reading.\", \"input_source\": \"aureon.swarm.druidic_council.CouncilReceipt\", \"label\": \"cited. swarm/druidic_council.py CouncilReceipt.to_dict ran.\", \"provenance\": \"cited\", \"result\": {\"schema\": \"example\"}, \"status\": \"cited\"}"
+    },
+    "swarm_echo": {
+      "arguments": {},
+      "input_note": "tau 3 is the class default. An empty bus is not a reading.",
+      "input_source": "aureon.swarm.memory_bus.CausalEchoBus.echo",
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"tau 3 is the class default. An empty bus is not a reading.\", \"input_source\": \"aureon.swarm.memory_bus.CausalEchoBus.echo\", \"label\": \"cited. swarm/memory_bus.py CausalEchoBus.echo ran.\", \"provenance\": \"cited\", \"result\": null, \"status\": \"cited\"}"
+    },
+    "swarm_echo_to_dict": {
+      "arguments": {},
+      "input_note": "tau 3 is the class default. Not a reading.",
+      "input_source": "aureon.swarm.memory_bus.CausalEchoBus",
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"tau 3 is the class default. Not a reading.\", \"input_source\": \"aureon.swarm.memory_bus.CausalEchoBus\", \"label\": \"cited. swarm/memory_bus.py CausalEchoBus.to_dict ran.\", \"provenance\": \"cited\", \"result\": {\"boundary\": \"only actualized increments live here; the possibility ensemble is parked separately and never becomes memory\", \"possibility_steps\": [], \"realized_steps\": [], \"tau\": 3}, \"status\": \"cited\"}"
+    },
+    "swarm_seat_to_dict": {
+      "arguments": {},
+      "input_note": "Fixed example payload. Not a council reading.",
+      "input_source": "aureon.swarm.druidic_council.SeatReceipt",
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed example payload. Not a council reading.\", \"input_source\": \"aureon.swarm.druidic_council.SeatReceipt\", \"label\": \"cited. swarm/druidic_council.py SeatReceipt.to_dict ran.\", \"provenance\": \"cited\", \"result\": {\"seat\": \"seer\"}, \"status\": \"cited\"}"
+    },
+    "swarm_steer_field": {
+      "arguments": {},
+      "input_note": "resistance 0.5 is the class default. heading null is a fixed example, not a reading.",
+      "input_source": "aureon.swarm.steering.SteeringField.steer",
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"resistance 0.5 is the class default. heading null is a fixed example, not a reading.\", \"input_source\": \"aureon.swarm.steering.SteeringField.steer\", \"label\": \"cited. swarm/steering.py SteeringField.steer ran.\", \"provenance\": \"cited\", \"result\": {\"note\": \"no heading yet \u2014 nothing to be perpendicular to, proposal passed through unchanged\", \"parallel\": [1.0, 0.0, 0.0], \"perpendicular_scaled\": [0.0, 0.0, 0.0], \"steered\": [1.0, 0.0, 0.0]}, \"status\": \"cited\"}"
+    },
+    "swarm_steer_flow": {
+      "arguments": {},
+      "input_note": "Fixed fixture from that test. Not a live reading.",
+      "input_source": "tests/test_swarm_fleadh.py::test_steer_flow_preserves_step_length_exactly",
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed fixture from that test. Not a live reading.\", \"input_source\": \"tests/test_swarm_fleadh.py::test_steer_flow_preserves_step_length_exactly\", \"label\": \"cited. swarm/fleadh.py steer_flow ran.\", \"provenance\": \"cited\", \"result\": {\"note\": \"perpendicular push removed; step length 2.291288 preserved\", \"steered\": [0.4297278981626889, 2.1893505548499097, -0.3799699310070092, 0.3573526732089729]}, \"status\": \"cited\"}"
+    },
+    "swarm_voice_read": {
+      "arguments": {
+        "gamma": 0.8
+      },
+      "input_note": "Fixed fixture from that test. Not a live lighthouse reading.",
+      "input_source": "tests/test_druidic_council.py::test_voice_bands_use_raw_gamma_without_invented_multiplier",
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed fixture from that test. Not a live lighthouse reading.\", \"input_source\": \"tests/test_druidic_council.py::test_voice_bands_use_raw_gamma_without_invented_multiplier\", \"label\": \"cited. swarm/druidic_council.py voice_for_gamma ran.\", \"provenance\": \"cited\", \"result\": [\"ACTIVE\", 0.8], \"status\": \"cited\"}"
+    }
+  },
+  "environment": {
+    "aureon_direct_url": {
+      "url": "https://github.com/RA-CONSULTING/Aureon-OS.git",
+      "vcs_info": {
+        "commit_id": "8aa6a2d971cc529484e2a5e261e28afafab4e4f4",
+        "requested_revision": "8aa6a2d971cc529484e2a5e261e28afafab4e4f4",
+        "vcs": "git"
+      }
+    },
+    "aureon_file": "/tmp/aureon-public-venv/lib/python3.12/site-packages/aureon/__init__.py",
+    "aureon_tree": "8aef927b7fe6276c187e4c73c79f0de012ad980d",
+    "code_commit": "566fe295f17235f68201dd10431105f58ab80a1f",
+    "code_commit_note": "This is the parent of the commit that contains this record. The record cannot name the commit that adds the file.",
+    "pin": "8aa6a2d971cc529484e2a5e261e28afafab4e4f4",
+    "pin_aureon_tree": "8aef927b7fe6276c187e4c73c79f0de012ad980d",
+    "python": "/tmp/aureon-public-venv/bin/python"
+  }
+}

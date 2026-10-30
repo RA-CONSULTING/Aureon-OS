@@ -38,19 +38,19 @@ def test_coverage_plan_matches_the_inventory() -> None:
         assert name in last
     alignment = next(row for row in rows if row["package"] == "alignment")
     assert alignment["public_entry_points"] == 24
-    assert alignment["reachable"] == 12
+    assert alignment["reachable"] == 11
     assert alignment["opened_by_allowlist"] == 3
 
 
-def test_constructor_allowlist_is_three_dataclasses() -> None:
+def test_constructor_allowlist_keeps_the_alignment_dataclasses() -> None:
     from aureon_public.body import _CONSTRUCTOR_ALLOWLIST, _function_source
     from aureon_public.inventory_scan import source_is_risky
 
-    assert _CONSTRUCTOR_ALLOWLIST == {
+    assert {
         ("alignment/harmonic_resonance.py", "HarmonicAnalysis"),
         ("alignment/pillar_alignment.py", "AlignmentCycleResult"),
         ("alignment/unified_directive.py", "MasterDirective"),
-    }
+    } <= _CONSTRUCTOR_ALLOWLIST
     for module, class_name in _CONSTRUCTOR_ALLOWLIST:
         source = _function_source(module, f"{class_name}.__init__")
         assert source_is_risky(source) is False
@@ -211,12 +211,21 @@ def test_stage1_tools_do_not_import_queen_miner_or_swarm_motion() -> None:
     import sys
 
     code = """
+import socket
 import sys
 sys.path.insert(0, sys.argv[1])
-from aureon_public.alignment_layer import TOOLS
+from aureon_public.alignment_layer import TOOLS as ALIGNMENT
+from aureon_public.stage1_rest import TOOLS as STAGE1
 from aureon_public.call_worker import _call
 from aureon_public.body import dotted_for
 import aureon_public.body as body
+
+opened = []
+def _refuse_socket(*args, **kwargs):
+    opened.append((args, kwargs))
+    raise RuntimeError("socket opened")
+socket.socket = _refuse_socket
+socket.create_connection = _refuse_socket
 
 def inline(module, symbol, arguments, timeout):
     del timeout
@@ -226,19 +235,36 @@ def inline(module, symbol, arguments, timeout):
         return "error", f"{type(exc).__name__}: {exc}"
 
 body._call_in_subprocess = inline
-names = [fn.__name__ for fn in TOOLS]
+tools = list(ALIGNMENT) + list(STAGE1)
+names = [fn.__name__ for fn in tools]
 if "alignment_unified_factory" in names:
     raise SystemExit("alignment_unified_factory is still a stage-1 tool")
-for fn in TOOLS:
+for fn in tools:
     fn()
-bad = [
-    name for name in sys.modules
-    if name == "aureon.miner" or name.startswith("aureon.miner.")
-    or name == "aureon.queen" or name.startswith("aureon.queen.")
-    or name == "aureon.swarm_motion" or name.startswith("aureon.swarm_motion.")
-]
+if opened:
+    raise SystemExit("socket opened")
+prefixes = (
+    "aureon.miner",
+    "aureon.queen",
+    "aureon.swarm_motion",
+    "aureon.inhouse_ai",
+    "aureon.integrations.ollama",
+    "requests",
+    "httpx",
+)
+bad = []
+for name in sys.modules:
+    if name in {"requests", "httpx"} or name.startswith(("requests.", "httpx.")):
+        bad.append(name)
+        continue
+    if any(name == prefix or name.startswith(prefix + ".") for prefix in prefixes):
+        bad.append(name)
+        continue
+    lowered = name.lower()
+    if "brain" in lowered or lowered.endswith("adapter") or ".adapter" in lowered or "ollama" in lowered:
+        bad.append(name)
 if bad:
-    raise SystemExit("imported " + ", ".join(sorted(bad)))
+    raise SystemExit("imported " + ", ".join(sorted(set(bad))))
 """
     mcp = str(ROOT / "mcp")
     completed = subprocess.run(
@@ -251,14 +277,76 @@ if bad:
     assert completed.returncode == 0, completed.stderr + completed.stdout
 
 
+def test_stage1_dispatch_does_not_load_inhouse_ai_or_ollama() -> None:
+    """Every stage-1 tool goes through dispatch. Neither process loads the adapter chain."""
+
+    import subprocess
+    import sys
+
+    code = r"""
+import json
+import os
+import sys
+
+os.environ["AUREON_PUBLIC_REPORT_MODULES"] = "1"
+sys.path.insert(0, sys.argv[1])
+from aureon_public.alignment_layer import TOOLS as ALIGNMENT
+from aureon_public.stage1_rest import TOOLS as STAGE1
+import aureon_public.body as body
+
+tools = list(ALIGNMENT) + list(STAGE1)
+names = [fn.__name__ for fn in tools]
+banned = [
+        name
+        for name in names
+        if name in {"alignment_unified_factory", "organism_compose_layers", "swarm_build_lane"}
+    ]
+if banned:
+    raise SystemExit("removed tool still registered: " + ", ".join(banned))
+body.reported_worker_modules.clear()
+body.reported_worker_module_reports = 0
+for fn in tools:
+    raw = fn()
+    loaded = json.loads(raw)
+    if loaded.get("called") is not True:
+        raise SystemExit(fn.__name__ + " did not run: " + raw[:400])
+
+def forbidden(modules):
+    return sorted(name for name in modules if "inhouse_ai" in name or "ollama_config" in name)
+
+server = forbidden(sys.modules)
+worker = forbidden(body.reported_worker_modules)
+if server or worker:
+    raise SystemExit(f"server={server} worker={worker}")
+if body.reported_worker_module_reports != len(tools):
+    raise SystemExit(
+        f"worker reports {body.reported_worker_module_reports} for {len(tools)} tools"
+    )
+"""
+    completed = subprocess.run(
+        [sys.executable, "-c", code, str(ROOT / "mcp")],
+        cwd="/tmp",
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr[-4000:] + completed.stdout[-1000:]
+
+
 def test_alignment_measured_record_is_a_pinned_run() -> None:
     from aureon_public.guard_loader import PINNED_COMMIT
 
     record = json.loads(
         (ROOT / "measured" / "aureon_public_alignment.json").read_text(encoding="utf-8")
     )
+    from aureon_public.measurement_stamp import CODE_COMMIT_NOTE, PIN_AUREON_TREE
+
     direct = record["environment"]["aureon_direct_url"]
     assert direct["vcs_info"]["commit_id"] == PINNED_COMMIT
+    assert record["environment"]["aureon_tree"] == PIN_AUREON_TREE
+    assert record["environment"]["pin_aureon_tree"] == PIN_AUREON_TREE
+    assert record["environment"]["code_commit_note"] == CODE_COMMIT_NOTE
+    assert len(record["environment"]["code_commit"]) == 40
     assert record["environment"]["python"].endswith("/python")
     assert "python3.12" in record["environment"]["aureon_file"] or record["environment"][
         "python"
@@ -288,3 +376,17 @@ def test_alignment_measured_record_is_a_pinned_run() -> None:
     assert full["result"]["lighthouse_cleared"] is True
     assert full["result"]["dominant_signal"] == "BUY"
     assert full["result"]["alignment_score"] == 0.9898
+    for name in (
+        "alignment_harmonic_to_dict",
+        "alignment_cycle_to_dict",
+        "alignment_directive_to_dict",
+    ):
+        call = record["calls"][name]
+        body = json.loads(call["text"])
+        assert "dataclass defaults" in body["input_note"]
+        assert "not a reading" in body["input_note"]
+        assert call["input_source"] == body["input_source"]
+    derived = json.loads(record["calls"]["alignment_derive_phase"]["text"])
+    assert "fixed example arguments" in derived["input_note"]
+    assert "not a reading" in derived["input_note"]
+    assert record["calls"]["alignment_derive_phase"]["input_source"] == derived["input_source"]

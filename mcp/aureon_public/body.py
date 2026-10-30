@@ -30,6 +30,9 @@ from aureon_public.tools import _dumps
 
 # Stages 1-6 raise this as each stage commit lands. Stage 7 is packaging.
 ENABLED_THROUGH = 6
+# Plan stages from coverage_plan.stage_for. Stages above this are refused
+# before a worker starts, until a later run opens them.
+OPEN_PLAN_THROUGH = 2
 
 _UNSAFE_NAME = re.compile(
     r"(run_|start_|stop_|launch_|serve|main$|^demo$|create_app|activate_|connect_|"
@@ -91,14 +94,30 @@ _OPERATOR_ALLOWLIST = {
     ("accounting/file_drop.py", "registered_ingestors"),
     ("portfolio/aureon_billion_goal_tracker.py", "get_days_remaining"),
 }
+# These stay off body_call. compose_repository_layers finds sibling checkouts
+# at parents[3] and execs them outside the pin. build_lane("fintech") imports
+# the in-house adapter through the accounting package.
+_ENTRY_REFUSAL = {
+    ("organism/repository_layers.py", "compose_repository_layers"): (
+        "stage 4 entry point is not called"
+    ),
+    ("swarm/capability_grid.py", "build_lane"): "stage 4 entry point is not called",
+}
 # A method call constructs its class. An unlisted constructor is not run.
-# The risk scan still runs. These three are dataclasses with no constructor
-# body in the file. PillarAlignment and UnifiedHarmonicDirective stay off
-# this list: their constructors wire the thought bus and other packages.
+# The risk scan still runs. PillarAlignment, UnifiedHarmonicDirective, and the
+# swarm classes that need nested agent instances stay off this list.
 _CONSTRUCTOR_ALLOWLIST: set[tuple[str, str]] = {
     ("alignment/harmonic_resonance.py", "HarmonicAnalysis"),
     ("alignment/pillar_alignment.py", "AlignmentCycleResult"),
     ("alignment/unified_directive.py", "MasterDirective"),
+    ("generated/research_cinema/harmonic_nexus_score_model.py", "HarmonicNexusScoreInputs"),
+    ("swarm/agent.py", "SwarmAgent"),
+    ("swarm/coherence.py", "ClusterCoherence"),
+    ("swarm/druidic_council.py", "CouncilReceipt"),
+    ("swarm/druidic_council.py", "SeatReceipt"),
+    ("swarm/memory_bus.py", "CausalEchoBus"),
+    ("swarm/queen_gate.py", "Actualization"),
+    ("swarm/steering.py", "SteeringField"),
 }
 _NAME_CONTAINS = ("write", "save", "export", "dump", "start", "run")
 _WORKER_SLOTS = threading.BoundedSemaphore(4)
@@ -362,6 +381,23 @@ def _checkout_load(module: str) -> str | None:
     return checkout_blob_refusal(file_for(module), repo_root(), PINNED_COMMIT)
 
 
+# Filled only when AUREON_PUBLIC_REPORT_MODULES=1 is copied into the worker.
+# The count is how many worker results included a modules list, including an empty one.
+reported_worker_modules: list[str] = []
+reported_worker_module_reports = 0
+# Last worker sweep block. Set only while this process is measuring.
+last_sweep_report: dict[str, Any] | None = None
+# In-process only. The environment and a client cannot set this.
+_sweep_measuring = False
+
+
+def enable_sweep_measurement() -> None:
+    """Let this process call past the call-sweep gate. Not an environment switch."""
+
+    global _sweep_measuring
+    _sweep_measuring = True
+
+
 def _worker_env() -> dict[str, str]:
     """Minimal child environment. Parent secrets and extras are not copied across."""
 
@@ -378,10 +414,12 @@ def _worker_env() -> dict[str, str]:
         "AUREON_ENABLE_AUTONOMOUS_CONTROL": "0",
         "AUREON_ACTIVATE_ON_IMPORT": "0",
     }
-    for key in ("LANG", "LC_ALL", "LC_CTYPE", "PYTHONHASHSEED"):
+    for key in ("LANG", "LC_ALL", "LC_CTYPE", "PYTHONHASHSEED", "AUREON_PUBLIC_REPORT_MODULES"):
         value = os.environ.get(key)
         if value:
             env[key] = value
+    if _sweep_measuring:
+        env["AUREON_PUBLIC_SWEEP"] = "1"
     return env
 
 
@@ -469,6 +507,15 @@ def _call_in_subprocess(module: str, symbol: str, arguments: dict[str, Any], tim
             body = json.loads(stdout.decode("utf-8"))
         except json.JSONDecodeError:
             return "error", "worker result was not JSON"
+        modules = body.get("modules") if isinstance(body, dict) else None
+        if isinstance(modules, list):
+            global reported_worker_module_reports
+            reported_worker_module_reports += 1
+            reported_worker_modules.extend(str(item) for item in modules)
+        sweep = body.get("sweep") if isinstance(body, dict) else None
+        if isinstance(sweep, dict):
+            global last_sweep_report
+            last_sweep_report = sweep
         if body.get("ok") is True:
             return "ok", body.get("result")
         return "error", str(body.get("error") or "worker failed")[:240]
@@ -546,6 +593,106 @@ def _safety_block(row: dict[str, Any], *, allow_fetch: bool, allow_write: bool) 
 
 
 _REFUSAL_CACHE: dict[tuple[str, str], str | None] = {}
+_PLAN_STAGE: dict[str, int] | None = None
+_STAGE2_TABLE: dict[str, dict[str, Any]] | None = None
+_STAGE2_MISSING = False
+
+
+def _plan_stage(package: str) -> int:
+    """Coverage-plan stage for a package. Unknown packages stay closed."""
+
+    global _PLAN_STAGE
+    if _PLAN_STAGE is None:
+        from collections import defaultdict
+
+        from aureon_public.coverage_plan import safety_category, stage_for
+
+        rows, _index = _inventory()
+        categories: dict[str, set[str]] = defaultdict(set)
+        for row in rows:
+            categories[str(row["package"])].add(safety_category(str(row.get("safety") or "")))
+        _PLAN_STAGE = {
+            name: stage_for(name, marks) for name, marks in categories.items()
+        }
+    return _PLAN_STAGE.get(package, 4)
+
+
+def _stage2_table() -> dict[str, dict[str, Any]] | None:
+    """Committed socket-blocked import sweep. None when the file is missing."""
+
+    global _STAGE2_MISSING, _STAGE2_TABLE
+    if _STAGE2_TABLE is not None or _STAGE2_MISSING:
+        return _STAGE2_TABLE
+    path = repo_root() / "measured" / "aureon_public_stage2_imports.json"
+    try:
+        loaded = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        _STAGE2_MISSING = True
+        return None
+    table: dict[str, dict[str, Any]] = {}
+    if isinstance(loaded, dict):
+        for row in loaded.get("modules") or []:
+            if isinstance(row, dict) and row.get("module"):
+                table[str(row["module"])] = row
+    _STAGE2_TABLE = table
+    return table
+
+
+def _stage2_import_refusal(module: str) -> str | None:
+    table = _stage2_table()
+    if table is None:
+        return "import sweep record is missing"
+    row = table.get(module)
+    if row is None:
+        return "module is not in the import sweep"
+    if row.get("refused"):
+        return "module import loads an adapter or http client"
+    return None
+
+
+_CALL_SWEEP: dict[tuple[str, str], dict[str, Any]] | None = None
+_CALL_SWEEP_MISSING = False
+
+
+def _call_sweep_table() -> dict[tuple[str, str], dict[str, Any]] | None:
+    """Per-entry-point call sweep. None when the file is missing."""
+
+    global _CALL_SWEEP, _CALL_SWEEP_MISSING
+    if _CALL_SWEEP is not None or _CALL_SWEEP_MISSING:
+        return _CALL_SWEEP
+    path = repo_root() / "measured" / "aureon_public_call_sweep.json"
+    try:
+        loaded = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        _CALL_SWEEP_MISSING = True
+        return None
+    table: dict[tuple[str, str], dict[str, Any]] = {}
+    if isinstance(loaded, dict):
+        for row in loaded.get("entries") or []:
+            if isinstance(row, dict) and row.get("module") and row.get("symbol"):
+                table[(str(row["module"]), str(row["symbol"]))] = row
+    _CALL_SWEEP = table
+    return table
+
+
+def _call_sweep_refusal(module: str, symbol: str) -> str | None:
+    """Refuse a call the sweep saw open a socket or load the banned chain.
+
+    Only ``enable_sweep_measurement`` in this process skips the gate. An
+    environment variable cannot.
+    """
+
+    if _sweep_measuring:
+        return None
+    table = _call_sweep_table()
+    if table is None:
+        return "call sweep record is missing"
+    row = table.get((module, symbol))
+    if row is None:
+        return "entry point is not in the call sweep"
+    if row.get("refused"):
+        return "call loads a banned chain or opens a connection"
+    return None
 
 
 def public_entry_refusal(row: dict[str, Any]) -> str | None:
@@ -567,6 +714,16 @@ def _public_entry_refusal(row: dict[str, Any]) -> str | None:
     kind = _package_kind(str(row["package"]))
     if kind in {"operator", "excluded"}:
         return f"package {row['package']} is {kind}"
+    plan_stage = _plan_stage(str(row["package"]))
+    if plan_stage > OPEN_PLAN_THROUGH:
+        return f"plan stage {plan_stage} is not open"
+    named = _ENTRY_REFUSAL.get((str(row["module"]), str(row["symbol"])))
+    if named:
+        return named
+    if plan_stage == 2:
+        sweep = _stage2_import_refusal(str(row["module"]))
+        if sweep:
+            return sweep
     if int(row.get("stage") or 0) > ENABLED_THROUGH:
         return f"stage {row['stage']} is not open"
     if row["kind"] not in _ENTRY_KINDS:
@@ -586,6 +743,9 @@ def _public_entry_refusal(row: dict[str, Any]) -> str | None:
             return constructor
     if not _quiet_source(str(row["module"]), str(row["symbol"])):
         return "source is not a quiet read"
+    sweep = _call_sweep_refusal(str(row["module"]), str(row["symbol"]))
+    if sweep:
+        return sweep
     return None
 
 

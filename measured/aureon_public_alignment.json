@@ -14,8 +14,10 @@
         "cycle_id": "fixed",
         "timestamp": 0.0
       },
+      "input_note": "These fields are the dataclass defaults, not a reading.",
+      "input_source": "aureon.alignment.pillar_alignment.AlignmentCycleResult",
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. alignment/pillar_alignment.py AlignmentCycleResult.to_dict ran.\", \"provenance\": \"cited\", \"result\": {\"agreeing_pillars\": 0, \"alignment_score\": 0.0, \"consensus_confidence\": 0.0, \"consensus_signal\": \"NEUTRAL\", \"cycle_id\": \"fixed\", \"duration_s\": 0.0, \"errors\": [], \"harmonic_lock\": 0.0, \"lighthouse_cleared\": false, \"mean_coherence\": 0.0, \"mean_frequency_hz\": 0.0, \"per_pillar_consonance\": {}, \"phase_coherence\": 0.0, \"pillar_results\": [], \"responding_pillars\": 0, \"signal_consensus\": 0.0, \"timestamp\": 0.0, \"total_pillars\": 0}, \"status\": \"cited\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"These fields are the dataclass defaults, not a reading.\", \"input_source\": \"aureon.alignment.pillar_alignment.AlignmentCycleResult\", \"label\": \"cited. alignment/pillar_alignment.py AlignmentCycleResult.to_dict ran.\", \"provenance\": \"cited\", \"result\": {\"agreeing_pillars\": 0, \"alignment_score\": 0.0, \"consensus_confidence\": 0.0, \"consensus_signal\": \"NEUTRAL\", \"cycle_id\": \"fixed\", \"duration_s\": 0.0, \"errors\": [], \"harmonic_lock\": 0.0, \"lighthouse_cleared\": false, \"mean_coherence\": 0.0, \"mean_frequency_hz\": 0.0, \"per_pillar_consonance\": {}, \"phase_coherence\": 0.0, \"pillar_results\": [], \"responding_pillars\": 0, \"signal_consensus\": 0.0, \"timestamp\": 0.0, \"total_pillars\": 0}, \"status\": \"cited\"}"
     },
     "alignment_derive_phase": {
       "arguments": {
@@ -23,16 +25,20 @@
         "signal": "BUY",
         "t": 0.0
       },
+      "input_note": "528 Hz is FUNDAMENTAL_HZ and BUY is the fixed example branch in derive_phase. They are fixed example arguments, not a reading.",
+      "input_source": "aureon.alignment.harmonic_resonance.derive_phase",
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. alignment/harmonic_resonance.py derive_phase ran.\", \"provenance\": \"cited\", \"result\": 0.0, \"status\": \"cited\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"528 Hz is FUNDAMENTAL_HZ and BUY is the fixed example branch in derive_phase. They are fixed example arguments, not a reading.\", \"input_source\": \"aureon.alignment.harmonic_resonance.derive_phase\", \"label\": \"cited. alignment/harmonic_resonance.py derive_phase ran.\", \"provenance\": \"cited\", \"result\": 0.0, \"status\": \"cited\"}"
     },
     "alignment_directive_to_dict": {
       "arguments": {
         "directive_id": "fixed",
         "timestamp": 0.0
       },
+      "input_note": "These fields are the dataclass defaults, not a reading.",
+      "input_source": "aureon.alignment.unified_directive.MasterDirective",
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. alignment/unified_directive.py MasterDirective.to_dict ran.\", \"provenance\": \"cited\", \"result\": {\"confidence\": 0.0, \"contributing_layers\": [], \"directive_id\": \"fixed\", \"dominant_chakra\": \"love\", \"dominant_frequency_hz\": 528.0, \"gamma\": 0.0, \"lighthouse_cleared\": false, \"love_stream_coherence\": 0.0, \"miner_confidence\": 0.0, \"pillar_alignment_score\": 0.0, \"queen_coherence\": 0.0, \"reasoning\": \"\", \"signal\": \"NEUTRAL\", \"timestamp\": 0.0}, \"status\": \"cited\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"These fields are the dataclass defaults, not a reading.\", \"input_source\": \"aureon.alignment.unified_directive.MasterDirective\", \"label\": \"cited. alignment/unified_directive.py MasterDirective.to_dict ran.\", \"provenance\": \"cited\", \"result\": {\"confidence\": 0.0, \"contributing_layers\": [], \"directive_id\": \"fixed\", \"dominant_chakra\": \"love\", \"dominant_frequency_hz\": 528.0, \"gamma\": 0.0, \"lighthouse_cleared\": false, \"love_stream_coherence\": 0.0, \"miner_confidence\": 0.0, \"pillar_alignment_score\": 0.0, \"queen_coherence\": 0.0, \"reasoning\": \"\", \"signal\": \"NEUTRAL\", \"timestamp\": 0.0}, \"status\": \"cited\"}"
     },
     "alignment_frequency_harmony": {
       "arguments": {},
@@ -59,8 +65,10 @@
     },
     "alignment_harmonic_to_dict": {
       "arguments": {},
+      "input_note": "These fields are the dataclass defaults, not a reading.",
+      "input_source": "aureon.alignment.harmonic_resonance.HarmonicAnalysis",
       "isError": false,
-      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. alignment/harmonic_resonance.py HarmonicAnalysis.to_dict ran.\", \"provenance\": \"cited\", \"result\": {\"agreeing_pillars\": 0, \"alignment_score\": 0.0, \"dominant_signal\": \"NEUTRAL\", \"frequency_std_hz\": 0.0, \"harmonic_lock\": 0.0, \"lighthouse_cleared\": false, \"mean_coherence\": 0.0, \"mean_frequency_hz\": 0.0, \"per_pillar_consonance\": {}, \"per_pillar_ratios\": {}, \"phase_coherence\": 0.0, \"signal_consensus\": 0.0, \"total_pillars\": 0}, \"status\": \"cited\"}"
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"These fields are the dataclass defaults, not a reading.\", \"input_source\": \"aureon.alignment.harmonic_resonance.HarmonicAnalysis\", \"label\": \"cited. alignment/harmonic_resonance.py HarmonicAnalysis.to_dict ran.\", \"provenance\": \"cited\", \"result\": {\"agreeing_pillars\": 0, \"alignment_score\": 0.0, \"dominant_signal\": \"NEUTRAL\", \"frequency_std_hz\": 0.0, \"harmonic_lock\": 0.0, \"lighthouse_cleared\": false, \"mean_coherence\": 0.0, \"mean_frequency_hz\": 0.0, \"per_pillar_consonance\": {}, \"per_pillar_ratios\": {}, \"phase_coherence\": 0.0, \"signal_consensus\": 0.0, \"total_pillars\": 0}, \"status\": \"cited\"}"
     },
     "alignment_phase_coherence": {
       "arguments": {},
@@ -92,6 +100,11 @@
       }
     },
     "aureon_file": "/tmp/aureon-public-venv/lib/python3.12/site-packages/aureon/__init__.py",
+    "aureon_tree": "8aef927b7fe6276c187e4c73c79f0de012ad980d",
+    "code_commit": "566fe295f17235f68201dd10431105f58ab80a1f",
+    "code_commit_note": "This is the parent of the commit that contains this record. The record cannot name the commit that adds the file.",
+    "pin": "8aa6a2d971cc529484e2a5e261e28afafab4e4f4",
+    "pin_aureon_tree": "8aef927b7fe6276c187e4c73c79f0de012ad980d",
     "python": "/tmp/aureon-public-venv/bin/python"
   }
 }

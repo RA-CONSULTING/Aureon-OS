@@ -86,48 +86,48 @@
   "enabled_through": 5,
   "entry_points": {
     "accounting": {
-      "public_entry_points": 0,
-      "reachable": 0
+      "reachable": 0,
+      "public_entry_points": 0
     },
     "bots": {
-      "public_entry_points": 0,
-      "reachable": 0
+      "reachable": 0,
+      "public_entry_points": 0
     },
     "bots_intelligence": {
-      "public_entry_points": 0,
-      "reachable": 0
+      "reachable": 0,
+      "public_entry_points": 0
     },
     "bridges": {
-      "public_entry_points": 0,
-      "reachable": 0
+      "reachable": 0,
+      "public_entry_points": 0
     },
     "conversion": {
-      "public_entry_points": 0,
-      "reachable": 0
+      "reachable": 0,
+      "public_entry_points": 0
     },
     "exchanges": {
-      "public_entry_points": 0,
-      "reachable": 0
+      "reachable": 0,
+      "public_entry_points": 0
     },
     "portfolio": {
-      "public_entry_points": 0,
-      "reachable": 0
+      "reachable": 0,
+      "public_entry_points": 0
     },
     "scanners": {
-      "public_entry_points": 0,
-      "reachable": 0
+      "reachable": 0,
+      "public_entry_points": 0
     },
     "strategies": {
-      "public_entry_points": 0,
-      "reachable": 0
+      "reachable": 0,
+      "public_entry_points": 0
     },
     "trading": {
-      "public_entry_points": 0,
-      "reachable": 0
+      "reachable": 0,
+      "public_entry_points": 0
     },
     "unified_margin_trader": {
-      "public_entry_points": 0,
-      "reachable": 0
+      "reachable": 0,
+      "public_entry_points": 0
     }
   },
   "stage": 5,

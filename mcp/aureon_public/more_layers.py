@@ -33,7 +33,7 @@ UPDATES: tuple[tuple[str, str, str], ...] = (
     ("data_feeds", "data_feed_parse_tick", "parse_binance_tick on one dict. No socket is opened."),
     ("decoders", "decoder_haversine", "haversine only. Decoders are not started."),
     ("gates", "gates_reading", "is_human_held and ungrounded_nodes. The benchmark writer is not called."),
-    ("generated", "excluded", "Generated trees stay uncalled."),
+    ("generated", "generated_default_inputs", "build_default_inputs. Deterministic score model. No network."),
     ("governance", "governance_seasonal_gate", "seasonal_gate_for_date. Live authorization is not issued."),
     ("grants", "grants_breath_interval", "breath_interval only. Dossiers are not read."),
     ("identity", "excluded", "read_identity can load personal files. Not called."),

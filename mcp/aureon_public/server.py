@@ -21,6 +21,13 @@ SERVER_INSTRUCTIONS = (
 )
 
 
+def refuse_sweep_environment() -> None:
+    """AUREON_PUBLIC_SWEEP is not a server mode. Setting it must not start the server."""
+
+    if os.environ.get("AUREON_PUBLIC_SWEEP"):
+        raise SystemExit("AUREON_PUBLIC_SWEEP must not be set. The server will not start.")
+
+
 def enforce_public_pin(source: dict[str, str] | None = None) -> None:
     """Refuse to start when public hosting requires the pinned commit.
 
@@ -42,6 +49,7 @@ def enforce_public_pin(source: dict[str, str] | None = None) -> None:
 def build_server(host: str = "127.0.0.1", port: int = 8077) -> FastMCP:
     """Register the milestone-1 tools, resources, and prompts."""
 
+    refuse_sweep_environment()
     apply_space_guard()
     source = aureon_source()
     instructions = (
@@ -123,6 +131,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8077)
     args = parser.parse_args(argv)
+    refuse_sweep_environment()
     apply_space_guard()
     enforce_public_pin()
     server = build_server(host=args.host, port=args.port)

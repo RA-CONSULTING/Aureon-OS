@@ -338,36 +338,36 @@
   "enabled_through": 2,
   "entry_points": {
     "alignment": {
-      "public_entry_points": 24,
-      "reachable": 12
+      "reachable": 11,
+      "public_entry_points": 24
     },
     "cognition": {
-      "public_entry_points": 14,
-      "reachable": 1
+      "reachable": 1,
+      "public_entry_points": 14
     },
     "gates": {
-      "public_entry_points": 12,
-      "reachable": 6
+      "reachable": 3,
+      "public_entry_points": 12
     },
     "governance": {
-      "public_entry_points": 105,
-      "reachable": 41
+      "reachable": 0,
+      "public_entry_points": 105
     },
     "observer": {
-      "public_entry_points": 63,
-      "reachable": 29
+      "reachable": 29,
+      "public_entry_points": 63
     },
     "queen": {
-      "public_entry_points": 566,
-      "reachable": 131
+      "reachable": 0,
+      "public_entry_points": 566
     },
     "swarm": {
-      "public_entry_points": 41,
-      "reachable": 10
+      "reachable": 24,
+      "public_entry_points": 41
     },
     "swarm_motion": {
-      "public_entry_points": 10,
-      "reachable": 0
+      "reachable": 0,
+      "public_entry_points": 10
     }
   },
   "stage": 2,
