@@ -79,12 +79,12 @@ class TemporalDialer:
         self.history: List[QuantumPacket] = []
         self.calibration_offset = 0.0
         
-        logger.info(f"🕰️ Temporal Dialer '{self.name}' Initializing...")
+        logger.debug("🕰️ Temporal Dialer '%s' Initializing...", self.name)
         
         if GLOBAL_FIELD_AVAILABLE:
             try:
                 self.field_connection = GlobalHarmonicField()
-                logger.info("   ✅ Connected to Global Harmonic Field")
+                logger.debug("   ✅ Connected to Global Harmonic Field")
             except Exception as e:
                 logger.error(f"   ❌ Failed to connect to Global Harmonic Field: {e}")
         else:

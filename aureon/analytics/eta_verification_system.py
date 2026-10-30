@@ -19,6 +19,7 @@ Gary Leckey | December 2025
 """
 
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
+import logging
 import os
 import json
 import time
@@ -153,7 +154,10 @@ class ETAVerificationEngine:
         # Load historical data
         self._load_history()
         
-        print(f"🎯⏱️ ETA Verification Engine initialized | Accuracy: {self.stats.hit_rate*100:.1f}%")
+        logging.debug(
+            "🎯⏱️ ETA Verification Engine initialized | Accuracy: %.1f%%",
+            self.stats.hit_rate * 100,
+        )
     
     def _load_history(self):
         """Load historical prediction data."""

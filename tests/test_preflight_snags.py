@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ast
 import json
+import logging
 import os
 import subprocess
 import sys
@@ -173,17 +174,30 @@ def test_master_ui_has_dashboard_and_command_center_tabs() -> None:
         stop_master_ui()
 
 
-def test_simulated_components_are_off_by_default(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+def test_simulated_components_are_off_by_default(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     monkeypatch.delenv("AUREON_SIMULATED_BOOT", raising=False)
+    caplog.set_level(logging.DEBUG, logger="root")
     assert simulated_boot_enabled() is False
     assert take_simulated(HARMONIC_WAVE_SIMULATION, "solfeggio visualization, not a live price feed") is False
     assert take_simulated(INTERNAL_MULTIVERSE, "aureon.simulation, 10 worlds × $10") is False
     assert take_simulated(MYCELIUM_HIVE_SEED, "hive seed is not an exchange balance") is False
-    captured = capsys.readouterr().out
+    captured = caplog.text
     assert "SIMULATED Harmonic Wave Simulation" in captured
     assert "10 worlds × $10" in captured
     assert "mycelium hive seed ($1000)" in captured
     assert "skipped on the default boot" in captured
+    assert capsys.readouterr().out == ""
+
+    monkeypatch.setenv("AUREON_SIMULATED_BOOT", "1")
+    assert simulated_boot_enabled() is True
+    assert take_simulated(INTERNAL_MULTIVERSE, "aureon.simulation, 10 worlds × $10") is True
+    visible = capsys.readouterr().out
+    assert "SIMULATED Internal Multiverse" in visible
+    assert "(AUREON_SIMULATED_BOOT=1)" in visible
 
     for relative in (
         "aureon/harmonic/aureon_harmonic_chain_master.py",
@@ -267,9 +281,14 @@ def test_readme_names_the_live_switch_and_the_thought_bus() -> None:
     assert "http://127.0.0.1:8799/healthz" in page
 
 
-def test_frontend_bridge_does_not_load_the_multiverse_by_default(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+def test_frontend_bridge_does_not_load_the_multiverse_by_default(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    caplog: pytest.LogCaptureFixture,
+) -> None:
     """Run the bridge's own multiverse gate. The rest of that module imports the swarm."""
     monkeypatch.setenv("AUREON_SIMULATED_BOOT", "0")
+    caplog.set_level(logging.DEBUG, logger="root")
     text = (REPO / "aureon/bridges/aureon_frontend_bridge.py").read_text(encoding="utf-8")
     start = text.index("# Internal Multiverse")
     end = text.index("# Miner Brain")
@@ -296,7 +315,7 @@ def test_frontend_bridge_does_not_load_the_multiverse_by_default(monkeypatch: py
     assert namespace["MULTIVERSE_AVAILABLE"] is False
     assert namespace["InternalMultiverse"] is None
     assert "Internal Multiverse: LOADED" not in captured
-    assert "skipped on the default boot" in captured
+    assert "skipped on the default boot" in caplog.text
 
 
 def test_ensure_venv_uses_copies_and_replaces_a_symlink(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

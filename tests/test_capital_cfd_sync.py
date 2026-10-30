@@ -680,6 +680,51 @@ class TestCapitalCFDSync(unittest.TestCase):
         self.assertEqual(sterling_feed["capital"]["equity_gbp"], 100.0)
         self.assertEqual(sterling_feed["capital"]["free_gbp"], 80.0)
 
+    def test_bad_amounts_stay_null_and_do_not_activate_the_book(self):
+        trader = self._build_trader(ClientStub(accounts=[
+            {"accountId": "A1", "balance": float("nan"), "available": 10.0, "currency": "GBP"},
+        ]))
+        self._prepare_dashboard_surface(trader)
+        snapshot = trader.get_capital_snapshot()
+        self.assertIsNone(snapshot["equity_gbp"])
+        self.assertIsNone(snapshot["free_gbp"])
+        self.assertIsNone(snapshot["used_gbp"])
+        self.assertIsNone(snapshot["target_pct_equity"])
+        envelope = trader._build_capital_risk_envelope()
+        self.assertIsNone(envelope["equity_gbp"])
+        self.assertIsNone(envelope["free_gbp"])
+        self.assertIsNone(envelope["stress_buffer_before_gbp"])
+        self.assertIsNone(envelope["margin_utilization_after_pct"])
+        self.assertIn("capital_account_balance_unavailable", envelope["blockers"])
+
+        negative = self._build_trader(ClientStub(accounts=[
+            {"accountId": "A1", "balance": -5.0, "available": 5.0, "currency": "GBP"},
+        ]))
+        self.assertIsNone(negative.get_capital_snapshot()["equity_gbp"])
+
+        zero = self._build_trader(ClientStub(accounts=[
+            {"accountId": "A1", "balance": 0.0, "available": 0.0, "currency": "GBP"},
+        ]))
+        zero_book = zero.get_capital_snapshot()
+        self.assertEqual(zero_book["equity_gbp"], 0.0)
+        self.assertEqual(zero_book["free_gbp"], 0.0)
+
+        mixed = self._build_trader(ClientStub(accounts=[
+            {"accountId": "A1", "balance": 10.0, "available": 4.0, "currency": "GBP"},
+            {"accountId": "A2", "balance": 20.0, "available": 8.0, "currency": "USD"},
+        ]))
+        preflight = mixed._capital_preflight("SILVER", 1, {"price": 10.0, "bid": 10.0, "ask": 10.0})
+        self.assertIsNone(preflight["available_balance"])
+        self.assertNotEqual(preflight["available_balance"], 12.0)
+        self.assertFalse(preflight["ok"])
+
+        from aureon.autonomous.aureon_trading_intelligence_checklist import _synthetic_rows
+
+        rows = {row["system"]: row for row in _synthetic_rows({"capital_risk_envelope": envelope})}
+        self.assertFalse(rows["CapitalPortfolioMemory"]["active_this_cycle"])
+        self.assertFalse(rows["CapitalLeverageEnvelope"]["active_this_cycle"])
+        self.assertFalse(rows["CapitalStressBuffer"]["active_this_cycle"])
+
     def test_status_lines_include_tick_and_stale_capital_feed(self):
         trader = self._build_trader(ClientStub())
         trader._latest_tick_line = "CAPITAL TICK sync=0.01s prices=0.02s"

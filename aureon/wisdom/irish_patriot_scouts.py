@@ -58,6 +58,7 @@ Gary Leckey | December 2025
 """
 
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
+import logging
 import os
 import sys
 import time
@@ -82,8 +83,8 @@ try:
     )
     GUERRILLA_ENGINE_AVAILABLE = True
 except ImportError:
-    print("⚠️ Guerrilla Warfare Engine not available - Patriots running in basic mode")
     GUERRILLA_ENGINE_AVAILABLE = False
+    logging.debug("Guerrilla Warfare Engine not available - Patriots running in basic mode")
 
 # 🎯⏱️ ETA VERIFICATION SYSTEM - Track and verify kill predictions
 try:
@@ -92,21 +93,21 @@ try:
         check_expired, get_corrected_eta, ETAOutcome
     )
     ETA_VERIFICATION_AVAILABLE = True
-    print("🎯⏱️ ETA Verification System WIRED to Patriots!")
+    logging.debug("🎯⏱️ ETA Verification System WIRED to Patriots!")
 except ImportError:
     ETA_VERIFICATION_AVAILABLE = False
-    print("⚠️ ETA Verification System not available - Patriots running without prediction tracking")
+    logging.debug("ETA Verification System not available - Patriots running without prediction tracking")
 
 # 🔬 IMPROVED ETA CALCULATOR - Fixes naive velocity decay assumptions
 try:
     from aureon.analytics.improved_eta_calculator import ImprovedETACalculator, ImprovedETA
     IMPROVED_ETA_AVAILABLE = True
     IMPROVED_ETA_CALC = ImprovedETACalculator()
-    print("🔬 Improved ETA Calculator WIRED to Patriots! (velocity decay model)")
+    logging.debug("🔬 Improved ETA Calculator WIRED to Patriots! (velocity decay model)")
 except ImportError:
     IMPROVED_ETA_AVAILABLE = False
     IMPROVED_ETA_CALC = None
-    print("⚠️ Improved ETA Calculator not available - using naive ETA")
+    logging.debug("Improved ETA Calculator not available - using naive ETA")
 
 try:
     from aureon.wisdom.celtic_preemptive_strike import (
@@ -115,7 +116,7 @@ try:
     )
     PREEMPTIVE_AVAILABLE = True
 except ImportError as e:
-    print(f"⚠️ Preemptive Strike Engine not available - Patriots running without early exit: {e}")
+    logging.debug("Preemptive Strike Engine not available - Patriots running without early exit: %s", e)
     PREEMPTIVE_AVAILABLE = False
 
 # 🧠 PROBABILITY INTELLIGENCE MATRIX - Stops Mistakes Before They Happen
@@ -126,11 +127,11 @@ try:
     )
     PROBABILITY_MATRIX_AVAILABLE = True
     PROB_MATRIX = get_probability_matrix()
-    print("🧠 Probability Intelligence Matrix WIRED to Patriots! (prevents bad trades)")
+    logging.debug("🧠 Probability Intelligence Matrix WIRED to Patriots! (prevents bad trades)")
 except ImportError:
     PROBABILITY_MATRIX_AVAILABLE = False
     PROB_MATRIX = None
-    print("⚠️ Probability Intelligence Matrix not available for Patriots")
+    logging.debug("Probability Intelligence Matrix not available for Patriots")
 
 # 💎 PROBABILITY ULTIMATE INTELLIGENCE - 95% Accuracy Pattern Learning
 try:
@@ -140,11 +141,11 @@ try:
     )
     ULTIMATE_INTELLIGENCE_AVAILABLE = True
     ULTIMATE_INTEL = get_ultimate_intelligence()
-    print("💎 Probability Ultimate Intelligence WIRED to Patriots! (95% accuracy)")
+    logging.debug("💎 Probability Ultimate Intelligence WIRED to Patriots!")
 except ImportError:
     ULTIMATE_INTELLIGENCE_AVAILABLE = False
     ULTIMATE_INTEL = None
-    print("⚠️ Ultimate Intelligence not available for Patriots")
+    logging.debug("Ultimate Intelligence not available for Patriots")
 
 # 🌍🍄 AUREON ULTIMATE ECOSYSTEM - Lazy load to avoid circular import
 # aureon_ultimate_ecosystem_wiring imports irish_patriot_scouts

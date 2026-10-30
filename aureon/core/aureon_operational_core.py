@@ -831,9 +831,9 @@ class AureonOperationalCore:
         self.reconciler = ExchangeReconciler()
         self._initialized_at = time.time()
 
-        logger.info("Aureon Operational Core ONLINE — 9 fixes active")
-        print("   🔧 Operational Core: Signal Gate + Circuit Breaker + Trade Lock + "
-              "Execution Confirm + State Pulse + Reconciler = WIRED")
+        logger.debug("Aureon Operational Core ONLINE — 9 fixes active")
+        logger.debug("   🔧 Operational Core: Signal Gate + Circuit Breaker + Trade Lock + "
+                     "Execution Confirm + State Pulse + Reconciler = WIRED")
 
     def check_trade_allowed(self, symbol: str, price: float, exchange: str,
                             queen_guidance: Optional[Dict] = None) -> Tuple[bool, str]:

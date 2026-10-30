@@ -325,9 +325,11 @@ class PhaseTransitionDetector:
         self._prev_state = PhaseState.UNKNOWN
         self._step_count = 0
 
-        logger.info(
-            f"PhaseTransitionDetector initialized: "
-            f"dim={embedding_dim}, delay={time_delay}, memory={memory_length}"
+        logger.debug(
+            "PhaseTransitionDetector initialized: dim=%s, delay=%s, memory=%s",
+            embedding_dim,
+            time_delay,
+            memory_length,
         )
 
     def ingest(self, price: float, timestamp: float = 0.0) -> Optional[PhaseSignature]:

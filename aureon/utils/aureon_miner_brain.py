@@ -79,7 +79,7 @@ try:
         timeline_select, timeline_validate, get_timeline_oracle
     )
     TIMELINE_ORACLE_AVAILABLE = True
-    print("⏳🔮 Miner Brain: Timeline Oracle WIRED! (7-day vision)")
+    logging.debug("⏳🔮 Miner Brain: Timeline Oracle WIRED! (7-day vision)")
 except ImportError:
     TIMELINE_ORACLE_AVAILABLE = False
     TimelineOracle = None
@@ -439,7 +439,7 @@ class WisdomJSONLoader:
     def _load_all_wisdom(self):
         """Load all civilization wisdom files."""
         if not os.path.exists(WISDOM_DATA_DIR):
-            logger.warning(f"Wisdom data directory not found: {WISDOM_DATA_DIR}")
+            logger.debug("Wisdom data directory not found: %s", WISDOM_DATA_DIR)
             return
         
         for civ_name, filename in self.CIVILIZATION_FILES.items():

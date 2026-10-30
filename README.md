@@ -19,6 +19,57 @@ Trading research · autonomous operator · planetary/HNC research · a coding or
 
 ---
 
+## Five-minute quickstart
+
+A fresh clone, Python 3.11 or newer, and no API keys. This path does not start Docker, does not read exchange keys, and does not place an order. It installs the operator extra, runs the offline operator server tests, the connectome test, and the quickstart banner test, then prints the HNC measurement from `aureon.evaluation.brain_proof.evaluate_brain`. That function runs `HarmonicRealityField.step` for 100 steps with the multiverse extension off. The class default HarmonicRealityField() has the multiverse on, which gives coherence 0.857719 and LOCKED. It is deterministic: it takes no seed, so the same figures come back on every run.
+
+Linux and macOS:
+
+```bash
+git clone https://github.com/RA-CONSULTING/Aureon-OS.git && cd Aureon-OS
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -U pip
+python -m pip install -e '.[operator]' 'pytest>=8' 'pytest-timeout>=2.3' 'numpy>=1.26' 'cryptography>=46'
+AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 pytest tests/test_operator_server.py tests/test_connectome.py tests/test_quickstart_brain_proof.py --timeout=60
+AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 python -c "from aureon.evaluation.brain_proof import evaluate_brain, render_brain_markdown; print(render_brain_markdown(evaluate_brain()))"
+```
+
+Windows:
+
+```bat
+git clone https://github.com/RA-CONSULTING/Aureon-OS.git && cd Aureon-OS
+py -3 -m venv .venv
+.venv\Scripts\activate
+python -m pip install -U pip
+python -m pip install -e ".[operator]" "pytest>=8" "pytest-timeout>=2.3" "numpy>=1.26" "cryptography>=46"
+set AUREON_LLM_OFFLINE=1
+set AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1
+pytest tests/test_operator_server.py tests/test_connectome.py tests/test_quickstart_brain_proof.py --timeout=60
+python -c "from aureon.evaluation.brain_proof import evaluate_brain, render_brain_markdown; print(render_brain_markdown(evaluate_brain()))"
+```
+
+The measurement below is from a run of that command with no keys:
+
+```text
+# HNC, Auris coherence, and QGITA
+
+These figures are the HNC master-formula path, Auris coherence, and the QGITA analyzer. They are not a claim that the system is conscious or alive.
+
+No outside model was called. Live trading stayed off. No order was placed.
+HNC formula path, multiverse off: state `unified`, coherence `0.9331334813083556`, last Λ(t) `1.409626852655939`, steps `100`.
+Multiverse extension: **measured**. project_to_3d sets noise to 0 when no observed residual is supplied. TranslationMap.noise_level is stored and is not read by that method. Three constructions of the default HarmonicRealityField returned the same series.
+Auris coherence `None` with status `no_data`. Nodes without a reading: Clownfish, Owl.
+Trade readiness: **HOLD**. no market series and no trade-outcome labels
+QGITA on the derived series `data/de440_timeseries.csv` (cited-unverified): status `complete`, FTCP count `0`, lighthouse events `0`. Detection rate **HOLD**. Clock: sample index. analyze_price_stream uses range(len(prices)) when no timestamps are passed
+QGITA on the formula series: FTCP count `0`, lighthouse events `0`. Detection rate **HOLD**. Clock: step index times HarmonicRealityField.dt
+Auris is not joined to Λ(t): **HOLD**. no function in the repo passes Λ(t) into get_auris_coherence
+```
+
+The longer operator preflight, containers, and the full offline suite are further down.
+
+---
+
 ## What Aureon OS is
 
 Aureon OS is a **local-first operating layer** — powered by the Harmonic Nexus Core — that
@@ -91,7 +142,7 @@ flowchart TB
 <img src="public/harmonic_wave_analysis.png" alt="Harmonic wave analysis" width="48%" />
 </div>
 
-### Quickstart
+### Operator preflight, containers, and the strict suite
 
 ```bash
 # 1 · evaluate the isolated operator protection preflight
@@ -185,6 +236,8 @@ bash production/install.sh
 ```
 
 Windows: `production\Install-AUREON.ps1`, or `production\install-windows.bat`. Running it again is safe. It installs Python, venv, Node, npm, git, and curl when apt, dnf, Homebrew, or winget can, writes `.env` from `.env.example` only when `.env` is absent, installs and builds the frontend, then calls the master launcher above. Docker images are used when the daemon answers. With no daemon the launcher uses its native fallbacks. When the UI answers, the installer prints `Aureon UI: http://127.0.0.1:5173/`.
+
+Installing from git (`pip install git+...`) brings the whole repo, trading modules included, and only the Hugging Face Spaces switch those modules off.
 
 `PyAudio` in `requirements.txt` needs the system audio headers (`portaudio`) before pip can build it. The Linux installer uses `requirements-linux.txt`, which leaves that package out and includes pytest, so `tests/test_preflight_snags.py` can run in the installer environment. Build the test virtualenv with `python -m venv --copies .venv`. A symlinked interpreter fails 32 evidence tests: `sys.executable` must be a real file inside the venv, which `--copies` provides and a symlink into another prefix does not. The installer creates `.venv` with `--copies`. Pytest prints a header note when the interpreter it is running is itself a symlink.
 

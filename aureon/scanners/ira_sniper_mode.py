@@ -39,6 +39,7 @@ One bullet. One kill. NO MISSES. EVER.
 # """
 
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
+import logging
 import os
 import time
 from typing import Dict, Any, Optional, Tuple, List
@@ -245,10 +246,10 @@ try:
         check_expired, get_corrected_eta, ETAOutcome
     )
     ETA_VERIFICATION_ENABLED = True
-    print("🎯⏱️ ETA Verification System WIRED!")
+    logging.debug("🎯⏱️ ETA Verification System WIRED!")
 except ImportError:
     ETA_VERIFICATION_ENABLED = False
-    print("⚠️ ETA Verification System not available")
+    logging.debug("⚠️ ETA Verification System not available")
 
 # =============================================================================
 # 🔬 IMPROVED ETA CALCULATOR - Fixes Naive Velocity Assumptions
@@ -258,11 +259,11 @@ try:
     from aureon.analytics.improved_eta_calculator import ImprovedETACalculator, ImprovedETA
     IMPROVED_ETA_ENABLED = True
     IMPROVED_ETA_CALC = ImprovedETACalculator()
-    print("🔬 Improved ETA Calculator WIRED! (velocity decay model)")
+    logging.debug("🔬 Improved ETA Calculator WIRED! (velocity decay model)")
 except ImportError:
     IMPROVED_ETA_ENABLED = False
     IMPROVED_ETA_CALC = None
-    print("⚠️ Improved ETA Calculator not available - using naive ETA")
+    logging.debug("⚠️ Improved ETA Calculator not available - using naive ETA")
 
 # =============================================================================
 # 🧠 PROBABILITY INTELLIGENCE MATRIX - Stops Mistakes Before They Happen
@@ -275,11 +276,11 @@ try:
     )
     PROBABILITY_MATRIX_ENABLED = True
     PROB_MATRIX = get_probability_matrix()
-    print("🧠 Probability Intelligence Matrix WIRED! (prevents bad trades)")
+    logging.debug("🧠 Probability Intelligence Matrix WIRED! (prevents bad trades)")
 except ImportError:
     PROBABILITY_MATRIX_ENABLED = False
     PROB_MATRIX = None
-    print("⚠️ Probability Intelligence Matrix not available")
+    logging.debug("⚠️ Probability Intelligence Matrix not available")
 
 # =============================================================================
 # 💎 PROBABILITY ULTIMATE INTELLIGENCE - 95% Accuracy Pattern Learning
@@ -292,11 +293,11 @@ try:
     )
     ULTIMATE_INTELLIGENCE_ENABLED = True
     ULTIMATE_INTEL = get_ultimate_intelligence()
-    print("💎 Probability Ultimate Intelligence WIRED! (95% accuracy)")
+    logging.debug("💎 Probability Ultimate Intelligence WIRED!")
 except ImportError:
     ULTIMATE_INTELLIGENCE_ENABLED = False
     ULTIMATE_INTEL = None
-    print("⚠️ Ultimate Intelligence not available")
+    logging.debug("⚠️ Ultimate Intelligence not available")
 
 # =============================================================================
 # 🌍🍄 AUREON ULTIMATE ECOSYSTEM - Full Integration (Lazy Loading)
@@ -382,15 +383,15 @@ except ImportError:
 try:
     from aureon.wisdom.irish_patriot_scouts import PatriotScoutNetwork, PatriotScout, PATRIOT_CONFIG
     PATRIOTS_WIRED = True
-    print("☘️ Irish Patriot Scouts import successful!")
+    logging.debug("☘️ Irish Patriot Scouts import successful!")
 except ImportError as e:
     PATRIOTS_WIRED = False
     PatriotScoutNetwork = None
-    print(f"⚠️ Irish Patriot Scouts import failed: {e}")
+    logging.debug("Irish Patriot Scouts import failed: %s", e)
 except Exception as e:
     PATRIOTS_WIRED = False
     PatriotScoutNetwork = None
-    print(f"⚠️ Irish Patriot Scouts error: {e}")
+    logging.debug("Irish Patriot Scouts error: %s", e)
 
 # Wire Mycelium Network
 try:
@@ -605,7 +606,7 @@ class MyceliumStateAggregator:
         """Register a system to the mycelium network."""
         self.systems[name] = system
         self.unified_state['systems_connected'] = len(self.systems)
-        print(f"   🍄 Mycelium: {name} connected to network")
+        logging.debug("   🍄 Mycelium: %s connected to network", name)
     
     def transmit(self, source: str, target: str, data: Any) -> Any:
         """Transmit data through a synapse between systems."""

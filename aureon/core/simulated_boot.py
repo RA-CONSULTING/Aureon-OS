@@ -8,6 +8,7 @@ and they are not live prices.
 
 from __future__ import annotations
 
+import logging
 import os
 
 HARMONIC_WAVE_SIMULATION = "Harmonic Wave Simulation"
@@ -28,12 +29,15 @@ def simulated_notice(name: str, detail: str) -> str:
 
 
 def take_simulated(name: str, detail: str) -> bool:
-    """Print the simulated label. Return True only when the operator opted in."""
+    """Return True only when the operator opted in.
+
+    The opted-in notice is printed. The default-boot skip stays at debug.
+    """
     notice = simulated_notice(name, detail)
     if simulated_boot_enabled():
         print(f"{notice} (AUREON_SIMULATED_BOOT=1)")
         return True
-    print(f"{notice} — skipped on the default boot")
+    logging.debug("%s — skipped on the default boot", notice)
     return False
 
 

@@ -195,9 +195,9 @@ class TradeLogger:
         self.trade_counter = 0
         self.lock = threading.Lock()
         
-        logger.info(f"📊 Trade Logger initialized")
-        logger.info(f"   Output directory: {self.output_dir}")
-        logger.info(f"   Trades file: {self.trades_file.name}")
+        logger.debug("📊 Trade Logger initialized")
+        logger.debug("   Output directory: %s", self.output_dir)
+        logger.debug("   Trades file: %s", self.trades_file.name)
 
     def _activate_persistence(self) -> bool:
         """Create runtime paths and the file handler only on the first real write."""

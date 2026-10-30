@@ -64,27 +64,20 @@ def _format_reading(value: Any, digits: int = 2) -> str:
     return f"{amount:.{digits}f}"
 
 
-def _currency_amount_map(accounts: Any, field: str) -> Dict[str, Any]:
-    """Sum one field per currency. A row with no currency cannot be a GBP book."""
+def _book_amount(value: Any) -> float | None:
+    """Account money. NaN, inf, and negatives are null. Zero stays zero."""
 
-    totals: Dict[str, Any] = {}
-    for account in list(accounts or []):
-        if not isinstance(account, dict):
-            return {"_unreadable": True}
-        currency = str(account.get("currency") or "").strip().upper()
-        if not currency:
-            return {"_unreadable": True}
-        amount = account.get(field, 0.0)
-        if currency not in totals:
-            totals[currency] = amount
-            continue
-        left = _finite_amount(totals[currency])
-        right = _finite_amount(amount)
-        if left is None or right is None:
-            totals[currency] = amount if right is None else totals[currency]
-            continue
-        totals[currency] = left + right
-    return totals
+    from aureon.exchanges.single_currency_equity import nonnegative_amount
+
+    return nonnegative_amount(value)
+
+
+def _currency_amount_map(accounts: Any, field: str) -> Dict[str, Any]:
+    """Sum one field per currency. A bad row makes the map unreadable."""
+
+    from aureon.exchanges.single_currency_equity import currency_amount_map
+
+    return currency_amount_map(accounts, field)
 
 # Module-level Lambda Engine reference — set by ICS before any instance is created.
 # Each CapitalCFDTrader.__init__ picks this up automatically.
@@ -2137,10 +2130,11 @@ class CapitalCFDTrader:
                 self._wire_mycelium_runtime()
                 capital = self.get_capital_snapshot()
                 growth = self._compute_growth_metrics()
-                drawdown_pct = abs(min(float(growth.get("equity_growth_pct", 0.0) or 0.0), 0.0))
+                growth_pct = _finite_amount(growth.get("equity_growth_pct"))
+                drawdown_pct = None if growth_pct is None else abs(min(growth_pct, 0.0))
                 governing_metrics = {
-                    "total_equity": float(capital.get("equity_gbp", 0.0) or 0.0),
-                    "total_cash": float(capital.get("free_gbp", 0.0) or 0.0),
+                    "total_equity": _book_amount(capital.get("equity_gbp")),
+                    "total_cash": _book_amount(capital.get("free_gbp")),
                     "realized_pnl_total": float((self.stats or {}).get("total_pnl_gbp", 0.0) or 0.0),
                     "win_rate": float(growth.get("win_rate", 0.0) or 0.0),
                     "drawdown_pct": drawdown_pct,
@@ -2234,7 +2228,7 @@ class CapitalCFDTrader:
             self.enabled,
             "Live exchange execution and pricing",
             (
-                f"positions={len(self.positions)} free_gbp={float(capital.get('free_gbp', 0.0) or 0.0):.2f} "
+                f"positions={len(self.positions)} free_gbp={_format_gbp_amount(capital.get('free_gbp'))} "
                 f"stale={float(capital.get('stale', 0.0) or 0.0):.0f}"
             ),
             ["equity_gbp", "free_gbp", "used_gbp", "budget_gbp"],
@@ -2592,17 +2586,15 @@ class CapitalCFDTrader:
         number stay null. They are not added together and not cached over
         a later honest null.
         """
-        from aureon.exchanges.single_currency_equity import gbp_equity_from_balances
+        from aureon.exchanges.single_currency_equity import (
+            assemble_sterling_snapshot,
+            gbp_equity_from_balances,
+            gbp_field_from_accounts,
+        )
 
         cached = dict(getattr(self, "_capital_snapshot_cache", {}) or {})
         if not self.client:
-            return cached or {
-                "equity_gbp": 0.0,
-                "free_gbp": 0.0,
-                "used_gbp": 0.0,
-                "budget_gbp": 0.0,
-                "target_pct_equity": 0.0,
-            }
+            return cached or assemble_sterling_snapshot(None, None, min_profit_gbp=CAPITAL_MIN_PROFIT_GBP)
         try:
             accounts = self.client.get_accounts()
         except Exception as e:
@@ -2623,27 +2615,15 @@ class CapitalCFDTrader:
             if raw and equity is None:
                 definitive_null = True
         else:
-            equity, _reason = gbp_equity_from_balances(_currency_amount_map(accounts, "balance"))
-            free, _free_reason = gbp_equity_from_balances(_currency_amount_map(accounts, "available"))
-            if equity is None:
+            equity, balance_bad = gbp_field_from_accounts(accounts, "balance")
+            free, free_bad = gbp_field_from_accounts(accounts, "available")
+            if balance_bad or free_bad:
+                equity = None
+                free = None
                 definitive_null = True
-        equity_amount = _finite_amount(equity)
-        free_amount = _finite_amount(free)
-        if equity_amount is None or free_amount is None:
-            used: float | None = None
-            budget: float | None = None
-            target_pct = 0.0
-        else:
-            used = max(0.0, equity_amount - free_amount)
-            budget = free_amount * 0.70
-            target_pct = (CAPITAL_MIN_PROFIT_GBP / equity_amount * 100.0) if equity_amount > 0 else 0.0
-        snapshot = {
-            "equity_gbp": equity_amount,
-            "free_gbp": free_amount,
-            "used_gbp": used,
-            "budget_gbp": budget,
-            "target_pct_equity": target_pct,
-        }
+        snapshot = assemble_sterling_snapshot(equity, free, min_profit_gbp=CAPITAL_MIN_PROFIT_GBP)
+        equity_amount = snapshot["equity_gbp"]
+        free_amount = snapshot["free_gbp"]
         if (equity_amount is not None and equity_amount > 0) or (free_amount is not None and free_amount > 0):
             self._capital_snapshot_cache = dict(snapshot)
             self._capital_snapshot_error = ""
@@ -2784,7 +2764,7 @@ class CapitalCFDTrader:
             "symbol": symbol,
             "epic": str(ticker.get("epic") or symbol),
             "requested_size": float(size or 0.0),
-            "available_balance": 0.0,
+            "available_balance": None,
             "market_status": "UNKNOWN",
             "minimum_deal_size": 0.0,
             "price": float(ticker.get("price") or 0.0),
@@ -2808,9 +2788,10 @@ class CapitalCFDTrader:
             accounts = []
             preflight["accounts_error"] = str(_e)
         preflight["accounts"] = accounts
-        preflight["available_balance"] = float(
-            sum(float(acc.get("available", 0.0) or 0.0) for acc in accounts)
-        )
+        from aureon.exchanges.single_currency_equity import gbp_field_from_accounts
+
+        available, unreadable = gbp_field_from_accounts(accounts, "available")
+        preflight["available_balance"] = None if unreadable else available
 
         market_summary: Dict[str, Any] = {}
         market_detail: Dict[str, Any] = {}
@@ -2893,7 +2874,11 @@ class CapitalCFDTrader:
                 f"{preflight['minimum_deal_size']:.6g}"
             )
             return preflight
-        if preflight["available_balance"] <= 0:
+        available_balance = preflight.get("available_balance")
+        if available_balance is None:
+            preflight["reason"] = "available account balance is not a single GBP figure"
+            return preflight
+        if available_balance <= 0:
             preflight["reason"] = "available account balance <= 0"
             return preflight
         allowed_statuses = {"TRADEABLE", "TRADEABLE_ONLINE", "OPEN", "EDITS_ONLY", "ONLINE"}
@@ -3025,10 +3010,15 @@ class CapitalCFDTrader:
         candidate: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         capital = self.get_capital_snapshot()
-        equity = max(0.0, float(capital.get("equity_gbp", 0.0) or 0.0))
-        free = max(0.0, float(capital.get("free_gbp", 0.0) or 0.0))
-        used = max(0.0, float(capital.get("used_gbp", 0.0) or 0.0))
-        reserve_required = max(CAPITAL_MIN_SURVIVAL_BUFFER_GBP, equity * max(0.0, CAPITAL_FREE_CASH_RESERVE_PCT))
+        equity = _book_amount(capital.get("equity_gbp"))
+        free = _book_amount(capital.get("free_gbp"))
+        used = _book_amount(capital.get("used_gbp"))
+        book_ready = equity is not None and free is not None and used is not None
+        reserve_required = (
+            max(CAPITAL_MIN_SURVIVAL_BUFFER_GBP, equity * max(0.0, CAPITAL_FREE_CASH_RESERVE_PCT))
+            if book_ready
+            else None
+        )
         positions = list(getattr(self, "positions", []) or [])
         gross_existing = 0.0
         estimated_margin_existing = 0.0
@@ -3100,39 +3090,50 @@ class CapitalCFDTrader:
                     break
 
         stress_after = _stress_loss(net_after, stress_pct_after)
-        estimated_margin_used = max(used, estimated_margin_existing)
-        margin_after = estimated_margin_used + cand_margin
         gross_after = gross_existing + cand_notional
-        free_after_margin = free - cand_margin
-        stress_buffer_before = free - reserve_required - existing_stress_loss
-        stress_buffer_after = free_after_margin - reserve_required - stress_after
-        margin_util_after = (margin_after / equity) if equity > 0 else 1.0
-        gross_leverage_after = (gross_after / equity) if equity > 0 else 0.0
-        single_symbol_pct = (symbol_after.get(cand_symbol, 0.0) / equity) if equity > 0 and cand_symbol else 0.0
-        directional_pct = (direction_after.get(cand_direction, 0.0) / equity) if equity > 0 and cand_direction else 0.0
+        if not book_ready:
+            estimated_margin_used = estimated_margin_existing
+            margin_after = estimated_margin_used + cand_margin
+            free_after_margin = None
+            stress_buffer_before = None
+            stress_buffer_after = None
+            margin_util_after = None
+            gross_leverage_after = None
+            single_symbol_pct = None
+            directional_pct = None
+        else:
+            estimated_margin_used = max(used, estimated_margin_existing)
+            margin_after = estimated_margin_used + cand_margin
+            free_after_margin = free - cand_margin
+            stress_buffer_before = free - reserve_required - existing_stress_loss
+            stress_buffer_after = free_after_margin - reserve_required - stress_after
+            margin_util_after = (margin_after / equity) if equity > 0 else 1.0
+            gross_leverage_after = (gross_after / equity) if equity > 0 else 0.0
+            single_symbol_pct = (symbol_after.get(cand_symbol, 0.0) / equity) if equity > 0 and cand_symbol else 0.0
+            directional_pct = (direction_after.get(cand_direction, 0.0) / equity) if equity > 0 and cand_direction else 0.0
 
         blockers: List[str] = []
-        if equity <= 0 or free <= 0:
+        if not book_ready or equity <= 0 or free <= 0:
             blockers.append("capital_account_balance_unavailable")
         if cand_symbol and cand_notional <= 0:
             blockers.append("candidate_notional_unavailable")
-        survival_threat = stress_buffer_before < 0
+        survival_threat = bool(book_ready and stress_buffer_before < 0)
         if survival_threat and CAPITAL_LOSS_CLOSE_POLICY == "never_self_close_loss":
             if not hedge_candidate:
                 blockers.append("no_loss_hold_survival_threat_freeze_new_entries")
             elif stress_after >= existing_stress_loss:
                 blockers.append("hedge_does_not_improve_stress_survival")
-        if cand_symbol and free_after_margin < reserve_required:
+        if book_ready and cand_symbol and free_after_margin < reserve_required:
             blockers.append("reserve_buffer_would_be_breached")
-        if cand_symbol and margin_util_after > max(0.0, CAPITAL_MAX_MARGIN_UTILIZATION_PCT):
+        if book_ready and cand_symbol and margin_util_after > max(0.0, CAPITAL_MAX_MARGIN_UTILIZATION_PCT):
             blockers.append("margin_utilization_limit")
-        if cand_symbol and gross_leverage_after > max(0.0, CAPITAL_MAX_GROSS_NOTIONAL_TO_EQUITY):
+        if book_ready and cand_symbol and gross_leverage_after > max(0.0, CAPITAL_MAX_GROSS_NOTIONAL_TO_EQUITY):
             blockers.append("gross_notional_leverage_limit")
-        if cand_symbol and single_symbol_pct > max(0.0, CAPITAL_MAX_SINGLE_SYMBOL_EXPOSURE_PCT):
+        if book_ready and cand_symbol and single_symbol_pct > max(0.0, CAPITAL_MAX_SINGLE_SYMBOL_EXPOSURE_PCT):
             blockers.append("single_symbol_concentration_limit")
-        if cand_symbol and directional_pct > max(0.0, CAPITAL_MAX_DIRECTIONAL_EXPOSURE_PCT):
+        if book_ready and cand_symbol and directional_pct > max(0.0, CAPITAL_MAX_DIRECTIONAL_EXPOSURE_PCT):
             blockers.append("directional_exposure_limit")
-        if cand_symbol and stress_buffer_after < 0:
+        if book_ready and cand_symbol and stress_buffer_after < 0:
             blockers.append("stress_buffer_negative_after_trade")
 
         envelope = {
@@ -3344,8 +3345,9 @@ class CapitalCFDTrader:
         existing_working_orders: Optional[List[Dict[str, Any]]] = None,
     ) -> Dict[str, Any]:
         capital = self.get_capital_snapshot()
-        equity = max(0.0, float(capital.get("equity_gbp", 0.0) or 0.0))
-        free = max(0.0, float(capital.get("free_gbp", 0.0) or 0.0))
+        equity = _book_amount(capital.get("equity_gbp"))
+        free = _book_amount(capital.get("free_gbp"))
+        book_ready = equity is not None and free is not None
         existing = list(existing_working_orders if existing_working_orders is not None else self._fetch_capital_working_orders())
         planned = [dict(order) for order in planned_orders if isinstance(order, dict)]
 
@@ -3368,31 +3370,36 @@ class CapitalCFDTrader:
             )
 
         base = self._build_capital_risk_envelope()
-        reserve_required = max(CAPITAL_MIN_SURVIVAL_BUFFER_GBP, equity * max(0.0, CAPITAL_FREE_CASH_RESERVE_PCT))
-        pending_margin_budget = free * max(0.0, CAPITAL_PENDING_MARGIN_BUDGET_PCT)
-        stress_buffer_after_all_fill = (
-            float(base.get("stress_buffer_before_gbp", 0.0) or 0.0)
-            - existing_margin
-            - planned_margin
-            - stress_loss_if_all_fill
-        )
+        if book_ready:
+            reserve_required = max(CAPITAL_MIN_SURVIVAL_BUFFER_GBP, equity * max(0.0, CAPITAL_FREE_CASH_RESERVE_PCT))
+            pending_margin_budget = free * max(0.0, CAPITAL_PENDING_MARGIN_BUDGET_PCT)
+            base_buffer = _finite_amount(base.get("stress_buffer_before_gbp"))
+            stress_buffer_after_all_fill = (
+                None
+                if base_buffer is None
+                else base_buffer - existing_margin - planned_margin - stress_loss_if_all_fill
+            )
+        else:
+            reserve_required = None
+            pending_margin_budget = None
+            stress_buffer_after_all_fill = None
         blockers: List[str] = []
         if not CAPITAL_PENDING_ORDER_PLANNING_ENABLED:
             blockers.append("pending_order_planning_disabled")
         if not CAPITAL_PENDING_ORDER_SUBMIT_ENABLED:
             blockers.append("pending_order_submission_disabled")
-        if equity <= 0 or free <= 0:
+        if not book_ready or equity <= 0 or free <= 0:
             blockers.append("capital_account_balance_unavailable")
         if pending_count_after > max(0, CAPITAL_MAX_PENDING_WORKING_ORDERS):
             blockers.append("max_pending_working_orders")
         for symbol, count in symbol_counts.items():
             if count > max(1, CAPITAL_MAX_PENDING_PER_SYMBOL):
                 blockers.append(f"max_pending_per_symbol:{symbol}")
-        if planned_margin + existing_margin > pending_margin_budget:
+        if book_ready and planned_margin + existing_margin > pending_margin_budget:
             blockers.append("pending_margin_budget_limit")
-        if free - reserve_required - existing_margin - planned_margin < 0:
+        if book_ready and free - reserve_required - existing_margin - planned_margin < 0:
             blockers.append("reserve_buffer_would_be_breached_by_pending_orders")
-        if stress_buffer_after_all_fill < 0:
+        if stress_buffer_after_all_fill is not None and stress_buffer_after_all_fill < 0:
             blockers.append("stress_buffer_negative_if_all_pending_fill")
         for order in planned:
             for blocker in order.get("blockers", []) or []:
@@ -3656,9 +3663,9 @@ class CapitalCFDTrader:
             change = abs(float(candidate.get("change_pct", 0.0) or 0.0))
             eta = required_tp_pct / max(change, 0.01) if required_tp_pct > 0 else 999.0
         expected_net = float(preflight.get("expected_net_profit", candidate.get("expected_net_profit", 0.0)) or 0.0)
-        equity = float(self.get_capital_snapshot().get("equity_gbp", 0.0) or 0.0)
+        equity = _book_amount(self.get_capital_snapshot().get("equity_gbp"))
         risk_adjusted = confidence / max(eta, 0.10)
-        if equity > 0:
+        if equity is not None and equity > 0:
             risk_adjusted += max(0.0, expected_net) / equity
         return {
             "symbol": symbol,
@@ -3885,7 +3892,7 @@ class CapitalCFDTrader:
         requested_size = float(adjusted.get("size", 0.0) or 0.0)
         minimum_size = float(preflight.get("minimum_deal_size", 0.0) or 0.0)
         price = float(preflight.get("price", 0.0) or 0.0)
-        available_balance = float(preflight.get("available_balance", 0.0) or 0.0)
+        available_balance = _book_amount(preflight.get("available_balance"))
         if minimum_size <= 0 or minimum_size <= requested_size:
             return adjusted
         if price <= 0:
@@ -3900,6 +3907,8 @@ class CapitalCFDTrader:
                 min_margin_required = reported_margin_required * (minimum_size / requested_size)
         if min_margin_required <= 0:
             min_margin_required = minimum_size * price
+        if available_balance is None:
+            return None
         if available_balance > 0 and min_margin_required > available_balance:
             return None
         adjusted["size"] = minimum_size
@@ -5241,9 +5250,13 @@ class CapitalCFDTrader:
         trades_closed = int(stats.get("trades_closed", 0.0) or 0.0)
         wins = int(stats.get("winning_trades", 0.0) or 0.0)
         losses = int(stats.get("losing_trades", 0.0) or 0.0)
-        equity_now = float(self.get_capital_snapshot().get("equity_gbp", 0.0) or 0.0)
+        equity_now = _book_amount(self.get_capital_snapshot().get("equity_gbp"))
         equity_start = float(getattr(self, "starting_equity_gbp", 0.0) or 0.0)
-        equity_growth_pct = ((equity_now - equity_start) / equity_start * 100.0) if equity_start > 0 else 0.0
+        equity_growth_pct = (
+            None
+            if equity_now is None
+            else ((equity_now - equity_start) / equity_start * 100.0) if equity_start > 0 else 0.0
+        )
         pnl_per_hour = pnl_gbp / runtime_hours if runtime_hours > 0 else 0.0
         trades_per_hour = trades_closed / runtime_hours if runtime_hours > 0 else 0.0
         avg_pnl = pnl_gbp / trades_closed if trades_closed > 0 else 0.0
@@ -6773,7 +6786,7 @@ class CapitalCFDTrader:
                         "preflight_reason": str(preflight.get("reason") or ""),
                         "market_status": str(preflight.get("market_status") or ""),
                         "minimum_deal_size": float(preflight.get("minimum_deal_size", 0.0) or 0.0),
-                        "available_balance": float(preflight.get("available_balance", 0.0) or 0.0),
+                        "available_balance": _book_amount(preflight.get("available_balance")),
                     }
 
                     if not preflight.get("ok"):
@@ -6847,8 +6860,10 @@ class CapitalCFDTrader:
             f"| promote_wait={float(confidence.get('validation_window_secs', self.SHADOW_MIN_VALIDATE) or self.SHADOW_MIN_VALIDATE):.1f}s "
             f"| mode={confidence.get('reason', 'n/a')}"
         )
+        equity_growth_pct = growth.get("equity_growth_pct")
+        equity_growth_text = "n/a" if equity_growth_pct is None else f"{float(equity_growth_pct):+.2f}%"
         lines.append(
-            f"  Growth: eq={float(growth.get('equity_growth_pct', 0.0) or 0.0):+.2f}% "
+            f"  Growth: eq={equity_growth_text} "
             f"| pnl/hr=£{float(growth.get('pnl_per_hour_gbp', 0.0) or 0.0):+.3f} "
             f"| trades/hr={float(growth.get('trades_per_hour', 0.0) or 0.0):.2f} "
             f"| avg/close=£{float(growth.get('avg_pnl_per_close_gbp', 0.0) or 0.0):+.3f} "

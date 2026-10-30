@@ -35,6 +35,18 @@ def test_duplicate_case_keys_are_not_collapsed():
     assert reason
 
 
+def test_a_real_zero_stays_zero():
+    amount, reason = gbp_equity_from_balances({"GBP": 0.0})
+    assert amount == 0.0
+    assert reason == ""
+
+
+def test_a_negative_amount_is_null():
+    amount, reason = gbp_equity_from_balances({"GBP": -1.0})
+    assert amount is None
+    assert "negative" in reason
+
+
 def test_non_finite_and_non_numeric_values_are_not_amounts():
     for raw in (
         {"GBP": float("nan")},
