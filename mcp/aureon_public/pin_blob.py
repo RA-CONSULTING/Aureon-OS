@@ -16,7 +16,7 @@ from pathlib import Path
 from types import ModuleType
 
 PINNED_PHENOLIC_BLOB = "325484e9299eecb427cf0063590b0a1d17c16f31"
-PHENOLIC_MISMATCH = "checkout phenolic_fingerprint differs from pin a00f744d"
+PHENOLIC_MISMATCH = "checkout phenolic_fingerprint differs from pin 8aa6a2d9"
 
 
 def git_blob_sha1(data: bytes) -> str:
@@ -123,12 +123,29 @@ class PinnedAureonFinder:
     def _files(self, fullname: str, relative: str) -> list[Path]:
         files: list[Path] = []
         checkout = self.root / relative
-        if checkout.is_file():
-            files.append(checkout)
         installed = self._installed_origin(fullname)
+        # The pin install is first when direct_url.json names this pin.
+        # Every candidate still has to match the pin blob before it runs.
+        # An install of any other commit stays behind the checkout.
+        pinned = self._pinned_install(installed)
+        if pinned is not None:
+            files.append(pinned)
+        if checkout.is_file() and checkout not in files:
+            files.append(checkout)
         if installed is not None and installed not in files:
             files.append(installed)
         return files
+
+    def _pinned_install(self, installed: Path | None) -> Path | None:
+        if installed is None or not installed.is_file():
+            return None
+        from aureon_public.guard_loader import _direct_url_commit, _outside_checkout
+
+        if not _outside_checkout(installed, self.root):
+            return None
+        if _direct_url_commit(installed) != self.commit:
+            return None
+        return installed
 
     def _installed_origin(self, fullname: str) -> Path | None:
         removed = [finder for finder in sys.meta_path if isinstance(finder, PinnedAureonFinder)]

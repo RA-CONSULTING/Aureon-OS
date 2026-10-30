@@ -405,7 +405,7 @@ def membrane_screen(text: str = "") -> str:
     body = asdict(verdict)
     body["label"] = (
         "cited. screen_ingress. phenolic_fingerprint loaded from checkout "
-        "after the blob check for pin a00f744d. Not an order."
+        "after the blob check for pin 8aa6a2d9. Not an order."
     )
     body["provenance"] = "cited"
     body["status"] = "cited"
@@ -539,7 +539,7 @@ def source_names(package: str) -> str:
 def _load_phenolic_fingerprint(root: Path | None = None) -> str | None:
     """Register the checkout's phenolic_fingerprint without putting the repo root on sys.path.
 
-    The file is executed only when its git blob is the blob at pin a00f744d.
+    The file is executed only when its git blob is the blob at pin 8aa6a2d9.
     A different checkout copy is refused and is not loaded.
     """
 

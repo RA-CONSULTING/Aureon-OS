@@ -4,9 +4,9 @@ MCP lets outside models call Aureon's tools. No outside model or API becomes Aur
 
 This process is a read-only FastMCP server named `aureon-public`. It exposes the milestone-1 tools, resources, and prompts. It does not place orders, read keys, start circulation, self-code, self-repair, or write the repository or `state/`.
 
-`aureon` is pinned to commit `a00f744d2e686e916e45b81dd4222408c368e305`, the same pin as the Hugging Face Spaces. A local checkout run uses its own commit, not the pin. The MCP SDK pin is `mcp==1.30.0` in `requirements.txt` and `pyproject.toml`. That is the version this server was installed and tested with. `mcp==1.30.0` provides `FastMCP` (`mcp.server.fastmcp`). MCP 2 renamed that class.
+`aureon` is pinned to commit `8aa6a2d971cc529484e2a5e261e28afafab4e4f4`, the same pin as the Hugging Face Spaces. A local checkout run uses its own commit, not the pin. The MCP SDK pin is `mcp==1.30.0` in `requirements.txt` and `pyproject.toml`. That is the version this server was installed and tested with. `mcp==1.30.0` provides `FastMCP` (`mcp.server.fastmcp`). MCP 2 renamed that class.
 
-Any public hosting, including the future aureon-public Space, must set `AUREON_PUBLIC_REQUIRE_PIN=1`. That refuses to start unless `aureon_source` is kind `pinned` at `a00f744d2e686e916e45b81dd4222408c368e305`. Local runs leave the variable unset and keep the visible `aureon_source` label. Each Hugging Face Space entry point calls `enforce_public_pin()` itself before `demo.launch`.
+Any public hosting, including the future aureon-public Space, must set `AUREON_PUBLIC_REQUIRE_PIN=1`. That refuses to start unless `aureon_source` is kind `pinned` at `8aa6a2d971cc529484e2a5e261e28afafab4e4f4`. Local runs leave the variable unset and keep the visible `aureon_source` label. Each Hugging Face Space entry point calls `enforce_public_pin()` itself before `demo.launch`.
 
 The operator process is separate: `python -m aureon_operator`. It stays off unless `AUREON_OPERATOR_MCP=1`, speaks stdio only, and refuses live orders. It does not import `aureon.trading` or the other blocked packages.
 
@@ -75,7 +75,7 @@ Each figure is reachable public functions and methods out of the public function
 
 The extra package tools are helpers. A helper call is not that layer's cognition.
 
-`body_call` runs one inventoried function or method. `body_surface` reads a module or class and does not construct it. `body_depth` reports the same ratio as this table. `body_registry` names the servers. The operator tool is `body_call_operator`. Live orders stay refused. A checkout file is imported only when its git blob matches pin `a00f744d`. The plan and the call rules are in `docs/mcp/REGISTRY.md`.
+`body_call` runs one inventoried function or method. `body_surface` reads a module or class and does not construct it. `body_depth` reports the same ratio as this table. `body_registry` names the servers. The operator tool is `body_call_operator`. Live orders stay refused. A checkout file is imported only when its git blob matches pin `8aa6a2d9`. The plan and the call rules are in `docs/mcp/REGISTRY.md`.
 
 Licence: MIT, the same licence as the repository `LICENSE`.
 

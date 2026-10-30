@@ -690,7 +690,7 @@ def body_call(module: str, symbol: str, arguments_json: str = "") -> str:
     This runs the named function. It is not a helper. Modules and classes
     are refused here. Operator, key, write, loop, and blocked packages are
     not called. A checkout file is imported only when its git blob matches
-    pin a00f744d.
+    pin 8aa6a2d9.
 
     Args:
         module: Inventory module path, such as harmonic/rainbow_reference.py. Label: cited.

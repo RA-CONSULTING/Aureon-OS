@@ -337,7 +337,7 @@ def render_plan(rows: list[dict]) -> str:
         "",
         "`repo_root()` and `aureon_source()` raise `FileNotFoundError` when there is no checkout. The servers need that checkout.",
         "",
-        "Any checkout file loaded beside the pin must pass the git blob check in `mcp/aureon_public/pin_blob.py` before it is executed. A file whose blob is not the blob at pin `a00f744d` is not imported.",
+        "Any checkout file loaded beside the pin must pass the git blob check in `mcp/aureon_public/pin_blob.py` before it is executed. A file whose blob is not the blob at pin `8aa6a2d9` is not imported.",
         "",
         "HOLD stays explicit: trade readiness, the Auris-to-Lambda link, QGITA detection and false-alarm rates, Schumann f0, and HumanEval not run. `consciousness_*` keys are dropped. The pin and `AUREON_PUBLIC_REQUIRE_PIN` stay. Space entry points call `enforce_public_pin()`.",
         "",
