@@ -8,11 +8,12 @@ Reproduce:
 
 ```bash
 env -u PYTHONPATH PYTHONPATH=mcp python3.12 -m aureon_public.coverage_plan --check
+bash measured/aureon_public_stage1_run.sh
 ```
 
-`--write` rewrites this file from the same function.
+`--write` rewrites this file from the same function. `measured/aureon_public_stage1_run.sh` rewrites both `measured/aureon_public_alignment.json` and `measured/aureon_public_stage1.json`.
 
-Listed symbols: 20083. Public entry points: 4388. Reachable now: 898. The previous plan recorded 879 reachable. Methods open because a constructor is allowlisted: 19. The refused-imports fence is unchanged.
+Listed symbols: 20083. Public entry points: 4388. Reachable now: 896. The previous plan recorded 898 reachable. Methods open because a constructor is allowlisted: 19. The refused-imports fence is unchanged.
 
 ## Stage order
 
@@ -35,7 +36,7 @@ Stage 2 is not opened. A stage-2 package has a process or write sentence, so it 
 | ---: | --- | ---: | ---: | ---: |
 | 1 | alignment | 36 | 24 | 12 |
 | 1 | generated | 8 | 4 | 4 |
-| 1 | swarm | 79 | 41 | 25 |
+| 1 | swarm | 79 | 41 | 24 |
 | 2 | atn | 57 | 28 | 0 |
 | 2 | cognition | 44 | 14 | 1 |
 | 2 | conversion | 170 | 0 | 0 |
@@ -72,7 +73,7 @@ Stage 2 is not opened. A stage-2 package has a process or write sentence, so it 
 | 4 | monitors | 345 | 158 | 0 |
 | 4 | observability | 27 | 9 | 4 |
 | 4 | operator | 1080 | 0 | 0 |
-| 4 | organism | 3 | 1 | 1 |
+| 4 | organism | 3 | 1 | 0 |
 | 4 | plumber | 497 | 271 | 52 |
 | 4 | portals | 74 | 51 | 11 |
 | 4 | portfolio | 322 | 0 | 0 |
@@ -111,8 +112,8 @@ Calling `get_unified_directive` constructs `UnifiedHarmonicDirective` with auto-
 
 `alignment` stays the first stage-1 package. `get_pillar_alignment` stays, with `auto_load_pillars` false. `get_unified_directive` is not a stage-1 tool. This run opens `generated` and `swarm`. `organism` is not opened.
 Generated was on the more_layers exclusion list. It is open because `aureon/generated/research_cinema/harmonic_nexus_score_model.py` imports only dataclasses and its module docstring calls it a deterministic helper, not trading authority. The four entry points are `build_default_inputs`, `HarmonicNexusScoreInputs.normalized`, `harmonic_nexus_score`, and `score_breakdown`. `tests/generated/test_harmonic_nexus_score_model.py` shows all-ones inputs score 100.0. That 100 is the weighted sum in that file. It does not score any Aureon or HNC claim and cannot be quoted as evidence.
-`organism` is stage 4, not stage 1. One call to `compose_repository_layers` after `apply_space_guard` loads `core.organism_composition`, and through that `aureon.inhouse_ai.llm_adapter`, `agent_runner`, `orchestrator`, `aureon.ollama_config`, and `aureon.autonomous.aureon_internal_coding_workforce`. `inhouse_ai` stays excluded. There is no stage-1 organism tool. The inventory entry point is still reachable through `body_call`; that is why the reachable count for the package stays 1.
-`build_lane` is not a stage-1 tool. `build_lane("fintech")` imports `aureon.accounting`, and that package init imports `governance.legacy_unity_composition`, which reaches `aureon.autonomous.aureon_internal_coding_workforce`. That module imports `aureon.inhouse_ai` and `aureon.ollama_config`. The entry point stays reachable through `body_call`. Swarm's reachable count stays 25.
+`body_call` refuses `organism/repository_layers.py` `compose_repository_layers`. With the checkout beside `NEXUS-LIVE-FEED-` and `Aureon-Trading--Project-Sero`, that call uses `Path(__file__).parents[3]`, independent of `AUREON_REPOS_ROOT`, and execs those sibling modules outside the pin. One call also loads `core.organism_composition`, and through that `aureon.inhouse_ai.llm_adapter`, `agent_runner`, `orchestrator`, `aureon.ollama_config`, and `aureon.autonomous.aureon_internal_coding_workforce`. `inhouse_ai` stays excluded. Organism reachable is 0.
+`body_call` refuses `swarm/capability_grid.py` `build_lane`. `build_lane("fintech")` imports `aureon.accounting`, and that package init reaches `aureon.autonomous.aureon_internal_coding_workforce`, which imports `aureon.inhouse_ai` and `aureon.ollama_config`. Swarm's other entry points stay. Swarm reachable is 24.
 The other swarm tools use fixtures from the swarm tests or fixed example arguments. Classes that need nested agent instances stay off the constructor allowlist: Cluster, Company, Zone, FleadhCompany, VisitorAgent, and WorkerAgent. Name-blocked `run_` entry points stay refused. Properties such as SwarmAgent.purity are not given tools because the worker calls methods. `validate_seat_receipt` stays reachable through `body_call` and is not a second tool: the public result cap would drop receipt fields before another call.
 Stage 2 was not started. No stage-2 tool was written.
 

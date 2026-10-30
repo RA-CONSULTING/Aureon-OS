@@ -91,6 +91,15 @@ _OPERATOR_ALLOWLIST = {
     ("accounting/file_drop.py", "registered_ingestors"),
     ("portfolio/aureon_billion_goal_tracker.py", "get_days_remaining"),
 }
+# These stay off body_call. compose_repository_layers finds sibling checkouts
+# at parents[3] and execs them outside the pin. build_lane("fintech") imports
+# the in-house adapter through the accounting package.
+_ENTRY_REFUSAL = {
+    ("organism/repository_layers.py", "compose_repository_layers"): (
+        "stage 4 entry point is not called"
+    ),
+    ("swarm/capability_grid.py", "build_lane"): "stage 4 entry point is not called",
+}
 # A method call constructs its class. An unlisted constructor is not run.
 # The risk scan still runs. PillarAlignment, UnifiedHarmonicDirective, and the
 # swarm classes that need nested agent instances stay off this list.
@@ -582,6 +591,9 @@ def _public_entry_refusal(row: dict[str, Any]) -> str | None:
         return "operator entry point is not on aureon-public"
     if row["package"] in _BLOCKED:
         return "blocked package is not imported on aureon-public"
+    named = _ENTRY_REFUSAL.get((str(row["module"]), str(row["symbol"])))
+    if named:
+        return named
     kind = _package_kind(str(row["package"]))
     if kind in {"operator", "excluded"}:
         return f"package {row['package']} is {kind}"

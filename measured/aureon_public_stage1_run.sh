@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# Write the stage-1 measured records. Do not hand-edit those files.
+# Rewrite measured/aureon_public_alignment.json and measured/aureon_public_stage1.json.
+# Do not hand-edit those files.
 #
 # Same install as measured/aureon_public_run.sh. Python 3.12 is required.
-# Regenerates the alignment record, then writes the remaining stage-1 record.
+# This script rewrites measured/aureon_public_alignment.json, then rewrites
+# measured/aureon_public_stage1.json.
 set -eu
 ROOT="$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)"
 VENV="${VENV:-/tmp/aureon-public-venv}"

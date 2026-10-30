@@ -54,7 +54,7 @@ Each figure is reachable public functions and methods out of the public function
 | observability | 4 | 9 |
 | observer | 29 | 63 |
 | operator | 0 | 0 |
-| organism | 1 | 1 |
+| organism | 0 | 1 |
 | plumber | 52 | 271 |
 | portals | 11 | 51 |
 | portfolio | 0 | 0 |
@@ -65,7 +65,7 @@ Each figure is reachable public functions and methods out of the public function
 | search | 2 | 5 |
 | simulation | 18 | 200 |
 | strategies | 0 | 0 |
-| swarm | 25 | 41 |
+| swarm | 24 | 41 |
 | swarm_motion | 0 | 10 |
 | trading | 0 | 0 |
 | unified_margin_trader | 0 | 0 |

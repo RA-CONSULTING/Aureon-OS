@@ -363,7 +363,7 @@
     },
     "swarm": {
       "public_entry_points": 41,
-      "reachable": 25
+      "reachable": 24
     },
     "swarm_motion": {
       "public_entry_points": 10,

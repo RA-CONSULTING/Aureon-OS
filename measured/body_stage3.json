@@ -823,7 +823,7 @@
     },
     "organism": {
       "public_entry_points": 1,
-      "reachable": 1
+      "reachable": 0
     },
     "vault": {
       "public_entry_points": 195,

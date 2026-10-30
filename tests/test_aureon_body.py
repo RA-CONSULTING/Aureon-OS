@@ -223,7 +223,9 @@ def test_stage3_calls_organism_bio_evaluation_and_vault_and_refuses_identity() -
     assert words["called"] is True
     assert words["result"] == 3
     layers = _load(body_call("organism/repository_layers.py", "compose_repository_layers"))
-    assert layers["called"] is True
+    assert layers["status"] == "unavailable"
+    assert layers.get("called") is not True
+    assert layers["reason"] == "stage 4 entry point is not called"
     nodes = _load(body_call("evaluation/auris_node_eval.py", "evaluate_auris_nodes"))
     assert nodes["status"] == "unavailable"
     assert nodes.get("called") is not True
@@ -233,6 +235,103 @@ def test_stage3_calls_organism_bio_evaluation_and_vault_and_refuses_identity() -
     record = json.loads((ROOT / "measured" / "body_stage3.json").read_text(encoding="utf-8"))
     called = {item["package"] for item in record["calls"] if item["called"] is True}
     assert {"bio", "organism", "evaluation", "vault", "core"} <= called
+
+
+def test_body_call_refuses_sibling_join_and_build_lane(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Side-by-side NEXUS and Sero checkouts are not exec'd and no request is built."""
+
+    import urllib.request
+
+    from aureon_public.body import dispatch
+
+    requests: list[str] = []
+
+    def capture(url: object, *args: object, **kwargs: object) -> None:
+        requests.append(str(url))
+        raise AssertionError(f"urllib request for {url}")
+
+    monkeypatch.setattr(urllib.request, "Request", capture)
+    monkeypatch.setattr(urllib.request, "urlopen", capture)
+
+    beside = Path(repo_root()).resolve().parent
+    marker = tmp_path / "sibling-exec.txt"
+    field = (
+        "from pathlib import Path\n"
+        "from urllib.request import Request, urlopen\n"
+        f"Path({str(marker)!r}).write_text('field')\n"
+        "Request('https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json')\n"
+        "SOURCE = 'https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json'\n"
+        "def observe_planetary_k_index(transport=None):\n"
+        "    Request(SOURCE)\n"
+        "    if transport is None:\n"
+        "        return urlopen(SOURCE).read()\n"
+        "    return transport(SOURCE)\n"
+    )
+    market = (
+        "from pathlib import Path\n"
+        "from urllib.request import Request, urlopen\n"
+        f"Path({str(marker)!r}).write_text('market')\n"
+        "Request('https://data-api.binance.vision/api/v3/ticker/price?symbol=BTCUSDT')\n"
+        "SOURCE = 'https://data-api.binance.vision/api/v3/ticker/price?symbol=BTCUSDT'\n"
+        "def observe_public_price(transport=None):\n"
+        "    Request(SOURCE)\n"
+        "    if transport is None:\n"
+        "        return urlopen(SOURCE).read()\n"
+        "    return transport(SOURCE)\n"
+    )
+
+    def write_sibling(path: Path, text: str) -> None:
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text, encoding="utf-8")
+        except PermissionError:
+            subprocess.check_call(["sudo", "-n", "mkdir", "-p", str(path.parent)])
+            subprocess.check_call(
+                ["sudo", "-n", "chown", "-R", f"{os.getuid()}:{os.getgid()}", str(path.parents[1])]
+            )
+            path.write_text(text, encoding="utf-8")
+
+    def remove_tree(path: Path) -> None:
+        import shutil
+
+        if not path.exists():
+            return
+        try:
+            shutil.rmtree(path)
+        except PermissionError:
+            subprocess.check_call(["sudo", "-n", "rm", "-rf", str(path)])
+
+    planted: list[Path] = []
+    layouts = (
+        ("NEXUS-LIVE-FEED-", "organism/public_field.py", field),
+        ("Aureon-Trading--Project-Sero", "organism/public_market.py", market),
+    )
+    try:
+        for name, relative, text in layouts:
+            root = beside / name
+            if root.exists():
+                continue
+            planted.append(root)
+            write_sibling(root.joinpath(*relative.split("/")), text)
+        assert len(planted) == 2 or all((beside / name).exists() for name, _relative, _text in layouts)
+        targets = (
+            ("organism/repository_layers.py", "compose_repository_layers", {}),
+            ("swarm/capability_grid.py", "build_lane", {"name": "fintech"}),
+        )
+        for module, symbol, arguments in targets:
+            via_call = _load(body_call(module, symbol))
+            via_dispatch = _load(dispatch(module, symbol, arguments, server="public"))
+            for body in (via_call, via_dispatch):
+                assert body["status"] == "unavailable", (module, symbol, body)
+                assert body.get("called") is not True
+                assert body["reason"] == "stage 4 entry point is not called"
+        assert requests == []
+        assert not marker.exists()
+        assert "nexus_public_field" not in sys.modules
+        assert "sero_public_market" not in sys.modules
+    finally:
+        for path in planted:
+            remove_tree(path)
 
 
 def test_stage2_calls_each_named_package() -> None:
