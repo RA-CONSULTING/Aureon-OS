@@ -406,10 +406,14 @@ def test_checkout_aureon_tree_equals_the_pin() -> None:
     import subprocess
 
     from aureon_public.guard_loader import PINNED_COMMIT
-    from aureon_public.measurement_stamp import PIN_AUREON_TREE
+    from aureon_public.measurement_stamp import PIN_AUREON_TREE, pin_tree_skip_reason
     from aureon_public.paths import repo_root
 
-    root = str(repo_root())
+    root_path = repo_root()
+    reason = pin_tree_skip_reason(root_path)
+    if reason:
+        pytest.skip(reason)
+    root = str(root_path)
 
     def rev_parse(*args: str) -> str:
         return subprocess.check_output(["git", "-C", root, *args], text=True).strip()
@@ -421,6 +425,60 @@ def test_checkout_aureon_tree_equals_the_pin() -> None:
         check=False,
     )
     assert diff.returncode == 0
+
+
+def test_pin_tree_check_skips_without_git_shallow_or_a_missing_pin(tmp_path: Path) -> None:
+    from aureon_public.measurement_stamp import pin_tree_skip_reason
+
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    assert pin_tree_skip_reason(empty) == "no .git; the pin tree comparison needs a git checkout"
+
+    bare = tmp_path / "nogit"
+    bare.mkdir()
+    subprocess.run(["git", "init", "-q", str(bare)], check=True)
+    missing = pin_tree_skip_reason(bare)
+    assert missing is not None
+    assert "not in this clone" in missing
+
+    shallow = tmp_path / "shallow"
+    shallow.mkdir()
+    subprocess.run(["git", "init", "-q", str(shallow)], check=True)
+    (shallow / ".git" / "shallow").write_text("0123456789abcdef0123456789abcdef01234567\n", encoding="utf-8")
+    reason = pin_tree_skip_reason(shallow)
+    assert reason is not None
+    assert reason.startswith("shallow clone")
+
+
+def test_measurement_stamp_refuses_a_dirty_working_tree(monkeypatch: pytest.MonkeyPatch) -> None:
+    from aureon_public import measurement_stamp as stamp
+
+    def _git(*args: str) -> str:
+        if args[:2] == ("status", "--porcelain"):
+            return " M measured/aureon_public_alignment.json"
+        return "a" * 40
+
+    monkeypatch.setattr(stamp, "_git", _git)
+    with pytest.raises(RuntimeError, match="dirty working tree"):
+        stamp.measurement_stamp()
+
+
+def test_measurement_stamp_reads_a_clean_working_tree(monkeypatch: pytest.MonkeyPatch) -> None:
+    from aureon_public.measurement_stamp import CODE_COMMIT_NOTE, PIN_AUREON_TREE, measurement_stamp
+
+    def _git(*args: str) -> str:
+        if args[:2] == ("status", "--porcelain"):
+            return ""
+        if args == ("rev-parse", "HEAD"):
+            return "b" * 40
+        return PIN_AUREON_TREE
+
+    monkeypatch.setattr("aureon_public.measurement_stamp._git", _git)
+    record = measurement_stamp()
+    assert record["code_commit"] == "b" * 40
+    assert record["code_commit_note"] == CODE_COMMIT_NOTE
+    assert record["aureon_tree"] == PIN_AUREON_TREE
+    assert record["pin_aureon_tree"] == PIN_AUREON_TREE
 
 
 def test_call_sweep_record_names_the_pin_and_the_sibling_layout() -> None:

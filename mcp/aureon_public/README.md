@@ -4,7 +4,7 @@ MCP lets outside models call Aureon's tools. No outside model or API becomes Aur
 
 This process is a read-only FastMCP server named `aureon-public`. It exposes the milestone-1 tools, resources, and prompts. It does not place orders, read keys, start circulation, self-code, self-repair, or write the repository or `state/`.
 
-`aureon` is pinned to commit `8aa6a2d971cc529484e2a5e261e28afafab4e4f4`, the same pin as the Hugging Face Spaces. A local checkout run uses its own commit, not the pin. The MCP SDK pin is `mcp==1.30.0` in `requirements.txt` and `pyproject.toml`. That is the version this server was installed and tested with. `mcp==1.30.0` provides `FastMCP` (`mcp.server.fastmcp`). MCP 2 renamed that class.
+`aureon` is pinned to commit `8aa6a2d971cc529484e2a5e261e28afafab4e4f4`, the same pin as the Hugging Face Spaces. A local checkout run uses its own commit, not the pin. The MCP SDK requirement is `mcp==1.30.0,<2` in `requirements.txt` and `pyproject.toml`. That installs 1.30.0 and excludes every 2.x release. This server imports `FastMCP` from `mcp.server.fastmcp`. The check that MCP 2 renamed that class to `MCPServer` is in `COVERAGE_PLAN.md`, with the sources. Migration to SDK v2 is a later decision.
 
 Any public hosting, including the future aureon-public Space, must set `AUREON_PUBLIC_REQUIRE_PIN=1`. That refuses to start unless `aureon_source` is kind `pinned` at `8aa6a2d971cc529484e2a5e261e28afafab4e4f4`. Local runs leave the variable unset and keep the visible `aureon_source` label. Each Hugging Face Space entry point calls `enforce_public_pin()` itself before `demo.launch`.
 

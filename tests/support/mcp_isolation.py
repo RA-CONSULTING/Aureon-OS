@@ -127,6 +127,7 @@ def is_mcp_test_module(module_name: str) -> bool:
         "test_aureon_public_mcp",
         "test_aureon_public_alignment",
         "test_aureon_public_stage1",
+        "test_aureon_public_protocol",
         "test_aureon_body",
     }:
         return True
