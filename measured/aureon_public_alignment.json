@@ -100,6 +100,11 @@
       }
     },
     "aureon_file": "/tmp/aureon-public-venv/lib/python3.12/site-packages/aureon/__init__.py",
+    "aureon_tree": "8aef927b7fe6276c187e4c73c79f0de012ad980d",
+    "code_commit": "566fe295f17235f68201dd10431105f58ab80a1f",
+    "code_commit_note": "This is the parent of the commit that contains this record. The record cannot name the commit that adds the file.",
+    "pin": "8aa6a2d971cc529484e2a5e261e28afafab4e4f4",
+    "pin_aureon_tree": "8aef927b7fe6276c187e4c73c79f0de012ad980d",
     "python": "/tmp/aureon-public-venv/bin/python"
   }
 }
