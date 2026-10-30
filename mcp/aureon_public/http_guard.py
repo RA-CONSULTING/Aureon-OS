@@ -203,18 +203,19 @@ def _forwarded_hops(value: str) -> list[str]:
 def client_address(scope: dict, headers: dict[str, str], trusted_hops: int) -> str:
     """Address appended by the trusted proxy, or the socket peer.
 
-    The first ``X-Forwarded-For`` value is the one a client can set. Hugging
-    Face appends the peer it saw, so that address is the last hop when
-    ``trusted_hops`` is 1. ``trusted_hops`` counts those appended hops from
-    the right. A shorter list has no trusted append, and the socket peer is
-    used instead.
+    The first ``X-Forwarded-For`` value is the one a client can set. A header
+    that is only that first hop is not trusted, and the socket peer is used.
+    ``trusted_hops`` counts appended hops from the right. The chosen hop is
+    used only when it sits after that first value. Hugging Face's appended
+    peer is the last hop when the header has that extra hop and
+    ``trusted_hops`` is 1.
     """
 
     peer = _socket_peer(scope)
     if trusted_hops <= 0:
         return peer
     hops = _forwarded_hops(headers.get("x-forwarded-for", ""))
-    if len(hops) < trusted_hops:
+    if len(hops) <= trusted_hops:
         return peer
     return hops[-trusted_hops]
 

@@ -1,0 +1,59 @@
+name: aureon-public space image
+
+# Builds the Space scaffold and runs its closed-stage check.
+# No secrets. The image is not deployed and no Hugging Face repository is created.
+# AUREON_REF for this proof is the pull request base, which is on main and
+# contains the aureon pin. The production ref is the bc-ee01 merge of the ten
+# stage-1 entry-point fix, and that merge is not in this tree yet. The Space
+# package itself is the build-context overlay from the pull request.
+
+on:
+  pull_request:
+    paths:
+      - "mcp/aureon_public/**"
+      - ".github/workflows/aureon-public-space.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aureon-public-space-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  image:
+    name: docker build and space --check
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the Space image
+        run: |
+          docker build \
+            -f mcp/aureon_public/Dockerfile \
+            --build-arg "AUREON_REF=${{ github.event.pull_request.base.sha }}" \
+            -t aureon-public-space \
+            mcp/aureon_public
+
+      - name: Run the entry check
+        run: |
+          docker run --rm aureon-public-space \
+            python -m aureon_public.space --check \
+            > /tmp/aureon-public-space-check.json
+          python3 - <<'PY'
+          import json
+          report = json.load(open("/tmp/aureon-public-space-check.json"))
+          print(json.dumps({
+              "ok": report.get("ok"),
+              "closed_packages_reachable": report.get("closed_packages_reachable"),
+          }, sort_keys=True))
+          if report.get("ok") is not True:
+              raise SystemExit("space --check ok is not true")
+          closed = report.get("closed_packages_reachable") or {}
+          if not closed:
+              raise SystemExit("closed_packages_reachable is empty")
+          for name, count in closed.items():
+              if count != 0:
+                  raise SystemExit(f"{name} reachable is {count}")
+          PY

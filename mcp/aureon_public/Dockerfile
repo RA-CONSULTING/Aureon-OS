@@ -27,7 +27,8 @@ ARG AUREON_REPO=https://github.com/RA-CONSULTING/Aureon-OS.git
 ARG AUREON_REF
 RUN test -n "$AUREON_REF" \
     && git clone --branch main --single-branch "$AUREON_REPO" /opt/aureon-os \
-    && git -C /opt/aureon-os checkout "$AUREON_REF"
+    && git -C /opt/aureon-os checkout "$AUREON_REF" \
+    && git config --system --add safe.directory /opt/aureon-os
 
 # Overlay this directory so the image runs the scaffold beside the Dockerfile,
 # including files that are not on AUREON_REF yet. The overlay is the public

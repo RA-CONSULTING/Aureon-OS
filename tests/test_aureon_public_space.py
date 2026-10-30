@@ -443,6 +443,91 @@ def test_chunked_post_without_content_length_over_the_cap_is_413() -> None:
     assert called["app"] is False
 
 
+def test_spike_rotating_forwarded_addresses_and_junk_bearers_are_refused() -> None:
+    """Spike: limit 3, five rotating forwarded addresses, five junk bearers."""
+
+    import asyncio
+
+    from aureon_public.http_guard import PublicHttpMiddleware
+
+    async def ok(scope, receive, send):
+        while True:
+            message = await receive()
+            if message.get("type") == "http.request" and not message.get("more_body", False):
+                break
+        await send({"type": "http.response.start", "status": 200, "headers": []})
+        await send({"type": "http.response.body", "body": b"ok"})
+
+    async def five(headers_for) -> list[int]:
+        middleware = PublicHttpMiddleware(ok, _limits(rate_limit=3))
+        found = []
+        for index in range(5):
+            found.append(await _middleware_status(middleware, headers_for(index)))
+        return found
+
+    forwarded = asyncio.run(
+        five(lambda index: {"x-forwarded-for": f"203.0.113.{index}"})
+    )
+    bearers = asyncio.run(
+        five(lambda index: {"authorization": f"Bearer junk-{index}"})
+    )
+    assert forwarded[3] == 429
+    assert forwarded[4] == 429
+    assert bearers[3] == 429
+    assert bearers[4] == 429
+
+
+def test_spike_chunked_50000_against_2000_is_refused() -> None:
+    """Spike: a 50,000-byte chunked POST against a 2,000-byte limit."""
+
+    import asyncio
+
+    from aureon_public.http_guard import PublicHttpMiddleware
+
+    called = {"app": False}
+
+    async def ok(scope, receive, send):
+        called["app"] = True
+        await send({"type": "http.response.start", "status": 200, "headers": []})
+        await send({"type": "http.response.body", "body": b"ok"})
+
+    middleware = PublicHttpMiddleware(ok, _limits(max_body_bytes=2000, rate_limit=10))
+    payload = b"x" * 50000
+    chunks = [
+        {"type": "http.request", "body": payload[:25000], "more_body": True},
+        {"type": "http.request", "body": payload[25000:], "more_body": False},
+    ]
+
+    async def post() -> int:
+        index = {"n": 0}
+
+        async def receive():
+            if index["n"] >= len(chunks):
+                return {"type": "http.disconnect"}
+            message = chunks[index["n"]]
+            index["n"] += 1
+            return message
+
+        messages = []
+
+        async def send(message):
+            messages.append(message)
+
+        scope = {
+            "type": "http",
+            "method": "POST",
+            "path": "/mcp",
+            "headers": [],
+            "client": ("127.0.0.1", 9),
+        }
+        await middleware(scope, receive, send)
+        start = next(message for message in messages if message["type"] == "http.response.start")
+        return int(start["status"])
+
+    assert asyncio.run(post()) == 413
+    assert called["app"] is False
+
+
 def test_rate_limiter_table_stays_bounded() -> None:
     from aureon_public.http_guard import RateLimiter
 
@@ -512,7 +597,7 @@ def test_scaffold_bakes_no_key_and_quotes_the_plan() -> None:
     assert "refused 4310" in readme
     assert "Other arguments have not been swept." in readme
     assert "alive" not in readme.lower()
-    assert "has not been built under Docker" in readme
+    assert "The measured session was taken without Docker." in readme
     assert "bc-ee01" in readme
     assert "ARG AUREON_REF=cf43882e" not in dockerfile
     assert "bc-ee01" in dockerfile
