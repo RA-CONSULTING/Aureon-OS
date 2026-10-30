@@ -34,11 +34,31 @@ def _plain(value: Any, depth: int = 0) -> Any:
     return {"type": type(value).__name__}
 
 
-def _dataclass_from_dict(fn: Any, annotation: Any, value: Any) -> Any | None:
-    """Build a generated dataclass from a JSON object.
+def _inventory_path(cls: type) -> str:
+    """Inventory module path for a class. ``aureon.`` is the package prefix."""
 
-    Only an ``__init__`` whose code filename is ``<string>`` is used. That is
-    the dataclass generator. A hand-written constructor is not called.
+    module = cls.__module__
+    if module.startswith("aureon."):
+        module = module[len("aureon.") :]
+    return module.replace(".", "/") + ".py"
+
+
+def _post_init_defined(cls: type) -> bool:
+    """True when ``__post_init__`` is defined anywhere on the class MRO."""
+
+    return any("__post_init__" in base.__dict__ for base in cls.__mro__)
+
+
+def _dataclass_from_dict(fn: Any, annotation: Any, value: Any) -> Any | None:
+    """Build an allowlisted dataclass from a JSON object.
+
+    The class is resolved from the annotation, including a name in the
+    function's globals, then checked by its own module. A class from another
+    package is not built unless that class is on ``_CONSTRUCTOR_ALLOWLIST``.
+
+    A generated dataclass ``__init__`` has code filename ``<string>`` and
+    still calls ``__post_init__``. Any class that defines ``__post_init__``
+    on its MRO is refused and is not constructed.
     """
 
     if not isinstance(value, dict):
@@ -50,6 +70,12 @@ def _dataclass_from_dict(fn: Any, annotation: Any, value: Any) -> Any | None:
         return None
     code = getattr(getattr(cls, "__init__", None), "__code__", None)
     if code is None or code.co_filename != "<string>":
+        return None
+    from aureon_public.body import _CONSTRUCTOR_ALLOWLIST
+
+    if (_inventory_path(cls), cls.__name__) not in _CONSTRUCTOR_ALLOWLIST:
+        return None
+    if _post_init_defined(cls):
         return None
     if not set(value).issubset(cls.__dataclass_fields__):
         return None

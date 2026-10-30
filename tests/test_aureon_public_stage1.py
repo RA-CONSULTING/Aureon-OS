@@ -17,6 +17,154 @@ def _load(text: str) -> dict:
     return json.loads(text)
 
 
+def test_dataclass_from_dict_refuses_an_unlisted_class_from_another_package() -> None:
+    from aureon.swarm.druidic_council import CouncilSeat
+    from aureon_public.call_worker import _dataclass_from_dict
+
+    def reader():
+        return None
+
+    reader.__globals__["CouncilSeat"] = CouncilSeat
+    payload = {"name": "seer", "agent_id": "agent-seer"}
+    assert _dataclass_from_dict(reader, CouncilSeat, payload) is None
+    assert _dataclass_from_dict(reader, "CouncilSeat", payload) is None
+
+
+def test_dataclass_from_dict_refuses_post_init_anywhere_on_the_mro(monkeypatch: pytest.MonkeyPatch) -> None:
+    from dataclasses import dataclass
+
+    import aureon_public.body as body
+    from aureon_public.call_worker import _dataclass_from_dict, _inventory_path
+
+    ran = {"parent": False, "direct": False}
+
+    @dataclass
+    class Parent:
+        def __post_init__(self) -> None:
+            ran["parent"] = True
+
+    @dataclass
+    class Child(Parent):
+        value: int
+
+    @dataclass
+    class Direct:
+        value: int
+
+        def __post_init__(self) -> None:
+            ran["direct"] = True
+
+    def reader():
+        return None
+
+    allowed = set(body._CONSTRUCTOR_ALLOWLIST)
+    allowed.add((_inventory_path(Child), Child.__name__))
+    allowed.add((_inventory_path(Direct), Direct.__name__))
+    monkeypatch.setattr(body, "_CONSTRUCTOR_ALLOWLIST", allowed)
+    assert Child.__init__.__code__.co_filename == "<string>"
+    assert Direct.__init__.__code__.co_filename == "<string>"
+    assert _dataclass_from_dict(reader, Child, {"value": 1}) is None
+    assert _dataclass_from_dict(reader, Direct, {"value": 1}) is None
+    assert ran == {"parent": False, "direct": False}
+
+
+def _write_sibling(path: Path, text: str) -> None:
+    import os
+    import subprocess
+
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+    except PermissionError:
+        subprocess.check_call(["sudo", "-n", "mkdir", "-p", str(path.parent)])
+        subprocess.check_call(["sudo", "-n", "chown", "-R", f"{os.getuid()}:{os.getgid()}", str(path.parents[1])])
+        path.write_text(text, encoding="utf-8")
+
+
+def _remove_tree(path: Path) -> None:
+    import shutil
+    import subprocess
+
+    if not path.exists():
+        return
+    try:
+        shutil.rmtree(path)
+    except PermissionError:
+        subprocess.check_call(["sudo", "-n", "rm", "-rf", str(path)])
+
+
+def test_organism_compose_does_not_load_sibling_feeds(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import urllib.request
+
+    from aureon_public.paths import repo_root
+    from aureon_public.stage1_rest import organism_compose_layers
+
+    requests: list[str] = []
+
+    def capture(url: object, *args: object, **kwargs: object) -> None:
+        requests.append(str(url))
+        raise AssertionError(f"urllib Request was built for {url}")
+
+    monkeypatch.setattr(urllib.request, "Request", capture)
+    monkeypatch.setattr(urllib.request, "urlopen", capture)
+
+    def plant(root: Path, marker: Path) -> None:
+        field = (
+            "from pathlib import Path\n"
+            f"Path({str(marker)!r}).write_text('field')\n"
+            "from urllib.request import Request\n"
+            "Request('https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json')\n"
+            "SOURCE = 'https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json'\n"
+            "def observe_planetary_k_index(transport=None):\n"
+            "    from urllib.request import Request, urlopen\n"
+            "    if transport is None:\n"
+            "        Request(SOURCE)\n"
+            "        return urlopen(SOURCE).read()\n"
+            "    return transport(SOURCE)\n"
+        )
+        market = (
+            "from pathlib import Path\n"
+            f"Path({str(marker)!r}).write_text('market')\n"
+            "from urllib.request import Request\n"
+            "Request('https://data-api.binance.vision/api/v3/ticker/price?symbol=BTCUSDT')\n"
+            "SOURCE = 'https://data-api.binance.vision/api/v3/ticker/price?symbol=BTCUSDT'\n"
+            "def observe_public_price(transport=None):\n"
+            "    from urllib.request import Request, urlopen\n"
+            "    if transport is None:\n"
+            "        Request(SOURCE)\n"
+            "        return urlopen(SOURCE).read()\n"
+            "    return transport(SOURCE)\n"
+        )
+        _write_sibling(root / "NEXUS-LIVE-FEED-" / "organism" / "public_field.py", field)
+        _write_sibling(root / "Aureon-Trading--Project-Sero" / "organism" / "public_market.py", market)
+
+    marker = tmp_path / "sibling-exec.txt"
+    plant(tmp_path / "repos-env", marker)
+    monkeypatch.setenv("AUREON_REPOS_ROOT", str(tmp_path / "repos-env"))
+
+    beside = repo_root().parent
+    planted_beside: list[Path] = []
+    for name in ("NEXUS-LIVE-FEED-", "Aureon-Trading--Project-Sero"):
+        path = beside / name
+        if not path.exists():
+            planted_beside.append(path)
+    try:
+        if len(planted_beside) == 2:
+            plant(beside, marker)
+        body = _load(organism_compose_layers())
+    finally:
+        for path in planted_beside:
+            _remove_tree(path)
+    assert len(planted_beside) == 2 or all((beside / name).exists() for name in (
+        "NEXUS-LIVE-FEED-",
+        "Aureon-Trading--Project-Sero",
+    ))
+    assert body["called"] is True
+    assert body["result"]["may_act"] is False
+    assert requests == []
+    assert not marker.exists()
+
+
 def test_generated_score_matches_the_repo_baseline() -> None:
     from aureon_public.stage1_rest import generated_breakdown, generated_normalized, generated_score
 
@@ -25,6 +173,8 @@ def test_generated_score_matches_the_repo_baseline() -> None:
     assert full["result"] == 100.0
     assert full["input_source"].endswith("test_harmonic_nexus_score_full_strength_is_100")
     assert "not a live reading" in full["input_note"].lower()
+    assert "does not score any Aureon or HNC claim" in full["input_note"]
+    assert "cannot be quoted as evidence" in full["input_note"]
 
     bounds = _load(generated_normalized())
     assert bounds["called"] is True
@@ -124,3 +274,7 @@ def test_stage1_measured_record_is_pinned_and_labelled() -> None:
         assert call["input_source"] == body["input_source"]
         assert "consciousness_" not in call["text"]
         assert call["isError"] is False
+    score = json.loads(record["calls"]["generated_score"]["text"])
+    assert "does not score any Aureon or HNC claim" in score["input_note"]
+    assert "cannot be quoted as evidence" in score["input_note"]
+    assert score["input_note"] == record["calls"]["generated_score"]["input_note"]

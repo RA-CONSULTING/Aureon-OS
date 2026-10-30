@@ -123,7 +123,8 @@ def generated_score() -> str:
     """harmonic_nexus_score on the full-strength fixture. Provenance: cited.
 
     The five ones are test_harmonic_nexus_score_full_strength_is_100.
-    The score is that fixture, not a live reading.
+    The score is that fixture, not a live reading. It does not score any
+    Aureon or HNC claim, so 100.0 cannot be quoted as evidence.
 
     Args:
         none: The fixture is fixed. Label: cited.
@@ -136,7 +137,10 @@ def generated_score() -> str:
             {"inputs": _FULL_INPUTS},
         ),
         "tests/generated/test_harmonic_nexus_score_model.py::test_harmonic_nexus_score_full_strength_is_100",
-        "Fixed fixture from that test. Not a live reading.",
+        (
+            "Fixed fixture from that test. Not a live reading. "
+            "This does not score any Aureon or HNC claim, so 100.0 cannot be quoted as evidence."
+        ),
     )
 
 
@@ -161,21 +165,61 @@ def generated_breakdown() -> str:
     )
 
 
+def _refuse_transport(url: str) -> bytes:
+    """A sibling feed must not fetch. This raises before any request is built."""
+
+    raise RuntimeError(f"transport refused: {url}")
+
+
 @quiet
 def organism_compose_layers() -> str:
-    """compose_repository_layers with no transport. Provenance: cited.
+    """compose_repository_layers on an empty temporary directory. Provenance: cited.
 
-    No field_transport or market_transport is passed, so those call sites do
-    not fetch. The joined hold is not a live market or field reading.
+    repos_root is that empty directory, so AUREON_REPOS_ROOT is not read and
+    siblings beside the checkout are not read. field_transport and
+    market_transport raise. Sibling public_field.py and public_market.py are
+    not loaded. NOAA and Binance are not requested. Not a live reading.
 
     Args:
-        none: The function's own default root is used. Label: cited.
+        none: The empty directory is created for this call. Label: cited.
     """
 
+    import os
+    import tempfile
+    from pathlib import Path
+
+    from aureon_public.tools import _dumps
+
+    saved = os.environ.pop("AUREON_REPOS_ROOT", None)
+    try:
+        from aureon.organism.repository_layers import compose_repository_layers
+
+        with tempfile.TemporaryDirectory(prefix="aureon-public-layers-") as tmp:
+            report = compose_repository_layers(
+                repos_root=Path(tmp),
+                field_transport=_refuse_transport,
+                market_transport=_refuse_transport,
+            )
+    finally:
+        if saved is not None:
+            os.environ["AUREON_REPOS_ROOT"] = saved
+    text = _dumps(
+        {
+            "called": True,
+            "label": "cited. organism/repository_layers.py compose_repository_layers ran.",
+            "provenance": "cited",
+            "result": report,
+            "status": "cited",
+        }
+    )
     return label_result(
-        _call("organism/repository_layers.py", "compose_repository_layers", {}),
+        text,
         "aureon.organism.repository_layers.compose_repository_layers",
-        "No field or market transport was passed. Not a live reading.",
+        (
+            "repos_root is an empty temporary directory. AUREON_REPOS_ROOT is not read. "
+            "field_transport and market_transport raise, so sibling public_field.py and "
+            "public_market.py are not loaded. Not a live field or market reading."
+        ),
     )
 
 
