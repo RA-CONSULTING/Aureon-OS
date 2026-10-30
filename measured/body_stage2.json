@@ -359,7 +359,7 @@
     },
     "queen": {
       "public_entry_points": 566,
-      "reachable": 132
+      "reachable": 131
     },
     "swarm": {
       "public_entry_points": 41,

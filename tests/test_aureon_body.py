@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -71,7 +73,7 @@ def test_public_call_refuses_operator_orders_and_blocked_packages() -> None:
     assert blocked.get("live_orders") == "refused"
 
 
-def test_surface_does_not_call_and_a_changed_blob_is_refused(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_surface_does_not_call_and_a_changed_blob_is_refused(monkeypatch: pytest.MonkeyPatch) -> None:
     surface = _load(body_surface("harmonic/aureon_harmonic_reality.py", "HarmonicSubstrate"))
     assert surface.get("called") is not True
     assert surface["status"] == "unavailable"
@@ -79,17 +81,17 @@ def test_surface_does_not_call_and_a_changed_blob_is_refused(tmp_path: Path, mon
 
     real = repo_root() / "aureon" / "harmonic" / "rainbow_reference.py"
     assert checkout_blob_refusal(real, repo_root(), PINNED_COMMIT) is None
-    changed = tmp_path / "rainbow_reference.py"
-    changed.write_bytes(real.read_bytes() + b"\n# changed\n")
 
-    def refuse(module_name: str, file_path: Path, expected_blob: str, mismatch: str) -> str | None:
-        del module_name, expected_blob, mismatch
-        if file_path == real:
-            return "checkout rainbow_reference.py differs from pin a00f744d"
-        return None
+    import aureon_public.pin_blob as pin
 
-    monkeypatch.setattr("aureon_public.pin_blob.load_pinned_source", refuse)
-    monkeypatch.setattr("aureon_public.body._outside", lambda origin, root: False)
+    real_hash = pin.git_blob_sha1
+
+    def fake(data: bytes) -> str:
+        if b"def solfeggio_ladder" in data:
+            return "ab" * 20
+        return real_hash(data)
+
+    monkeypatch.setattr(pin, "git_blob_sha1", fake)
     refused = _load(body_call("harmonic/rainbow_reference.py", "solfeggio_ladder"))
     assert refused["status"] == "unavailable"
     assert "differs from pin" in refused["reason"]
@@ -272,6 +274,177 @@ def test_stage1_sweep_counts_real_calls() -> None:
             assert item["status"] == "cited"
 
 
+def test_accounting_writers_are_refused_on_the_operator_path(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("AUREON_OPERATOR_MCP", "1")
+    for module, symbol in (
+        ("accounting/file_drop.py", "ingest_bank_csv"),
+        ("accounting/pdf_writer.py", "press_pdf"),
+        ("accounting/client_ledger.py", "ClientLedger.post"),
+    ):
+        body = _load(body_call_operator(module, symbol))
+        assert body["status"] == "unavailable", symbol
+        assert body.get("called") is not True
+        assert "not allowlisted" in body["reason"]
+        assert body.get("live_orders") == "refused"
+
+
+def test_live_worker_cap_refuses_calls_past_four(monkeypatch: pytest.MonkeyPatch) -> None:
+    import threading
+    import time
+
+    hold = threading.Event()
+    started: list[int] = []
+
+    class _Held:
+        def __init__(self) -> None:
+            self.pid = os.getpid()
+            self.returncode = 0
+
+        def communicate(self, payload: bytes | None = None, timeout: float | None = None) -> tuple[bytes, bytes]:
+            del payload, timeout
+            hold.wait(15)
+            return (b'{"ok": true, "result": 1}', b"")
+
+    def popen(*_args: object, **_kwargs: object) -> _Held:
+        started.append(1)
+        return _Held()
+
+    real_popen = __import__("subprocess").Popen
+
+    def guarded(cmd: object, **kwargs: object) -> object:
+        if isinstance(cmd, (list, tuple)) and any("call_worker" in str(part) for part in cmd):
+            return popen(cmd, **kwargs)
+        return real_popen(cmd, **kwargs)
+
+    monkeypatch.setattr("aureon_public.body.subprocess.Popen", guarded)
+    reasons: list[str] = []
+
+    def run() -> None:
+        body = _load(body_call("harmonic/rainbow_reference.py", "solfeggio_ladder"))
+        if body.get("status") != "cited":
+            reasons.append(str(body.get("reason")))
+
+    threads = [threading.Thread(target=run) for _ in range(6)]
+    for thread in threads:
+        thread.start()
+    deadline = time.time() + 20
+    while time.time() < deadline and (len(started) < 4 or not reasons):
+        time.sleep(0.05)
+    hold.set()
+    for thread in threads:
+        thread.join(timeout=5)
+    assert len(started) <= 4
+    assert any("live worker cap 4 reached" in reason for reason in reasons)
+
+
+def test_worker_env_hides_a_server_sentinel(monkeypatch: pytest.MonkeyPatch) -> None:
+    import subprocess as subprocess_module
+
+    monkeypatch.setenv("AUREON_SENTINEL_SECRET", "do-not-leak")
+    seen: dict[str, dict[str, str]] = {}
+    real = subprocess_module.Popen
+
+    def popen(cmd: list[str], **kwargs: object) -> subprocess_module.Popen[bytes]:
+        if any("call_worker" in str(part) for part in cmd):
+            env = kwargs.get("env")
+            assert isinstance(env, dict)
+            seen["env"] = env
+            assert kwargs.get("cwd") not in {str(repo_root()), str(repo_root().resolve())}
+        return real(cmd, **kwargs)
+
+    monkeypatch.setattr("aureon_public.body.subprocess.Popen", popen)
+    body = _load(body_call("harmonic/rainbow_reference.py", "solfeggio_ladder"))
+    assert body["status"] == "cited"
+    env = seen["env"]
+    assert "AUREON_SENTINEL_SECRET" not in env
+    assert "do-not-leak" not in json.dumps(env)
+    assert env["AUREON_DISABLE_REAL_ORDERS"] == "1"
+    assert "PYTHONPATH" in env
+    assert set(env) <= {
+        "PATH",
+        "HOME",
+        "PYTHONPATH",
+        "AUREON_AUDIT_MODE",
+        "AUREON_DISABLE_REAL_ORDERS",
+        "AUREON_DISABLE_LIVE_BACKGROUND_STARTUP",
+        "AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS",
+        "AUREON_ENABLE_AUTONOMOUS_CONTROL",
+        "AUREON_ACTIVATE_ON_IMPORT",
+    }
+
+
+def test_listener_backed_ssrf_does_not_connect() -> None:
+    import threading
+    import time
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    hits: list[str] = []
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:  # noqa: N802
+            hits.append(self.path)
+            self.send_response(200)
+            self.end_headers()
+
+        def log_message(self, format: str, *args: object) -> None:
+            del format, args
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    port = server.server_address[1]
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        url = f"http://127.0.0.1:{port}/secret"
+        fetched = _load(
+            body_call(
+                "search/online_research_cinema.py",
+                "fetch_source",
+                json.dumps({"url": url}),
+            )
+        )
+        probed = _load(
+            body_call(
+                "autonomous/mind_wiring_audit.py",
+                "probe_http_service",
+                json.dumps({"target": {"url": url, "id": "local", "name": "local", "source": "test"}}),
+            )
+        )
+        time.sleep(0.3)
+    finally:
+        server.shutdown()
+        server.server_close()
+    assert fetched["status"] == "unavailable"
+    assert fetched.get("called") is not True
+    assert probed["status"] == "unavailable"
+    assert probed.get("called") is not True
+    assert hits == []
+
+
+def test_timeout_kills_the_worker_and_names_the_real_limit(monkeypatch: pytest.MonkeyPatch) -> None:
+    import subprocess as subprocess_module
+    import time
+
+    from aureon_public.body import _call_in_subprocess
+
+    real = subprocess_module.Popen
+    pids: list[int] = []
+
+    def popen(cmd: list[str], **kwargs: object) -> subprocess_module.Popen[bytes]:
+        if any("call_worker" in str(part) for part in cmd):
+            proc = real([sys.executable, "-c", "import time; time.sleep(30)"], **kwargs)
+            pids.append(proc.pid)
+            return proc
+        return real(cmd, **kwargs)
+
+    monkeypatch.setattr("aureon_public.body.subprocess.Popen", popen)
+    state, message = _call_in_subprocess("harmonic/rainbow_reference.py", "solfeggio_ladder", {}, 0.4)
+    assert state == "timeout"
+    assert message == "exceeded 0.4s"
+    time.sleep(0.1)
+    with pytest.raises(ProcessLookupError):
+        os.kill(pids[0], 0)
+
+
 def test_operator_rows_outside_the_allowlist_are_refused(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("AUREON_OPERATOR_MCP", "1")
     rows = (
@@ -406,6 +579,132 @@ def test_checkout_blob_refuses_an_empty_blob_and_a_path_outside_the_root(tmp_pat
         import aureon_public.pin_blob as pin_blob
 
         pin_blob.expected_pin_blob = original
+
+
+def _isolated(code: str, *args: str) -> subprocess.CompletedProcess[str]:
+    env = {
+        "PATH": os.environ.get("PATH", ""),
+        "HOME": os.environ.get("HOME", ""),
+        "AUREON_AUDIT_MODE": "1",
+        "AUREON_DISABLE_REAL_ORDERS": "1",
+        "AUREON_DISABLE_LIVE_BACKGROUND_STARTUP": "1",
+        "AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS": "1",
+        "AUREON_ENABLE_AUTONOMOUS_CONTROL": "0",
+        "AUREON_ACTIVATE_ON_IMPORT": "0",
+    }
+    return subprocess.run(
+        [sys.executable, "-I", "-c", code, str(ROOT / "mcp"), *args],
+        cwd=os.environ.get("TMPDIR") or "/tmp",
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=90,
+        check=False,
+    )
+
+
+def test_worker_does_not_run_a_root_json_or_aureon_public(tmp_path: Path) -> None:
+    root = repo_root()
+    json_path = root / "json.py"
+    package = root / "aureon_public"
+    assert not json_path.exists()
+    assert not package.exists()
+    marker_json = tmp_path / "json_ran"
+    marker_pkg = tmp_path / "pkg_ran"
+    try:
+        json_path.write_text(
+            "from pathlib import Path\n" + f"Path({str(marker_json)!r}).write_text('ran')\n",
+            encoding="utf-8",
+        )
+        package.mkdir()
+        (package / "__init__.py").write_text(
+            "from pathlib import Path\n" + f"Path({str(marker_pkg)!r}).write_text('init')\n",
+            encoding="utf-8",
+        )
+        (package / "__main__.py").write_text(
+            "from pathlib import Path\n" + f"Path({str(marker_pkg)!r}).write_text('main')\n",
+            encoding="utf-8",
+        )
+        body = _load(body_call("harmonic/rainbow_reference.py", "solfeggio_ladder"))
+        assert body["status"] == "cited", body.get("reason")
+        assert not marker_json.exists()
+        assert not marker_pkg.exists()
+    finally:
+        json_path.unlink(missing_ok=True)
+        for name in ("__main__.py", "__init__.py"):
+            child = package / name
+            if child.is_file():
+                child.unlink()
+        if package.is_dir():
+            package.rmdir()
+
+
+def test_edited_guard_does_not_run(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import aureon_public.guard_loader as guard_loader
+    from aureon_public.pin_blob import git_blob_sha1
+
+    source = (repo_root() / "huggingface" / "hnc-field" / "guard.py").read_bytes()
+    assert git_blob_sha1(source) == guard_loader.GUARD_BLOB
+    marker = tmp_path / "guard_ran"
+    edited = tmp_path / "guard.py"
+    edited.write_bytes(
+        source + f"\nfrom pathlib import Path\nPath({str(marker)!r}).write_text('ran')\n".encode()
+    )
+    monkeypatch.setattr(guard_loader, "_DONE", False)
+    monkeypatch.setattr(guard_loader, "space_guard", lambda: edited)
+    with pytest.raises(ImportError, match="differs from pin"):
+        guard_loader.apply_space_guard()
+    assert not marker.exists()
+
+
+def test_preseeded_aureon_module_is_refused() -> None:
+    code = (
+        "import sys\n"
+        "import types\n"
+        "sys.path.insert(0, sys.argv[1])\n"
+        "sys.modules['aureon.planted'] = types.ModuleType('aureon.planted')\n"
+        "from aureon_public.call_worker import _load\n"
+        "try:\n"
+        "    _load('aureon.harmonic.rainbow_reference', 'harmonic/rainbow_reference.py')\n"
+        "except ImportError as exc:\n"
+        "    if 'aureon.planted' not in str(exc):\n"
+        "        raise SystemExit(str(exc))\n"
+        "    raise SystemExit(0)\n"
+        "raise SystemExit('preseeded aureon module was accepted')\n"
+    )
+    completed = _isolated(code)
+    assert completed.returncode == 0, completed.stderr
+
+
+def test_import_checked_does_not_run_an_outside_parent(tmp_path: Path) -> None:
+    planted = tmp_path / "plant"
+    package = planted / "aureon"
+    package.mkdir(parents=True)
+    marker = tmp_path / "parent_ran"
+    (package / "__init__.py").write_text(
+        "from pathlib import Path\n" + f"Path({str(marker)!r}).write_text('ran')\n",
+        encoding="utf-8",
+    )
+    code = (
+        "import sys\n"
+        "from pathlib import Path\n"
+        "sys.path.insert(0, sys.argv[2])\n"
+        "sys.path.insert(0, sys.argv[1])\n"
+        "from aureon_public.body import _import_checked\n"
+        "loaded, refusal = _import_checked('harmonic/rainbow_reference.py')\n"
+        "if refusal:\n"
+        "    raise SystemExit(refusal)\n"
+        "origin = str(getattr(loaded, '__file__', ''))\n"
+        "if not origin.endswith('rainbow_reference.py'):\n"
+        "    raise SystemExit(origin or 'missing module')\n"
+        "if Path(sys.argv[2]).resolve() in Path(origin).resolve().parents:\n"
+        "    raise SystemExit('loaded the planted tree')\n"
+        "if not hasattr(loaded, 'solfeggio_ladder'):\n"
+        "    raise SystemExit('real entry point missing')\n"
+    )
+    completed = _isolated(code, str(planted))
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert not marker.exists()
 
 
 def test_operator_call_refuses_without_the_flag_and_refuses_live_orders(monkeypatch: pytest.MonkeyPatch) -> None:

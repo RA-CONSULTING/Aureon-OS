@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-import importlib
 import inspect
 import json
 import sys
 from datetime import date
+from pathlib import Path
 from typing import Any
 
 
@@ -54,16 +54,42 @@ def _coerce(fn: Any, kwargs: dict[str, Any]) -> dict[str, Any]:
     return coerced
 
 
+def _drop_checkout_root() -> None:
+    """The Space guard puts the checkout on sys.path. The worker must not keep it."""
+
+    from aureon_public.paths import repo_root
+
+    root = repo_root().resolve()
+    kept: list[str] = []
+    for entry in sys.path:
+        if not entry:
+            continue
+        try:
+            if Path(entry).resolve() == root:
+                continue
+        except OSError:
+            kept.append(entry)
+            continue
+        kept.append(entry)
+    sys.path[:] = kept
+
+
 def _load(dotted: str, module_rel: str) -> Any:
     del module_rel
     if dotted != "aureon" and not dotted.startswith("aureon."):
         raise RuntimeError("only an aureon module can be loaded")
     from aureon_public.guard_loader import apply_space_guard
-    from aureon_public.pin_blob import install_pinned_aureon_finder
+    from aureon_public.pin_blob import (
+        import_through_finder,
+        install_pinned_aureon_finder,
+        refuse_preseeded_aureon,
+    )
 
-    apply_space_guard()
     install_pinned_aureon_finder()
-    return importlib.import_module(dotted)
+    apply_space_guard()
+    _drop_checkout_root()
+    refuse_preseeded_aureon()
+    return import_through_finder(dotted)
 
 
 def _call(dotted: str, symbol: str, arguments: dict[str, Any], module_rel: str) -> Any:

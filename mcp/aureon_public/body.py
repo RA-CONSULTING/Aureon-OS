@@ -9,8 +9,6 @@ from __future__ import annotations
 
 import ast
 import hashlib
-import importlib
-import importlib.util
 import inspect
 import json
 import os
@@ -18,13 +16,15 @@ import re
 import signal
 import subprocess
 import sys
+import tempfile
+import threading
 from datetime import date
 from pathlib import Path
 from typing import Any
 
-from aureon_public.guard_loader import PINNED_COMMIT, apply_space_guard, aureon_source
+from aureon_public.guard_loader import PINNED_COMMIT, aureon_source
 from aureon_public.paths import repo_root
-from aureon_public.pin_blob import load_checkout_module
+from aureon_public.pin_blob import checkout_blob_refusal, import_through_finder
 from aureon_public.quiet import quiet
 from aureon_public.tools import _dumps
 
@@ -54,6 +54,9 @@ _UNSAFE_SOURCE = (
     "serve_forever",
     "SystemExit",
     "os._exit",
+    "os.system",
+    "sqlite",
+    "execute(",
     "open(",
 )
 
@@ -91,6 +94,9 @@ _OPERATOR_ALLOWLIST = {
 # A method call constructs its class. An unlisted constructor is not run.
 _CONSTRUCTOR_ALLOWLIST: set[tuple[str, str]] = set()
 _NAME_CONTAINS = ("write", "save", "export", "dump", "start", "run")
+_WORKER_LOCK = threading.Lock()
+_LIVE_WORKERS = 0
+WORKER_CAP = 4
 
 
 def enabled_stage() -> int:
@@ -332,25 +338,68 @@ def _required_missing(fn: Any, kwargs: dict[str, Any]) -> str | None:
 
 
 def _checkout_load(module: str) -> str | None:
-    """Load a checkout module through the pinned helper. None when the install is outside."""
+    """Hash-check the target file. The worker loads parents through the finder.
 
-    apply_space_guard()
-    root = repo_root()
-    path = file_for(module)
-    dotted = dotted_for(module)
-    spec = importlib.util.find_spec(dotted)
-    origin = getattr(spec, "origin", None) if spec is not None else None
-    from_checkout = True
-    if origin:
-        origin_path = Path(origin)
-        if origin_path.is_file() and _outside(origin_path, root):
-            from_checkout = False
-    if not from_checkout:
-        return None
-    from aureon_public.pin_blob import load_checkout_module
+    ``find_spec`` is not used. It would import parent packages before the blob check.
+    """
 
-    _loaded, error = load_checkout_module(dotted, path, root, PINNED_COMMIT)
-    return error
+    return checkout_blob_refusal(file_for(module), repo_root(), PINNED_COMMIT)
+
+
+def _worker_env() -> dict[str, str]:
+    """Minimal child environment. Server secrets are not copied across."""
+
+    package_root = str(Path(__file__).resolve().parents[1])
+    return {
+        "PATH": os.environ.get("PATH", ""),
+        "HOME": os.environ.get("HOME", ""),
+        "PYTHONPATH": package_root,
+        "AUREON_AUDIT_MODE": "1",
+        "AUREON_DISABLE_REAL_ORDERS": "1",
+        "AUREON_DISABLE_LIVE_BACKGROUND_STARTUP": "1",
+        "AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS": "1",
+        "AUREON_ENABLE_AUTONOMOUS_CONTROL": "0",
+        "AUREON_ACTIVATE_ON_IMPORT": "0",
+    }
+
+
+def _worker_argv() -> list[str]:
+    """Isolated interpreter. The mcp path is argv, not cwd and not PYTHONPATH.
+
+    ``-I`` implies ``-E``, ``-s``, and ``-P``, so the checkout is not on sys.path
+    and a root-level ``json.py`` or ``aureon_public`` package cannot shadow the worker.
+    """
+
+    mcp_root = str(Path(__file__).resolve().parents[1])
+    code = (
+        "import sys\n"
+        "sys.path.insert(0, sys.argv[1])\n"
+        "from aureon_public.call_worker import main\n"
+        "main()\n"
+    )
+    return [sys.executable, "-I", "-c", code, mcp_root]
+
+
+def _worker_cwd() -> str:
+    """A directory outside the checkout. cwd must not become sys.path[0]."""
+
+    return tempfile.gettempdir()
+
+
+def _acquire_worker() -> str | None:
+    global _LIVE_WORKERS
+    with _WORKER_LOCK:
+        if _LIVE_WORKERS >= WORKER_CAP:
+            return f"live worker cap {WORKER_CAP} reached"
+        _LIVE_WORKERS += 1
+    return None
+
+
+def _release_worker() -> None:
+    global _LIVE_WORKERS
+    with _WORKER_LOCK:
+        if _LIVE_WORKERS > 0:
+            _LIVE_WORKERS -= 1
 
 
 def _call_in_subprocess(module: str, symbol: str, arguments: dict[str, Any], timeout: float) -> tuple[str, Any]:
@@ -361,6 +410,9 @@ def _call_in_subprocess(module: str, symbol: str, arguments: dict[str, Any], tim
     checkout_error = _checkout_load(module)
     if checkout_error:
         return "error", checkout_error
+    cap = _acquire_worker()
+    if cap:
+        return "capped", cap
     payload = json.dumps(
         {
             "dotted": dotted_for(module),
@@ -369,39 +421,38 @@ def _call_in_subprocess(module: str, symbol: str, arguments: dict[str, Any], tim
             "arguments": arguments,
         }
     ).encode("utf-8")
-    package_root = str(Path(__file__).resolve().parents[1])
-    env = os.environ.copy()
-    pythonpath = env.get("PYTHONPATH", "")
-    env["PYTHONPATH"] = package_root if not pythonpath else package_root + os.pathsep + pythonpath
-    process = subprocess.Popen(
-        [sys.executable, "-m", "aureon_public.call_worker"],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        start_new_session=True,
-        cwd=str(repo_root()),
-        env=env,
-    )
     try:
-        stdout, _stderr = process.communicate(payload, timeout=timeout)
-    except subprocess.TimeoutExpired:
+        process = subprocess.Popen(
+            _worker_argv(),
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            start_new_session=True,
+            cwd=_worker_cwd(),
+            env=_worker_env(),
+        )
         try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
-        process.communicate()
-        return "timeout", f"exceeded {timeout:.0f}s"
-    if process.returncode not in {0, None}:
-        text = stdout.decode("utf-8", errors="replace").strip()
-        if not text:
-            return "error", f"worker exited {process.returncode}"
-    try:
-        body = json.loads(stdout.decode("utf-8"))
-    except json.JSONDecodeError:
-        return "error", "worker result was not JSON"
-    if body.get("ok") is True:
-        return "ok", body.get("result")
-    return "error", str(body.get("error") or "worker failed")[:240]
+            stdout, _stderr = process.communicate(payload, timeout=timeout)
+        except subprocess.TimeoutExpired:
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            process.communicate()
+            return "timeout", f"exceeded {timeout:g}s"
+        if process.returncode not in {0, None}:
+            text = stdout.decode("utf-8", errors="replace").strip()
+            if not text:
+                return "error", f"worker exited {process.returncode}"
+        try:
+            body = json.loads(stdout.decode("utf-8"))
+        except json.JSONDecodeError:
+            return "error", "worker result was not JSON"
+        if body.get("ok") is True:
+            return "ok", body.get("result")
+        return "error", str(body.get("error") or "worker failed")[:240]
+    finally:
+        _release_worker()
 
 
 def _constructor_refusal(module: str, class_name: str) -> str | None:
@@ -432,27 +483,18 @@ def _operator_allowlist_refusal(row: dict[str, Any]) -> str | None:
 
 
 def _import_checked(module: str) -> tuple[Any | None, str | None]:
-    apply_space_guard()
-    from aureon_public.layers import _load_phenolic_fingerprint
+    """Load a module and its parents through the pinned finder.
 
-    _load_phenolic_fingerprint()
-    root = repo_root()
+    There is no outside-checkout fallback and no ``find_spec`` on the full name.
+    """
+
     path = file_for(module)
     dotted = dotted_for(module)
-    spec = importlib.util.find_spec(dotted)
-    origin = getattr(spec, "origin", None) if spec is not None else None
-    from_checkout = True
-    if origin:
-        origin_path = Path(origin)
-        if origin_path.is_file() and _outside(origin_path, root):
-            from_checkout = False
-    if from_checkout:
-        loaded, refusal = load_checkout_module(dotted, path, root, PINNED_COMMIT)
-        if refusal:
-            return None, refusal
-        return loaded, None
+    refusal = checkout_blob_refusal(path, repo_root(), PINNED_COMMIT)
+    if refusal:
+        return None, refusal
     try:
-        imported = importlib.import_module(dotted)
+        imported = import_through_finder(dotted)
     except SystemExit:
         return None, "import raised SystemExit"
     except Exception as exc:  # noqa: BLE001 - import failure is an unavailable tool result
@@ -592,6 +634,11 @@ def dispatch(
         return _unavailable("symbol is not in the inventory")
     if server == "operator" and os.environ.get("AUREON_OPERATOR_MCP") != "1":
         return _unavailable("AUREON_OPERATOR_MCP=1 is required")
+    if server == "operator":
+        allow = _operator_allowlist_refusal(row)
+        if allow:
+            return _unavailable(allow, live_orders="refused")
+        return _invoke(row, arguments or {}, timeout, allow_fetch=False, allow_write=False)
     if server == "public":
         reason = public_entry_refusal(row)
         if reason:
@@ -603,14 +650,7 @@ def dispatch(
                 return _refused(reason)
             return _unavailable(reason)
         return _invoke(row, arguments or {}, timeout, allow_fetch=False, allow_write=False)
-    if int(row.get("stage") or 0) > ENABLED_THROUGH:
-        return _unavailable(f"stage {row['stage']} is not open")
-    if row["server"] == "public":
-        return _unavailable("public entry point stays on aureon-public")
-    allow = _operator_allowlist_refusal(row)
-    if allow:
-        return _unavailable(allow, live_orders="refused")
-    return _invoke(row, arguments or {}, timeout, allow_fetch=False, allow_write=False)
+    return _unavailable("unknown server")
 
 
 def _parse_arguments(arguments_json: str) -> dict[str, Any] | str:
