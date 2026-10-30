@@ -4,14 +4,12 @@ Every bold claim Aureon / HNC makes, with a direct link to the file that proves 
 
 > **How to use this table:** The middle column tells you *where the claim was established*. The right column gives you the *Python module, dataset, or paper section* that lets you reproduce it. Start with any row that interests you — all claims cross-reference.
 
-> **Prove it in one command.** To verify the running system end-to-end rather than a single claim, boot the operator app and exercise the full capability surface + every self-test (including the 45 Tier-A architectural invariants) in one shot:
+> **Capability preflight, on HOLD.** That command does not boot the operator app or exercise the capability surface, and it is not a measured result for the claims in this file. The note is [`docs/reports/CAPABILITY_DEMO.md`](reports/CAPABILITY_DEMO.md).
 >
 > ```bash
 > AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 \
 >   python -m aureon.saas.capability_demo --report docs/reports/CAPABILITY_DEMO.md
 > ```
->
-> Exit 0 means every capability class is proven, every rolled-up suite is green, coverage is complete, and all 45 Tier-A invariants pass. The written report is [`docs/reports/CAPABILITY_DEMO.md`](reports/CAPABILITY_DEMO.md). Read-only; nothing is armed; an offline / unconfigured capability reports *honest_unavailable*, never a fabricated value.
 
 ---
 

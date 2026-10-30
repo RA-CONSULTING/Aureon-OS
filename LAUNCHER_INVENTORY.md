@@ -1,6 +1,8 @@
 # Launcher inventory
 
-One canonical entry brings the checkout up. Trading is live when the operator's own exchange keys are in `.env`. With no keys the boot stays paper and says so.
+> **New users: stay on the five-minute quickstart in the root README. Do not add your own exchange keys.** This launcher defaults to full autonomy. If exchange keys are in `.env`, the boot can go live and trade.
+
+One canonical entry brings the checkout up. Trading is live when exchange keys are in `.env`. With no keys the boot stays paper and says so.
 
 ```
 python -m aureon.launch.master

@@ -71,8 +71,8 @@ The Aureon Mind (neural systems) is fully operational in the Micro Profit Labyri
 
 ### ✅ Probability Systems - OPERATIONAL
 
-- **Probability Nexus:** 80%+ win rate
-- **Ultimate Intelligence:** 95% accuracy, 57 patterns learned
+- **Probability Nexus:** win rate not yet measured; no verified live track record
+- **Ultimate Intelligence:** accuracy not yet measured; no verified live track record
 - **Probability Matrix:** Prevents bad trades
 - **HNC Matrix:** Pattern recognition active
 
@@ -169,7 +169,7 @@ The Aureon Mind (neural systems) is fully operational in the Micro Profit Labyri
 ### ✅ War Strategy - OPERATIONAL
 
 - IRA Celtic Sniper: Zero-loss mode
-- Unified Sniper Brain: 1,000,000 wins, 0 losses, 100% win rate
+- Unified Sniper Brain: no verified live track record (the old win-count claim is withdrawn)
 - Irish Patriot Scouts: Warriors ready
 - Guerrilla Warfare: Flying columns active
 - Quick Kill Probability: Active
@@ -196,7 +196,7 @@ The Aureon Mind (neural systems) is fully operational in the Micro Profit Labyri
 - Bus Aggregator: ✅ Working
 - Mycelium Consensus: ✅ Working
 - Lighthouse Validation: ✅ Working
-- Ultimate Intel: ✅ 95% accuracy
+- Ultimate Intel: accuracy not yet measured
 
 ### Queen Integration
 
@@ -288,7 +288,7 @@ python micro_profit_labyrinth.py --duration 30
 ✅ Miner Brain: Cognitive intelligence active  
 ✅ Neural Networks: All 12 neurons firing  
 ✅ Mycelium: 90 connections, distributed intelligence  
-✅ Probability Systems: 95% accuracy  
+✅ Probability Systems: accuracy not yet measured; no verified live track record  
 ✅ Multi-Worlds: 10 universes simulating  
 ✅ Exchanges: All 3 connected (Kraken, Binance, Alpaca)  
 

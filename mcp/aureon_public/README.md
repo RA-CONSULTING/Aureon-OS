@@ -146,6 +146,12 @@ pip install -e mcp
 
 ## Run
 
+Check the closed-stage report with:
+
+```bash
+python -m aureon_public.space --check
+```
+
 stdio, which is what desktop clients use:
 
 ```bash

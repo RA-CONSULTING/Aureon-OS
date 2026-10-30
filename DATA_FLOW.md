@@ -1,5 +1,7 @@
 # Aureon Trading System — Data Flow Architecture
 
+Measured trading performance is not yet measured. There is no verified live track record. The live routes are active: with exchange keys in `.env`, the launcher boots into live trading. The diagrams below are the path the code is designed to follow. They are not a measured result.
+
 ---
 
 ## High-Level Flow
@@ -109,6 +111,8 @@
 ---
 
 ## Detailed Flow: Single Trade Execution
+
+Prices in this walkthrough show the shape of one order moving through the layers. They are not a measured run. Live P&L, win rate, and trade counts are not yet measured. There is no verified live track record. The live routes are active.
 
 ```
 STEP 1: DATA INGESTION
@@ -236,7 +240,7 @@ STEP 7: MONITORING (Real-time loop)
 │    ├─ Order filled at $3,247.45        │
 │    ├─ Entry price: $3,247.45           │
 │    ├─ Position: +0.0616 ETH            │
-│    ├─ Unrealized P&L: -$0.09           │
+│    ├─ Unrealized P&L field: written    │
 │    └─ Status: OPEN                     │
 └────────────┬────────────────────────────┘
              │
@@ -273,7 +277,7 @@ STEP 9: EXIT EXECUTION (3_forcing)
 │  Execution:                             │
 │    Filled at: $3,295.18                 │
 │    Timestamp: 2026-04-24 14:36:46.512  │
-│    Gross proceeds: $200.90              │
+│    Proceeds field: written on fill      │
 └────────────┬────────────────────────────┘
              │
              ▼
@@ -285,8 +289,8 @@ STEP 10: RECORDING & VALIDATION (4_output)
 │    "entry_price": 3247.45,             │
 │    "exit_price": 3295.18,              │
 │    "quantity": 0.0616,                 │
-│    "pnl": 0.90,                        │
-│    "pnl_pct": 0.45%,                   │
+│    "pnl": "(field; unmeasured)",       │
+│    "pnl_pct": "(field; unmeasured)",   │
 │    "entry_time": 1764797752.234,       │
 │    "exit_time": 1764797806.512,        │
 │    "hold_time_sec": 94,                │
@@ -309,39 +313,37 @@ STEP 10: RECORDING & VALIDATION (4_output)
              ▼
 STEP 11: PORTFOLIO UPDATE
 ┌─────────────────────────────────────────┐
-│  Before:                                │
-│    Balance: $10,000.00                 │
-│    Open positions: 2                    │
-│    Unrealized P&L: -$12.34             │
+│  The book is designed to store:        │
+│    ├─ cash balance                      │
+│    ├─ open position count               │
+│    ├─ unrealized P&L field              │
+│    ├─ realized P&L field                │
+│    └─ a cumulative P&L field            │
 │                                         │
-│  Trade P&L:                             │
-│    +$0.90 (this trade)                 │
-│                                         │
-│  After:                                 │
-│    Balance: $10,000.90                 │
-│    Open positions: 1                    │
-│    Realized gains: +$0.90              │
-│    Cumulative P&L: +2.00 (all trades)  │
-│    Win rate: 66.7% (16/24)             │
-│    Sharpe ratio: 1.8                    │
+│  Those amounts are not yet measured.    │
+│  No verified live track record.         │
+│  Live routes are active.                │
 └────────────┬────────────────────────────┘
              │
              ▼
 STEP 12: VISUALIZATION & REPORTING
 ┌─────────────────────────────────────────┐
-│  Dashboard Updates:                     │
-│    ├─ Live portfolio: $10,000.90       │
-│    ├─ Session trades: 16 of 24         │
-│    ├─ Session P&L: +$2.00              │
-│    ├─ Win rate: 66.7%                  │
-│    ├─ Avg trade: +$0.125               │
-│    └─ Max drawdown: 0.3%               │
+│  Dashboard fields the path can show:   │
+│    ├─ live portfolio                    │
+│    ├─ session trade count               │
+│    ├─ session P&L                       │
+│    ├─ win rate                          │
+│    ├─ average trade                     │
+│    └─ max drawdown                      │
 │                                         │
-│  Performance Metrics:                   │
-│    ├─ Sharpe: 1.8                      │
-│    ├─ Sortino: 2.1                     │
-│    ├─ Profit factor: 2.4                │
-│    └─ Consecutive wins: 3               │
+│  Also designed, still unmeasured:      │
+│    ├─ Sharpe                            │
+│    ├─ Sortino                           │
+│    ├─ profit factor                     │
+│    └─ consecutive wins                  │
+│                                         │
+│  No figure is quoted. Results are not │
+│  yet measured.                          │
 │                                         │
 │  Audit Trail:                           │
 │    Logged to: 4_output/trade_outputs/  │
@@ -442,14 +444,14 @@ Historical Data          Strategy Logic           Validation Engine
     └────────────┬──────────┘
                 │
                 ▼
-    ┌────────────────────────────────────────┐
-    │  Output:                               │
-    │  ├─ 629 trades analyzed                │
-    │  ├─ 92.4% accuracy                     │
-    │  ├─ +$97,475 combined profit           │
-    │  ├─ 0.64-1.83% max drawdown            │
-    │  └─ Complete audit trail               │
-    └────────────────────────────────────────┘
+    ┌──────────────────────────────────────────┐
+    │  Output the engine is designed to write │
+    │  ├─ a trade record for each replay      │
+    │  ├─ accuracy (not yet measured)         │
+    │  ├─ combined P&L (not yet measured)     │
+    │  ├─ drawdown (not yet measured)         │
+    │  └─ an audit trail                      │
+    └──────────────────────────────────────────┘
 ```
 
 ---

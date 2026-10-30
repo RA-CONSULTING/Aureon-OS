@@ -13,9 +13,11 @@ This is a different switch from `AUREON_AUTONOMY` (the pursuit loop) and from `A
 
 ## Trading
 
+> **New users: stay on the five-minute quickstart in the root README. Do not add your own exchange keys.** The master launcher defaults to full autonomy. If exchange keys are in `.env`, the boot can go live and trade.
+
 The master launcher (`scripts/launch/aureon-master.sh`) boots the organism in full mode.
 
-Trading is live when the person running it has put their own exchange keys in `.env` (Kraken, Binance, Alpaca, or Capital.com: the whole group for that venue). The health report then says `trading_mode=live (exchange keys present)`.
+Trading is live when a complete exchange key group is already in `.env` (Kraken, Binance, Alpaca, or Capital.com). The health report then says `trading_mode=live (exchange keys present)`. Do not add keys for a first look. Stay on the five-minute quickstart.
 
 With no complete key group, every child stays in paper/public-data mode and the report says `trading_mode=paper/public-data (no exchange keys)`. Key presence is the switch. The launcher does not place an order by itself, and it does not create `capital_release.flag`.
 

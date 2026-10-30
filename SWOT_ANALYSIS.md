@@ -1,5 +1,7 @@
 # Aureon Trading System — SWOT Analysis
 
+Measured trading performance is not yet measured. There is no verified live track record. The live routes are active: with exchange keys in `.env`, the launcher boots into live trading. This note keeps the strategic map. It does not quote P&L, win rate, or trade counts.
+
 ---
 
 ## STRENGTHS
@@ -11,11 +13,11 @@
 - ✅ **Ancient wisdom convergence research** (1,190 entries, 12 civilizations, 47+ proofs)
 - ✅ **HNC theory implementation** (Master Formula, LTDE, φ² Coherence Bridge)
 
-### Production-Grade Execution
-- ✅ **Live trading active** (real accounts on Binance, Kraken)
-- ✅ **Paper trading proven** (24 trades, 66.7% win rate)
-- ✅ **Backtesting validated** (629 trades, 92.4% accuracy, +$97,475 PnL)
-- ✅ **Risk management deployed** (position sizing, stop-losses, coherence gates)
+### Execution path (routes active; results not yet measured)
+- ✅ **Live routes are active** on Binance and Kraken. With exchange keys in `.env`, the launcher boots into live trading. There is no verified live track record.
+- ✅ **Paper path designed** to simulate fills against market data. Measured paper performance is not yet measured.
+- ✅ **Backtest path designed** to replay historical candles through HNC signals. Measured backtest performance is not yet measured.
+- ✅ **Risk management designed** (position sizing, stop-losses, coherence gates)
 - ✅ **Multi-exchange support** (Binance, Kraken, others)
 
 ### Technical Excellence
@@ -25,10 +27,10 @@
 - ✅ **Full test coverage** (validation, verification, audit trails)
 - ✅ **Clear navigation** (3 entry points, QUICK_START guide)
 
-### Competitive Advantages
-- ✅ **Superior win rates** vs. industry (92.4% vs. Freqtrade 55%, Backtrader 52%)
-- ✅ **Lower drawdowns** (0.64% spot vs. 12-25% for competitors)
-- ✅ **Sub-second execution** (ETA predictions 100% accurate)
+### Competitive position
+- ✅ **No win-rate comparison is claimed.** Measured performance is not yet measured.
+- ✅ **Drawdown versus other frameworks is not yet measured.**
+- ✅ **Timing prediction is designed** into the execution path. Measured timing accuracy is not yet measured.
 - ✅ **Proprietary theory** (HNC can't be replicated by competitors)
 - ✅ **Integrated forensics** (no other system does bot + manipulation + trading)
 
@@ -65,8 +67,8 @@
 - ❌ **No cloud deployment** (no hosted version, only on-premise)
 
 ### Testing & Validation
-- ❌ **Limited live data** (only 24 paper trades, 1 live portfolio)
-- ❌ **No out-of-sample validation** (backtest results may overfit)
+- ❌ **No verified live track record** (measured live and paper results are not yet measured)
+- ❌ **No out-of-sample validation** (no measured out-of-sample run is on record)
 - ❌ **No stress testing** (no crash scenarios, black swan tests)
 - ❌ **No performance benchmarks** (vs. exchange latency, slippage)
 - ❌ **No regression tests** (no automated testing suite visible)
@@ -156,7 +158,7 @@
 | Factor | Status | Impact | Priority |
 |--------|--------|--------|----------|
 | **Unique capabilities** | Strength | 🔴 High | Keep & Protect |
-| **Live trading proof** | Strength | 🔴 High | Leverage |
+| **Measured live performance** | Not yet measured | 🔴 High | Do not cite a track record; live routes stay active |
 | **2,694 files scattered** | Weakness | 🟡 Medium | FIXED (organization) |
 | **No UI/Dashboard** | Weakness | 🟡 Medium | Build immediately |
 | **No CLI** | Weakness | 🟡 Medium | Add soon |

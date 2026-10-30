@@ -131,8 +131,9 @@ realized/parked counts, and each packet's relevance score.
 ```bash
 python tests/benchmarks/benchmark_aureon_scope.py     # Tier-A incl. b53
 python -m pytest tests/test_prompt_router.py -q       # 11 pinned rules
-python -m aureon.saas.capability_demo --report docs/reports/CAPABILITY_DEMO.md
 ```
+
+The capability demonstration is on HOLD and is not a measured result for this router. See [`docs/reports/CAPABILITY_DEMO.md`](reports/CAPABILITY_DEMO.md).
 
 ---
 
