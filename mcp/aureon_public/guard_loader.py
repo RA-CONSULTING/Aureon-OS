@@ -81,14 +81,27 @@ def apply_space_guard() -> None:
 
 
 def _prefer_installed_aureon(root: Path) -> None:
-    """Use the pinned install when it is present. Otherwise keep the checkout."""
+    """Use the pinned install when it is present. Otherwise keep the checkout.
+
+    The pinned finder is already on ``sys.meta_path``. It answers from the
+    checkout without reading ``sys.path``, so this probe takes it off the path
+    for the lookup. A direct_url.json that names the pin is what keeps the
+    trimmed path. The blob check still decides which bytes run.
+    """
+
+    from aureon_public.pin_blob import PinnedAureonFinder
 
     saved = list(sys.path)
     trimmed = [entry for entry in saved if not _same(entry, root)]
     sys.path[:] = trimmed
+    removed = [finder for finder in sys.meta_path if isinstance(finder, PinnedAureonFinder)]
+    for finder in removed:
+        sys.meta_path.remove(finder)
     try:
         found = importlib.util.find_spec("aureon")
     finally:
+        for finder in reversed(removed):
+            sys.meta_path.insert(0, finder)
         sys.path[:] = saved
     origin = getattr(found, "origin", None) if found is not None else None
     if not origin:

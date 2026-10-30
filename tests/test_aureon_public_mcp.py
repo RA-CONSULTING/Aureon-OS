@@ -276,6 +276,55 @@ def test_aureon_source_checkout_uses_git_head_or_unknown(tmp_path: Path) -> None
     assert len(live["commit"]) == 40
 
 
+def test_pinned_install_is_preferred_over_a_matching_checkout(tmp_path: Path) -> None:
+    import importlib.util
+
+    import aureon_public.guard_loader as guard_loader
+    from aureon_public.pin_blob import install_pinned_aureon_finder
+
+    root = ROOT
+    site = tmp_path / "site"
+    package = site / "aureon"
+    package.mkdir(parents=True)
+    origin = package / "__init__.py"
+    origin.write_bytes((root / "aureon" / "__init__.py").read_bytes())
+    dist = site / "aureon-0.dist-info"
+    dist.mkdir()
+    (dist / "direct_url.json").write_text(
+        json.dumps({"vcs_info": {"commit_id": PINNED_COMMIT}}),
+        encoding="utf-8",
+    )
+    saved_modules = {
+        name: module
+        for name, module in sys.modules.items()
+        if name == "aureon" or name.startswith("aureon.")
+    }
+    saved_path = list(sys.path)
+    for name in saved_modules:
+        sys.modules.pop(name, None)
+    sys.path.insert(0, str(site))
+    install_pinned_aureon_finder(root)
+    try:
+        guard_loader._prefer_installed_aureon(root)
+        assert not any(guard_loader._same(entry, root) for entry in sys.path)
+        found = importlib.util.find_spec("aureon")
+        assert found is not None
+        assert Path(found.origin).resolve() == origin.resolve()
+        assert describe_aureon_source(origin, root) == {"kind": "pinned", "commit": PINNED_COMMIT}
+
+        origin.write_bytes(b"# not the pin\n")
+        sys.modules.pop("aureon", None)
+        found = importlib.util.find_spec("aureon")
+        assert found is not None
+        assert Path(found.origin).resolve() == (root / "aureon" / "__init__.py").resolve()
+    finally:
+        sys.path[:] = saved_path
+        for name in list(sys.modules):
+            if name == "aureon" or name.startswith("aureon."):
+                sys.modules.pop(name, None)
+        sys.modules.update(saved_modules)
+
+
 def test_tool_output_and_server_info_name_the_aureon_that_ran() -> None:
     source = aureon_source()
     assert source["kind"] in {"pinned", "installed", "checkout"}
