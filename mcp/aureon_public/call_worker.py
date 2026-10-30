@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import inspect
 import json
+import os
 import sys
 from datetime import date
 from pathlib import Path
@@ -177,6 +178,12 @@ def main() -> None:
         payload = {"ok": False, "error": "SystemExit"}
     except Exception as exc:
         payload = {"ok": False, "error": f"{type(exc).__name__}: {exc}"[:240]}
+    if os.environ.get("AUREON_PUBLIC_REPORT_MODULES") == "1":
+        payload["modules"] = sorted(
+            name
+            for name in sys.modules
+            if "inhouse_ai" in name or "ollama_config" in name
+        )
     sys.stdout = real_stdout
     real_stdout.write(json.dumps(payload))
 

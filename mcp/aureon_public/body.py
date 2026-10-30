@@ -369,6 +369,12 @@ def _checkout_load(module: str) -> str | None:
     return checkout_blob_refusal(file_for(module), repo_root(), PINNED_COMMIT)
 
 
+# Filled only when AUREON_PUBLIC_REPORT_MODULES=1 is copied into the worker.
+# The count is how many worker results included a modules list, including an empty one.
+reported_worker_modules: list[str] = []
+reported_worker_module_reports = 0
+
+
 def _worker_env() -> dict[str, str]:
     """Minimal child environment. Parent secrets and extras are not copied across."""
 
@@ -385,7 +391,7 @@ def _worker_env() -> dict[str, str]:
         "AUREON_ENABLE_AUTONOMOUS_CONTROL": "0",
         "AUREON_ACTIVATE_ON_IMPORT": "0",
     }
-    for key in ("LANG", "LC_ALL", "LC_CTYPE", "PYTHONHASHSEED"):
+    for key in ("LANG", "LC_ALL", "LC_CTYPE", "PYTHONHASHSEED", "AUREON_PUBLIC_REPORT_MODULES"):
         value = os.environ.get(key)
         if value:
             env[key] = value
@@ -476,6 +482,11 @@ def _call_in_subprocess(module: str, symbol: str, arguments: dict[str, Any], tim
             body = json.loads(stdout.decode("utf-8"))
         except json.JSONDecodeError:
             return "error", "worker result was not JSON"
+        modules = body.get("modules") if isinstance(body, dict) else None
+        if isinstance(modules, list):
+            global reported_worker_module_reports
+            reported_worker_module_reports += 1
+            reported_worker_modules.extend(str(item) for item in modules)
         if body.get("ok") is True:
             return "ok", body.get("result")
         return "error", str(body.get("error") or "worker failed")[:240]

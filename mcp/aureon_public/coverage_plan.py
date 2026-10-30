@@ -63,6 +63,12 @@ def safety_category(text: str) -> str:
 def stage_for(package: str, categories: set[str]) -> int:
     """Earlier stages are the safer reads. Stage 4 stays behind the fence."""
 
+    # compose_repository_layers loads core.organism_composition, which imports
+    # aureon.inhouse_ai.llm_adapter, agent_runner, orchestrator,
+    # aureon.ollama_config, and aureon.autonomous.aureon_internal_coding_workforce.
+    # inhouse_ai is excluded. That chain is not a stage-1 read.
+    if package == "organism":
+        return 4
     if package in FENCE or "order" in categories or "key" in categories or "fetch" in categories:
         return 4
     if "process" in categories or "write" in categories:
@@ -172,7 +178,7 @@ def render() -> str:
         f"Packages still excluded by `more_layers`: {', '.join(excluded)}. `generated` left that list because its score model is deterministic and does not fetch. The other exclusions stay.",
         "",
         f"Within a stage, packages are alphabetical. The first package is `{first}`.",
-        "Stage 1 is the deterministic read-only packages. This run opens the rest of stage 1: generated, organism, and swarm, after alignment.",
+        "Stage 1 is the deterministic read-only packages. This run opens generated and swarm, after alignment. Organism is stage 4 because its join loads the in-house adapter chain.",
         "Stage 2 is not opened. A stage-2 package has a process or write sentence, so it is not read-only. Those packages stay for a later run, with their own records.",
         "",
         "## Counts",
@@ -210,10 +216,11 @@ def render() -> str:
             "",
             "## This run",
             "",
-            "`alignment` stays the first stage-1 package. `get_pillar_alignment` stays, with `auto_load_pillars` false. `get_unified_directive` is not a stage-1 tool. This run also opens `generated`, `organism`, and `swarm`.",
+            "`alignment` stays the first stage-1 package. `get_pillar_alignment` stays, with `auto_load_pillars` false. `get_unified_directive` is not a stage-1 tool. This run opens `generated` and `swarm`. `organism` is not opened.",
             "Generated was on the more_layers exclusion list. It is open because `aureon/generated/research_cinema/harmonic_nexus_score_model.py` imports only dataclasses and its module docstring calls it a deterministic helper, not trading authority. The four entry points are `build_default_inputs`, `HarmonicNexusScoreInputs.normalized`, `harmonic_nexus_score`, and `score_breakdown`. `tests/generated/test_harmonic_nexus_score_model.py` shows all-ones inputs score 100.0. That 100 is the weighted sum in that file. It does not score any Aureon or HNC claim and cannot be quoted as evidence.",
-            "`organism_compose_layers` passes an empty temporary `repos_root` and field and market transports that raise. It does not read `AUREON_REPOS_ROOT` and does not load a sibling `public_field.py` or `public_market.py`.",
-            "Swarm tools use fixtures from the swarm tests or fixed example arguments. Classes that need nested agent instances stay off the constructor allowlist: Cluster, Company, Zone, FleadhCompany, VisitorAgent, and WorkerAgent. Name-blocked `run_` entry points stay refused. Properties such as SwarmAgent.purity are not given tools because the worker calls methods. `validate_seat_receipt` stays reachable through `body_call` and is not a second tool: the public result cap would drop receipt fields before another call.",
+            "`organism` is stage 4, not stage 1. One call to `compose_repository_layers` after `apply_space_guard` loads `core.organism_composition`, and through that `aureon.inhouse_ai.llm_adapter`, `agent_runner`, `orchestrator`, `aureon.ollama_config`, and `aureon.autonomous.aureon_internal_coding_workforce`. `inhouse_ai` stays excluded. There is no stage-1 organism tool. The inventory entry point is still reachable through `body_call`; that is why the reachable count for the package stays 1.",
+            "`build_lane` is not a stage-1 tool. `build_lane(\"fintech\")` imports `aureon.accounting`, and that package init imports `governance.legacy_unity_composition`, which reaches `aureon.autonomous.aureon_internal_coding_workforce`. That module imports `aureon.inhouse_ai` and `aureon.ollama_config`. The entry point stays reachable through `body_call`. Swarm's reachable count stays 25.",
+            "The other swarm tools use fixtures from the swarm tests or fixed example arguments. Classes that need nested agent instances stay off the constructor allowlist: Cluster, Company, Zone, FleadhCompany, VisitorAgent, and WorkerAgent. Name-blocked `run_` entry points stay refused. Properties such as SwarmAgent.purity are not given tools because the worker calls methods. `validate_seat_receipt` stays reachable through `body_call` and is not a second tool: the public result cap would drop receipt fields before another call.",
             "Stage 2 was not started. No stage-2 tool was written.",
             "",
             "The pin stays `8aa6a2d971cc529484e2a5e261e28afafab4e4f4`. The alignment modules at this checkout match that pin, so the tools do not need a newer commit. `GUARD_BLOB` and `INVENTORY_SHA256` are unchanged.",

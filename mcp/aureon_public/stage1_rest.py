@@ -1,7 +1,8 @@
-"""Remaining stage-1 packages: generated, organism, and swarm.
+"""Remaining stage-1 packages: generated and swarm.
 
-Calls go through dispatch. Stage 2 is not opened. Defaults are labelled.
-No queen, miner, swarm_motion, brain, or network client is imported here.
+Calls go through dispatch. Organism is not a stage-1 tool. Stage 2 is not
+opened. Defaults are labelled. No queen, miner, swarm_motion, brain, or
+network client is imported here.
 """
 
 from __future__ import annotations
@@ -165,64 +166,6 @@ def generated_breakdown() -> str:
     )
 
 
-def _refuse_transport(url: str) -> bytes:
-    """A sibling feed must not fetch. This raises before any request is built."""
-
-    raise RuntimeError(f"transport refused: {url}")
-
-
-@quiet
-def organism_compose_layers() -> str:
-    """compose_repository_layers on an empty temporary directory. Provenance: cited.
-
-    repos_root is that empty directory, so AUREON_REPOS_ROOT is not read and
-    siblings beside the checkout are not read. field_transport and
-    market_transport raise. Sibling public_field.py and public_market.py are
-    not loaded. NOAA and Binance are not requested. Not a live reading.
-
-    Args:
-        none: The empty directory is created for this call. Label: cited.
-    """
-
-    import os
-    import tempfile
-    from pathlib import Path
-
-    from aureon_public.tools import _dumps
-
-    saved = os.environ.pop("AUREON_REPOS_ROOT", None)
-    try:
-        from aureon.organism.repository_layers import compose_repository_layers
-
-        with tempfile.TemporaryDirectory(prefix="aureon-public-layers-") as tmp:
-            report = compose_repository_layers(
-                repos_root=Path(tmp),
-                field_transport=_refuse_transport,
-                market_transport=_refuse_transport,
-            )
-    finally:
-        if saved is not None:
-            os.environ["AUREON_REPOS_ROOT"] = saved
-    text = _dumps(
-        {
-            "called": True,
-            "label": "cited. organism/repository_layers.py compose_repository_layers ran.",
-            "provenance": "cited",
-            "result": report,
-            "status": "cited",
-        }
-    )
-    return label_result(
-        text,
-        "aureon.organism.repository_layers.compose_repository_layers",
-        (
-            "repos_root is an empty temporary directory. AUREON_REPOS_ROOT is not read. "
-            "field_transport and market_transport raise, so sibling public_field.py and "
-            "public_market.py are not loaded. Not a live field or market reading."
-        ),
-    )
-
-
 @quiet
 def swarm_voice_read(gamma: float = 0.80) -> str:
     """voice_for_gamma. Provenance: cited.
@@ -275,30 +218,6 @@ def swarm_steer_flow(u_json: str = "", grad_json: str = "") -> str:
             text,
             "tests/test_swarm_fleadh.py::test_steer_flow_preserves_step_length_exactly",
             "Fixed fixture from that test. Not a live reading.",
-        )
-    return text
-
-
-@quiet
-def swarm_build_lane(name: str = "fintech") -> str:
-    """build_lane. Provenance: cited.
-
-    The default name is the fintech lane in tests/test_swarm_capabilities.py.
-    The lane is built from in-process books. It is not a live market reading
-    and it does not place an order.
-
-    Args:
-        name: Lane name. Label: cited, build_lane.
-    """
-
-    if not isinstance(name, str) or not name.strip():
-        return _unavailable("name is missing")
-    text = _call("swarm/capability_grid.py", "build_lane", {"name": name})
-    if name == "fintech":
-        return label_result(
-            text,
-            "tests/test_swarm_capabilities.py::test_every_lane_carries_real_provenance",
-            "Fixed lane name from that test. Not a live market reading.",
         )
     return text
 
@@ -557,10 +476,8 @@ TOOLS: list[Any] = [
     generated_normalized,
     generated_score,
     generated_breakdown,
-    organism_compose_layers,
     swarm_voice_read,
     swarm_steer_flow,
-    swarm_build_lane,
     swarm_build_seat,
     swarm_agent_substrate,
     swarm_agent_to_dict,

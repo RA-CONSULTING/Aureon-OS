@@ -277,6 +277,62 @@ if bad:
     assert completed.returncode == 0, completed.stderr + completed.stdout
 
 
+def test_stage1_dispatch_does_not_load_inhouse_ai_or_ollama() -> None:
+    """Every stage-1 tool goes through dispatch. Neither process loads the adapter chain."""
+
+    import subprocess
+    import sys
+
+    code = r"""
+import json
+import os
+import sys
+
+os.environ["AUREON_PUBLIC_REPORT_MODULES"] = "1"
+sys.path.insert(0, sys.argv[1])
+from aureon_public.alignment_layer import TOOLS as ALIGNMENT
+from aureon_public.stage1_rest import TOOLS as STAGE1
+import aureon_public.body as body
+
+tools = list(ALIGNMENT) + list(STAGE1)
+names = [fn.__name__ for fn in tools]
+banned = [
+        name
+        for name in names
+        if name in {"alignment_unified_factory", "organism_compose_layers", "swarm_build_lane"}
+    ]
+if banned:
+    raise SystemExit("removed tool still registered: " + ", ".join(banned))
+body.reported_worker_modules.clear()
+body.reported_worker_module_reports = 0
+for fn in tools:
+    raw = fn()
+    loaded = json.loads(raw)
+    if loaded.get("called") is not True:
+        raise SystemExit(fn.__name__ + " did not run: " + raw[:400])
+
+def forbidden(modules):
+    return sorted(name for name in modules if "inhouse_ai" in name or "ollama_config" in name)
+
+server = forbidden(sys.modules)
+worker = forbidden(body.reported_worker_modules)
+if server or worker:
+    raise SystemExit(f"server={server} worker={worker}")
+if body.reported_worker_module_reports != len(tools):
+    raise SystemExit(
+        f"worker reports {body.reported_worker_module_reports} for {len(tools)} tools"
+    )
+"""
+    completed = subprocess.run(
+        [sys.executable, "-c", code, str(ROOT / "mcp")],
+        cwd="/tmp",
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr[-4000:] + completed.stdout[-1000:]
+
+
 def test_alignment_measured_record_is_a_pinned_run() -> None:
     from aureon_public.guard_loader import PINNED_COMMIT
 

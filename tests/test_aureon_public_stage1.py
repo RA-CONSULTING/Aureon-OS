@@ -68,101 +68,170 @@ def test_dataclass_from_dict_refuses_post_init_anywhere_on_the_mro(monkeypatch: 
     assert ran == {"parent": False, "direct": False}
 
 
-def _write_sibling(path: Path, text: str) -> None:
-    import os
+# Reachable public functions whose annotations name a dataclass that defines
+# __post_init__. 27 parameters, 25 entry points. Strings only: this module
+# does not import those packages.
+_POST_INIT_CASES = [
+    ("approval/notify.py", "subject_line", "request", "ApprovalRequest"),
+    ("core/organism_composition.py", "bind_canonical_organism_composition", "governance", "GovernanceBindings"),
+    ("core/organism_composition.py", "configure_canonical_organism_composition", "composition", "OrganismComposition"),
+    ("governance/legacy_capability_manifest.py", "build_legacy_capability_manifest", "capabilities", "LegacyEconomicCapability"),
+    ("governance/legacy_economic_unity.py", "bind_legacy_economic_unity_gateway", "capabilities", "LegacyEconomicCapability"),
+    ("governance/qgita_kundalini_truth_gate.py", "validate_diagnostic_bundle", "request", "TruthGateRequest"),
+    ("governance/qgita_kundalini_truth_gate.py", "validate_grounding_bundle", "request", "TruthGateRequest"),
+    ("governance/trusted_truth_evidence.py", "validate_diagnostic_signal_set", "request", "TruthGateRequest"),
+    ("grants/scout.py", "assess", "opportunity", "Opportunity"),
+    ("plumber/authorization_chain_v02.py", "validate_authorization_trust_v02", "trust", "AuthorityBindingV02"),
+    ("plumber/magic_star_v02.py", "build_heart_source_identity_commitment_v02", "source_authority", "AuthorityBindingV02"),
+    ("plumber/magic_star_v02.py", "heart_receipt_commitment_v02", "receipt", "SignedReceipt"),
+    ("plumber/magic_star_v02.py", "validate_distinct_authorities_v02", "trust", "AuthorityBindingV02"),
+    ("plumber/magic_star_v02.py", "verify_component_v02", "expected_authority", "AuthorityBindingV02"),
+    ("plumber/receipts.py", "validate_receipt", "receipt", "SignedReceipt"),
+    ("plumber/recipient_proof_v02.py", "verify_recipient_proof_v02", "enrollment", "RecipientEnrollmentV02"),
+    ("plumber/release_boundary_v02.py", "validate_capability_release_result_v02", "receipt_authority", "AuthorityBindingV02"),
+    ("plumber/release_boundary_v02.py", "validate_capability_release_result_v02", "result", "CapabilityReleaseResultV02"),
+    ("plumber/release_evidence_v02.py", "validate_release_evidence_trust_v02", "trust", "AuthorityBindingV02"),
+    ("plumber/source_identity.py", "verify_source_identity", "value", "SourceIdentityV0"),
+    ("plumber/spore_transport.py", "reassemble_ciphertext", "fragments", "SporeFragment"),
+    ("plumber/spore_transport.py", "reassemble_ciphertext", "manifest", "SporeManifest"),
+    ("plumber/temporal_identity.py", "validate_temporal_identity", "identity", "TemporalIdentityV0"),
+    ("portals/actions.py", "apply_approved_action", "action", "PortalAction"),
+    ("queen/queen_mind.py", "bind_queen_mind", "manifest", "QueenFacultyManifest"),
+    ("queen/queen_process_roof.py", "bind_queen_process_roof", "composition", "OrganismComposition"),
+    ("wisdom/platypus.py", "compute_lambda_field", "config", "PlatypusConfig"),
+]
+
+
+def test_post_init_cases_cover_the_reachable_parameters() -> None:
+    assert len(_POST_INIT_CASES) == 27
+    assert len({(module, symbol) for module, symbol, _param, _name in _POST_INIT_CASES}) == 25
+    assert ("queen/queen_process_roof.py", "bind_queen_process_roof", "composition", "OrganismComposition") in _POST_INIT_CASES
+    assert ("portals/actions.py", "apply_approved_action", "action", "PortalAction") in _POST_INIT_CASES
+    assert ("core/organism_composition.py", "configure_canonical_organism_composition", "composition", "OrganismComposition") in _POST_INIT_CASES
+
+
+@pytest.mark.parametrize(
+    ("module", "symbol", "param", "class_name"),
+    _POST_INIT_CASES,
+    ids=[f"{module}:{symbol}:{param}" for module, symbol, param, _name in _POST_INIT_CASES],
+)
+def test_worker_refuses_post_init_dataclass(module: str, symbol: str, param: str, class_name: str) -> None:
+    """A JSON object through the worker does not construct the dataclass."""
+
     import subprocess
+    import sys
 
-    try:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(text, encoding="utf-8")
-    except PermissionError:
-        subprocess.check_call(["sudo", "-n", "mkdir", "-p", str(path.parent)])
-        subprocess.check_call(["sudo", "-n", "chown", "-R", f"{os.getuid()}:{os.getgid()}", str(path.parents[1])])
-        path.write_text(text, encoding="utf-8")
+    code = r"""
+import inspect
+import sys
+import typing
 
+sys.path.insert(0, sys.argv[1])
+module, symbol, param, class_name = sys.argv[2:6]
+from aureon_public.body import dotted_for
+from aureon_public.call_worker import _call, _dataclass_from_dict, _load
 
-def _remove_tree(path: Path) -> None:
-    import shutil
-    import subprocess
+mod = _load(dotted_for(module), module)
+fn = getattr(mod, symbol)
+hint = typing.get_type_hints(fn)[param]
 
-    if not path.exists():
+def walk(value):
+    if isinstance(value, type):
+        yield value
         return
-    try:
-        shutil.rmtree(path)
-    except PermissionError:
-        subprocess.check_call(["sudo", "-n", "rm", "-rf", str(path)])
+    for arg in typing.get_args(value):
+        yield from walk(arg)
+
+found = [cls for cls in walk(hint) if cls.__name__ == class_name]
+if len(found) != 1:
+    raise SystemExit(f"class {class_name} not in {hint!r}")
+cls = found[0]
+ran = {"n": 0}
+
+def boom(self):
+    ran["n"] += 1
+
+patched = False
+for base in cls.__mro__:
+    if "__post_init__" in base.__dict__:
+        setattr(base, "__post_init__", boom)
+        patched = True
+if not patched:
+    raise SystemExit("no __post_init__ on MRO")
+raw = inspect.signature(fn).parameters[param].annotation
+built = _dataclass_from_dict(fn, raw, {})
+if built is not None:
+    raise SystemExit("dataclass was built from the JSON object")
+try:
+    _call(dotted_for(module), symbol, {param: {}}, module)
+except Exception:
+    pass
+if ran["n"]:
+    raise SystemExit(f"__post_init__ ran {ran['n']}")
+"""
+    completed = subprocess.run(
+        [sys.executable, "-c", code, str(ROOT / "mcp"), module, symbol, param, class_name],
+        cwd="/tmp",
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr[-2000:] + completed.stdout[-500:]
 
 
-def test_organism_compose_does_not_load_sibling_feeds(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    import urllib.request
+def test_stage1_score_input_with_post_init_is_not_built() -> None:
+    """The allowlisted stage-1 score dataclass is refused once it defines __post_init__."""
 
-    from aureon_public.paths import repo_root
-    from aureon_public.stage1_rest import organism_compose_layers
+    import subprocess
+    import sys
 
-    requests: list[str] = []
+    code = r"""
+import inspect
+import sys
 
-    def capture(url: object, *args: object, **kwargs: object) -> None:
-        requests.append(str(url))
-        raise AssertionError(f"urllib Request was built for {url}")
+sys.path.insert(0, sys.argv[1])
+from aureon_public.call_worker import _call, _dataclass_from_dict, _load
 
-    monkeypatch.setattr(urllib.request, "Request", capture)
-    monkeypatch.setattr(urllib.request, "urlopen", capture)
+module = "generated/research_cinema/harmonic_nexus_score_model.py"
+mod = _load("aureon.generated.research_cinema.harmonic_nexus_score_model", module)
+cls = mod.HarmonicNexusScoreInputs
+fn = mod.harmonic_nexus_score
+ran = {"n": 0}
 
-    def plant(root: Path, marker: Path) -> None:
-        field = (
-            "from pathlib import Path\n"
-            f"Path({str(marker)!r}).write_text('field')\n"
-            "from urllib.request import Request\n"
-            "Request('https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json')\n"
-            "SOURCE = 'https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json'\n"
-            "def observe_planetary_k_index(transport=None):\n"
-            "    from urllib.request import Request, urlopen\n"
-            "    if transport is None:\n"
-            "        Request(SOURCE)\n"
-            "        return urlopen(SOURCE).read()\n"
-            "    return transport(SOURCE)\n"
-        )
-        market = (
-            "from pathlib import Path\n"
-            f"Path({str(marker)!r}).write_text('market')\n"
-            "from urllib.request import Request\n"
-            "Request('https://data-api.binance.vision/api/v3/ticker/price?symbol=BTCUSDT')\n"
-            "SOURCE = 'https://data-api.binance.vision/api/v3/ticker/price?symbol=BTCUSDT'\n"
-            "def observe_public_price(transport=None):\n"
-            "    from urllib.request import Request, urlopen\n"
-            "    if transport is None:\n"
-            "        Request(SOURCE)\n"
-            "        return urlopen(SOURCE).read()\n"
-            "    return transport(SOURCE)\n"
-        )
-        _write_sibling(root / "NEXUS-LIVE-FEED-" / "organism" / "public_field.py", field)
-        _write_sibling(root / "Aureon-Trading--Project-Sero" / "organism" / "public_market.py", market)
+def boom(self):
+    ran["n"] += 1
 
-    marker = tmp_path / "sibling-exec.txt"
-    plant(tmp_path / "repos-env", marker)
-    monkeypatch.setenv("AUREON_REPOS_ROOT", str(tmp_path / "repos-env"))
-
-    beside = repo_root().parent
-    planted_beside: list[Path] = []
-    for name in ("NEXUS-LIVE-FEED-", "Aureon-Trading--Project-Sero"):
-        path = beside / name
-        if not path.exists():
-            planted_beside.append(path)
-    try:
-        if len(planted_beside) == 2:
-            plant(beside, marker)
-        body = _load(organism_compose_layers())
-    finally:
-        for path in planted_beside:
-            _remove_tree(path)
-    assert len(planted_beside) == 2 or all((beside / name).exists() for name in (
-        "NEXUS-LIVE-FEED-",
-        "Aureon-Trading--Project-Sero",
-    ))
-    assert body["called"] is True
-    assert body["result"]["may_act"] is False
-    assert requests == []
-    assert not marker.exists()
+cls.__post_init__ = boom
+payload = {
+    "source_strength": 1.0,
+    "coherence_agreement": 1.0,
+    "repeatability": 1.0,
+    "friction_feasibility": 1.0,
+    "contradiction_handling": 1.0,
+}
+raw = inspect.signature(fn).parameters["inputs"].annotation
+if _dataclass_from_dict(fn, raw, payload) is not None:
+    raise SystemExit("stage-1 dataclass was built")
+try:
+    _call(
+        "aureon.generated.research_cinema.harmonic_nexus_score_model",
+        "harmonic_nexus_score",
+        {"inputs": payload},
+        module,
+    )
+except Exception:
+    pass
+if ran["n"]:
+    raise SystemExit(f"__post_init__ ran {ran['n']}")
+"""
+    completed = subprocess.run(
+        [sys.executable, "-c", code, str(ROOT / "mcp")],
+        cwd="/tmp",
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr[-2000:] + completed.stdout[-500:]
 
 
 def test_generated_score_matches_the_repo_baseline() -> None:
@@ -219,10 +288,8 @@ def test_swarm_voice_and_steer_match_the_repo_baseline() -> None:
 def test_stage1_defaults_are_labelled_and_not_live() -> None:
     from aureon_public.stage1_rest import (
         generated_default_inputs,
-        organism_compose_layers,
         swarm_actualization_to_dict,
         swarm_agent_substrate,
-        swarm_build_lane,
         swarm_build_seat,
         swarm_coherence_gamma,
         swarm_echo,
@@ -230,10 +297,8 @@ def test_stage1_defaults_are_labelled_and_not_live() -> None:
 
     for fn in (
         generated_default_inputs,
-        organism_compose_layers,
         swarm_actualization_to_dict,
         swarm_agent_substrate,
-        swarm_build_lane,
         swarm_build_seat,
         swarm_coherence_gamma,
         swarm_echo,
@@ -250,11 +315,6 @@ def test_stage1_defaults_are_labelled_and_not_live() -> None:
     substrate = _load(swarm_agent_substrate())
     assert substrate["called"] is True
     assert substrate["result"] == 0.0
-    hold = _load(organism_compose_layers())
-    assert hold["called"] is True
-    assert hold["result"]["may_act"] is False
-    lane = _load(swarm_build_lane())
-    assert lane["called"] is True
     seat = _load(swarm_build_seat())
     assert seat["called"] is True
     assert seat["result"]["seat"] == "seer"
