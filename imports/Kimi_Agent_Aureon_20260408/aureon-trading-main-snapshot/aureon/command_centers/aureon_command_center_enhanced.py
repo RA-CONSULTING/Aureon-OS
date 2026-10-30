@@ -466,7 +466,7 @@ ENHANCED_HTML = """
                 
                 const metrics = status.metadata || {};
                 const metricsStr = Object.entries(metrics)
-                    .map(([k, v]) => `${k}: ${typeof v === 'number' ? v.toFixed(2) : v}`)
+                    .map(([k, v]) => `${k}: ${v === null || v === undefined ? 'no data' : (typeof v === 'number' ? v.toFixed(2) : v)}`)
                     .join(' | ');
                 
                 item.innerHTML = `
@@ -538,7 +538,7 @@ ENHANCED_HTML = """
                     <span class="signal-type ${signal.signal_type}">${signal.signal_type}</span>
                 </div>
                 <div style="font-size: 0.85em; color: #888;">
-                    ${signal.source} | Conf: ${(signal.confidence * 100).toFixed(0)}% | Score: ${signal.score.toFixed(2)}
+                    ${signal.source} | Conf: ${signal.confidence == null ? 'no data' : (signal.confidence * 100).toFixed(0) + '%'} | Score: ${signal.score == null ? 'no data' : signal.score.toFixed(2)}
                 </div>
                 <div style="margin-top: 5px; font-size: 0.9em;">${signal.reason}</div>
             `;
@@ -627,70 +627,70 @@ class AureonCommandCenterEnhanced:
         if SYSTEMS.get('Kraken'):
             try:
                 self.systems_instances['Kraken'] = SYSTEMS['Kraken']()
-                self.systems_status['Kraken'] = {'status': 'ONLINE', 'confidence': 1.0, 'accuracy': 0.0, 'signals_sent': 0, 'metadata': {}}
+                self.systems_status['Kraken'] = {'status': 'ONLINE', 'confidence': None, 'accuracy': None, 'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {}}
             except: pass
         
         if SYSTEMS.get('Binance'):
             try:
                 self.systems_instances['Binance'] = SYSTEMS['Binance']()
-                self.systems_status['Binance'] = {'status': 'ONLINE', 'confidence': 1.0, 'accuracy': 0.0, 'signals_sent': 0, 'metadata': {}}
+                self.systems_status['Binance'] = {'status': 'ONLINE', 'confidence': None, 'accuracy': None, 'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {}}
             except: pass
         
         if SYSTEMS.get('Alpaca'):
             try:
                 self.systems_instances['Alpaca'] = SYSTEMS['Alpaca']()
-                self.systems_status['Alpaca'] = {'status': 'ONLINE', 'confidence': 1.0, 'accuracy': 0.0, 'signals_sent': 0, 'metadata': {}}
+                self.systems_status['Alpaca'] = {'status': 'ONLINE', 'confidence': None, 'accuracy': None, 'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {}}
             except: pass
         
         # Initialize Queen systems
         if SYSTEMS.get('QueenHive'):
             try:
                 self.systems_instances['QueenHive'] = SYSTEMS['QueenHive']()
-                self.systems_status['QueenHive'] = {'status': 'ONLINE', 'confidence': 0.95, 'accuracy': 0.85, 'signals_sent': 0, 'metadata': {'patterns': 229}}
+                self.systems_status['QueenHive'] = {'status': 'ONLINE', 'confidence': None, 'accuracy': None, 'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'patterns': None}}
             except: pass
         
         if SYSTEMS.get('ThoughtBus'):
             try:
                 self.systems_instances['ThoughtBus'] = SYSTEMS['ThoughtBus']()
-                self.systems_status['ThoughtBus'] = {'status': 'ONLINE', 'confidence': 1.0, 'accuracy': 0.0, 'signals_sent': 0, 'metadata': {'channels': 12}}
+                self.systems_status['ThoughtBus'] = {'status': 'ONLINE', 'confidence': None, 'accuracy': None, 'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'channels': 12}}
             except: pass
         
         # Initialize intelligence systems
         if SYSTEMS.get('UltimateIntel'):
             try:
                 self.systems_instances['UltimateIntel'] = SYSTEMS['UltimateIntel']()
-                self.systems_status['UltimateIntel'] = {'status': 'ONLINE', 'confidence': 0.95, 'accuracy': None, 'signals_sent': 0, 'metadata': {'patterns': 57}}
+                self.systems_status['UltimateIntel'] = {'status': 'ONLINE', 'confidence': None, 'accuracy': None, 'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'patterns': None}}
             except: pass
         
         if SYSTEMS.get('ProbabilityNexus'):
             try:
                 self.systems_instances['ProbabilityNexus'] = SYSTEMS['ProbabilityNexus']()
-                self.systems_status['ProbabilityNexus'] = {'status': 'ONLINE', 'confidence': 0.80, 'accuracy': 0.796, 'signals_sent': 0, 'metadata': {'coherence': 0.82}}
+                self.systems_status['ProbabilityNexus'] = {'status': 'ONLINE', 'confidence': None, 'accuracy': None, 'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'coherence': 0.82}}
             except: pass
         
         if SYSTEMS.get('TimelineOracle'):
             try:
                 self.systems_instances['TimelineOracle'] = SYSTEMS['TimelineOracle']()
-                self.systems_status['TimelineOracle'] = {'status': 'ONLINE', 'confidence': 0.75, 'accuracy': 0.0, 'signals_sent': 0, 'metadata': {'vision_days': 7}}
+                self.systems_status['TimelineOracle'] = {'status': 'ONLINE', 'confidence': None, 'accuracy': None, 'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'vision_days': 7}}
             except: pass
         
         if SYSTEMS.get('QuantumMirror'):
             try:
                 self.systems_instances['QuantumMirror'] = SYSTEMS['QuantumMirror']()
-                self.systems_status['QuantumMirror'] = {'status': 'ONLINE', 'confidence': 0.70, 'accuracy': 0.0, 'signals_sent': 0, 'metadata': {'mirrors': 5}}
+                self.systems_status['QuantumMirror'] = {'status': 'ONLINE', 'confidence': None, 'accuracy': None, 'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'mirrors': 5}}
             except: pass
         
         # Initialize harmonic systems
         if SYSTEMS.get('HarmonicFusion'):
             try:
                 self.systems_instances['HarmonicFusion'] = SYSTEMS['HarmonicFusion']()
-                self.systems_status['HarmonicFusion'] = {'status': 'ONLINE', 'confidence': 0.85, 'accuracy': 0.0, 'signals_sent': 0, 'metadata': {'freq': 432}}
+                self.systems_status['HarmonicFusion'] = {'status': 'ONLINE', 'confidence': None, 'accuracy': None, 'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'freq': 432}}
             except: pass
         
         if SYSTEMS.get('WaveScanner'):
             try:
                 self.systems_instances['WaveScanner'] = SYSTEMS['WaveScanner']()
-                self.systems_status['WaveScanner'] = {'status': 'ONLINE', 'confidence': 0.78, 'accuracy': 0.0, 'signals_sent': 0, 'metadata': {'waves': 12}}
+                self.systems_status['WaveScanner'] = {'status': 'ONLINE', 'confidence': None, 'accuracy': None, 'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'waves': 12}}
             except: pass
         
         print(f"✅ Initialized {len(self.systems_instances)} systems\n")

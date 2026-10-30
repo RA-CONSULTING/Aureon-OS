@@ -2018,7 +2018,7 @@ UNIFIED_MASTER_HTML = """
                 
                 item.innerHTML = `
                     <div class="system-name">${layerIcon} ${system.name}</div>
-                    ${system.confidence > 0 || system.accuracy > 0 || system.accuracy === null ? `
+                    ${system.confidence > 0 || system.confidence === null || system.accuracy > 0 || system.accuracy === null ? `
                         <div class="system-metrics">
                             ${system.confidence > 0 ? `Conf: ${(system.confidence * 100).toFixed(0)}%` : (system.confidence === null ? 'Conf: no data' : '')}
                             ${system.accuracy === null ? ' | Acc: no data' : (system.accuracy > 0 ? ` | Acc: ${(system.accuracy * 100).toFixed(0)}%` : '')}
@@ -2143,7 +2143,7 @@ UNIFIED_MASTER_HTML = """
                     <span class="signal-type ${signal.signal_type}">${signal.signal_type}</span>
                 </div>
                 <div style="font-size: 0.85em; color: #888;">
-                    ${signal.source} | ${(signal.confidence * 100).toFixed(0)}%
+                    ${signal.source} | ${signal.confidence == null ? 'no data' : (signal.confidence * 100).toFixed(0) + '%'}
                 </div>
             `;
             
@@ -2650,8 +2650,8 @@ class AureonUnifiedMasterHub:
                 from aureon.exchanges.kraken_client import get_kraken_client
                 self.exchange_clients['Kraken'] = get_kraken_client()
                 self.systems_status['Kraken'] = {
-                    'status': 'ONLINE', 'confidence': 1.0, 'accuracy': 0.0,
-                    'signals_sent': 0, 'metadata': {}
+                    'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+                    'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {}
                 }
             except: pass
         
@@ -2659,8 +2659,8 @@ class AureonUnifiedMasterHub:
             try:
                 self.exchange_clients['Binance'] = BinanceClient()
                 self.systems_status['Binance'] = {
-                    'status': 'ONLINE', 'confidence': 1.0, 'accuracy': 0.0,
-                    'signals_sent': 0, 'metadata': {}
+                    'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+                    'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {}
                 }
             except: pass
         
@@ -2668,8 +2668,8 @@ class AureonUnifiedMasterHub:
             try:
                 self.exchange_clients['Alpaca'] = AlpacaClient()
                 self.systems_status['Alpaca'] = {
-                    'status': 'ONLINE', 'confidence': 1.0, 'accuracy': 0.0,
-                    'signals_sent': 0, 'metadata': {}
+                    'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+                    'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {}
                 }
             except: pass
         
@@ -2678,8 +2678,8 @@ class AureonUnifiedMasterHub:
             try:
                 self.intelligence_systems['QueenHive'] = QueenHiveMind()
                 self.systems_status['QueenHive'] = {
-                    'status': 'ONLINE', 'confidence': 0.95, 'accuracy': 0.85,
-                    'signals_sent': 0, 'metadata': {'patterns': 229}
+                    'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+                    'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'patterns': None}
                 }
             except: pass
         
@@ -2687,8 +2687,8 @@ class AureonUnifiedMasterHub:
             try:
                 self.intelligence_systems['UltimateIntel'] = UltimateIntelligence()
                 self.systems_status['UltimateIntel'] = {
-                    'status': 'ONLINE', 'confidence': 0.95, 'accuracy': None,
-                    'signals_sent': 0, 'metadata': {'patterns': 57}
+                    'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+                    'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'patterns': None}
                 }
             except: pass
         
@@ -2696,8 +2696,8 @@ class AureonUnifiedMasterHub:
             try:
                 self.intelligence_systems['ProbabilityNexus'] = ProbabilityNexus()
                 self.systems_status['ProbabilityNexus'] = {
-                    'status': 'ONLINE', 'confidence': 0.80, 'accuracy': 0.796,
-                    'signals_sent': 0, 'metadata': {'win_rate': 79.6}
+                    'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+                    'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'win_rate': None}
                 }
             except: pass
         
@@ -2705,8 +2705,8 @@ class AureonUnifiedMasterHub:
             try:
                 self.intelligence_systems['TimelineOracle'] = TimelineOracle()
                 self.systems_status['TimelineOracle'] = {
-                    'status': 'ONLINE', 'confidence': 0.75, 'accuracy': 0.0,
-                    'signals_sent': 0, 'metadata': {'vision_days': 7}
+                    'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+                    'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'vision_days': 7}
                 }
             except: pass
         
@@ -2714,8 +2714,8 @@ class AureonUnifiedMasterHub:
             try:
                 self.intelligence_systems['QuantumMirror'] = QuantumMirror()
                 self.systems_status['QuantumMirror'] = {
-                    'status': 'ONLINE', 'confidence': 0.70, 'accuracy': 0.0,
-                    'signals_sent': 0, 'metadata': {'mirrors': 5}
+                    'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+                    'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'mirrors': 5}
                 }
             except: pass
         
@@ -2724,8 +2724,8 @@ class AureonUnifiedMasterHub:
             try:
                 self.intelligence_systems['AnimalMomentumScanners'] = AnimalMomentumScanners()
                 self.systems_status['AnimalMomentumScanners'] = {
-                    'status': 'ONLINE', 'confidence': 0.85, 'accuracy': 0.0,
-                    'signals_sent': 0, 'metadata': {'animals': 12}
+                    'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+                    'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'animals': 12}
                 }
             except: pass
         
@@ -2733,8 +2733,8 @@ class AureonUnifiedMasterHub:
             try:
                 self.intelligence_systems['BotShapeScanner'] = BotShapeScanner()
                 self.systems_status['BotShapeScanner'] = {
-                    'status': 'ONLINE', 'confidence': 0.80, 'accuracy': 0.0,
-                    'signals_sent': 0, 'metadata': {'shapes': 50}
+                    'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+                    'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'shapes': 50}
                 }
             except: pass
         
@@ -2742,8 +2742,8 @@ class AureonUnifiedMasterHub:
             try:
                 self.intelligence_systems['GlobalWaveScanner'] = GlobalWaveScanner()
                 self.systems_status['GlobalWaveScanner'] = {
-                    'status': 'ONLINE', 'confidence': 0.75, 'accuracy': 0.0,
-                    'signals_sent': 0, 'metadata': {'waves': 100}
+                    'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+                    'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'waves': 100}
                 }
             except: pass
         
@@ -2751,8 +2751,8 @@ class AureonUnifiedMasterHub:
             try:
                 self.intelligence_systems['OceanScanner'] = OceanScanner()
                 self.systems_status['OceanScanner'] = {
-                    'status': 'ONLINE', 'confidence': 0.70, 'accuracy': 0.0,
-                    'signals_sent': 0, 'metadata': {'depths': 20}
+                    'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+                    'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'depths': 20}
                 }
             except: pass
         
@@ -2760,8 +2760,8 @@ class AureonUnifiedMasterHub:
             try:
                 self.intelligence_systems['OceanWaveScanner'] = OceanWaveScanner()
                 self.systems_status['OceanWaveScanner'] = {
-                    'status': 'ONLINE', 'confidence': 0.75, 'accuracy': 0.0,
-                    'signals_sent': 0, 'metadata': {'ocean_waves': 30}
+                    'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+                    'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'ocean_waves': 30}
                 }
             except: pass
         
@@ -2769,8 +2769,8 @@ class AureonUnifiedMasterHub:
             try:
                 self.intelligence_systems['StrategicWarfareScanner'] = StrategicWarfareScanner()
                 self.systems_status['StrategicWarfareScanner'] = {
-                    'status': 'ONLINE', 'confidence': 0.90, 'accuracy': 0.0,
-                    'signals_sent': 0, 'metadata': {'tactics': 25}
+                    'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+                    'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'tactics': 25}
                 }
             except: pass
         
@@ -2778,8 +2778,8 @@ class AureonUnifiedMasterHub:
             try:
                 self.intelligence_systems['WisdomScanner'] = WisdomScanner()
                 self.systems_status['WisdomScanner'] = {
-                    'status': 'ONLINE', 'confidence': 0.85, 'accuracy': 0.0,
-                    'signals_sent': 0, 'metadata': {'wisdoms': 100}
+                    'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+                    'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'wisdoms': 100}
                 }
             except: pass
         
@@ -2787,8 +2787,8 @@ class AureonUnifiedMasterHub:
             try:
                 self.intelligence_systems['UnifiedEcosystem'] = UnifiedEcosystem()
                 self.systems_status['UnifiedEcosystem'] = {
-                    'status': 'ONLINE', 'confidence': 0.95, 'accuracy': 0.0,
-                    'signals_sent': 0, 'metadata': {'branches': 1000}
+                    'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+                    'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'branches': 1000}
                 }
             except: pass
         
@@ -2796,8 +2796,8 @@ class AureonUnifiedMasterHub:
             try:
                 self.intelligence_systems['GlobalFinancialFeed'] = GlobalFinancialFeed()
                 self.systems_status['GlobalFinancialFeed'] = {
-                    'status': 'ONLINE', 'confidence': 1.0, 'accuracy': 0.0,
-                    'signals_sent': 0, 'metadata': {'feeds': 50}
+                    'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+                    'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'feeds': 50}
                 }
             except: pass
         
@@ -2805,8 +2805,8 @@ class AureonUnifiedMasterHub:
             try:
                 self.intelligence_systems['QueenCounterIntelligence'] = CounterIntel()
                 self.systems_status['QueenCounterIntelligence'] = {
-                    'status': 'ONLINE', 'confidence': 0.95, 'accuracy': 0.0,
-                    'signals_sent': 0, 'metadata': {'threats_neutralized': 0}
+                    'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+                    'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'threats_neutralized': 0}
                 }
             except: pass
             
@@ -2814,8 +2814,8 @@ class AureonUnifiedMasterHub:
             try:
                 self.intelligence_systems['BotIntelligenceProfiler'] = BotProfiler()
                 self.systems_status['BotIntelligenceProfiler'] = {
-                    'status': 'ONLINE', 'confidence': 0.90, 'accuracy': 0.88,
-                    'signals_sent': 0, 'metadata': {'profiles': 12}
+                    'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+                    'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'profiles': 12}
                 }
             except: pass
             
@@ -2823,8 +2823,8 @@ class AureonUnifiedMasterHub:
             try:
                 self.intelligence_systems['MobyDickWhaleHunter'] = WhaleHunter()
                 self.systems_status['MobyDickWhaleHunter'] = {
-                    'status': 'ONLINE', 'confidence': 0.85, 'accuracy': 0.0,
-                    'signals_sent': 0, 'metadata': {'whales_tracked': 3}
+                    'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+                    'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'whales_tracked': 3}
                 }
             except: pass
         
@@ -2833,8 +2833,8 @@ class AureonUnifiedMasterHub:
             try:
                 self.intelligence_systems['LuckFieldMapper'] = LuckFieldMapper()
                 self.systems_status['LuckFieldMapper'] = {
-                    'status': 'ONLINE', 'confidence': 0.90, 'accuracy': 0.0,
-                    'signals_sent': 0, 'metadata': {'luck_state': 'Unknown'}
+                    'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+                    'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'luck_state': 'Unknown'}
                 }
             except Exception as e:
                 logger.error(f"Failed to init LuckField: {e}")
@@ -2843,8 +2843,8 @@ class AureonUnifiedMasterHub:
             try:
                 self.intelligence_systems['StargateProtocolEngine'] = StargateProtocol()
                 self.systems_status['StargateProtocolEngine'] = {
-                    'status': 'ONLINE', 'confidence': 0.95, 'accuracy': 0.0,
-                    'signals_sent': 0, 'metadata': {'nodes_active': 12}
+                    'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+                    'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'nodes_active': 12}
                 }
             except Exception as e:
                 logger.error(f"Failed to init Stargate: {e}")
@@ -2875,8 +2875,8 @@ class AureonUnifiedMasterHub:
             try:
                 self.orca_kill_cycle = OrcaKillCycle()
                 self.systems_status['OrcaKillCycle'] = {
-                    'status': 'ONLINE', 'confidence': 0.90, 'accuracy': 0.0,
-                    'signals_sent': 0, 'metadata': {'mode': 'war_room'}
+                    'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+                    'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'mode': 'war_room'}
                 }
                 logger.info("⚔️ Orca Kill Cycle initialized for War Room")
             except Exception as e:
@@ -2886,16 +2886,16 @@ class AureonUnifiedMasterHub:
             try:
                 self.intelligence_systems['TimelineAnchorValidator'] = TimelineAnchorValidator()
                 self.systems_status['TimelineAnchorValidator'] = {
-                    'status': 'ONLINE', 'confidence': 0.80, 'accuracy': 0.0,
-                    'signals_sent': 0, 'metadata': {'anchors': 7}
+                    'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+                    'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'anchors': 7}
                 }
             except: pass
         
         # Subscribe to ThoughtBus
         self.thought_bus.subscribe('*', self._on_thought)
         self.systems_status['ThoughtBus'] = {
-            'status': 'ONLINE', 'confidence': 1.0, 'accuracy': 0.0,
-            'signals_sent': 0, 'metadata': {'channels': '*'}
+            'status': 'ONLINE', 'confidence': None, 'accuracy': None,
+            'signals_sent': 0, 'truth_status': 'no_data', 'generated_values': False, 'metadata': {'channels': '*'}
         }
         
         logger.info(f"✅ Initialized {len(self.systems_status)} core systems")

@@ -466,7 +466,7 @@ ENHANCED_HTML = """
                 
                 const metrics = status.metadata || {};
                 const metricsStr = Object.entries(metrics)
-                    .map(([k, v]) => `${k}: ${typeof v === 'number' ? v.toFixed(2) : v}`)
+                    .map(([k, v]) => `${k}: ${v === null || v === undefined ? 'no data' : (typeof v === 'number' ? v.toFixed(2) : v)}`)
                     .join(' | ');
                 
                 item.innerHTML = `
@@ -538,7 +538,7 @@ ENHANCED_HTML = """
                     <span class="signal-type ${signal.signal_type}">${signal.signal_type}</span>
                 </div>
                 <div style="font-size: 0.85em; color: #888;">
-                    ${signal.source} | Conf: ${(signal.confidence * 100).toFixed(0)}% | Score: ${signal.score.toFixed(2)}
+                    ${signal.source} | Conf: ${signal.confidence == null ? 'no data' : (signal.confidence * 100).toFixed(0) + '%'} | Score: ${signal.score == null ? 'no data' : signal.score.toFixed(2)}
                 </div>
                 <div style="margin-top: 5px; font-size: 0.9em;">${signal.reason}</div>
             `;
