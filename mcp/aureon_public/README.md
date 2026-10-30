@@ -18,7 +18,7 @@ Each figure is reachable public functions and methods out of the public function
 | Package | Reachable | Public entry points |
 | --- | ---: | ---: |
 | accounting | 0 | 0 |
-| alignment | 9 | 24 |
+| alignment | 12 | 24 |
 | analytics | 37 | 167 |
 | appliance | 2 | 7 |
 | approval | 20 | 42 |
@@ -74,6 +74,8 @@ Each figure is reachable public functions and methods out of the public function
 | wisdom | 72 | 375 |
 
 The extra package tools are helpers. A helper call is not that layer's cognition.
+
+The order for opening the rest of the inventory is `COVERAGE_PLAN.md`. Alignment is the first package in that order.
 
 `body_call` runs one inventoried function or method. `body_surface` reads a module or class and does not construct it. `body_depth` reports the same ratio as this table. `body_registry` names the servers. The operator tool is `body_call_operator`. Live orders stay refused. A checkout file is imported only when its git blob matches pin `8aa6a2d9`. The plan and the call rules are in `docs/mcp/REGISTRY.md`.
 

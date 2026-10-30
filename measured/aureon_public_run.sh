@@ -14,7 +14,7 @@ ROOT="$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)"
 VENV="${VENV:-/tmp/aureon-public-venv}"
 WORK="${WORK:-/tmp/aureon-public-measure}"
 OUT="${OUT:-$ROOT/measured/aureon_public_run.json}"
-python3 -m venv "$VENV"
+python3.12 -m venv "$VENV"
 "$VENV/bin/python" -m pip install -U pip
 "$VENV/bin/python" -m pip install -r "$ROOT/mcp/aureon_public/requirements.txt"
 "$VENV/bin/python" -m pip install -e "$ROOT/mcp" --no-deps
