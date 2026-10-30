@@ -360,6 +360,67 @@ def test_body_call_refuses_sibling_join_and_build_lane(tmp_path: Path, monkeypat
             remove_tree(path)
 
 
+def test_get_unified_directive_does_not_open_a_socket(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The no-argument call builds queen and miner bridges, so body_call refuses it."""
+
+    import socket
+    import subprocess as subprocess_module
+
+    opened: list[object] = []
+    popens: list[object] = []
+
+    class _Guard(socket.socket):
+        def connect(self, address: object, *args: object, **kwargs: object) -> None:
+            opened.append(address)
+            raise OSError("socket blocked")
+
+        def connect_ex(self, address: object, *args: object, **kwargs: object) -> int:
+            opened.append(address)
+            raise OSError("socket blocked")
+
+    def _create_connection(*args: object, **kwargs: object) -> object:
+        opened.append(args)
+        raise OSError("socket blocked")
+
+    real_popen = subprocess_module.Popen
+
+    def _popen(*args: object, **kwargs: object) -> object:
+        command = args[0] if args else kwargs.get("args")
+        text = " ".join(str(part) for part in command) if isinstance(command, (list, tuple)) else str(command)
+        if "call_worker" in text:
+            popens.append(text)
+        return real_popen(*args, **kwargs)
+
+    monkeypatch.setattr(socket, "socket", _Guard)
+    monkeypatch.setattr(socket, "create_connection", _create_connection)
+    monkeypatch.setattr(subprocess_module, "Popen", _popen)
+    body = _load(body_call("alignment/unified_directive.py", "get_unified_directive"))
+    assert body["status"] == "unavailable"
+    assert body.get("called") is not True
+    assert body["reason"] == "call loads a banned chain or opens a connection"
+    assert opened == []
+    assert popens == []
+
+
+def test_call_sweep_record_names_the_pin_and_the_sibling_layout() -> None:
+    record = json.loads(
+        (ROOT / "measured" / "aureon_public_call_sweep.json").read_text(encoding="utf-8")
+    )
+    assert record["pin"].startswith("8aa6a2d9")
+    assert record["aureon_source"]["kind"] == "pinned"
+    assert record["aureon_source"]["commit"] == record["pin"]
+    names = {item["name"] for item in record["layout"]["siblings"]}
+    assert names == {"NEXUS-LIVE-FEED-", "Aureon-Trading--Project-Sero"}
+    assert all(item["present"] is True for item in record["layout"]["siblings"])
+    directive = next(
+        row
+        for row in record["entries"]
+        if row["module"] == "alignment/unified_directive.py" and row["symbol"] == "get_unified_directive"
+    )
+    assert directive["refused"] is True
+    assert directive["tested_stage1_tool"] is False
+
+
 def test_queen_quantum_frog_health_does_not_open_a_socket(monkeypatch: pytest.MonkeyPatch) -> None:
     """update_health_status is refused before a worker, so Ollama is not dialed."""
 
@@ -410,6 +471,10 @@ def test_stage2_import_sweep_matches_body_call() -> None:
         (ROOT / "measured" / "aureon_public_stage2_imports.json").read_text(encoding="utf-8")
     )
     assert record["pin"].startswith("8aa6a2d9")
+    assert record["aureon_source"]["kind"] == "pinned"
+    assert record["aureon_source"]["commit"] == record["pin"]
+    names = {item["name"] for item in record["layout"]["siblings"]}
+    assert names == {"NEXUS-LIVE-FEED-", "Aureon-Trading--Project-Sero"}
     assert record["sockets"] == "blocked"
     assert record["modules"]
     for row in record["modules"]:

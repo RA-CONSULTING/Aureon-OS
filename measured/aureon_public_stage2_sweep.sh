@@ -5,6 +5,9 @@
 # A module is refused when that import loads inhouse_ai, ollama_config, or an
 # HTTP client, or when it opens a connection.
 #
+# This script places fake NEXUS-LIVE-FEED- and Aureon-Trading--Project-Sero
+# checkouts beside the repo before the sweep, then removes the ones it created.
+#
 # Uses the venv from measured/aureon_public_stage1_run.sh when it is already
 # present. Otherwise this script installs the same runtime and test requirements.
 # Python 3.12 is required.
@@ -19,4 +22,6 @@ if [ ! -x "$VENV/bin/python" ]; then
   "$VENV/bin/python" -m pip install -r "$ROOT/mcp/aureon_public/test-requirements.txt"
   "$VENV/bin/python" -m pip install -e "$ROOT/mcp" --no-deps
 fi
+"$VENV/bin/python" -m aureon_public.sweep_layout --plant
+trap '"$VENV/bin/python" -m aureon_public.sweep_layout --cleanup' EXIT
 env -u PYTHONPATH "$VENV/bin/python" -m aureon_public.stage2_import_sweep --out "$OUT"

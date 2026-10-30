@@ -10,13 +10,14 @@ Reproduce:
 env -u PYTHONPATH PYTHONPATH=mcp python3.12 -m aureon_public.coverage_plan --check
 bash measured/aureon_public_stage1_run.sh
 bash measured/aureon_public_stage2_sweep.sh
+bash measured/aureon_public_call_sweep.sh
 env -u PYTHONPATH /tmp/aureon-public-venv/bin/python -m pytest tests/test_aureon_public_mcp.py tests/test_aureon_body.py tests/bio/test_mcp_*.py tests/test_aureon_public_alignment.py tests/test_aureon_public_stage1.py --tb=line
 ```
 
-`--write` rewrites this file from the same function. `measured/aureon_public_stage1_run.sh` installs `mcp/aureon_public/requirements.txt` and `mcp/aureon_public/test-requirements.txt`, then rewrites both `measured/aureon_public_alignment.json` and `measured/aureon_public_stage1.json`. `test-requirements.txt` is the test install: pytest, pytest-timeout, flask, pandas, and scipy. It is not the public server runtime. `measured/aureon_public_stage2_sweep.sh` rewrites `measured/aureon_public_stage2_imports.json` with sockets blocked.
+`--write` rewrites this file from the same function. `measured/aureon_public_stage1_run.sh` installs `mcp/aureon_public/requirements.txt` and `mcp/aureon_public/test-requirements.txt`, then rewrites both `measured/aureon_public_alignment.json` and `measured/aureon_public_stage1.json`. `test-requirements.txt` is the test install: pytest, pytest-timeout, flask, pandas, and scipy. It is not the public server runtime. `measured/aureon_public_stage2_sweep.sh` and `measured/aureon_public_call_sweep.sh` place fake `NEXUS-LIVE-FEED-` and `Aureon-Trading--Project-Sero` checkouts beside the repo, block sockets, and rewrite their measured records. Each record names the pin and the `aureon_source` kind.
 
-Listed symbols: 20083. Public entry points: 4388. Reachable now: 89. The previous plan recorded 896 reachable. Methods open because a constructor is allowlisted: 19. The refused-imports fence is unchanged.
-Only the stage-1 entry points are tested. `body_call` refuses every plan stage 3 and stage 4 package before a worker starts, until a later run opens that stage. Stage 2 stays callable except where `measured/aureon_public_stage2_imports.json` shows the module import loads `inhouse_ai`, `ollama_config`, or an HTTP client, or opens a connection. `queen/queen_quantum_frog.py` `update_health_status` is refused with the queen package. It does not dial Ollama.
+Listed symbols: 20083. Public entry points: 4388. Reachable now: 85. The previous plan recorded 89 reachable. Methods open because a constructor is allowlisted: 19. The refused-imports fence is unchanged.
+Only the stage-1 tools are tested. Reachable now is what `body_call` still runs after the call sweep. Plan stages 3 and 4 stay closed. Stage 2 reach that remains is untested, unaudited reach, not coverage. The call sweep calls every entry point that was still reachable, with no arguments, and refuses one that opens a connection or loads queen, miner, swarm_motion, inhouse_ai, ollama_config, or an HTTP client. `get_unified_directive` is refused that way. It does not build the queen and miner bridges.
 
 ## Stage order
 
@@ -37,7 +38,7 @@ Stage 2 has no new tools. Clean stage-2 entry points stay callable through `body
 
 | Stage | Package | Listed | Public entry points | Reachable now |
 | ---: | --- | ---: | ---: | ---: |
-| 1 | alignment | 36 | 24 | 12 |
+| 1 | alignment | 36 | 24 | 11 |
 | 1 | generated | 8 | 4 | 4 |
 | 1 | swarm | 79 | 41 | 24 |
 | 2 | atn | 57 | 28 | 0 |
@@ -45,7 +46,7 @@ Stage 2 has no new tools. Clean stage-2 entry points stay callable through `body
 | 2 | conversion | 170 | 0 | 0 |
 | 2 | decoders | 161 | 80 | 5 |
 | 2 | evaluation | 20 | 10 | 7 |
-| 2 | gates | 24 | 12 | 6 |
+| 2 | gates | 24 | 12 | 3 |
 | 2 | observer | 104 | 63 | 29 |
 | 2 | s51 | 55 | 24 | 1 |
 | 3 | accounting | 50 | 0 | 0 |
@@ -107,9 +108,9 @@ These packages are stage 4 because they are on the refused-imports fence or an i
 
 ## Stage 4
 
-`alignment/unified_directive.py` `get_unified_directive` is not a stage-1 tool. Queen is stage 4. Miner is stage 3. Both are open at stage 4, so this entry point waits there. It is not called by a tool in this run.
+`alignment/unified_directive.py` `get_unified_directive` is not a stage-1 tool. Queen is stage 4. Miner is stage 3. `body_call` refuses it now. The no-argument call is in the call sweep.
 
-Calling `get_unified_directive` constructs `UnifiedHarmonicDirective` with auto-wire on. That constructs `QueenAIBridge` and `MinerAIBridge`. Each bridge loads `AureonBrainAdapter` as the reasoning backend when the Ollama switchboard is missing or unhealthy, and each bridge wires itself to a `ThoughtBus`. The constructor imports `aureon.queen`, `aureon.miner`, and `aureon.swarm_motion`.
+Calling `get_unified_directive` constructs `UnifiedHarmonicDirective` with auto-wire on. That constructs `QueenAIBridge` and `MinerAIBridge`. Each bridge loads `AureonBrainAdapter` as the reasoning backend when the Ollama switchboard is missing or unhealthy, and each bridge wires itself to a `ThoughtBus`. The call imports `aureon.queen`, `aureon.miner`, and `aureon.swarm_motion`, and it attempted a connection to `127.0.0.1:11434`. The sweep blocked that socket.
 
 ## This run
 

@@ -338,7 +338,7 @@
   "enabled_through": 2,
   "entry_points": {
     "alignment": {
-      "reachable": 12,
+      "reachable": 11,
       "public_entry_points": 24
     },
     "cognition": {
@@ -346,7 +346,7 @@
       "public_entry_points": 14
     },
     "gates": {
-      "reachable": 6,
+      "reachable": 3,
       "public_entry_points": 12
     },
     "governance": {

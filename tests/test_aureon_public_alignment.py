@@ -38,7 +38,7 @@ def test_coverage_plan_matches_the_inventory() -> None:
         assert name in last
     alignment = next(row for row in rows if row["package"] == "alignment")
     assert alignment["public_entry_points"] == 24
-    assert alignment["reachable"] == 12
+    assert alignment["reachable"] == 11
     assert alignment["opened_by_allowlist"] == 3
 
 

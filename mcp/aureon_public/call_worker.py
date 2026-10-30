@@ -162,7 +162,53 @@ def _call(dotted: str, symbol: str, arguments: dict[str, Any], module_rel: str) 
     return method(**_coerce(method, method_args))
 
 
+_SWEEP_SOCKETS: list[str] = []
+
+
+def _install_sweep_guard() -> None:
+    """Block and log connections. Used only while the call sweep is measuring."""
+
+    if os.environ.get("AUREON_PUBLIC_SWEEP") != "1":
+        return
+    import socket
+
+    class _Guard(socket.socket):
+        def connect(self, address: object, *args: object, **kwargs: object) -> None:
+            _SWEEP_SOCKETS.append(str(address)[:160])
+            raise OSError("socket blocked")
+
+        def connect_ex(self, address: object, *args: object, **kwargs: object) -> int:
+            _SWEEP_SOCKETS.append(str(address)[:160])
+            raise OSError("socket blocked")
+
+    def _create_connection(*args: object, **kwargs: object) -> object:
+        _SWEEP_SOCKETS.append("create_connection")
+        raise OSError("socket blocked")
+
+    socket.socket = _Guard  # type: ignore[misc]
+    socket.create_connection = _create_connection  # type: ignore[assignment]
+
+
+def _sweep_modules() -> list[str]:
+    from aureon_public.stage2_import_sweep import is_http_client
+
+    banned = []
+    for name in sys.modules:
+        if any(marker in name for marker in ("inhouse_ai", "ollama_config")):
+            banned.append(name)
+            continue
+        if name in {"aureon.queen", "aureon.miner", "aureon.swarm_motion"} or name.startswith(
+            ("aureon.queen.", "aureon.miner.", "aureon.swarm_motion.")
+        ):
+            banned.append(name)
+            continue
+        if is_http_client(name):
+            banned.append(name)
+    return sorted(banned)
+
+
 def main() -> None:
+    _install_sweep_guard()
     real_stdout = sys.stdout
     sys.stdout = sys.stderr
     try:
@@ -184,6 +230,8 @@ def main() -> None:
             for name in sys.modules
             if "inhouse_ai" in name or "ollama_config" in name
         )
+    if os.environ.get("AUREON_PUBLIC_SWEEP") == "1":
+        payload["sweep"] = {"modules": _sweep_modules(), "sockets": list(_SWEEP_SOCKETS)}
     sys.stdout = real_stdout
     real_stdout.write(json.dumps(payload))
 

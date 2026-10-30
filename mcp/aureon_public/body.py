@@ -385,6 +385,8 @@ def _checkout_load(module: str) -> str | None:
 # The count is how many worker results included a modules list, including an empty one.
 reported_worker_modules: list[str] = []
 reported_worker_module_reports = 0
+# Last worker sweep block. Set only while AUREON_PUBLIC_SWEEP=1.
+last_sweep_report: dict[str, Any] | None = None
 
 
 def _worker_env() -> dict[str, str]:
@@ -403,7 +405,14 @@ def _worker_env() -> dict[str, str]:
         "AUREON_ENABLE_AUTONOMOUS_CONTROL": "0",
         "AUREON_ACTIVATE_ON_IMPORT": "0",
     }
-    for key in ("LANG", "LC_ALL", "LC_CTYPE", "PYTHONHASHSEED", "AUREON_PUBLIC_REPORT_MODULES"):
+    for key in (
+        "LANG",
+        "LC_ALL",
+        "LC_CTYPE",
+        "PYTHONHASHSEED",
+        "AUREON_PUBLIC_REPORT_MODULES",
+        "AUREON_PUBLIC_SWEEP",
+    ):
         value = os.environ.get(key)
         if value:
             env[key] = value
@@ -499,6 +508,10 @@ def _call_in_subprocess(module: str, symbol: str, arguments: dict[str, Any], tim
             global reported_worker_module_reports
             reported_worker_module_reports += 1
             reported_worker_modules.extend(str(item) for item in modules)
+        if os.environ.get("AUREON_PUBLIC_SWEEP") == "1" and isinstance(body, dict):
+            global last_sweep_report
+            sweep = body.get("sweep")
+            last_sweep_report = sweep if isinstance(sweep, dict) else {}
         if body.get("ok") is True:
             return "ok", body.get("result")
         return "error", str(body.get("error") or "worker failed")[:240]
@@ -633,6 +646,51 @@ def _stage2_import_refusal(module: str) -> str | None:
     return None
 
 
+_CALL_SWEEP: dict[tuple[str, str], dict[str, Any]] | None = None
+_CALL_SWEEP_MISSING = False
+
+
+def _call_sweep_table() -> dict[tuple[str, str], dict[str, Any]] | None:
+    """Per-entry-point call sweep. None when the file is missing."""
+
+    global _CALL_SWEEP, _CALL_SWEEP_MISSING
+    if _CALL_SWEEP is not None or _CALL_SWEEP_MISSING:
+        return _CALL_SWEEP
+    path = repo_root() / "measured" / "aureon_public_call_sweep.json"
+    try:
+        loaded = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        _CALL_SWEEP_MISSING = True
+        return None
+    table: dict[tuple[str, str], dict[str, Any]] = {}
+    if isinstance(loaded, dict):
+        for row in loaded.get("entries") or []:
+            if isinstance(row, dict) and row.get("module") and row.get("symbol"):
+                table[(str(row["module"]), str(row["symbol"]))] = row
+    _CALL_SWEEP = table
+    return table
+
+
+def _call_sweep_refusal(module: str, symbol: str) -> str | None:
+    """Refuse a call the sweep saw open a socket or load the banned chain.
+
+    ``AUREON_PUBLIC_SWEEP=1`` skips this gate so the reproduce script can call
+    the same entry points again.
+    """
+
+    if os.environ.get("AUREON_PUBLIC_SWEEP") == "1":
+        return None
+    table = _call_sweep_table()
+    if table is None:
+        return "call sweep record is missing"
+    row = table.get((module, symbol))
+    if row is None:
+        return "entry point is not in the call sweep"
+    if row.get("refused"):
+        return "call loads a banned chain or opens a connection"
+    return None
+
+
 def public_entry_refusal(row: dict[str, Any]) -> str | None:
     """Why the public server will not run this row. None when it may run."""
 
@@ -681,6 +739,9 @@ def _public_entry_refusal(row: dict[str, Any]) -> str | None:
             return constructor
     if not _quiet_source(str(row["module"]), str(row["symbol"])):
         return "source is not a quiet read"
+    sweep = _call_sweep_refusal(str(row["module"]), str(row["symbol"]))
+    if sweep:
+        return sweep
     return None
 
 

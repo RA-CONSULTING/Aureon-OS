@@ -18,7 +18,7 @@ Each figure is reachable public functions and methods out of the public function
 | Package | Reachable | Public entry points |
 | --- | ---: | ---: |
 | accounting | 0 | 0 |
-| alignment | 12 | 24 |
+| alignment | 11 | 24 |
 | analytics | 0 | 167 |
 | appliance | 0 | 7 |
 | approval | 0 | 42 |
@@ -39,7 +39,7 @@ Each figure is reachable public functions and methods out of the public function
 | decoders | 5 | 80 |
 | evaluation | 7 | 10 |
 | exchanges | 0 | 0 |
-| gates | 6 | 12 |
+| gates | 3 | 12 |
 | generated | 4 | 4 |
 | governance | 0 | 105 |
 | grants | 0 | 44 |

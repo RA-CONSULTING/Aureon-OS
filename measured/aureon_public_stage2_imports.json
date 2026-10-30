@@ -3,6 +3,10 @@
     "inhouse_ai",
     "ollama_config"
   ],
+  "aureon_source": {
+    "commit": "8aa6a2d971cc529484e2a5e261e28afafab4e4f4",
+    "kind": "pinned"
+  },
   "http_clients": [
     "aiohttp",
     "http.client",
@@ -14,6 +18,23 @@
     "websocket",
     "websockets"
   ],
+  "layout": {
+    "beside": "/",
+    "created": [
+      "NEXUS-LIVE-FEED-",
+      "Aureon-Trading--Project-Sero"
+    ],
+    "siblings": [
+      {
+        "name": "NEXUS-LIVE-FEED-",
+        "present": true
+      },
+      {
+        "name": "Aureon-Trading--Project-Sero",
+        "present": true
+      }
+    ]
+  },
   "modules": [
     {
       "bad": [
