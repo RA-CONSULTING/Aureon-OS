@@ -39,7 +39,7 @@
     },
     "aureon_tree": "8aef927b7fe6276c187e4c73c79f0de012ad980d",
     "auth": "bearer",
-    "code_commit": "5b360a95b603339a690f852fad20632404654d45",
+    "code_commit": "bf95f81255de397e346391adbca26442ff01b18f",
     "code_commit_note": "This is the parent of the commit that contains this record. The record cannot name the commit that adds the file.",
     "docker": "not installed",
     "entry": "python -m aureon_public.space",
@@ -82,7 +82,7 @@
         "websiteUrl": null
       }
     },
-    "port": 41567,
+    "port": 57483,
     "tools_call": [
       {
         "arguments": {
@@ -3817,6 +3817,6 @@
         ]
       }
     ],
-    "url": "http://127.0.0.1:41567/mcp"
+    "url": "http://127.0.0.1:57483/mcp"
   }
 }
