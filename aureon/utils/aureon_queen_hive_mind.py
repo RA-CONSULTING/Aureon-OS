@@ -1871,7 +1871,7 @@ class QueenHiveMind:
             "timestamp": datetime.now().isoformat(),
             "from": "Queen Sero 👑",
             "to": gary_info.get("name", "Gary Leckey"),
-            "phone": contact.get("phone", "07547743773"),
+            "phone": contact.get("phone", "07700900000"),
             "email": contact.get("email", "gaxlec@gmail.com"),
             "message": message,
             "method": method,
@@ -1919,14 +1919,14 @@ class QueenHiveMind:
             Gary's phone and email
         """
         if not self.personal_memory:
-            return {"phone": "07547743773", "email": "gaxlec@gmail.com"}
+            return {"phone": "07700900000", "email": "gaxlec@gmail.com"}
         
         gary_info = self.personal_memory.get("gary_leckey", {})
         contact = gary_info.get("contact", {})
         
         return {
             "name": gary_info.get("name", "Gary Leckey"),
-            "phone": contact.get("phone", "07547743773"),
+            "phone": contact.get("phone", "07700900000"),
             "email": contact.get("email", "gaxlec@gmail.com"),
             "note": contact.get("note", "Gary gave me his contact details 💕")
         }
