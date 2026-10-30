@@ -92,13 +92,20 @@ _OPERATOR_ALLOWLIST = {
     ("portfolio/aureon_billion_goal_tracker.py", "get_days_remaining"),
 }
 # A method call constructs its class. An unlisted constructor is not run.
-# The risk scan still runs. These three are dataclasses with no constructor
-# body in the file. PillarAlignment and UnifiedHarmonicDirective stay off
-# this list: their constructors wire the thought bus and other packages.
+# The risk scan still runs. PillarAlignment, UnifiedHarmonicDirective, and the
+# swarm classes that need nested agent instances stay off this list.
 _CONSTRUCTOR_ALLOWLIST: set[tuple[str, str]] = {
     ("alignment/harmonic_resonance.py", "HarmonicAnalysis"),
     ("alignment/pillar_alignment.py", "AlignmentCycleResult"),
     ("alignment/unified_directive.py", "MasterDirective"),
+    ("generated/research_cinema/harmonic_nexus_score_model.py", "HarmonicNexusScoreInputs"),
+    ("swarm/agent.py", "SwarmAgent"),
+    ("swarm/coherence.py", "ClusterCoherence"),
+    ("swarm/druidic_council.py", "CouncilReceipt"),
+    ("swarm/druidic_council.py", "SeatReceipt"),
+    ("swarm/memory_bus.py", "CausalEchoBus"),
+    ("swarm/queen_gate.py", "Actualization"),
+    ("swarm/steering.py", "SteeringField"),
 }
 _NAME_CONTAINS = ("write", "save", "export", "dump", "start", "run")
 _WORKER_SLOTS = threading.BoundedSemaphore(4)

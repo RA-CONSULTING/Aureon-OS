@@ -562,6 +562,7 @@ def _load_phenolic_fingerprint(root: Path | None = None) -> str | None:
 def public_layer_tools() -> list[Any]:
     from aureon_public.alignment_layer import TOOLS as ALIGNMENT_TOOLS
     from aureon_public.more_layers import TOOLS
+    from aureon_public.stage1_rest import TOOLS as STAGE1_TOOLS
 
     return [
         package_dispositions,
@@ -578,6 +579,7 @@ def public_layer_tools() -> list[Any]:
         source_names,
         *TOOLS,
         *ALIGNMENT_TOOLS,
+        *STAGE1_TOOLS,
     ]
 
 

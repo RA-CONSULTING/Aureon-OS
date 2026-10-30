@@ -12,7 +12,7 @@ env -u PYTHONPATH PYTHONPATH=mcp python3.12 -m aureon_public.coverage_plan --che
 
 `--write` rewrites this file from the same function.
 
-Listed symbols: 20083. Public entry points: 4388. Reachable now: 879. Reachable before the constructor allowlist in this run: 876. The allowlist opened 3 dataclass `to_dict` methods. The refused-imports fence is unchanged.
+Listed symbols: 20083. Public entry points: 4388. Reachable now: 898. The previous plan recorded 879 reachable. Methods open because a constructor is allowlisted: 19. The refused-imports fence is unchanged.
 
 ## Stage order
 
@@ -23,18 +23,20 @@ The stage is the inventory safety text, not a new scan.
 3. Operator-scoped, with no pure public row and no key, order, or live-fetch sentence.
 4. Last. Any key, order, or live-fetch sentence, plus the refused-imports fence. The fence is `_BLOCKED` and `unified_margin_trader`. This run does not add to it and does not import it.
 
-Packages already excluded by `more_layers` stay excluded: atn, command_centers, conversion, generated, identity, inhouse_ai, miner, monitors, swarm_motion. Exclusion is not removed here.
+Packages still excluded by `more_layers`: atn, command_centers, conversion, identity, inhouse_ai, miner, monitors, swarm_motion. `generated` left that list because its score model is deterministic and does not fetch. The other exclusions stay.
 
-Within a stage, packages are alphabetical. The first package is `alignment`. This run opens that package. Later packages stay on the counts below.
+Within a stage, packages are alphabetical. The first package is `alignment`.
+Stage 1 is the deterministic read-only packages. This run opens the rest of stage 1: generated, organism, and swarm, after alignment.
+Stage 2 is not opened. A stage-2 package has a process or write sentence, so it is not read-only. Those packages stay for a later run, with their own records.
 
 ## Counts
 
 | Stage | Package | Listed | Public entry points | Reachable now |
 | ---: | --- | ---: | ---: | ---: |
 | 1 | alignment | 36 | 24 | 12 |
-| 1 | generated | 8 | 4 | 0 |
+| 1 | generated | 8 | 4 | 4 |
 | 1 | organism | 3 | 1 | 1 |
-| 1 | swarm | 79 | 41 | 10 |
+| 1 | swarm | 79 | 41 | 25 |
 | 2 | atn | 57 | 28 | 0 |
 | 2 | cognition | 44 | 14 | 1 |
 | 2 | conversion | 170 | 0 | 0 |
@@ -107,7 +109,9 @@ Calling `get_unified_directive` constructs `UnifiedHarmonicDirective` with auto-
 
 ## This run
 
-`alignment` is the first stage-1 package. The new tools call its deterministic entry points through `dispatch`, which keeps `PinnedAureonFinder`, the pin blob check, and the operator fence. `get_pillar_alignment` stays, with `auto_load_pillars` false: it builds a `ThoughtBus` and does not load pillar agents. `get_unified_directive` is not one of these tools. `PillarAlignment` and `UnifiedHarmonicDirective` are not allowlisted. `run_synthetic_cycle` stays refused because the name fence rejects `run_`.
+`alignment` stays the first stage-1 package. `get_pillar_alignment` stays, with `auto_load_pillars` false. `get_unified_directive` is not a stage-1 tool. This run also opens `generated`, `organism`, and `swarm`.
+Generated is the deterministic score model. It does not fetch. Swarm tools use fixtures from the swarm tests or fixed example arguments. Classes that need nested agent instances stay off the constructor allowlist: Cluster, Company, Zone, FleadhCompany, VisitorAgent, and WorkerAgent. Name-blocked `run_` entry points stay refused. Properties such as SwarmAgent.purity are not given tools because the worker calls methods. `validate_seat_receipt` stays reachable through `body_call` and is not a second tool: the public result cap would drop receipt fields before another call.
+Stage 2 was not started. No stage-2 tool was written.
 
 The pin stays `8aa6a2d971cc529484e2a5e261e28afafab4e4f4`. The alignment modules at this checkout match that pin, so the tools do not need a newer commit. `GUARD_BLOB` and `INVENTORY_SHA256` are unchanged.
 

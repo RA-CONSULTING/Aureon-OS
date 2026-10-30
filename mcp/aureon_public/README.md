@@ -40,7 +40,7 @@ Each figure is reachable public functions and methods out of the public function
 | evaluation | 7 | 10 |
 | exchanges | 0 | 0 |
 | gates | 6 | 12 |
-| generated | 0 | 4 |
+| generated | 4 | 4 |
 | governance | 41 | 105 |
 | grants | 9 | 44 |
 | harmonic | 58 | 278 |
@@ -65,7 +65,7 @@ Each figure is reachable public functions and methods out of the public function
 | search | 2 | 5 |
 | simulation | 18 | 200 |
 | strategies | 0 | 0 |
-| swarm | 10 | 41 |
+| swarm | 25 | 41 |
 | swarm_motion | 0 | 10 |
 | trading | 0 | 0 |
 | unified_margin_trader | 0 | 0 |

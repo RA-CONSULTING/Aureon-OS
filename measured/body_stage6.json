@@ -119,7 +119,7 @@
     },
     "generated": {
       "public_entry_points": 4,
-      "reachable": 0
+      "reachable": 4
     },
     "grants": {
       "public_entry_points": 44,

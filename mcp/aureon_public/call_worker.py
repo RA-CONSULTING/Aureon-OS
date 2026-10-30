@@ -34,6 +34,28 @@ def _plain(value: Any, depth: int = 0) -> Any:
     return {"type": type(value).__name__}
 
 
+def _dataclass_from_dict(fn: Any, annotation: Any, value: Any) -> Any | None:
+    """Build a generated dataclass from a JSON object.
+
+    Only an ``__init__`` whose code filename is ``<string>`` is used. That is
+    the dataclass generator. A hand-written constructor is not called.
+    """
+
+    if not isinstance(value, dict):
+        return None
+    cls = annotation
+    if isinstance(annotation, str):
+        cls = fn.__globals__.get(annotation) or fn.__globals__.get(annotation.split(".")[-1])
+    if not isinstance(cls, type) or not hasattr(cls, "__dataclass_fields__"):
+        return None
+    code = getattr(getattr(cls, "__init__", None), "__code__", None)
+    if code is None or code.co_filename != "<string>":
+        return None
+    if not set(value).issubset(cls.__dataclass_fields__):
+        return None
+    return cls(**value)
+
+
 def _coerce(fn: Any, kwargs: dict[str, Any]) -> dict[str, Any]:
     try:
         signature = inspect.signature(fn)
@@ -51,6 +73,10 @@ def _coerce(fn: Any, kwargs: dict[str, Any]) -> dict[str, Any]:
             coerced[name] = date.fromisoformat(value)
         elif (annotation is frozenset or origin is frozenset) and isinstance(value, list):
             coerced[name] = frozenset(value)
+        else:
+            built = _dataclass_from_dict(fn, annotation, value)
+            if built is not None:
+                coerced[name] = built
     return coerced
 
 

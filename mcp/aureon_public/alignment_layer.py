@@ -57,20 +57,33 @@ def _call(module: str, symbol: str, arguments: dict[str, Any]) -> str:
     return dispatch(module, symbol, arguments, server="public")
 
 
-def _annotate(text: str, used_fixture: bool) -> str:
-    """Mark a default-fixture result so scores are not read as a live reading."""
+def label_result(text: str, source: str, note: str) -> str:
+    """Attach input_source and input_note to a tool result."""
 
-    if not used_fixture:
-        return text
     try:
         body = json.loads(text)
     except json.JSONDecodeError:
         return text
     if not isinstance(body, dict):
         return text
-    body["input_note"] = FIXTURE_NOTE
-    body["input_source"] = FIXTURE_SOURCE
+    body["input_note"] = note
+    body["input_source"] = source
     return json.dumps(body, ensure_ascii=False, allow_nan=False, sort_keys=True)
+
+
+def _annotate(text: str, used_fixture: bool) -> str:
+    """Mark a default-fixture result so scores are not read as a live reading."""
+
+    if not used_fixture:
+        return text
+    return label_result(text, FIXTURE_SOURCE, FIXTURE_NOTE)
+
+
+DEFAULTS_NOTE = "These fields are the dataclass defaults, not a reading."
+DERIVE_NOTE = (
+    "528 Hz is FUNDAMENTAL_HZ and BUY is the fixed example branch in derive_phase. "
+    "They are fixed example arguments, not a reading."
+)
 
 
 @quiet
@@ -189,6 +202,7 @@ def alignment_derive_phase(frequency_hz: float = 528.0, t: float = 0.0, signal: 
     """derive_phase. Provenance: cited.
 
     528 Hz is FUNDAMENTAL_HZ in harmonic_resonance.py. t is 0 so the drift term is zero.
+    BUY is the fixed example branch in derive_phase. Those defaults are not a reading.
     BUY, SELL, and any other string are the branches already in derive_phase.
 
     Args:
@@ -203,11 +217,14 @@ def alignment_derive_phase(frequency_hz: float = 528.0, t: float = 0.0, signal: 
         return _unavailable("frequency_hz or t is missing")
     if not isinstance(signal, str) or not signal.strip():
         return _unavailable("signal is missing")
-    return _call(
+    text = _call(
         "alignment/harmonic_resonance.py",
         "derive_phase",
         {"frequency_hz": frequency, "t": moment, "signal": signal},
     )
+    if frequency == 528.0 and moment == 0.0 and signal == "BUY":
+        return label_result(text, "aureon.alignment.harmonic_resonance.derive_phase", DERIVE_NOTE)
+    return text
 
 
 @quiet
@@ -275,13 +292,18 @@ def alignment_harmonic_to_dict() -> str:
     """HarmonicAnalysis.to_dict on the dataclass defaults. Provenance: cited.
 
     The class has no constructor body. Defaults are the literals in the class.
+    lighthouse_cleared false and dominant_signal NEUTRAL are those defaults, not a reading.
     No pillar agent is built.
 
     Args:
         none: This tool takes no inputs. Label: cited, HarmonicAnalysis.to_dict.
     """
 
-    return _call("alignment/harmonic_resonance.py", "HarmonicAnalysis.to_dict", {})
+    return label_result(
+        _call("alignment/harmonic_resonance.py", "HarmonicAnalysis.to_dict", {}),
+        "aureon.alignment.harmonic_resonance.HarmonicAnalysis",
+        DEFAULTS_NOTE,
+    )
 
 
 @quiet
@@ -289,7 +311,7 @@ def alignment_cycle_to_dict(cycle_id: str = "fixed", timestamp: float = 0.0) -> 
     """AlignmentCycleResult.to_dict with a fixed id and timestamp. Provenance: cited.
 
     The dataclass defaults would call uuid and the clock. Those arguments are passed
-    so this call does not. Other fields stay the dataclass defaults.
+    so this call does not. Other fields stay the dataclass defaults and are not a reading.
 
     Args:
         cycle_id: Passed as the constructor cycle_id. Label: cited.
@@ -299,11 +321,14 @@ def alignment_cycle_to_dict(cycle_id: str = "fixed", timestamp: float = 0.0) -> 
     moment = _finite(timestamp)
     if moment is None or not isinstance(cycle_id, str) or not cycle_id:
         return _unavailable("cycle_id or timestamp is missing")
-    return _call(
+    text = _call(
         "alignment/pillar_alignment.py",
         "AlignmentCycleResult.to_dict",
         {"init": {"cycle_id": cycle_id, "timestamp": moment}},
     )
+    if cycle_id == "fixed" and moment == 0.0:
+        return label_result(text, "aureon.alignment.pillar_alignment.AlignmentCycleResult", DEFAULTS_NOTE)
+    return text
 
 
 @quiet
@@ -312,7 +337,7 @@ def alignment_directive_to_dict(directive_id: str = "fixed", timestamp: float = 
 
     The dataclass defaults would call uuid and the clock. Those arguments are passed
     so this call does not. Other fields stay the dataclass defaults, including
-    dominant_frequency_hz = FUNDAMENTAL_HZ.
+    dominant_frequency_hz = FUNDAMENTAL_HZ, and are not a reading.
 
     Args:
         directive_id: Passed as the constructor directive_id. Label: cited.
@@ -322,11 +347,14 @@ def alignment_directive_to_dict(directive_id: str = "fixed", timestamp: float = 
     moment = _finite(timestamp)
     if moment is None or not isinstance(directive_id, str) or not directive_id:
         return _unavailable("directive_id or timestamp is missing")
-    return _call(
+    text = _call(
         "alignment/unified_directive.py",
         "MasterDirective.to_dict",
         {"init": {"directive_id": directive_id, "timestamp": moment}},
     )
+    if directive_id == "fixed" and moment == 0.0:
+        return label_result(text, "aureon.alignment.unified_directive.MasterDirective", DEFAULTS_NOTE)
+    return text
 
 
 @quiet
