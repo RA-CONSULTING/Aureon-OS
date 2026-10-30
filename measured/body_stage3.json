@@ -814,7 +814,7 @@
       "public_entry_points": 64
     },
     "evaluation": {
-      "reachable": 7,
+      "reachable": 6,
       "public_entry_points": 10
     },
     "identity": {

@@ -36,8 +36,8 @@ Each figure is reachable public functions and methods out of the public function
 | conversion | 0 | 0 |
 | core | 0 | 452 |
 | data_feeds | 0 | 118 |
-| decoders | 5 | 80 |
-| evaluation | 7 | 10 |
+| decoders | 4 | 80 |
+| evaluation | 6 | 10 |
 | exchanges | 0 | 0 |
 | gates | 3 | 12 |
 | generated | 4 | 4 |
@@ -52,7 +52,7 @@ Each figure is reachable public functions and methods out of the public function
 | miner | 0 | 0 |
 | monitors | 0 | 158 |
 | observability | 0 | 9 |
-| observer | 29 | 63 |
+| observer | 24 | 63 |
 | operator | 0 | 0 |
 | organism | 0 | 1 |
 | plumber | 0 | 271 |

@@ -97,11 +97,22 @@ _OPERATOR_ALLOWLIST = {
 # These stay off body_call. compose_repository_layers finds sibling checkouts
 # at parents[3] and execs them outside the pin. build_lane("fintech") imports
 # the in-house adapter through the accounting package.
+_UNTESTED_STAGE2 = "untested stage-2 entry point is not called"
 _ENTRY_REFUSAL = {
     ("organism/repository_layers.py", "compose_repository_layers"): (
         "stage 4 entry point is not called"
     ),
     ("swarm/capability_grid.py", "build_lane"): "stage 4 entry point is not called",
+    # Reachable through body_call, and not a tested tool. The real argument
+    # is an object the constructor allowlist does not include.
+    ("decoders/book_of_ur.py", "test_phi_resonance_me"): _UNTESTED_STAGE2,
+    ("observer/momentum.py", "set_momentum_tracker"): _UNTESTED_STAGE2,
+    ("observer/predictor.py", "make_predictor"): _UNTESTED_STAGE2,
+    ("observer/wave_predictor.py", "set_wave_predictor"): _UNTESTED_STAGE2,
+    ("observer/wave_predictor.py", "make_predictor"): _UNTESTED_STAGE2,
+    ("observer/live_data_policy.py", "log_blocked_fallback"): (
+        "fallback log is not emitted for an event that did not happen"
+    ),
 }
 # A method call constructs its class. An unlisted constructor is not run.
 # The risk scan still runs. PillarAlignment, UnifiedHarmonicDirective, and the
@@ -413,6 +424,7 @@ def _worker_env() -> dict[str, str]:
         "AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS": "1",
         "AUREON_ENABLE_AUTONOMOUS_CONTROL": "0",
         "AUREON_ACTIVATE_ON_IMPORT": "0",
+        "AUREON_OBSERVER_MODE": "dry_run",
     }
     for key in ("LANG", "LC_ALL", "LC_CTYPE", "PYTHONHASHSEED", "AUREON_PUBLIC_REPORT_MODULES"):
         value = os.environ.get(key)
@@ -420,6 +432,21 @@ def _worker_env() -> dict[str, str]:
             env[key] = value
     if _sweep_measuring:
         env["AUREON_PUBLIC_SWEEP"] = "1"
+        sandbox = os.environ.get("AUREON_PUBLIC_SANDBOX")
+        if sandbox:
+            env["AUREON_PUBLIC_SANDBOX"] = sandbox
+        for key in (
+            "HOME",
+            "USERPROFILE",
+            "XDG_CACHE_HOME",
+            "XDG_CONFIG_HOME",
+            "XDG_DATA_HOME",
+            "XDG_RUNTIME_DIR",
+            "XDG_STATE_HOME",
+        ):
+            value = os.environ.get(key)
+            if value:
+                env[key] = value
     return env
 
 
@@ -646,7 +673,7 @@ def _stage2_import_refusal(module: str) -> str | None:
     if row is None:
         return "module is not in the import sweep"
     if row.get("refused"):
-        return "module import loads an adapter or http client"
+        return str(row.get("refusal") or "module import loads an adapter or http client")
     return None
 
 
@@ -691,7 +718,7 @@ def _call_sweep_refusal(module: str, symbol: str) -> str | None:
     if row is None:
         return "entry point is not in the call sweep"
     if row.get("refused"):
-        return "call loads a banned chain or opens a connection"
+        return str(row.get("refusal") or "call loads a banned chain or opens a connection")
     return None
 
 

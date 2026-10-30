@@ -14,7 +14,7 @@
       "kind": "pinned"
     },
     "aureon_tree": "8aef927b7fe6276c187e4c73c79f0de012ad980d",
-    "code_commit": "6d6d8a1d29ad1b2d602c16780817237b9ef223a5",
+    "code_commit": "9da98a3c6f1538fc6ef7bd92a3e2aee96f0a7676",
     "code_commit_note": "This is the parent of the commit that contains this record. The record cannot name the commit that adds the file.",
     "mcp": "1.30.0",
     "pin": "8aa6a2d971cc529484e2a5e261e28afafab4e4f4",
@@ -2748,6 +2748,1065 @@
           {
             "_meta": null,
             "annotations": null,
+            "description": "Distil the phenolic bridge test's analysis dict.\n\n    The dict is tests/test_phenolic_bridge.py. It is not a laboratory result\n    from this server. The result names separable compounds and provenance counts\n    in that dict.\n\n    Args:\n        none: The fixture is fixed. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_summarize_patternsArguments",
+              "type": "object"
+            },
+            "name": "stage2_summarize_patterns",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_summarize_patternsOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Build the Book of Ur decoder from the me catalog in that file.\n\n    The catalog is the module's own table. This is not a live geographic reading.\n\n    Args:\n        none: The catalog is in the module. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_sumerian_decoderArguments",
+              "type": "object"
+            },
+            "name": "stage2_sumerian_decoder",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_sumerian_decoderOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return the bearing the Sumerian decoder computes from the Ur coordinates in that file.\n\n    Args:\n        none: The coordinates are in the module. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_sumerian_vectorArguments",
+              "type": "object"
+            },
+            "name": "stage2_sumerian_vector",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_sumerian_vectorOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Build the I Ching decoder from the hexagram table in that file.\n\n    Args:\n        none: The table is in the module. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_iching_decoderArguments",
+              "type": "object"
+            },
+            "name": "stage2_iching_decoder",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_iching_decoderOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return the geographic vector the I Ching decoder computes from its own table.\n\n    Args:\n        none: The table is in the module. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_iching_vectorArguments",
+              "type": "object"
+            },
+            "name": "stage2_iching_vector",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_iching_vectorOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Format the committed Auris report as markdown.\n\n    The numbers are reports/measured/auris_nodes.json. This does not re-evaluate the nodes.\n\n    Args:\n        none: The file is fixed. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_render_aurisArguments",
+              "type": "object"
+            },
+            "name": "stage2_render_auris",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_render_aurisOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Format the committed brain report as markdown.\n\n    The numbers are reports/measured/brain.json. This does not rerun the brain proof.\n\n    Args:\n        none: The file is fixed. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_render_brainArguments",
+              "type": "object"
+            },
+            "name": "stage2_render_brain",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_render_brainOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Format the committed self-coder report as markdown.\n\n    The numbers are reports/measured/self_coder.json. This does not run the harness.\n\n    Args:\n        none: The file is fixed. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_render_self_coderArguments",
+              "type": "object"
+            },
+            "name": "stage2_render_self_coder",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_render_self_coderOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Format the committed organism report as markdown.\n\n    The numbers are reports/measured/organism.json. This does not rerun circulation.\n\n    Args:\n        none: The file is fixed. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_render_organismArguments",
+              "type": "object"
+            },
+            "name": "stage2_render_organism",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_render_organismOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Format the committed QGITA report as markdown.\n\n    The numbers are reports/measured/qgita_snr.json. This does not rerun the benchmark.\n\n    Args:\n        none: The file is fixed. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_render_qgitaArguments",
+              "type": "object"
+            },
+            "name": "stage2_render_qgita",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_render_qgitaOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Apply the pre-registered next-step rule to ticks 0 through 6.\n\n    reports/measured/organism.json records tick baseline 6 and held-out tick 7.\n    organism_proof.TICKS is 8. The result is that rule on this series, not a new organism run.\n\n    Args:\n        none: The series is fixed. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_predict_nextArguments",
+              "type": "object"
+            },
+            "name": "stage2_predict_next",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_predict_nextOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Assemble a gate report from an empty check list.\n\n    aureon/gates/benchmark.py says an empty list must not pass. The panel is not convened.\n    The status is the assembler's empty-list result, not a gate measurement.\n\n    Args:\n        none: The check list is empty. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_build_reportArguments",
+              "type": "object"
+            },
+            "name": "stage2_build_report",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_build_reportOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Name the panel nodes whose slice is absent from an empty grounded set.\n\n    The empty set is tests/gates/test_switchboard.py. Tiger and Panda stay in the\n    result because nothing in the organism measures those slices. This is not a live vote.\n\n    Args:\n        none: The grounded set is empty. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_ungrounded_nodesArguments",
+              "type": "object"
+            },
+            "name": "stage2_ungrounded_nodes",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_ungrounded_nodesOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Say whether an action is on the human-held list.\n\n    The default draft is an ordinary action in tests/gates/test_switchboard.py\n    and is not held. submit is held. This does not execute the action.\n\n    Args:\n        action: The action string passed to is_human_held. Label: cited, the switchboard test.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {
+                "action": {
+                  "default": "draft",
+                  "title": "Action",
+                  "type": "string"
+                }
+              },
+              "title": "stage2_is_human_heldArguments",
+              "type": "object"
+            },
+            "name": "stage2_is_human_held",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_is_human_heldOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Fit alpha and g to the first 80 Lambda values in data/de440_timeseries.csv.\n\n    This is a curve fit of that prefix. It is not a live trace and it is not the white-paper coefficients.\n\n    Args:\n        none: The prefix is fixed. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_fit_tanhArguments",
+              "type": "object"
+            },
+            "name": "stage2_fit_tanh",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_fit_tanhOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Fit alpha, g, beta, and tau to the first 80 Lambda values in data/de440_timeseries.csv.\n\n    This is a curve fit of that prefix. It is not a live trace and it is not the white-paper coefficients.\n\n    Args:\n        none: The prefix is fixed. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_fit_fullArguments",
+              "type": "object"
+            },
+            "name": "stage2_fit_full",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_fit_fullOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Read whether simulation fallback is allowed in this worker.\n\n    The worker does not set AUREON_ALLOW_SIM_FALLBACK. The function's production posture is false.\n    This does not fetch a feed.\n\n    Args:\n        none: The worker environment is the public worker environment. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_simulation_fallbackArguments",
+              "type": "object"
+            },
+            "name": "stage2_simulation_fallback",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_simulation_fallbackOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Build the fallback audit dict from the benchmark test.\n\n    source is b70_probe and when is 123.0, both from tests/benchmarks/benchmark_aureon_scope.py.\n    The dict says the reading is a test fixture.\n\n    Args:\n        none: The arguments are the benchmark's. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_fallback_markerArguments",
+              "type": "object"
+            },
+            "name": "stage2_fallback_marker",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_fallback_markerOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return the momentum tracker installed in this worker.\n\n    A fresh worker has none, so the result is null. That null is not a momentum reading.\n\n    Args:\n        none: No tracker is installed. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_momentum_trackerArguments",
+              "type": "object"
+            },
+            "name": "stage2_momentum_tracker",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_momentum_trackerOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Ask the momentum predictor with no tracker installed.\n\n    The default symbol is BTCUSD, the function's own default. The result is the function's\n    neutral no-data signal. It does not read a price.\n\n    Args:\n        none: The symbol default is the function's. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_momentum_predictArguments",
+              "type": "object"
+            },
+            "name": "stage2_momentum_predict",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_momentum_predictOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return get_mode under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. It is not a broker session and it does not place an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_observer_modeArguments",
+              "type": "object"
+            },
+            "name": "stage2_observer_mode",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_observer_modeOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return reload_mode under AUREON_OBSERVER_MODE=dry_run.\n\n    This does not write a file and does not start a process. The result is that function's return.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_reload_modeArguments",
+              "type": "object"
+            },
+            "name": "stage2_reload_mode",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_reload_modeOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return is_live under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not place an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_is_liveArguments",
+              "type": "object"
+            },
+            "name": "stage2_is_live",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_is_liveOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return is_shadow under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. It does not describe a broker session.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_is_shadowArguments",
+              "type": "object"
+            },
+            "name": "stage2_is_shadow",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_is_shadowOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return gate_buy_veto_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not place an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_gate_buy_vetoArguments",
+              "type": "object"
+            },
+            "name": "stage2_gate_buy_veto",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_gate_buy_vetoOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return gate_sell_veto_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not place an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_gate_sell_vetoArguments",
+              "type": "object"
+            },
+            "name": "stage2_gate_sell_veto",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_gate_sell_vetoOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return narrow_band_threshold_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not change an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_narrow_bandArguments",
+              "type": "object"
+            },
+            "name": "stage2_narrow_band",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_narrow_bandOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return kelly_buffer_scaling_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not size an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_kelly_bufferArguments",
+              "type": "object"
+            },
+            "name": "stage2_kelly_buffer",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_kelly_bufferOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return vote_addition_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not cast a vote.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_vote_additionArguments",
+              "type": "object"
+            },
+            "name": "stage2_vote_addition",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_vote_additionOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return phase_veto_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not block an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_phase_vetoArguments",
+              "type": "object"
+            },
+            "name": "stage2_phase_veto",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_phase_vetoOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return volatility_veto_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not block an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_volatility_vetoArguments",
+              "type": "object"
+            },
+            "name": "stage2_volatility_veto",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_volatility_vetoOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Resolve the checkout that contains aureon/ and data/.\n\n    The public result may keep only the path type. The path is the checkout this process loaded.\n\n    Args:\n        none: The start path is the worker's current directory. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_repo_rootArguments",
+              "type": "object"
+            },
+            "name": "stage2_repo_root",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_repo_rootOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Read data/real_data_sources.json.\n\n    The object is that file. This does not contact the sources.\n\n    Args:\n        none: The path is the function's own default. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_source_registryArguments",
+              "type": "object"
+            },
+            "name": "stage2_source_registry",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_source_registryOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "List the source ids in data/real_data_sources.json.\n\n    A set does not survive the public result cap as a list. The ids are the keys\n    load_source_registry returns from that file.\n\n    Args:\n        none: The path is the function's own default. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_source_idsArguments",
+              "type": "object"
+            },
+            "name": "stage2_source_ids",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_source_idsOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Build the test-fixture metric named in tests/test_real_data_contract.py.\n\n    The name is fixture.metric and the value is 1. The envelope's truth status is\n    test_fixture. It is not a live metric.\n\n    Args:\n        none: The name and value are the test's. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_test_fixture_metricArguments",
+              "type": "object"
+            },
+            "name": "stage2_test_fixture_metric",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_test_fixture_metricOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Count truth statuses in a one-item list whose status is test_fixture.\n\n    test_fixture is the status make_test_fixture_metric writes. The count is of\n    that one status, not a census of operational sources.\n\n    Args:\n        none: The list is that one status. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_truth_countsArguments",
+              "type": "object"
+            },
+            "name": "stage2_truth_counts",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_truth_countsOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return the wave predictor installed in this worker.\n\n    A fresh worker has none, so the result is null. That null is not a forecast.\n\n    Args:\n        none: No predictor is installed. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_wave_predictorArguments",
+              "type": "object"
+            },
+            "name": "stage2_wave_predictor",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_wave_predictorOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Ask the wave predictor with none installed.\n\n    The default symbol is BTCUSD, the function's own default. The result is the\n    function's neutral not-running signal. It does not forecast a price.\n\n    Args:\n        none: The symbol default is the function's. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_wave_predictArguments",
+              "type": "object"
+            },
+            "name": "stage2_wave_predict",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_wave_predictOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Summarize an empty closed-trade receipt list.\n\n    aureon/s51/aureon_51_compound.py calls this with an empty list when run as a script.\n    The result is no_data. No trade is added.\n\n    Args:\n        none: The receipt list is empty. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_summarize_compoundingArguments",
+              "type": "object"
+            },
+            "name": "stage2_summarize_compounding",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_summarize_compoundingOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
             "description": "Call one public entry point from the inventory. Provenance: cited.\n\n    This runs the named function. It is not a helper. Modules and classes\n    are refused here. Operator, key, write, loop, and blocked packages are\n    not called. A checkout file is imported only when its git blob matches\n    pin 8aa6a2d9.\n\n    Args:\n        module: Inventory module path, such as harmonic/rainbow_reference.py. Label: cited.\n        symbol: Function or Class.method. Label: cited.\n        arguments_json: JSON object of keyword arguments. Empty means none. Label: cited.\n    ",
             "execution": null,
             "icons": null,
@@ -2918,7 +3977,7 @@
         "websiteUrl": null
       }
     },
-    "port": 35023,
+    "port": 34715,
     "prompts_list": [
       {
         "_meta": null,
@@ -5616,6 +6675,1065 @@
           {
             "_meta": null,
             "annotations": null,
+            "description": "Distil the phenolic bridge test's analysis dict.\n\n    The dict is tests/test_phenolic_bridge.py. It is not a laboratory result\n    from this server. The result names separable compounds and provenance counts\n    in that dict.\n\n    Args:\n        none: The fixture is fixed. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_summarize_patternsArguments",
+              "type": "object"
+            },
+            "name": "stage2_summarize_patterns",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_summarize_patternsOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Build the Book of Ur decoder from the me catalog in that file.\n\n    The catalog is the module's own table. This is not a live geographic reading.\n\n    Args:\n        none: The catalog is in the module. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_sumerian_decoderArguments",
+              "type": "object"
+            },
+            "name": "stage2_sumerian_decoder",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_sumerian_decoderOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return the bearing the Sumerian decoder computes from the Ur coordinates in that file.\n\n    Args:\n        none: The coordinates are in the module. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_sumerian_vectorArguments",
+              "type": "object"
+            },
+            "name": "stage2_sumerian_vector",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_sumerian_vectorOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Build the I Ching decoder from the hexagram table in that file.\n\n    Args:\n        none: The table is in the module. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_iching_decoderArguments",
+              "type": "object"
+            },
+            "name": "stage2_iching_decoder",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_iching_decoderOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return the geographic vector the I Ching decoder computes from its own table.\n\n    Args:\n        none: The table is in the module. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_iching_vectorArguments",
+              "type": "object"
+            },
+            "name": "stage2_iching_vector",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_iching_vectorOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Format the committed Auris report as markdown.\n\n    The numbers are reports/measured/auris_nodes.json. This does not re-evaluate the nodes.\n\n    Args:\n        none: The file is fixed. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_render_aurisArguments",
+              "type": "object"
+            },
+            "name": "stage2_render_auris",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_render_aurisOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Format the committed brain report as markdown.\n\n    The numbers are reports/measured/brain.json. This does not rerun the brain proof.\n\n    Args:\n        none: The file is fixed. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_render_brainArguments",
+              "type": "object"
+            },
+            "name": "stage2_render_brain",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_render_brainOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Format the committed self-coder report as markdown.\n\n    The numbers are reports/measured/self_coder.json. This does not run the harness.\n\n    Args:\n        none: The file is fixed. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_render_self_coderArguments",
+              "type": "object"
+            },
+            "name": "stage2_render_self_coder",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_render_self_coderOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Format the committed organism report as markdown.\n\n    The numbers are reports/measured/organism.json. This does not rerun circulation.\n\n    Args:\n        none: The file is fixed. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_render_organismArguments",
+              "type": "object"
+            },
+            "name": "stage2_render_organism",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_render_organismOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Format the committed QGITA report as markdown.\n\n    The numbers are reports/measured/qgita_snr.json. This does not rerun the benchmark.\n\n    Args:\n        none: The file is fixed. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_render_qgitaArguments",
+              "type": "object"
+            },
+            "name": "stage2_render_qgita",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_render_qgitaOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Apply the pre-registered next-step rule to ticks 0 through 6.\n\n    reports/measured/organism.json records tick baseline 6 and held-out tick 7.\n    organism_proof.TICKS is 8. The result is that rule on this series, not a new organism run.\n\n    Args:\n        none: The series is fixed. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_predict_nextArguments",
+              "type": "object"
+            },
+            "name": "stage2_predict_next",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_predict_nextOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Assemble a gate report from an empty check list.\n\n    aureon/gates/benchmark.py says an empty list must not pass. The panel is not convened.\n    The status is the assembler's empty-list result, not a gate measurement.\n\n    Args:\n        none: The check list is empty. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_build_reportArguments",
+              "type": "object"
+            },
+            "name": "stage2_build_report",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_build_reportOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Name the panel nodes whose slice is absent from an empty grounded set.\n\n    The empty set is tests/gates/test_switchboard.py. Tiger and Panda stay in the\n    result because nothing in the organism measures those slices. This is not a live vote.\n\n    Args:\n        none: The grounded set is empty. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_ungrounded_nodesArguments",
+              "type": "object"
+            },
+            "name": "stage2_ungrounded_nodes",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_ungrounded_nodesOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Say whether an action is on the human-held list.\n\n    The default draft is an ordinary action in tests/gates/test_switchboard.py\n    and is not held. submit is held. This does not execute the action.\n\n    Args:\n        action: The action string passed to is_human_held. Label: cited, the switchboard test.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {
+                "action": {
+                  "default": "draft",
+                  "title": "Action",
+                  "type": "string"
+                }
+              },
+              "title": "stage2_is_human_heldArguments",
+              "type": "object"
+            },
+            "name": "stage2_is_human_held",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_is_human_heldOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Fit alpha and g to the first 80 Lambda values in data/de440_timeseries.csv.\n\n    This is a curve fit of that prefix. It is not a live trace and it is not the white-paper coefficients.\n\n    Args:\n        none: The prefix is fixed. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_fit_tanhArguments",
+              "type": "object"
+            },
+            "name": "stage2_fit_tanh",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_fit_tanhOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Fit alpha, g, beta, and tau to the first 80 Lambda values in data/de440_timeseries.csv.\n\n    This is a curve fit of that prefix. It is not a live trace and it is not the white-paper coefficients.\n\n    Args:\n        none: The prefix is fixed. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_fit_fullArguments",
+              "type": "object"
+            },
+            "name": "stage2_fit_full",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_fit_fullOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Read whether simulation fallback is allowed in this worker.\n\n    The worker does not set AUREON_ALLOW_SIM_FALLBACK. The function's production posture is false.\n    This does not fetch a feed.\n\n    Args:\n        none: The worker environment is the public worker environment. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_simulation_fallbackArguments",
+              "type": "object"
+            },
+            "name": "stage2_simulation_fallback",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_simulation_fallbackOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Build the fallback audit dict from the benchmark test.\n\n    source is b70_probe and when is 123.0, both from tests/benchmarks/benchmark_aureon_scope.py.\n    The dict says the reading is a test fixture.\n\n    Args:\n        none: The arguments are the benchmark's. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_fallback_markerArguments",
+              "type": "object"
+            },
+            "name": "stage2_fallback_marker",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_fallback_markerOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return the momentum tracker installed in this worker.\n\n    A fresh worker has none, so the result is null. That null is not a momentum reading.\n\n    Args:\n        none: No tracker is installed. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_momentum_trackerArguments",
+              "type": "object"
+            },
+            "name": "stage2_momentum_tracker",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_momentum_trackerOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Ask the momentum predictor with no tracker installed.\n\n    The default symbol is BTCUSD, the function's own default. The result is the function's\n    neutral no-data signal. It does not read a price.\n\n    Args:\n        none: The symbol default is the function's. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_momentum_predictArguments",
+              "type": "object"
+            },
+            "name": "stage2_momentum_predict",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_momentum_predictOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return get_mode under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. It is not a broker session and it does not place an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_observer_modeArguments",
+              "type": "object"
+            },
+            "name": "stage2_observer_mode",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_observer_modeOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return reload_mode under AUREON_OBSERVER_MODE=dry_run.\n\n    This does not write a file and does not start a process. The result is that function's return.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_reload_modeArguments",
+              "type": "object"
+            },
+            "name": "stage2_reload_mode",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_reload_modeOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return is_live under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not place an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_is_liveArguments",
+              "type": "object"
+            },
+            "name": "stage2_is_live",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_is_liveOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return is_shadow under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. It does not describe a broker session.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_is_shadowArguments",
+              "type": "object"
+            },
+            "name": "stage2_is_shadow",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_is_shadowOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return gate_buy_veto_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not place an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_gate_buy_vetoArguments",
+              "type": "object"
+            },
+            "name": "stage2_gate_buy_veto",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_gate_buy_vetoOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return gate_sell_veto_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not place an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_gate_sell_vetoArguments",
+              "type": "object"
+            },
+            "name": "stage2_gate_sell_veto",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_gate_sell_vetoOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return narrow_band_threshold_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not change an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_narrow_bandArguments",
+              "type": "object"
+            },
+            "name": "stage2_narrow_band",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_narrow_bandOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return kelly_buffer_scaling_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not size an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_kelly_bufferArguments",
+              "type": "object"
+            },
+            "name": "stage2_kelly_buffer",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_kelly_bufferOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return vote_addition_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not cast a vote.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_vote_additionArguments",
+              "type": "object"
+            },
+            "name": "stage2_vote_addition",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_vote_additionOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return phase_veto_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not block an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_phase_vetoArguments",
+              "type": "object"
+            },
+            "name": "stage2_phase_veto",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_phase_vetoOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return volatility_veto_active under AUREON_OBSERVER_MODE=dry_run.\n\n    The result is that function's return. This call does not block an order.\n\n    Args:\n        none: The worker sets AUREON_OBSERVER_MODE=dry_run. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_volatility_vetoArguments",
+              "type": "object"
+            },
+            "name": "stage2_volatility_veto",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_volatility_vetoOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Resolve the checkout that contains aureon/ and data/.\n\n    The public result may keep only the path type. The path is the checkout this process loaded.\n\n    Args:\n        none: The start path is the worker's current directory. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_repo_rootArguments",
+              "type": "object"
+            },
+            "name": "stage2_repo_root",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_repo_rootOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Read data/real_data_sources.json.\n\n    The object is that file. This does not contact the sources.\n\n    Args:\n        none: The path is the function's own default. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_source_registryArguments",
+              "type": "object"
+            },
+            "name": "stage2_source_registry",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_source_registryOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "List the source ids in data/real_data_sources.json.\n\n    A set does not survive the public result cap as a list. The ids are the keys\n    load_source_registry returns from that file.\n\n    Args:\n        none: The path is the function's own default. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_source_idsArguments",
+              "type": "object"
+            },
+            "name": "stage2_source_ids",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_source_idsOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Build the test-fixture metric named in tests/test_real_data_contract.py.\n\n    The name is fixture.metric and the value is 1. The envelope's truth status is\n    test_fixture. It is not a live metric.\n\n    Args:\n        none: The name and value are the test's. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_test_fixture_metricArguments",
+              "type": "object"
+            },
+            "name": "stage2_test_fixture_metric",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_test_fixture_metricOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Count truth statuses in a one-item list whose status is test_fixture.\n\n    test_fixture is the status make_test_fixture_metric writes. The count is of\n    that one status, not a census of operational sources.\n\n    Args:\n        none: The list is that one status. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_truth_countsArguments",
+              "type": "object"
+            },
+            "name": "stage2_truth_counts",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_truth_countsOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Return the wave predictor installed in this worker.\n\n    A fresh worker has none, so the result is null. That null is not a forecast.\n\n    Args:\n        none: No predictor is installed. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_wave_predictorArguments",
+              "type": "object"
+            },
+            "name": "stage2_wave_predictor",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_wave_predictorOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Ask the wave predictor with none installed.\n\n    The default symbol is BTCUSD, the function's own default. The result is the\n    function's neutral not-running signal. It does not forecast a price.\n\n    Args:\n        none: The symbol default is the function's. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_wave_predictArguments",
+              "type": "object"
+            },
+            "name": "stage2_wave_predict",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_wave_predictOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
+            "description": "Summarize an empty closed-trade receipt list.\n\n    aureon/s51/aureon_51_compound.py calls this with an empty list when run as a script.\n    The result is no_data. No trade is added.\n\n    Args:\n        none: The receipt list is empty. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "stage2_summarize_compoundingArguments",
+              "type": "object"
+            },
+            "name": "stage2_summarize_compounding",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "stage2_summarize_compoundingOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
             "description": "Call one public entry point from the inventory. Provenance: cited.\n\n    This runs the named function. It is not a helper. Modules and classes\n    are refused here. Operator, key, write, loop, and blocked packages are\n    not called. A checkout file is imported only when its git blob matches\n    pin 8aa6a2d9.\n\n    Args:\n        module: Inventory module path, such as harmonic/rainbow_reference.py. Label: cited.\n        symbol: Function or Class.method. Label: cited.\n        arguments_json: JSON object of keyword arguments. Empty means none. Label: cited.\n    ",
             "execution": null,
             "icons": null,
@@ -5755,6 +7873,6 @@
         ]
       }
     ],
-    "url": "http://127.0.0.1:35023/mcp"
+    "url": "http://127.0.0.1:34715/mcp"
   }
 }

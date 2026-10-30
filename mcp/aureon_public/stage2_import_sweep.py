@@ -1,8 +1,9 @@
 """Sweep plan-stage-2 modules in isolated processes with sockets blocked.
 
 A module is refused when its import loads ``inhouse_ai``, ``ollama_config``,
-or an HTTP client, or when the import opens a connection. The public server
-reads the committed record and refuses those modules before a worker starts.
+or an HTTP client, or when the import opens a connection, starts a process,
+or writes outside the sandbox. The public server reads the committed record
+and refuses those modules before a worker starts.
 
     bash measured/aureon_public_stage2_sweep.sh
 """
@@ -40,17 +41,34 @@ def is_http_client(name: str) -> bool:
     return any(name == prefix or name.startswith(prefix + ".") for prefix in HTTP_PREFIXES)
 
 
-def import_is_refused(bad: list[str], socket_attempts: list[str]) -> bool:
+def import_refusal(
+    bad: list[str],
+    socket_attempts: list[str],
+    processes: list[str] | None = None,
+    writes: list[str] | None = None,
+) -> str | None:
+    """Why an import is refused. None when the import is clean."""
+
+    if socket_attempts or any(
+        any(marker in name for marker in ADAPTER_MARKERS) or is_http_client(name) for name in bad
+    ):
+        return "module import loads an adapter or http client"
+    if processes:
+        return "module import starts a process"
+    if writes:
+        return "module import writes outside the sandbox"
+    return None
+
+
+def import_is_refused(
+    bad: list[str],
+    socket_attempts: list[str],
+    processes: list[str] | None = None,
+    writes: list[str] | None = None,
+) -> bool:
     """The rule the measured record and body_call share."""
 
-    if socket_attempts:
-        return True
-    for name in bad:
-        if any(marker in name for marker in ADAPTER_MARKERS):
-            return True
-        if is_http_client(name):
-            return True
-    return False
+    return import_refusal(bad, socket_attempts, processes, writes) is not None
 
 
 def _dotted(module: str) -> str:
@@ -58,33 +76,14 @@ def _dotted(module: str) -> str:
     return "aureon." + stem.replace("/", ".")
 
 
-def _block_sockets() -> list[str]:
-    import socket
-
-    attempts: list[str] = []
-
-    class _Guard(socket.socket):
-        def connect(self, address: Any, *args: Any, **kwargs: Any) -> None:
-            attempts.append(str(address)[:160])
-            raise OSError("socket blocked")
-
-        def connect_ex(self, address: Any, *args: Any, **kwargs: Any) -> int:
-            attempts.append(str(address)[:160])
-            raise OSError("socket blocked")
-
-    def _create_connection(*_args: Any, **_kwargs: Any) -> Any:
-        attempts.append("create_connection")
-        raise OSError("socket blocked")
-
-    socket.socket = _Guard  # type: ignore[misc]
-    socket.create_connection = _create_connection  # type: ignore[assignment]
-    return attempts
-
-
 def child_main(module: str) -> None:
     """Import one module. Stdout is one JSON object."""
 
-    attempts = _block_sockets()
+    from aureon_public.sweep_guard import declare_sandbox, install_sweep_guard, snapshot
+
+    os.environ["AUREON_PUBLIC_SWEEP"] = "1"
+    declare_sandbox()
+    install_sweep_guard()
     error = None
     try:
         from aureon_public.call_worker import _load
@@ -99,8 +98,15 @@ def child_main(module: str) -> None:
         for name in _sys.modules
         if any(marker in name for marker in ADAPTER_MARKERS) or is_http_client(name)
     )
+    snap = snapshot()
     json.dump(
-        {"bad": bad, "error": error, "socket": attempts},
+        {
+            "bad": bad,
+            "error": error,
+            "process": snap["processes"],
+            "socket": snap["sockets"],
+            "writes": snap["writes"],
+        },
         sys.stdout,
     )
 
@@ -169,14 +175,20 @@ def build_record(timeout: float) -> dict[str, Any]:
         payload = _one(module, timeout)
         bad = [str(item) for item in payload.get("bad") or []]
         sockets = [str(item) for item in payload.get("socket") or []]
+        processes = [str(item) for item in payload.get("process") or []]
+        writes = [str(item) for item in payload.get("writes") or []]
+        refusal = import_refusal(bad, sockets, processes, writes)
         modules.append(
             {
                 "bad": bad,
                 "error": payload.get("error"),
                 "module": module,
                 "package": package,
-                "refused": import_is_refused(bad, sockets),
+                "process": processes,
+                "refusal": refusal,
+                "refused": refusal is not None,
                 "socket": bool(sockets),
+                "writes": writes,
             }
         )
     return {
@@ -185,7 +197,9 @@ def build_record(timeout: float) -> dict[str, Any]:
         "http_clients": sorted(HTTP_ROOTS | set(HTTP_PREFIXES)),
         "layout": layout_record(),
         "modules": modules,
+        "processes": "blocked",
         "sockets": "blocked",
+        "writes": "outside sandbox blocked",
         **stamp,
     }
 

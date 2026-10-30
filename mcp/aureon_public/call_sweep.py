@@ -1,8 +1,10 @@
-"""Call every body_call-reachable entry point with no arguments.
+"""Call every body_call-reachable entry point.
 
 Each call uses the public worker. Sockets are blocked and logged in that
-worker. Fake NEXUS and Sero checkouts sit beside the repo. An entry point is
-refused when the call opens a connection or loads queen, miner, swarm_motion,
+worker. Fake NEXUS and Sero checkouts sit beside the repo. Stage-2 entry
+points are also called with the real arguments in stage2_arguments. An entry
+point is refused when any of those calls opens a connection, starts a
+process, writes outside the sandbox, or loads queen, miner, swarm_motion,
 inhouse_ai, ollama_config, or an HTTP client.
 
     bash measured/aureon_public_call_sweep.sh
@@ -84,11 +86,29 @@ def reachable_entries() -> list[dict[str, Any]]:
     return found
 
 
-def child_main(module: str, symbol: str) -> None:
-    import aureon_public.body as body_module
+def hazard_reason(payload: dict[str, Any]) -> str | None:
+    """The refusal sentence for one call. None when the call stayed inside the rules."""
 
+    bad = payload.get("bad") or []
+    sockets = payload.get("socket") or []
+    processes = payload.get("process") or []
+    writes = payload.get("writes") or []
+    if bad or sockets:
+        return "call loads a banned chain or opens a connection"
+    if processes:
+        return "call starts a process"
+    if writes:
+        return "call writes outside the sandbox"
+    return None
+
+
+def child_main(module: str, symbol: str, arguments_json: str = "") -> None:
+    import aureon_public.body as body_module
+    from aureon_public.sweep_guard import declare_sandbox
+
+    declare_sandbox()
     body_module.enable_sweep_measurement()
-    text = body_module.body_call(module, symbol)
+    text = body_module.body_call(module, symbol, arguments_json)
     try:
         body = json.loads(text)
     except json.JSONDecodeError:
@@ -98,39 +118,58 @@ def child_main(module: str, symbol: str) -> None:
         {
             "bad": list(report.get("modules") or []),
             "called": body.get("called") is True,
+            "process": list(report.get("processes") or []),
             "reason": body.get("reason"),
+            "sandbox_writes": list(report.get("sandbox_writes") or []),
             "socket": list(report.get("sockets") or []),
             "status": body.get("status"),
+            "writes": list(report.get("writes") or []),
         },
         sys.stdout,
     )
 
 
-def _one(module: str, symbol: str, timeout: float) -> dict[str, Any]:
-    completed = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "aureon_public.call_sweep",
-            "--module",
-            module,
-            "--symbol",
-            symbol,
-        ],
-        cwd=os.environ.get("TMPDIR") or "/tmp",
-        capture_output=True,
-        text=True,
-        timeout=timeout,
-        check=False,
-        env={key: value for key, value in os.environ.items() if key != "AUREON_PUBLIC_SWEEP"},
-    )
+def _one(module: str, symbol: str, timeout: float, arguments_json: str = "") -> dict[str, Any]:
+    command = [
+        sys.executable,
+        "-m",
+        "aureon_public.call_sweep",
+        "--module",
+        module,
+        "--symbol",
+        symbol,
+    ]
+    if arguments_json:
+        command.extend(["--arguments", arguments_json])
+    try:
+        completed = subprocess.run(
+            command,
+            cwd=os.environ.get("TMPDIR") or "/tmp",
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            check=False,
+            env={key: value for key, value in os.environ.items() if key != "AUREON_PUBLIC_SWEEP"},
+        )
+    except subprocess.TimeoutExpired:
+        return {
+            "bad": [],
+            "called": False,
+            "error": "sweep exceeded the timeout",
+            "process": [],
+            "socket": [],
+            "status": "unavailable",
+            "writes": [],
+        }
     if not completed.stdout.strip():
         return {
             "bad": [],
             "called": False,
             "error": f"sweep exited {completed.returncode}",
+            "process": [],
             "socket": [],
             "status": "unavailable",
+            "writes": [],
         }
     try:
         payload = json.loads(completed.stdout)
@@ -139,10 +178,25 @@ def _one(module: str, symbol: str, timeout: float) -> dict[str, Any]:
             "bad": [],
             "called": False,
             "error": "sweep result was not JSON",
+            "process": [],
             "socket": [],
             "status": "unavailable",
+            "writes": [],
         }
     return payload if isinstance(payload, dict) else {}
+
+
+def _first_hazard(hazards: list[str]) -> str | None:
+    order = (
+        "call loads a banned chain or opens a connection",
+        "call starts a process",
+        "call writes outside the sandbox",
+        "call did not finish",
+    )
+    for sentence in order:
+        if sentence in hazards:
+            return sentence
+    return None
 
 
 def build_record(timeout: float) -> dict[str, Any]:
@@ -150,37 +204,104 @@ def build_record(timeout: float) -> dict[str, Any]:
     from aureon_public.measurement_stamp import measurement_stamp
     from aureon_public.sweep_layout import layout_record
 
+    from aureon_public.stage2_arguments import attempts_for
+
     source = aureon_source()
     stamp = measurement_stamp()
     tested = _tested_stage1_tools()
     entries = []
     for row in reachable_entries():
         print(f"{row['module']} {row['symbol']}", file=sys.stderr)
-        payload = _one(row["module"], row["symbol"], timeout)
-        bad = [str(item) for item in payload.get("bad") or []]
-        sockets = [str(item) for item in payload.get("socket") or []]
+        planned = [
+            {
+                "arguments": {},
+                "label": "no_arguments",
+                "note": "No arguments.",
+                "source": None,
+            }
+        ]
+        if row["plan_stage"] == 2:
+            planned.extend(attempts_for(row["module"], row["symbol"]))
+        recorded = []
+        hazards: list[str] = []
+        for attempt in planned:
+            if attempt.get("fixture"):
+                arguments_json = json.dumps({"__sweep_fixture__": attempt["fixture"]})
+                shown: dict[str, Any] = {"__sweep_fixture__": attempt["fixture"]}
+            else:
+                arguments = attempt.get("arguments") if isinstance(attempt.get("arguments"), dict) else {}
+                arguments_json = json.dumps(arguments) if arguments else ""
+                shown = arguments if isinstance(arguments, dict) else {}
+            payload = _one(row["module"], row["symbol"], timeout, arguments_json)
+            reason = hazard_reason(payload)
+            if reason:
+                hazards.append(reason)
+            elif row["plan_stage"] == 2 and payload.get("error"):
+                hazards.append("call did not finish")
+                reason = "call did not finish"
+            recorded.append(
+                {
+                    "arguments": shown,
+                    "bad": [str(item) for item in payload.get("bad") or []],
+                    "called": payload.get("called") is True,
+                    "error": payload.get("error"),
+                    "label": attempt.get("label"),
+                    "note": attempt.get("note"),
+                    "process": [str(item) for item in payload.get("process") or []],
+                    "reason": payload.get("reason"),
+                    "refusal": reason,
+                    "sandbox_writes": [str(item) for item in payload.get("sandbox_writes") or []],
+                    "socket": [str(item) for item in payload.get("socket") or []],
+                    "source": attempt.get("source"),
+                    "status": payload.get("status"),
+                    "writes": [str(item) for item in payload.get("writes") or []],
+                }
+            )
+        first = recorded[0]
+        refusal = _first_hazard(hazards)
         key = (row["module"], row["symbol"])
         entries.append(
             {
-                "bad": bad,
-                "called": payload.get("called") is True,
-                "error": payload.get("error"),
+                "attempts": recorded,
+                "bad": first["bad"],
+                "called": first["called"],
+                "error": first["error"],
                 "module": row["module"],
                 "package": row["package"],
                 "plan_stage": row["plan_stage"],
-                "reason": payload.get("reason"),
-                "refused": bool(bad or sockets),
-                "socket": sockets,
-                "status": payload.get("status"),
+                "process": first["process"],
+                "reason": first["reason"],
+                "refusal": refusal,
+                "refused": refusal is not None,
+                "sandbox_writes": sorted(
+                    {item for attempt in recorded for item in attempt["sandbox_writes"]}
+                ),
+                "socket": first["socket"],
+                "status": first["status"],
                 "symbol": row["symbol"],
                 "tested_stage1_tool": key in tested,
+                "writes": first["writes"],
             }
         )
+    from aureon_public.sweep_layout import beside
+
+    home = beside() / "home"
     return {
         "aureon_source": source,
         "entries": entries,
         "layout": layout_record(),
+        "user_dirs": {
+            "HOME": str(home),
+            "USERPROFILE": str(home),
+            "XDG_CACHE_HOME": str(home / ".cache"),
+            "XDG_CONFIG_HOME": str(home / ".config"),
+            "XDG_DATA_HOME": str(home / ".local" / "share"),
+            "XDG_RUNTIME_DIR": str(beside() / "runtime"),
+            "XDG_STATE_HOME": str(home / ".local" / "state"),
+        },
+        "processes": "blocked",
         "sockets": "blocked",
+        "writes": "outside sandbox blocked",
         **stamp,
     }
 
@@ -189,13 +310,14 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="aureon-public-call-sweep")
     parser.add_argument("--module")
     parser.add_argument("--symbol")
+    parser.add_argument("--arguments", default="")
     parser.add_argument("--out", type=Path)
-    parser.add_argument("--timeout", type=float, default=30.0)
+    parser.add_argument("--timeout", type=float, default=45.0)
     args = parser.parse_args(argv)
     if args.module or args.symbol:
         if not args.module or not args.symbol:
             raise SystemExit("module and symbol are both required")
-        child_main(args.module, args.symbol)
+        child_main(args.module, args.symbol, args.arguments)
         return
     record = build_record(args.timeout)
     text = json.dumps(record, indent=2, sort_keys=True) + "\n"

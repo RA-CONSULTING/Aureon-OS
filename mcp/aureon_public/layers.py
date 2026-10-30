@@ -37,7 +37,7 @@ PACKAGES: tuple[dict[str, str], ...] = (
     {"package": "core", "kind": "public", "reason": "Canonical field, LambdaEngine, circulation catalog, and the repository-layer hold."},
     {"package": "data_feeds", "kind": "catalog", "reason": "Feeds are key-adjacent. Not called."},
     {"package": "decoders", "kind": "catalog", "reason": "Not opened. No safe callable wrapped."},
-    {"package": "evaluation", "kind": "evidence_predict_next", "reason": "predict_next only. evaluate_organism is not called."},
+    {"package": "evaluation", "kind": "evidence_predict_next", "reason": "predict_next and the committed-report formatters. evaluate_organism and the self-coder harness are not called."},
     {"package": "exchanges", "kind": "operator", "reason": "Blocked by guard.py. Operator refusal only. No live orders."},
     {"package": "gates", "kind": "catalog", "reason": "Signature pass was not done. Not called."},
     {"package": "generated", "kind": "catalog", "reason": "Generated trees are not exposed."},
@@ -563,6 +563,7 @@ def public_layer_tools() -> list[Any]:
     from aureon_public.alignment_layer import TOOLS as ALIGNMENT_TOOLS
     from aureon_public.more_layers import TOOLS
     from aureon_public.stage1_rest import TOOLS as STAGE1_TOOLS
+    from aureon_public.stage2_layer import TOOLS as STAGE2_TOOLS
 
     return [
         package_dispositions,
@@ -580,6 +581,7 @@ def public_layer_tools() -> list[Any]:
         *TOOLS,
         *ALIGNMENT_TOOLS,
         *STAGE1_TOOLS,
+        *STAGE2_TOOLS,
     ]
 
 

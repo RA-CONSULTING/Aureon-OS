@@ -4,11 +4,11 @@
     "ollama_config"
   ],
   "aureon_source": {
-    "commit": "566fe295f17235f68201dd10431105f58ab80a1f",
+    "commit": "d16de642e899dce335b28c148db4918b1f39eec7",
     "kind": "checkout"
   },
   "aureon_tree": "8aef927b7fe6276c187e4c73c79f0de012ad980d",
-  "code_commit": "566fe295f17235f68201dd10431105f58ab80a1f",
+  "code_commit": "d16de642e899dce335b28c148db4918b1f39eec7",
   "code_commit_note": "This is the parent of the commit that contains this record. The record cannot name the commit that adds the file.",
   "http_clients": [
     "aiohttp",
@@ -22,7 +22,7 @@
     "websockets"
   ],
   "layout": {
-    "beside": "/tmp/aureon-sweep-parent.lGAN0b",
+    "beside": "/tmp/aureon-sweep-parent.Is2F8l",
     "created": [
       "NEXUS-LIVE-FEED-",
       "Aureon-Trading--Project-Sero"
@@ -144,8 +144,11 @@
       "error": null,
       "module": "atn/aureon_atn_backtest.py",
       "package": "atn",
+      "process": [],
+      "refusal": "module import loads an adapter or http client",
       "refused": true,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [
@@ -252,8 +255,11 @@
       "error": null,
       "module": "atn/aureon_atn_forensics.py",
       "package": "atn",
+      "process": [],
+      "refusal": "module import loads an adapter or http client",
       "refused": true,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [
@@ -360,80 +366,110 @@
       "error": null,
       "module": "atn/aureon_atn_monitor.py",
       "package": "atn",
+      "process": [],
+      "refusal": "module import loads an adapter or http client",
       "refused": true,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "cognition/logic_flow.py",
       "package": "cognition",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "cognition/logic_train_audit.py",
       "package": "cognition",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "cognition/phenolic_bridge.py",
       "package": "cognition",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "cognition/pipeline.py",
       "package": "cognition",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "cognition/schemas.py",
       "package": "cognition",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "decoders/aztec_decoder.py",
       "package": "decoders",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "decoders/book_of_ur.py",
       "package": "decoders",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "decoders/celtic_ogham.py",
       "package": "decoders",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "decoders/egyptian_decoder.py",
       "package": "decoders",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [
@@ -444,8 +480,11 @@
       "error": null,
       "module": "decoders/emerald_spec.py",
       "package": "decoders",
+      "process": [],
+      "refusal": "module import loads an adapter or http client",
       "refused": true,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [
@@ -456,243 +495,335 @@
       "error": null,
       "module": "decoders/grail_convergence.py",
       "package": "decoders",
+      "process": [],
+      "refusal": "module import loads an adapter or http client",
       "refused": true,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "decoders/iching_decoder.py",
       "package": "decoders",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "decoders/japanese_decoder.py",
       "package": "decoders",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "decoders/maya_decoder.py",
       "package": "decoders",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "decoders/ming_japan_decoder.py",
       "package": "decoders",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "decoders/mogollon_decoder.py",
       "package": "decoders",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "evaluation/auris_node_eval.py",
       "package": "evaluation",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "evaluation/brain_proof.py",
       "package": "evaluation",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "evaluation/measured_proof.py",
       "package": "evaluation",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "evaluation/organism_proof.py",
       "package": "evaluation",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "evaluation/qgita_snr_benchmark.py",
       "package": "evaluation",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "gates/benchmark.py",
       "package": "gates",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "gates/panel.py",
       "package": "gates",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "gates/switchboard.py",
       "package": "gates",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "observer/__init__.py",
       "package": "observer",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "observer/fitter.py",
       "package": "observer",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "observer/harmonic_observer.py",
       "package": "observer",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "observer/live_data_policy.py",
       "package": "observer",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "observer/momentum.py",
       "package": "observer",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "observer/predictor.py",
       "package": "observer",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "observer/production_mode.py",
       "package": "observer",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "observer/real_data_contract.py",
       "package": "observer",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "observer/real_price_fallback.py",
       "package": "observer",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "observer/rock.py",
       "package": "observer",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "observer/wave_predictor.py",
       "package": "observer",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "observer/wiring.py",
       "package": "observer",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": "ImportError: Refused imports: aureon.exchanges, aureon.trading, unified_margin_trader, aureon.bots, aureon.bots_intelligence, aureon.bridges, aureon.scanners. No keys are present. Refused: aureon.exchanges",
       "module": "s51/aureon_51.py",
       "package": "s51",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "s51/aureon_51_compound.py",
       "package": "s51",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": "ModuleNotFoundError: No module named 'websockets'",
       "module": "s51/aureon_51_live.py",
       "package": "s51",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     },
     {
       "bad": [],
       "error": null,
       "module": "s51/aureon_51_turbo.py",
       "package": "s51",
+      "process": [],
+      "refusal": null,
       "refused": false,
-      "socket": false
+      "socket": false,
+      "writes": []
     }
   ],
   "pin": "8aa6a2d971cc529484e2a5e261e28afafab4e4f4",
   "pin_aureon_tree": "8aef927b7fe6276c187e4c73c79f0de012ad980d",
-  "sockets": "blocked"
+  "processes": "blocked",
+  "sockets": "blocked",
+  "writes": "outside sandbox blocked"
 }

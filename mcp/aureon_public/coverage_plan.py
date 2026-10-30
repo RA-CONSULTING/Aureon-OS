@@ -10,6 +10,7 @@ The file is refused when its sha256 is not INVENTORY_SHA256.
 from __future__ import annotations
 
 import argparse
+import json
 from collections import defaultdict
 from pathlib import Path
 
@@ -85,6 +86,33 @@ def _rows() -> tuple[list[dict], dict[str, dict[str, int]]]:
     return loaded, package_depth()
 
 
+def tested_keys() -> set[tuple[str, str]]:
+    """Entry points a public tool calls and a test exercises."""
+
+    from aureon_public.call_sweep import _tested_stage1_tools
+    from aureon_public.stage2_layer import TESTED
+
+    return set(_tested_stage1_tools()) | set(TESTED)
+
+
+def _tested_counts(loaded: list[dict]) -> dict[str, int]:
+    """Reachable public entry points that a tool calls. A refused point is not tested."""
+
+    wanted = tested_keys()
+    counts: dict[str, int] = defaultdict(int)
+    seen: set[tuple[str, str]] = set()
+    for row in loaded:
+        if row["server"] != "public" or row["kind"] not in {"function", "method"}:
+            continue
+        key = (str(row["module"]), str(row["symbol"]))
+        if key in seen or key not in wanted:
+            continue
+        seen.add(key)
+        if public_entry_refusal(row) is None:
+            counts[str(row["package"])] += 1
+    return counts
+
+
 def plan_rows() -> list[dict]:
     """One row per package. Counts are the pinned inventory and the current guard."""
 
@@ -93,6 +121,7 @@ def plan_rows() -> list[dict]:
     for row in loaded:
         by_package[row["package"]].append(row)
     opened = _opened_by_allowlist(loaded)
+    tested = _tested_counts(loaded)
     rows = []
     for package in sorted(by_package):
         items = by_package[package]
@@ -108,7 +137,9 @@ def plan_rows() -> list[dict]:
                 "package": package,
                 "public_entry_points": counted["public_entry_points"],
                 "reachable": counted["reachable"],
+                "refused": counted["public_entry_points"] - counted["reachable"],
                 "stage": stage,
+                "tested": tested.get(package, 0),
             }
         )
     rows.sort(key=lambda row: (row["stage"], row["package"]))
@@ -141,11 +172,204 @@ def _excluded_packages() -> list[str]:
     return sorted(package for package, kind, _reason in UPDATES if kind == "excluded")
 
 
+def _read_json(name: str) -> dict:
+    path = repo_root() / "measured" / name
+    try:
+        loaded = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return loaded if isinstance(loaded, dict) else {}
+
+
+def _stage2_lines() -> list[str]:
+    """What this run opened, refused, and left without a tool."""
+
+    from aureon_public.stage2_arguments import NOT_A_TOOL
+
+    imports = _read_json("aureon_public_stage2_imports.json")
+    calls = _read_json("aureon_public_call_sweep.json")
+    lines = [
+        "Stage 2 tools call through `dispatch`. The inputs are the tests and committed files named on each tool. `atn` stays excluded because its modules load an HTTP client. `conversion` has no public function or method and stays excluded. The constructor allowlist, the `__post_init__` refusal, the `AUREON_PUBLIC_SWEEP` start refusal, and the pin check are unchanged.",
+        "Import refusals:",
+    ]
+    modules = [row for row in imports.get("modules") or [] if isinstance(row, dict) and row.get("refused")]
+    if not modules:
+        lines.append("- none recorded")
+    for row in sorted(modules, key=lambda item: str(item.get("module"))):
+        lines.append(
+            f"- `{row.get('module')}`: {row.get('refusal') or 'module import loads an adapter or http client'}"
+        )
+    lines.append("Import errors that are not refusals:")
+    errors = [
+        row
+        for row in imports.get("modules") or []
+        if isinstance(row, dict) and row.get("error") and not row.get("refused")
+    ]
+    if not errors:
+        lines.append("- none recorded")
+    for row in sorted(errors, key=lambda item: str(item.get("module"))):
+        lines.append(f"- `{row.get('module')}`: {row.get('error')}")
+    lines.append("Call refusals from the sweep:")
+    entries = [
+        row
+        for row in calls.get("entries") or []
+        if isinstance(row, dict) and row.get("refused")
+    ]
+    if not entries:
+        lines.append("- none recorded")
+    for row in sorted(entries, key=lambda item: (str(item.get("module")), str(item.get("symbol")))):
+        extra = []
+        for attempt in row.get("attempts") or []:
+            if isinstance(attempt, dict) and attempt.get("process"):
+                extra.append("The same call started a process. The sweep blocked it.")
+            if isinstance(attempt, dict) and attempt.get("writes"):
+                extra.append("The same call wrote outside the sandbox. The sweep blocked it.")
+        suffix = (". " + " ".join(dict.fromkeys(extra))) if extra else ""
+        lines.append(
+            f"- `{row.get('module')}` `{row.get('symbol')}`: {row.get('refusal') or 'call loads a banned chain or opens a connection'}{suffix}"
+        )
+    from aureon_public.body import _ENTRY_REFUSAL, _UNTESTED_STAGE2, lookup, public_entry_refusal
+
+    lines.append(
+        "These five were reachable and had no tool. `body_call` and `dispatch` refuse them. The constructor allowlist is unchanged."
+    )
+    for key in sorted(item for item, reason in _ENTRY_REFUSAL.items() if reason == _UNTESTED_STAGE2):
+        lines.append(f"- `{key[0]}` `{key[1]}`: {_UNTESTED_STAGE2}. {NOT_A_TOOL[key]}")
+    still = []
+    for key in sorted(NOT_A_TOOL):
+        row = lookup(key[0], key[1])
+        if row is not None and public_entry_refusal(row) is None:
+            still.append(key)
+    if still:
+        lines.append("These stage-2 entry points are still reachable and are not tools:")
+        for key in still:
+            lines.append(f"- `{key[0]}` `{key[1]}`. {NOT_A_TOOL[key]}")
+    return lines
+
+
+def _public_keys() -> dict[int, list[tuple[str, str]]]:
+    """Reachable public entry points, by coverage-plan stage."""
+
+    from aureon_public.body import _inventory, _plan_stage, public_entry_refusal
+
+    seen: set[tuple[str, str]] = set()
+    found: dict[int, list[tuple[str, str]]] = defaultdict(list)
+    rows, _index = _inventory()
+    for row in rows:
+        if row["server"] != "public" or row["kind"] not in {"function", "method"}:
+            continue
+        key = (str(row["module"]), str(row["symbol"]))
+        if key in seen:
+            continue
+        seen.add(key)
+        if public_entry_refusal(row) is not None:
+            continue
+        found[_plan_stage(str(row["package"]))].append(key)
+    for keys in found.values():
+        keys.sort()
+    return found
+
+
+def _reconciliation_lines() -> list[str]:
+    """How reachable and tested moved from main c1ae468d to this tree.
+
+    Main recorded 85 reachable: stage 1 was 39 and stage 2 was 46. Stage 1
+    tested 29 entry points and stage 2 tested none. A tool does not create a
+    new reachable row.
+    """
+
+    from aureon_public.body import _ENTRY_REFUSAL, _UNTESTED_STAGE2
+    from aureon_public.call_sweep import _tested_stage1_tools
+    from aureon_public.stage2_layer import TESTED
+
+    reachable = _public_keys()
+    stage1_tested = sorted(_tested_stage1_tools())
+    stage2_tested = sorted(TESTED)
+    stage1_now = set(reachable.get(1, []))
+    stage2_now = set(reachable.get(2, []))
+    dropped = [key for key in stage1_tested if key not in stage1_now]
+    untested_stage1 = [key for key in reachable.get(1, []) if key not in set(stage1_tested)]
+    lines = [
+        "## Count reconciliation",
+        "",
+        "Main `c1ae468d` recorded reachable 85. Stage 1 was 39 (alignment 11, generated 4, swarm 24). Stage 2 was 46 (atn 0, cognition 1, conversion 0, decoders 5, evaluation 7, gates 3, observer 29, s51 1). 39 + 46 = 85. Tested on that main was the 29 stage-1 tool entry points below. Stage 2 tested was 0. Registering a tool does not add a reachable row. The tool calls an entry point that was already reachable.",
+        f"Stage 1 reachable now: {len(stage1_now)}. Stage 2 reachable now: {len(stage2_now)}. {len(stage1_now)} + {len(stage2_now)} = {len(stage1_now) + len(stage2_now)}.",
+        f"Stage 1 tested now: {len(stage1_tested)}. Stage 2 tested now: {len(stage2_tested)}. {len(stage1_tested)} + {len(stage2_tested)} = {len(stage1_tested) + len(stage2_tested)}.",
+        "Every stage-1 entry point that was tested on main is still tested. None dropped out:",
+    ]
+    if dropped:
+        lines.append("Stage-1 tested entry points that are no longer reachable:")
+        for module, symbol in dropped:
+            lines.append(f"- `{module}` `{symbol}`")
+    else:
+        lines.append("No stage-1 tested entry point dropped out.")
+    for module, symbol in stage1_tested:
+        lines.append(f"- `{module}` `{symbol}`")
+    lines.append(
+        "Stage 1 still has reachable entry points that were not tested on main and are not tested now. This run did not remove them from tested, because they were not tested:"
+    )
+    for module, symbol in untested_stage1:
+        lines.append(f"- `{module}` `{symbol}`")
+    lines.append(
+        "Stage 2 reachable fell by 7, from 46 to 39. The call sweep refused `self_coder_report`. Five reachable entry points had no tool. `log_blocked_fallback` would write a fallback log for an event that did not happen, so `body_call` refuses it."
+    )
+    calls = _read_json("aureon_public_call_sweep.json")
+    self_coder = next(
+        (
+            row
+            for row in calls.get("entries") or []
+            if isinstance(row, dict)
+            and row.get("module") == "evaluation/measured_proof.py"
+            and row.get("symbol") == "self_coder_report"
+        ),
+        None,
+    )
+    if isinstance(self_coder, dict):
+        lines.append(
+            f"- `evaluation/measured_proof.py` `self_coder_report`: {self_coder.get('refusal') or 'refused by the call sweep'}."
+        )
+    else:
+        lines.append(
+            "- `evaluation/measured_proof.py` `self_coder_report`: refused by the call sweep. The record names the reason."
+        )
+    for key in sorted(item for item, reason in _ENTRY_REFUSAL.items() if reason == _UNTESTED_STAGE2):
+        lines.append(f"- `{key[0]}` `{key[1]}`: {_UNTESTED_STAGE2}.")
+    lines.append(
+        "- `observer/live_data_policy.py` `log_blocked_fallback`: "
+        "fallback log is not emitted for an event that did not happen."
+    )
+    total = len(stage1_now) + len(stage2_now)
+    tested_total = len(stage1_tested) + len(stage2_tested)
+    if (
+        len(stage1_now) != 39
+        or len(stage2_now) != 39
+        or len(stage1_tested) != 29
+        or len(stage2_tested) != 39
+        or dropped
+        or total != 78
+        or tested_total != 68
+    ):
+        raise RuntimeError(
+            "count reconciliation drifted: "
+            f"stage1 {len(stage1_now)} tested {len(stage1_tested)}; "
+            f"stage2 {len(stage2_now)} tested {len(stage2_tested)}; "
+            f"dropped {dropped}"
+        )
+    lines.append(
+        "Those seven are the only entry points that left the reachable set since main `c1ae468d`. "
+        "85 - 7 = 78. Stage 2's remaining 39 reachable entry points are the 39 tested tools. "
+        "39 + 39 = 78 reachable. 29 + 39 = 68 tested."
+    )
+    return lines
+
+
 def render() -> str:
     rows = plan_rows()
     listed = sum(row["listed"] for row in rows)
     public = sum(row["public_entry_points"] for row in rows)
     reachable = sum(row["reachable"] for row in rows)
+    tested = sum(row["tested"] for row in rows)
+    refused = sum(row["refused"] for row in rows)
     opened = sum(row["opened_by_allowlist"] for row in rows)
     excluded = _excluded_packages()
     first = next(row["package"] for row in rows if row["stage"] == 1)
@@ -164,15 +388,15 @@ def render() -> str:
         "bash measured/aureon_public_stage2_sweep.sh",
         "bash measured/aureon_public_call_sweep.sh",
         "bash measured/aureon_public_protocol_run.sh",
-        "env -u PYTHONPATH /tmp/aureon-public-venv/bin/python -m pytest tests/test_aureon_public_mcp.py tests/test_aureon_body.py tests/bio/test_mcp_interior_attribution.py tests/bio/test_mcp_membrane.py tests/bio/test_mcp_transport.py tests/test_aureon_public_alignment.py tests/test_aureon_public_stage1.py tests/test_aureon_public_protocol.py --tb=line",
+        "env -u PYTHONPATH /tmp/aureon-public-venv/bin/python -m pytest tests/test_aureon_public_mcp.py tests/test_aureon_body.py tests/bio/test_mcp_interior_attribution.py tests/bio/test_mcp_membrane.py tests/bio/test_mcp_transport.py tests/test_aureon_public_alignment.py tests/test_aureon_public_stage1.py tests/test_aureon_public_stage2.py tests/test_aureon_public_protocol.py --tb=line",
         "```",
         "",
-        "That pytest command is the gate. It runs in `/tmp/aureon-public-venv`, the venv `measured/aureon_public_stage1_run.sh` creates (`VENV` overrides the path). The file list is `tests/test_aureon_public_mcp.py`, `tests/test_aureon_body.py`, `tests/bio/test_mcp_interior_attribution.py`, `tests/bio/test_mcp_membrane.py`, `tests/bio/test_mcp_transport.py`, `tests/test_aureon_public_alignment.py`, `tests/test_aureon_public_stage1.py`, and `tests/test_aureon_public_protocol.py`. `tests/test_async_socket_isolation.py` is not in the gate list. It imports `pytest_socket`, and `mcp/aureon_public/test-requirements.txt` does not install that plugin.",
+        "That pytest command is the gate. It runs in `/tmp/aureon-public-venv`, the venv `measured/aureon_public_stage1_run.sh` creates (`VENV` overrides the path). The file list is `tests/test_aureon_public_mcp.py`, `tests/test_aureon_body.py`, `tests/bio/test_mcp_interior_attribution.py`, `tests/bio/test_mcp_membrane.py`, `tests/bio/test_mcp_transport.py`, `tests/test_aureon_public_alignment.py`, `tests/test_aureon_public_stage1.py`, `tests/test_aureon_public_stage2.py`, and `tests/test_aureon_public_protocol.py`. `tests/test_async_socket_isolation.py` is not in the gate list. It imports `pytest_socket`, and `mcp/aureon_public/test-requirements.txt` does not install that plugin.",
         "",
         "`--write` rewrites this file from the same function. `measured/aureon_public_stage1_run.sh` installs `mcp/aureon_public/requirements.txt` and `mcp/aureon_public/test-requirements.txt`, then rewrites both `measured/aureon_public_alignment.json` and `measured/aureon_public_stage1.json`. It writes those two files under a temp directory first and copies them into `measured/` only after both stamps have finished. `measurement_stamp` raises `RuntimeError` when `git status --porcelain` is not empty, so the second stamp must not see the first file. `test-requirements.txt` is the test install: pytest, pytest-timeout, flask, pandas, and scipy. It is not the public server runtime. `measured/aureon_public_stage2_sweep.sh` and `measured/aureon_public_call_sweep.sh` copy the checkout with `cp -a` under an ordinary temp parent, place fake `NEXUS-LIVE-FEED-` and `Aureon-Trading--Project-Sero` checkouts beside that copy, block sockets, and rewrite their measured records. Each sweep record names the pin, the `aureon/` tree hash beside that pin, the `aureon_source` kind, and that temp parent. `measured/aureon_public_protocol_run.sh` starts this server over stdio and over Streamable HTTP bound to `127.0.0.1`, with `AUREON_PUBLIC_REQUIRE_PIN=1`. An MCP SDK 1.30.0 client calls `tools/list`, `resources/list`, `prompts/list`, and one `tools/call` (`alignment_consonance_read` with ratio 1.0). The raw pages are `measured/aureon_public_protocol.json`. These measured records name `code_commit`, the parent of the commit that contains the record file. A record cannot name the commit that adds the file.",
         "",
-        f"Listed symbols: {listed}. Public entry points: {public}. Reachable now: {reachable}. The plan on main recorded 879 reachable. An earlier draft head of this PR recorded 89 reachable, before the call sweep. Methods open because a constructor is allowlisted: {opened}. The refused-imports fence is unchanged.",
-        "Only the stage-1 tools are tested. Reachable now is what `body_call` still runs after the call sweep. Plan stages 3 and 4 stay closed. Stage 2 reach that remains is untested, unaudited reach, not coverage. The call sweep calls every entry point that was still reachable, with no arguments, and refuses one that opens a connection or loads queen, miner, swarm_motion, inhouse_ai, ollama_config, or an HTTP client. `get_unified_directive` is refused that way. It does not build the queen and miner bridges.",
+        f"Listed symbols: {listed}. Public entry points: {public}. Reachable now: {reachable}. Tested: {tested}. Refused: {refused}. The plan on main recorded 879 reachable. An earlier draft head of the stage-1 PR recorded 89 reachable, before the call sweep. Methods open because a constructor is allowlisted: {opened}. The refused-imports fence is unchanged.",
+        "Reachable means `public_entry_refusal` returns None. Tested means a public tool calls that entry point and `tests/test_aureon_public_stage1.py` or `tests/test_aureon_public_stage2.py` exercises the tool. Refused means a public entry point the server will not run. Plan stages 3 and 4 stay closed. The call sweep calls every entry point that was still reachable, with no arguments, and calls each stage-2 entry point again with the real arguments in `stage2_arguments.py`. It refuses one that opens a connection, starts a process, writes outside the sandbox, or loads queen, miner, swarm_motion, inhouse_ai, ollama_config, or an HTTP client. `get_unified_directive` is refused that way. It does not build the queen and miner bridges.",
         "",
         "## Stage order",
         "",
@@ -187,16 +411,16 @@ def render() -> str:
         "",
         f"Within a stage, packages are alphabetical. The first package is `{first}`.",
         "Stage 1 is the deterministic read-only packages. This run opens generated and swarm, after alignment. Organism is stage 4 because its join loads the in-house adapter chain.",
-        "Stage 2 has no new tools. Clean stage-2 entry points stay callable through `body_call`. A stage-2 module whose import loads an adapter or an HTTP client, or opens a connection, is refused.",
+        "Stage 2 is open. A stage-2 module whose import loads an adapter or an HTTP client, starts a process, or writes outside the sandbox is refused. A stage-2 entry point is refused when the no-argument call or a real-argument call does any of those, or does not finish. `atn` stays excluded. `conversion` has no public function or method and stays excluded.",
         "",
         "## Counts",
         "",
-        "| Stage | Package | Listed | Public entry points | Reachable now |",
-        "| ---: | --- | ---: | ---: | ---: |",
+        "| Stage | Package | Listed | Public entry points | Reachable now | Tested | Refused |",
+        "| ---: | --- | ---: | ---: | ---: | ---: | ---: |",
     ]
     for row in rows:
         lines.append(
-            f"| {row['stage']} | {row['package']} | {row['listed']} | {row['public_entry_points']} | {row['reachable']} |"
+            f"| {row['stage']} | {row['package']} | {row['listed']} | {row['public_entry_points']} | {row['reachable']} | {row['tested']} | {row['refused']} |"
         )
     lines.extend(
         [
@@ -229,7 +453,8 @@ def render() -> str:
             "`body_call` refuses `organism/repository_layers.py` `compose_repository_layers`. With the checkout beside `NEXUS-LIVE-FEED-` and `Aureon-Trading--Project-Sero`, that call uses `Path(__file__).parents[3]`, independent of `AUREON_REPOS_ROOT`, and execs those sibling modules outside the pin. One call also loads `core.organism_composition`, and through that `aureon.inhouse_ai.llm_adapter`, `agent_runner`, `orchestrator`, `aureon.ollama_config`, and `aureon.autonomous.aureon_internal_coding_workforce`. `inhouse_ai` stays excluded. Organism reachable is 0.",
             "`body_call` refuses `swarm/capability_grid.py` `build_lane`. `build_lane(\"fintech\")` imports `aureon.accounting`, and that package init reaches `aureon.autonomous.aureon_internal_coding_workforce`, which imports `aureon.inhouse_ai` and `aureon.ollama_config`. Swarm's other entry points stay. Swarm reachable is 24.",
             "The other swarm tools use fixtures from the swarm tests or fixed example arguments. Classes that need nested agent instances stay off the constructor allowlist: Cluster, Company, Zone, FleadhCompany, VisitorAgent, and WorkerAgent. Name-blocked `run_` entry points stay refused. Properties such as SwarmAgent.purity are not given tools because the worker calls methods. `validate_seat_receipt` stays reachable through `body_call` and is not a second tool: the public result cap would drop receipt fields before another call.",
-            "Stage 2 was not started. No stage-2 tool was written.",
+            *_stage2_lines(),
+            *_reconciliation_lines(),
             "",
             "The pin stays `8aa6a2d971cc529484e2a5e261e28afafab4e4f4`. The alignment modules at this checkout match that pin, so the tools do not need a newer commit. `GUARD_BLOB` and `INVENTORY_SHA256` are unchanged.",
             "",
@@ -249,7 +474,7 @@ def render() -> str:
             "",
             "The same v2.0.0 notes also replace `ClientSession` plus the transport clients with `Client`, and the v2.3.0 constructor no longer accepts `host`, `port`, or `streamable_http_path`. This server still passes those three to `FastMCP`, and the measured client still uses `ClientSession`. Staying on 1.30.0 keeps that call shape.",
             "",
-            "The protocol proof is the stdio session and the Streamable HTTP session bound to `127.0.0.1`. A Hugging Face Space scaffold, remote HTTP auth, and stage 2 each stay for a later PR.",
+            "The protocol proof is the stdio session and the Streamable HTTP session bound to `127.0.0.1`. A Hugging Face Space scaffold and remote HTTP auth stay for a later PR. Stage 2 is this run.",
             "",
         ]
     )

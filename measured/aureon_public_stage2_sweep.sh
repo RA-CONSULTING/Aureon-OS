@@ -3,7 +3,8 @@
 #
 # Each plan-stage-2 module is imported in its own process with sockets blocked.
 # A module is refused when that import loads inhouse_ai, ollama_config, or an
-# HTTP client, or when it opens a connection.
+# HTTP client, or when it opens a connection, starts a process, or writes
+# outside the temp parent.
 #
 # The checkout is copied under an ordinary temp parent. Fake NEXUS-LIVE-FEED-
 # and Aureon-Trading--Project-Sero folders are placed beside that copy. The

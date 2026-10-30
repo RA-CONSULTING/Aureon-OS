@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import enum
 import inspect
 import json
 import os
@@ -20,6 +21,8 @@ def _plain(value: Any, depth: int = 0) -> Any:
         if isinstance(value, str):
             return value[:500]
         return value
+    if isinstance(value, enum.Enum):
+        return _plain(value.value, depth + 1)
     if isinstance(value, dict):
         return {str(key): _plain(item, depth + 1) for key, item in list(value.items())[:30]}
     if isinstance(value, (list, tuple)):
@@ -147,6 +150,10 @@ def _load(dotted: str, module_rel: str) -> Any:
 
 def _call(dotted: str, symbol: str, arguments: dict[str, Any], module_rel: str) -> Any:
     imported = _load(dotted, module_rel)
+    if os.environ.get("AUREON_PUBLIC_SWEEP") == "1" and isinstance(arguments.get("__sweep_fixture__"), str):
+        from aureon_public.stage2_arguments import resolve_fixture
+
+        arguments = resolve_fixture(str(arguments["__sweep_fixture__"]))
     if "." not in symbol:
         fn = getattr(imported, symbol)
         return fn(**_coerce(fn, arguments))
@@ -162,31 +169,18 @@ def _call(dotted: str, symbol: str, arguments: dict[str, Any], module_rel: str) 
     return method(**_coerce(method, method_args))
 
 
-_SWEEP_SOCKETS: list[str] = []
-
-
 def _install_sweep_guard() -> None:
-    """Block and log connections. Used only while the call sweep is measuring."""
+    """Block sockets, process starts, and writes outside the sandbox.
+
+    Used only while the call sweep is measuring. The server refuses to start
+    when AUREON_PUBLIC_SWEEP is set.
+    """
 
     if os.environ.get("AUREON_PUBLIC_SWEEP") != "1":
         return
-    import socket
+    from aureon_public.sweep_guard import install_sweep_guard
 
-    class _Guard(socket.socket):
-        def connect(self, address: object, *args: object, **kwargs: object) -> None:
-            _SWEEP_SOCKETS.append(str(address)[:160])
-            raise OSError("socket blocked")
-
-        def connect_ex(self, address: object, *args: object, **kwargs: object) -> int:
-            _SWEEP_SOCKETS.append(str(address)[:160])
-            raise OSError("socket blocked")
-
-    def _create_connection(*args: object, **kwargs: object) -> object:
-        _SWEEP_SOCKETS.append("create_connection")
-        raise OSError("socket blocked")
-
-    socket.socket = _Guard  # type: ignore[misc]
-    socket.create_connection = _create_connection  # type: ignore[assignment]
+    install_sweep_guard()
 
 
 def _sweep_modules() -> list[str]:
@@ -231,7 +225,16 @@ def main() -> None:
             if "inhouse_ai" in name or "ollama_config" in name
         )
     if os.environ.get("AUREON_PUBLIC_SWEEP") == "1":
-        payload["sweep"] = {"modules": _sweep_modules(), "sockets": list(_SWEEP_SOCKETS)}
+        from aureon_public.sweep_guard import snapshot
+
+        snap = snapshot()
+        payload["sweep"] = {
+            "modules": _sweep_modules(),
+            "processes": snap["processes"],
+            "sandbox_writes": snap["sandbox_writes"],
+            "sockets": snap["sockets"],
+            "writes": snap["writes"],
+        }
     sys.stdout = real_stdout
     real_stdout.write(json.dumps(payload))
 
