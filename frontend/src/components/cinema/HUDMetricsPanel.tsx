@@ -6,13 +6,17 @@
 interface HUDMetricsPanelProps {
   coherence: number | null;         // 0-1
   lambda: number | null;            // secondary metric
-  lighthouseSignal: number;  // signal strength
-  prismState: string;        // FORMING, BLUE, GOLD, RED
-  hncFrequency: number;      // Hz
-  hncMarketState: string;    // CONSOLIDATION, TRENDING, VOLATILE, BREAKOUT
-  gaiaLatticeState: string;  // COHERENT, DISTORTION, NEUTRAL
-  gaiaFrequency: number;     // Hz
-  dominantNode: string;      // Tiger, Falcon, etc.
+  lighthouseSignal: number | null;  // signal strength
+  prismState: string | null;        // FORMING, BLUE, GOLD, RED
+  hncFrequency: number | null;      // Hz
+  hncMarketState: string | null;    // CONSOLIDATION, TRENDING, VOLATILE, BREAKOUT
+  gaiaLatticeState: string | null;  // COHERENT, DISTORTION, NEUTRAL
+  gaiaFrequency: number | null;     // Hz
+  dominantNode: string | null;      // Tiger, Falcon, etc.
+}
+
+function formatHz(value: number | null | undefined): string {
+  return typeof value === 'number' && Number.isFinite(value) ? `${value.toFixed(0)}Hz` : 'unavailable';
 }
 
 // SVG circular gauge
@@ -70,9 +74,18 @@ function CircularGauge({ value, max = 1, label, color, size = 52 }: {
 
 function StateBadge({ label, state, colorMap }: {
   label: string;
-  state: string;
+  state: string | null;
   colorMap: Record<string, string>;
 }) {
+  if (!state) {
+    return (
+      <div className="flex items-center gap-1.5">
+        <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
+        <span className="text-[9px] text-white/35 uppercase tracking-wider">{label}</span>
+        <span className="text-[9px] font-medium text-white/40">unavailable</span>
+      </div>
+    );
+  }
   const color = colorMap[state] || '#8844ff';
 
   return (
@@ -90,13 +103,13 @@ function StateBadge({ label, state, colorMap }: {
 export function HUDMetricsPanel({
   coherence = null,
   lambda = null,
-  lighthouseSignal = 0.3,
-  prismState = 'FORMING',
-  hncFrequency = 432,
-  hncMarketState = 'CONSOLIDATION',
-  gaiaLatticeState = 'NEUTRAL',
-  gaiaFrequency = 432,
-  dominantNode = 'Tiger',
+  lighthouseSignal = null,
+  prismState = null,
+  hncFrequency = null,
+  hncMarketState = null,
+  gaiaLatticeState = null,
+  gaiaFrequency = null,
+  dominantNode = null,
 }: HUDMetricsPanelProps) {
   const prismColors: Record<string, string> = {
     FORMING: '#8844ff',
@@ -126,7 +139,15 @@ export function HUDMetricsPanel({
           <CircularGauge
             value={coherence}
             label="Gamma"
-            color={coherence != null && coherence > 0.7 ? '#00ff88' : coherence != null && coherence > 0.4 ? '#4488ff' : '#8844ff'}
+            color={
+              coherence == null
+                ? 'rgba(255,255,255,0.35)'
+                : coherence > 0.7
+                  ? '#00ff88'
+                  : coherence > 0.4
+                    ? '#4488ff'
+                    : '#8844ff'
+            }
           />
           <CircularGauge
             value={lambda}
@@ -134,7 +155,7 @@ export function HUDMetricsPanel({
             color="#44ccff"
           />
           <CircularGauge
-            value={lighthouseSignal}
+            value={typeof lighthouseSignal === 'number' && Number.isFinite(lighthouseSignal) ? lighthouseSignal : null}
             label="Lighthouse"
             color="#ffaa00"
           />
@@ -151,17 +172,17 @@ export function HUDMetricsPanel({
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-warning shadow-[0_0_4px_rgba(251,146,60,0.6)]" />
             <span className="text-[9px] text-white/35 uppercase tracking-wider">Node</span>
-            <span className="text-[9px] font-medium text-warning">{dominantNode}</span>
+            <span className="text-[9px] font-medium text-warning">{dominantNode || 'unavailable'}</span>
           </div>
         </div>
 
         {/* Frequency readout */}
         <div className="mt-2.5 pt-2 border-t border-white/[0.04] flex items-center justify-between">
           <div className="text-[9px] text-white/25">
-            HNC {hncFrequency.toFixed(0)}Hz
+            HNC {formatHz(hncFrequency)}
           </div>
           <div className="text-[9px] text-white/25">
-            Gaia {gaiaFrequency.toFixed(0)}Hz
+            Gaia {formatHz(gaiaFrequency)}
           </div>
         </div>
       </div>

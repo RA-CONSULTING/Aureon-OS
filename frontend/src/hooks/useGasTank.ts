@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { finiteOrNull, readingText } from '@/lib/reading';
 
 interface GasTankState {
-  balance: number;
-  initialBalance: number;
-  highWaterMark: number;
-  feeRate: number;
+  balance: number | null;
+  initialBalance: number | null;
+  highWaterMark: number | null;
+  feeRate: number | null;
   membershipType: 'founder' | 'standard';
-  feesPaidToday: number;
-  totalFeesPaid: number;
+  feesPaidToday: number | null;
+  totalFeesPaid: number | null;
   status: 'ACTIVE' | 'LOW' | 'CRITICAL' | 'EMPTY' | 'PAUSED';
   canTrade: boolean;
   isLoading: boolean;
@@ -18,13 +19,13 @@ interface GasTankState {
 export const useGasTank = (userId: string | null) => {
   const { toast } = useToast();
   const [state, setState] = useState<GasTankState>({
-    balance: 0,
-    initialBalance: 0,
-    highWaterMark: 0,
-    feeRate: 0.20,
+    balance: null,
+    initialBalance: null,
+    highWaterMark: null,
+    feeRate: null,
     membershipType: 'standard',
-    feesPaidToday: 0,
-    totalFeesPaid: 0,
+    feesPaidToday: null,
+    totalFeesPaid: null,
     status: 'PAUSED',
     canTrade: false,
     isLoading: true,
@@ -52,13 +53,13 @@ export const useGasTank = (userId: string | null) => {
 
       if (data) {
         setState({
-          balance: parseFloat(data.balance as any),
-          initialBalance: parseFloat(data.initial_balance as any),
-          highWaterMark: parseFloat(data.high_water_mark as any),
-          feeRate: parseFloat(data.fee_rate as any),
+          balance: finiteOrNull(data.balance),
+          initialBalance: finiteOrNull(data.initial_balance),
+          highWaterMark: finiteOrNull(data.high_water_mark),
+          feeRate: finiteOrNull(data.fee_rate),
           membershipType: data.membership_type as 'founder' | 'standard',
-          feesPaidToday: parseFloat(data.fees_paid_today as any),
-          totalFeesPaid: parseFloat(data.total_fees_paid as any),
+          feesPaidToday: finiteOrNull(data.fees_paid_today),
+          totalFeesPaid: finiteOrNull(data.total_fees_paid),
           status: data.status as any,
           canTrade: data.balance > 0 && data.status !== 'PAUSED' && data.status !== 'EMPTY',
           isLoading: false,
@@ -91,13 +92,13 @@ export const useGasTank = (userId: string | null) => {
           
           if (data) {
             const newState = {
-              balance: parseFloat(data.balance),
-              initialBalance: parseFloat(data.initial_balance),
-              highWaterMark: parseFloat(data.high_water_mark),
-              feeRate: parseFloat(data.fee_rate),
+              balance: finiteOrNull(data.balance),
+              initialBalance: finiteOrNull(data.initial_balance),
+              highWaterMark: finiteOrNull(data.high_water_mark),
+              feeRate: finiteOrNull(data.fee_rate),
               membershipType: data.membership_type as 'founder' | 'standard',
-              feesPaidToday: parseFloat(data.fees_paid_today),
-              totalFeesPaid: parseFloat(data.total_fees_paid),
+              feesPaidToday: finiteOrNull(data.fees_paid_today),
+              totalFeesPaid: finiteOrNull(data.total_fees_paid),
               status: data.status as any,
               canTrade: data.balance > 0 && data.status !== 'PAUSED' && data.status !== 'EMPTY',
               isLoading: false,
@@ -109,13 +110,13 @@ export const useGasTank = (userId: string | null) => {
             if (data.status === 'LOW' && state.status !== 'LOW') {
               toast({
                 title: '🟡 Gas Tank Low',
-                description: `Balance: £${parseFloat(data.balance).toFixed(2)}. Consider topping up.`,
+                description: `Balance: ${readingText(data.balance, (balance) => `£${balance.toFixed(2)}`)}. Consider topping up.`,
                 variant: 'default',
               });
             } else if (data.status === 'CRITICAL' && state.status !== 'CRITICAL') {
               toast({
                 title: '🔴 Gas Tank Critical',
-                description: `Balance: £${parseFloat(data.balance).toFixed(2)}. Top up soon!`,
+                description: `Balance: ${readingText(data.balance, (balance) => `£${balance.toFixed(2)}`)}. Top up soon!`,
                 variant: 'destructive',
               });
             } else if (data.status === 'EMPTY' && state.status !== 'EMPTY') {

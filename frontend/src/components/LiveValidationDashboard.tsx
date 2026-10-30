@@ -5,18 +5,19 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Play, Pause, Square, Camera, Download } from 'lucide-react';
 import { useEcosystemData } from '@/hooks/useEcosystemData';
+import { finiteOrNull, readingText } from '@/lib/reading';
 
 interface ValidationMetrics {
-  coherence: number;
-  schumannLock: number;
-  tsvGain: number;
-  primeAlignment: number;
-  tenNineOneConcordance: number;
-  alphaTheta: number;
-  hrvNorm: number;
-  gsrNorm: number;
-  calmIndex: number;
-  auraHue: number;
+  coherence: number | null;
+  schumannLock: number | null;
+  tsvGain: number | null;
+  primeAlignment: number | null;
+  tenNineOneConcordance: number | null;
+  alphaTheta: number | null;
+  hrvNorm: number | null;
+  gsrNorm: number | null;
+  calmIndex: number | null;
+  auraHue: number | null;
 }
 
 interface ValidationPhase {
@@ -36,16 +37,16 @@ export default function LiveValidationDashboard() {
   
   // LIVE DATA ONLY - Use real ecosystem metrics
   const [metrics, setMetrics] = useState<ValidationMetrics>({
-    coherence: 0,
-    schumannLock: 0,
-    tsvGain: 0,
-    primeAlignment: 0,
-    tenNineOneConcordance: 0,
-    alphaTheta: 1.0,
-    hrvNorm: 0,
-    gsrNorm: 0,
-    calmIndex: 0,
-    auraHue: 0
+    coherence: null,
+    schumannLock: null,
+    tsvGain: null,
+    primeAlignment: null,
+    tenNineOneConcordance: null,
+    alphaTheta: null,
+    hrvNorm: null,
+    gsrNorm: null,
+    calmIndex: null,
+    auraHue: null
   });
 
   const phases: ValidationPhase[] = [
@@ -85,17 +86,18 @@ export default function LiveValidationDashboard() {
         });
 
         // LIVE DATA ONLY - Use real ecosystem metrics
+        const coherence = finiteOrNull(ecosystemMetrics.coherence);
         setMetrics({
-          coherence: ecosystemMetrics.coherence || 0,
-          schumannLock: ecosystemMetrics.harmonicLock ? 1 : 0,
-          tsvGain: ecosystemMetrics.probabilityFusion || 0,
-          primeAlignment: ecosystemMetrics.consensusConfidence || 0,
-          tenNineOneConcordance: ecosystemMetrics.hiveMindCoherence || 0,
-          alphaTheta: 1.0 + (ecosystemMetrics.coherence || 0) * 0.5,
-          hrvNorm: ecosystemMetrics.harmonicFidelity || 0,
-          gsrNorm: ecosystemMetrics.qgitaConfidence || 0,
-          calmIndex: ecosystemMetrics.coherence || 0,
-          auraHue: (ecosystemMetrics.frequency || 528) / 10
+          coherence,
+          schumannLock: ecosystemMetrics.harmonicLock == null ? null : ecosystemMetrics.harmonicLock ? 1 : 0,
+          tsvGain: finiteOrNull(ecosystemMetrics.probabilityFusion),
+          primeAlignment: finiteOrNull(ecosystemMetrics.consensusConfidence),
+          tenNineOneConcordance: finiteOrNull(ecosystemMetrics.hiveMindCoherence),
+          alphaTheta: coherence == null ? null : 1.0 + coherence * 0.5,
+          hrvNorm: finiteOrNull(ecosystemMetrics.harmonicFidelity),
+          gsrNorm: finiteOrNull(ecosystemMetrics.qgitaConfidence),
+          calmIndex: coherence,
+          auraHue: finiteOrNull(ecosystemMetrics.frequency) == null ? null : (finiteOrNull(ecosystemMetrics.frequency) as number) / 10
         });
       }, 1000);
     }
@@ -136,7 +138,8 @@ export default function LiveValidationDashboard() {
     console.log('Exporting validation data...');
   };
 
-  const isValidationSuccess = metrics.coherence >= 0.65 && metrics.schumannLock >= 0.65;
+  const isValidationSuccess = metrics.coherence != null && metrics.coherence >= 0.65
+    && metrics.schumannLock != null && metrics.schumannLock >= 0.65;
   const totalDuration = phaseStates.reduce((sum, phase) => sum + phase.duration, 0);
   const elapsedTime = phaseStates.slice(0, currentPhase).reduce((sum, phase) => sum + phase.duration, 0) + phaseTimer;
   const progress = (elapsedTime / totalDuration) * 100;
@@ -222,9 +225,9 @@ export default function LiveValidationDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="text-sm text-muted-foreground">Coherence</div>
-            <div className="text-2xl font-bold">{(metrics.coherence || 0).toFixed(3)}</div>
-            <Badge variant={metrics.coherence >= 0.65 ? "default" : "secondary"}>
-              {metrics.coherence >= 0.65 ? "PASS" : "MONITOR"}
+            <div className="text-2xl font-bold">{readingText(metrics.coherence, (value) => value.toFixed(3))}</div>
+            <Badge variant={metrics.coherence != null && metrics.coherence >= 0.65 ? "default" : "secondary"}>
+              {metrics.coherence == null ? 'unavailable' : metrics.coherence >= 0.65 ? "PASS" : "MONITOR"}
             </Badge>
           </CardContent>
         </Card>
@@ -232,9 +235,9 @@ export default function LiveValidationDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="text-sm text-muted-foreground">Schumann Lock</div>
-            <div className="text-2xl font-bold">{(metrics.schumannLock || 0).toFixed(3)}</div>
-            <Badge variant={metrics.schumannLock >= 0.65 ? "default" : "secondary"}>
-              {metrics.schumannLock >= 0.65 ? "PASS" : "MONITOR"}
+            <div className="text-2xl font-bold">{readingText(metrics.schumannLock, (value) => value.toFixed(3))}</div>
+            <Badge variant={metrics.schumannLock != null && metrics.schumannLock >= 0.65 ? "default" : "secondary"}>
+              {metrics.schumannLock == null ? 'unavailable' : metrics.schumannLock >= 0.65 ? "PASS" : "MONITOR"}
             </Badge>
           </CardContent>
         </Card>
@@ -242,9 +245,9 @@ export default function LiveValidationDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="text-sm text-muted-foreground">TSV Gain</div>
-            <div className="text-2xl font-bold">{(metrics.tsvGain || 0).toFixed(3)}</div>
-            <Badge variant={metrics.tsvGain < 0.92 ? "default" : "destructive"}>
-              {metrics.tsvGain < 0.92 ? "SAFE" : "CLIP"}
+            <div className="text-2xl font-bold">{readingText(metrics.tsvGain, (value) => value.toFixed(3))}</div>
+            <Badge variant={metrics.tsvGain != null && metrics.tsvGain < 0.92 ? "default" : "destructive"}>
+              {metrics.tsvGain == null ? 'unavailable' : metrics.tsvGain < 0.92 ? "SAFE" : "CLIP"}
             </Badge>
           </CardContent>
         </Card>
@@ -252,7 +255,7 @@ export default function LiveValidationDashboard() {
         <Card>
           <CardContent className="p-4">
             <div className="text-sm text-muted-foreground">Calm Index</div>
-            <div className="text-2xl font-bold">{(metrics.calmIndex || 0).toFixed(3)}</div>
+            <div className="text-2xl font-bold">{readingText(metrics.calmIndex, (value) => value.toFixed(3))}</div>
             <Badge variant="outline">AURA</Badge>
           </CardContent>
         </Card>

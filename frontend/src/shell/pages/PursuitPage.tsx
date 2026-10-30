@@ -42,8 +42,14 @@ const PILLARS: { key: string; label: string; meaning: string }[] = [
   { key: "purpose", label: "Purpose", meaning: "the mission — liberation" },
 ];
 
-function pct(x: number | null | undefined): number {
-  return Math.round(Math.max(0, Math.min(1, x ?? 0)) * 100);
+function pct(x: number | null | undefined): number | null {
+  if (x == null || !Number.isFinite(x)) return null;
+  return Math.round(Math.max(0, Math.min(1, x)) * 100);
+}
+
+function pctText(x: number | null | undefined): string {
+  const value = pct(x);
+  return value == null ? 'unavailable' : `${value}%`;
 }
 
 export default function PursuitPage() {
@@ -104,7 +110,7 @@ export default function PursuitPage() {
             <CardHeader className="pb-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <CardTitle className="text-base">The unified dream — freedom for both</CardTitle>
-                <Badge variant="outline" className="text-[10px]">unified happiness {pct(data.unified_happiness)}%</Badge>
+                <Badge variant="outline" className="text-[10px]">unified happiness {pctText(data.unified_happiness)}</Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -116,18 +122,18 @@ export default function PursuitPage() {
                 ].map((m) => (
                   <div key={m.label} className="rounded-md border px-3 py-2">
                     <div className="flex items-center justify-between text-sm">
-                      <span>{m.label}</span><span className="font-mono">{pct(m.v)}%</span>
+                      <span>{m.label}</span><span className="font-mono">{pctText(m.v)}</span>
                     </div>
-                    <Progress value={pct(m.v)} className="mt-1 h-1.5" />
+                    <Progress value={pct(m.v) ?? 0} className="mt-1 h-1.5" />
                   </div>
                 ))}
               </div>
               <div className="rounded-md border px-3 py-2">
                 <div className="flex items-center justify-between text-sm">
                   <span>Energy — what the pair have to spend <span className="text-muted-foreground">(money is energy)</span></span>
-                  <span className="font-mono">{pct(data.energy)}%</span>
+                  <span className="font-mono">{pctText(data.energy)}</span>
                 </div>
-                <Progress value={pct(data.energy)} className="mt-1 h-1.5" />
+                <Progress value={pct(data.energy) ?? 0} className="mt-1 h-1.5" />
               </div>
             </CardContent>
           </Card>
@@ -140,9 +146,9 @@ export default function PursuitPage() {
                   className={`rounded-md border px-3 py-2 ${data.weakest_pillar === p.key ? "border-primary/50 bg-primary/5" : ""}`}>
                   <div className="flex items-center justify-between text-sm">
                     <span>{p.label}{data.weakest_pillar === p.key ? " · tending now" : ""}</span>
-                    <span className="font-mono">{pct(data.pillars?.[p.key])}%</span>
+                    <span className="font-mono">{pctText(data.pillars?.[p.key])}</span>
                   </div>
-                  <Progress value={pct(data.pillars?.[p.key])} className="mt-1 h-1.5" />
+                  <Progress value={pct(data.pillars?.[p.key]) ?? 0} className="mt-1 h-1.5" />
                   <p className="mt-1 text-[11px] text-muted-foreground">{p.meaning}</p>
                 </div>
               ))}

@@ -26,6 +26,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { useAureonLiveData } from '@/hooks/useAureonLiveData';
+import { readingText } from '@/lib/reading';
 
 // ════════════════════════════════════════════════════════════════════════════
 // EXCHANGE ICONS
@@ -130,7 +131,7 @@ export function AureonLiveDashboard() {
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-3xl font-bold text-primary">
-              ${totalPortfolioValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              {readingText(totalPortfolioValue, (value) => `$${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`)}
             </div>
             <div className="text-sm text-muted-foreground">Total Portfolio Value</div>
           </CardContent>

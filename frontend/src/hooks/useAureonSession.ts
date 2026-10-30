@@ -6,11 +6,12 @@ import { temporalLadder, SYSTEMS } from '@/core/temporalLadder';
 import { multiExchangeClient, type MultiExchangeState } from '@/core/multiExchangeClient';
 import { thePrism, type PrismOutput } from '@/core/thePrism';
 import { toast } from 'sonner';
+import { finiteOrNull } from '@/lib/reading';
 
 export interface QuantumState {
   coherence: number;
   lambda: number;
-  lighthouseSignal: number;
+  lighthouseSignal: number | null;
   dominantNode: string;
   prismLevel: number;
   prismState: string;
@@ -257,7 +258,7 @@ export function useAureonSession(userId: string | null) {
         const newQuantumState: QuantumState = {
           coherence: result.lambdaState.coherence,
           lambda: result.lambdaState.lambda,
-          lighthouseSignal: result.lighthouseState?.L || 0,
+          lighthouseSignal: finiteOrNull(result.lighthouseState?.L),
           dominantNode: result.lambdaState.dominantNode,
           prismLevel: prismOutput.level,
           prismState: prismOutput.state,
@@ -397,9 +398,9 @@ export function useAureonSession(userId: string | null) {
         const hasMeasurements = ['live', 'real_derived'].includes(String(data.measurement_truth_status));
         if (hasMeasurements) {
           setQuantumState({
-            coherence: data.current_coherence == null ? null : Number(data.current_coherence),
-            lambda: data.current_lambda == null ? null : Number(data.current_lambda),
-            lighthouseSignal: data.current_lighthouse_signal == null ? null : Number(data.current_lighthouse_signal),
+            coherence: finiteOrNull(data.current_coherence),
+            lambda: finiteOrNull(data.current_lambda),
+            lighthouseSignal: finiteOrNull(data.current_lighthouse_signal),
             dominantNode: data.dominant_node ?? null,
             prismLevel: data.prism_level ?? null,
             prismState: data.prism_state ?? null,

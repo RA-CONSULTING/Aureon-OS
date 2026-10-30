@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { finiteOrNull, readingText } from '@/lib/reading';
 
 interface GasTankDisplayProps {
   userId: string | null;
@@ -24,9 +25,11 @@ export const GasTankDisplay = ({ userId, onEmpty }: GasTankDisplayProps) => {
   const [isTopping, setIsTopping] = useState(false);
 
   // Calculate percentage for fuel gauge
-  const percentage = gasTank.initialBalance > 0 
-    ? Math.max(0, Math.min(100, (gasTank.balance / gasTank.initialBalance) * 100))
-    : 0;
+  const balance = finiteOrNull(gasTank.balance);
+  const initialBalance = finiteOrNull(gasTank.initialBalance);
+  const percentage = balance != null && initialBalance != null && initialBalance > 0
+    ? Math.max(0, Math.min(100, (balance / initialBalance) * 100))
+    : null;
 
   // Determine gauge color
   const getGaugeColor = () => {
@@ -87,7 +90,7 @@ export const GasTankDisplay = ({ userId, onEmpty }: GasTankDisplayProps) => {
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-mono bg-primary/10 px-2 py-1 rounded">
-                  {gasTank.membershipType.toUpperCase()} {(gasTank.feeRate * 100).toFixed(0)}%
+                  {gasTank.membershipType.toUpperCase()} {readingText(gasTank.feeRate, (rate) => `${(rate * 100).toFixed(0)}%`)}
                 </span>
               </div>
             </div>
@@ -97,17 +100,17 @@ export const GasTankDisplay = ({ userId, onEmpty }: GasTankDisplayProps) => {
               <div className="h-8 bg-muted/30 rounded-lg overflow-hidden relative">
                 <div
                   className={`h-full bg-gradient-to-r ${getGaugeColor()} transition-all duration-500`}
-                  style={{ width: `${percentage}%` }}
+                  style={{ width: `${percentage ?? 0}%` }}
                 />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <span className="text-xs font-bold text-white drop-shadow-lg">
-                    {percentage.toFixed(0)}%
+                    {percentage == null ? 'unavailable' : `${percentage.toFixed(0)}%`}
                   </span>
                 </div>
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground">
-                  £{gasTank.balance.toFixed(2)} / £{gasTank.initialBalance.toFixed(2)}
+                  {readingText(balance, (value) => `£${value.toFixed(2)}`)} / {readingText(initialBalance, (value) => `£${value.toFixed(2)}`)}
                 </span>
               </div>
             </div>
@@ -116,15 +119,15 @@ export const GasTankDisplay = ({ userId, onEmpty }: GasTankDisplayProps) => {
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div>
                 <p className="text-muted-foreground">High-Water Mark</p>
-                <p className="font-bold">£{gasTank.highWaterMark.toFixed(2)}</p>
+                <p className="font-bold">{readingText(gasTank.highWaterMark, (value) => `£${value.toFixed(2)}`)}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Today's Fees</p>
-                <p className="font-bold text-destructive">£{gasTank.feesPaidToday.toFixed(2)}</p>
+                <p className="font-bold text-destructive">{readingText(gasTank.feesPaidToday, (value) => `£${value.toFixed(2)}`)}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Total Fees Paid</p>
-                <p className="font-bold text-destructive">£{gasTank.totalFeesPaid.toFixed(2)}</p>
+                <p className="font-bold text-destructive">{readingText(gasTank.totalFeesPaid, (value) => `£${value.toFixed(2)}`)}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Status</p>

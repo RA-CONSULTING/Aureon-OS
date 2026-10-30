@@ -12,6 +12,7 @@ import { useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { globalSystemsManager } from '@/core/globalSystemsManager';
 import { terminalStateUrls } from '@/config/serviceEndpoints';
+import { combineBookTotals, selectEquity } from '@/lib/reading';
 
 // Public live feed user ID - data pushed from Python terminal
 const LIVE_FEED_USER_ID = '69e5567f-7ad1-42af-860f-3709ef1f5935';
@@ -499,19 +500,13 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
         const krakenEquity = firstFinite(kraken.portfolio_value, kraken.equity, combined.kraken_equity);
         const capitalEquity = firstFinite(capital.equity_gbp, combined.capital_equity_gbp);
         const equityNote = krakenReason && (krakenEquity == null || krakenEquity <= 0) ? krakenReason : '';
-        const totalEquity: number | null = equityNote
-          ? null
-          : krakenEquity != null && krakenEquity > 0
-            ? krakenEquity
-            : capitalEquity != null
-              ? capitalEquity
-              : krakenEquity;
+        const totalEquity = selectEquity(equityNote, krakenEquity, capitalEquity);
         const krakenFree = firstFinite(kraken.pool_available, kraken.free_margin);
         const capitalFree = firstFinite(capital.free_gbp);
-        const availableBalance = krakenFree != null && krakenFree > 0 ? krakenFree : capitalFree;
+        const availableBalance = combineBookTotals(krakenFree, capitalFree);
         const krakenPnl = firstFinite(kraken.compounded, kraken.session_profit, combined.kraken_session_pnl);
         const capitalPnl = firstFinite(capital.stats?.total_pnl_gbp, combined.capital_session_pnl_gbp);
-        const totalPnl = krakenPnl != null && krakenPnl !== 0 ? krakenPnl : capitalPnl;
+        const totalPnl = combineBookTotals(krakenPnl, capitalPnl);
         const latestMonitorLine = String(
           localState.latest_monitor_line
           || capital.latest_monitor_line

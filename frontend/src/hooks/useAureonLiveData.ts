@@ -11,6 +11,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { finiteOrNull } from '@/lib/reading';
 import { bridgeWsUrl } from '@/config/serviceEndpoints';
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -65,7 +66,7 @@ export interface UseLiveDataResult {
   
   // Exchange data
   exchanges: Record<string, ExchangeData>;
-  totalPortfolioValue: number;
+  totalPortfolioValue: number | null;
   allBalances: Record<string, Record<string, number>>;
   
   // Signals
@@ -109,7 +110,7 @@ export function useAureonLiveData(): UseLiveDataResult {
   
   // Data state
   const [exchanges, setExchanges] = useState<Record<string, ExchangeData>>({});
-  const [totalPortfolioValue, setTotalPortfolioValue] = useState(0);
+  const [totalPortfolioValue, setTotalPortfolioValue] = useState<number | null>(null);
   const [allBalances, setAllBalances] = useState<Record<string, Record<string, number>>>({});
   const [signals, setSignals] = useState<SystemSignal[]>([]);
   const [signalCount, setSignalCount] = useState(0);
@@ -128,7 +129,7 @@ export function useAureonLiveData(): UseLiveDataResult {
   // Process incoming payload
   const processPayload = useCallback((payload: BridgePayload) => {
     setExchanges(payload.exchanges || {});
-    setTotalPortfolioValue(payload.total_portfolio_value || 0);
+    setTotalPortfolioValue(finiteOrNull(payload.total_portfolio_value));
     setAllBalances(payload.all_balances || {});
     setSignals(payload.signals || []);
     setSignalCount(payload.signal_count || 0);

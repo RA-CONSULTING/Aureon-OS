@@ -5,14 +5,16 @@
 
 import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { Html } from '@react-three/drei';
 import * as THREE from 'three';
+import { finiteOrNull, metricRingCaption } from '@/lib/reading';
 
 interface MetricRingsProps {
-  totalEquity: number;
-  coherence: number;         // 0-1
-  totalTrades: number;
-  winRate: number;            // 0-100
-  totalPnl: number;
+  totalEquity: number | null;
+  coherence: number | null;         // 0-1
+  totalTrades: number | null;
+  winRate: number | null;            // 0-100
+  totalPnl: number | null;
 }
 
 const ringVertexShader = `
@@ -173,17 +175,37 @@ function TradeCountRing({ totalTrades, winRate }: { totalTrades: number; winRate
 }
 
 export function MetricRings({
-  totalEquity = 0,
-  coherence = 0.5,
-  totalTrades = 0,
-  winRate = 50,
-  totalPnl = 0,
+  totalEquity = null,
+  coherence = null,
+  totalTrades = null,
+  winRate = null,
+  totalPnl = null,
 }: MetricRingsProps) {
+  const equity = finiteOrNull(totalEquity);
+  const gamma = finiteOrNull(coherence);
+  const trades = finiteOrNull(totalTrades);
+  const rate = finiteOrNull(winRate);
+  const pnl = finiteOrNull(totalPnl);
+  const caption = metricRingCaption([
+    { name: 'equity', value: equity },
+    { name: 'coherence', value: gamma },
+    { name: 'trades', value: trades },
+    { name: 'win rate', value: rate },
+    { name: 'pnl', value: pnl },
+  ]);
+
   return (
     <group>
-      <EquityRing equity={totalEquity} pnl={totalPnl} />
-      <CoherenceRing coherence={coherence} />
-      <TradeCountRing totalTrades={totalTrades} winRate={winRate} />
+      {equity != null && pnl != null && <EquityRing equity={equity} pnl={pnl} />}
+      {gamma != null && <CoherenceRing coherence={gamma} />}
+      {trades != null && rate != null && <TradeCountRing totalTrades={trades} winRate={rate} />}
+      {caption && (
+        <Html position={[0, 2.4, 0]} center>
+          <span className="text-[10px] uppercase tracking-wider text-white/50 whitespace-nowrap">
+            {caption}
+          </span>
+        </Html>
+      )}
     </group>
   );
 }

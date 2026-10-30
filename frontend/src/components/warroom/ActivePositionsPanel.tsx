@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, TrendingUp, TrendingDown, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { finiteOrNull, readingText, sumReadings } from '@/lib/reading';
 
 interface Position {
   id: string;
@@ -101,8 +102,8 @@ export function ActivePositionsPanel() {
     }
   };
 
-  const totalPnl = positions.reduce((sum, p) => sum + (p.unrealized_pnl || 0), 0);
-  const totalValue = positions.reduce((sum, p) => sum + (p.position_value_usdt || 0), 0);
+  const totalPnl = sumReadings(positions.map((p) => p.unrealized_pnl));
+  const totalValue = sumReadings(positions.map((p) => p.position_value_usdt));
 
   if (loading) {
     return (
@@ -121,11 +122,11 @@ export function ActivePositionsPanel() {
           <span> Active Positions</span>
           <div className="flex items-center gap-2">
             <Badge variant="outline">{positions.length} open</Badge>
-            <Badge 
-              variant={totalPnl >= 0 ? 'default' : 'destructive'}
-              className={totalPnl >= 0 ? 'bg-success' : ''}
+            <Badge
+              variant={totalPnl == null ? 'outline' : totalPnl >= 0 ? 'default' : 'destructive'}
+              className={totalPnl != null && totalPnl >= 0 ? 'bg-success' : ''}
             >
-              {totalPnl >= 0 ? '+' : ''}{totalPnl.toFixed(2)} USD
+              {readingText(totalPnl, (pnl) => `${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)} USD`)}
             </Badge>
           </div>
         </CardTitle>
@@ -140,8 +141,12 @@ export function ActivePositionsPanel() {
           <ScrollArea className="h-64">
             <div className="space-y-2">
               {positions.map(position => {
-                const pnlPercent = ((position.current_price - position.entry_price) / position.entry_price) * 100 * (position.side === 'LONG' ? 1 : -1);
-                const isProfit = pnlPercent >= 0;
+                const entry = finiteOrNull(position.entry_price);
+                const current = finiteOrNull(position.current_price);
+                const pnlPercent = entry != null && current != null && entry > 0
+                  ? ((current - entry) / entry) * 100 * (position.side === 'LONG' ? 1 : -1)
+                  : null;
+                const isProfit = pnlPercent != null && pnlPercent >= 0;
                 
                 return (
                   <div
@@ -173,17 +178,17 @@ export function ActivePositionsPanel() {
                     <div className="grid grid-cols-3 gap-2 text-xs">
                       <div>
                         <p className="text-muted-foreground">Entry</p>
-                        <p className="font-medium">${position.entry_price.toFixed(2)}</p>
+                        <p className="font-medium">{readingText(entry, (price) => `$${price.toFixed(2)}`)}</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">Current</p>
-                        <p className="font-medium">${position.current_price?.toFixed(2) || 'N/A'}</p>
+                        <p className="font-medium">{readingText(current, (price) => `$${price.toFixed(2)}`)}</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">P&L</p>
-                        <p className={`font-medium flex items-center gap-1 ${isProfit ? 'text-success' : 'text-destructive'}`}>
-                          {isProfit ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                          {pnlPercent.toFixed(2)}%
+                        <p className={`font-medium flex items-center gap-1 ${pnlPercent == null ? 'text-muted-foreground' : isProfit ? 'text-success' : 'text-destructive'}`}>
+                          {pnlPercent == null ? null : isProfit ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                          {readingText(pnlPercent, (pct) => `${pct.toFixed(2)}%`)}
                         </p>
                       </div>
                     </div>
@@ -191,15 +196,15 @@ export function ActivePositionsPanel() {
                     <div className="grid grid-cols-3 gap-2 text-xs mt-2">
                       <div>
                         <p className="text-muted-foreground">Size</p>
-                        <p className="font-medium">${position.position_value_usdt?.toFixed(2)}</p>
+                        <p className="font-medium">{readingText(position.position_value_usdt, (value) => `$${value.toFixed(2)}`)}</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">SL</p>
-                        <p className="font-medium text-destructive">${position.stop_loss_price?.toFixed(2)}</p>
+                        <p className="font-medium text-destructive">{readingText(position.stop_loss_price, (price) => `$${price.toFixed(2)}`)}</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">TP</p>
-                        <p className="font-medium text-success">${position.take_profit_price?.toFixed(2)}</p>
+                        <p className="font-medium text-success">{readingText(position.take_profit_price, (price) => `$${price.toFixed(2)}`)}</p>
                       </div>
                     </div>
                   </div>
@@ -212,7 +217,7 @@ export function ActivePositionsPanel() {
         {positions.length > 0 && (
           <div className="mt-3 pt-3 border-t border-border/50 flex justify-between text-sm">
             <span className="text-muted-foreground">Total Exposure</span>
-            <span className="font-bold">${totalValue.toFixed(2)}</span>
+            <span className="font-bold">{readingText(totalValue, (value) => `$${value.toFixed(2)}`)}</span>
           </div>
         )}
       </CardContent>

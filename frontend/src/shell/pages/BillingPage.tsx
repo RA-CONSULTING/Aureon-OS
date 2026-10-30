@@ -14,6 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useGasTank } from "@/hooks/useGasTank";
+import { readingText } from "@/lib/reading";
 import { SUPPORT_PAYMENT_URLS } from "@/hooks/useSupportProject";
 
 interface BillingStatus {
@@ -33,11 +34,11 @@ function GasTankCard({ userId }: { userId: string }) {
         <CardDescription className="flex items-center gap-1.5">
           <Fuel className="h-3.5 w-3.5" /> Gas tank
         </CardDescription>
-        <CardTitle className="text-2xl">£{Number(gasTank.balance ?? 0).toFixed(2)}</CardTitle>
+        <CardTitle className="text-2xl">{readingText(gasTank.balance, (balance) => `£${balance.toFixed(2)}`)}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-1 text-xs text-muted-foreground">
         <p>status: {gasTank.status} · membership: {gasTank.membershipType}</p>
-        <p>total fees paid: £{Number(gasTank.totalFeesPaid ?? 0).toFixed(2)}</p>
+        <p>total fees paid: {readingText(gasTank.totalFeesPaid, (fees) => `£${fees.toFixed(2)}`)}</p>
       </CardContent>
     </Card>
   );
@@ -107,8 +108,8 @@ export default function BillingPage() {
           <CardContent className="space-y-1 text-xs text-muted-foreground">
             {status?.metering && (
               <p>
-                events — flushed: {status.metering.flushed ?? 0} · pending: {status.metering.pending ?? 0} ·
-                dropped: {status.metering.dropped ?? 0}
+                events — flushed: {readingText(status.metering.flushed)} · pending: {readingText(status.metering.pending)} ·
+                dropped: {readingText(status.metering.dropped)}
               </p>
             )}
             {status && !status.configured && (

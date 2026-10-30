@@ -55,8 +55,14 @@ const MEASURES: { key: keyof Inner; label: string; hint: string }[] = [
   { key: "ego_dissolution", label: "Ego dissolution", hint: "the separate self loosens toward unity" },
 ];
 
-function pct(x: number | null | undefined): number {
-  return Math.round(Math.max(0, Math.min(1, x ?? 0)) * 100);
+function pct(x: number | null | undefined): number | null {
+  if (x == null || !Number.isFinite(x)) return null;
+  return Math.round(Math.max(0, Math.min(1, x)) * 100);
+}
+
+function pctText(x: number | null | undefined): string {
+  const value = pct(x);
+  return value == null ? 'unavailable' : `${value}%`;
 }
 
 export default function InnerWorkPage() {
@@ -122,21 +128,21 @@ export default function InnerWorkPage() {
                 </CardTitle>
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="text-[10px]">{data.stage_index}/7 centres cleared</Badge>
-                  <Badge variant="outline" className="text-[10px]">potential {pct(data.potential)}%</Badge>
+                  <Badge variant="outline" className="text-[10px]">potential {pctText(data.potential)}</Badge>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
               {data.work && <p className="text-sm text-muted-foreground italic">“{data.work}”</p>}
-              <Progress value={pct(data.potential)} />
+              <Progress value={pct(data.potential) ?? 0} />
               <div className="grid gap-2 sm:grid-cols-2">
                 {MEASURES.map((m) => (
                   <div key={m.key} className="rounded-md border px-3 py-2">
                     <div className="flex items-center justify-between text-sm">
                       <span>{m.label}</span>
-                      <span className="font-mono">{pct(data[m.key] as number)}%</span>
+                      <span className="font-mono">{pctText(data[m.key] as number)}</span>
                     </div>
-                    <Progress value={pct(data[m.key] as number)} className="mt-1 h-1.5" />
+                    <Progress value={pct(data[m.key] as number) ?? 0} className="mt-1 h-1.5" />
                     <p className="mt-1 text-[11px] text-muted-foreground">{m.hint}</p>
                   </div>
                 ))}

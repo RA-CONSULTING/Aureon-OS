@@ -88,7 +88,7 @@ export function CinematicHUD({ state, hiveMood, activeScanner, onNarratorEvent }
 
       {/* Ambient soundscape controls */}
       <AmbientSoundscape
-        coherence={coherenceForDisplay ?? 0}
+        coherence={coherenceForDisplay}
         psi={c.psi}
         fearLevel={c.fearLevel}
         gaiaFrequency={state.gaiaFrequency}

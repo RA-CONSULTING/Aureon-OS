@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Zap, TrendingUp, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useMultiExchangeBalances } from '@/hooks/useMultiExchangeBalances';
+import { readingText } from '@/lib/reading';
 import { ExchangeType, EXCHANGE_FEES } from '@/core/unifiedExchangeClient';
 
 const EXCHANGE_COLORS: Record<ExchangeType, string> = {
@@ -76,7 +77,7 @@ export function MultiExchangePanel() {
               </span>
             </div>
             <Badge variant={connectedCount === totalExchanges ? 'default' : 'secondary'}>
-              ${totalEquityUsd.toLocaleString(undefined, { maximumFractionDigits: 2 })} Total
+              {readingText(totalEquityUsd, (equity) => `$${equity.toLocaleString(undefined, { maximumFractionDigits: 2 })}`)} Total
             </Badge>
           </div>
 
@@ -103,7 +104,7 @@ export function MultiExchangePanel() {
                   <div className="flex justify-between">
                     <span>Balance:</span>
                     <span className="font-mono">
-                      ${status.totalUsdValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                      {readingText(status.totalUsdValue, (value) => `$${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`)}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -170,7 +171,7 @@ export function MultiExchangePanel() {
                       {balance.grandTotal.toFixed(6)}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      ${balance.usdValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                      {readingText(balance.usdValue, (value) => `$${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`)}
                     </div>
                   </div>
                 </div>

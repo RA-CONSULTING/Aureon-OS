@@ -13,6 +13,8 @@ import { MarketNebula } from './MarketNebula';
 import { CoherenceAurora } from './CoherenceAurora';
 import { ExchangeGateways } from './ExchangeGateways';
 import { MetricRings } from './MetricRings';
+import { MetricRingLegend } from './MetricRingLegend';
+import { finiteOrNull } from '@/lib/reading';
 import { CinematicCamera } from './CinematicCamera';
 import { EventSpotlight } from './EventSpotlight';
 import type { GlobalState } from '@/core/globalSystemsManager';
@@ -44,10 +46,14 @@ function SceneContent({ state, hiveMood, activeEvent }: CinematicSceneProps) {
       ? (state.winningTrades / state.totalTrades) * 100
       : null;
 
-  // Use consciousness psi for aurora, fall back to coherence (0 only drives 3D visuals)
   const rawCoherence = c.available ? c.psi : state.coherence;
-  const effectiveCoherence =
-    typeof rawCoherence === 'number' && Number.isFinite(rawCoherence) ? rawCoherence : 0;
+  const ringCoherence = finiteOrNull(rawCoherence);
+  const ringEquity = finiteOrNull(state.totalEquity);
+  const ringTrades = finiteOrNull(state.totalTrades);
+  const ringWinRate = finiteOrNull(winRate);
+  const ringPnl = finiteOrNull(state.totalPnl);
+  // Motion-only intensity. A missing reading does not paint a zero ring.
+  const effectiveCoherence = ringCoherence ?? 0;
   const hasNewThought = c.thoughtStream.length > 0 || !!(state.queenVoice?.text);
 
   return (
@@ -110,11 +116,11 @@ function SceneContent({ state, hiveMood, activeEvent }: CinematicSceneProps) {
 
       {/* Orbital metric rings */}
       <MetricRings
-        totalEquity={state.totalEquity ?? 0}
-        coherence={effectiveCoherence}
-        totalTrades={state.totalTrades ?? 0}
-        winRate={winRate ?? 0}
-        totalPnl={state.totalPnl ?? 0}
+        totalEquity={ringEquity}
+        coherence={ringCoherence}
+        totalTrades={ringTrades}
+        winRate={ringWinRate}
+        totalPnl={ringPnl}
       />
 
       {/* Dynamic post-processing - responds to events */}
@@ -124,8 +130,21 @@ function SceneContent({ state, hiveMood, activeEvent }: CinematicSceneProps) {
 }
 
 export function CinematicScene({ state, hiveMood, activeEvent }: CinematicSceneProps) {
+  const ringCoherence = finiteOrNull(state.consciousness?.available ? state.consciousness.psi : state.coherence);
+  const ringTrades = finiteOrNull(state.totalTrades);
+  const ringWins = finiteOrNull(state.winningTrades);
+  const ringWinRate = ringTrades != null && ringTrades > 0 && ringWins != null
+    ? (ringWins / ringTrades) * 100
+    : null;
   return (
     <div className="absolute inset-0">
+      <MetricRingLegend
+        totalEquity={state.totalEquity}
+        coherence={ringCoherence}
+        totalTrades={state.totalTrades}
+        winRate={ringWinRate}
+        totalPnl={state.totalPnl}
+      />
       <Canvas
         camera={{ position: [0, 8, 25], fov: 55, near: 0.1, far: 200 }}
         gl={{

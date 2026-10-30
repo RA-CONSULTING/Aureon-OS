@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { finiteOrNull } from '@/lib/reading';
 
 export interface AssetBalance {
   asset: string;
@@ -25,7 +26,7 @@ export interface ExchangeBalance {
 
 export interface UserBalancesState {
   balances: ExchangeBalance[];
-  totalEquityUsd: number;
+  totalEquityUsd: number | null;
   connectedExchanges: string[];
   isLoading: boolean;
   error: string | null;
@@ -35,7 +36,7 @@ export interface UserBalancesState {
 export function useUserBalances(autoRefresh: boolean = true, refreshInterval: number = 30000) {
   const [state, setState] = useState<UserBalancesState>({
     balances: [],
-    totalEquityUsd: 0,
+    totalEquityUsd: null,
     connectedExchanges: [],
     isLoading: true,
     error: null,
@@ -72,7 +73,7 @@ export function useUserBalances(autoRefresh: boolean = true, refreshInterval: nu
 
         setState({
           balances: data.balances || [],
-          totalEquityUsd: data.totalEquityUsd || 0,
+          totalEquityUsd: finiteOrNull(data.totalEquityUsd),
           connectedExchanges: data.connectedExchanges || [],
           isLoading: false,
           error: null,

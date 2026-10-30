@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useUserBalances } from '@/hooks/useUserBalances';
+import { finiteOrNull, readingText, sumReadings } from '@/lib/reading';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -159,8 +160,8 @@ export default function FullPortfolioDisplay() {
 
   const openPositions = positions.filter(p => p.status === 'open');
   const closedPositions = positions.filter(p => p.status === 'closed');
-  const totalRealizedPnl = closedPositions.reduce((sum, p) => sum + (p.realized_pnl || 0), 0);
-  const totalUnrealizedPnl = openPositions.reduce((sum, p) => sum + (p.unrealized_pnl || 0), 0);
+  const totalRealizedPnl = sumReadings(closedPositions.map((p) => p.realized_pnl));
+  const totalUnrealizedPnl = sumReadings(openPositions.map((p) => p.unrealized_pnl));
 
   return (
     <div className="space-y-6">
@@ -168,7 +169,7 @@ export default function FullPortfolioDisplay() {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         <StatCard
           title="Total Equity"
-          value={`$${totalEquityUsd.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+          value={readingText(totalEquityUsd, (equity) => `$${equity.toLocaleString(undefined, { minimumFractionDigits: 2 })}`)}
           icon={<Wallet className="w-4 h-4" />}
           status="neutral"
         />
@@ -186,15 +187,15 @@ export default function FullPortfolioDisplay() {
         />
         <StatCard
           title="Unrealized P&L"
-          value={`${totalUnrealizedPnl >= 0 ? '+' : ''}$${totalUnrealizedPnl.toFixed(2)}`}
+          value={readingText(totalUnrealizedPnl, (pnl) => `${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}`)}
           icon={<DollarSign className="w-4 h-4" />}
-          status={totalUnrealizedPnl >= 0 ? 'success' : 'error'}
+          status={totalUnrealizedPnl == null ? 'neutral' : totalUnrealizedPnl >= 0 ? 'success' : 'error'}
         />
         <StatCard
           title="Realized P&L"
-          value={`${totalRealizedPnl >= 0 ? '+' : ''}$${totalRealizedPnl.toFixed(2)}`}
+          value={readingText(totalRealizedPnl, (pnl) => `${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}`)}
           icon={<DollarSign className="w-4 h-4" />}
-          status={totalRealizedPnl >= 0 ? 'success' : 'error'}
+          status={totalRealizedPnl == null ? 'neutral' : totalRealizedPnl >= 0 ? 'success' : 'error'}
         />
         <StatCard
           title="Total Trades"
@@ -425,8 +426,8 @@ function StatCard({ title, value, icon, status }: { title: string; value: string
 
 // Position Card Component
 function PositionCard({ position }: { position: Position }) {
-  const pnl = position.status === 'closed' ? position.realized_pnl : position.unrealized_pnl;
-  const pnlPositive = (pnl || 0) >= 0;
+  const pnl = finiteOrNull(position.status === 'closed' ? position.realized_pnl : position.unrealized_pnl);
+  const pnlPositive = pnl != null && pnl >= 0;
 
   return (
     <div className={`p-3 rounded-lg border ${pnlPositive ? 'border-success/30 bg-success/5' : 'border-destructive/30 bg-destructive/5'}`}>
@@ -438,15 +439,15 @@ function PositionCard({ position }: { position: Position }) {
           <span className="font-bold">{position.symbol}</span>
           <Badge variant="outline">{position.status.toUpperCase()}</Badge>
         </div>
-        <span className={`font-mono font-bold ${pnlPositive ? 'text-success' : 'text-destructive'}`}>
-          {pnlPositive ? '+' : ''}${(pnl || 0).toFixed(2)}
+        <span className={`font-mono font-bold ${pnl == null ? 'text-muted-foreground' : pnlPositive ? 'text-success' : 'text-destructive'}`}>
+          {readingText(pnl, (value) => `${value >= 0 ? '+' : ''}$${value.toFixed(2)}`)}
         </span>
       </div>
       <div className="grid grid-cols-4 gap-2 text-xs text-muted-foreground">
-        <div><span className="text-foreground">Entry:</span> ${position.entry_price.toFixed(4)}</div>
-        <div><span className="text-foreground">Qty:</span> {position.quantity.toFixed(6)}</div>
-        <div><span className="text-foreground">Value:</span> ${position.position_value_usdt.toFixed(2)}</div>
-        <div><span className="text-foreground">Current:</span> ${(position.current_price || 0).toFixed(4)}</div>
+        <div><span className="text-foreground">Entry:</span> {readingText(position.entry_price, (price) => `$${price.toFixed(4)}`)}</div>
+        <div><span className="text-foreground">Qty:</span> {readingText(position.quantity, (qty) => qty.toFixed(6))}</div>
+        <div><span className="text-foreground">Value:</span> {readingText(position.position_value_usdt, (value) => `$${value.toFixed(2)}`)}</div>
+        <div><span className="text-foreground">Current:</span> {readingText(position.current_price, (price) => `$${price.toFixed(4)}`)}</div>
       </div>
       <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground mt-1">
         <div><Clock className="w-3 h-3 inline mr-1" />{format(new Date(position.opened_at), 'MMM dd HH:mm:ss')}</div>
@@ -462,8 +463,9 @@ function PositionCard({ position }: { position: Position }) {
 
 // Execution Card Component
 function ExecutionCard({ execution }: { execution: TradeExecution }) {
-  const execPrice = execution.executed_price || execution.price || 0;
-  const value = execPrice * execution.quantity;
+  const execPrice = finiteOrNull(execution.executed_price) ?? finiteOrNull(execution.price);
+  const quantity = finiteOrNull(execution.quantity);
+  const value = execPrice != null && quantity != null ? execPrice * quantity : null;
 
   return (
     <div className={`p-3 rounded-lg border ${execution.side === 'BUY' ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-red-500'} bg-muted/20`}>
@@ -474,12 +476,12 @@ function ExecutionCard({ execution }: { execution: TradeExecution }) {
           <Badge variant="outline">{execution.signal_type}</Badge>
           <Badge variant={execution.status === 'filled' ? 'default' : 'secondary'}>{execution.status}</Badge>
         </div>
-        <span className="font-mono text-foreground">${value.toFixed(2)}</span>
+        <span className="font-mono text-foreground">{readingText(value, (amount) => `$${amount.toFixed(2)}`)}</span>
       </div>
       <div className="grid grid-cols-4 gap-2 text-xs">
         <div><span className="text-muted-foreground">Price:</span> <span className="font-mono">${execution.price?.toFixed(4) || '-'}</span></div>
         <div><span className="text-muted-foreground">Exec Price:</span> <span className="font-mono">${execution.executed_price?.toFixed(4) || '-'}</span></div>
-        <div><span className="text-muted-foreground">Qty:</span> <span className="font-mono">{execution.quantity.toFixed(6)}</span></div>
+        <div><span className="text-muted-foreground">Qty:</span> <span className="font-mono">{readingText(quantity, (qty) => qty.toFixed(6))}</span></div>
         <div><span className="text-muted-foreground">Size:</span> <span className="font-mono">${execution.position_size_usdt.toFixed(2)}</span></div>
       </div>
       <div className="grid grid-cols-4 gap-2 text-xs mt-1">

@@ -21,6 +21,7 @@ import { tradeLogger } from './tradeLogger';
 import { capitalPool } from './capitalPool';
 import { platypusEngine, type PlatypusState } from './platypusCoherenceEngine';
 import { supabase } from '@/integrations/supabase/client';
+import { equityReadingFromExchange } from '@/lib/reading';
 
 export interface GlobalState {
   // Auth state
@@ -730,17 +731,16 @@ class GlobalSystemsManager {
     
     // Subscribe to exchange updates and sync balances for trading
     this.exchangeUnsubscribe = multiExchangeClient.subscribe((state: MultiExchangeState) => {
-      this.updateState({ 
+      const reportedEquity = equityReadingFromExchange(state);
+      this.updateState({
         exchangeState: state,
-        // Sync balance to trading state
-        totalEquity: state.totalEquityUsd ?? null,
-        availableBalance: state.totalEquityUsd ?? null,
+        totalEquity: reportedEquity,
+        availableBalance: reportedEquity,
       });
-      
-      // Update Capital Pool with new equity
-      if (state.totalEquityUsd != null && state.totalEquityUsd > 0) {
-        capitalPool.updateEquity(state.totalEquityUsd, 0);
-        console.log(`💰 [GlobalSystems] Balance synced: $${state.totalEquityUsd.toFixed(2)}`);
+
+      if (reportedEquity != null) {
+        capitalPool.updateEquity(reportedEquity, capitalPool.getState().unrealizedPnL);
+        console.log(`💰 [GlobalSystems] Balance synced: $${reportedEquity.toFixed(2)}`);
       }
     });
     
