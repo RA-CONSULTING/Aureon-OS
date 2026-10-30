@@ -12,7 +12,7 @@ import { useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { globalSystemsManager } from '@/core/globalSystemsManager';
 import { terminalStateUrls } from '@/config/serviceEndpoints';
-import { combineBookTotals, selectEquity } from '@/lib/reading';
+import { combineBookTotals, krakenPoolAvailable, selectEquity } from '@/lib/reading';
 
 // Public live feed user ID - data pushed from Python terminal
 const LIVE_FEED_USER_ID = '69e5567f-7ad1-42af-860f-3709ef1f5935';
@@ -573,7 +573,7 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
           compoundedCapital: firstFinite(kraken.compounded),
           harvestedCapital: firstFinite(kraken.harvested),
           poolTotal: firstFinite(kraken.pool_total, totalEquity),
-          poolAvailable: firstFinite(kraken.pool_available, availableBalance),
+          poolAvailable: krakenPoolAvailable(firstFinite(kraken.pool_available), firstFinite(kraken.free_margin)),
           scoutCount: firstFinite(kraken.scout_count),
           splitCount: firstFinite(kraken.split_count),
           wsConnected: Boolean(kraken.ws_connected || localState.ws_connected),

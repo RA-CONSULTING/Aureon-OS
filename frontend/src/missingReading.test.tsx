@@ -7,6 +7,7 @@ import {
   finiteOrNull,
   metricRingCaption,
   readingText,
+  krakenPoolAvailable,
   selectEquity,
   sumReadings,
 } from './lib/reading.ts';
@@ -75,6 +76,9 @@ test('exchange books do not turn a missing total into zero', () => {
   ]);
   assert.equal(zeroKept.total, 0);
   assert.equal(selectEquity('', 0, 9), 0);
+  assert.equal(krakenPoolAvailable(null, null), null);
+  assert.equal(krakenPoolAvailable(0, 12), 0);
+  assert.equal(krakenPoolAvailable(null, 4), 4);
   assert.equal(selectEquity('', null, null), null);
   assert.equal(selectEquity('kraken unread', 0, 9), null);
   assert.equal(equityReadingFromExchange({

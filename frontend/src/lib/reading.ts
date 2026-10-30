@@ -73,7 +73,12 @@ export function combineBookTotals(books: MoneyBook[]): BookTotal {
   };
 }
 
-/** Prefer the first book that actually reported, including a genuine zero. */
+/**
+ * One portfolio figure from the book that reported.
+ * A Kraken equity of exactly 0 is a real reading, so it is kept and Capital
+ * is not substituted for it. Capital is used only when Kraken did not report.
+ * A non-empty equity note withholds the figure.
+ */
 export function selectEquity(
   equityNote: string,
   kraken: number | null,
@@ -82,6 +87,12 @@ export function selectEquity(
   if (equityNote) return null;
   if (kraken != null) return kraken;
   return capital;
+}
+
+/** Kraken's own pool. A missing pool is not replaced by another book or a combined total. */
+export function krakenPoolAvailable(poolAvailable: number | null, freeMargin: number | null): number | null {
+  if (poolAvailable != null) return poolAvailable;
+  return freeMargin;
 }
 
 export function equityReadingFromExchange(state: {

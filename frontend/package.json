@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "lint:shell": "eslint src/shell --max-warnings 0",
     "typecheck": "tsc -p tsconfig.app.json --noEmit",
+    "test:missing-reading": "tsx --tsconfig tsconfig.app.json --test src/missingReading.test.tsx",
     "test:e2e": "npm run unavailable -- test:e2e",
     "preview": "npm run unavailable -- preview",
     "unavailable": "node -e process.exitCode=2",
