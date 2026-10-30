@@ -838,7 +838,7 @@ class MindThoughtActionHub:
         if self.prob_nexus:
             print(f"   • Probability Nexus: 79.6% win rate")
         if self.ultimate_intel:
-            print(f"   • Ultimate Intelligence: 95% accuracy")
+            print(f"   • Ultimate Intelligence")
         print(f"{'='*80}\n")
         
         # Start background tasks

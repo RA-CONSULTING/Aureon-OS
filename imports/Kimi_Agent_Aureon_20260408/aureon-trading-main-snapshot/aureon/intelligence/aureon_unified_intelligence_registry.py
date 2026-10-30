@@ -365,7 +365,7 @@ CATEGORIES: Dict[str, CategoryDefinition] = {
         thought_bus_pattern="intel.*",
         systems=[
             SystemEntry("Ultimate Intelligence", "probability_ultimate_intelligence", "ProbabilityUltimateIntelligence",
-                       "95% accuracy ML prediction with multi-dimensional pattern keys",
+                       "ML prediction with multi-dimensional pattern keys",
                        chain_inputs=["all_scanner_outputs", "all_analyzer_outputs"],
                        chain_outputs=["ultimate_predictions", "confidence_scores"],
                        thought_bus_topics=["intel.ultimate"]),

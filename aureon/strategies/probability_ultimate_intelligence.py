@@ -2,7 +2,7 @@
 """
 💎 PROBABILITY ULTIMATE INTELLIGENCE
 =====================================
-Achieved: 95% accuracy with 97% F1 score in backtesting
+Learns patterns from backtesting
 
 This module learns from every trade to build pattern recognition
 that approaches perfect prediction.
@@ -167,7 +167,7 @@ class UltimatePrediction:
 class ProbabilityUltimateIntelligence:
     """
     The ultimate probability system that learns from every trade.
-    Achieved 95% accuracy in backtesting.
+    Learns patterns from backtesting.
     
     🐠 Enhanced with Clownfish v2.0 micro-change detection for 5D pattern keys.
     """

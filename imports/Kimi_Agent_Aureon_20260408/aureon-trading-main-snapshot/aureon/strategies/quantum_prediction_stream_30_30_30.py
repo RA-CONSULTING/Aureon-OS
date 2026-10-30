@@ -9,7 +9,7 @@ Three 30-second windows:
 
 Integrates:
 - Queen + Dr. Auris consciousness dialogue
-- 95% accuracy Probability Matrix
+- Probability Matrix
 - Sacred geometry validation (Metatron's Cube)
 - Fibonacci predictions
 - 4 quantum space propagation (Beta, Alpha, Theta, Delta)

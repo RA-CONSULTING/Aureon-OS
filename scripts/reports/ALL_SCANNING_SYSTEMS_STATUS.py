@@ -306,7 +306,7 @@ intelligence_systems = [
     {
         "name": "Probability Ultimate Intelligence",
         "file": "probability_ultimate_intelligence.py",
-        "purpose": "95% accuracy ML prediction engine",
+        "purpose": "ML prediction engine",
         "capabilities": [
             "High-confidence predictions",
             "Probabilistic modeling",

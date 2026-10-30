@@ -270,7 +270,7 @@ class QueenFullyOnline:
         # G. Ultimate Intelligence (Probability Matrix)
         if ProbabilityUltimateIntelligence:
             self.systems['ultimate_intel'] = ProbabilityUltimateIntelligence()
-            logger.info("💎 Ultimate Intelligence: WIRED (95% Accuracy Matrix)")
+            logger.info("💎 Ultimate Intelligence: WIRED ")
 
 
     def _on_perception(self, thought):

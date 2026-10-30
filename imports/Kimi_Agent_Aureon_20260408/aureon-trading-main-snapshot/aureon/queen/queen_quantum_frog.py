@@ -352,7 +352,7 @@ except ImportError:
     OrcaOpportunity = None
     OrcaWhaleSignal = None
 
-# 🔮 Probability Ultimate Intelligence (95% accuracy)
+# 🔮 Probability Ultimate Intelligence
 try:
     from probability_ultimate_intelligence import ProbabilityUltimateIntelligence as UltimateIntelligence
     ULTIMATE_INTEL_AVAILABLE = True
@@ -497,7 +497,7 @@ except ImportError:
     TradeEntry = None
     TradeExit = None
 
-# 🌉 Truth Prediction Bridge - 95% accuracy intelligence
+# 🌉 Truth Prediction Bridge
 try:
     from aureon_truth_prediction_bridge import get_truth_bridge, TruthPredictionBridge
     TRUTH_BRIDGE_AVAILABLE = True
@@ -641,7 +641,7 @@ except ImportError:
     STARGATE_GRID_AVAILABLE = False
     StargateGrid = None
 
-# 🎬 Inception Engine - Russian doll probability (LIMBO = 95% accuracy)
+# 🎬 Inception Engine - Russian doll probability (LIMBO)
 try:
     from aureon_inception_engine import get_inception_engine, inception_dive, get_limbo_insight, InceptionEngine
     INCEPTION_ENGINE_AVAILABLE = True
@@ -3691,12 +3691,12 @@ class OrcaKillCycle:
         except Exception:
             pass
         
-        # 3. Ultimate Intelligence (95% accuracy!) - CRITICAL
+        # 3. Ultimate Intelligence - CRITICAL
         self.ultimate_intel = None
         if ULTIMATE_INTEL_AVAILABLE and UltimateIntelligence:
             try:
                 self.ultimate_intel = UltimateIntelligence()
-                _safe_print("💎 Mycelium: Ultimate Intelligence WIRED! (95% accuracy)")
+                _safe_print("💎 Mycelium: Ultimate Intelligence WIRED!")
             except Exception:
                 pass
         
@@ -4709,12 +4709,12 @@ class OrcaKillCycle:
         self.prediction_window_seconds = 30.0
         self.prediction_buffer = {}  # symbol -> list of {'timestamp','probability','confidence'}
         
-        # 🌉 TRUTH PREDICTION BRIDGE - 95% accuracy real-time validation
+        # 🌉 TRUTH PREDICTION BRIDGE - real-time validation
         self.truth_bridge = None
         if TRUTH_BRIDGE_AVAILABLE and get_truth_bridge:
             try:
                 self.truth_bridge = get_truth_bridge()
-                _safe_print("🌉 Truth Prediction Bridge: WIRED! (95% accuracy Queen+Auris+Harmonic)")
+                _safe_print("🌉 Truth Prediction Bridge: WIRED! (Queen+Auris+Harmonic)")
             except Exception as e:
                 _safe_print(f"⚠️ Truth Bridge failed: {e}")
         
@@ -5559,7 +5559,7 @@ class OrcaKillCycle:
         if self.miner_brain:
             print("   • Miner Brain: ACTIVE (Cognitive Intelligence)")
         if self.ultimate_intel:
-            print("   • Ultimate Intelligence: ACTIVE (95% accuracy)")
+            print("   • Ultimate Intelligence: ACTIVE")
         
         print("\n🐋 WHALE SYSTEMS:")
         if self.whale_tracker:
@@ -8769,7 +8769,7 @@ class OrcaKillCycle:
         # ═══════════════════════════════════════════════════════════════════════
 
         # ═══════════════════════════════════════════════════════════════════════
-        #   🌉 TRUTH PREDICTION ENGINE GATE (Queen's 95% accuracy + Dr. Auris validation)
+        #   🌉 TRUTH PREDICTION ENGINE GATE (Queen's probability + Dr. Auris validation)
         # ═══════════════════════════════════════════════════════════════════════
         if self.truth_bridge:
             truth_signal = self.truth_bridge.get_trading_signal(symbol, "BUY", max_age_seconds=60.0)
@@ -8967,7 +8967,7 @@ class OrcaKillCycle:
             }
 
         # ═══════════════════════════════════════════════════════════════════
-        #   🌉 TRUTH PREDICTION ENGINE GATE (95% accuracy)
+        #   🌉 TRUTH PREDICTION ENGINE GATE
         # ═══════════════════════════════════════════════════════════════════
         if self.truth_bridge:
             truth_signal = self.truth_bridge.get_trading_signal(symbol, "BUY", max_age_seconds=60.0)
@@ -10633,11 +10633,11 @@ class OrcaKillCycle:
         all_opportunities = []
         
         # ═══════════════════════════════════════════════════════════════════
-        # 🧠 SOURCE 1: Ultimate Intelligence (95% accuracy!) - HIGHEST PRIORITY
+        # 🧠 SOURCE 1: Ultimate Intelligence - HIGHEST PRIORITY
         # ═══════════════════════════════════════════════════════════════════
         if hasattr(self, 'ultimate_intel') and self.ultimate_intel:
             try:
-                print("\n💎 Consulting Ultimate Intelligence (95% accuracy)...")
+                print("\n💎 Consulting Ultimate Intelligence...")
                 # Use predict() method for guaranteed patterns
                 if hasattr(self.ultimate_intel, 'get_guaranteed_patterns'):
                     patterns = self.ultimate_intel.get_guaranteed_patterns()
@@ -13438,7 +13438,7 @@ class OrcaKillCycle:
         
         STAGE 1: SCAN - Use ALL intelligence systems to find candidates
           - Quantum scoring (Luck, Phantom, Inception, Elephant, etc.)
-          - Probability predictions (95% accuracy)
+          - Probability predictions
           - Wave scanner momentum
           - Firm intelligence (smart money)
           - Whale signals

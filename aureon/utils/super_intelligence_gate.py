@@ -11,7 +11,7 @@ VERIFIED RESULTS (1,041 historical trades):
 - ≥7 of 8 systems: 47 trades, 100.0% WIN RATE, $36.84 P&L
 
 LAYERED SYSTEMS:
-1. 💎 Probability Ultimate Intelligence (95% accuracy)
+1. 💎 Probability Ultimate Intelligence
 2. 🔫 Unified Sniper Brain (100% trained parameters)
 3. ⚗️ QGITA Framework (Fibonacci structural analysis)
 4. 🗼 Lighthouse Metrics (spectral coherence analysis)

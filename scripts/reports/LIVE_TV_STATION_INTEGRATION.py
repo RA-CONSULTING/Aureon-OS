@@ -166,7 +166,7 @@ Every 10 seconds, Queen Eternal Machine now executes:
    
    Generates Prediction:
    • Analyzes market snapshot
-   • Queries Queen's probability matrices (95% accuracy)
+   • Queries Queen's probability matrices
    • Validates with Dr. Auris (geometric truth)
    • Checks harmonic Hz resonance
    • ONLY generates if all 3 layers approve
@@ -267,7 +267,7 @@ All validation is based on REAL DATA:
 ✅ Real momentum calculations (from actual price history)
 
 Triple validation layer:
-1️⃣  Queen's Probability Matrices (95% accuracy)
+1️⃣  Queen's Probability Matrices
 2️⃣  Dr. Auris Geometric Truth Validation
 3️⃣  Harmonic Hz Resonance Analysis
 

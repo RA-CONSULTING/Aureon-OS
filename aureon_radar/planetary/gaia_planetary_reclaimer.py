@@ -595,7 +595,7 @@ except ImportError:
     PathMemory = None
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 💎 PROBABILITY ULTIMATE INTELLIGENCE - 95% Accuracy Pattern Learning
+# 💎 PROBABILITY ULTIMATE INTELLIGENCE - Pattern Learning
 # ═══════════════════════════════════════════════════════════════════════════════
 
 ULTIMATE_INTEL_AVAILABLE = False
@@ -825,7 +825,7 @@ class QueenVerifier:
     - QueenLossLearning: Wisdom from losses (elephant memory)
     - ThoughtBus: Real-time event broadcasting
     - PathMemory: Labyrinth navigation (winning paths)
-    - ProbabilityUltimateIntelligence: 95% accuracy patterns
+    - ProbabilityUltimateIntelligence: pattern learning
     - MinerBrain: Cognitive intelligence (11 civilizations)
     
     Metrics tracked:
@@ -862,7 +862,7 @@ class QueenVerifier:
         self.path_memory = None  # Track winning/losing asset paths
         
         # 💎 Advanced Intelligence Systems
-        self.ultimate_intel = None  # 95% accuracy pattern learning
+        self.ultimate_intel = None  # pattern learning
         self.miner_brain = None     # Cognitive intelligence (11 civilizations)
         self.ultimate_confidence = 0.5  # Latest prediction confidence
         self.pattern_win_rate = 0.0     # Current pattern's historical win rate
@@ -927,7 +927,7 @@ class QueenVerifier:
             except Exception as e:
                 print(f"   ⚠️ PathMemory: Offline ({e})")
         
-        # 💎 Probability Ultimate Intelligence - 95% accuracy patterns
+        # 💎 Probability Ultimate Intelligence - pattern learning
         if ULTIMATE_INTEL_AVAILABLE and ProbabilityUltimateIntelligence:
             try:
                 self.ultimate_intel = ProbabilityUltimateIntelligence()
@@ -1149,7 +1149,7 @@ class QueenVerifier:
                     self.pnl_history = self.pnl_history[-100:]
                 
                 # Update the ultimate intelligence with this trade's outcome
-                # This helps build 95% accuracy patterns over time
+                # This helps build patterns over time
                 self.ultimate_intel.total_predictions += 1
                 if won:
                     self.ultimate_intel.correct_predictions += 1
@@ -1239,7 +1239,7 @@ class QueenVerifier:
             return {'paths': 0, 'wins': 0, 'losses': 0, 'win_rate': 0.0}
     
     def get_ultimate_prediction(self, profit: float = 0.0) -> dict:
-        """💎 Get prediction from Ultimate Intelligence (95% accuracy)"""
+        """💎 Get prediction from Ultimate Intelligence"""
         if not self.ultimate_intel:
             return {'confidence': 0.5, 'pattern_win_rate': 0.0, 'is_guaranteed': False}
         try:

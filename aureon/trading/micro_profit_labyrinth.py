@@ -719,7 +719,7 @@ except Exception as e:
     HNC_MATRIX_AVAILABLE = False
     safe_print(f"⚠️ HNC Matrix import failed: {e}")
 
-# Ultimate Intelligence (95% accuracy patterns)
+# Ultimate Intelligence (pattern learning)
 try:
     from aureon.strategies.probability_ultimate_intelligence import get_ultimate_intelligence, ultimate_predict
     ULTIMATE_INTEL_AVAILABLE = True
@@ -4928,7 +4928,7 @@ class MicroProfitLabyrinth:
         self.mycelium_network = None  # Hive intelligence
         self.lighthouse = None         # Consensus validation
         self.hnc_matrix = None         # Pattern recognition
-        self.ultimate_intel = None     # 95% accuracy patterns
+        self.ultimate_intel = None     # pattern learning
         self.unified_ecosystem = None  # Full ecosystem read-only
         self.timeline_oracle = None    # ⏳🔮 7-day future validation
         self.market_map = None         # 🗺️ Crypto market correlation map
@@ -6099,11 +6099,11 @@ class MicroProfitLabyrinth:
         else:
             safe_print(f"   📊 HNC Matrix: ❌ NOT AVAILABLE (import={HNC_MATRIX_AVAILABLE})")
         
-        # 💎 Ultimate Intelligence (95% Accuracy)
+        # 💎 Ultimate Intelligence
         if ULTIMATE_INTEL_AVAILABLE and get_ultimate_intelligence:
             try:
                 self.ultimate_intel = get_ultimate_intelligence()
-                safe_print("   💎 Ultimate Intelligence: ✅ WIRED (95% Accuracy)")
+                safe_print("   💎 Ultimate Intelligence: ✅ WIRED")
             except Exception as e:
                 safe_print(f"   ⚠️ Ultimate Intel error: {e}")
                 self.ultimate_intel = None

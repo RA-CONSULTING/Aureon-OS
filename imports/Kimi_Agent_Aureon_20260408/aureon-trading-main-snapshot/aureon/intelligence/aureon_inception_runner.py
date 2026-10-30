@@ -97,7 +97,7 @@ try:
         get_ultimate_intelligence, ultimate_predict
     )
     PROBABILITY_READY = True
-    print("🔱 LAYER 5: Probability Intelligence READY (95% accuracy)")
+    print("🔱 LAYER 5: Probability Intelligence READY")
 except ImportError:
     PROBABILITY_READY = False
     print("⚠️ Probability Intelligence not found")
@@ -254,7 +254,7 @@ class InceptionRunner:
                     })
         
         # ══════════════════════════════════════════════════════════════════════
-        # LAYER 5: PROBABILITY INTELLIGENCE (95% accuracy)
+        # LAYER 5: PROBABILITY INTELLIGENCE
         # ══════════════════════════════════════════════════════════════════════
         if self.probability and PROBABILITY_READY:
             prices = market_data.get("prices", {})

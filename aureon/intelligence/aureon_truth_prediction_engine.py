@@ -136,7 +136,7 @@ class TruthPredictionEngine:
         if PROBABILITY_AVAILABLE:
             try:
                 self.probability_intel = ProbabilityUltimateIntelligence()
-                print("✅ Probability Ultimate Intelligence loaded (95% accuracy)")
+                print("✅ Probability Ultimate Intelligence loaded")
             except Exception as e:
                 print(f"⚠️ Failed to load probability intelligence: {e}")
         

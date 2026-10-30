@@ -132,7 +132,7 @@ except ImportError:
     PROB_MATRIX = None
     print("⚠️ Probability Intelligence Matrix not available for Patriots")
 
-# 💎 PROBABILITY ULTIMATE INTELLIGENCE - 95% Accuracy Pattern Learning
+# 💎 PROBABILITY ULTIMATE INTELLIGENCE - Pattern Learning
 try:
     from probability_ultimate_intelligence import (
         get_ultimate_intelligence, ultimate_predict, record_ultimate_outcome,
@@ -140,7 +140,7 @@ try:
     )
     ULTIMATE_INTELLIGENCE_AVAILABLE = True
     ULTIMATE_INTEL = get_ultimate_intelligence()
-    print("💎 Probability Ultimate Intelligence WIRED to Patriots! (95% accuracy)")
+    print("💎 Probability Ultimate Intelligence WIRED to Patriots!")
 except ImportError:
     ULTIMATE_INTELLIGENCE_AVAILABLE = False
     ULTIMATE_INTEL = None

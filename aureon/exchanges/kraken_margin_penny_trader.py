@@ -4575,7 +4575,7 @@ class KrakenMarginArmyTrader:
         return result
 
     def _score_prob_ultimate(self, symbol: str, side: str, current_price: float, momentum_pct: float) -> dict:
-        """Probability Ultimate Intelligence: 95% accuracy pattern-based prediction."""
+        """Probability Ultimate Intelligence: pattern-based prediction."""
         result = {"bonus": 0.0, "win_rate": 0.0, "pattern": ""}
         if self.prob_ultimate is None:
             return result

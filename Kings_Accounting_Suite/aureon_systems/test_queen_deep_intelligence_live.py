@@ -12,7 +12,7 @@ Systems under test
  1.  ProbabilityIntelligenceMatrix   — trade probability calculator
  2.  LighthouseMetricsEngine         — spectral coherence (scipy/numpy)
  3.  ElephantMemory                  — pattern recognition (57 learned patterns)
- 4.  ProbabilityUltimateIntelligence — 95%-accuracy trained predictor (1M wins)
+ 4.  ProbabilityUltimateIntelligence — trained predictor (1M wins)
  5.  SuperIntelligenceGate           — 8-system consensus gate
  6.  PillarCouncil (Quadrumvirate)   — 4-pillar governance session
  7.  QueenDeepIntelligence           — autonomous hypothesis engine
@@ -212,7 +212,7 @@ print(f"    XRP ({current['XRP']:.4f}): {len(xrp_sigs)} patterns matched")
 # ══════════════════════════════════════════════════════════════════════════════
 #  4. PROBABILITY ULTIMATE INTELLIGENCE — 1M-WIN TRAINED MODEL
 # ══════════════════════════════════════════════════════════════════════════════
-sec("4. ProbabilityUltimateIntelligence — 95%-Accuracy Trained Predictor")
+sec("4. ProbabilityUltimateIntelligence — Trained Predictor")
 
 from probability_ultimate_intelligence import ProbabilityUltimateIntelligence
 

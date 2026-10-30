@@ -283,7 +283,7 @@ except ImportError:
     logging.debug("⚠️ Probability Intelligence Matrix not available")
 
 # =============================================================================
-# 💎 PROBABILITY ULTIMATE INTELLIGENCE - 95% Accuracy Pattern Learning
+# 💎 PROBABILITY ULTIMATE INTELLIGENCE - Pattern Learning
 # =============================================================================
 
 try:

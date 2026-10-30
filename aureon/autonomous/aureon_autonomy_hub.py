@@ -1190,7 +1190,7 @@ def adapt_imperial_predictability(data_signals: Dict[str, UnifiedSignal],
 
 def adapt_probability_ultimate(data_signals: Dict[str, UnifiedSignal],
                                 symbol: str) -> Optional[UnifiedSignal]:
-    """Adapter: Probability Ultimate Intelligence (95% accuracy) -> UnifiedSignal"""
+    """Adapter: Probability Ultimate Intelligence -> UnifiedSignal"""
     global _ultimate_instance
     try:
         if _ultimate_instance is None:

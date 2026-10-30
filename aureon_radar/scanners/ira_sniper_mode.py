@@ -282,7 +282,7 @@ except ImportError:
     print("⚠️ Probability Intelligence Matrix not available")
 
 # =============================================================================
-# 💎 PROBABILITY ULTIMATE INTELLIGENCE - 95% Accuracy Pattern Learning
+# 💎 PROBABILITY ULTIMATE INTELLIGENCE - Pattern Learning
 # =============================================================================
 
 try:
@@ -292,7 +292,7 @@ try:
     )
     ULTIMATE_INTELLIGENCE_ENABLED = True
     ULTIMATE_INTEL = get_ultimate_intelligence()
-    print("💎 Probability Ultimate Intelligence WIRED! (95% accuracy)")
+    print("💎 Probability Ultimate Intelligence WIRED!")
 except ImportError:
     ULTIMATE_INTELLIGENCE_ENABLED = False
     ULTIMATE_INTEL = None

@@ -8,7 +8,7 @@ THREE EXCHANGES WORKING AS ONE UNIFIED ORGANISM:
 - 🍄 MYCELIUM: Cross-exchange signal sharing & intelligence
 
 🌍 FULL ECOSYSTEM INTELLIGENCE WIRED:
-- 💎 Ultimate Intelligence (95% accuracy pattern learning)
+- 💎 Ultimate Intelligence (pattern learning)
 - 🍄 Mycelium Neural Network (UNIFIED cross-exchange brain)
 - 🌍 HNC Probability Matrix (harmonic natural cycles)
 - ⚔️ War Strategy Engine (quick kill assessment)
@@ -121,14 +121,14 @@ def get_real_portfolio_balance() -> Tuple[float, Dict[str, float]]:
 
 from aureon_probability_nexus import AureonProbabilityNexus
 
-# 💎 PROBABILITY ULTIMATE INTELLIGENCE - 95% Accuracy
+# 💎 PROBABILITY ULTIMATE INTELLIGENCE
 try:
     from probability_ultimate_intelligence import (
         get_ultimate_intelligence, ultimate_predict, record_ultimate_outcome
     )
     ULTIMATE_INTEL = get_ultimate_intelligence()
     ULTIMATE_AVAILABLE = True
-    print("💎 Ultimate Intelligence WIRED! (95% accuracy)")
+    print("💎 Ultimate Intelligence WIRED!")
 except ImportError:
     ULTIMATE_INTEL = None
     ULTIMATE_AVAILABLE = False
@@ -947,7 +947,7 @@ class RaceToHundredK:
                         recent_candles = self.price_data[pair][max(0, candle_idx-64):candle_idx+1]
                         price_history = [c['close'] for c in recent_candles]
                         
-                        # 2. BOOST: Ultimate Intelligence (95% accuracy)
+                        # 2. BOOST: Ultimate Intelligence
                         ultimate_boost = 0.0
                         if ULTIMATE_AVAILABLE and ULTIMATE_INTEL:
                             try:

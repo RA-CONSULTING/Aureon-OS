@@ -148,7 +148,7 @@ class AureonSystemsIntegrator:
             'aureon_harmonic_fusion': 'Multi-system harmonic fusion',
             'aureon_miner_brain': 'Mining intelligence core',
             'aureon_queen_hive_mind': 'Queen decision controller',
-            'probability_ultimate_intelligence': '95% accuracy predictions',
+            'probability_ultimate_intelligence': 'pattern predictions',
             'aureon_immune_system': 'Self-healing runtime protection',
             'aureon_memory_core': 'Persistent memory spiral',
             'aureon_internal_multiverse': 'Internal multiverse branching',
