@@ -1,10 +1,10 @@
 {
   "aureon_source": {
-    "commit": "c26b651ddc8c8d258c91de4f7300187cd20f61b2",
+    "commit": "09828f685a1e525895b8fea6df765dbb358961ea",
     "kind": "checkout"
   },
   "aureon_tree": "8aef927b7fe6276c187e4c73c79f0de012ad980d",
-  "code_commit": "c26b651ddc8c8d258c91de4f7300187cd20f61b2",
+  "code_commit": "09828f685a1e525895b8fea6df765dbb358961ea",
   "code_commit_note": "This is the parent of the commit that contains this record. The record cannot name the commit that adds the file.",
   "entries": [
     {
@@ -756,57 +756,6 @@
       "socket": [],
       "status": "unavailable",
       "symbol": "summarize_patterns",
-      "tested_stage1_tool": false,
-      "writes": []
-    },
-    {
-      "attempts": [
-        {
-          "arguments": {},
-          "bad": [],
-          "called": false,
-          "error": null,
-          "label": "no_arguments",
-          "note": "No arguments.",
-          "process": [],
-          "reason": "TypeError: test_phi_resonance_me() missing 1 required positional argument: 'me'",
-          "refusal": null,
-          "socket": [],
-          "source": null,
-          "status": "unavailable",
-          "writes": []
-        },
-        {
-          "arguments": {
-            "__sweep_fixture__": "sumerian_enship"
-          },
-          "bad": [],
-          "called": true,
-          "error": null,
-          "label": "enship",
-          "note": "First foundation me in the module catalog.",
-          "process": [],
-          "reason": null,
-          "refusal": null,
-          "socket": [],
-          "source": "aureon/decoders/book_of_ur.py",
-          "status": "cited",
-          "writes": []
-        }
-      ],
-      "bad": [],
-      "called": false,
-      "error": null,
-      "module": "decoders/book_of_ur.py",
-      "package": "decoders",
-      "plan_stage": 2,
-      "process": [],
-      "reason": "TypeError: test_phi_resonance_me() missing 1 required positional argument: 'me'",
-      "refusal": null,
-      "refused": false,
-      "socket": [],
-      "status": "unavailable",
-      "symbol": "test_phi_resonance_me",
       "tested_stage1_tool": false,
       "writes": []
     },
@@ -2634,57 +2583,6 @@
         {
           "arguments": {},
           "bad": [],
-          "called": false,
-          "error": null,
-          "label": "no_arguments",
-          "note": "No arguments.",
-          "process": [],
-          "reason": "TypeError: set_momentum_tracker() missing 1 required positional argument: 't'",
-          "refusal": null,
-          "socket": [],
-          "source": null,
-          "status": "unavailable",
-          "writes": []
-        },
-        {
-          "arguments": {
-            "__sweep_fixture__": "empty_momentum_tracker"
-          },
-          "bad": [],
-          "called": true,
-          "error": null,
-          "label": "empty_tracker",
-          "note": "MomentumTracker() takes no readings.",
-          "process": [],
-          "reason": null,
-          "refusal": null,
-          "socket": [],
-          "source": "aureon/observer/momentum.py",
-          "status": "cited",
-          "writes": []
-        }
-      ],
-      "bad": [],
-      "called": false,
-      "error": null,
-      "module": "observer/momentum.py",
-      "package": "observer",
-      "plan_stage": 2,
-      "process": [],
-      "reason": "TypeError: set_momentum_tracker() missing 1 required positional argument: 't'",
-      "refusal": null,
-      "refused": false,
-      "socket": [],
-      "status": "unavailable",
-      "symbol": "set_momentum_tracker",
-      "tested_stage1_tool": false,
-      "writes": []
-    },
-    {
-      "attempts": [
-        {
-          "arguments": {},
-          "bad": [],
           "called": true,
           "error": null,
           "label": "no_arguments",
@@ -2711,57 +2609,6 @@
       "socket": [],
       "status": "cited",
       "symbol": "momentum_predict_fn",
-      "tested_stage1_tool": false,
-      "writes": []
-    },
-    {
-      "attempts": [
-        {
-          "arguments": {},
-          "bad": [],
-          "called": false,
-          "error": null,
-          "label": "no_arguments",
-          "note": "No arguments.",
-          "process": [],
-          "reason": "TypeError: make_predictor() missing 1 required positional argument: 'observer'",
-          "refusal": null,
-          "socket": [],
-          "source": null,
-          "status": "unavailable",
-          "writes": []
-        },
-        {
-          "arguments": {
-            "__sweep_fixture__": "empty_harmonic_observer"
-          },
-          "bad": [],
-          "called": true,
-          "error": null,
-          "label": "unpublished_observer",
-          "note": "The test constructs the observer with publish_to_bus false.",
-          "process": [],
-          "reason": null,
-          "refusal": null,
-          "socket": [],
-          "source": "tests/observer/test_predictor_contract.py",
-          "status": "cited",
-          "writes": []
-        }
-      ],
-      "bad": [],
-      "called": false,
-      "error": null,
-      "module": "observer/predictor.py",
-      "package": "observer",
-      "plan_stage": 2,
-      "process": [],
-      "reason": "TypeError: make_predictor() missing 1 required positional argument: 'observer'",
-      "refusal": null,
-      "refused": false,
-      "socket": [],
-      "status": "unavailable",
-      "symbol": "make_predictor",
       "tested_stage1_tool": false,
       "writes": []
     },
@@ -3379,108 +3226,6 @@
       "socket": [],
       "status": "cited",
       "symbol": "get_wave_predictor",
-      "tested_stage1_tool": false,
-      "writes": []
-    },
-    {
-      "attempts": [
-        {
-          "arguments": {},
-          "bad": [],
-          "called": false,
-          "error": null,
-          "label": "no_arguments",
-          "note": "No arguments.",
-          "process": [],
-          "reason": "TypeError: set_wave_predictor() missing 1 required positional argument: 'p'",
-          "refusal": null,
-          "socket": [],
-          "source": null,
-          "status": "unavailable",
-          "writes": []
-        },
-        {
-          "arguments": {
-            "__sweep_fixture__": "empty_wave_for_set"
-          },
-          "bad": [],
-          "called": true,
-          "error": null,
-          "label": "empty_predictor",
-          "note": "WavePredictor() takes no trace.",
-          "process": [],
-          "reason": null,
-          "refusal": null,
-          "socket": [],
-          "source": "aureon/observer/wave_predictor.py",
-          "status": "cited",
-          "writes": []
-        }
-      ],
-      "bad": [],
-      "called": false,
-      "error": null,
-      "module": "observer/wave_predictor.py",
-      "package": "observer",
-      "plan_stage": 2,
-      "process": [],
-      "reason": "TypeError: set_wave_predictor() missing 1 required positional argument: 'p'",
-      "refusal": null,
-      "refused": false,
-      "socket": [],
-      "status": "unavailable",
-      "symbol": "set_wave_predictor",
-      "tested_stage1_tool": false,
-      "writes": []
-    },
-    {
-      "attempts": [
-        {
-          "arguments": {},
-          "bad": [],
-          "called": false,
-          "error": null,
-          "label": "no_arguments",
-          "note": "No arguments.",
-          "process": [],
-          "reason": "TypeError: make_predictor() missing 1 required positional argument: 'predictor'",
-          "refusal": null,
-          "socket": [],
-          "source": null,
-          "status": "unavailable",
-          "writes": []
-        },
-        {
-          "arguments": {
-            "__sweep_fixture__": "empty_wave_for_make"
-          },
-          "bad": [],
-          "called": true,
-          "error": null,
-          "label": "empty_predictor",
-          "note": "WavePredictor() takes no trace.",
-          "process": [],
-          "reason": null,
-          "refusal": null,
-          "socket": [],
-          "source": "aureon/observer/wave_predictor.py",
-          "status": "cited",
-          "writes": []
-        }
-      ],
-      "bad": [],
-      "called": false,
-      "error": null,
-      "module": "observer/wave_predictor.py",
-      "package": "observer",
-      "plan_stage": 2,
-      "process": [],
-      "reason": "TypeError: make_predictor() missing 1 required positional argument: 'predictor'",
-      "refusal": null,
-      "refused": false,
-      "socket": [],
-      "status": "unavailable",
-      "symbol": "make_predictor",
       "tested_stage1_tool": false,
       "writes": []
     },
@@ -4387,7 +4132,7 @@
     }
   ],
   "layout": {
-    "beside": "/tmp/aureon-sweep-parent.a3kijT",
+    "beside": "/tmp/aureon-sweep-parent.itk8v1",
     "created": [
       "NEXUS-LIVE-FEED-",
       "Aureon-Trading--Project-Sero"
