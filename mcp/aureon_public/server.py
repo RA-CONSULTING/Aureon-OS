@@ -62,6 +62,11 @@ def build_server(host: str = "127.0.0.1", port: int = 8077) -> FastMCP:
         host=host,
         port=port,
         streamable_http_path="/mcp",
+        # JSON responses and no session. GET /mcp is not a long-lived event
+        # stream. The HTTP guard answers that GET with 405 so it cannot hold
+        # an in-flight call slot.
+        json_response=True,
+        stateless_http=True,
     )
     for fn in (
         tools.hnc_reality_step,
@@ -122,6 +127,38 @@ def build_server(host: str = "127.0.0.1", port: int = 8077) -> FastMCP:
     return server
 
 
+def streamable_http_config(app: object, host: str, port: int):
+    """Uvicorn config that does not rewrite the client from forwarded headers.
+
+    Uvicorn's default ``proxy_headers`` trusts ``X-Forwarded-For`` from
+    127.0.0.1 and replaces ``scope["client"]`` before this process's middleware
+    runs. ``proxy_headers=False`` and an empty ``forwarded_allow_ips`` leave
+    that header for ``http_guard`` only.
+    """
+
+    import uvicorn
+
+    return uvicorn.Config(
+        app,
+        host=host,
+        port=port,
+        log_level="warning",
+        proxy_headers=False,
+        forwarded_allow_ips="",
+    )
+
+
+def serve_streamable_http(server: FastMCP, host: str, port: int) -> None:
+    """Listen with the bearer check and the rate, size, and timeout limits."""
+
+    import uvicorn
+
+    from aureon_public.http_guard import PublicHttpMiddleware, load_http_limits
+
+    app = PublicHttpMiddleware(server.streamable_http_app(), load_http_limits())
+    uvicorn.Server(streamable_http_config(app, host, port)).run()
+
+
 def main(argv: list[str] | None = None) -> None:
     """stdio, or streamable HTTP when --transport streamable-http is set."""
 
@@ -134,8 +171,14 @@ def main(argv: list[str] | None = None) -> None:
     refuse_sweep_environment()
     apply_space_guard()
     enforce_public_pin()
-    server = build_server(host=args.host, port=args.port)
-    server.run(transport=args.transport)
+    if args.transport == "stdio":
+        build_server().run(transport="stdio")
+        return
+    from aureon_public.http_guard import resolve_http_bind
+
+    host = resolve_http_bind(args.host)
+    server = build_server(host=host, port=args.port)
+    serve_streamable_http(server, host, args.port)
 
 
 if __name__ == "__main__":

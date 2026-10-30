@@ -1,4 +1,27 @@
+---
+title: aureon-public
+emoji: "🔷"
+colorFrom: blue
+colorTo: gray
+sdk: docker
+app_port: 7860
+pinned: false
+license: mit
+---
+
 # aureon-public
+
+This is a partial release covering stages 1 and 2 of 4. Stages 3 and 4 stay closed. That includes miner, queen, exchanges, orders, and keys. `COVERAGE_PLAN.md` records the counts: listed symbols 20083, public entry points 4388, reachable now 69, tested 69, refused 4319. Stage 1 reachable now is 30 and stage 1 tested now is 30. Stage 2 reachable now is 39 and stage 2 tested now is 39. 30 + 39 = 69 reachable. 30 + 39 = 69 tested.
+
+Miner is stage 3: 15 listed, 0 public entry points, reachable 0, tested 0, refused 0. Queen is stage 4: 1348 listed, 566 public entry points, reachable 0, tested 0, refused 566. Exchanges are stage 4: 643 listed, 0 public entry points, reachable 0, tested 0, refused 0. Accounting is stage 3 with reachable 0. Trading is stage 4 with reachable 0.
+
+The measured tests are the call sweep. It calls every entry point that was still reachable, with no arguments, and calls each stage-2 entry point again with the real arguments in `stage2_arguments.py`. Connections, process starts, and writes outside the sandbox are logged: the committed record says sockets blocked, processes blocked, and writes outside the sandbox blocked. A call that opens a connection, starts a process, writes outside the sandbox, or loads queen, miner, swarm_motion, inhouse_ai, ollama_config, or an HTTP client is refused. Other arguments have not been swept.
+
+The Space entry is `python -m aureon_public.space`. It sets `AUREON_PUBLIC_REQUIRE_PIN=1` and `AUREON_OBSERVER_MODE=dry_run`, and it refuses to start when `AUREON_PUBLIC_SWEEP` is set. The image installs `requirements.txt` (`mcp==1.30.0,<2` and aureon pin `8aa6a2d971cc529484e2a5e261e28afafab4e4f4`) and then the mcp package with `--no-deps`, the same runtime install as `measured/aureon_public_stage1_run.sh`. The image does not install test requirements and does not contain `AUREON_PUBLIC_API_KEY`.
+
+`AUREON_PUBLIC_OPEN=1` is set in the image, so the read-only stage-1 and stage-2 surface is served on port 7860 without a key. Set `AUREON_PUBLIC_API_KEY` in the Space secret settings to require `Authorization: Bearer`. A missing or wrong bearer then receives HTTP 401. With neither the key nor `AUREON_PUBLIC_OPEN=1`, the process binds to `127.0.0.1` only and refuses `0.0.0.0`. The image keeps `AUREON_PUBLIC_HOST=0.0.0.0` whenever it is in open mode or keyed mode. The MCP SDK turns DNS-rebinding protection on for a `127.0.0.1` bind and then answers HTTP 421 to `Host: *.hf.space`. A `0.0.0.0` bind accepts that Host header, which is what Hugging Face's proxy sends. The public HTTP server uses MCP SDK 1.30 stateless JSON responses (`stateless_http` and `json_response`). `GET /mcp` returns HTTP 405. That long-lived event stream is not used, and it does not take an in-flight call slot. `AUREON_PUBLIC_MAX_INFLIGHT` (default 4, the same size as the public worker pool) caps concurrent in-flight POST `/mcp` requests. Each tool call starts a worker process. A POST over that cap returns HTTP 503 with `error` `busy`. `AUREON_PUBLIC_RATE_LIMIT` (default 120) and `AUREON_PUBLIC_RATE_WINDOW_S` (default 60) limit requests per client. `AUREON_PUBLIC_TRUSTED_PROXY_HOPS` defaults to 1. When `X-Forwarded-For` is present and has at least that many values, the client is the value that many hops from the right. With the default, that is the last value, including a header whose only value is the client address. A fake first hop in front of that value does not get its own bucket. Zero trusted proxy hops ignores the header and uses the socket peer. The real Hugging Face header shape has to be confirmed on the private Space before this default is treated as settled. `AUREON_PUBLIC_FORWARDED_DIAG=1` records hop count and whether each hop is an IPv4 address, an IPv6 address, or something else. It does not store the addresses. Open mode buckets by that address only. A bearer is the client id only when it matches `AUREON_PUBLIC_API_KEY`. The tracked-id table is capped by `AUREON_PUBLIC_RATE_MAX_CLIENTS` (default 4096) and drops expired windows. `AUREON_PUBLIC_MAX_BODY_BYTES` (default 1048576) counts bytes as they arrive, including a chunked body with no content-length. Every body message is counted until `more_body` is false or the client disconnects. Empty chunks do not stop that count, and the unread remainder is not passed through. `AUREON_PUBLIC_REQUEST_TIMEOUT_S` (default 30) limits a POST and also bounds that body read. A rate limit returns HTTP 429. A body over the cap returns HTTP 413. An idle or unfinished body returns HTTP 408 with `error` `body_timeout`. A POST that passes the timeout returns HTTP 504.
+
+This scaffold is not deployed and it does not create a Hugging Face repository. The measured session was taken without Docker. `.github/workflows/aureon-public-space.yml` builds this image on a pull request and runs `python -m aureon_public.space --check`. `AUREON_REF` defaults to `0390194b80cddb66c8cfd052efe3aa4f9d1545d6`, the merge commit of #225. That tree contains the aureon pin. Do not point `AUREON_REF` at cf43882e as a standing default. The first Hugging Face build log must show the `AUREON_REF` build arg. Uvicorn is started with `proxy_headers` off and an empty `forwarded_allow_ips`, so `X-Forwarded-For` is read only by this server's own middleware.
 
 MCP lets outside models call Aureon's tools. No outside model or API becomes Aureon's reasoning. The cognition runs in Aureon's own code.
 
@@ -6,7 +29,7 @@ This process is a read-only FastMCP server named `aureon-public`. It exposes the
 
 `aureon` is pinned to commit `8aa6a2d971cc529484e2a5e261e28afafab4e4f4`, the same pin as the Hugging Face Spaces. A local checkout run uses its own commit, not the pin. The MCP SDK requirement is `mcp==1.30.0,<2` in `requirements.txt` and `pyproject.toml`. That installs 1.30.0 and excludes every 2.x release. This server imports `FastMCP` from `mcp.server.fastmcp`. The check that MCP 2 renamed that class to `MCPServer` is in `COVERAGE_PLAN.md`, with the sources. Migration to SDK v2 is a later decision.
 
-Any public hosting, including the future aureon-public Space, must set `AUREON_PUBLIC_REQUIRE_PIN=1`. That refuses to start unless `aureon_source` is kind `pinned` at `8aa6a2d971cc529484e2a5e261e28afafab4e4f4`. Local runs leave the variable unset and keep the visible `aureon_source` label. Each Hugging Face Space entry point calls `enforce_public_pin()` itself before `demo.launch`.
+Any public hosting, including this aureon-public Space scaffold, must set `AUREON_PUBLIC_REQUIRE_PIN=1`. That refuses to start unless `aureon_source` is kind `pinned` at `8aa6a2d971cc529484e2a5e261e28afafab4e4f4`. Local runs of `python -m aureon_public` leave the variable unset and keep the visible `aureon_source` label. `python -m aureon_public.space` calls `enforce_public_pin()` before it binds.
 
 The operator process is separate: `python -m aureon_operator`. It stays off unless `AUREON_OPERATOR_MCP=1`, speaks stdio only, and refuses live orders. It does not import `aureon.trading` or the other blocked packages.
 
