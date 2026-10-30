@@ -30,7 +30,7 @@ cleanup_parent() {
 }
 trap cleanup_parent EXIT
 mkdir -p "$PARENT/Aureon-OS"
-cp -al "$ROOT/." "$PARENT/Aureon-OS/"
+cp -a "$ROOT/." "$PARENT/Aureon-OS/"
 PYTHONPATH="$PARENT/Aureon-OS/mcp" "$VENV/bin/python" -m aureon_public.sweep_layout --plant
 env -u AUREON_PUBLIC_SWEEP PYTHONPATH="$PARENT/Aureon-OS/mcp" \
   "$VENV/bin/python" -m aureon_public.stage2_import_sweep --out "$OUT"

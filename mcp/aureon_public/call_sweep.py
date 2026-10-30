@@ -146,10 +146,12 @@ def _one(module: str, symbol: str, timeout: float) -> dict[str, Any]:
 
 
 def build_record(timeout: float) -> dict[str, Any]:
-    from aureon_public.guard_loader import PINNED_COMMIT, aureon_source
+    from aureon_public.guard_loader import aureon_source
+    from aureon_public.measurement_stamp import measurement_stamp
     from aureon_public.sweep_layout import layout_record
 
     source = aureon_source()
+    stamp = measurement_stamp()
     tested = _tested_stage1_tools()
     entries = []
     for row in reachable_entries():
@@ -178,8 +180,8 @@ def build_record(timeout: float) -> dict[str, Any]:
         "aureon_source": source,
         "entries": entries,
         "layout": layout_record(),
-        "pin": PINNED_COMMIT,
         "sockets": "blocked",
+        **stamp,
     }
 
 

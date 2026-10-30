@@ -55,10 +55,13 @@ def _environment() -> dict[str, Any]:
         direct = json.loads(raw) if raw else None
     except Exception as exc:  # noqa: BLE001 - the record should say the pin was not readable
         direct = {"error": type(exc).__name__}
+    from aureon_public.measurement_stamp import measurement_stamp
+
     return {
         "aureon_direct_url": direct,
         "aureon_file": aureon.__file__,
         "python": sys.executable,
+        **measurement_stamp(),
     }
 
 

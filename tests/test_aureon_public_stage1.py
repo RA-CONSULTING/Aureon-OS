@@ -325,7 +325,13 @@ def test_stage1_measured_record_is_pinned_and_labelled() -> None:
     from aureon_public.stage1_rest import TOOLS
 
     record = json.loads((ROOT / "measured" / "aureon_public_stage1.json").read_text(encoding="utf-8"))
+    from aureon_public.measurement_stamp import CODE_COMMIT_NOTE, PIN_AUREON_TREE
+
     assert record["environment"]["aureon_direct_url"]["vcs_info"]["commit_id"] == PINNED_COMMIT
+    assert record["environment"]["aureon_tree"] == PIN_AUREON_TREE
+    assert record["environment"]["pin_aureon_tree"] == PIN_AUREON_TREE
+    assert record["environment"]["code_commit_note"] == CODE_COMMIT_NOTE
+    assert len(record["environment"]["code_commit"]) == 40
     assert set(record["calls"]) == {fn.__name__ for fn in TOOLS}
     for name, call in record["calls"].items():
         body = json.loads(call["text"])

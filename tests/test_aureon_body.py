@@ -402,11 +402,38 @@ def test_get_unified_directive_does_not_open_a_socket(monkeypatch: pytest.Monkey
     assert popens == []
 
 
+def test_checkout_aureon_tree_equals_the_pin() -> None:
+    import subprocess
+
+    from aureon_public.guard_loader import PINNED_COMMIT
+    from aureon_public.measurement_stamp import PIN_AUREON_TREE
+    from aureon_public.paths import repo_root
+
+    root = str(repo_root())
+
+    def rev_parse(*args: str) -> str:
+        return subprocess.check_output(["git", "-C", root, *args], text=True).strip()
+
+    assert rev_parse("rev-parse", f"{PINNED_COMMIT}:aureon") == PIN_AUREON_TREE
+    assert rev_parse("rev-parse", "HEAD:aureon") == PIN_AUREON_TREE
+    diff = subprocess.run(
+        ["git", "-C", root, "diff", "--quiet", PINNED_COMMIT, "--", "aureon"],
+        check=False,
+    )
+    assert diff.returncode == 0
+
+
 def test_call_sweep_record_names_the_pin_and_the_sibling_layout() -> None:
     record = json.loads(
         (ROOT / "measured" / "aureon_public_call_sweep.json").read_text(encoding="utf-8")
     )
+    from aureon_public.measurement_stamp import CODE_COMMIT_NOTE, PIN_AUREON_TREE
+
     assert record["pin"].startswith("8aa6a2d9")
+    assert record["aureon_tree"] == PIN_AUREON_TREE
+    assert record["pin_aureon_tree"] == PIN_AUREON_TREE
+    assert record["code_commit_note"] == CODE_COMMIT_NOTE
+    assert len(record["code_commit"]) == 40
     assert record["aureon_source"]["kind"] in {"pinned", "checkout"}
     assert record["aureon_source"]["commit"]
     names = {item["name"] for item in record["layout"]["siblings"]}
@@ -524,7 +551,13 @@ def test_stage2_import_sweep_matches_body_call() -> None:
     record = json.loads(
         (ROOT / "measured" / "aureon_public_stage2_imports.json").read_text(encoding="utf-8")
     )
+    from aureon_public.measurement_stamp import CODE_COMMIT_NOTE, PIN_AUREON_TREE
+
     assert record["pin"].startswith("8aa6a2d9")
+    assert record["aureon_tree"] == PIN_AUREON_TREE
+    assert record["pin_aureon_tree"] == PIN_AUREON_TREE
+    assert record["code_commit_note"] == CODE_COMMIT_NOTE
+    assert len(record["code_commit"]) == 40
     assert record["aureon_source"]["kind"] in {"pinned", "checkout"}
     assert record["aureon_source"]["commit"]
     names = {item["name"] for item in record["layout"]["siblings"]}

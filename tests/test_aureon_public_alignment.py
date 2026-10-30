@@ -339,8 +339,14 @@ def test_alignment_measured_record_is_a_pinned_run() -> None:
     record = json.loads(
         (ROOT / "measured" / "aureon_public_alignment.json").read_text(encoding="utf-8")
     )
+    from aureon_public.measurement_stamp import CODE_COMMIT_NOTE, PIN_AUREON_TREE
+
     direct = record["environment"]["aureon_direct_url"]
     assert direct["vcs_info"]["commit_id"] == PINNED_COMMIT
+    assert record["environment"]["aureon_tree"] == PIN_AUREON_TREE
+    assert record["environment"]["pin_aureon_tree"] == PIN_AUREON_TREE
+    assert record["environment"]["code_commit_note"] == CODE_COMMIT_NOTE
+    assert len(record["environment"]["code_commit"]) == 40
     assert record["environment"]["python"].endswith("/python")
     assert "python3.12" in record["environment"]["aureon_file"] or record["environment"][
         "python"
