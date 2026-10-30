@@ -2,10 +2,8 @@ name: aureon-public space image
 
 # Builds the Space scaffold and runs its closed-stage check.
 # No secrets. The image is not deployed and no Hugging Face repository is created.
-# AUREON_REF will be the merge commit of #225 after that pull request merges.
-# That sha is not known yet. This proof uses the pull request base, which is
-# on main and contains the aureon pin. The Space package itself is the
-# build-context overlay from the pull request.
+# AUREON_REF is the merge commit of #225. That tree contains the aureon pin.
+# The Space package itself is the build-context overlay from the pull request.
 
 on:
   pull_request:
@@ -32,7 +30,7 @@ jobs:
         run: |
           docker build \
             -f mcp/aureon_public/Dockerfile \
-            --build-arg "AUREON_REF=${{ github.event.pull_request.base.sha }}" \
+            --build-arg AUREON_REF=0390194b80cddb66c8cfd052efe3aa4f9d1545d6 \
             -t aureon-public-space \
             mcp/aureon_public
 

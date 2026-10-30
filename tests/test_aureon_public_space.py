@@ -952,9 +952,9 @@ def test_scaffold_bakes_no_key_and_quotes_the_plan() -> None:
     assert "mcp==1.30.0,<2" in requirements
     assert "8aa6a2d971cc529484e2a5e261e28afafab4e4f4" in requirements
     assert "partial release covering stages 1 and 2 of 4" in readme
-    assert "reachable now 78" in readme
-    assert "tested 68" in readme
-    assert "refused 4310" in readme
+    assert "reachable now 69" in readme
+    assert "tested 69" in readme
+    assert "refused 4319" in readme
     assert "Other arguments have not been swept." in readme
     assert "alive" not in readme.lower()
     assert "The measured session was taken without Docker." in readme
@@ -962,4 +962,4 @@ def test_scaffold_bakes_no_key_and_quotes_the_plan() -> None:
     assert 'echo "AUREON_REF=${AUREON_REF}"' in dockerfile
     assert "#225" in readme
     assert "ARG AUREON_REF=cf43882e" not in dockerfile
-    assert "#225" in dockerfile
+    assert "0390194b80cddb66c8cfd052efe3aa4f9d1545d6" in dockerfile

@@ -20,12 +20,10 @@ RUN apt-get update \
 
 # Full history of main so git rev-parse of the aureon pin still resolves.
 # A shallow clone would omit that commit.
-# AUREON_REF is required. It will be set to the merge commit of #225 after
-# that pull request merges. That sha is not known yet. The pull-request
-# workflow passes the pull request base instead, so the clone contains the
+# AUREON_REF defaults to the merge commit of #225. That tree contains the
 # aureon pin. Do not set cf43882e as a standing default.
 ARG AUREON_REPO=https://github.com/RA-CONSULTING/Aureon-OS.git
-ARG AUREON_REF
+ARG AUREON_REF=0390194b80cddb66c8cfd052efe3aa4f9d1545d6
 # The first Hugging Face build log must show the AUREON_REF build arg.
 RUN test -n "$AUREON_REF" \
     && echo "AUREON_REF=${AUREON_REF}" \
