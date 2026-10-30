@@ -199,6 +199,16 @@ def _stage2_lines() -> list[str]:
         lines.append(
             f"- `{row.get('module')}`: {row.get('refusal') or 'module import loads an adapter or http client'}"
         )
+    lines.append("Import errors that are not refusals:")
+    errors = [
+        row
+        for row in imports.get("modules") or []
+        if isinstance(row, dict) and row.get("error") and not row.get("refused")
+    ]
+    if not errors:
+        lines.append("- none recorded")
+    for row in sorted(errors, key=lambda item: str(item.get("module"))):
+        lines.append(f"- `{row.get('module')}`: {row.get('error')}")
     lines.append("Call refusals from the sweep:")
     entries = [
         row
@@ -208,8 +218,15 @@ def _stage2_lines() -> list[str]:
     if not entries:
         lines.append("- none recorded")
     for row in sorted(entries, key=lambda item: (str(item.get("module")), str(item.get("symbol")))):
+        extra = []
+        for attempt in row.get("attempts") or []:
+            if isinstance(attempt, dict) and attempt.get("process"):
+                extra.append("The same call started a process. The sweep blocked it.")
+            if isinstance(attempt, dict) and attempt.get("writes"):
+                extra.append("The same call wrote outside the sandbox. The sweep blocked it.")
+        suffix = (". " + " ".join(dict.fromkeys(extra))) if extra else ""
         lines.append(
-            f"- `{row.get('module')}` `{row.get('symbol')}`: {row.get('refusal') or 'call loads a banned chain or opens a connection'}"
+            f"- `{row.get('module')}` `{row.get('symbol')}`: {row.get('refusal') or 'call loads a banned chain or opens a connection'}{suffix}"
         )
     from aureon_public.body import lookup, public_entry_refusal
 

@@ -37,7 +37,7 @@ Each figure is reachable public functions and methods out of the public function
 | core | 0 | 452 |
 | data_feeds | 0 | 118 |
 | decoders | 5 | 80 |
-| evaluation | 7 | 10 |
+| evaluation | 6 | 10 |
 | exchanges | 0 | 0 |
 | gates | 3 | 12 |
 | generated | 4 | 4 |

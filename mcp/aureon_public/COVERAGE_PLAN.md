@@ -19,7 +19,7 @@ That pytest command is the gate. It runs in `/tmp/aureon-public-venv`, the venv 
 
 `--write` rewrites this file from the same function. `measured/aureon_public_stage1_run.sh` installs `mcp/aureon_public/requirements.txt` and `mcp/aureon_public/test-requirements.txt`, then rewrites both `measured/aureon_public_alignment.json` and `measured/aureon_public_stage1.json`. It writes those two files under a temp directory first and copies them into `measured/` only after both stamps have finished. `measurement_stamp` raises `RuntimeError` when `git status --porcelain` is not empty, so the second stamp must not see the first file. `test-requirements.txt` is the test install: pytest, pytest-timeout, flask, pandas, and scipy. It is not the public server runtime. `measured/aureon_public_stage2_sweep.sh` and `measured/aureon_public_call_sweep.sh` copy the checkout with `cp -a` under an ordinary temp parent, place fake `NEXUS-LIVE-FEED-` and `Aureon-Trading--Project-Sero` checkouts beside that copy, block sockets, and rewrite their measured records. Each sweep record names the pin, the `aureon/` tree hash beside that pin, the `aureon_source` kind, and that temp parent. `measured/aureon_public_protocol_run.sh` starts this server over stdio and over Streamable HTTP bound to `127.0.0.1`, with `AUREON_PUBLIC_REQUIRE_PIN=1`. An MCP SDK 1.30.0 client calls `tools/list`, `resources/list`, `prompts/list`, and one `tools/call` (`alignment_consonance_read` with ratio 1.0). The raw pages are `measured/aureon_public_protocol.json`. These measured records name `code_commit`, the parent of the commit that contains the record file. A record cannot name the commit that adds the file.
 
-Listed symbols: 20083. Public entry points: 4388. Reachable now: 85. Tested: 69. Refused: 4303. The plan on main recorded 879 reachable. An earlier draft head of the stage-1 PR recorded 89 reachable, before the call sweep. Methods open because a constructor is allowlisted: 19. The refused-imports fence is unchanged.
+Listed symbols: 20083. Public entry points: 4388. Reachable now: 84. Tested: 69. Refused: 4304. The plan on main recorded 879 reachable. An earlier draft head of the stage-1 PR recorded 89 reachable, before the call sweep. Methods open because a constructor is allowlisted: 19. The refused-imports fence is unchanged.
 Reachable means `public_entry_refusal` returns None. Tested means a public tool calls that entry point and `tests/test_aureon_public_stage1.py` or `tests/test_aureon_public_stage2.py` exercises the tool. Refused means a public entry point the server will not run. Plan stages 3 and 4 stay closed. The call sweep calls every entry point that was still reachable, with no arguments, and calls each stage-2 entry point again with the real arguments in `stage2_arguments.py`. It refuses one that opens a connection, starts a process, writes outside the sandbox, or loads queen, miner, swarm_motion, inhouse_ai, ollama_config, or an HTTP client. `get_unified_directive` is refused that way. It does not build the queen and miner bridges.
 
 ## Stage order
@@ -48,7 +48,7 @@ Stage 2 is open. A stage-2 module whose import loads an adapter or an HTTP clien
 | 2 | cognition | 44 | 14 | 1 | 1 | 13 |
 | 2 | conversion | 170 | 0 | 0 | 0 | 0 |
 | 2 | decoders | 161 | 80 | 5 | 4 | 75 |
-| 2 | evaluation | 20 | 10 | 7 | 6 | 3 |
+| 2 | evaluation | 20 | 10 | 6 | 6 | 4 |
 | 2 | gates | 24 | 12 | 3 | 3 | 9 |
 | 2 | observer | 104 | 63 | 29 | 25 | 34 |
 | 2 | s51 | 55 | 24 | 1 | 1 | 23 |
@@ -129,8 +129,12 @@ Import refusals:
 - `atn/aureon_atn_monitor.py`: module import loads an adapter or http client
 - `decoders/emerald_spec.py`: module import loads an adapter or http client
 - `decoders/grail_convergence.py`: module import loads an adapter or http client
+Import errors that are not refusals:
+- `s51/aureon_51.py`: ImportError: Refused imports: aureon.exchanges, aureon.trading, unified_margin_trader, aureon.bots, aureon.bots_intelligence, aureon.bridges, aureon.scanners. No keys are present. Refused: aureon.exchanges
+- `s51/aureon_51_live.py`: ModuleNotFoundError: No module named 'websockets'
 Call refusals from the sweep:
 - `alignment/unified_directive.py` `get_unified_directive`: call loads a banned chain or opens a connection
+- `evaluation/measured_proof.py` `self_coder_report`: call loads a banned chain or opens a connection. The same call started a process. The sweep blocked it.
 - `gates/panel.py` `auris_panel`: call loads a banned chain or opens a connection
 - `gates/panel.py` `build_vault`: call loads a banned chain or opens a connection
 - `gates/switchboard.py` `read_organism`: call loads a banned chain or opens a connection
