@@ -303,6 +303,9 @@ export function LiveTerminalStats() {
   const capitalRatchet = summary?.capitalConfidenceRatchet || {};
   const capitalWaveform = summary?.capitalUnifiedWaveformCheck || {};
   const capitalNoLossQueue = summary?.capitalNoLossHoldQueue || {};
+  const capitalReserveGbp = finiteOrNull(capitalRisk.reserve_required_gbp);
+  const capitalStressBufferGbp = finiteOrNull(capitalRisk.stress_buffer_before_gbp);
+  const capitalLosingCount = finiteOrNull(capitalNoLossQueue.losing_position_count);
   const queenVoice = state.queenVoice;
 
   return (
@@ -378,7 +381,7 @@ export function LiveTerminalStats() {
                   symbol={pos.symbol}
                   side={pos.side}
                   entryPrice={finiteOrNull(pos.entryPrice)}
-                  currentPrice={finiteOrNull(pos.currentPrice, pos.entryPrice)}
+                  currentPrice={finiteOrNull(pos.currentPrice)}
                   pnlPercent={finiteOrNull(pos.pnlPercent)}
                   exchange={pos.exchange}
                   tradeId={pos.tradeId}
@@ -397,7 +400,7 @@ export function LiveTerminalStats() {
                   symbol={shadow.symbol}
                   side={shadow.side}
                   entryPrice={finiteOrNull(shadow.entryPrice)}
-                  currentPrice={finiteOrNull(shadow.currentPrice, shadow.entryPrice)}
+                  currentPrice={finiteOrNull(shadow.currentPrice)}
                   movePercent={finiteOrNull(shadow.movePercent)}
                   targetMovePercent={finiteOrNull(shadow.targetMovePercent)}
                   exchange={shadow.exchange}
@@ -424,12 +427,20 @@ export function LiveTerminalStats() {
             <div className="grid gap-1 text-muted-foreground">
               <div className="flex justify-between gap-2">
                 <span>Reserve</span>
-                <span className="text-foreground">GBP {safeNumber(capitalRisk.reserve_required_gbp).toFixed(2)}</span>
+                <span className="text-foreground">{money(capitalReserveGbp, 'GBP ')}</span>
               </div>
               <div className="flex justify-between gap-2">
                 <span>Stress Buffer</span>
-                <span className={safeNumber(capitalRisk.stress_buffer_before_gbp) >= 0 ? 'text-success' : 'text-destructive'}>
-                  GBP {safeNumber(capitalRisk.stress_buffer_before_gbp).toFixed(2)}
+                <span
+                  className={
+                    capitalStressBufferGbp == null
+                      ? 'text-muted-foreground'
+                      : capitalStressBufferGbp >= 0
+                        ? 'text-success'
+                        : 'text-destructive'
+                  }
+                >
+                  {money(capitalStressBufferGbp, 'GBP ')}
                 </span>
               </div>
               <div className="flex justify-between gap-2">
@@ -452,8 +463,16 @@ export function LiveTerminalStats() {
               </div>
               <div className="flex justify-between gap-2">
                 <span>No-loss queue</span>
-                <span className={safeNumber(capitalNoLossQueue.losing_position_count) > 0 ? 'text-warning' : 'text-muted-foreground'}>
-                  {safeNumber(capitalNoLossQueue.losing_position_count)} held
+                <span
+                  className={
+                    capitalLosingCount == null
+                      ? 'text-muted-foreground'
+                      : capitalLosingCount > 0
+                        ? 'text-warning'
+                        : 'text-muted-foreground'
+                  }
+                >
+                  {capitalLosingCount == null ? 'unavailable' : `${capitalLosingCount} held`}
                 </span>
               </div>
             </div>
@@ -465,9 +484,9 @@ export function LiveTerminalStats() {
                   key={`capital-${pos.symbol}-${pos.tradeId || index}`}
                   symbol={pos.symbol}
                   side={pos.side}
-                  entryPrice={safeNumber(pos.entryPrice)}
-                  currentPrice={safeNumber(pos.currentPrice, safeNumber(pos.entryPrice))}
-                  pnlPercent={safeNumber(pos.pnlPercent)}
+                  entryPrice={finiteOrNull(pos.entryPrice)}
+                  currentPrice={finiteOrNull(pos.currentPrice)}
+                  pnlPercent={finiteOrNull(pos.pnlPercent)}
                   exchange={pos.exchange}
                   tradeId={pos.tradeId}
                 />
@@ -484,13 +503,13 @@ export function LiveTerminalStats() {
                   key={`capital-shadow-${shadow.symbol}-${index}`}
                   symbol={shadow.symbol}
                   side={shadow.side}
-                  entryPrice={safeNumber(shadow.entryPrice)}
-                  currentPrice={safeNumber(shadow.currentPrice, safeNumber(shadow.entryPrice))}
-                  movePercent={safeNumber(shadow.movePercent)}
-                  targetMovePercent={safeNumber(shadow.targetMovePercent)}
+                  entryPrice={finiteOrNull(shadow.entryPrice)}
+                  currentPrice={finiteOrNull(shadow.currentPrice)}
+                  movePercent={finiteOrNull(shadow.movePercent)}
+                  targetMovePercent={finiteOrNull(shadow.targetMovePercent)}
                   exchange={shadow.exchange}
                   validated={Boolean(shadow.validated)}
-                  ageSeconds={safeNumber(shadow.ageSeconds)}
+                  ageSeconds={finiteOrNull(shadow.ageSeconds)}
                 />
               ))
             ) : (
