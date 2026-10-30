@@ -17,6 +17,8 @@ Trading research · autonomous operator · planetary/HNC research · a coding or
 
 </div>
 
+Older notes under `aureon-trading/docs/` (for example `AUREON_MIND_STATUS.md`) are earlier research writing. This README and `mcp/aureon_public` are the current, checked parts.
+
 ---
 
 ## Five-minute quickstart

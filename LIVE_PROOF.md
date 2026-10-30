@@ -1,6 +1,6 @@
-# Aureon Trading System — Live Proof & Performance Verification
+# Aureon Trading System — Live Path (design; performance on HOLD)
 
-> **Complete evidence of backtesting, paper trading simulation, and live execution with HNC harmonic signal validation**
+> **What the trading path is designed to do. Measured live performance is unmeasured and on HOLD until a measured, reproducible run exists.**
 
 > 🚀 **To actually RUN the system, see [`RUNNING.md`](RUNNING.md).**
 >
@@ -11,391 +11,151 @@
 
 ---
 
-## Executive Summary
+## Status
 
-Aureon-Trading is **not theoretical.** This document proves three complete stages:
-
-| Stage | Status | Performance | Data |
-|-------|--------|-------------|------|
-| **Stage 1: Backtesting** | ✅ Complete | +$97,475 across 629 trades | Historical validation |
-| **Stage 2: Paper Trading** | ✅ Live | +$2.00 (24 trades) with HNC analysis | Real-time simulation |
-| **Stage 3: Live Trading** | ✅ Active | Multi-exchange portfolio management | Production accounts |
-| **Stage 4: Verification** | ✅ Validated | 100% ETA prediction accuracy | Timing & execution proof |
+Earlier drafts of this note quoted backtest and paper-trading totals as if they were a verified record. They were not. Those P&L amounts, win rates, and trade counts are not repeated here. Live performance stays unmeasured and on HOLD until a measured, reproducible run exists.
 
 ---
 
-## Stage 1: Backtesting — Historical Validation
+## What the four stages are designed to do
 
-### Spot Trading Backtest
-**File:** `4_output/performance_metrics/backtest_spot_results.json`
-
-```
-Performance Summary:
-  Total Trades:        285
-  Winning Trades:      285 ✅
-  Losing Trades:         0
-  Win Rate:           100.0%
-  
-Profitability:
-  Total PnL:        +$38,670.03
-  Peak Equity:      $34,842.17
-  Max Drawdown:         0.64%
-
-Signal Quality:
-  Buy Signals:         295
-  Sell Signals:        285
-  Signal Accuracy:    100.0%
-
-Active Pairs: NEARUSDT, GRTUSDT, SOLUSDT, ETH-USD, BNB, LINK, AVAX, DOGE, UNI, ATOM +40 more
-Exchange:     Binance (spot only)
-```
-
-**What This Proves:**
-- HNC coherence thresholds identify entry points with 100% accuracy
-- Harmonic frequency analysis predicts reversals reliably
-- Spot trading strategy is profitable with zero drawdown
+| Stage | What the code is designed to do | Measured performance |
+|-------|----------------------------------|----------------------|
+| **Stage 1: Backtesting** | Replay historical candles through HNC signals and write a results file | On HOLD |
+| **Stage 2: Paper trading** | Simulate fills against market data and store a trade record with HNC fields | On HOLD |
+| **Stage 3: Live trading** | Track positions on connected exchanges when the operator's keys are present | On HOLD |
+| **Stage 4: Verification** | Compare a predicted time-to-target with the fill that actually happened | On HOLD |
 
 ---
 
-### Margin Trading Backtest
-**File:** `4_output/performance_metrics/backtest_margin_results.json`
+## Stage 1: Backtesting — historical replay
 
-```
-Performance Summary:
-  Total Trades:        344
-  Winning Trades:      296 ✅
-  Losing Trades:        48
-  Win Rate:            86.0%
+The spot replay is `aureon/analytics/aureon_historical_backtest.py`. The margin replay is `aureon/analytics/super_intelligence_backtest.py`.
 
-Profitability:
-  Total PnL:        +$58,805.68
-  Peak Equity:      $59,751.21
-  Max Drawdown:         1.83%
+They are designed to write:
 
-Leverage & Risk:
-  Long Margin Trades:   284
-  Short Trades:          60
-  Total Leverage:       698
-  Rollover Fees:    -$50,304.56
+- `4_output/performance_metrics/backtest_spot_results.json`
+- `4_output/performance_metrics/backtest_margin_results.json`
 
-Active Pairs: 60+ crypto pairs across USDT, USD, EUR, GBP pairs
-Strategies:   Long margin, short selling, hedged positions
-```
+The spot path is designed for long-only pairs. The margin path is designed to record long margin, short sales, leverage, and rollover fees. A results file from either path is not treated here as a verified performance record.
 
-**What This Proves:**
-- System manages leverage effectively (86% win rate with 2x+ leverage)
-- Risk management prevents catastrophic losses
-- Multi-directional strategies (long/short) both profitable
-- Can scale to institutional position sizes
+What this stage is designed to record:
+
+- whether a coherence threshold produced an entry
+- whether a harmonic-frequency reading lined up with the bar
+- drawdown, fees, and direction, as fields on the replay
+
+Running the replay does not, by itself, establish that the strategy made money.
 
 ---
 
-### Combined Backtest Results
+## Stage 2: Paper trading — real-time simulation
 
-```
-Backtesting Summary:
-  ───────────────────────────────────
-  Total Backtest Trades:      629
-  Total Wins:                 581
-  Total Losses:                48
-  Overall Win Rate:          92.4%
-  
-  Combined PnL:           +$97,475.71
-  Risk-Adjusted Return:     Excellent (low drawdown, consistent wins)
-  ───────────────────────────────────
-```
+Designed output: `4_output/trade_outputs/paper_trade_history.json`
 
-**Interpretation:**
-- The system's signal generation is proven at scale (629 trades)
-- Harmonic analysis provides edge in both bullish and bearish markets
-- Risk controls ensure drawdown stays <2% even with leverage
+A paper record is designed to hold:
 
----
+- symbol, entry price, exit price, pnl, and pnl percent
+- `hnc_analysis`: frequency, coherence, score, action, probability
+- `execution`: exchange, entry time, exit time, hold time, reason
 
-## Stage 2: Paper Trading — Real-Time Simulation
+Coherence is scored on a 0–1 scale. The productive band named on this path is 0.35–0.945. That is a design bound on the signal, not a measured win rate.
 
-### Live Paper Trade History
-**File:** `4_output/trade_outputs/paper_trade_history.json`
+What this stage is designed to do:
 
-**Sample Trades (Showing HNC Signal Integration):**
+- run against market data without sending an order
+- attach an HNC reading to each simulated fill
+- keep a losing fill inside the risk limits the run was given
 
-```json
-{
-  "symbol": "ZECUSDC",
-  "entry_price": 347.9,
-  "exit_price": 346.22,
-  "pnl": -0.0966,
-  "pnl_pct": -0.48%,
-  
-  "hnc_analysis": {
-    "frequency": 512.19,        // Hz (φ² Coherence Bridge frequency)
-    "coherence": 0.8876,        // 0-1 scale, productive band 0.35-0.945
-    "score": 3.1597,            // HNC master formula output
-    "action": "STRONG BUY",     // Generated by Γ coherence operator
-    "probability": 0.7937       // Signal confidence (79.4%)
-  },
-  
-  "execution": {
-    "exchange": "binance",
-    "entry_time": 1764797773.78,
-    "exit_time": 1764797867.35,
-    "hold_time_sec": 93.57,
-    "reason": "TIMEOUT"
-  }
-}
-```
-
-**Real Paper Trade Statistics:**
-
-```
-Paper Trading Session:
-  ───────────────────────────────────
-  Total Trades:              24
-  Profitable Trades:         16
-  Losing Trades:              8
-  Win Rate:                66.7%
-  
-  Session PnL:            +$2.00
-  Starting Balance:        $100.00
-  Ending Balance:          $101.67
-  Return %:                 1.67%
-  ───────────────────────────────────
-
-Harmonic Analysis Quality:
-  Avg Coherence Score:     0.856
-  Avg Probability:         0.794 (79.4% signal confidence)
-  Avg Hold Time:           94 seconds
-  
-Trades with Coherence >0.9:  12 trades (50%)
-Trades with Probability >0.8: 19 trades (79%)
-```
-
-**What This Proves:**
-- System operates in real-time against live market data
-- HNC signal generation is consistent and quantifiable
-- Entry/exit timing aligns with harmonic frequency shifts
-- Risk management works: losing trades are contained
+Measured session P&L and win rate are on HOLD.
 
 ---
 
-## Stage 3: Live Trading — Production Execution
+## Stage 3: Live trading — exchange book
 
-### Live Portfolio State
-**File:** `4_output/portfolio_management/portfolio_truth.json`
+Designed state file: `4_output/portfolio_management/portfolio_truth.json`
 
-**Current Portfolio Across Exchanges:**
+The live book is designed to list positions per exchange. Kraken and Binance are the adapters this path names. Each position is designed to carry units, cost, value, and a P&L field. No account snapshot is quoted here.
 
-```
-Live Account Summary (as of 2026-02-05 18:31:07 UTC):
-  ───────────────────────────────────────────────────
-  Exchange:    KRAKEN
-  
-  Active Positions:
-    ADA:       27.90 units  | Cost: $9.92 | Value: -$9.92 (liquidated)
-    CRO:      172.37 units  | Cost: $0.00 | Value: $0.00
-    EUL:        3.64 units  | Cost: $8.05 | PnL: -$8.05
-    
-  Exchange:    BINANCE
-  
-  Active Pairs:
-    ZECUSDC:   Spot + Margin | Entry: $347.90
-    SAPIENUSDC: Spot + Margin | Entry: $0.1701
-    ENAUSDC:   Spot + Margin | Entry: $0.2920
-    
-  ───────────────────────────────────────────────────
-  
-  Total Portfolio Value:    [Real-time updating]
-  Positions Tracked:        15+ active pairs
-  Exchanges Connected:      Kraken, Binance
-```
+What the production path is designed to provide:
 
-**Portfolio Management Features in Production:**
+1. **Multi-exchange coordination**
+   - Position tracking across Kraken and Binance at the same time
+   - A place to record a hedge across venues
+   - A place to record an arbitrage candidate
 
-1. **Multi-Exchange Coordination**
-   - Position tracking across Kraken, Binance simultaneously
-   - Hedging strategies across venues
-   - Arbitrage opportunities identified
-
-2. **Real-Time Updates**
+2. **Real-time updates**
    - Live balance monitoring
    - Position P&L tracking
-   - Entry price vs. current price alignment
+   - Entry price versus current price
 
-3. **Risk Management**
-   - Stop-loss enforcement (can exit any position)
-   - Position sizing based on account equity
-   - Cross-exchange margin management
+3. **Risk management**
+   - Stop-loss exit
+   - Position size from account equity
+   - Cross-exchange margin tracking
 
----
-
-## Stage 4: Verification — Proof of Timing & Execution
-
-### ETA Prediction Verification
-**File:** `4_output/trade_outputs/eta_verification_history.json`
-
-**What is ETA Prediction?**
-The system predicts the EXACT TIME (in seconds) when a trade will reach its target profit level.
-
-**Verification Results:**
-
-```
-ETA Prediction Accuracy Test:
-  ───────────────────────────────────
-  Total Predictions:          5
-  Accurate Hits:              5 ✅
-  Hit Rate:               100.0%
-  
-  On-Time Hits:               0 (0%)
-  Early Hits:                 5 (100%) ← Predictions fired too early
-  Late Hits:                  0 (0%)
-  
-  Avg Time Error:       -16.20 seconds
-  Time Error %:         -40.94% (average 40% earlier than predicted)
-  ───────────────────────────────────
-
-Adaptations Applied:
-  Velocity Correction Factor: 0.774  (account for market speed)
-  ETA Bias:                 -8.80 seconds (system runs ahead)
-  Min Confidence Threshold:   0.30 (30% baseline confidence)
-```
-
-**Sample Verified Prediction:**
-
-```json
-{
-  "prediction_id": "test:TEST0USDC:1767195986794",
-  "symbol": "TEST0USDC",
-  "prediction_time": 1767195986.794,
-  
-  "signal_metrics": {
-    "confidence": 0.70,          // 70% confidence in timing
-    "momentum_score": 0.50,      // Current momentum direction
-    "cascade_level": "SLIGHT",   // HNC cascade intensity
-    "coherence_zone": "HALFWAY"  // Position in harmonic cycle
-  },
-  
-  "prediction": {
-    "predicted_eta_seconds": 30.0,      // System predicted 30 sec to target
-    "target_pnl": $0.01,
-    "target_kill_time": 2026-03-01 12:46:56
-  },
-  
-  "actual_execution": {
-    "actual_eta_seconds": 0.0106,       // Actually hit in 0.01 sec
-    "actual_kill_time": 2026-03-01 12:46:56.805,
-    "final_pnl": $0.012,                // Beat target by 20%
-    "outcome": "HIT_EARLY"
-  },
-  
-  "accuracy": {
-    "time_error": -29.99 seconds        // Prediction was too conservative
-    "pnl_accuracy": +20% vs target      // Beat profit target
-    "verdict": "VERIFIED ✅"
-  }
-}
-```
-
-**What This Proves:**
-- HNC timing prediction is extremely fast (0.01 sec execution)
-- Predictions are conservative (early rather than late)
-- Profit targets exceeded (overperforms predictions)
-- System can be adaptive (correction factors applied)
+Live performance is on HOLD. A live session runs only when the operator's exchange keys are present. This note does not arm one.
 
 ---
 
-## Trade Execution Quality Metrics
+## Stage 4: Verification — timing against the fill
 
-### Paper Trade Example: Detailed Analysis
+Designed history: `4_output/trade_outputs/eta_verification_history.json`
 
-**Trade: SAPIENUSDC**
-```
-Entry Signal:
-  Frequency: 803.67 Hz      (Harmonic resonance detected)
-  Coherence: 0.9241        (Excellent φ-correlation)
-  Score: 2.9008            (Master formula high value)
-  Action: STRONG BUY
-  Probability: 82.04%      (High confidence entry)
+ETA prediction is the attempt to name, in seconds, when a trade will reach its target. A verification record is designed to hold:
 
-Execution:
-  Exchange: Binance
-  Entry Price: $0.1701
-  Entry Time: 2026-02-05 17:43:09.7
-  
-Exit Signal:
-  Exit Price: $0.1711      ($0.001 gain)
-  Exit Time: 2026-02-05 17:44:43.5
-  Hold Time: 93.76 seconds
-  
-Performance:
-  PnL: +$0.0941
-  PnL %: +0.588%
-  
-  Harmonic Alignment:
-    - Frequency match to φ resonance: CONFIRMED
-    - Coherence during hold: STABLE (0.924)
-    - Exit aligned to harmonic shift: YES
-```
+- signal metrics: confidence, momentum score, cascade level, coherence zone
+- the predicted ETA and the target
+- the actual ETA, the actual fill time, and the final pnl
+- a time error and a verdict
+
+The verifier is also designed to store a velocity correction and an ETA bias so a later run can adjust. Measured hit rate and timing error are on HOLD. A record of this shape is not proof that targets were met.
 
 ---
 
-## Trade Validation & Auditing
+## Trade validation
 
-### Trade Profit Validation
-**File:** `aureon/portfolio/trade_profit_validator.py`
+Module: `aureon/portfolio/trade_profit_validator.py`
 
-**Validation Pipeline:**
-```python
-✅ Entry validation:
-   - Price recorded correctly
-   - Timestamp synchronized with exchange
-   - Signal strength verified
-   - Frequency analysis confirmed
+The validator is designed to check three stretches of a fill.
 
-✅ Hold period validation:
-   - Position tracked in real-time
-   - Risk limits enforced
-   - Market volatility assessed
-   - No slippage anomalies
+Entry:
 
-✅ Exit validation:
-   - Actual exit price vs. predicted
-   - Time to target calculation
-   - PnL reconciliation
-   - Commission/fee deduction verified
-```
+- price recorded
+- timestamp lined up with the exchange
+- signal strength present
+- frequency reading present
 
----
+Hold:
 
-## Risk Management in Practice
+- position tracked while it is open
+- risk limits enforced
+- volatility noted
+- slippage looked at
 
-### Drawdown Control (Backtesting)
+Exit:
 
-**Spot Trading:**
-- Max Drawdown: 0.64% (extremely tight)
-- Strategy: Tight stop-losses at coherence threshold breaks
+- exit price against the prediction
+- time to target
+- P&L reconciliation
+- commission and fees deducted
 
-**Margin Trading:**
-- Max Drawdown: 1.83% (acceptable for leverage usage)
-- Strategy: Dynamic position sizing based on coherence
-- Protection: Cross-margin hedging on leverage pairs
-
-### Paper Trading Risk Profile
-
-```
-Paper Trading Risk Metrics:
-  Win Rate: 66.7%          (2 out of 3 trades profitable)
-  Avg Win: +0.59%
-  Avg Loss: -0.27%
-  Profit Factor: 2.18      (excellent risk/reward ratio)
-  
-  Drawdown Events: Minimal
-  Longest Losing Streak: 2 trades
-  Recovery Time: <5 minutes
-```
+Passing those checks is a property of one recorded fill. It is not a win rate.
 
 ---
 
-## Complete Pipeline: From Signal to Execution
+## Risk controls the code is designed to apply
+
+Spot and margin replays are designed to record max drawdown.
+
+- Spot: a stop when the coherence threshold breaks
+- Margin: position size from coherence, plus a hedge on leveraged pairs
+
+Paper mode is designed to record win size, loss size, a profit factor, losing streaks, and recovery time. Those are field names. No measured risk statistic is quoted here. That measurement is on HOLD.
+
+---
+
+## Pipeline from signal to execution
 
 ```
 1. HARMONIC ANALYSIS
@@ -429,46 +189,18 @@ Paper Trading Risk Metrics:
    └─ Output: Trade audit record
 ```
 
----
+The backtest is designed so a later measured run can be split by regime (trend, range, reversal, high volatility) and by direction (long or short). No regime table is quoted. That split is on HOLD until a reproducible run exists.
 
-## Performance by Market Condition
-
-### Backtesting Performance Matrix
-
-```
-Market Condition          Spot Win%    Margin Win%    Strategy Type
-─────────────────────────────────────────────────────────────────
-Bullish Trend             100% (156)   92% (168)      Long positions
-Sideways/Range            100% (78)    88% (98)       Counter-trend
-Bearish Reversal          100% (51)    75% (78)       Short positions
-High Volatility           100% (285)   86% (344)      Harmonic riding
-
-Overall                   100% (285)   86% (344)      Hybrid strategy
-```
-
-**Interpretation:**
-- System excels in trending markets (100% accuracy in short-term bounces)
-- Margin trading shows slight weakness in bearish reversals (75% vs. 86%)
-- Stable performance across volatility levels indicates robust design
+No win rate, drawdown, or P&L comparison with any other framework is claimed. A comparison waits on a measured, reproducible Aureon run.
 
 ---
 
-## Comparison to Industry Standards
+## How to run a measured pass
 
-| Metric | Aureon Spot | Aureon Margin | Freqtrade (avg) | Backtrader (avg) |
-|--------|-------------|---------------|-----------------|------------------|
-| Win Rate | 100% | 86% | 55% | 52% |
-| Max Drawdown | 0.64% | 1.83% | 12-25% | 15-30% |
-| PnL per 100 trades | +$13,565 | +$17,100 | +$800-2000 | +$500-1500 |
-| Avg Hold Time | ~94 sec | ~110 sec | 2-8 hours | 4-12 hours |
-| Signal Confidence | 79% | 82% | 45-60% | 50-65% |
-| Unique Feature | HNC Harmonic | Multi-direction | ML-based | Event-driven |
+These commands start the stages. They do not turn an old note into a verified record. Treat any JSON they write as unmeasured until the run is reproduced and the raw output is kept.
 
----
+### Backtesting
 
-## How to Reproduce These Results
-
-### Run Backtesting
 ```bash
 # Spot trading backtest
 python3 aureon/analytics/aureon_historical_backtest.py
@@ -481,7 +213,8 @@ cat 4_output/performance_metrics/backtest_spot_results.json
 cat 4_output/performance_metrics/backtest_margin_results.json
 ```
 
-### Run Paper Trading
+### Paper trading
+
 ```bash
 # Start paper trading simulation
 python scripts/aureon_ignition.py    # safe dry-run mode (default)
@@ -493,7 +226,8 @@ python3 aureon/portfolio/live_portfolio_growth_tracker.py
 cat 4_output/trade_outputs/paper_trade_history.json
 ```
 
-### Check Live Trading
+### Live book
+
 ```bash
 # View current portfolio state
 python3 scripts/diagnostics/check_portfolio.py
@@ -505,7 +239,8 @@ python3 scripts/diagnostics/check_recent_trades.py
 python3 aureon/bots/king_accounting.py
 ```
 
-### Verify Trade Accuracy
+### Trade checks
+
 ```bash
 # Run trade validation
 python3 aureon/portfolio/trade_profit_validator.py
@@ -519,40 +254,37 @@ cat 4_output/trade_outputs/eta_verification_history.json
 
 ---
 
-## Data Files Reference
+## Data files
 
-| File | Purpose | Latest Data |
-|------|---------|-------------|
-| `4_output/trade_outputs/paper_trade_history.json` | Live paper trading records | 24 trades, +$2.00 PnL |
-| `4_output/performance_metrics/backtest_spot_results.json` | Historical backtest (spot) | 285 trades, +$38,670 |
-| `4_output/performance_metrics/backtest_margin_results.json` | Historical backtest (margin) | 344 trades, +$58,805 |
-| `4_output/portfolio_management/portfolio_truth.json` | Current live accounts | Real-time positions |
-| `4_output/trade_outputs/eta_verification_history.json` | ETA prediction accuracy | 5/5 hits (100%) |
-| `4_output/performance_metrics/trade_history_audit.json` | Trade validation records | Complete audit trail |
+| File | What it is designed to hold |
+|------|-----------------------------|
+| `4_output/trade_outputs/paper_trade_history.json` | Paper fills and their HNC fields |
+| `4_output/performance_metrics/backtest_spot_results.json` | Spot replay |
+| `4_output/performance_metrics/backtest_margin_results.json` | Margin replay |
+| `4_output/portfolio_management/portfolio_truth.json` | Positions on connected exchanges |
+| `4_output/trade_outputs/eta_verification_history.json` | Predicted time versus the fill |
+| `4_output/performance_metrics/trade_history_audit.json` | Validator output |
 
----
-
-## Key Takeaway
-
-**Aureon-Trading is production-grade:** 
-
-✅ Backtested on 629 historical trades (92% win rate)  
-✅ Paper trading live with real market data (66.7% win rate)  
-✅ Live execution across Binance, Kraken, and other exchanges  
-✅ Unique harmonic signal generation with 79-82% confidence  
-✅ Timing predictions verified at sub-second accuracy  
-✅ Risk management proven in backtests and live trading  
-
-**What makes it different:**
-- Uses HNC (Harmonic Nexus Core) instead of traditional technical analysis
-- Detects market harmonics (φ² Coherence Bridge, 528 Hz, Solfeggio frequencies)
-- Predicts exact timing to profit targets (ETA prediction)
-- Tracks and detects bot manipulation patterns (Domain III)
-- Combines ancient wisdom convergence with modern execution
+Performance figures from these files are not quoted. They are on HOLD.
 
 ---
 
-**Last Updated:** 2026-02-25  
-**Repository:** gary-leckey/aureon-trading  
-**Architect:** Gary LeCkey  
+## Takeaway
+
+The trading path is built to replay history, paper-trade against market data, track live positions when keys are present, and check a timing prediction against the fill.
+
+Measured P&L, win rate, and trade counts are unmeasured and on HOLD until a measured, reproducible run exists.
+
+What the design uses, in place of a plain moving-average stack:
+
+- HNC (Harmonic Nexus Core), including the φ² Coherence Bridge and the frequencies the signal path already names (528 Hz among them)
+- an ETA: a predicted time to a target
+- bot-pattern tracking (Domain III)
+- the same harmonic frame the rest of the organism uses
+
+---
+
+**Last Updated:** 2026-10-30
+**Repository:** gary-leckey/aureon-trading
+**Architect:** Gary LeCkey
 **Model:** PEFCφS (Position of Echo-Feedback Cognitive φ-Substrate)
