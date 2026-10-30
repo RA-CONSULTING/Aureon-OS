@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # Rewrite measured/aureon_public_call_sweep.json. Do not hand-edit that file.
 #
-# Calls every entry point body_call can still run, with no arguments, one
-# worker each. Sockets are blocked and logged. An entry point is refused when
-# that call opens a connection or loads queen, miner, swarm_motion, inhouse_ai,
-# ollama_config, or an HTTP client.
+# Calls every entry point body_call can still run, one worker each. Stage-2
+# entry points are also called with the real arguments in stage2_arguments.py.
+# Sockets, process starts, and writes outside the temp parent are blocked and
+# logged. An entry point is refused when a call opens a connection, starts a
+# process, writes outside that parent, or loads queen, miner, swarm_motion,
+# inhouse_ai, ollama_config, or an HTTP client.
 #
 # The checkout is copied under an ordinary temp parent. Fake NEXUS-LIVE-FEED-
 # and Aureon-Trading--Project-Sero folders are placed beside that copy. The

@@ -420,6 +420,9 @@ def _worker_env() -> dict[str, str]:
             env[key] = value
     if _sweep_measuring:
         env["AUREON_PUBLIC_SWEEP"] = "1"
+        sandbox = os.environ.get("AUREON_PUBLIC_SANDBOX")
+        if sandbox:
+            env["AUREON_PUBLIC_SANDBOX"] = sandbox
     return env
 
 
@@ -646,7 +649,7 @@ def _stage2_import_refusal(module: str) -> str | None:
     if row is None:
         return "module is not in the import sweep"
     if row.get("refused"):
-        return "module import loads an adapter or http client"
+        return str(row.get("refusal") or "module import loads an adapter or http client")
     return None
 
 
@@ -691,7 +694,7 @@ def _call_sweep_refusal(module: str, symbol: str) -> str | None:
     if row is None:
         return "entry point is not in the call sweep"
     if row.get("refused"):
-        return "call loads a banned chain or opens a connection"
+        return str(row.get("refusal") or "call loads a banned chain or opens a connection")
     return None
 
 

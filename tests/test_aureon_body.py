@@ -626,7 +626,12 @@ def test_stage2_import_sweep_matches_body_call() -> None:
     assert record["sockets"] == "blocked"
     assert record["modules"]
     for row in record["modules"]:
-        assert row["refused"] is import_is_refused(row["bad"], ["connect"] if row["socket"] else [])
+        assert row["refused"] is import_is_refused(
+            row["bad"],
+            ["connect"] if row["socket"] else [],
+            row.get("process") or [],
+            row.get("writes") or [],
+        )
         sample = lookup(row["module"], _first_symbol(row["module"]))
         if sample is None or sample["kind"] not in {"function", "method"}:
             continue
@@ -635,7 +640,8 @@ def test_stage2_import_sweep_matches_body_call() -> None:
             assert reason is not None
             continue
         if row["refused"]:
-            assert reason == "module import loads an adapter or http client", row["module"]
+            expected = row.get("refusal") or "module import loads an adapter or http client"
+            assert reason == expected, row["module"]
         else:
             assert reason != "module import loads an adapter or http client", row["module"]
 
