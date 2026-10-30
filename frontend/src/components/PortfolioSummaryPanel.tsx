@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useUserBalances } from '@/hooks/useUserBalances';
+import { readingText } from '@/lib/reading';
 import { Wallet, RefreshCw } from 'lucide-react';
 import { formatDistanceToNowStrict } from 'date-fns';
 
@@ -68,7 +69,7 @@ export function PortfolioSummaryPanel() {
           <Wallet className="h-4 w-4 text-primary" />
           Portfolio
           <Badge variant="outline" className="text-xs ml-1">
-            ${totalEquityUsd.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+            {readingText(totalEquityUsd, (equity) => `$${equity.toLocaleString(undefined, { maximumFractionDigits: 2 })}`)}
           </Badge>
           <Button
             variant="ghost"

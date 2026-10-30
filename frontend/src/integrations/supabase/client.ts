@@ -4,20 +4,27 @@ import type { Database } from './types';
 
 // URL may be set for local preview. The publishable key is not committed;
 // set VITE_SUPABASE_PUBLISHABLE_KEY. History is listed in ROTATE_KEYS.md.
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ?? 'https://owfeyxrfyhprpcgqwxqh.supabase.co';
-const configuredKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '';
+const SUPABASE_URL = import.meta.env?.VITE_SUPABASE_URL ?? 'https://owfeyxrfyhprpcgqwxqh.supabase.co';
+const configuredKey = import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY ?? '';
 // createClient throws on an empty key and that blanked the shell before first
 // paint. This string is not a credential. A real key comes only from the env.
 const SUPABASE_PUBLISHABLE_KEY = configuredKey || 'local-preview-no-credential';
 
 export const supabaseConfigured = Boolean(configuredKey);
 
+const memoryStorage = {
+  getItem: (_key: string) => null,
+  setItem: (_key: string, _value: string) => {},
+  removeItem: (_key: string) => {},
+};
+const authStorage = typeof globalThis.localStorage === 'undefined' ? memoryStorage : globalThis.localStorage;
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    storage: localStorage,
+    storage: authStorage,
     persistSession: Boolean(configuredKey),
     autoRefreshToken: Boolean(configuredKey),
   }

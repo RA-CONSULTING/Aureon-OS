@@ -204,7 +204,9 @@ export function UnifiedBusStatus() {
         <div className="space-y-1">
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>Systems Ready</span>
-            <span>{snapshot?.systemsReady ?? 0} / {snapshot?.totalSystems ?? 0}</span>
+            <span>
+              {snapshot == null ? 'unavailable' : `${snapshot.systemsReady} / ${snapshot.totalSystems}`}
+            </span>
           </div>
           <Progress 
             value={snapshot ? (snapshot.systemsReady / Math.max(snapshot.totalSystems, 1)) * 100 : 0} 

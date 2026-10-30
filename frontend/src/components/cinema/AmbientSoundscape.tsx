@@ -8,12 +8,13 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import type { NarratorEventType } from './NarratorEngine';
+import { finiteOrNull } from '@/lib/reading';
 
 interface AmbientSoundscapeProps {
-  coherence: number;
-  psi: number;
-  fearLevel: number;
-  gaiaFrequency: number;
+  coherence: number | null;
+  psi: number | null;
+  fearLevel: number | null;
+  gaiaFrequency: number | null;
   activeEvent: NarratorEventType | null;
 }
 
@@ -58,7 +59,8 @@ export function AmbientSoundscape({
 
     const drone = ctx.createOscillator();
     drone.type = 'sine';
-    drone.frequency.value = gaiaFrequency || 432;
+    const tunedHz = finiteOrNull(gaiaFrequency);
+    if (tunedHz != null) drone.frequency.value = tunedHz;
     drone.connect(droneGain);
     drone.start();
     droneOscRef.current = drone;
@@ -150,38 +152,38 @@ export function AmbientSoundscape({
       if (!ctx) return;
       const t = ctx.currentTime;
 
-      // Drone volume follows coherence
-      if (droneGainRef.current) {
+      const coherenceLevel = finiteOrNull(coherence);
+      const psiLevel = finiteOrNull(psi);
+      const fear = finiteOrNull(fearLevel);
+      const tunedHz = finiteOrNull(gaiaFrequency);
+
+      if (droneGainRef.current && coherenceLevel != null) {
         droneGainRef.current.gain.linearRampToValueAtTime(
-          coherence * 0.15, t + 0.3
+          coherenceLevel * 0.15, t + 0.3
         );
       }
 
-      // Drone frequency tracks gaiaFrequency
-      if (droneOscRef.current) {
+      if (droneOscRef.current && tunedHz != null) {
         droneOscRef.current.frequency.linearRampToValueAtTime(
-          gaiaFrequency || 432, t + 0.5
+          tunedHz, t + 0.5
         );
       }
 
-      // Sub bass pulses with psi
-      if (subGainRef.current) {
+      if (subGainRef.current && psiLevel != null) {
         subGainRef.current.gain.linearRampToValueAtTime(
-          psi * 0.08, t + 0.3
+          psiLevel * 0.08, t + 0.3
         );
       }
 
-      // Shimmer follows coherence (very subtle)
-      if (shimmerGainRef.current) {
+      if (shimmerGainRef.current && coherenceLevel != null) {
         shimmerGainRef.current.gain.linearRampToValueAtTime(
-          coherence * 0.02, t + 0.3
+          coherenceLevel * 0.02, t + 0.3
         );
       }
 
-      // Noise layer follows fear
-      if (noiseGainRef.current) {
+      if (noiseGainRef.current && fear != null) {
         noiseGainRef.current.gain.linearRampToValueAtTime(
-          fearLevel * 0.08, t + 0.3
+          fear * 0.08, t + 0.3
         );
       }
     }, 200);

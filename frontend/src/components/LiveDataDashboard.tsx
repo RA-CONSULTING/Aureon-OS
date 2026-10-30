@@ -7,6 +7,7 @@
 
 import { useGlobalState, useTradingState, useQuantumState, usePlatypusState } from '@/hooks/useGlobalState';
 import { useUserBalances } from '@/hooks/useUserBalances';
+import { readingText } from '@/lib/reading';
 import { useStrikeFeed } from '@/hooks/useStrikeFeed';
 import { useBinanceWebSocket } from '@/hooks/useBinanceWebSocket';
 import { useAureonLiveData } from '@/hooks/useAureonLiveData';
@@ -99,16 +100,16 @@ export default function LiveDataDashboard() {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
         <StatCard 
           title="Total Equity" 
-          value={`$${totalEquityUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          value={readingText(totalEquityUsd, (equity) => `$${equity.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`)}
           icon={<Wallet className="w-4 h-4" />}
-          status={totalEquityUsd > 0 ? 'success' : 'neutral'}
+          status={totalEquityUsd != null && totalEquityUsd > 0 ? 'success' : 'neutral'}
         />
         <StatCard 
           title="Net P&L" 
           value={
             typeof tradingState.totalPnl === 'number' && Number.isFinite(tradingState.totalPnl)
               ? `${tradingState.totalPnl >= 0 ? '+' : ''}$${tradingState.totalPnl.toFixed(2)}`
-              : 'unavailable'
+              : (tradingState.totalPnlNote || 'unavailable')
           }
           icon={
             typeof tradingState.totalPnl === 'number' && tradingState.totalPnl >= 0
@@ -187,7 +188,7 @@ export default function LiveDataDashboard() {
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="default" className="bg-success/20 text-success">
-                ${bridgeData.totalPortfolioValue.toLocaleString(undefined, { maximumFractionDigits: 2 })} Total
+                {readingText(bridgeData.totalPortfolioValue, (value) => `$${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`)} Total
               </Badge>
               <Badge variant="outline" className="text-warning">
                 {bridgeData.signalCount} Signals

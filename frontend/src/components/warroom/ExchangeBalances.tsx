@@ -4,16 +4,17 @@ import { cn } from '@/lib/utils';
 import { Wallet, ArrowRightLeft } from 'lucide-react';
 
 interface ExchangeBalancesProps {
-  totalEquityUsd: number;
+  totalEquityUsd: number | null;
   exchanges: Array<{
     exchange: string;
     connected: boolean;
-    totalUsdValue: number;
+    totalUsdValue: number | null;
   }>;
 }
 
 export function ExchangeBalances({ totalEquityUsd, exchanges }: ExchangeBalancesProps) {
-  const formatUsd = (value: number) => {
+  const formatUsd = (value: number | null) => {
+    if (value == null || !Number.isFinite(value)) return 'unavailable';
     if (value >= 1000000) return `$${(value / 1000000).toFixed(2)}M`;
     if (value >= 1000) return `$${(value / 1000).toFixed(1)}K`;
     return `$${value.toFixed(2)}`;

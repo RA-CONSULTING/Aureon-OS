@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUserBalances, ExchangeBalance } from '@/hooks/useUserBalances';
+import { readingText } from '@/lib/reading';
 import { Wallet, RefreshCw, TrendingUp, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -82,7 +83,7 @@ export function UserAssetsPanel() {
             <div className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-success" />
               <span className="text-xl font-bold font-mono">
-                ${totalEquityUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {readingText(totalEquityUsd, (equity) => `$${equity.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`)}
               </span>
             </div>
           </div>

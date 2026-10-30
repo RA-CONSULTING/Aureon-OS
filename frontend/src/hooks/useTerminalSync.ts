@@ -12,6 +12,7 @@ import { useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { globalSystemsManager } from '@/core/globalSystemsManager';
 import { terminalStateUrls } from '@/config/serviceEndpoints';
+import { combineBookTotals, krakenPoolAvailable, selectEquity } from '@/lib/reading';
 
 // Public live feed user ID - data pushed from Python terminal
 const LIVE_FEED_USER_ID = '69e5567f-7ad1-42af-860f-3709ef1f5935';
@@ -499,19 +500,21 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
         const krakenEquity = firstFinite(kraken.portfolio_value, kraken.equity, combined.kraken_equity);
         const capitalEquity = firstFinite(capital.equity_gbp, combined.capital_equity_gbp);
         const equityNote = krakenReason && (krakenEquity == null || krakenEquity <= 0) ? krakenReason : '';
-        const totalEquity: number | null = equityNote
-          ? null
-          : krakenEquity != null && krakenEquity > 0
-            ? krakenEquity
-            : capitalEquity != null
-              ? capitalEquity
-              : krakenEquity;
+        const totalEquity = selectEquity(equityNote, krakenEquity, capitalEquity);
         const krakenFree = firstFinite(kraken.pool_available, kraken.free_margin);
         const capitalFree = firstFinite(capital.free_gbp);
-        const availableBalance = krakenFree != null && krakenFree > 0 ? krakenFree : capitalFree;
+        const freeBooks = combineBookTotals([
+          { name: 'Kraken', currency: null, amount: krakenFree },
+          { name: 'Capital', currency: 'GBP', amount: capitalFree },
+        ]);
+        const availableBalance = freeBooks.total;
         const krakenPnl = firstFinite(kraken.compounded, kraken.session_profit, combined.kraken_session_pnl);
         const capitalPnl = firstFinite(capital.stats?.total_pnl_gbp, combined.capital_session_pnl_gbp);
-        const totalPnl = krakenPnl != null && krakenPnl !== 0 ? krakenPnl : capitalPnl;
+        const pnlBooks = combineBookTotals([
+          { name: 'Kraken', currency: null, amount: krakenPnl },
+          { name: 'Capital', currency: 'GBP', amount: capitalPnl },
+        ]);
+        const totalPnl = pnlBooks.total;
         const latestMonitorLine = String(
           localState.latest_monitor_line
           || capital.latest_monitor_line
@@ -528,12 +531,14 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
           totalEquity,
           equityNote,
           availableBalance,
+          availableBalanceNote: freeBooks.total == null ? freeBooks.note : null,
           peakEquity: firstFinite(kraken.peak_equity, totalEquity),
           currentDrawdownPercent: firstFinite(kraken.current_drawdown),
           maxDrawdownPercent: firstFinite(kraken.max_drawdown),
           totalTrades,
           winningTrades,
           totalPnl,
+          totalPnlNote: pnlBooks.total == null ? pnlBooks.note : null,
           cyclePnl: totalPnl,
           cyclePnlPercent:
             totalEquity != null && totalEquity > 0 && totalPnl != null
@@ -568,7 +573,7 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
           compoundedCapital: firstFinite(kraken.compounded),
           harvestedCapital: firstFinite(kraken.harvested),
           poolTotal: firstFinite(kraken.pool_total, totalEquity),
-          poolAvailable: firstFinite(kraken.pool_available, availableBalance),
+          poolAvailable: krakenPoolAvailable(firstFinite(kraken.pool_available), firstFinite(kraken.free_margin)),
           scoutCount: firstFinite(kraken.scout_count),
           splitCount: firstFinite(kraken.split_count),
           wsConnected: Boolean(kraken.ws_connected || localState.ws_connected),
@@ -589,6 +594,8 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
             capitalEquityGbp: firstFinite(combined.capital_equity_gbp, capitalEquity),
             krakenSessionPnl: firstFinite(combined.kraken_session_pnl, krakenPnl),
             capitalSessionPnlGbp: firstFinite(combined.capital_session_pnl_gbp, capitalPnl),
+            krakenAvailable: krakenFree,
+            capitalAvailableGbp: capitalFree,
             openPositions: toNumber(combined.open_positions || activePositions.length),
             capitalOpenPositions: capitalPositions.length,
             krakenOpenPositions: krakenPositions.length,
@@ -647,6 +654,8 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
         totalTrades: firstFinite(localState.total_trades),
         winningTrades: firstFinite(localState.wins),
         totalPnl,
+        totalPnlNote: totalPnl == null ? 'unavailable' : null,
+        availableBalanceNote: null,
         cyclePnl: totalPnl,
         cyclePnlPercent: localState.portfolio_value > 0 && totalPnl != null ? (totalPnl / localState.portfolio_value) * 100 : null,
         avgHoldTimeMinutes: firstFinite(localState.avg_hold_time),
@@ -749,6 +758,8 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
       totalTrades: session.total_trades ?? tradeStats.total ?? null,
       winningTrades: session.winning_trades ?? tradeStats.wins ?? null,
       totalPnl: session.total_pnl_usdt ?? tradeStats.totalPnl ?? null,
+      totalPnlNote: (session.total_pnl_usdt ?? tradeStats.totalPnl) == null ? 'unavailable' : null,
+      availableBalanceNote: null,
       cyclePnl: cyclePnl ?? null,
       cyclePnlPercent:
         session.total_equity_usdt > 0 && cyclePnl != null

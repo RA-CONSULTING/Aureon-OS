@@ -7,14 +7,15 @@ import { Label } from "@/components/ui/label";
 import { TrendingUp, TrendingDown, AlertCircle, Loader2, Search } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { finiteOrNull, readingText } from '@/lib/reading';
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Balance {
   asset: string;
-  free: number;
-  price: number;
-  usdtValue: number;
+  free: number | null;
+  price: number | null;
+  usdtValue: number | null;
 }
 
 interface TradingSymbol {
@@ -29,10 +30,11 @@ interface TradingSymbol {
 interface QuickTradeProps {
   balances: Balance[];
   canTrade: boolean;
+  initialSymbol?: string;
 }
 
-export const QuickTrade = ({ balances, canTrade }: QuickTradeProps) => {
-  const [symbol, setSymbol] = useState<string>('');
+export const QuickTrade = ({ balances, canTrade, initialSymbol = '' }: QuickTradeProps) => {
+  const [symbol, setSymbol] = useState<string>(initialSymbol);
   const [side, setSide] = useState<'BUY' | 'SELL'>('BUY');
   const [amount, setAmount] = useState<string>('');
   const [isExecuting, setIsExecuting] = useState(false);
@@ -77,12 +79,12 @@ export const QuickTrade = ({ balances, canTrade }: QuickTradeProps) => {
         .map(b => ({
           symbol: `${b.asset}USDT`,
           baseAsset: b.asset,
-          price: b.price,
+          price: finiteOrNull(b.price),
           volume24h: 0,
           priceChange24h: 0,
           minNotional: 10,
           inPortfolio: true,
-          balance: b.free,
+          balance: finiteOrNull(b.free),
         }));
     }
 
@@ -92,7 +94,7 @@ export const QuickTrade = ({ balances, canTrade }: QuickTradeProps) => {
       return {
         ...s,
         inPortfolio: !!portfolioAsset,
-        balance: portfolioAsset?.free || 0,
+        balance: finiteOrNull(portfolioAsset?.free),
       };
     });
   };
@@ -108,8 +110,8 @@ export const QuickTrade = ({ balances, canTrade }: QuickTradeProps) => {
     : availableSymbols;
 
   // For SELL, only show assets in portfolio
-  const displaySymbols = side === 'SELL' 
-    ? filteredSymbols.filter(s => s.inPortfolio && s.balance > 0)
+  const displaySymbols = side === 'SELL'
+    ? filteredSymbols.filter(s => s.inPortfolio && s.balance != null && s.balance > 0)
     : filteredSymbols;
 
   const selectedSymbol = availableSymbols.find(s => s.symbol === symbol);
@@ -150,10 +152,10 @@ export const QuickTrade = ({ balances, canTrade }: QuickTradeProps) => {
       }
 
       const tradingSymbol = symbol;
-      const currentPrice = selectedSymbol?.price || 0;
-      
-      if (!currentPrice) {
-        throw new Error('Unable to fetch current price');
+      const currentPrice = finiteOrNull(selectedSymbol?.price);
+
+      if (currentPrice == null) {
+        throw new Error('Current price unavailable');
       }
 
       // Calculate quantity based on amount (in USDT)
@@ -168,14 +170,20 @@ export const QuickTrade = ({ balances, canTrade }: QuickTradeProps) => {
 
       // Check if user has enough balance
       if (side === 'SELL') {
-        const availableBalance = portfolioBalance?.free || 0;
+        const availableBalance = finiteOrNull(portfolioBalance?.free);
+        if (availableBalance == null) {
+          throw new Error(`${baseAsset} balance unavailable`);
+        }
         if (quantity > availableBalance) {
           throw new Error(`Insufficient ${baseAsset} balance. Available: ${availableBalance.toFixed(6)}`);
         }
       } else {
-        // For BUY, check USDT balance
-        if (!usdtBalance || amountUsdt > usdtBalance.free) {
-          throw new Error(`Insufficient USDT balance. Available: $${usdtBalance?.free.toFixed(2) || 0}`);
+        const usdtFree = finiteOrNull(usdtBalance?.free);
+        if (usdtFree == null) {
+          throw new Error('USDT balance unavailable');
+        }
+        if (amountUsdt > usdtFree) {
+          throw new Error(`Insufficient USDT balance. Available: $${usdtFree.toFixed(2)}`);
         }
       }
 
@@ -350,9 +358,9 @@ export const QuickTrade = ({ balances, canTrade }: QuickTradeProps) => {
             min="0"
             step="0.01"
           />
-          {selectedSymbol && amount && parseFloat(amount) > 0 && (
+          {selectedSymbol && amount && parseFloat(amount) > 0 && finiteOrNull(selectedSymbol.price) != null && (
             <div className="text-xs text-muted-foreground mt-1">
-              ≈ {(parseFloat(amount) / selectedSymbol.price).toFixed(6)} {baseAsset}
+              ≈ {(parseFloat(amount) / (finiteOrNull(selectedSymbol.price) as number)).toFixed(6)} {baseAsset}
             </div>
           )}
         </div>
@@ -361,27 +369,33 @@ export const QuickTrade = ({ balances, canTrade }: QuickTradeProps) => {
           <div className="p-3 rounded-lg bg-muted/50 space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Current Price:</span>
-              <span className="font-mono font-semibold">${selectedSymbol.price.toFixed(2)}</span>
+              <span className="font-mono font-semibold">
+                {readingText(selectedSymbol.price, (price) => `$${price.toFixed(2)}`)}
+              </span>
             </div>
-            {selectedSymbol.priceChange24h !== undefined && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">24h Change:</span>
-                <span className={`font-mono ${selectedSymbol.priceChange24h >= 0 ? 'text-success' : 'text-destructive'}`}>
-                  {selectedSymbol.priceChange24h >= 0 ? '+' : ''}{selectedSymbol.priceChange24h.toFixed(2)}%
-                </span>
-              </div>
-            )}
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">24h Change:</span>
+              <span className={`font-mono ${
+                finiteOrNull(selectedSymbol.priceChange24h) == null
+                  ? 'text-muted-foreground'
+                  : (finiteOrNull(selectedSymbol.priceChange24h) as number) >= 0
+                    ? 'text-success'
+                    : 'text-destructive'
+              }`}>
+                {readingText(selectedSymbol.priceChange24h, (change) => `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`)}
+              </span>
+            </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Your Balance:</span>
               <span className="font-mono">
-                {portfolioBalance ? `${portfolioBalance.free.toFixed(6)} ${baseAsset}` : `0 ${baseAsset}`}
+                {readingText(portfolioBalance?.free, (free) => `${free.toFixed(6)} ${baseAsset}`)}
               </span>
             </div>
             {side === 'BUY' && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">USDT Available:</span>
                 <span className="font-mono">
-                  ${(usdtBalance?.free || 0).toFixed(2)}
+                  {readingText(usdtBalance?.free, (free) => `$${free.toFixed(2)}`)}
                 </span>
               </div>
             )}

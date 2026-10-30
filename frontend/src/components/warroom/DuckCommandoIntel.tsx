@@ -132,13 +132,21 @@ export function DuckCommandoIntel({
                     </div>
                     <div className="text-center">
                       <span className="block text-xs"></span>
-                      <span className="block text-sm font-bold text-white">{status.activePositions ?? 0}</span>
+                      <span className="block text-sm font-bold text-white">
+                        {status.activePositions == null ? 'unavailable' : status.activePositions}
+                      </span>
                       <span className="block text-[9px] text-gray-500">Active</span>
                     </div>
                     <div className="text-center">
                       <span className="block text-xs"></span>
-                      <span className={`block text-sm font-bold ${(status.todayPnl ?? 0) >= 0 ? 'text-success' : 'text-destructive'}`}>
-                        ${(status.todayPnl ?? 0).toFixed(2)}
+                      <span className={`block text-sm font-bold ${
+                        status.todayPnl == null
+                          ? 'text-white/50'
+                          : status.todayPnl >= 0
+                            ? 'text-success'
+                            : 'text-destructive'
+                      }`}>
+                        {status.todayPnl == null ? 'unavailable' : `$${status.todayPnl.toFixed(2)}`}
                       </span>
                       <span className="block text-[9px] text-gray-500">PnL</span>
                     </div>

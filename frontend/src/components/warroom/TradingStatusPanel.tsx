@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
+import { finiteOrNull, readingText } from '@/lib/reading';
 import { CheckCircle2, XCircle, AlertCircle, Activity } from 'lucide-react';
 
 interface GateStatus {
@@ -51,8 +52,8 @@ export function TradingStatusPanel() {
           .limit(1)
           .single();
 
-        const currentCoherence = masterEq?.coherence || 0;
-        const currentConfidence = lighthouse?.confidence || 0;
+        const currentCoherence = finiteOrNull(masterEq?.coherence);
+        const currentConfidence = finiteOrNull(lighthouse?.confidence);
         const isLHE = lighthouse?.is_lhe || false;
         const qgitaTier = qgita?.tier || 3;
 
@@ -65,14 +66,14 @@ export function TradingStatusPanel() {
         setGates([
           {
             name: 'Coherence Gate',
-            passed: currentCoherence >= minCoherence,
-            value: currentCoherence.toFixed(3),
+            passed: currentCoherence != null && currentCoherence >= minCoherence,
+            value: readingText(currentCoherence, (value) => value.toFixed(3)),
             threshold: `≥ ${minCoherence}`,
           },
           {
             name: 'Lighthouse Confidence',
-            passed: currentConfidence >= minConfidence,
-            value: currentConfidence.toFixed(3),
+            passed: currentConfidence != null && currentConfidence >= minConfidence,
+            value: readingText(currentConfidence, (value) => value.toFixed(3)),
             threshold: `≥ ${minConfidence}`,
           },
           {

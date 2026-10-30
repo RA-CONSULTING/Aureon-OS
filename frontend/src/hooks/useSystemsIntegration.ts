@@ -134,7 +134,7 @@ export function useQueenHiveBrowser(): UseQueenHiveBrowserReturn {
 export function useTemporalLadder(): {
   state: TemporalLadderState | null;
   systemStatuses: Array<{ name: string; active: boolean; health: number }>;
-  hiveMindCoherence: number;
+  hiveMindCoherence: number | null;
 } {
   const [state, setState] = useState<TemporalLadderState | null>(null);
 
@@ -159,6 +159,6 @@ export function useTemporalLadder(): {
   return {
     state,
     systemStatuses,
-    hiveMindCoherence: state?.hiveMindCoherence ?? 0
+    hiveMindCoherence: state?.hiveMindCoherence ?? null
   };
 }

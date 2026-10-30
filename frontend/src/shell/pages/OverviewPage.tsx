@@ -333,10 +333,10 @@ export default function OverviewPage() {
           ) : (
             <div className="flex flex-wrap gap-4 text-sm">
               <span><b>{organism.connectome.nodes ?? "?"}</b> <span className="text-muted-foreground">modules</span></span>
-              <span><b>{organism.connectome.baton_linked ?? 0}</b> <span className="text-muted-foreground">linked</span></span>
-              <span><b>{organism.connectome.touched ?? 0}</b> <span className="text-muted-foreground">touched</span></span>
-              <span><b>{organism.connectome.woven ?? 0}</b> <span className="text-muted-foreground">woven</span></span>
-              <span className="text-primary"><b>{organism.connectome.coverage_pct ?? 0}%</b> <span className="text-muted-foreground">felt</span></span>
+              <span><b>{organism.connectome.baton_linked == null ? 'unavailable' : organism.connectome.baton_linked}</b> <span className="text-muted-foreground">linked</span></span>
+              <span><b>{organism.connectome.touched == null ? 'unavailable' : organism.connectome.touched}</b> <span className="text-muted-foreground">touched</span></span>
+              <span><b>{organism.connectome.woven == null ? 'unavailable' : organism.connectome.woven}</b> <span className="text-muted-foreground">woven</span></span>
+              <span className="text-primary"><b>{organism.connectome.coverage_pct == null ? 'unavailable' : `${organism.connectome.coverage_pct}%`}</b> <span className="text-muted-foreground">felt</span></span>
             </div>
           )}
         </CardContent>

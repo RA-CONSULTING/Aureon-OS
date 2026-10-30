@@ -43,6 +43,7 @@ export function CinematicHUD({ state, hiveMood, activeScanner, onNarratorEvent }
       <HUDTopBar
         totalEquity={state.totalEquity}
         totalPnl={state.totalPnl}
+        totalPnlNote={state.totalPnlNote}
         cyclePnlPercent={state.cyclePnlPercent}
         winRate={winRate}
         coherence={coherenceForDisplay}
@@ -88,7 +89,7 @@ export function CinematicHUD({ state, hiveMood, activeScanner, onNarratorEvent }
 
       {/* Ambient soundscape controls */}
       <AmbientSoundscape
-        coherence={coherenceForDisplay ?? 0}
+        coherence={coherenceForDisplay}
         psi={c.psi}
         fearLevel={c.fearLevel}
         gaiaFrequency={state.gaiaFrequency}

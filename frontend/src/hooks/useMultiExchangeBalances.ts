@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { finiteOrNull } from '@/lib/reading';
 import { smartOrderRouter, RoutingDecision } from '../core/smartOrderRouter';
 import { ExchangeType } from '../core/unifiedExchangeClient';
 
@@ -32,13 +33,13 @@ export interface ExchangeStatus {
   connected: boolean;
   lastUpdate: number;
   balanceCount: number;
-  totalUsdValue: number;
+  totalUsdValue: number | null;
 }
 
 export interface MultiExchangeState {
   exchanges: ExchangeStatus[];
   consolidatedBalances: ConsolidatedBalance[];
-  totalEquityUsd: number;
+  totalEquityUsd: number | null;
   lastUpdate: number;
 }
 
@@ -46,13 +47,13 @@ export interface UseMultiExchangeBalancesResult {
   state: MultiExchangeState | null;
   consolidatedBalances: ConsolidatedBalance[];
   exchangeStatuses: ExchangeStatus[];
-  totalEquityUsd: number;
+  totalEquityUsd: number | null;
   isLoading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
   getRouting: (symbol: string, side: 'BUY' | 'SELL', quantity: number) => Promise<RoutingDecision | null>;
   lastRoutingDecision: RoutingDecision | null;
-  getPositionSize: (riskPercentage?: number) => { positionSizeUsd: number; availableBalance: number; riskAmount: number };
+  getPositionSize: (riskPercentage?: number) => { positionSizeUsd: number | null; availableBalance: number | null; riskAmount: number | null };
 }
 
 export function useMultiExchangeBalances(): UseMultiExchangeBalancesResult {
@@ -119,13 +120,13 @@ export function useMultiExchangeBalances(): UseMultiExchangeBalancesResult {
           connected: b.connected,
           lastUpdate: Date.now(),
           balanceCount: b.assets.length,
-          totalUsdValue: b.totalUsd
+          totalUsdValue: finiteOrNull(b.totalUsd)
         }));
 
         setState({
           exchanges: exchangeStatuses,
           consolidatedBalances: Array.from(assetMap.values()).sort((a, b) => b.usdValue - a.usdValue),
-          totalEquityUsd: data.totalEquityUsd || 0,
+          totalEquityUsd: finiteOrNull(data.totalEquityUsd),
           lastUpdate: Date.now()
         });
       } else {
@@ -163,10 +164,13 @@ export function useMultiExchangeBalances(): UseMultiExchangeBalancesResult {
   }, []);
 
   const getPositionSize = useCallback((riskPercentage: number = 0.02) => {
-    const totalEquity = state?.totalEquityUsd || 0;
+    const totalEquity = finiteOrNull(state?.totalEquityUsd);
+    if (totalEquity == null || !Number.isFinite(riskPercentage)) {
+      return { positionSizeUsd: null, availableBalance: totalEquity, riskAmount: null };
+    }
     const riskAmount = totalEquity * riskPercentage;
     return {
-      positionSizeUsd: riskAmount * 10, // 10x leverage assumption
+      positionSizeUsd: riskAmount * 10,
       availableBalance: totalEquity,
       riskAmount
     };
@@ -176,7 +180,7 @@ export function useMultiExchangeBalances(): UseMultiExchangeBalancesResult {
     state,
     consolidatedBalances: state?.consolidatedBalances || [],
     exchangeStatuses: state?.exchanges || [],
-    totalEquityUsd: state?.totalEquityUsd || 0,
+    totalEquityUsd: finiteOrNull(state?.totalEquityUsd),
     isLoading,
     error,
     refresh: fetchBalances,
@@ -196,10 +200,10 @@ export function useAssetBalance(asset: string) {
   
   return {
     asset,
-    totalFree: balance?.totalFree || 0,
-    totalLocked: balance?.totalLocked || 0,
-    grandTotal: balance?.grandTotal || 0,
-    usdValue: balance?.usdValue || 0,
+    totalFree: finiteOrNull(balance?.totalFree),
+    totalLocked: finiteOrNull(balance?.totalLocked),
+    grandTotal: finiteOrNull(balance?.grandTotal),
+    usdValue: finiteOrNull(balance?.usdValue),
     byExchange: balance?.balances || {}
   };
 }

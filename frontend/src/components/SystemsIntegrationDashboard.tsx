@@ -115,22 +115,22 @@ export const SystemsIntegrationDashboard: React.FC = () => {
               <div
                 className="h-4 rounded-full transition-all duration-500"
                 style={{
-                  width: `${hiveMindCoherence * 100}%`,
+                  width: `${hiveMindCoherence == null ? 0 : hiveMindCoherence * 100}%`,
                   background: `linear-gradient(90deg, hsl(var(--primary)), hsl(var(--chart-2)))`,
                 }}
               />
             </div>
           </div>
           <span className="text-2xl font-bold text-foreground">
-            {(hiveMindCoherence * 100).toFixed(1)}%
+            {hiveMindCoherence == null ? 'unavailable' : `${(hiveMindCoherence * 100).toFixed(1)}%`}
           </span>
         </div>
         <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
           <div className="text-muted-foreground">
-            Active Systems: <span className="text-foreground font-bold">{state?.systemsActive || 0}</span>/{state?.systemsTotal || 8}
+            Active Systems: <span className="text-foreground font-bold">{state == null ? 'unavailable' : state.systemsActive}</span>/{state == null ? 'unavailable' : state.systemsTotal}
           </div>
           <div className="text-muted-foreground">
-            Integration Health: <span className="text-foreground font-bold">{((state?.integrationHealth || 0) * 100).toFixed(0)}%</span>
+            Integration Health: <span className="text-foreground font-bold">{state?.integrationHealth == null ? 'unavailable' : `${(state.integrationHealth * 100).toFixed(0)}%`}</span>
           </div>
         </div>
       </div>

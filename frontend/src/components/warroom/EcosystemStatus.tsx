@@ -10,20 +10,22 @@ import { Sparkles, Activity, Brain, Zap, Radio, Waves, Target, Layers, GitBranch
 import { cn } from '@/lib/utils';
 import { ecosystemConnector, type EcosystemState } from '@/core/ecosystemConnector';
 import { ecosystemEnhancements } from '@/core/ecosystemEnhancements';
+import { finiteOrNull } from '@/lib/reading';
 
 interface SystemDisplayProps {
   name: string;
   icon: React.ElementType;
   active: boolean;
-  coherence: number;
+  coherence: number | null;
   color?: string;
 }
 
 function SystemDisplay({ name, icon: Icon, active, coherence, color }: SystemDisplayProps) {
+  const reading = finiteOrNull(coherence);
   const getStatusColor = () => {
-    if (!active) return 'bg-muted-foreground';
-    if (coherence > 0.8) return 'bg-success';
-    if (coherence > 0.5) return 'bg-warning';
+    if (!active || reading == null) return 'bg-muted-foreground';
+    if (reading > 0.8) return 'bg-success';
+    if (reading > 0.5) return 'bg-warning';
     return 'bg-warning';
   };
 
@@ -35,7 +37,7 @@ function SystemDisplay({ name, icon: Icon, active, coherence, color }: SystemDis
         {name}
       </span>
       <span className="text-[10px] text-muted-foreground ml-auto font-mono">
-        {(coherence * 100).toFixed(0)}%
+        {reading == null ? 'unavailable' : `${(reading * 100).toFixed(0)}%`}
       </span>
     </div>
   );
@@ -73,12 +75,13 @@ export function EcosystemStatus() {
     };
   }, []);
 
-  const getOverallHealth = () => {
-    if (!state) return 0;
+  const getOverallHealth = (): number | null => {
+    if (!state || !Number.isFinite(state.totalSystems) || state.totalSystems <= 0) return null;
     return state.activeSystems / state.totalSystems;
   };
 
-  const getHealthColor = (health: number) => {
+  const getHealthColor = (health: number | null) => {
+    if (health == null) return 'text-muted-foreground';
     if (health > 0.8) return 'text-success';
     if (health > 0.5) return 'text-warning';
     return 'text-warning';
@@ -92,7 +95,7 @@ export function EcosystemStatus() {
             <GitBranch className="h-3 w-3" /> ECOSYSTEM
           </span>
           <Badge variant="outline" className="text-[9px]">
-            {state?.activeSystems || 0}/{state?.totalSystems || 0} systems
+            {state == null ? 'unavailable' : `${state.activeSystems} / ${state.totalSystems}`} systems
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -101,7 +104,7 @@ export function EcosystemStatus() {
         <div className="flex items-center justify-between pb-2 border-b border-border/30">
           <span className="text-xs text-muted-foreground">Integration Health</span>
           <span className={cn("text-sm font-mono font-bold", getHealthColor(getOverallHealth()))}>
-            {(getOverallHealth() * 100).toFixed(0)}%
+            {getOverallHealth() == null ? 'unavailable' : `${((getOverallHealth() as number) * 100).toFixed(0)}%`}
           </span>
         </div>
 
@@ -113,35 +116,35 @@ export function EcosystemStatus() {
               name="Harmonic Nexus" 
               icon={Sparkles} 
               active={!!state?.harmonicNexus}
-              coherence={state?.harmonicNexus?.substrateCoherence || 0}
+              coherence={finiteOrNull(state?.harmonicNexus?.substrateCoherence)}
               color="text-primary"
             />
             <SystemDisplay 
               name="Omega Equation" 
               icon={Activity} 
               active={!!state?.omega}
-              coherence={state?.omega?.coherence || 0}
+              coherence={finiteOrNull(state?.omega?.coherence)}
               color="text-primary"
             />
             <SystemDisplay 
               name="QGITA Engine" 
               icon={Brain} 
               active={!!state?.qgita}
-              coherence={state?.qgita?.confidence || 0}
+              coherence={finiteOrNull(state?.qgita?.confidence)}
               color="text-primary"
             />
             <SystemDisplay 
               name="Master Equation" 
               icon={Zap} 
               active={true}
-              coherence={state?.omega?.love || 0}
+              coherence={finiteOrNull(state?.omega?.love)}
               color="text-warning"
             />
             <SystemDisplay 
               name="Lighthouse" 
               icon={Radio} 
               active={true}
-              coherence={state?.harmonicNexus?.lighthouseSignal || 0.7}
+              coherence={finiteOrNull(state?.harmonicNexus?.lighthouseSignal)}
               color="text-warning"
             />
           </div>
@@ -152,21 +155,21 @@ export function EcosystemStatus() {
               name="Eckoushic Cascade" 
               icon={Waves} 
               active={!!state?.eckoushic}
-              coherence={state?.eckoushic?.echoResonance || 0}
+              coherence={finiteOrNull(state?.eckoushic?.echoResonance)}
               color="text-primary"
             />
             <SystemDisplay 
               name="Unity Detector" 
               icon={Target} 
               active={!!state?.unity}
-              coherence={state?.unity?.unityStrength || 0}
+              coherence={finiteOrNull(state?.unity?.unityStrength)}
               color="text-success"
             />
             <SystemDisplay 
               name="Fibonacci Lattice" 
               icon={Layers} 
               active={!!state?.fibonacci}
-              coherence={state?.fibonacci?.ratioAlignment || 0}
+              coherence={finiteOrNull(state?.fibonacci?.ratioAlignment)}
               color="text-warning"
             />
             <SystemDisplay 
