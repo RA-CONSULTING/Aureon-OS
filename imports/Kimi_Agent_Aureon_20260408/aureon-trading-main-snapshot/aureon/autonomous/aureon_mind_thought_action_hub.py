@@ -426,9 +426,10 @@ MIND_THOUGHT_ACTION_HTML = """
             for (const [key, value] of Object.entries(stats)) {
                 const item = document.createElement('div');
                 item.className = 'mind-stat';
+                const shown = (value === null || value === undefined) ? 'no data' : value;
                 item.innerHTML = `
                     <span class="stat-label">${key}</span>
-                    <span class="stat-value">${value}</span>
+                    <span class="stat-value">${shown}</span>
                 `;
                 mindDiv.appendChild(item);
             }
@@ -584,9 +585,9 @@ class MindThoughtActionHub:
         
         # Stats
         self.mind_stats = {
-            'Queen Patterns': 0,
-            'Intelligence Accuracy': 0,
-            'Nexus Win Rate': 0,
+            'Queen Patterns': None,
+            'Intelligence Accuracy': None,
+            'Nexus Win Rate': None,
             'Active Thoughts/s': 0,
             'Actions Executed': 0
         }
@@ -614,7 +615,7 @@ class MindThoughtActionHub:
         if QueenHiveMind:
             try:
                 self.queen = QueenHiveMind()
-                self.mind_stats['Queen Patterns'] = 229  # From elephant memory
+                self.mind_stats['Queen Patterns'] = None
                 logger.info("👑 Queen Hive Mind loaded")
             except: pass
         
@@ -622,7 +623,7 @@ class MindThoughtActionHub:
         if ProbabilityNexus:
             try:
                 self.prob_nexus = ProbabilityNexus()
-                self.mind_stats['Nexus Win Rate'] = 79.6
+                self.mind_stats['Nexus Win Rate'] = None
                 logger.info("🔮 Probability Nexus loaded")
             except: pass
         
@@ -630,7 +631,7 @@ class MindThoughtActionHub:
         if UltimateIntelligence:
             try:
                 self.ultimate_intel = UltimateIntelligence()
-                self.mind_stats['Intelligence Accuracy'] = 95.0
+                self.mind_stats['Intelligence Accuracy'] = None
                 logger.info("💎 Ultimate Intelligence loaded")
             except: pass
         

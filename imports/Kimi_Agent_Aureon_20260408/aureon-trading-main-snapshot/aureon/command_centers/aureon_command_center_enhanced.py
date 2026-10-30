@@ -471,8 +471,8 @@ ENHANCED_HTML = """
                 
                 item.innerHTML = `
                     <div class="system-name">${status.status === 'ONLINE' ? '🟢' : '🔴'} ${name}</div>
-                    ${status.confidence > 0 ? `<span class="system-metric">Conf: ${(status.confidence * 100).toFixed(0)}%</span>` : ''}
-                    ${status.accuracy > 0 ? `<span class="system-metric">Acc: ${(status.accuracy * 100).toFixed(0)}%</span>` : ''}
+                    ${status.confidence === null ? `<span class="system-metric">Conf: no data</span>` : (status.confidence > 0 ? `<span class="system-metric">Conf: ${(status.confidence * 100).toFixed(0)}%</span>` : '')}
+                    ${status.accuracy === null ? `<span class="system-metric">Acc: no data</span>` : (status.accuracy > 0 ? `<span class="system-metric">Acc: ${(status.accuracy * 100).toFixed(0)}%</span>` : '')}
                     ${status.signals_sent > 0 ? `<span class="system-metric">Signals: ${status.signals_sent}</span>` : ''}
                     ${metricsStr ? `<div class="system-metric" style="margin-top: 3px;">${metricsStr}</div>` : ''}
                 `;
@@ -659,7 +659,7 @@ class AureonCommandCenterEnhanced:
         if SYSTEMS.get('UltimateIntel'):
             try:
                 self.systems_instances['UltimateIntel'] = SYSTEMS['UltimateIntel']()
-                self.systems_status['UltimateIntel'] = {'status': 'ONLINE', 'confidence': 0.95, 'accuracy': 0.95, 'signals_sent': 0, 'metadata': {'patterns': 57}}
+                self.systems_status['UltimateIntel'] = {'status': 'ONLINE', 'confidence': 0.95, 'accuracy': None, 'signals_sent': 0, 'metadata': {'patterns': 57}}
             except: pass
         
         if SYSTEMS.get('ProbabilityNexus'):

@@ -2018,10 +2018,10 @@ UNIFIED_MASTER_HTML = """
                 
                 item.innerHTML = `
                     <div class="system-name">${layerIcon} ${system.name}</div>
-                    ${system.confidence > 0 || system.accuracy > 0 ? `
+                    ${system.confidence > 0 || system.accuracy > 0 || system.accuracy === null ? `
                         <div class="system-metrics">
-                            ${system.confidence > 0 ? `Conf: ${(system.confidence * 100).toFixed(0)}%` : ''}
-                            ${system.accuracy > 0 ? ` | Acc: ${(system.accuracy * 100).toFixed(0)}%` : ''}
+                            ${system.confidence > 0 ? `Conf: ${(system.confidence * 100).toFixed(0)}%` : (system.confidence === null ? 'Conf: no data' : '')}
+                            ${system.accuracy === null ? ' | Acc: no data' : (system.accuracy > 0 ? ` | Acc: ${(system.accuracy * 100).toFixed(0)}%` : '')}
                             ${system.signals_sent > 0 ? ` | Signals: ${system.signals_sent}` : ''}
                         </div>
                     ` : ''}
@@ -2682,7 +2682,7 @@ class AureonUnifiedMasterHub:
             try:
                 self.intelligence_systems['UltimateIntel'] = UltimateIntelligence()
                 self.systems_status['UltimateIntel'] = {
-                    'status': 'ONLINE', 'confidence': 0.95, 'accuracy': 0.95,
+                    'status': 'ONLINE', 'confidence': 0.95, 'accuracy': None,
                     'signals_sent': 0, 'metadata': {'patterns': 57}
                 }
             except: pass
