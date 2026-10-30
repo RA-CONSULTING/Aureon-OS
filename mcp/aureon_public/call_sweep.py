@@ -104,9 +104,9 @@ def hazard_reason(payload: dict[str, Any]) -> str | None:
 
 def child_main(module: str, symbol: str, arguments_json: str = "") -> None:
     import aureon_public.body as body_module
-    from aureon_public.sweep_layout import beside
+    from aureon_public.sweep_guard import declare_sandbox
 
-    os.environ["AUREON_PUBLIC_SANDBOX"] = str(beside())
+    declare_sandbox()
     body_module.enable_sweep_measurement()
     text = body_module.body_call(module, symbol, arguments_json)
     try:

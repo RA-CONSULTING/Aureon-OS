@@ -20,6 +20,32 @@ _WRITES: list[str] = []
 _REAL: dict[str, Any] = {}
 
 
+def declare_sandbox() -> Path:
+    """Point temp files at a directory inside the sweep parent.
+
+    Python probes ``/tmp`` when ``TMPDIR`` is unset. Those probes are not the
+    module writing. The sandbox stays the temp parent, and ``TMPDIR`` is a
+    directory inside it.
+    """
+
+    from aureon_public.sweep_layout import beside
+
+    sandbox = beside()
+    scratch = sandbox / "sweep-scratch"
+    scratch.mkdir(parents=True, exist_ok=True)
+    os.environ["AUREON_PUBLIC_SANDBOX"] = str(sandbox)
+    os.environ["TMPDIR"] = str(scratch)
+    os.environ["TEMP"] = str(scratch)
+    os.environ["TMP"] = str(scratch)
+    try:
+        import tempfile
+
+        tempfile.tempdir = None
+    except Exception:
+        pass
+    return sandbox
+
+
 def snapshot() -> dict[str, list[str]]:
     """Copies of the attempts recorded since install."""
 

@@ -79,11 +79,10 @@ def _dotted(module: str) -> str:
 def child_main(module: str) -> None:
     """Import one module. Stdout is one JSON object."""
 
-    from aureon_public.sweep_guard import install_sweep_guard, snapshot
-    from aureon_public.sweep_layout import beside
+    from aureon_public.sweep_guard import declare_sandbox, install_sweep_guard, snapshot
 
     os.environ["AUREON_PUBLIC_SWEEP"] = "1"
-    os.environ["AUREON_PUBLIC_SANDBOX"] = str(beside())
+    declare_sandbox()
     install_sweep_guard()
     error = None
     try:
