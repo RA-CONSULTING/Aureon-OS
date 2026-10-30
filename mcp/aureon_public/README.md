@@ -65,7 +65,7 @@ Each figure is reachable public functions and methods out of the public function
 | search | 0 | 5 |
 | simulation | 0 | 200 |
 | strategies | 0 | 0 |
-| swarm | 24 | 41 |
+| swarm | 15 | 41 |
 | swarm_motion | 0 | 10 |
 | trading | 0 | 0 |
 | unified_margin_trader | 0 | 0 |

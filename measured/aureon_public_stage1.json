@@ -56,6 +56,13 @@
       "isError": false,
       "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed example arguments, not a reading.\", \"input_source\": \"aureon.swarm.agent.SwarmAgent\", \"label\": \"cited. swarm/agent.py SwarmAgent.to_dict ran.\", \"provenance\": \"cited\", \"result\": {\"agent_id\": \"stage1\", \"constraint\": 1e-06, \"kappa\": 0.0, \"p\": {\"hold\": 1.0}, \"purity\": 0.0, \"resonance\": 0.0, \"role\": \"scout\"}, \"status\": \"cited\"}"
     },
+    "swarm_agent_update": {
+      "arguments": {},
+      "input_note": "The first update in that test. Empty cluster and no echo. The return is None.",
+      "input_source": "tests/test_swarm_hive.py::test_agent_keeps_a_normalized_soft_simplex",
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"The first update in that test. Empty cluster and no echo. The return is None.\", \"input_source\": \"tests/test_swarm_hive.py::test_agent_keeps_a_normalized_soft_simplex\", \"label\": \"cited. swarm/agent.py SwarmAgent.update ran.\", \"provenance\": \"cited\", \"result\": null, \"status\": \"cited\"}"
+    },
     "swarm_build_seat": {
       "arguments": {},
       "input_note": "Fixed fixture from tests/test_druidic_council.py. Not a live council.",
@@ -140,7 +147,7 @@
     },
     "aureon_file": "/tmp/aureon-public-venv/lib/python3.12/site-packages/aureon/__init__.py",
     "aureon_tree": "8aef927b7fe6276c187e4c73c79f0de012ad980d",
-    "code_commit": "566fe295f17235f68201dd10431105f58ab80a1f",
+    "code_commit": "6d2da2c6a6ff677edbd8bdabd2af44ead4808ac1",
     "code_commit_note": "This is the parent of the commit that contains this record. The record cannot name the commit that adds the file.",
     "pin": "8aa6a2d971cc529484e2a5e261e28afafab4e4f4",
     "pin_aureon_tree": "8aef927b7fe6276c187e4c73c79f0de012ad980d",

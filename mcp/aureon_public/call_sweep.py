@@ -2,10 +2,11 @@
 
 Each call uses the public worker. Sockets are blocked and logged in that
 worker. Fake NEXUS and Sero checkouts sit beside the repo. Stage-2 entry
-points are also called with the real arguments in stage2_arguments. An entry
-point is refused when any of those calls opens a connection, starts a
-process, writes outside the sandbox, or loads queen, miner, swarm_motion,
-inhouse_ai, ollama_config, or an HTTP client.
+points are also called with the real arguments in stage2_arguments.
+SwarmAgent.update is also called with the hive fixture from
+tests/test_swarm_hive.py. An entry point is refused when any of those calls
+opens a connection, starts a process, writes outside the sandbox, or loads
+queen, miner, swarm_motion, inhouse_ai, ollama_config, or an HTTP client.
 
     bash measured/aureon_public_call_sweep.sh
 """
@@ -52,6 +53,7 @@ def _tested_stage1_tools() -> set[tuple[str, str]]:
         ("swarm/druidic_council.py", "SeatReceipt.to_dict"),
         ("swarm/druidic_council.py", "CouncilReceipt.to_dict"),
         ("swarm/queen_gate.py", "Actualization.to_dict"),
+        ("swarm/agent.py", "SwarmAgent.update"),
     }
 
 
@@ -199,6 +201,30 @@ def _first_hazard(hazards: list[str]) -> str | None:
     return None
 
 
+def _stage1_extra_attempts(module: str, symbol: str) -> list[dict[str, Any]]:
+    """Real stage-1 arguments copied from tests/test_swarm_hive.py."""
+
+    if (module, symbol) != ("swarm/agent.py", "SwarmAgent.update"):
+        return []
+    return [
+        {
+            "arguments": {
+                "cluster_states": [],
+                "context": [0.4, 0.2, -0.1, 0.3, 0.0, 0.1, -0.2, 0.05],
+                "echo": None,
+                "init": {
+                    "actions": ["hold", "advance", "retreat"],
+                    "agent_id": "a1",
+                    "role": "research",
+                },
+            },
+            "label": "hive_first_update",
+            "note": "The first update call in test_agent_keeps_a_normalized_soft_simplex. Empty cluster and no echo.",
+            "source": "tests/test_swarm_hive.py",
+        }
+    ]
+
+
 def build_record(timeout: float) -> dict[str, Any]:
     from aureon_public.guard_loader import aureon_source
     from aureon_public.measurement_stamp import measurement_stamp
@@ -222,6 +248,7 @@ def build_record(timeout: float) -> dict[str, Any]:
         ]
         if row["plan_stage"] == 2:
             planned.extend(attempts_for(row["module"], row["symbol"]))
+        planned.extend(_stage1_extra_attempts(row["module"], row["symbol"]))
         recorded = []
         hazards: list[str] = []
         for attempt in planned:

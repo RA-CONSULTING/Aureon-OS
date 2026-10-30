@@ -359,6 +359,114 @@ def test_sweep_guard_blocks_each_extra_mutation_and_spawn(tmp_path: Path, monkey
     assert not any(str(tmp_path) in item for item in snap["writes"])
 
 
+def test_sweep_guard_blocks_metadata_and_link_calls(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from aureon_public.sweep_guard import install_sweep_guard, snapshot, uninstall_sweep_guard
+
+    monkeypatch.setenv("AUREON_PUBLIC_SWEEP", "1")
+    monkeypatch.setenv("AUREON_PUBLIC_SANDBOX", str(tmp_path))
+    outside = tmp_path.parent / "aureon-stage1-meta-outside"
+    outside.mkdir(exist_ok=True)
+    target = outside / "meta.txt"
+    target.write_text("meta", encoding="utf-8")
+    directory = outside / "empty-dir"
+    directory.mkdir()
+    link_name = outside / "link"
+    fd = os.open(target, os.O_RDWR)
+    try:
+        install_sweep_guard()
+        with pytest.raises(OSError, match="write blocked"):
+            os.rmdir(directory)
+        assert directory.is_dir()
+        with pytest.raises(OSError, match="write blocked"):
+            os.truncate(target, 0)
+        assert target.read_text(encoding="utf-8") == "meta"
+        with pytest.raises(OSError, match="write blocked"):
+            os.ftruncate(fd, 0)
+        with pytest.raises(OSError, match="write blocked"):
+            os.fchmod(fd, 0o600)
+        assert target.read_text(encoding="utf-8") == "meta"
+        with pytest.raises(OSError, match="write blocked"):
+            os.chmod(target, 0o600)
+        with pytest.raises(OSError, match="write blocked"):
+            os.chown(target, os.getuid(), os.getgid())
+        with pytest.raises(OSError, match="write blocked"):
+            os.symlink(target, link_name)
+        assert not link_name.exists()
+        with pytest.raises(OSError, match="write blocked"):
+            os.link(target, outside / "hard")
+        with pytest.raises(OSError, match="write blocked"):
+            os.utime(target, None)
+        if hasattr(os, "lchmod"):
+            with pytest.raises(OSError, match="write blocked"):
+                os.lchmod(target, 0o600)
+        snap = snapshot()
+    finally:
+        uninstall_sweep_guard()
+        os.close(fd)
+        if link_name.is_symlink() or link_name.exists():
+            link_name.unlink()
+        if directory.exists():
+            directory.rmdir()
+        if target.exists():
+            target.unlink()
+        if outside.exists():
+            outside.rmdir()
+    assert snap["writes"]
+    assert any("truncate" in item or str(target) in item for item in snap["writes"])
+
+
+def test_swarm_agent_update_uses_the_hive_fixture() -> None:
+    from aureon_public.stage1_rest import swarm_agent_update
+
+    body = _load(swarm_agent_update())
+    assert body["called"] is True
+    assert body["result"] is None
+    assert body["input_source"] == "tests/test_swarm_hive.py::test_agent_keeps_a_normalized_soft_simplex"
+
+
+def test_the_other_nine_stage1_points_are_refused() -> None:
+    from aureon_public.body import body_call, dispatch, lookup, public_entry_refusal
+
+    expected = {
+        ("swarm/agent.py", "SwarmAgent.purity"): "property is not called; the worker calls methods",
+        ("swarm/coherence.py", "ClusterCoherence.warm"): "property is not called; the worker calls methods",
+        ("swarm/memory_bus.py", "CausalEchoBus.possibilities"): "one call cannot park an ensemble and read it",
+        ("swarm/auris_node_receipts.py", "issue_auris_node_receipt"): "trusted resolver is not built from JSON",
+        (
+            "swarm/auris_node_receipts.py",
+            "validate_auris_node_receipt",
+        ): "receipt is assembled by the test harness; the public result cap would drop its fields",
+        (
+            "swarm/auris_node_receipts.py",
+            "validate_hnc_evidence",
+        ): "receipt is assembled by the test harness; the public result cap would drop its fields",
+        (
+            "swarm/auris_node_receipts.py",
+            "validate_provider_moment",
+        ): "receipt is assembled by the test harness; the public result cap would drop its fields",
+        (
+            "swarm/druidic_council.py",
+            "validate_council_receipt",
+        ): "receipt is assembled by the test harness; the public result cap would drop its fields",
+        (
+            "swarm/druidic_council.py",
+            "validate_seat_receipt",
+        ): "receipt is assembled by the test harness; the public result cap would drop its fields",
+    }
+    assert len(expected) == 9
+    for (module, symbol), reason in expected.items():
+        row = lookup(module, symbol)
+        assert row is not None
+        assert public_entry_refusal(row) == reason
+        for raw in (
+            body_call(module, symbol),
+            dispatch(module, symbol, {}, server="public"),
+        ):
+            body = _load(raw)
+            assert body.get("called") is not True, symbol
+            assert body["reason"] == reason
+
+
 def test_stage1_tested_entry_points_are_still_tested() -> None:
     from aureon_public.body import lookup, public_entry_refusal
     from aureon_public.call_sweep import _tested_stage1_tools

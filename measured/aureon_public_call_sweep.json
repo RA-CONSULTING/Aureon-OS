@@ -1,10 +1,10 @@
 {
   "aureon_source": {
-    "commit": "9da98a3c6f1538fc6ef7bd92a3e2aee96f0a7676",
+    "commit": "6d2da2c6a6ff677edbd8bdabd2af44ead4808ac1",
     "kind": "checkout"
   },
   "aureon_tree": "8aef927b7fe6276c187e4c73c79f0de012ad980d",
-  "code_commit": "9da98a3c6f1538fc6ef7bd92a3e2aee96f0a7676",
+  "code_commit": "6d2da2c6a6ff677edbd8bdabd2af44ead4808ac1",
   "code_commit_note": "This is the parent of the commit that contains this record. The record cannot name the commit that adds the file.",
   "entries": [
     {
@@ -3451,41 +3451,43 @@
           "source": null,
           "status": "unavailable",
           "writes": []
-        }
-      ],
-      "bad": [],
-      "called": false,
-      "error": null,
-      "module": "swarm/agent.py",
-      "package": "swarm",
-      "plan_stage": 1,
-      "process": [],
-      "reason": "TypeError: SwarmAgent.__init__() missing 3 required positional arguments: 'agent_id', 'role', and 'actions'",
-      "refusal": null,
-      "refused": false,
-      "sandbox_writes": [],
-      "socket": [],
-      "status": "unavailable",
-      "symbol": "SwarmAgent.update",
-      "tested_stage1_tool": false,
-      "writes": []
-    },
-    {
-      "attempts": [
+        },
         {
-          "arguments": {},
+          "arguments": {
+            "cluster_states": [],
+            "context": [
+              0.4,
+              0.2,
+              -0.1,
+              0.3,
+              0.0,
+              0.1,
+              -0.2,
+              0.05
+            ],
+            "echo": null,
+            "init": {
+              "actions": [
+                "hold",
+                "advance",
+                "retreat"
+              ],
+              "agent_id": "a1",
+              "role": "research"
+            }
+          },
           "bad": [],
-          "called": false,
+          "called": true,
           "error": null,
-          "label": "no_arguments",
-          "note": "No arguments.",
+          "label": "hive_first_update",
+          "note": "The first update call in test_agent_keeps_a_normalized_soft_simplex. Empty cluster and no echo.",
           "process": [],
-          "reason": "TypeError: SwarmAgent.__init__() missing 3 required positional arguments: 'agent_id', 'role', and 'actions'",
+          "reason": null,
           "refusal": null,
           "sandbox_writes": [],
           "socket": [],
-          "source": null,
-          "status": "unavailable",
+          "source": "tests/test_swarm_hive.py",
+          "status": "cited",
           "writes": []
         }
       ],
@@ -3502,8 +3504,8 @@
       "sandbox_writes": [],
       "socket": [],
       "status": "unavailable",
-      "symbol": "SwarmAgent.purity",
-      "tested_stage1_tool": false,
+      "symbol": "SwarmAgent.update",
+      "tested_stage1_tool": true,
       "writes": []
     },
     {
@@ -3576,186 +3578,6 @@
       "status": "unavailable",
       "symbol": "SwarmAgent.to_dict",
       "tested_stage1_tool": true,
-      "writes": []
-    },
-    {
-      "attempts": [
-        {
-          "arguments": {},
-          "bad": [],
-          "called": false,
-          "error": null,
-          "label": "no_arguments",
-          "note": "No arguments.",
-          "process": [],
-          "reason": "TypeError: validate_provider_moment() missing 2 required positional arguments: 'hnc_evidence' and 'auris_evidence'",
-          "refusal": null,
-          "sandbox_writes": [],
-          "socket": [],
-          "source": null,
-          "status": "unavailable",
-          "writes": []
-        }
-      ],
-      "bad": [],
-      "called": false,
-      "error": null,
-      "module": "swarm/auris_node_receipts.py",
-      "package": "swarm",
-      "plan_stage": 1,
-      "process": [],
-      "reason": "TypeError: validate_provider_moment() missing 2 required positional arguments: 'hnc_evidence' and 'auris_evidence'",
-      "refusal": null,
-      "refused": false,
-      "sandbox_writes": [],
-      "socket": [],
-      "status": "unavailable",
-      "symbol": "validate_provider_moment",
-      "tested_stage1_tool": false,
-      "writes": []
-    },
-    {
-      "attempts": [
-        {
-          "arguments": {},
-          "bad": [],
-          "called": false,
-          "error": null,
-          "label": "no_arguments",
-          "note": "No arguments.",
-          "process": [],
-          "reason": "TypeError: validate_hnc_evidence() missing 1 required positional argument: 'hnc_evidence'",
-          "refusal": null,
-          "sandbox_writes": [],
-          "socket": [],
-          "source": null,
-          "status": "unavailable",
-          "writes": []
-        }
-      ],
-      "bad": [],
-      "called": false,
-      "error": null,
-      "module": "swarm/auris_node_receipts.py",
-      "package": "swarm",
-      "plan_stage": 1,
-      "process": [],
-      "reason": "TypeError: validate_hnc_evidence() missing 1 required positional argument: 'hnc_evidence'",
-      "refusal": null,
-      "refused": false,
-      "sandbox_writes": [],
-      "socket": [],
-      "status": "unavailable",
-      "symbol": "validate_hnc_evidence",
-      "tested_stage1_tool": false,
-      "writes": []
-    },
-    {
-      "attempts": [
-        {
-          "arguments": {},
-          "bad": [],
-          "called": false,
-          "error": null,
-          "label": "no_arguments",
-          "note": "No arguments.",
-          "process": [],
-          "reason": "TypeError: issue_auris_node_receipt() missing 2 required keyword-only arguments: 'seat' and 'resolver'",
-          "refusal": null,
-          "sandbox_writes": [],
-          "socket": [],
-          "source": null,
-          "status": "unavailable",
-          "writes": []
-        }
-      ],
-      "bad": [],
-      "called": false,
-      "error": null,
-      "module": "swarm/auris_node_receipts.py",
-      "package": "swarm",
-      "plan_stage": 1,
-      "process": [],
-      "reason": "TypeError: issue_auris_node_receipt() missing 2 required keyword-only arguments: 'seat' and 'resolver'",
-      "refusal": null,
-      "refused": false,
-      "sandbox_writes": [],
-      "socket": [],
-      "status": "unavailable",
-      "symbol": "issue_auris_node_receipt",
-      "tested_stage1_tool": false,
-      "writes": []
-    },
-    {
-      "attempts": [
-        {
-          "arguments": {},
-          "bad": [],
-          "called": false,
-          "error": null,
-          "label": "no_arguments",
-          "note": "No arguments.",
-          "process": [],
-          "reason": "TypeError: validate_auris_node_receipt() missing 1 required positional argument: 'receipt'",
-          "refusal": null,
-          "sandbox_writes": [],
-          "socket": [],
-          "source": null,
-          "status": "unavailable",
-          "writes": []
-        }
-      ],
-      "bad": [],
-      "called": false,
-      "error": null,
-      "module": "swarm/auris_node_receipts.py",
-      "package": "swarm",
-      "plan_stage": 1,
-      "process": [],
-      "reason": "TypeError: validate_auris_node_receipt() missing 1 required positional argument: 'receipt'",
-      "refusal": null,
-      "refused": false,
-      "sandbox_writes": [],
-      "socket": [],
-      "status": "unavailable",
-      "symbol": "validate_auris_node_receipt",
-      "tested_stage1_tool": false,
-      "writes": []
-    },
-    {
-      "attempts": [
-        {
-          "arguments": {},
-          "bad": [],
-          "called": false,
-          "error": null,
-          "label": "no_arguments",
-          "note": "No arguments.",
-          "process": [],
-          "reason": "TypeError: 'bool' object is not callable",
-          "refusal": null,
-          "sandbox_writes": [],
-          "socket": [],
-          "source": null,
-          "status": "unavailable",
-          "writes": []
-        }
-      ],
-      "bad": [],
-      "called": false,
-      "error": null,
-      "module": "swarm/coherence.py",
-      "package": "swarm",
-      "plan_stage": 1,
-      "process": [],
-      "reason": "TypeError: 'bool' object is not callable",
-      "refusal": null,
-      "refused": false,
-      "sandbox_writes": [],
-      "socket": [],
-      "status": "unavailable",
-      "symbol": "ClusterCoherence.warm",
-      "tested_stage1_tool": false,
       "writes": []
     },
     {
@@ -3984,78 +3806,6 @@
           "label": "no_arguments",
           "note": "No arguments.",
           "process": [],
-          "reason": "TypeError: validate_seat_receipt() missing 1 required positional argument: 'receipt'",
-          "refusal": null,
-          "sandbox_writes": [],
-          "socket": [],
-          "source": null,
-          "status": "unavailable",
-          "writes": []
-        }
-      ],
-      "bad": [],
-      "called": false,
-      "error": null,
-      "module": "swarm/druidic_council.py",
-      "package": "swarm",
-      "plan_stage": 1,
-      "process": [],
-      "reason": "TypeError: validate_seat_receipt() missing 1 required positional argument: 'receipt'",
-      "refusal": null,
-      "refused": false,
-      "sandbox_writes": [],
-      "socket": [],
-      "status": "unavailable",
-      "symbol": "validate_seat_receipt",
-      "tested_stage1_tool": false,
-      "writes": []
-    },
-    {
-      "attempts": [
-        {
-          "arguments": {},
-          "bad": [],
-          "called": false,
-          "error": null,
-          "label": "no_arguments",
-          "note": "No arguments.",
-          "process": [],
-          "reason": "TypeError: validate_council_receipt() missing 1 required positional argument: 'receipt'",
-          "refusal": null,
-          "sandbox_writes": [],
-          "socket": [],
-          "source": null,
-          "status": "unavailable",
-          "writes": []
-        }
-      ],
-      "bad": [],
-      "called": false,
-      "error": null,
-      "module": "swarm/druidic_council.py",
-      "package": "swarm",
-      "plan_stage": 1,
-      "process": [],
-      "reason": "TypeError: validate_council_receipt() missing 1 required positional argument: 'receipt'",
-      "refusal": null,
-      "refused": false,
-      "sandbox_writes": [],
-      "socket": [],
-      "status": "unavailable",
-      "symbol": "validate_council_receipt",
-      "tested_stage1_tool": false,
-      "writes": []
-    },
-    {
-      "attempts": [
-        {
-          "arguments": {},
-          "bad": [],
-          "called": false,
-          "error": null,
-          "label": "no_arguments",
-          "note": "No arguments.",
-          "process": [],
           "reason": "TypeError: steer_flow() missing 2 required positional arguments: 'u' and 'grad'",
           "refusal": null,
           "sandbox_writes": [],
@@ -4116,42 +3866,6 @@
       "status": "unavailable",
       "symbol": "CausalEchoBus.echo",
       "tested_stage1_tool": true,
-      "writes": []
-    },
-    {
-      "attempts": [
-        {
-          "arguments": {},
-          "bad": [],
-          "called": false,
-          "error": null,
-          "label": "no_arguments",
-          "note": "No arguments.",
-          "process": [],
-          "reason": "TypeError: CausalEchoBus.possibilities() missing 1 required positional argument: 'step'",
-          "refusal": null,
-          "sandbox_writes": [],
-          "socket": [],
-          "source": null,
-          "status": "unavailable",
-          "writes": []
-        }
-      ],
-      "bad": [],
-      "called": false,
-      "error": null,
-      "module": "swarm/memory_bus.py",
-      "package": "swarm",
-      "plan_stage": 1,
-      "process": [],
-      "reason": "TypeError: CausalEchoBus.possibilities() missing 1 required positional argument: 'step'",
-      "refusal": null,
-      "refused": false,
-      "sandbox_writes": [],
-      "socket": [],
-      "status": "unavailable",
-      "symbol": "CausalEchoBus.possibilities",
-      "tested_stage1_tool": false,
       "writes": []
     },
     {
@@ -4264,7 +3978,7 @@
     }
   ],
   "layout": {
-    "beside": "/tmp/aureon-sweep-parent.2N9Rw1",
+    "beside": "/tmp/aureon-sweep-parent.vhA9L8",
     "created": [
       "NEXUS-LIVE-FEED-",
       "Aureon-Trading--Project-Sero"
@@ -4285,13 +3999,13 @@
   "processes": "blocked",
   "sockets": "blocked",
   "user_dirs": {
-    "HOME": "/tmp/aureon-sweep-parent.2N9Rw1/home",
-    "USERPROFILE": "/tmp/aureon-sweep-parent.2N9Rw1/home",
-    "XDG_CACHE_HOME": "/tmp/aureon-sweep-parent.2N9Rw1/home/.cache",
-    "XDG_CONFIG_HOME": "/tmp/aureon-sweep-parent.2N9Rw1/home/.config",
-    "XDG_DATA_HOME": "/tmp/aureon-sweep-parent.2N9Rw1/home/.local/share",
-    "XDG_RUNTIME_DIR": "/tmp/aureon-sweep-parent.2N9Rw1/runtime",
-    "XDG_STATE_HOME": "/tmp/aureon-sweep-parent.2N9Rw1/home/.local/state"
+    "HOME": "/tmp/aureon-sweep-parent.vhA9L8/home",
+    "USERPROFILE": "/tmp/aureon-sweep-parent.vhA9L8/home",
+    "XDG_CACHE_HOME": "/tmp/aureon-sweep-parent.vhA9L8/home/.cache",
+    "XDG_CONFIG_HOME": "/tmp/aureon-sweep-parent.vhA9L8/home/.config",
+    "XDG_DATA_HOME": "/tmp/aureon-sweep-parent.vhA9L8/home/.local/share",
+    "XDG_RUNTIME_DIR": "/tmp/aureon-sweep-parent.vhA9L8/runtime",
+    "XDG_STATE_HOME": "/tmp/aureon-sweep-parent.vhA9L8/home/.local/state"
   },
   "writes": "outside sandbox blocked"
 }

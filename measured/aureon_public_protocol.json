@@ -14,7 +14,7 @@
       "kind": "pinned"
     },
     "aureon_tree": "8aef927b7fe6276c187e4c73c79f0de012ad980d",
-    "code_commit": "9da98a3c6f1538fc6ef7bd92a3e2aee96f0a7676",
+    "code_commit": "6d2da2c6a6ff677edbd8bdabd2af44ead4808ac1",
     "code_commit_note": "This is the parent of the commit that contains this record. The record cannot name the commit that adds the file.",
     "mcp": "1.30.0",
     "pin": "8aa6a2d971cc529484e2a5e261e28afafab4e4f4",
@@ -2451,6 +2451,33 @@
           {
             "_meta": null,
             "annotations": null,
+            "description": "SwarmAgent.update on the hive test's first context.\n\n    The agent id, role, actions, and CONTEXT are that test. The cluster is\n    empty and the echo is absent, as the loop starts. The function returns None.\n\n    Args:\n        none: The fixture is fixed. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "swarm_agent_updateArguments",
+              "type": "object"
+            },
+            "name": "swarm_agent_update",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "swarm_agent_updateOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
             "description": "SwarmAgent.substrate at t 0. Provenance: cited.\n\n    The agent id, role, and action are fixed example arguments. t is 0.\n    The value is that call, not a reading.\n\n    Args:\n        none: The example is fixed. Label: cited.\n    ",
             "execution": null,
             "icons": null,
@@ -3977,7 +4004,7 @@
         "websiteUrl": null
       }
     },
-    "port": 34715,
+    "port": 55147,
     "prompts_list": [
       {
         "_meta": null,
@@ -6378,6 +6405,33 @@
           {
             "_meta": null,
             "annotations": null,
+            "description": "SwarmAgent.update on the hive test's first context.\n\n    The agent id, role, actions, and CONTEXT are that test. The cluster is\n    empty and the echo is absent, as the loop starts. The function returns None.\n\n    Args:\n        none: The fixture is fixed. Label: cited.\n    ",
+            "execution": null,
+            "icons": null,
+            "inputSchema": {
+              "properties": {},
+              "title": "swarm_agent_updateArguments",
+              "type": "object"
+            },
+            "name": "swarm_agent_update",
+            "outputSchema": {
+              "properties": {
+                "result": {
+                  "title": "Result",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "title": "swarm_agent_updateOutput",
+              "type": "object"
+            },
+            "title": null
+          },
+          {
+            "_meta": null,
+            "annotations": null,
             "description": "SwarmAgent.substrate at t 0. Provenance: cited.\n\n    The agent id, role, and action are fixed example arguments. t is 0.\n    The value is that call, not a reading.\n\n    Args:\n        none: The example is fixed. Label: cited.\n    ",
             "execution": null,
             "icons": null,
@@ -7873,6 +7927,6 @@
         ]
       }
     ],
-    "url": "http://127.0.0.1:34715/mcp"
+    "url": "http://127.0.0.1:55147/mcp"
   }
 }

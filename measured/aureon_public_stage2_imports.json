@@ -4,11 +4,11 @@
     "ollama_config"
   ],
   "aureon_source": {
-    "commit": "d16de642e899dce335b28c148db4918b1f39eec7",
+    "commit": "6d2da2c6a6ff677edbd8bdabd2af44ead4808ac1",
     "kind": "checkout"
   },
   "aureon_tree": "8aef927b7fe6276c187e4c73c79f0de012ad980d",
-  "code_commit": "d16de642e899dce335b28c148db4918b1f39eec7",
+  "code_commit": "6d2da2c6a6ff677edbd8bdabd2af44ead4808ac1",
   "code_commit_note": "This is the parent of the commit that contains this record. The record cannot name the commit that adds the file.",
   "http_clients": [
     "aiohttp",
@@ -22,7 +22,7 @@
     "websockets"
   ],
   "layout": {
-    "beside": "/tmp/aureon-sweep-parent.Is2F8l",
+    "beside": "/tmp/aureon-sweep-parent.vKFvIm",
     "created": [
       "NEXUS-LIVE-FEED-",
       "Aureon-Trading--Project-Sero"

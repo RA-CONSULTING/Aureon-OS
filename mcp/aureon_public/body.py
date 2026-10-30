@@ -113,6 +113,33 @@ _ENTRY_REFUSAL = {
     ("observer/live_data_policy.py", "log_blocked_fallback"): (
         "fallback log is not emitted for an event that did not happen"
     ),
+    ("swarm/agent.py", "SwarmAgent.purity"): (
+        "property is not called; the worker calls methods"
+    ),
+    ("swarm/coherence.py", "ClusterCoherence.warm"): (
+        "property is not called; the worker calls methods"
+    ),
+    ("swarm/memory_bus.py", "CausalEchoBus.possibilities"): (
+        "one call cannot park an ensemble and read it"
+    ),
+    ("swarm/auris_node_receipts.py", "issue_auris_node_receipt"): (
+        "trusted resolver is not built from JSON"
+    ),
+    ("swarm/auris_node_receipts.py", "validate_auris_node_receipt"): (
+        "receipt is assembled by the test harness; the public result cap would drop its fields"
+    ),
+    ("swarm/auris_node_receipts.py", "validate_hnc_evidence"): (
+        "receipt is assembled by the test harness; the public result cap would drop its fields"
+    ),
+    ("swarm/auris_node_receipts.py", "validate_provider_moment"): (
+        "receipt is assembled by the test harness; the public result cap would drop its fields"
+    ),
+    ("swarm/druidic_council.py", "validate_council_receipt"): (
+        "receipt is assembled by the test harness; the public result cap would drop its fields"
+    ),
+    ("swarm/druidic_council.py", "validate_seat_receipt"): (
+        "receipt is assembled by the test harness; the public result cap would drop its fields"
+    ),
 }
 # A method call constructs its class. An unlisted constructor is not run.
 # The risk scan still runs. PillarAlignment, UnifiedHarmonicDirective, and the

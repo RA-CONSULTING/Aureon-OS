@@ -3,6 +3,8 @@
 #
 # Calls every entry point body_call can still run, one worker each. Stage-2
 # entry points are also called with the real arguments in stage2_arguments.py.
+# SwarmAgent.update is also called with the hive fixture from
+# tests/test_swarm_hive.py.
 # Sockets, process starts, and writes outside the temp parent are blocked and
 # logged. An entry point is refused when a call opens a connection, starts a
 # process, writes outside that parent, or loads queen, miner, swarm_motion,
