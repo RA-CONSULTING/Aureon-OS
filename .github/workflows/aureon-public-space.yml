@@ -2,10 +2,10 @@ name: aureon-public space image
 
 # Builds the Space scaffold and runs its closed-stage check.
 # No secrets. The image is not deployed and no Hugging Face repository is created.
-# AUREON_REF for this proof is the pull request base, which is on main and
-# contains the aureon pin. The production ref is the bc-ee01 merge of the ten
-# stage-1 entry-point fix, and that merge is not in this tree yet. The Space
-# package itself is the build-context overlay from the pull request.
+# AUREON_REF will be the merge commit of #225 after that pull request merges.
+# That sha is not known yet. This proof uses the pull request base, which is
+# on main and contains the aureon pin. The Space package itself is the
+# build-context overlay from the pull request.
 
 on:
   pull_request:

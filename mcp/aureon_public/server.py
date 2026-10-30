@@ -62,6 +62,11 @@ def build_server(host: str = "127.0.0.1", port: int = 8077) -> FastMCP:
         host=host,
         port=port,
         streamable_http_path="/mcp",
+        # JSON responses and no session. GET /mcp is not a long-lived event
+        # stream. The HTTP guard answers that GET with 405 so it cannot hold
+        # an in-flight call slot.
+        json_response=True,
+        stateless_http=True,
     )
     for fn in (
         tools.hnc_reality_step,

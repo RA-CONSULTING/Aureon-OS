@@ -20,10 +20,10 @@ RUN apt-get update \
 
 # Full history of main so git rev-parse of the aureon pin still resolves.
 # A shallow clone would omit that commit.
-# AUREON_REF is required. The production value is the merge that carries the
-# ten stage-1 entry-point fix (bc-ee01). That merge is not on main yet.
-# The pull-request workflow passes the pull request base instead, so the
-# clone contains the aureon pin. Do not set cf43882e as a standing default.
+# AUREON_REF is required. It will be set to the merge commit of #225 after
+# that pull request merges. That sha is not known yet. The pull-request
+# workflow passes the pull request base instead, so the clone contains the
+# aureon pin. Do not set cf43882e as a standing default.
 ARG AUREON_REPO=https://github.com/RA-CONSULTING/Aureon-OS.git
 ARG AUREON_REF
 RUN test -n "$AUREON_REF" \

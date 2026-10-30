@@ -352,7 +352,7 @@ def _limits(**overrides: object):
         "rate_limit": 2,
         "rate_window_s": 60.0,
         "timeout_s": 5.0,
-        "trusted_hops": 1,
+        "trusted_proxy_hops": 1,
         "max_clients": 32,
         "max_inflight": 8,
     }
@@ -497,8 +497,8 @@ def test_chunked_post_without_content_length_over_the_cap_is_413() -> None:
     assert called["app"] is False
 
 
-def test_spike_rotating_forwarded_addresses_and_junk_bearers_are_refused() -> None:
-    """Spike: limit 3, five rotating forwarded addresses, five junk bearers."""
+def test_spike_junk_bearers_are_refused() -> None:
+    """Open mode, limit 3, five junk bearers share the socket peer."""
 
     import asyncio
 
@@ -512,23 +512,161 @@ def test_spike_rotating_forwarded_addresses_and_junk_bearers_are_refused() -> No
         await send({"type": "http.response.start", "status": 200, "headers": []})
         await send({"type": "http.response.body", "body": b"ok"})
 
-    async def five(headers_for) -> list[int]:
-        middleware = PublicHttpMiddleware(ok, _limits(rate_limit=3))
+    middleware = PublicHttpMiddleware(ok, _limits(rate_limit=3))
+
+    async def statuses() -> list[int]:
         found = []
         for index in range(5):
-            found.append(await _middleware_status(middleware, headers_for(index)))
+            found.append(await _middleware_status(middleware, {"authorization": f"Bearer junk-{index}"}))
         return found
 
-    forwarded = asyncio.run(
-        five(lambda index: {"x-forwarded-for": f"203.0.113.{index}"})
+    codes = asyncio.run(statuses())
+    assert codes[3] == 429
+    assert codes[4] == 429
+
+
+def test_single_hop_forwarded_address_is_its_own_client() -> None:
+    """One X-Forwarded-For value is the client when one trusted proxy is configured."""
+
+    import asyncio
+
+    from aureon_public.http_guard import PublicHttpMiddleware
+
+    async def ok(scope, receive, send):
+        while True:
+            message = await receive()
+            if message.get("type") == "http.request" and not message.get("more_body", False):
+                break
+        await send({"type": "http.response.start", "status": 200, "headers": []})
+        await send({"type": "http.response.body", "body": b"ok"})
+
+    middleware = PublicHttpMiddleware(ok, _limits(rate_limit=2, trusted_proxy_hops=1))
+
+    async def statuses() -> list[int]:
+        found = []
+        for _repeat in range(3):
+            found.append(await _middleware_status(middleware, {"x-forwarded-for": "203.0.113.10"}))
+        found.append(await _middleware_status(middleware, {"x-forwarded-for": "203.0.113.11"}))
+        return found
+
+    codes = asyncio.run(statuses())
+    assert codes[0] == 200
+    assert codes[1] == 200
+    assert codes[2] == 429
+    assert codes[3] == 200
+
+
+def test_spoofed_first_hop_does_not_get_its_own_bucket() -> None:
+    """A fake first hop in front of one real last hop stays one client."""
+
+    import asyncio
+
+    from aureon_public.http_guard import PublicHttpMiddleware
+
+    async def ok(scope, receive, send):
+        while True:
+            message = await receive()
+            if message.get("type") == "http.request" and not message.get("more_body", False):
+                break
+        await send({"type": "http.response.start", "status": 200, "headers": []})
+        await send({"type": "http.response.body", "body": b"ok"})
+
+    middleware = PublicHttpMiddleware(ok, _limits(rate_limit=2, trusted_proxy_hops=1))
+
+    async def statuses() -> list[int]:
+        found = []
+        for index in range(4):
+            found.append(
+                await _middleware_status(
+                    middleware,
+                    {"x-forwarded-for": f"198.51.100.{index}, 203.0.113.50"},
+                )
+            )
+        return found
+
+    codes = asyncio.run(statuses())
+    assert codes[0] == 200
+    assert codes[1] == 200
+    assert codes[2] == 429
+    assert codes[3] == 429
+
+
+def test_forwarded_diagnostic_records_shape_without_addresses(monkeypatch: pytest.MonkeyPatch) -> None:
+    from aureon_public.http_guard import clear_forwarded_shapes, client_address, forwarded_shapes
+
+    clear_forwarded_shapes()
+    monkeypatch.delenv("AUREON_PUBLIC_FORWARDED_DIAG", raising=False)
+    scope = {"client": ("10.0.0.1", 9)}
+    client_address(scope, {"x-forwarded-for": "203.0.113.10"}, 1)
+    assert forwarded_shapes() == []
+    monkeypatch.setenv("AUREON_PUBLIC_FORWARDED_DIAG", "1")
+    clear_forwarded_shapes()
+    client_address(
+        scope,
+        {"x-forwarded-for": "203.0.113.10, 2001:db8::1"},
+        1,
     )
-    bearers = asyncio.run(
-        five(lambda index: {"authorization": f"Bearer junk-{index}"})
-    )
-    assert forwarded[3] == 429
-    assert forwarded[4] == 429
-    assert bearers[3] == 429
-    assert bearers[4] == 429
+    recorded = forwarded_shapes()
+    assert recorded == [{"hops": 2, "kinds": ["ipv4", "ipv6"]}]
+    text = json.dumps(recorded)
+    assert "203.0.113.10" not in text
+    assert "2001:db8::1" not in text
+    clear_forwarded_shapes()
+
+
+async def _middleware_get(middleware, headers: dict[str, str]) -> int:
+    import asyncio
+
+    raw = [(key.lower().encode("latin1"), value.encode("latin1")) for key, value in headers.items()]
+    scope = {
+        "type": "http",
+        "method": "GET",
+        "path": "/mcp",
+        "headers": raw,
+        "client": ("127.0.0.1", 9),
+    }
+
+    async def receive():
+        await asyncio.Event().wait()
+        return {"type": "http.disconnect"}
+
+    messages = []
+
+    async def send(message):
+        messages.append(message)
+
+    await middleware(scope, receive, send)
+    start = next(message for message in messages if message["type"] == "http.response.start")
+    return int(start["status"])
+
+
+def test_open_gets_do_not_consume_call_slots() -> None:
+    """Buzz: four open GETs from four addresses, then another client's POST."""
+
+    import asyncio
+
+    from aureon_public.http_guard import PublicHttpMiddleware
+
+    async def ok(scope, receive, send):
+        while True:
+            message = await receive()
+            if message.get("type") == "http.request" and not message.get("more_body", False):
+                break
+        await send({"type": "http.response.start", "status": 200, "headers": []})
+        await send({"type": "http.response.body", "body": b"ok"})
+
+    middleware = PublicHttpMiddleware(ok, _limits(max_inflight=4, rate_limit=20))
+
+    async def run() -> None:
+        gets = []
+        for index in range(4):
+            gets.append(await _middleware_get(middleware, {"x-forwarded-for": f"203.0.113.{index}"}))
+        assert gets == [405, 405, 405, 405]
+        assert middleware._inflight == 0
+        posted = await _middleware_status(middleware, {"x-forwarded-for": "198.51.100.8"})
+        assert posted == 200
+
+    asyncio.run(run())
 
 
 def test_spike_chunked_50000_against_2000_is_refused() -> None:
@@ -688,6 +826,6 @@ def test_scaffold_bakes_no_key_and_quotes_the_plan() -> None:
     assert "Other arguments have not been swept." in readme
     assert "alive" not in readme.lower()
     assert "The measured session was taken without Docker." in readme
-    assert "bc-ee01" in readme
+    assert "#225" in readme
     assert "ARG AUREON_REF=cf43882e" not in dockerfile
-    assert "bc-ee01" in dockerfile
+    assert "#225" in dockerfile

@@ -22,7 +22,7 @@ _DEFAULT_RATE_LIMIT = 120
 _DEFAULT_RATE_WINDOW_S = 60.0
 _DEFAULT_MAX_BODY = 1_048_576
 _DEFAULT_TIMEOUT_S = 30.0
-_DEFAULT_TRUSTED_HOPS = 1
+_DEFAULT_TRUSTED_PROXY_HOPS = 1
 _DEFAULT_MAX_CLIENTS = 4096
 # The public worker pool is 4. One live session holds the SSE GET and a POST
 # at the same time, so the cap stays at that same low number.
@@ -38,7 +38,7 @@ class HttpLimits:
     rate_limit: int
     rate_window_s: float
     timeout_s: float
-    trusted_hops: int = _DEFAULT_TRUSTED_HOPS
+    trusted_proxy_hops: int = _DEFAULT_TRUSTED_PROXY_HOPS
     max_clients: int = _DEFAULT_MAX_CLIENTS
     max_inflight: int = _DEFAULT_MAX_INFLIGHT
 
@@ -125,7 +125,10 @@ def load_http_limits() -> HttpLimits:
         rate_limit=_positive_int("AUREON_PUBLIC_RATE_LIMIT", _DEFAULT_RATE_LIMIT),
         rate_window_s=_positive_float("AUREON_PUBLIC_RATE_WINDOW_S", _DEFAULT_RATE_WINDOW_S),
         timeout_s=_positive_float("AUREON_PUBLIC_REQUEST_TIMEOUT_S", _DEFAULT_TIMEOUT_S),
-        trusted_hops=_nonnegative_int("AUREON_PUBLIC_TRUSTED_HOPS", _DEFAULT_TRUSTED_HOPS),
+        trusted_proxy_hops=_nonnegative_int(
+            "AUREON_PUBLIC_TRUSTED_PROXY_HOPS",
+            _DEFAULT_TRUSTED_PROXY_HOPS,
+        ),
         max_clients=_positive_int("AUREON_PUBLIC_RATE_MAX_CLIENTS", _DEFAULT_MAX_CLIENTS),
         max_inflight=_positive_int("AUREON_PUBLIC_MAX_INFLIGHT", _DEFAULT_MAX_INFLIGHT),
     )
@@ -205,24 +208,71 @@ def _forwarded_hops(value: str) -> list[str]:
     return [part.strip() for part in value.split(",") if part.strip()]
 
 
-def client_address(scope: dict, headers: dict[str, str], trusted_hops: int) -> str:
-    """Address appended by the trusted proxy, or the socket peer.
+def client_address(scope: dict, headers: dict[str, str], trusted_proxy_hops: int) -> str:
+    """Client address behind ``trusted_proxy_hops`` trusted proxies.
 
-    The first ``X-Forwarded-For`` value is the one a client can set. A header
-    that is only that first hop is not trusted, and the socket peer is used.
-    ``trusted_hops`` counts appended hops from the right. The chosen hop is
-    used only when it sits after that first value. Hugging Face's appended
-    peer is the last hop when the header has that extra hop and
-    ``trusted_hops`` is 1.
+    ``AUREON_PUBLIC_TRUSTED_PROXY_HOPS`` defaults to 1. When the header is
+    present and has at least that many values, the client is
+    ``hops[-trusted_proxy_hops]``. With the default, that is the last value,
+    including a header that contains only one address. A fake first hop does
+    not become its own bucket. Zero trusted hops ignores the header and uses
+    the socket peer. The real Hugging Face header shape still has to be
+    confirmed on the private Space.
     """
 
     peer = _socket_peer(scope)
-    if trusted_hops <= 0:
+    note_forwarded_shape(headers.get("x-forwarded-for", ""))
+    if trusted_proxy_hops <= 0:
         return peer
     hops = _forwarded_hops(headers.get("x-forwarded-for", ""))
-    if len(hops) <= trusted_hops:
+    if len(hops) < trusted_proxy_hops:
         return peer
-    return hops[-trusted_hops]
+    return hops[-trusted_proxy_hops]
+
+
+_SHAPE_CAP = 32
+_forwarded_shapes: list[dict[str, object]] = []
+
+
+def _hop_kind(token: str) -> str:
+    """Classify one hop. The returned label is not the address."""
+
+    host = token.strip()
+    if host.startswith("[") and "]" in host:
+        host = host[1 : host.index("]")]
+    elif host.count(":") == 1 and host.rsplit(":", 1)[-1].isdigit():
+        host = host.rsplit(":", 1)[0]
+    try:
+        import ipaddress
+
+        parsed = ipaddress.ip_address(host)
+    except ValueError:
+        return "other"
+    return "ipv4" if parsed.version == 4 else "ipv6"
+
+
+def note_forwarded_shape(value: str) -> None:
+    """Record hop count and hop kinds when the diagnostic is on.
+
+    ``AUREON_PUBLIC_FORWARDED_DIAG=1`` opts in. The record does not store the
+    header or the addresses.
+    """
+
+    if os.environ.get("AUREON_PUBLIC_FORWARDED_DIAG") != "1":
+        return
+    hops = _forwarded_hops(value)
+    _forwarded_shapes.append({"hops": len(hops), "kinds": [_hop_kind(hop) for hop in hops]})
+    del _forwarded_shapes[:-_SHAPE_CAP]
+
+
+def forwarded_shapes() -> list[dict[str, object]]:
+    """Copies of the diagnostic shapes. Empty unless the diagnostic is on."""
+
+    return [dict(item) for item in _forwarded_shapes]
+
+
+def clear_forwarded_shapes() -> None:
+    _forwarded_shapes.clear()
 
 
 def _client_id(scope: dict, headers: dict[str, str], limits: HttpLimits) -> str:
@@ -231,7 +281,7 @@ def _client_id(scope: dict, headers: dict[str, str], limits: HttpLimits) -> str:
     Open mode has no configured key, so a presented bearer is never the client id.
     """
 
-    address = client_address(scope, headers, limits.trusted_hops)
+    address = client_address(scope, headers, limits.trusted_proxy_hops)
     if limits.api_key:
         presented = _bearer(headers.get("authorization", ""))
         if presented is not None and _key_matches(presented, limits.api_key):
@@ -255,6 +305,8 @@ async def _reject(send, status: int, error: str, *, retry_after: str | None = No
     ]
     if status == 401:
         header_list.append((b"www-authenticate", b"Bearer"))
+    if status == 405:
+        header_list.append((b"allow", b"POST"))
     if retry_after is not None:
         header_list.append((b"retry-after", retry_after.encode("ascii")))
     await send({"type": "http.response.start", "status": status, "headers": header_list})
@@ -295,6 +347,11 @@ class PublicHttpMiddleware:
                 await _reject(send, 401, "unauthorized")
                 return
         method = scope.get("method", "GET")
+        if method == "GET":
+            # Streamable HTTP's long-lived event stream. Stateless JSON mode
+            # does not use it. Answering here keeps it off the call slots.
+            await _reject(send, 405, "method_not_allowed")
+            return
         if method == "POST":
             declared = _content_length(headers)
             if declared is not None and declared > self.limits.max_body_bytes:
