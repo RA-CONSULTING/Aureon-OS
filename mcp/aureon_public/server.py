@@ -122,6 +122,18 @@ def build_server(host: str = "127.0.0.1", port: int = 8077) -> FastMCP:
     return server
 
 
+def serve_streamable_http(server: FastMCP, host: str, port: int) -> None:
+    """Listen with the bearer check and the rate, size, and timeout limits."""
+
+    import uvicorn
+
+    from aureon_public.http_guard import PublicHttpMiddleware, load_http_limits
+
+    app = PublicHttpMiddleware(server.streamable_http_app(), load_http_limits())
+    config = uvicorn.Config(app, host=host, port=port, log_level="warning")
+    uvicorn.Server(config).run()
+
+
 def main(argv: list[str] | None = None) -> None:
     """stdio, or streamable HTTP when --transport streamable-http is set."""
 
@@ -134,8 +146,14 @@ def main(argv: list[str] | None = None) -> None:
     refuse_sweep_environment()
     apply_space_guard()
     enforce_public_pin()
-    server = build_server(host=args.host, port=args.port)
-    server.run(transport=args.transport)
+    if args.transport == "stdio":
+        build_server().run(transport="stdio")
+        return
+    from aureon_public.http_guard import resolve_http_bind
+
+    host = resolve_http_bind(args.host)
+    server = build_server(host=host, port=args.port)
+    serve_streamable_http(server, host, args.port)
 
 
 if __name__ == "__main__":

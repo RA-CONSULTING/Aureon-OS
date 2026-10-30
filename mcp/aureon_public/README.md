@@ -1,4 +1,27 @@
+---
+title: aureon-public
+emoji: "🔷"
+colorFrom: blue
+colorTo: gray
+sdk: docker
+app_port: 7860
+pinned: false
+license: mit
+---
+
 # aureon-public
+
+This is a partial release covering stages 1 and 2 of 4. Stages 3 and 4 stay closed. That includes miner, queen, exchanges, orders, and keys. `COVERAGE_PLAN.md` records the counts: listed symbols 20083, public entry points 4388, reachable now 78, tested 68, refused 4310. Stage 1 reachable now is 39 and stage 1 tested now is 29. Stage 2 reachable now is 39 and stage 2 tested now is 39. 39 + 39 = 78 reachable. 29 + 39 = 68 tested.
+
+Miner is stage 3: 15 listed, 0 public entry points, reachable 0, tested 0, refused 0. Queen is stage 4: 1348 listed, 566 public entry points, reachable 0, tested 0, refused 566. Exchanges are stage 4: 643 listed, 0 public entry points, reachable 0, tested 0, refused 0. Accounting is stage 3 with reachable 0. Trading is stage 4 with reachable 0.
+
+The measured tests are the call sweep. It calls every entry point that was still reachable, with no arguments, and calls each stage-2 entry point again with the real arguments in `stage2_arguments.py`. Connections, process starts, and writes outside the sandbox are logged: the committed record says sockets blocked, processes blocked, and writes outside the sandbox blocked. A call that opens a connection, starts a process, writes outside the sandbox, or loads queen, miner, swarm_motion, inhouse_ai, ollama_config, or an HTTP client is refused. Other arguments have not been swept.
+
+The Space entry is `python -m aureon_public.space`. It sets `AUREON_PUBLIC_REQUIRE_PIN=1` and `AUREON_OBSERVER_MODE=dry_run`, and it refuses to start when `AUREON_PUBLIC_SWEEP` is set. The image installs `requirements.txt` (`mcp==1.30.0,<2` and aureon pin `8aa6a2d971cc529484e2a5e261e28afafab4e4f4`) and then the mcp package with `--no-deps`, the same runtime install as `measured/aureon_public_stage1_run.sh`. The image does not install test requirements and does not contain `AUREON_PUBLIC_API_KEY`.
+
+`AUREON_PUBLIC_OPEN=1` is set in the image, so the read-only stage-1 and stage-2 surface is served on port 7860 without a key. Set `AUREON_PUBLIC_API_KEY` in the Space secret settings to require `Authorization: Bearer`. A missing or wrong bearer then receives HTTP 401. With neither the key nor `AUREON_PUBLIC_OPEN=1`, the process binds to `127.0.0.1` only. `AUREON_PUBLIC_RATE_LIMIT` (default 120) and `AUREON_PUBLIC_RATE_WINDOW_S` (default 60) limit requests per client. `AUREON_PUBLIC_MAX_BODY_BYTES` (default 1048576) limits the request body. `AUREON_PUBLIC_REQUEST_TIMEOUT_S` (default 30) limits a POST. Exceeding any of those returns HTTP 429.
+
+This scaffold is not deployed and it does not create a Hugging Face repository. Build it with `docker build -f mcp/aureon_public/Dockerfile mcp/aureon_public` when Docker is available.
 
 MCP lets outside models call Aureon's tools. No outside model or API becomes Aureon's reasoning. The cognition runs in Aureon's own code.
 
@@ -6,7 +29,7 @@ This process is a read-only FastMCP server named `aureon-public`. It exposes the
 
 `aureon` is pinned to commit `8aa6a2d971cc529484e2a5e261e28afafab4e4f4`, the same pin as the Hugging Face Spaces. A local checkout run uses its own commit, not the pin. The MCP SDK requirement is `mcp==1.30.0,<2` in `requirements.txt` and `pyproject.toml`. That installs 1.30.0 and excludes every 2.x release. This server imports `FastMCP` from `mcp.server.fastmcp`. The check that MCP 2 renamed that class to `MCPServer` is in `COVERAGE_PLAN.md`, with the sources. Migration to SDK v2 is a later decision.
 
-Any public hosting, including the future aureon-public Space, must set `AUREON_PUBLIC_REQUIRE_PIN=1`. That refuses to start unless `aureon_source` is kind `pinned` at `8aa6a2d971cc529484e2a5e261e28afafab4e4f4`. Local runs leave the variable unset and keep the visible `aureon_source` label. Each Hugging Face Space entry point calls `enforce_public_pin()` itself before `demo.launch`.
+Any public hosting, including this aureon-public Space scaffold, must set `AUREON_PUBLIC_REQUIRE_PIN=1`. That refuses to start unless `aureon_source` is kind `pinned` at `8aa6a2d971cc529484e2a5e261e28afafab4e4f4`. Local runs of `python -m aureon_public` leave the variable unset and keep the visible `aureon_source` label. `python -m aureon_public.space` calls `enforce_public_pin()` before it binds.
 
 The operator process is separate: `python -m aureon_operator`. It stays off unless `AUREON_OPERATOR_MCP=1`, speaks stdio only, and refuses live orders. It does not import `aureon.trading` or the other blocked packages.
 
