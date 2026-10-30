@@ -339,7 +339,7 @@
   "entry_points": {
     "alignment": {
       "public_entry_points": 24,
-      "reachable": 9
+      "reachable": 12
     },
     "cognition": {
       "public_entry_points": 14,

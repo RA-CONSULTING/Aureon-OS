@@ -92,7 +92,14 @@ _OPERATOR_ALLOWLIST = {
     ("portfolio/aureon_billion_goal_tracker.py", "get_days_remaining"),
 }
 # A method call constructs its class. An unlisted constructor is not run.
-_CONSTRUCTOR_ALLOWLIST: set[tuple[str, str]] = set()
+# The risk scan still runs. These three are dataclasses with no constructor
+# body in the file. PillarAlignment and UnifiedHarmonicDirective stay off
+# this list: their constructors wire the thought bus and other packages.
+_CONSTRUCTOR_ALLOWLIST: set[tuple[str, str]] = {
+    ("alignment/harmonic_resonance.py", "HarmonicAnalysis"),
+    ("alignment/pillar_alignment.py", "AlignmentCycleResult"),
+    ("alignment/unified_directive.py", "MasterDirective"),
+}
 _NAME_CONTAINS = ("write", "save", "export", "dump", "start", "run")
 _WORKER_SLOTS = threading.BoundedSemaphore(4)
 WORKER_WAIT_SECONDS = 10.0

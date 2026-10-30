@@ -1,0 +1,90 @@
+{
+  "calls": {
+    "alignment_consonance_read": {
+      "arguments": {
+        "ratio": 1.0
+      },
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. alignment/harmonic_resonance.py consonance_score ran.\", \"provenance\": \"cited\", \"result\": 1.0, \"status\": \"cited\"}"
+    },
+    "alignment_cycle_to_dict": {
+      "arguments": {
+        "cycle_id": "fixed",
+        "timestamp": 0.0
+      },
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. alignment/pillar_alignment.py AlignmentCycleResult.to_dict ran.\", \"provenance\": \"cited\", \"result\": {\"agreeing_pillars\": 0, \"alignment_score\": 0.0, \"consensus_confidence\": 0.0, \"consensus_signal\": \"NEUTRAL\", \"cycle_id\": \"fixed\", \"duration_s\": 0.0, \"errors\": [], \"harmonic_lock\": 0.0, \"lighthouse_cleared\": false, \"mean_coherence\": 0.0, \"mean_frequency_hz\": 0.0, \"per_pillar_consonance\": {}, \"phase_coherence\": 0.0, \"pillar_results\": [], \"responding_pillars\": 0, \"signal_consensus\": 0.0, \"timestamp\": 0.0, \"total_pillars\": 0}, \"status\": \"cited\"}"
+    },
+    "alignment_derive_phase": {
+      "arguments": {
+        "frequency_hz": 528.0,
+        "signal": "BUY",
+        "t": 0.0
+      },
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. alignment/harmonic_resonance.py derive_phase ran.\", \"provenance\": \"cited\", \"result\": 0.0, \"status\": \"cited\"}"
+    },
+    "alignment_directive_to_dict": {
+      "arguments": {
+        "directive_id": "fixed",
+        "timestamp": 0.0
+      },
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. alignment/unified_directive.py MasterDirective.to_dict ran.\", \"provenance\": \"cited\", \"result\": {\"confidence\": 0.0, \"contributing_layers\": [], \"directive_id\": \"fixed\", \"dominant_chakra\": \"love\", \"dominant_frequency_hz\": 528.0, \"gamma\": 0.0, \"lighthouse_cleared\": false, \"love_stream_coherence\": 0.0, \"miner_confidence\": 0.0, \"pillar_alignment_score\": 0.0, \"queen_coherence\": 0.0, \"reasoning\": \"\", \"signal\": \"NEUTRAL\", \"timestamp\": 0.0}, \"status\": \"cited\"}"
+    },
+    "alignment_frequency_harmony": {
+      "arguments": {},
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. alignment/harmonic_resonance.py analyse_frequency_harmony ran.\", \"provenance\": \"cited\", \"result\": [0.999659969005458, {\"Auris\": 1.4034090909090908, \"Infinite\": 1.0, \"Nexus\": 0.8181818181818182, \"Omega\": 0.8181818181818182, \"Piano\": 0.75, \"QGITA\": 1.0}, {\"Auris\": 0.9979598140327476, \"Infinite\": 1.0, \"Nexus\": 1.0, \"Omega\": 1.0, \"Piano\": 1.0, \"QGITA\": 1.0}], \"status\": \"cited\"}"
+    },
+    "alignment_full_analysis": {
+      "arguments": {
+        "t": 0.0
+      },
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. alignment/harmonic_resonance.py full_harmonic_analysis ran.\", \"provenance\": \"cited\", \"result\": {\"agreeing_pillars\": 6, \"alignment_score\": 0.9898, \"dominant_signal\": \"BUY\", \"frequency_std_hz\": 0.0, \"harmonic_lock\": 1.0, \"lighthouse_cleared\": true, \"mean_coherence\": 0.96, \"mean_frequency_hz\": 528.0, \"per_pillar_consonance\": {\"P0\": 1.0, \"P1\": 1.0, \"P2\": 1.0, \"P3\": 1.0, \"P4\": 1.0, \"P5\": 1.0}, \"per_pillar_ratios\": {\"P0\": 1.0, \"P1\": 1.0, \"P2\": 1.0, \"P3\": 1.0, \"P4\": 1.0, \"P5\": 1.0}, \"phase_coherence\": 1.0, \"signal_consensus\": 1.0, \"total_pillars\": 6}, \"status\": \"cited\"}"
+    },
+    "alignment_geometric_mean": {
+      "arguments": {},
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. alignment/harmonic_resonance.py geometric_mean ran.\", \"provenance\": \"cited\", \"result\": 1.0, \"status\": \"cited\"}"
+    },
+    "alignment_harmonic_to_dict": {
+      "arguments": {},
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. alignment/harmonic_resonance.py HarmonicAnalysis.to_dict ran.\", \"provenance\": \"cited\", \"result\": {\"agreeing_pillars\": 0, \"alignment_score\": 0.0, \"dominant_signal\": \"NEUTRAL\", \"frequency_std_hz\": 0.0, \"harmonic_lock\": 0.0, \"lighthouse_cleared\": false, \"mean_coherence\": 0.0, \"mean_frequency_hz\": 0.0, \"per_pillar_consonance\": {}, \"per_pillar_ratios\": {}, \"phase_coherence\": 0.0, \"signal_consensus\": 0.0, \"total_pillars\": 0}, \"status\": \"cited\"}"
+    },
+    "alignment_phase_coherence": {
+      "arguments": {},
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. alignment/harmonic_resonance.py compute_phase_coherence ran.\", \"provenance\": \"cited\", \"result\": 1.0, \"status\": \"cited\"}"
+    },
+    "alignment_pillar_factory": {
+      "arguments": {},
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. alignment/pillar_alignment.py get_pillar_alignment ran.\", \"provenance\": \"cited\", \"result\": {\"fields\": {\"config\": {\"fields\": {\"auto_load_pillars\": false, \"cycle_timeout_s\": 30.0, \"fundamental_hz\": 528.0, \"lighthouse_threshold\": 0.945, \"max_concurrent_pillars\": 6}, \"type\": \"AlignmentConfig\"}}, \"type\": \"PillarAlignment\"}, \"status\": \"cited\"}"
+    },
+    "alignment_signal_consensus": {
+      "arguments": {},
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. alignment/harmonic_resonance.py compute_signal_consensus ran.\", \"provenance\": \"cited\", \"result\": [0.3333333333333333, \"BUY\", 2, 6], \"status\": \"cited\"}"
+    },
+    "alignment_unified_factory": {
+      "arguments": {},
+      "isError": false,
+      "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"label\": \"cited. alignment/unified_directive.py get_unified_directive ran.\", \"provenance\": \"cited\", \"result\": {\"fields\": {\"pillars\": {\"fields\": {\"config\": {\"fields\": \"dict\", \"type\": \"AlignmentConfig\"}}, \"type\": \"PillarAlignment\"}}, \"type\": \"UnifiedHarmonicDirective\"}, \"status\": \"cited\"}"
+    }
+  },
+  "environment": {
+    "aureon_direct_url": {
+      "url": "https://github.com/RA-CONSULTING/Aureon-OS.git",
+      "vcs_info": {
+        "commit_id": "8aa6a2d971cc529484e2a5e261e28afafab4e4f4",
+        "requested_revision": "8aa6a2d971cc529484e2a5e261e28afafab4e4f4",
+        "vcs": "git"
+      }
+    },
+    "aureon_file": "/tmp/aureon-public-venv/lib/python3.12/site-packages/aureon/__init__.py",
+    "python": "/tmp/aureon-public-venv/bin/python"
+  }
+}
