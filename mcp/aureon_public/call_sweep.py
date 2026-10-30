@@ -283,10 +283,22 @@ def build_record(timeout: float) -> dict[str, Any]:
                 "writes": first["writes"],
             }
         )
+    from aureon_public.sweep_layout import beside
+
+    home = beside() / "home"
     return {
         "aureon_source": source,
         "entries": entries,
         "layout": layout_record(),
+        "user_dirs": {
+            "HOME": str(home),
+            "USERPROFILE": str(home),
+            "XDG_CACHE_HOME": str(home / ".cache"),
+            "XDG_CONFIG_HOME": str(home / ".config"),
+            "XDG_DATA_HOME": str(home / ".local" / "share"),
+            "XDG_RUNTIME_DIR": str(beside() / "runtime"),
+            "XDG_STATE_HOME": str(home / ".local" / "state"),
+        },
         "processes": "blocked",
         "sockets": "blocked",
         "writes": "outside sandbox blocked",
