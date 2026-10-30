@@ -299,6 +299,12 @@ def _socket_blocked_asyncio_run(request, monkeypatch):
 @pytest.hookimpl(hookwrapper=True, trylast=True)
 def pytest_runtest_teardown(item, nextitem):
     yield
+    # A public tool call installs the Space trading-import blocker. Drop it
+    # after the test so later modules can import aureon.trading.
+    sys.meta_path[:] = [finder for finder in sys.meta_path if type(finder).__name__ != "_BlockTrading"]
+    guard_loader = sys.modules.get("aureon_public.guard_loader")
+    if guard_loader is not None:
+        guard_loader._DONE = False
     loop = item.stash.get(_ASYNC_LOOP_KEY, None)
     if loop is None or loop.is_closed():
         return
