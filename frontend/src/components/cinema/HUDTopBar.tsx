@@ -8,6 +8,7 @@ import { useState, useEffect, useRef } from 'react';
 interface HUDTopBarProps {
   totalEquity: number | null;
   totalPnl: number | null;
+  totalPnlNote?: string | null;
   cyclePnlPercent: number | null;
   winRate: number | null;
   coherence: number | null;
@@ -71,6 +72,7 @@ function StatusDot({ connected, label }: { connected: boolean; label: string }) 
 export function HUDTopBar({
   totalEquity = null,
   totalPnl = null,
+  totalPnlNote = null,
   cyclePnlPercent = null,
   winRate = null,
   coherence = null,
@@ -101,7 +103,7 @@ export function HUDTopBar({
             <div className="text-[10px] text-white/30 uppercase tracking-widest mb-0.5">Session P&L</div>
             <div className="text-lg font-light tracking-wide">
               {totalPnl == null ? (
-                <span className="text-white/50">unavailable</span>
+                <span className="text-white/50">{totalPnlNote || 'unavailable'}</span>
               ) : (
                 <>
                   <AnimatedNumber value={totalPnl} prefix="$" colorBySign />

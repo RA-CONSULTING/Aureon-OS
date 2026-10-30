@@ -43,6 +43,7 @@ export function CinematicHUD({ state, hiveMood, activeScanner, onNarratorEvent }
       <HUDTopBar
         totalEquity={state.totalEquity}
         totalPnl={state.totalPnl}
+        totalPnlNote={state.totalPnlNote}
         cyclePnlPercent={state.cyclePnlPercent}
         winRate={winRate}
         coherence={coherenceForDisplay}

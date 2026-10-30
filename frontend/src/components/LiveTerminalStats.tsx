@@ -2,17 +2,17 @@ import { useEffect, useRef, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { useGlobalState } from '@/hooks/useGlobalState';
 import { cn } from '@/lib/utils';
+import { finiteOrNull as finiteReading } from '@/lib/reading';
 
 const safeNumber = (value: unknown, fallback = 0): number => {
-  const num = Number(value);
+  const num = typeof value === 'number' ? value : Number.NaN;
   return Number.isFinite(num) ? num : fallback;
 };
 
 const finiteOrNull = (value: unknown, ...fallbacks: unknown[]): number | null => {
   for (const candidate of [value, ...fallbacks]) {
-    if (candidate === null || candidate === undefined || candidate === '') continue;
-    const num = Number(candidate);
-    if (Number.isFinite(num)) return num;
+    const num = finiteReading(candidate);
+    if (num != null) return num;
   }
   return null;
 };
@@ -550,12 +550,27 @@ export function LiveTerminalStats() {
         <div className="grid gap-1.5 md:grid-cols-3">
           <ExchangeMetric
             label="Portfolio"
-            value={state.equityNote ? state.equityNote : money(totalEquity, '€')}
+            value={state.equityNote ? state.equityNote : money(totalEquity, '')}
           />
-          <ExchangeMetric label="Available" value={money(available, '€')} />
+          {summary && (
+            <>
+              <ExchangeMetric
+                label="Kraken available"
+                value={summary.krakenAvailable == null ? 'Kraken unavailable' : summary.krakenAvailable.toFixed(2)}
+              />
+              <ExchangeMetric
+                label="Capital available"
+                value={summary.capitalAvailableGbp == null ? 'Capital unavailable' : `£${summary.capitalAvailableGbp.toFixed(2)}`}
+              />
+            </>
+          )}
+          <ExchangeMetric
+            label="Available"
+            value={available == null ? (state.availableBalanceNote || 'unavailable') : available.toFixed(2)}
+          />
           <ExchangeMetric
             label="Session"
-            value={formatSigned(totalPnl, 2, '€')}
+            value={totalPnl == null ? (state.totalPnlNote || 'unavailable') : formatSigned(totalPnl, 2, '')}
             className={typeof totalPnl === 'number' && totalPnl < 0 ? 'text-destructive' : 'text-success'}
           />
         </div>

@@ -105,6 +105,8 @@ export function useTradingState() {
     totalTrades: state.totalTrades,
     winningTrades: state.winningTrades,
     totalPnl: state.totalPnl,
+    totalPnlNote: state.totalPnlNote,
+    availableBalanceNote: state.availableBalanceNote,
     gasTankBalance: state.gasTankBalance,
     recentTrades: state.recentTrades,
     lastSignal: state.lastSignal,

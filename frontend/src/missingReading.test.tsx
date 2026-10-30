@@ -11,6 +11,7 @@ import {
   sumReadings,
 } from './lib/reading.ts';
 import { HUDMetricsPanel } from './components/cinema/HUDMetricsPanel.tsx';
+import { HUDTopBar } from './components/cinema/HUDTopBar.tsx';
 import { MetricRingLegend } from './components/cinema/MetricRingLegend.tsx';
 import { DuckCommandoIntel } from './components/warroom/DuckCommandoIntel.tsx';
 import { ExchangeBalances } from './components/warroom/ExchangeBalances.tsx';
@@ -21,9 +22,16 @@ test('finite readings keep zero and withhold missing values', () => {
   assert.equal(finiteOrNull(null), null);
   assert.equal(finiteOrNull(undefined), null);
   assert.equal(finiteOrNull(''), null);
+  assert.equal(finiteOrNull('   '), null);
+  assert.equal(finiteOrNull('\n\t'), null);
   assert.equal(finiteOrNull('nope'), null);
+  assert.equal(finiteOrNull(false), null);
+  assert.equal(finiteOrNull(true), null);
+  assert.equal(finiteOrNull([]), null);
+  assert.equal(finiteOrNull({}), null);
   assert.equal(finiteOrNull(0), 0);
   assert.equal(finiteOrNull('0'), 0);
+  assert.equal(finiteOrNull(' 1.5 '), 1.5);
   assert.equal(readingText(null), 'unavailable');
   assert.equal(readingText(0, (n) => n.toFixed(2)), '0.00');
   assert.equal(sumReadings([]), 0);
@@ -32,10 +40,40 @@ test('finite readings keep zero and withhold missing values', () => {
 });
 
 test('exchange books do not turn a missing total into zero', () => {
-  assert.equal(combineBookTotals(null, null), null);
-  assert.equal(combineBookTotals(0, null), 0);
-  assert.equal(combineBookTotals(null, 0), 0);
-  assert.equal(combineBookTotals(1.5, 2), 3.5);
+  const neither = combineBookTotals([
+    { name: 'Kraken', currency: 'USD', amount: null },
+    { name: 'Capital', currency: 'USD', amount: null },
+  ]);
+  assert.equal(neither.total, null);
+  assert.match(neither.note, /Kraken and Capital unavailable/);
+
+  const krakenOnly = combineBookTotals([
+    { name: 'Kraken', currency: 'USD', amount: 0 },
+    { name: 'Capital', currency: 'USD', amount: null },
+  ]);
+  assert.equal(krakenOnly.total, null);
+  assert.match(krakenOnly.note, /Capital unavailable/);
+  assert.doesNotMatch(krakenOnly.note, /0/);
+
+  const capitalOnly = combineBookTotals([
+    { name: 'Kraken', currency: null, amount: null },
+    { name: 'Capital', currency: 'GBP', amount: 0 },
+  ]);
+  assert.equal(capitalOnly.total, null);
+  assert.match(capitalOnly.note, /Kraken unavailable/);
+
+  const sameCurrency = combineBookTotals([
+    { name: 'Kraken', currency: 'USD', amount: 1.5 },
+    { name: 'Capital', currency: 'USD', amount: 2 },
+  ]);
+  assert.equal(sameCurrency.total, 3.5);
+  assert.equal(sameCurrency.currency, 'USD');
+
+  const zeroKept = combineBookTotals([
+    { name: 'Kraken', currency: 'USD', amount: 0 },
+    { name: 'Capital', currency: 'USD', amount: 0 },
+  ]);
+  assert.equal(zeroKept.total, 0);
   assert.equal(selectEquity('', 0, 9), 0);
   assert.equal(selectEquity('', null, null), null);
   assert.equal(selectEquity('kraken unread', 0, 9), null);
@@ -54,6 +92,43 @@ test('exchange books do not turn a missing total into zero', () => {
     generatedValues: false,
     totalEquityUsd: 0,
   }), 0);
+});
+
+test('mixed currencies are not summed', () => {
+  const mixed = combineBookTotals([
+    { name: 'Kraken', currency: null, amount: 10 },
+    { name: 'Capital', currency: 'GBP', amount: 4 },
+  ]);
+  assert.equal(mixed.total, null);
+  assert.equal(mixed.currency, null);
+  assert.deepEqual(mixed.missing, []);
+  assert.equal(mixed.note, 'unavailable');
+
+  const labelledMismatch = combineBookTotals([
+    { name: 'Kraken', currency: 'USD', amount: 10 },
+    { name: 'Capital', currency: 'GBP', amount: 4 },
+  ]);
+  assert.equal(labelledMismatch.total, null);
+});
+
+test('HUD names the missing book instead of showing the other book as the total', () => {
+  const markup = renderToStaticMarkup(
+    <HUDTopBar
+      totalEquity={null}
+      totalPnl={null}
+      totalPnlNote="Capital unavailable"
+      cyclePnlPercent={null}
+      winRate={null}
+      coherence={null}
+      totalTrades={null}
+      isActive={false}
+      krakenConnected={false}
+      capitalConnected={false}
+      binanceConnected={false}
+    />,
+  );
+  assert.match(markup, /Capital unavailable/);
+  assert.doesNotMatch(markup, /\$0\.00/);
 });
 
 test('HUDMetricsPanel renders a null coherence as unavailable and keeps zero', () => {

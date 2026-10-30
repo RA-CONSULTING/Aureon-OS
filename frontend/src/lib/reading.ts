@@ -1,8 +1,13 @@
 /** A live reading. Missing stays null. A real zero stays zero. */
 
+const NUMERIC_TEXT = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?$/;
+
 export function finiteOrNull(value: unknown): number | null {
-  if (value === null || value === undefined || value === '') return null;
-  const num = typeof value === 'number' ? value : Number(value);
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if (!trimmed || !NUMERIC_TEXT.test(trimmed)) return null;
+  const num = Number(trimmed);
   return Number.isFinite(num) ? num : null;
 }
 
@@ -26,14 +31,46 @@ export function sumReadings(values: readonly unknown[]): number | null {
   return sum;
 }
 
+export type MoneyBook = {
+  name: string;
+  /** Null when the feed did not name a currency. Do not guess one. */
+  currency: string | null;
+  amount: number | null;
+};
+
+export type BookTotal = {
+  total: number | null;
+  currency: string | null;
+  missing: string[];
+  note: string;
+};
+
 /**
- * Exchange books that were both read. A missing book does not become zero,
- * and a reported zero is kept. When only one book was read, that reading stands.
+ * A combined total exists only when every book was read and they share one
+ * labelled currency. No conversion is applied. A missing book is named.
+ * A reported zero is kept inside a book and inside a same-currency total.
  */
-export function combineBookTotals(...values: Array<number | null>): number | null {
-  const present = values.filter((value): value is number => value != null && Number.isFinite(value));
-  if (present.length === 0) return null;
-  return present.reduce((sum, value) => sum + value, 0);
+export function combineBookTotals(books: MoneyBook[]): BookTotal {
+  const missing = books.filter((book) => book.amount == null).map((book) => book.name);
+  if (missing.length > 0) {
+    return {
+      total: null,
+      currency: null,
+      missing,
+      note: `${missing.join(' and ')} unavailable`,
+    };
+  }
+  const currencies = books.map((book) => (book.currency == null ? '' : book.currency.trim()));
+  const sameCurrency = currencies.every((currency) => currency.length > 0) && new Set(currencies).size === 1;
+  if (!sameCurrency) {
+    return { total: null, currency: null, missing: [], note: 'unavailable' };
+  }
+  return {
+    total: books.reduce((sum, book) => sum + (book.amount as number), 0),
+    currency: currencies[0],
+    missing: [],
+    note: '',
+  };
 }
 
 /** Prefer the first book that actually reported, including a genuine zero. */

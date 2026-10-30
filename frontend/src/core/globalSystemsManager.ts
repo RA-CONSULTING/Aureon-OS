@@ -48,9 +48,11 @@ export interface GlobalState {
   totalEquity: number | null;
   equityNote: string | null;
   availableBalance: number | null;
+  availableBalanceNote: string | null;
   totalTrades: number | null;
   winningTrades: number | null;
   totalPnl: number | null;
+  totalPnlNote: string | null;
   gasTankBalance: number;
   recentTrades: Array<{
     time: string;
@@ -207,6 +209,8 @@ export interface GlobalState {
     capitalEquityGbp: number | null;
     krakenSessionPnl: number | null;
     capitalSessionPnlGbp: number | null;
+    krakenAvailable: number | null;
+    capitalAvailableGbp: number | null;
     openPositions: number;
     capitalOpenPositions: number;
     krakenOpenPositions: number;
@@ -306,9 +310,11 @@ const initialState: GlobalState = {
   totalEquity: null,
   equityNote: null,
   availableBalance: null,
+  availableBalanceNote: null,
   totalTrades: null,
   winningTrades: null,
   totalPnl: null,
+  totalPnlNote: null,
   gasTankBalance: null,
   recentTrades: [],
   

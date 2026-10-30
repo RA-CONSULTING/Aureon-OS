@@ -109,7 +109,7 @@ export default function LiveDataDashboard() {
           value={
             typeof tradingState.totalPnl === 'number' && Number.isFinite(tradingState.totalPnl)
               ? `${tradingState.totalPnl >= 0 ? '+' : ''}$${tradingState.totalPnl.toFixed(2)}`
-              : 'unavailable'
+              : (tradingState.totalPnlNote || 'unavailable')
           }
           icon={
             typeof tradingState.totalPnl === 'number' && tradingState.totalPnl >= 0
