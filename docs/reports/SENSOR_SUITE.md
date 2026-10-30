@@ -202,11 +202,4 @@ AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 pytest tests/bio/ -q
 python tests/benchmarks/benchmark_aureon_scope.py     # Tier-A: 45 architectural invariants
 ```
 
-Or prove the **whole system** in one command — this boots the operator app, exercises the full live
-capability surface (reasoning, operator, MCP boundary, connection probes, the SaaS telemetry surface,
-frontend↔backend parity) and rolls up every self-test **including** the 45 Tier-A invariants above:
-
-```bash
-AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 \
-  python -m aureon.saas.capability_demo --report docs/reports/CAPABILITY_DEMO.md
-```
+The capability demonstration is on HOLD. It does not boot the operator app and it is not a measured result for this suite. The note is [`CAPABILITY_DEMO.md`](CAPABILITY_DEMO.md).

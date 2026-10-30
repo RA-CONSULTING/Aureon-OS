@@ -1,5 +1,7 @@
 # Installer
 
+> **New users: stay on the five-minute quickstart in the root README. Do not add your own exchange keys.** This installer calls the master launcher, which defaults to full autonomy. If exchange keys are in `.env`, that boot can go live and trade.
+
 `install.sh` is the Linux and macOS installer. `Install-AUREON.ps1` is the Windows installer. `install-windows.bat` and `Install-AUREON-Windows.bat` call that PowerShell script. Re-running any of them is safe.
 
 From a fresh clone:

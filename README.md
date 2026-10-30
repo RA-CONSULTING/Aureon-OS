@@ -19,6 +19,8 @@ Trading research · autonomous operator · planetary/HNC research · a coding or
 
 Older notes under `aureon-trading/docs/` (for example `AUREON_MIND_STATUS.md`) are earlier research writing. This README and `mcp/aureon_public` are the current, checked parts.
 
+> **New users: stay on the five-minute quickstart. Do not add your own exchange keys.** The master launcher and the installer default to full autonomy. If exchange keys are in `.env`, that boot can go live and trade.
+
 ---
 
 ## Five-minute quickstart
@@ -69,6 +71,10 @@ Auris is not joined to Λ(t): **HOLD**. no function in the repo passes Λ(t) int
 ```
 
 The longer operator preflight, containers, and the full offline suite are further down.
+
+## Public MCP (stages 1 and 2 of 4)
+
+[`mcp/aureon_public/README.md`](mcp/aureon_public/README.md) is the public MCP surface. It is read-only. Stages 1 and 2 of 4 are open. Stages 3 and 4 stay closed.
 
 ---
 
@@ -192,6 +198,8 @@ that the whole system is protected or production-ready.
 
 ### Canonical organism launcher
 
+> **Stay on the five-minute quickstart. Do not add your own exchange keys.** This launcher defaults to full autonomy. If exchange keys are in `.env`, the boot can go live and trade.
+
 The terminal-HOLD bootstraps stay holds. The organism launcher is a separate entry. Its default is full autonomy, and it does not place an order by itself:
 
 ```bash
@@ -218,7 +226,7 @@ scripts\launch\aureon-master.ps1
 
 `scripts\launch\aureon-master.bat` is the same entry. That one command writes `.env` from `.env.example` when `.env` is absent, installs Python requirements into `.venv`, Node packages for `frontend/`, and the self-host images when Docker answers, then starts the organism. An existing `.env` is left as it is. Paths follow the checkout.
 
-Put your own exchange keys in `.env` after that file exists (Kraken, Binance, Alpaca, or Capital.com: the whole group for that venue). The next boot is live and the health report says `trading_mode=live (exchange keys present)`. With no complete group the same boot stays in paper/public-data mode and the report says `trading_mode=paper/public-data (no exchange keys)`. Do not commit `.env`. The launcher does not place an order by itself.
+Do not add exchange keys to `.env`. A complete key group (Kraken, Binance, Alpaca, or Capital.com) makes the next boot live, and the health report says `trading_mode=live (exchange keys present)`. With no complete group the same boot stays in paper/public-data mode and the report says `trading_mode=paper/public-data (no exchange keys)`. Do not commit `.env`. The launcher does not place an order by itself. New users should stay on the five-minute quickstart.
 
 The boot is unrestricted by default. `AUREON_AUTONOMY_MODE` unset is `full`. Self-coding may edit any path except credential material, approves its own edits, and commits a patch after that patch's tests pass. Nothing is pushed. There is no kill switch and no kill file: `AUREON_SELF_REPAIR_KILL` and `state/SELF_REPAIR_KILL` do not stop a write or an order. Changes and order attempts are appended to `state/autonomy_audit.jsonl`. The unity exchange brain, the unified market trader, the Capital.com CFD trader, and the micro-profit labyrinth each record an attempt. Secret values are redacted. The same records are published on the circulation thought bus. The metacognition and self-repair loops consume them. After repeated failed self-changes, metacognition raises a concern and lowers its confidence, and self-repair deprioritises a target that keeps failing. A self-patch whose tests fail stays applied. It is not reversed. Credentials are still never written into the repo or into a log.
 
@@ -239,7 +247,7 @@ bash production/install.sh
 
 Windows: `production\Install-AUREON.ps1`, or `production\install-windows.bat`. Running it again is safe. It installs Python, venv, Node, npm, git, and curl when apt, dnf, Homebrew, or winget can, writes `.env` from `.env.example` only when `.env` is absent, installs and builds the frontend, then calls the master launcher above. Docker images are used when the daemon answers. With no daemon the launcher uses its native fallbacks. When the UI answers, the installer prints `Aureon UI: http://127.0.0.1:5173/`.
 
-Installing from git (`pip install git+...`) brings the whole repo, trading modules included, and only the Hugging Face Spaces switch those modules off.
+Installing from git (`pip install git+...`) brings the whole repo, trading modules included. A Hugging Face Space is planned, and nothing is hosted yet, so no Space is switching those modules off.
 
 `PyAudio` in `requirements.txt` needs the system audio headers (`portaudio`) before pip can build it. The Linux installer uses `requirements-linux.txt`, which leaves that package out and includes pytest, so `tests/test_preflight_snags.py` can run in the installer environment. Build the test virtualenv with `python -m venv --copies .venv`. A symlinked interpreter fails 32 evidence tests: `sys.executable` must be a real file inside the venv, which `--copies` provides and a symlink into another prefix does not. The installer creates `.venv` with `--copies`. Pytest prints a header note when the interpreter it is running is itself a symlink.
 
@@ -370,7 +378,8 @@ ruff check aureon/operator/ aureon/saas/ && mypy aureon/operator/ aureon/saas/
 AUREON_LLM_OFFLINE=1 pytest tests/test_operator_*.py tests/test_saas_*.py tests/test_connectome.py -q
 
 # evaluate the capability-demo protection preflight; it currently returns HOLD
-# without importing or booting the capability surface
+# without importing or booting the capability surface. That is not a measured
+# capability result.
 AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 \
   python -I -S -B scripts/bootstrap/protected_bootstrap_v05.py --target-id capability-demo -- --report docs/reports/CAPABILITY_DEMO.md
 ```

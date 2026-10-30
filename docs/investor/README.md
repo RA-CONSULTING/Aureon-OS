@@ -36,26 +36,21 @@ The repository is broad, but the current investment thesis is narrow:
 - Research and grant material needs to be categorized so reviewers can separate
   validated evidence from exploratory work.
 
-## Prove It In One Command
+## Capability preflight (on HOLD)
 
-The paths below are a reading sequence. If you would rather verify the running
-system directly, one command boots the operator application and exercises the
-full capability surface end-to-end — reasoning, the operator answer path, the
-read-only MCP boundary, connection test probes, the SaaS telemetry surface, and
-frontend↔backend parity — then rolls up every existing self-test, including the
-45 Tier-A architectural invariants:
+The paths below are a reading sequence. The capability demonstration does not
+currently verify the running system. It holds before the operator app is built,
+so it does not exercise reasoning, the operator answer path, the MCP boundary,
+connection probes, the SaaS telemetry surface, or frontend-to-backend parity,
+and it does not roll up the self-tests.
 
 ```bash
 AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 \
   python -m aureon.saas.capability_demo --report docs/reports/CAPABILITY_DEMO.md
 ```
 
-It runs offline, is read-only, and arms nothing — no flag is flipped, no approval
-is recorded, no money moves, no trade is placed. A capability that needs live keys
-or state it does not have reports *honest_unavailable* with a stated reason rather
-than a fabricated value; the command exits 0 only when every capability class is
-proven, every rolled-up self-test is green, coverage is complete, and all 45
-Tier-A invariants pass. The written report is
+The held path does not flip a flag, record an approval, move money, or place a
+trade. It also does not establish that any capability class passed. The note is
 [`../reports/CAPABILITY_DEMO.md`](../reports/CAPABILITY_DEMO.md).
 
 ## Audience Paths
