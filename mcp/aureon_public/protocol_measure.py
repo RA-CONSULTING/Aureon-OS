@@ -28,7 +28,8 @@ from mcp.client.stdio import stdio_client
 from mcp.client.streamable_http import streamable_http_client
 
 from aureon_public import paths
-from aureon_public.guard_loader import aureon_source, enforce_public_pin
+from aureon_public.guard_loader import aureon_source
+from aureon_public.server import enforce_public_pin
 
 TOOL_NAME = "alignment_consonance_read"
 TOOL_ARGUMENTS = {"ratio": 1.0}
