@@ -1,0 +1,8 @@
+# Test install for the measured venv. Not the public server runtime.
+# measured/aureon_public_stage1_run.sh installs this after requirements.txt.
+# The server runtime stays mcp/aureon_public/requirements.txt.
+pytest>=8.0
+pytest-timeout>=2.3
+flask>=3.0
+pandas>=2.1.0
+scipy>=1.11

@@ -419,20 +419,20 @@
   "enabled_through": 1,
   "entry_points": {
     "core": {
-      "public_entry_points": 23,
-      "reachable": 7
+      "reachable": 0,
+      "public_entry_points": 23
     },
     "harmonic": {
-      "public_entry_points": 278,
-      "reachable": 58
+      "reachable": 0,
+      "public_entry_points": 278
     },
     "utils": {
-      "public_entry_points": 119,
-      "reachable": 14
+      "reachable": 0,
+      "public_entry_points": 119
     },
     "wisdom": {
-      "public_entry_points": 40,
-      "reachable": 10
+      "reachable": 0,
+      "public_entry_points": 40
     }
   },
   "stage": 1,

@@ -30,6 +30,9 @@ from aureon_public.tools import _dumps
 
 # Stages 1-6 raise this as each stage commit lands. Stage 7 is packaging.
 ENABLED_THROUGH = 6
+# Plan stages from coverage_plan.stage_for. Stages above this are refused
+# before a worker starts, until a later run opens them.
+OPEN_PLAN_THROUGH = 2
 
 _UNSAFE_NAME = re.compile(
     r"(run_|start_|stop_|launch_|serve|main$|^demo$|create_app|activate_|connect_|"
@@ -573,6 +576,61 @@ def _safety_block(row: dict[str, Any], *, allow_fetch: bool, allow_write: bool) 
 
 
 _REFUSAL_CACHE: dict[tuple[str, str], str | None] = {}
+_PLAN_STAGE: dict[str, int] | None = None
+_STAGE2_TABLE: dict[str, dict[str, Any]] | None = None
+_STAGE2_MISSING = False
+
+
+def _plan_stage(package: str) -> int:
+    """Coverage-plan stage for a package. Unknown packages stay closed."""
+
+    global _PLAN_STAGE
+    if _PLAN_STAGE is None:
+        from collections import defaultdict
+
+        from aureon_public.coverage_plan import safety_category, stage_for
+
+        rows, _index = _inventory()
+        categories: dict[str, set[str]] = defaultdict(set)
+        for row in rows:
+            categories[str(row["package"])].add(safety_category(str(row.get("safety") or "")))
+        _PLAN_STAGE = {
+            name: stage_for(name, marks) for name, marks in categories.items()
+        }
+    return _PLAN_STAGE.get(package, 4)
+
+
+def _stage2_table() -> dict[str, dict[str, Any]] | None:
+    """Committed socket-blocked import sweep. None when the file is missing."""
+
+    global _STAGE2_MISSING, _STAGE2_TABLE
+    if _STAGE2_TABLE is not None or _STAGE2_MISSING:
+        return _STAGE2_TABLE
+    path = repo_root() / "measured" / "aureon_public_stage2_imports.json"
+    try:
+        loaded = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        _STAGE2_MISSING = True
+        return None
+    table: dict[str, dict[str, Any]] = {}
+    if isinstance(loaded, dict):
+        for row in loaded.get("modules") or []:
+            if isinstance(row, dict) and row.get("module"):
+                table[str(row["module"])] = row
+    _STAGE2_TABLE = table
+    return table
+
+
+def _stage2_import_refusal(module: str) -> str | None:
+    table = _stage2_table()
+    if table is None:
+        return "import sweep record is missing"
+    row = table.get(module)
+    if row is None:
+        return "module is not in the import sweep"
+    if row.get("refused"):
+        return "module import loads an adapter or http client"
+    return None
 
 
 def public_entry_refusal(row: dict[str, Any]) -> str | None:
@@ -591,12 +649,19 @@ def _public_entry_refusal(row: dict[str, Any]) -> str | None:
         return "operator entry point is not on aureon-public"
     if row["package"] in _BLOCKED:
         return "blocked package is not imported on aureon-public"
-    named = _ENTRY_REFUSAL.get((str(row["module"]), str(row["symbol"])))
-    if named:
-        return named
     kind = _package_kind(str(row["package"]))
     if kind in {"operator", "excluded"}:
         return f"package {row['package']} is {kind}"
+    plan_stage = _plan_stage(str(row["package"]))
+    if plan_stage > OPEN_PLAN_THROUGH:
+        return f"plan stage {plan_stage} is not open"
+    named = _ENTRY_REFUSAL.get((str(row["module"]), str(row["symbol"])))
+    if named:
+        return named
+    if plan_stage == 2:
+        sweep = _stage2_import_refusal(str(row["module"]))
+        if sweep:
+            return sweep
     if int(row.get("stage") or 0) > ENABLED_THROUGH:
         return f"stage {row['stage']} is not open"
     if row["kind"] not in _ENTRY_KINDS:

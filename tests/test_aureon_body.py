@@ -30,14 +30,23 @@ def _load(text: str) -> dict:
 
 
 def test_stage1_calls_real_entry_points_and_names_auris() -> None:
-    ladder = _load(body_call("harmonic/rainbow_reference.py", "solfeggio_ladder"))
+    ladder = _load(
+        body_call(
+            "alignment/harmonic_resonance.py",
+            "consonance_score",
+            json.dumps({"ratio": 1.0}),
+        )
+    )
     assert ladder["status"] == "cited"
     assert ladder["called"] is True
     assert ladder["label"].startswith("cited.")
     assert not ladder["label"].startswith("helper.")
     assert "consciousness_" not in json.dumps(ladder)
-    assert isinstance(ladder["result"], list)
-    assert ladder["result"]
+
+    closed = _load(body_call("harmonic/rainbow_reference.py", "solfeggio_ladder"))
+    assert closed["status"] == "unavailable"
+    assert closed.get("called") is not True
+    assert closed["reason"] == "plan stage 4 is not open"
 
     substrate = _load(
         body_call(
@@ -57,8 +66,9 @@ def test_stage1_calls_real_entry_points_and_names_auris() -> None:
     assert nodes.get("called") is not True
 
     analyzer = _load(body_call("wisdom/aureon_qgita_framework.py", "get_qgita_analyzer"))
-    assert analyzer["called"] is True
-    assert analyzer["result"]["type"] == "QGITAMarketAnalyzer"
+    assert analyzer["status"] == "unavailable"
+    assert analyzer.get("called") is not True
+    assert analyzer["reason"] == "plan stage 4 is not open"
 
 
 def test_public_call_refuses_operator_orders_and_blocked_packages() -> None:
@@ -83,7 +93,7 @@ def test_surface_does_not_call_and_a_changed_blob_is_refused(monkeypatch: pytest
     assert surface["status"] == "unavailable"
     assert enabled_stage() >= 1
 
-    real = repo_root() / "aureon" / "harmonic" / "rainbow_reference.py"
+    real = repo_root() / "aureon" / "alignment" / "harmonic_resonance.py"
     assert checkout_blob_refusal(real, repo_root(), PINNED_COMMIT) is None
 
     import aureon_public.pin_blob as pin
@@ -91,12 +101,18 @@ def test_surface_does_not_call_and_a_changed_blob_is_refused(monkeypatch: pytest
     real_hash = pin.git_blob_sha1
 
     def fake(data: bytes) -> str:
-        if b"def solfeggio_ladder" in data:
+        if b"def consonance_score" in data:
             return "ab" * 20
         return real_hash(data)
 
     monkeypatch.setattr(pin, "git_blob_sha1", fake)
-    refused = _load(body_call("harmonic/rainbow_reference.py", "solfeggio_ladder"))
+    refused = _load(
+        body_call(
+            "alignment/harmonic_resonance.py",
+            "consonance_score",
+            json.dumps({"ratio": 1.0}),
+        )
+    )
     assert refused["status"] == "unavailable"
     assert "differs from pin" in refused["reason"]
 
@@ -137,10 +153,13 @@ def test_stage7_registry_names_servers_spaces_and_the_pin() -> None:
 def test_stage6_calls_the_remaining_public_readers() -> None:
     assert enabled_stage() >= 6
     rank = _load(body_call("briefing/schemas.py", "severity_rank", json.dumps({"severity": "high"})))
-    assert rank["called"] is True
+    assert rank["status"] == "unavailable"
+    assert rank.get("called") is not True
+    assert rank["reason"] == "plan stage 4 is not open"
     color = _load(body_call("simulation/aureon_world_simulator.py", "hz_to_rgb", json.dumps({"hz": 528})))
-    assert color["called"] is True
-    assert color["result"] == [0, 255, 0] or isinstance(color["result"], list)
+    assert color["status"] == "unavailable"
+    assert color.get("called") is not True
+    assert color["reason"] == "plan stage 4 is not open"
     record = json.loads((ROOT / "measured" / "body_stage6.json").read_text(encoding="utf-8"))
     called = {item["package"] for item in record["calls"] if item["called"] is True}
     assert {
@@ -195,8 +214,9 @@ def test_stage4_calls_feed_decoder_search_portal_analytics_atn_and_monitor() -> 
             json.dumps({"lat1": 51.5, "lon1": -0.12, "lat2": 48.86, "lon2": 2.35}),
         )
     )
-    assert distance["called"] is True
-    assert isinstance(distance["result"], float)
+    assert distance["status"] == "unavailable"
+    assert distance.get("called") is not True
+    assert distance["reason"] == "module import loads an adapter or http client"
     impacts = _load(
         body_call(
             "atn/aureon_atn_backtest.py",
@@ -220,12 +240,13 @@ def test_stage3_calls_organism_bio_evaluation_and_vault_and_refuses_identity() -
             json.dumps({"text": "one two three"}),
         )
     )
-    assert words["called"] is True
-    assert words["result"] == 3
+    assert words["status"] == "unavailable"
+    assert words.get("called") is not True
+    assert words["reason"] == "plan stage 4 is not open"
     layers = _load(body_call("organism/repository_layers.py", "compose_repository_layers"))
     assert layers["status"] == "unavailable"
     assert layers.get("called") is not True
-    assert layers["reason"] == "stage 4 entry point is not called"
+    assert layers["reason"] == "plan stage 4 is not open"
     nodes = _load(body_call("evaluation/auris_node_eval.py", "evaluate_auris_nodes"))
     assert nodes["status"] == "unavailable"
     assert nodes.get("called") is not True
@@ -324,7 +345,12 @@ def test_body_call_refuses_sibling_join_and_build_lane(tmp_path: Path, monkeypat
             for body in (via_call, via_dispatch):
                 assert body["status"] == "unavailable", (module, symbol, body)
                 assert body.get("called") is not True
-                assert body["reason"] == "stage 4 entry point is not called"
+                expected = (
+                    "plan stage 4 is not open"
+                    if module.startswith("organism/")
+                    else "stage 4 entry point is not called"
+                )
+                assert body["reason"] == expected
         assert requests == []
         assert not marker.exists()
         assert "nexus_public_field" not in sys.modules
@@ -334,23 +360,107 @@ def test_body_call_refuses_sibling_join_and_build_lane(tmp_path: Path, monkeypat
             remove_tree(path)
 
 
+def test_queen_quantum_frog_health_does_not_open_a_socket(monkeypatch: pytest.MonkeyPatch) -> None:
+    """update_health_status is refused before a worker, so Ollama is not dialed."""
+
+    import socket
+    import subprocess as subprocess_module
+
+    opened: list[object] = []
+    popens: list[object] = []
+
+    class _Guard(socket.socket):
+        def connect(self, address: object, *args: object, **kwargs: object) -> None:
+            opened.append(address)
+            raise OSError("socket blocked")
+
+        def connect_ex(self, address: object, *args: object, **kwargs: object) -> int:
+            opened.append(address)
+            raise OSError("socket blocked")
+
+    def _create_connection(*args: object, **kwargs: object) -> object:
+        opened.append(args)
+        raise OSError("socket blocked")
+
+    real_popen = subprocess_module.Popen
+
+    def _popen(*args: object, **kwargs: object) -> object:
+        command = args[0] if args else kwargs.get("args")
+        text = " ".join(str(part) for part in command) if isinstance(command, (list, tuple)) else str(command)
+        if "call_worker" in text:
+            popens.append(text)
+        return real_popen(*args, **kwargs)
+
+    monkeypatch.setattr(socket, "socket", _Guard)
+    monkeypatch.setattr(socket, "create_connection", _create_connection)
+    monkeypatch.setattr(subprocess_module, "Popen", _popen)
+    body = _load(body_call("queen/queen_quantum_frog.py", "update_health_status"))
+    assert body["status"] == "unavailable"
+    assert body.get("called") is not True
+    assert body["reason"] == "plan stage 4 is not open"
+    assert opened == []
+    assert popens == []
+
+
+def test_stage2_import_sweep_matches_body_call() -> None:
+    from aureon_public.body import lookup, public_entry_refusal
+    from aureon_public.stage2_import_sweep import import_is_refused
+
+    record = json.loads(
+        (ROOT / "measured" / "aureon_public_stage2_imports.json").read_text(encoding="utf-8")
+    )
+    assert record["pin"].startswith("8aa6a2d9")
+    assert record["sockets"] == "blocked"
+    assert record["modules"]
+    for row in record["modules"]:
+        assert row["refused"] is import_is_refused(row["bad"], ["connect"] if row["socket"] else [])
+        sample = lookup(row["module"], _first_symbol(row["module"]))
+        if sample is None or sample["kind"] not in {"function", "method"}:
+            continue
+        reason = public_entry_refusal(sample)
+        if sample["package"] in {"atn"} or str(reason or "").startswith("package "):
+            assert reason is not None
+            continue
+        if row["refused"]:
+            assert reason == "module import loads an adapter or http client", row["module"]
+        else:
+            assert reason != "module import loads an adapter or http client", row["module"]
+
+
+def _first_symbol(module: str) -> str:
+    from aureon_public.body import _inventory
+
+    rows, _index = _inventory()
+    for row in rows:
+        if row["module"] == module and row["server"] == "public" and row["kind"] in {"function", "method"}:
+            return str(row["symbol"])
+    return ""
+
+
 def test_stage2_calls_each_named_package() -> None:
     assert enabled_stage() >= 2
     calls = {
         "alignment": body_call("alignment/harmonic_resonance.py", "consonance_score", json.dumps({"ratio": 1.0})),
-        "queen": body_call("queen/temporal_ground.py", "compute_zpe_ground", json.dumps({"lambda_t": 0.0})),
         "swarm": body_call("swarm/druidic_council.py", "voice_for_gamma", json.dumps({"gamma": 0.5})),
         "gates": body_call("gates/switchboard.py", "is_human_held", json.dumps({"action": "draft"})),
+        "observer": body_call("observer/live_data_policy.py", "simulation_fallback_allowed"),
+    }
+    closed = {
+        "queen": body_call("queen/temporal_ground.py", "compute_zpe_ground", json.dumps({"lambda_t": 0.0})),
         "governance": body_call(
             "governance/celtic_voice_bank.py",
             "seasonal_gate_for_date",
             json.dumps({"value": "2026-10-29"}),
         ),
-        "observer": body_call("observer/live_data_policy.py", "simulation_fallback_allowed"),
     }
     logic = _load(body_call("cognition/logic_flow.py", "compute_logic_flow"))
     assert logic["status"] == "unavailable"
     assert logic.get("called") is not True
+    for package, raw in closed.items():
+        body = _load(raw)
+        assert body["status"] == "unavailable", package
+        assert body.get("called") is not True
+        assert body["reason"] == "plan stage 4 is not open"
     for package, raw in calls.items():
         body = _load(raw)
         assert body.get("called") is True, (package, body.get("reason"))
@@ -423,7 +533,13 @@ def test_live_worker_cap_waits_when_four_workers_are_busy(monkeypatch: pytest.Mo
     results: list[str] = []
 
     def run() -> None:
-        body = _load(body_call("harmonic/rainbow_reference.py", "solfeggio_ladder"))
+        body = _load(
+            body_call(
+                "alignment/harmonic_resonance.py",
+                "consonance_score",
+                json.dumps({"ratio": 1.0}),
+            )
+        )
         results.append(str(body.get("status")))
 
     threads = [threading.Thread(target=run) for _ in range(6)]
@@ -459,7 +575,13 @@ def test_worker_env_hides_a_server_sentinel(monkeypatch: pytest.MonkeyPatch) -> 
         return real(cmd, **kwargs)
 
     monkeypatch.setattr("aureon_public.body.subprocess.Popen", popen)
-    body = _load(body_call("harmonic/rainbow_reference.py", "solfeggio_ladder"))
+    body = _load(
+        body_call(
+            "alignment/harmonic_resonance.py",
+            "consonance_score",
+            json.dumps({"ratio": 1.0}),
+        )
+    )
     assert body["status"] == "cited"
     env = seen["env"]
     assert "AUREON_SENTINEL_SECRET" not in env
@@ -846,7 +968,13 @@ def test_worker_does_not_run_a_root_json_or_aureon_public(tmp_path: Path) -> Non
             "from pathlib import Path\n" + f"Path({str(marker_pkg)!r}).write_text('main')\n",
             encoding="utf-8",
         )
-        body = _load(body_call("harmonic/rainbow_reference.py", "solfeggio_ladder"))
+        body = _load(
+            body_call(
+                "alignment/harmonic_resonance.py",
+                "consonance_score",
+                json.dumps({"ratio": 1.0}),
+            )
+        )
         assert body["status"] == "cited", body.get("reason")
         assert not marker_json.exists()
         assert not marker_pkg.exists()

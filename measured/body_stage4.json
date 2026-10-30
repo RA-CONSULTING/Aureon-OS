@@ -392,32 +392,32 @@
   "enabled_through": 4,
   "entry_points": {
     "analytics": {
-      "public_entry_points": 167,
-      "reachable": 37
+      "reachable": 0,
+      "public_entry_points": 167
     },
     "atn": {
-      "public_entry_points": 28,
-      "reachable": 0
+      "reachable": 0,
+      "public_entry_points": 28
     },
     "data_feeds": {
-      "public_entry_points": 118,
-      "reachable": 11
+      "reachable": 0,
+      "public_entry_points": 118
     },
     "decoders": {
-      "public_entry_points": 80,
-      "reachable": 10
+      "reachable": 5,
+      "public_entry_points": 80
     },
     "monitors": {
-      "public_entry_points": 158,
-      "reachable": 0
+      "reachable": 0,
+      "public_entry_points": 158
     },
     "portals": {
-      "public_entry_points": 51,
-      "reachable": 11
+      "reachable": 0,
+      "public_entry_points": 51
     },
     "search": {
-      "public_entry_points": 5,
-      "reachable": 2
+      "reachable": 0,
+      "public_entry_points": 5
     }
   },
   "stage": 4,

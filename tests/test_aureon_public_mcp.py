@@ -605,7 +605,13 @@ def test_subprocess_body_call_ignores_stray_module_in_repo_root() -> None:
         encoding="utf-8",
     )
     try:
-        body = _load(body_call("harmonic/rainbow_reference.py", "solfeggio_ladder"))
+        body = _load(
+            body_call(
+                "alignment/harmonic_resonance.py",
+                "consonance_score",
+                json.dumps({"ratio": 1.0}),
+            )
+        )
         assert body["status"] == "cited"
         assert body.get("called") is True
     finally:

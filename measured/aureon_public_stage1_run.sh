@@ -2,9 +2,13 @@
 # Rewrite measured/aureon_public_alignment.json and measured/aureon_public_stage1.json.
 # Do not hand-edit those files.
 #
-# Same install as measured/aureon_public_run.sh. Python 3.12 is required.
-# This script rewrites measured/aureon_public_alignment.json, then rewrites
-# measured/aureon_public_stage1.json.
+# Same runtime install as measured/aureon_public_run.sh, plus the test file.
+# Python 3.12 is required.
+# This script installs mcp/aureon_public/requirements.txt and
+# mcp/aureon_public/test-requirements.txt, then rewrites
+# measured/aureon_public_alignment.json and measured/aureon_public_stage1.json.
+# test-requirements.txt is pytest, pytest-timeout, flask, pandas, and scipy.
+# It is not the public server runtime.
 set -eu
 ROOT="$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)"
 VENV="${VENV:-/tmp/aureon-public-venv}"
@@ -14,6 +18,7 @@ OUT="${OUT:-$ROOT/measured/aureon_public_stage1.json}"
 python3.12 -m venv "$VENV"
 "$VENV/bin/python" -m pip install -U pip
 "$VENV/bin/python" -m pip install -r "$ROOT/mcp/aureon_public/requirements.txt"
+"$VENV/bin/python" -m pip install -r "$ROOT/mcp/aureon_public/test-requirements.txt"
 "$VENV/bin/python" -m pip install -e "$ROOT/mcp" --no-deps
 mkdir -p "$WORK"
 cd "$WORK"

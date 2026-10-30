@@ -9,11 +9,14 @@ Reproduce:
 ```bash
 env -u PYTHONPATH PYTHONPATH=mcp python3.12 -m aureon_public.coverage_plan --check
 bash measured/aureon_public_stage1_run.sh
+bash measured/aureon_public_stage2_sweep.sh
+env -u PYTHONPATH /tmp/aureon-public-venv/bin/python -m pytest tests/test_aureon_public_mcp.py tests/test_aureon_body.py tests/bio/test_mcp_*.py tests/test_aureon_public_alignment.py tests/test_aureon_public_stage1.py --tb=line
 ```
 
-`--write` rewrites this file from the same function. `measured/aureon_public_stage1_run.sh` rewrites both `measured/aureon_public_alignment.json` and `measured/aureon_public_stage1.json`.
+`--write` rewrites this file from the same function. `measured/aureon_public_stage1_run.sh` installs `mcp/aureon_public/requirements.txt` and `mcp/aureon_public/test-requirements.txt`, then rewrites both `measured/aureon_public_alignment.json` and `measured/aureon_public_stage1.json`. `test-requirements.txt` is the test install: pytest, pytest-timeout, flask, pandas, and scipy. It is not the public server runtime. `measured/aureon_public_stage2_sweep.sh` rewrites `measured/aureon_public_stage2_imports.json` with sockets blocked.
 
-Listed symbols: 20083. Public entry points: 4388. Reachable now: 896. The previous plan recorded 898 reachable. Methods open because a constructor is allowlisted: 19. The refused-imports fence is unchanged.
+Listed symbols: 20083. Public entry points: 4388. Reachable now: 89. The previous plan recorded 896 reachable. Methods open because a constructor is allowlisted: 19. The refused-imports fence is unchanged.
+Only the stage-1 entry points are tested. `body_call` refuses every plan stage 3 and stage 4 package before a worker starts, until a later run opens that stage. Stage 2 stays callable except where `measured/aureon_public_stage2_imports.json` shows the module import loads `inhouse_ai`, `ollama_config`, or an HTTP client, or opens a connection. `queen/queen_quantum_frog.py` `update_health_status` is refused with the queen package. It does not dial Ollama.
 
 ## Stage order
 
@@ -28,7 +31,7 @@ Packages still excluded by `more_layers`: atn, command_centers, conversion, iden
 
 Within a stage, packages are alphabetical. The first package is `alignment`.
 Stage 1 is the deterministic read-only packages. This run opens generated and swarm, after alignment. Organism is stage 4 because its join loads the in-house adapter chain.
-Stage 2 is not opened. A stage-2 package has a process or write sentence, so it is not read-only. Those packages stay for a later run, with their own records.
+Stage 2 has no new tools. Clean stage-2 entry points stay callable through `body_call`. A stage-2 module whose import loads an adapter or an HTTP client, or opens a connection, is refused.
 
 ## Counts
 
@@ -40,55 +43,55 @@ Stage 2 is not opened. A stage-2 package has a process or write sentence, so it 
 | 2 | atn | 57 | 28 | 0 |
 | 2 | cognition | 44 | 14 | 1 |
 | 2 | conversion | 170 | 0 | 0 |
-| 2 | decoders | 161 | 80 | 10 |
+| 2 | decoders | 161 | 80 | 5 |
 | 2 | evaluation | 20 | 10 | 7 |
 | 2 | gates | 24 | 12 | 6 |
 | 2 | observer | 104 | 63 | 29 |
 | 2 | s51 | 55 | 24 | 1 |
 | 3 | accounting | 50 | 0 | 0 |
 | 3 | miner | 15 | 0 | 0 |
-| 4 | analytics | 464 | 167 | 37 |
-| 4 | appliance | 15 | 7 | 2 |
-| 4 | approval | 82 | 42 | 20 |
+| 4 | analytics | 464 | 167 | 0 |
+| 4 | appliance | 15 | 7 | 0 |
+| 4 | approval | 82 | 42 | 0 |
 | 4 | autonomous | 1745 | 0 | 0 |
-| 4 | bio | 474 | 206 | 96 |
+| 4 | bio | 474 | 206 | 0 |
 | 4 | bots | 611 | 0 | 0 |
 | 4 | bots_intelligence | 234 | 0 | 0 |
 | 4 | bridges | 281 | 0 | 0 |
-| 4 | briefing | 62 | 34 | 7 |
+| 4 | briefing | 62 | 34 | 0 |
 | 4 | code_architect | 98 | 0 | 0 |
 | 4 | command_centers | 260 | 0 | 0 |
 | 4 | connectors | 47 | 0 | 0 |
-| 4 | core | 986 | 452 | 109 |
-| 4 | data_feeds | 251 | 118 | 11 |
+| 4 | core | 986 | 452 | 0 |
+| 4 | data_feeds | 251 | 118 | 0 |
 | 4 | exchanges | 643 | 0 | 0 |
-| 4 | governance | 204 | 105 | 41 |
-| 4 | grants | 77 | 44 | 9 |
-| 4 | harmonic | 605 | 278 | 58 |
+| 4 | governance | 204 | 105 | 0 |
+| 4 | grants | 77 | 44 | 0 |
+| 4 | harmonic | 605 | 278 | 0 |
 | 4 | identity | 16 | 0 | 0 |
 | 4 | inhouse_ai | 145 | 0 | 0 |
-| 4 | integrations | 167 | 65 | 7 |
-| 4 | intelligence | 597 | 274 | 36 |
+| 4 | integrations | 167 | 65 | 0 |
+| 4 | intelligence | 597 | 274 | 0 |
 | 4 | launch | 97 | 0 | 0 |
 | 4 | monitors | 345 | 158 | 0 |
-| 4 | observability | 27 | 9 | 4 |
+| 4 | observability | 27 | 9 | 0 |
 | 4 | operator | 1080 | 0 | 0 |
 | 4 | organism | 3 | 1 | 0 |
-| 4 | plumber | 497 | 271 | 52 |
-| 4 | portals | 74 | 51 | 11 |
+| 4 | plumber | 497 | 271 | 0 |
+| 4 | portals | 74 | 51 | 0 |
 | 4 | portfolio | 322 | 0 | 0 |
-| 4 | queen | 1348 | 566 | 131 |
+| 4 | queen | 1348 | 566 | 0 |
 | 4 | saas | 83 | 0 | 0 |
 | 4 | scanners | 335 | 0 | 0 |
-| 4 | search | 21 | 5 | 2 |
-| 4 | simulation | 440 | 200 | 18 |
+| 4 | search | 21 | 5 | 0 |
+| 4 | simulation | 440 | 200 | 0 |
 | 4 | strategies | 474 | 0 | 0 |
 | 4 | swarm_motion | 49 | 10 | 0 |
 | 4 | trading | 2023 | 0 | 0 |
 | 4 | unified_margin_trader | 1643 | 0 | 0 |
-| 4 | utils | 1162 | 455 | 59 |
-| 4 | vault | 418 | 195 | 20 |
-| 4 | wisdom | 755 | 375 | 72 |
+| 4 | utils | 1162 | 455 | 0 |
+| 4 | vault | 418 | 195 | 0 |
+| 4 | wisdom | 755 | 375 | 0 |
 
 ## Fence
 
