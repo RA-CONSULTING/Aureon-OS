@@ -1,6 +1,6 @@
 # Aureon Trading System — Data Flow Architecture
 
-Measured trading performance is unmeasured and on HOLD until a measured, reproducible run exists. The diagrams below are the path the code is designed to follow. They are not a measured result.
+Measured trading performance is not yet measured. There is no verified live track record. The live routes are active: with exchange keys in `.env`, the launcher boots into live trading. The diagrams below are the path the code is designed to follow. They are not a measured result.
 
 ---
 
@@ -112,7 +112,7 @@ Measured trading performance is unmeasured and on HOLD until a measured, reprodu
 
 ## Detailed Flow: Single Trade Execution
 
-Prices in this walkthrough show the shape of one order moving through the layers. They are not a measured run. Live P&L, win rate, and trade counts are unmeasured and on HOLD until a measured, reproducible run exists.
+Prices in this walkthrough show the shape of one order moving through the layers. They are not a measured run. Live P&L, win rate, and trade counts are not yet measured. There is no verified live track record. The live routes are active.
 
 ```
 STEP 1: DATA INGESTION
@@ -320,9 +320,9 @@ STEP 11: PORTFOLIO UPDATE
 │    ├─ realized P&L field                │
 │    └─ a cumulative P&L field            │
 │                                         │
-│  Those amounts are unmeasured.          │
-│  Live performance is on HOLD until a    │
-│  measured, reproducible run exists.     │
+│  Those amounts are not yet measured.    │
+│  No verified live track record.         │
+│  Live routes are active.                │
 └────────────┬────────────────────────────┘
              │
              ▼
@@ -342,8 +342,8 @@ STEP 12: VISUALIZATION & REPORTING
 │    ├─ profit factor                     │
 │    └─ consecutive wins                  │
 │                                         │
-│  No figure is quoted. Performance is   │
-│  on HOLD until a reproducible run.     │
+│  No figure is quoted. Results are not │
+│  yet measured.                          │
 │                                         │
 │  Audit Trail:                           │
 │    Logged to: 4_output/trade_outputs/  │
@@ -447,9 +447,9 @@ Historical Data          Strategy Logic           Validation Engine
     ┌──────────────────────────────────────────┐
     │  Output the engine is designed to write │
     │  ├─ a trade record for each replay      │
-    │  ├─ accuracy (unmeasured; on HOLD)      │
-    │  ├─ combined P&L (unmeasured; on HOLD)  │
-    │  ├─ drawdown (unmeasured; on HOLD)      │
+    │  ├─ accuracy (not yet measured)         │
+    │  ├─ combined P&L (not yet measured)     │
+    │  ├─ drawdown (not yet measured)         │
     │  └─ an audit trail                      │
     └──────────────────────────────────────────┘
 ```

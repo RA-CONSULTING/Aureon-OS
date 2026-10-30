@@ -1,12 +1,11 @@
 # 🌟 Rising Star Logic - Complete Summary
 
+Win rates, trade counts, and dollar results in this note are unverified. They are not a live track record. The live routes are active, and there is no verified live track record.
+
 ## What Was Built
 
 ### Problem Identified
-From 63 historical Alpaca trades:
-- **15 wins, 48 losses** (24% win rate)
-- **67% of wins came from ACCUMULATION** (buying more when price dropped)
-- Current code **NEVER accumulates** - only buys once per symbol
+An unverified note of historical Alpaca fills described a sample in which most of the wins were said to come from buying more after a drop. That sample is not a verified track record, and the counts are not repeated here. The code path this note describes buys once per symbol and does not accumulate.
 
 ### Solution: Rising Star Logic
 
@@ -67,7 +66,7 @@ candidates = scanner.scan_entire_market(max_candidates=20)
 ```
 Uses ALL intelligence systems:
 - ✅ Quantum scoring (luck, inception, phantom)
-- ✅ Probability Ultimate Intelligence (95% accuracy)
+- ✅ Probability Ultimate Intelligence (accuracy not yet measured)
 - ✅ Wave Scanner momentum
 - ✅ Firm intelligence (whale tracking)
 
@@ -79,8 +78,8 @@ sim_results = scanner.run_monte_carlo_simulations(candidate)
 ```
 Runs **1000 simulations** per top-4 candidate:
 - Weighted by intelligence factors
-- Calculates win rate, avg profit, time to profit
-- Confidence = 70% win rate + 30% speed
+- Calculates a simulated win rate, average profit, and time to profit
+- Confidence weights that simulated win rate at 70% and speed at 30%. The weight is a scoring rule, not a verified track record.
 
 ### Stage 3: SELECT (Best 2)
 ```python
@@ -114,6 +113,8 @@ if net_pnl > 0 and time_in_position <= 30:
 ---
 
 ## Math Example
+
+The dollar figures below illustrate the accumulation rule. They are not a verified track record.
 
 ### Without Accumulation (Old Way)
 - Buy $5.00 @ $350
@@ -171,22 +172,23 @@ if self.check_30_second_profit(pos, net_pnl, pos.entry_time):
 
 ## Expected Results
 
-### Current Performance (No Accumulation)
-- **24% win rate** (15 wins / 63 trades)
-- Only wins when price pumps above entry
-- Fees eat small gains
+No verified win rate or trade count is quoted. The items below are what the logic is designed to do.
+
+### Without accumulation
+- The single-buy path only closes a win when price is above the entry
+- Fees can consume a small gain
 
 ### With Rising Star Logic
-- **Target: 60-70% win rate** (from Monte Carlo sims)
-- Accumulation captures wins even on price drops
-- 30-second window increases trade frequency
-- Multi-intelligence filtering reduces bad entries
+- Accumulation is designed to add after a drop
+- A 30-second window is designed to exit sooner
+- Four-stage filtering is designed to drop weak entries
+- A simulated win rate from Monte Carlo is not a verified track record
 
 ### Key Improvements
-1. **DCA turns losses into wins** - 67% of historical wins used accumulation
-2. **Monte Carlo pre-validation** - Only trade high-confidence candidates
-3. **Faster exits** - 30-second target vs 2+ minute average
-4. **Better entries** - 4-stage filtering vs simple momentum scan
+1. **DCA is designed to add after a drop** — an unverified note said many historical wins had done that; that count is not repeated
+2. **Monte Carlo pre-validation** — only candidates that pass the confidence gate
+3. **Faster exits** — a 30-second target against a longer single-buy hold
+4. **Narrower entries** — four stages instead of a momentum scan alone
 
 ---
 
@@ -209,24 +211,7 @@ Track these in `rising_star_stats` dict:
 
 ## Demo Output
 
-Run `python rising_star_demo.py` to see:
-
-```
-📊 ACCUMULATION MATH DEMO
-  Old Way (no DCA): $-0.0250
-  New Way (DCA):    $0.0358
-  💡 Accumulation turned LOSS into WIN!
-
-🎲 MONTE CARLO SIMULATION DEMO
-  Win Rate: 75.0%
-  Avg Time to Profit: 31.2s
-  Overall Confidence: 81.3%
-  ✅ PASS - High confidence, select for trading
-
-⚡ 30-SECOND PROFIT WINDOW DEMO
-  Old Random:  120s | ⏳ Standard
-  Rising Star:  28s | ✅ FAST KILL
-```
+`python rising_star_demo.py` is designed to print an accumulation illustration, a Monte Carlo sketch, and a 30-second-window sketch. Any win rate, dollar result, or trade count it prints is unverified and is not a live track record. Those figures are not copied here.
 
 ---
 
@@ -255,9 +240,9 @@ Run `python rising_star_demo.py` to see:
 
 ## References
 
-- **Historical Analysis**: 63 Alpaca trades, 15 wins (24%), 67% accumulation wins
-- **Monte Carlo**: 1000 simulations, 75% win rate, 81.3% confidence
-- **Accumulation**: Turns -$0.025 loss → +$0.036 win
-- **Speed**: 28s avg vs 120s old method (4.3x faster)
+- **Historical sample**: unverified. No win rate or trade count is quoted.
+- **Monte Carlo**: the scanner is designed to run 1000 simulations per candidate. A simulated win rate is not a verified track record.
+- **Accumulation**: an illustration of averaging down, not a verified dollar result.
+- **Speed**: the 30-second window is a design target, not a measured average.
 
-**The Math Works** ✅
+There is no verified live track record.

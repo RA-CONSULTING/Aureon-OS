@@ -1,6 +1,6 @@
-# Aureon Trading System — Live Path (design; performance on HOLD)
+# Aureon Trading System — Live Path (routes active; no verified live track record)
 
-> **What the trading path is designed to do. Measured live performance is unmeasured and on HOLD until a measured, reproducible run exists.**
+> **What the trading path is designed to do. There is no verified live track record yet. The live routes are active: with exchange keys in `.env`, the launcher boots into live trading.**
 
 > 🚀 **To actually RUN the system, see [`RUNNING.md`](RUNNING.md).**
 >
@@ -13,18 +13,18 @@
 
 ## Status
 
-Earlier drafts of this note quoted backtest and paper-trading totals as if they were a verified record. They were not. Those P&L amounts, win rates, and trade counts are not repeated here. Live performance stays unmeasured and on HOLD until a measured, reproducible run exists.
+Earlier drafts of this note quoted backtest and paper-trading totals as if they were a verified record. They were not. Those P&L amounts, win rates, and trade counts are not repeated here. Live performance is not yet measured. There is no verified live track record. The live routes are active: with exchange keys in `.env`, the launcher boots into live trading.
 
 ---
 
 ## What the four stages are designed to do
 
-| Stage | What the code is designed to do | Measured performance |
-|-------|----------------------------------|----------------------|
-| **Stage 1: Backtesting** | Replay historical candles through HNC signals and write a results file | On HOLD |
-| **Stage 2: Paper trading** | Simulate fills against market data and store a trade record with HNC fields | On HOLD |
-| **Stage 3: Live trading** | Track positions on connected exchanges when the operator's keys are present | On HOLD |
-| **Stage 4: Verification** | Compare a predicted time-to-target with the fill that actually happened | On HOLD |
+| Stage | What the code is designed to do | Measured result |
+|-------|----------------------------------|-----------------|
+| **Stage 1: Backtesting** | Replay historical candles through HNC signals and write a results file | none yet |
+| **Stage 2: Paper trading** | Simulate fills against market data and store a trade record with HNC fields | none yet |
+| **Stage 3: Live trading** | Live routes are active. With exchange keys in `.env`, the launcher boots into live trading. | none yet |
+| **Stage 4: Verification** | Compare a predicted time-to-target with the fill that actually happened | none yet |
 
 ---
 
@@ -67,7 +67,7 @@ What this stage is designed to do:
 - attach an HNC reading to each simulated fill
 - keep a losing fill inside the risk limits the run was given
 
-Measured session P&L and win rate are on HOLD.
+Measured session P&L and win rate are not yet measured. There is no verified live track record.
 
 ---
 
@@ -94,7 +94,7 @@ What the production path is designed to provide:
    - Position size from account equity
    - Cross-exchange margin tracking
 
-Live performance is on HOLD. A live session runs only when the operator's exchange keys are present. This note does not arm one.
+There is no verified live track record. The live routes are active. With exchange keys in `.env`, the launcher boots into live trading. This note does not arm one.
 
 ---
 
@@ -109,7 +109,7 @@ ETA prediction is the attempt to name, in seconds, when a trade will reach its t
 - the actual ETA, the actual fill time, and the final pnl
 - a time error and a verdict
 
-The verifier is also designed to store a velocity correction and an ETA bias so a later run can adjust. Measured hit rate and timing error are on HOLD. A record of this shape is not proof that targets were met.
+The verifier is also designed to store a velocity correction and an ETA bias so a later run can adjust. Measured hit rate and timing error are not yet measured. A record of this shape is not a verified track record.
 
 ---
 
@@ -151,7 +151,7 @@ Spot and margin replays are designed to record max drawdown.
 - Spot: a stop when the coherence threshold breaks
 - Margin: position size from coherence, plus a hedge on leveraged pairs
 
-Paper mode is designed to record win size, loss size, a profit factor, losing streaks, and recovery time. Those are field names. No measured risk statistic is quoted here. That measurement is on HOLD.
+Paper mode is designed to record win size, loss size, a profit factor, losing streaks, and recovery time. Those are field names. No measured risk statistic is quoted here. That measurement is not yet measured.
 
 ---
 
@@ -189,7 +189,7 @@ Paper mode is designed to record win size, loss size, a profit factor, losing st
    └─ Output: Trade audit record
 ```
 
-The backtest is designed so a later measured run can be split by regime (trend, range, reversal, high volatility) and by direction (long or short). No regime table is quoted. That split is on HOLD until a reproducible run exists.
+The backtest is designed so a later measured run can be split by regime (trend, range, reversal, high volatility) and by direction (long or short). No regime table is quoted. That split is not yet measured.
 
 No win rate, drawdown, or P&L comparison with any other framework is claimed. A comparison waits on a measured, reproducible Aureon run.
 
@@ -265,15 +265,15 @@ cat 4_output/trade_outputs/eta_verification_history.json
 | `4_output/trade_outputs/eta_verification_history.json` | Predicted time versus the fill |
 | `4_output/performance_metrics/trade_history_audit.json` | Validator output |
 
-Performance figures from these files are not quoted. They are on HOLD.
+Performance figures from these files are not quoted. There is no verified live track record.
 
 ---
 
 ## Takeaway
 
-The trading path is built to replay history, paper-trade against market data, track live positions when keys are present, and check a timing prediction against the fill.
+The trading path is built to replay history, paper-trade against market data, track live positions, and check a timing prediction against the fill. The live routes are active. With exchange keys in `.env`, the launcher boots into live trading.
 
-Measured P&L, win rate, and trade counts are unmeasured and on HOLD until a measured, reproducible run exists.
+Measured P&L, win rate, and trade counts are not yet measured. There is no verified live track record.
 
 What the design uses, in place of a plain moving-average stack:
 

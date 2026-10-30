@@ -1,6 +1,6 @@
 # Complete Audit, SWOT, & Data Flow Summary
 
-Measured trading performance is unmeasured and on HOLD until a measured, reproducible run exists. This summary keeps the audit of the documentation and the architecture. It does not quote P&L, win rate, or trade counts.
+Measured trading performance is not yet measured. There is no verified live track record. The live routes are active: with exchange keys in `.env`, the launcher boots into live trading. This summary keeps the audit of the documentation and the architecture. It does not quote P&L, win rate, or trade counts.
 
 ---
 
@@ -22,7 +22,7 @@ All documentation now in place to understand the complete system architecture.
 | Document | Lines | Size | Purpose |
 |----------|-------|------|---------|
 | **CAPABILITIES.md** | 528 | 16KB | 10 use cases with exact commands |
-| **LIVE_PROOF.md** | 552 | 17KB | Four designed trading stages; measured performance on HOLD |
+| **LIVE_PROOF.md** | 552 | 17KB | Four designed trading stages; no verified live track record |
 | **QUICK_START.md** | 363 | 12KB | Commands and file locations for everything |
 | **SWOT_ANALYSIS.md** | 285 | 11KB | Strategic positioning assessment |
 | **DATA_FLOW.md** | 486 | 18KB | Architecture and data flow diagrams |
@@ -37,7 +37,7 @@ All documentation now in place to understand the complete system architecture.
 | **README wrong order** | Reordered from "entry points first" to "proof first" | Better user onboarding |
 | **2,694 files scattered** | Created navigation guide (QUICK_START) mapping all files to commands | 100% discoverable |
 | **No use case documentation** | Created CAPABILITIES.md with 10 scenarios | Clear value proposition |
-| **No evidence of working** | LIVE_PROOF.md describes the designed stages and states that measured performance is on HOLD | No unverified P&L is cited |
+| **No evidence of working** | LIVE_PROOF.md describes the active routes and states that performance is not yet measured | No unverified P&L is cited |
 | **Missing strategic analysis** | Created SWOT_ANALYSIS.md | Strategic clarity |
 | **No data flow visibility** | Created DATA_FLOW.md with detailed flows | Architecture understood |
 
@@ -48,7 +48,7 @@ All documentation now in place to understand the complete system architecture.
 ✅ README sections reordered correctly (proof → entry → action)  
 ✅ 3 clear entry points for different user types  
 ✅ Every capability mapped to exact commands  
-✅ The four trading stages are described as design. Measured P&L, win rate, and trade counts are on HOLD  
+✅ The four trading stages are described as design. The live routes are active. Measured P&L, win rate, and trade counts are not yet measured.  
 
 ### Commits Made
 
@@ -75,10 +75,10 @@ All documentation now in place to understand the complete system architecture.
 - ✅ Only system with ancient wisdom convergence research integrated
 
 **Performance status:**
-- ✅ No win-rate comparison is claimed. Measured performance is on HOLD until a reproducible run exists.
-- ✅ Drawdown versus other frameworks is unmeasured and on HOLD.
-- ✅ Timing checks are designed into the execution path. Measured timing accuracy is on HOLD.
-- ✅ Live adapters are designed for real accounts when the operator's keys are present. Measured live performance is on HOLD.
+- ✅ No win-rate comparison is claimed. Measured performance is not yet measured.
+- ✅ Drawdown versus other frameworks is not yet measured.
+- ✅ Timing checks are designed into the execution path. Measured timing accuracy is not yet measured.
+- ✅ Live routes are active. With exchange keys in `.env`, the launcher boots into live trading. There is no verified live track record.
 
 **Production Ready:**
 - ✅ Multi-exchange support (Binance, Kraken, others)
@@ -273,7 +273,7 @@ All documentation now in place to understand the complete system architecture.
 → [`CAPABILITIES.md`](CAPABILITIES.md) → Pick use case → Run command
 
 **For "What would a measured run show?"**
-→ [`LIVE_PROOF.md`](LIVE_PROOF.md) → the four stages the code is designed to run. Measured performance is on HOLD.
+→ [`LIVE_PROOF.md`](LIVE_PROOF.md) → the four stages the code is designed to run. The live routes are active. Measured performance is not yet measured.
 
 **For "How do I use it?"**
 → [`QUICK_START.md`](QUICK_START.md) → Find command, find file, run
@@ -300,9 +300,9 @@ All documentation now in place to understand the complete system architecture.
 | Metric | Value | Status |
 |--------|-------|--------|
 | **Repository Size** | 2,694 files | ✅ Fully mapped |
-| **Backtesting** | Designed replay; results on HOLD | ⏸ Unmeasured |
-| **Paper trading** | Designed simulation; results on HOLD | ⏸ Unmeasured |
-| **Live trading** | Designed when operator keys are present | ⏸ Unmeasured |
+| **Backtesting** | Designed replay; result none yet | Not yet measured |
+| **Paper trading** | Designed simulation; result none yet | Not yet measured |
+| **Live trading** | Routes are active. With exchange keys in `.env`, the launcher boots into live trading. | No verified track record |
 | **Unique Features** | 4 (harmonic, bots, forensics, wisdom) | ✅ Market-only |
 | **Documentation** | 7 major guides + this summary | ✅ Complete |
 | **Links Verified** | 100+ internal links | ✅ All working |
@@ -326,7 +326,7 @@ Based on SWOT analysis, priority order:
 
 Aureon-Trading is:
 - ✅ **Unique** — Only system with harmonic + bots + forensics
-- ✅ **Designed to trade** — backtest, paper, and live paths exist in the code. Measured P&L and win rate are on HOLD until a reproducible run exists.
+- ✅ **Designed to trade** — backtest, paper, and live paths exist in the code. The live routes are active. Measured P&L and win rate are not yet measured. There is no verified live track record.
 - ✅ **Well-organized** — Complete metadata, clear navigation
 - ✅ **Documented** — 7 guides + this summary
 - ✅ **Strategic** — SWOT analysis shows clear path forward

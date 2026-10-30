@@ -1,6 +1,6 @@
 # Aureon Trading System — SWOT Analysis
 
-Measured trading performance is unmeasured and on HOLD until a measured, reproducible run exists. This note keeps the strategic map. It does not quote P&L, win rate, or trade counts.
+Measured trading performance is not yet measured. There is no verified live track record. The live routes are active: with exchange keys in `.env`, the launcher boots into live trading. This note keeps the strategic map. It does not quote P&L, win rate, or trade counts.
 
 ---
 
@@ -13,10 +13,10 @@ Measured trading performance is unmeasured and on HOLD until a measured, reprodu
 - ✅ **Ancient wisdom convergence research** (1,190 entries, 12 civilizations, 47+ proofs)
 - ✅ **HNC theory implementation** (Master Formula, LTDE, φ² Coherence Bridge)
 
-### Execution path (designed; performance on HOLD)
-- ✅ **Live adapters designed** for Binance and Kraken, used when the operator's keys are present. Measured live performance is on HOLD.
-- ✅ **Paper path designed** to simulate fills against market data. Measured paper performance is on HOLD.
-- ✅ **Backtest path designed** to replay historical candles through HNC signals. Measured backtest performance is on HOLD.
+### Execution path (routes active; results not yet measured)
+- ✅ **Live routes are active** on Binance and Kraken. With exchange keys in `.env`, the launcher boots into live trading. There is no verified live track record.
+- ✅ **Paper path designed** to simulate fills against market data. Measured paper performance is not yet measured.
+- ✅ **Backtest path designed** to replay historical candles through HNC signals. Measured backtest performance is not yet measured.
 - ✅ **Risk management designed** (position sizing, stop-losses, coherence gates)
 - ✅ **Multi-exchange support** (Binance, Kraken, others)
 
@@ -28,9 +28,9 @@ Measured trading performance is unmeasured and on HOLD until a measured, reprodu
 - ✅ **Clear navigation** (3 entry points, QUICK_START guide)
 
 ### Competitive position
-- ✅ **No win-rate comparison is claimed.** Measured performance is on HOLD until a reproducible run exists.
-- ✅ **Drawdown versus other frameworks is unmeasured** and on HOLD.
-- ✅ **Timing prediction is designed** into the execution path. Measured timing accuracy is on HOLD.
+- ✅ **No win-rate comparison is claimed.** Measured performance is not yet measured.
+- ✅ **Drawdown versus other frameworks is not yet measured.**
+- ✅ **Timing prediction is designed** into the execution path. Measured timing accuracy is not yet measured.
 - ✅ **Proprietary theory** (HNC can't be replicated by competitors)
 - ✅ **Integrated forensics** (no other system does bot + manipulation + trading)
 
@@ -67,7 +67,7 @@ Measured trading performance is unmeasured and on HOLD until a measured, reprodu
 - ❌ **No cloud deployment** (no hosted version, only on-premise)
 
 ### Testing & Validation
-- ❌ **No verified performance record** (measured live and paper results are on HOLD)
+- ❌ **No verified live track record** (measured live and paper results are not yet measured)
 - ❌ **No out-of-sample validation** (no measured out-of-sample run is on record)
 - ❌ **No stress testing** (no crash scenarios, black swan tests)
 - ❌ **No performance benchmarks** (vs. exchange latency, slippage)
@@ -158,7 +158,7 @@ Measured trading performance is unmeasured and on HOLD until a measured, reprodu
 | Factor | Status | Impact | Priority |
 |--------|--------|--------|----------|
 | **Unique capabilities** | Strength | 🔴 High | Keep & Protect |
-| **Measured live performance** | On HOLD | 🔴 High | Do not cite until a reproducible run exists |
+| **Measured live performance** | Not yet measured | 🔴 High | Do not cite a track record; live routes stay active |
 | **2,694 files scattered** | Weakness | 🟡 Medium | FIXED (organization) |
 | **No UI/Dashboard** | Weakness | 🟡 Medium | Build immediately |
 | **No CLI** | Weakness | 🟡 Medium | Add soon |

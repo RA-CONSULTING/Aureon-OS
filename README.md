@@ -17,7 +17,7 @@ Trading research · autonomous operator · planetary/HNC research · a coding or
 
 </div>
 
-Older notes under `aureon-trading/docs/` (for example `AUREON_MIND_STATUS.md`) are earlier research writing. This README and `mcp/aureon_public` are the current, checked parts.
+Older notes in `docs/` (for example `docs/AUREON_MIND_STATUS.md`), `aureon-trading/docs/`, and `imports/` (including the `imports/Kimi_Agent_Aureon_20260408` snapshot) are earlier research writing and may repeat figures that have since been withdrawn. This README and `mcp/aureon_public` are the current, checked parts.
 
 > **New users: stay on the five-minute quickstart. Do not add your own exchange keys.** The master launcher and the installer default to full autonomy. If exchange keys are in `.env`, that boot can go live and trade.
 
