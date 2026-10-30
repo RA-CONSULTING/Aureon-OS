@@ -228,20 +228,134 @@ def _stage2_lines() -> list[str]:
         lines.append(
             f"- `{row.get('module')}` `{row.get('symbol')}`: {row.get('refusal') or 'call loads a banned chain or opens a connection'}{suffix}"
         )
-    from aureon_public.body import lookup, public_entry_refusal
+    from aureon_public.body import _ENTRY_REFUSAL, _UNTESTED_STAGE2, lookup, public_entry_refusal
 
     lines.append(
-        "These stage-2 entry points stay reachable through `body_call` and are not tools. The worker cannot be given the real object as JSON without adding a constructor, and the constructor allowlist is unchanged."
+        "These five were reachable and had no tool. `body_call` and `dispatch` refuse them. The constructor allowlist is unchanged."
     )
-    left = False
+    for key in sorted(item for item, reason in _ENTRY_REFUSAL.items() if reason == _UNTESTED_STAGE2):
+        lines.append(f"- `{key[0]}` `{key[1]}`: {_UNTESTED_STAGE2}. {NOT_A_TOOL[key]}")
+    still = []
     for key in sorted(NOT_A_TOOL):
         row = lookup(key[0], key[1])
-        if row is None or public_entry_refusal(row) is not None:
+        if row is not None and public_entry_refusal(row) is None:
+            still.append(key)
+    if still:
+        lines.append("These stage-2 entry points are still reachable and are not tools:")
+        for key in still:
+            lines.append(f"- `{key[0]}` `{key[1]}`. {NOT_A_TOOL[key]}")
+    return lines
+
+
+def _public_keys() -> dict[int, list[tuple[str, str]]]:
+    """Reachable public entry points, by coverage-plan stage."""
+
+    from aureon_public.body import _inventory, _plan_stage, public_entry_refusal
+
+    seen: set[tuple[str, str]] = set()
+    found: dict[int, list[tuple[str, str]]] = defaultdict(list)
+    rows, _index = _inventory()
+    for row in rows:
+        if row["server"] != "public" or row["kind"] not in {"function", "method"}:
             continue
-        left = True
-        lines.append(f"- `{key[0]}` `{key[1]}`. {NOT_A_TOOL[key]}")
-    if not left:
-        lines.append("- none")
+        key = (str(row["module"]), str(row["symbol"]))
+        if key in seen:
+            continue
+        seen.add(key)
+        if public_entry_refusal(row) is not None:
+            continue
+        found[_plan_stage(str(row["package"]))].append(key)
+    for keys in found.values():
+        keys.sort()
+    return found
+
+
+def _reconciliation_lines() -> list[str]:
+    """How reachable and tested moved from main c1ae468d to this tree.
+
+    Main recorded 85 reachable: stage 1 was 39 and stage 2 was 46. Stage 1
+    tested 29 entry points and stage 2 tested none. A tool does not create a
+    new reachable row.
+    """
+
+    from aureon_public.body import _ENTRY_REFUSAL, _UNTESTED_STAGE2
+    from aureon_public.call_sweep import _tested_stage1_tools
+    from aureon_public.stage2_layer import TESTED
+
+    reachable = _public_keys()
+    stage1_tested = sorted(_tested_stage1_tools())
+    stage2_tested = sorted(TESTED)
+    stage1_now = set(reachable.get(1, []))
+    stage2_now = set(reachable.get(2, []))
+    dropped = [key for key in stage1_tested if key not in stage1_now]
+    untested_stage1 = [key for key in reachable.get(1, []) if key not in set(stage1_tested)]
+    lines = [
+        "## Count reconciliation",
+        "",
+        "Main `c1ae468d` recorded reachable 85. Stage 1 was 39 (alignment 11, generated 4, swarm 24). Stage 2 was 46 (atn 0, cognition 1, conversion 0, decoders 5, evaluation 7, gates 3, observer 29, s51 1). 39 + 46 = 85. Tested on that main was the 29 stage-1 tool entry points below. Stage 2 tested was 0. Registering a tool does not add a reachable row. The tool calls an entry point that was already reachable.",
+        f"Stage 1 reachable now: {len(stage1_now)}. Stage 2 reachable now: {len(stage2_now)}. {len(stage1_now)} + {len(stage2_now)} = {len(stage1_now) + len(stage2_now)}.",
+        f"Stage 1 tested now: {len(stage1_tested)}. Stage 2 tested now: {len(stage2_tested)}. {len(stage1_tested)} + {len(stage2_tested)} = {len(stage1_tested) + len(stage2_tested)}.",
+        "Every stage-1 entry point that was tested on main is still tested. None dropped out:",
+    ]
+    if dropped:
+        lines.append("Stage-1 tested entry points that are no longer reachable:")
+        for module, symbol in dropped:
+            lines.append(f"- `{module}` `{symbol}`")
+    else:
+        lines.append("No stage-1 tested entry point dropped out.")
+    for module, symbol in stage1_tested:
+        lines.append(f"- `{module}` `{symbol}`")
+    lines.append(
+        "Stage 1 still has reachable entry points that were not tested on main and are not tested now. This run did not remove them from tested, because they were not tested:"
+    )
+    for module, symbol in untested_stage1:
+        lines.append(f"- `{module}` `{symbol}`")
+    lines.append(
+        "Stage 2 reachable fell by 6, from 46 to 40. One was refused by the call sweep. Five were reachable with no tool, and `body_call` now refuses them."
+    )
+    calls = _read_json("aureon_public_call_sweep.json")
+    self_coder = next(
+        (
+            row
+            for row in calls.get("entries") or []
+            if isinstance(row, dict)
+            and row.get("module") == "evaluation/measured_proof.py"
+            and row.get("symbol") == "self_coder_report"
+        ),
+        None,
+    )
+    if isinstance(self_coder, dict):
+        lines.append(
+            f"- `evaluation/measured_proof.py` `self_coder_report`: {self_coder.get('refusal') or 'refused by the call sweep'}."
+        )
+    else:
+        lines.append(
+            "- `evaluation/measured_proof.py` `self_coder_report`: refused by the call sweep. The record names the reason."
+        )
+    for key in sorted(item for item, reason in _ENTRY_REFUSAL.items() if reason == _UNTESTED_STAGE2):
+        lines.append(f"- `{key[0]}` `{key[1]}`: {_UNTESTED_STAGE2}.")
+    total = len(stage1_now) + len(stage2_now)
+    tested_total = len(stage1_tested) + len(stage2_tested)
+    if (
+        len(stage1_now) != 39
+        or len(stage2_now) != 40
+        or len(stage1_tested) != 29
+        or len(stage2_tested) != 40
+        or dropped
+        or total != 79
+        or tested_total != 69
+    ):
+        raise RuntimeError(
+            "count reconciliation drifted: "
+            f"stage1 {len(stage1_now)} tested {len(stage1_tested)}; "
+            f"stage2 {len(stage2_now)} tested {len(stage2_tested)}; "
+            f"dropped {dropped}"
+        )
+    lines.append(
+        "Those six are the only entry points that left the reachable set since main `c1ae468d`. "
+        "85 - 6 = 79. Stage 2's remaining 40 reachable entry points are the 40 tested tools. "
+        "39 + 40 = 79 reachable. 29 + 40 = 69 tested."
+    )
     return lines
 
 
@@ -336,6 +450,7 @@ def render() -> str:
             "`body_call` refuses `swarm/capability_grid.py` `build_lane`. `build_lane(\"fintech\")` imports `aureon.accounting`, and that package init reaches `aureon.autonomous.aureon_internal_coding_workforce`, which imports `aureon.inhouse_ai` and `aureon.ollama_config`. Swarm's other entry points stay. Swarm reachable is 24.",
             "The other swarm tools use fixtures from the swarm tests or fixed example arguments. Classes that need nested agent instances stay off the constructor allowlist: Cluster, Company, Zone, FleadhCompany, VisitorAgent, and WorkerAgent. Name-blocked `run_` entry points stay refused. Properties such as SwarmAgent.purity are not given tools because the worker calls methods. `validate_seat_receipt` stays reachable through `body_call` and is not a second tool: the public result cap would drop receipt fields before another call.",
             *_stage2_lines(),
+            *_reconciliation_lines(),
             "",
             "The pin stays `8aa6a2d971cc529484e2a5e261e28afafab4e4f4`. The alignment modules at this checkout match that pin, so the tools do not need a newer commit. `GUARD_BLOB` and `INVENTORY_SHA256` are unchanged.",
             "",
@@ -355,7 +470,7 @@ def render() -> str:
             "",
             "The same v2.0.0 notes also replace `ClientSession` plus the transport clients with `Client`, and the v2.3.0 constructor no longer accepts `host`, `port`, or `streamable_http_path`. This server still passes those three to `FastMCP`, and the measured client still uses `ClientSession`. Staying on 1.30.0 keeps that call shape.",
             "",
-            "The protocol proof is the stdio session and the Streamable HTTP session bound to `127.0.0.1`. A Hugging Face Space scaffold, remote HTTP auth, and stage 2 each stay for a later PR.",
+            "The protocol proof is the stdio session and the Streamable HTTP session bound to `127.0.0.1`. A Hugging Face Space scaffold and remote HTTP auth stay for a later PR. Stage 2 is this run.",
             "",
         ]
     )

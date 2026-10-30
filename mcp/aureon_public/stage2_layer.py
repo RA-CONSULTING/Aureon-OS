@@ -6,6 +6,7 @@ here. A number in the result is the function's result on the named input.
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from aureon_public.alignment_layer import label_result
@@ -21,10 +22,14 @@ from aureon_public.stage2_arguments import (
 )
 
 _MODE = "aureon/observer/production_mode.py"
-_MODE_NOTE = (
-    "The worker does not set AUREON_OBSERVER_MODE. The module default is live. "
-    "That word is the code default, not a broker session and not an order."
-)
+# The worker does not receive AUREON_OBSERVER_MODE. The code default in
+# production_mode.py is the string live. The public result names that default
+# and does not return it as a bare mode word.
+MODE_WHEN_UNSET = {
+    "mode_env": None,
+    "code_default": "live",
+    "note": "code default only; no broker session, no orders",
+}
 
 
 def _call(module: str, symbol: str, arguments: dict[str, Any]) -> str:
@@ -411,152 +416,169 @@ def stage2_momentum_predict() -> str:
     )
 
 
-def _mode(symbol: str, sentence: str) -> str:
-    return label_result(_call("observer/production_mode.py", symbol, {}), _MODE, sentence)
+def _mode(symbol: str) -> str:
+    """Call one production-mode entry point and replace its raw result.
+
+    The worker does not receive AUREON_OBSERVER_MODE. The raw return is the
+    code default. The public result is MODE_WHEN_UNSET, not that raw value.
+    """
+
+    text = label_result(
+        _call("observer/production_mode.py", symbol, {}),
+        _MODE,
+        MODE_WHEN_UNSET["note"],
+    )
+    try:
+        body = json.loads(text)
+    except json.JSONDecodeError:
+        return text
+    if not isinstance(body, dict) or body.get("called") is not True:
+        return text
+    body["result"] = dict(MODE_WHEN_UNSET)
+    return json.dumps(body, ensure_ascii=False, allow_nan=False, sort_keys=True)
 
 
 @quiet
 def stage2_observer_mode() -> str:
-    """Read AUREON_OBSERVER_MODE.
+    """Read the observer mode with the variable unset.
 
-    Unset, the module default is live. That word is the code default, not a broker session.
+    The result names the code default. It is not a broker session and it does not place an order.
 
     Args:
-        none: The worker does not set the variable. Label: cited.
+        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.
     """
 
-    return _mode("get_mode", _MODE_NOTE)
+    return _mode("get_mode")
 
 
 @quiet
 def stage2_reload_mode() -> str:
     """Drop the cached observer mode and read the environment again.
 
-    This does not write a file and does not start a process.
+    This does not write a file and does not start a process. The result names the code default.
 
     Args:
-        none: The worker does not set the variable. Label: cited.
+        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.
     """
 
-    return _mode("reload_mode", _MODE_NOTE + " reload_mode clears the cache and reads the variable again.")
+    return _mode("reload_mode")
 
 
 @quiet
 def stage2_is_live() -> str:
-    """Say whether the resolved observer mode is live.
+    """Ask whether the resolved observer mode equals the code default.
 
-    With the module default, this is true. It does not mean an order was sent.
+    The public result does not return that comparison as a bare word. It names the code default.
 
     Args:
-        none: The worker does not set the variable. Label: cited.
+        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.
     """
 
-    return _mode("is_live", _MODE_NOTE)
+    return _mode("is_live")
 
 
 @quiet
 def stage2_is_shadow() -> str:
-    """Say whether the resolved observer mode is shadow.
+    """Ask whether the resolved observer mode is the shadow setting.
 
-    With the module default, this is false.
+    The public result names the code default. It does not describe a broker session.
 
     Args:
-        none: The worker does not set the variable. Label: cited.
+        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.
     """
 
-    return _mode("is_shadow", _MODE_NOTE)
+    return _mode("is_shadow")
 
 
 @quiet
 def stage2_gate_buy_veto() -> str:
-    """Say whether the buy veto is armed.
+    """Ask whether the buy veto flag follows the code default.
 
-    It is true only when the mode is live. With the module default it is true.
-    It does not place an order.
+    The public result names the code default. This call does not place an order.
 
     Args:
-        none: The worker does not set the variable. Label: cited.
+        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.
     """
 
-    return _mode("gate_buy_veto_active", _MODE_NOTE + " This flag does not place an order.")
+    return _mode("gate_buy_veto_active")
 
 
 @quiet
 def stage2_gate_sell_veto() -> str:
-    """Say whether the sell veto is armed.
+    """Ask whether the sell veto flag follows the code default.
 
-    It is true only when the mode is live. It does not place an order.
+    The public result names the code default. This call does not place an order.
 
     Args:
-        none: The worker does not set the variable. Label: cited.
+        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.
     """
 
-    return _mode("gate_sell_veto_active", _MODE_NOTE + " This flag does not place an order.")
+    return _mode("gate_sell_veto_active")
 
 
 @quiet
 def stage2_narrow_band() -> str:
-    """Say whether the narrow-band threshold is armed.
+    """Ask whether the narrow-band flag follows the code default.
 
-    It is true only when the mode is live. It does not change an order.
+    The public result names the code default. This call does not change an order.
 
     Args:
-        none: The worker does not set the variable. Label: cited.
+        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.
     """
 
-    return _mode("narrow_band_threshold_active", _MODE_NOTE + " This flag does not change an order.")
+    return _mode("narrow_band_threshold_active")
 
 
 @quiet
 def stage2_kelly_buffer() -> str:
-    """Say whether Kelly buffer scaling is armed.
+    """Ask whether Kelly buffer scaling follows the code default.
 
-    It is true only when the mode is live. It does not size an order.
+    The public result names the code default. This call does not size an order.
 
     Args:
-        none: The worker does not set the variable. Label: cited.
+        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.
     """
 
-    return _mode("kelly_buffer_scaling_active", _MODE_NOTE + " This flag does not size an order.")
+    return _mode("kelly_buffer_scaling_active")
 
 
 @quiet
 def stage2_vote_addition() -> str:
-    """Say whether the observer's extra votes are armed.
+    """Ask whether the extra observer votes follow the code default.
 
-    It is true only when the mode is live. It does not cast a live vote.
+    The public result names the code default. This call does not cast a vote.
 
     Args:
-        none: The worker does not set the variable. Label: cited.
+        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.
     """
 
-    return _mode("vote_addition_active", _MODE_NOTE + " This flag does not cast a live vote.")
+    return _mode("vote_addition_active")
 
 
 @quiet
 def stage2_phase_veto() -> str:
-    """Say whether the phase veto is armed.
+    """Ask whether the phase veto follows the code default.
 
-    It is true only when the mode is live. It does not block an order from here.
+    The public result names the code default. This call does not block an order.
 
     Args:
-        none: The worker does not set the variable. Label: cited.
+        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.
     """
 
-    return _mode("phase_veto_active", _MODE_NOTE + " This flag does not block an order from this call.")
+    return _mode("phase_veto_active")
 
 
 @quiet
 def stage2_volatility_veto() -> str:
-    """Say whether the volatility veto is armed.
+    """Ask whether the volatility veto follows the code default.
 
-    It is true only when the mode is live. It does not block an order from here.
+    The public result names the code default. This call does not block an order.
 
     Args:
-        none: The worker does not set the variable. Label: cited.
+        none: The worker does not receive AUREON_OBSERVER_MODE. Label: cited.
     """
 
-    return _mode("volatility_veto_active", _MODE_NOTE + " This flag does not block an order from this call.")
+    return _mode("volatility_veto_active")
 
 
 @quiet

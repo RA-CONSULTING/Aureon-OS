@@ -404,7 +404,7 @@
       "public_entry_points": 118
     },
     "decoders": {
-      "reachable": 5,
+      "reachable": 4,
       "public_entry_points": 80
     },
     "monitors": {

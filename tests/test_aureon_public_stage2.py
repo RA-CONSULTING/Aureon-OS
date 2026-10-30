@@ -204,6 +204,83 @@ def test_stages_three_and_four_stay_closed() -> None:
         assert body["reason"] == reason
 
 
+_UNTESTED_STAGE2 = (
+    ("decoders/book_of_ur.py", "test_phi_resonance_me"),
+    ("observer/momentum.py", "set_momentum_tracker"),
+    ("observer/predictor.py", "make_predictor"),
+    ("observer/wave_predictor.py", "set_wave_predictor"),
+    ("observer/wave_predictor.py", "make_predictor"),
+)
+
+
+def test_untested_stage2_entry_points_are_refused() -> None:
+    from aureon_public.body import _UNTESTED_STAGE2 as reason
+    from aureon_public.body import body_call, dispatch, lookup, public_entry_refusal
+
+    for module, symbol in _UNTESTED_STAGE2:
+        row = lookup(module, symbol)
+        assert row is not None
+        assert public_entry_refusal(row) == reason
+        for raw in (
+            body_call(module, symbol),
+            dispatch(module, symbol, {}, server="public"),
+        ):
+            body = _load(raw)
+            assert body.get("called") is not True, (module, symbol)
+            assert body["status"] == "unavailable"
+            assert body["reason"] == reason
+
+
+def test_observer_mode_tools_do_not_return_a_bare_live(monkeypatch: pytest.MonkeyPatch) -> None:
+    from aureon_public.stage2_layer import (
+        MODE_WHEN_UNSET,
+        stage2_gate_buy_veto,
+        stage2_gate_sell_veto,
+        stage2_is_live,
+        stage2_is_shadow,
+        stage2_kelly_buffer,
+        stage2_narrow_band,
+        stage2_observer_mode,
+        stage2_phase_veto,
+        stage2_reload_mode,
+        stage2_volatility_veto,
+        stage2_vote_addition,
+    )
+
+    monkeypatch.delenv("AUREON_OBSERVER_MODE", raising=False)
+    tools = (
+        stage2_observer_mode,
+        stage2_reload_mode,
+        stage2_is_live,
+        stage2_is_shadow,
+        stage2_gate_buy_veto,
+        stage2_gate_sell_veto,
+        stage2_narrow_band,
+        stage2_kelly_buffer,
+        stage2_vote_addition,
+        stage2_phase_veto,
+        stage2_volatility_veto,
+    )
+    for fn in tools:
+        raw = fn()
+        body = _load(raw)
+        assert body["called"] is True, fn.__name__
+        assert body["result"] == MODE_WHEN_UNSET
+        assert body["result"]["mode_env"] is None
+        assert '"result": "live"' not in raw
+        assert '"result": true' not in raw
+
+
+def test_stage1_tested_entry_points_are_still_tested() -> None:
+    from aureon_public.body import lookup, public_entry_refusal
+    from aureon_public.call_sweep import _tested_stage1_tools
+
+    for module, symbol in sorted(_tested_stage1_tools()):
+        row = lookup(module, symbol)
+        assert row is not None, (module, symbol)
+        assert public_entry_refusal(row) is None, (module, symbol)
+
+
 def test_atn_and_conversion_stay_closed() -> None:
     from aureon_public.body import package_depth
 

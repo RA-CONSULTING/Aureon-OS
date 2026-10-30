@@ -97,11 +97,19 @@ _OPERATOR_ALLOWLIST = {
 # These stay off body_call. compose_repository_layers finds sibling checkouts
 # at parents[3] and execs them outside the pin. build_lane("fintech") imports
 # the in-house adapter through the accounting package.
+_UNTESTED_STAGE2 = "untested stage-2 entry point is not called"
 _ENTRY_REFUSAL = {
     ("organism/repository_layers.py", "compose_repository_layers"): (
         "stage 4 entry point is not called"
     ),
     ("swarm/capability_grid.py", "build_lane"): "stage 4 entry point is not called",
+    # Reachable through body_call, and not a tested tool. The real argument
+    # is an object the constructor allowlist does not include.
+    ("decoders/book_of_ur.py", "test_phi_resonance_me"): _UNTESTED_STAGE2,
+    ("observer/momentum.py", "set_momentum_tracker"): _UNTESTED_STAGE2,
+    ("observer/predictor.py", "make_predictor"): _UNTESTED_STAGE2,
+    ("observer/wave_predictor.py", "set_wave_predictor"): _UNTESTED_STAGE2,
+    ("observer/wave_predictor.py", "make_predictor"): _UNTESTED_STAGE2,
 }
 # A method call constructs its class. An unlisted constructor is not run.
 # The risk scan still runs. PillarAlignment, UnifiedHarmonicDirective, and the
