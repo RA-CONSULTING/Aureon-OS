@@ -331,7 +331,7 @@ def render_plan(rows: list[dict]) -> str:
         "",
         "MCP lets outside models call Aureon's tools. No outside model or API becomes Aureon's reasoning. The cognition runs in Aureon's own code.",
         "",
-        "Public (`aureon-public`) is for entry points that run without keys, personal data, or writes. Live public fetches are allowed there, with a source label and a timeout. Operator (`aureon-operator`) is stdio only, off unless `AUREON_OPERATOR_MCP=1`. It may read keys from the environment and must not log or return them. It writes only under a configurable state root. Live orders return `live_orders: refused`. Process starters are start, status, and stop tools, each behind its own flag.",
+        "Public (`aureon-public`) runs entry points that need no keys, personal data, writes, or live fetches. Operator (`aureon-operator`) is stdio only and stays off unless `AUREON_OPERATOR_MCP=1`. It is deny-by-default: the only calls that run are `accounting/file_drop.py` `registered_ingestors` and `portfolio/aureon_billion_goal_tracker.py` `get_days_remaining`, both with `allow_fetch` and `allow_write` false. It does not read keys. Live orders return `live_orders: refused`.",
         "",
         "Functions and methods are tools. Modules and classes are resources (the surface, not a constructed instance). The running servers address them through `body_call` and `body_surface` so the catalog stays one pair of tools instead of nineteen thousand registrations. The form column is the kind of call. `body_call` runs the real function. `body_surface` does not.",
         "",

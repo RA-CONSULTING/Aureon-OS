@@ -11,12 +11,9 @@ from pathlib import Path
 from typing import Any
 
 from aureon_public import paths
-from aureon_public.guard_loader import apply_space_guard
 from aureon_public.quiet import quiet
 from aureon_public.text import AURIS_FOUR, HOLD_LINE
 from aureon_public.tools import _dumps, _finite
-
-apply_space_guard()
 
 # kind: public tool name, catalog (named, not called), or operator (not on this server).
 PACKAGES: tuple[dict[str, str], ...] = (

@@ -10,12 +10,10 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from aureon_public.guard_loader import apply_space_guard, aureon_source
 from aureon_public import paths
+from aureon_public.guard_loader import aureon_source
 from aureon_public.quiet import quiet
 from aureon_public.text import AURIS_FOUR, HOLD_LINE
-
-apply_space_guard()
 
 _AURIS_FIELDS = ("volatility", "momentum", "volume", "spread")
 
