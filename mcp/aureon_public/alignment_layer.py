@@ -14,6 +14,11 @@ from aureon_public.quiet import quiet
 from aureon_public.tools import _finite
 
 # Inputs copied from tests/stress/stress_test_inhouse_ai.py::test_harmonic_math.
+FIXTURE_SOURCE = "tests/stress/stress_test_inhouse_ai.py::test_harmonic_math"
+FIXTURE_NOTE = (
+    "Fixed fixture from tests/stress/stress_test_inhouse_ai.py::test_harmonic_math. "
+    "Not a live market reading and not a lighthouse reading."
+)
 SPLIT_SIGNALS = ["BUY", "BUY", "SELL", "SELL", "NEUTRAL", "NEUTRAL"]
 AGREE_SIGNALS = ["BUY", "BUY", "BUY", "BUY", "BUY", "BUY"]
 ALIGNED_PHASES = [0.0, 0.0, 0.0]
@@ -52,11 +57,27 @@ def _call(module: str, symbol: str, arguments: dict[str, Any]) -> str:
     return dispatch(module, symbol, arguments, server="public")
 
 
+def _annotate(text: str, used_fixture: bool) -> str:
+    """Mark a default-fixture result so scores are not read as a live reading."""
+
+    if not used_fixture:
+        return text
+    try:
+        body = json.loads(text)
+    except json.JSONDecodeError:
+        return text
+    if not isinstance(body, dict):
+        return text
+    body["input_note"] = FIXTURE_NOTE
+    body["input_source"] = FIXTURE_SOURCE
+    return json.dumps(body, ensure_ascii=False, allow_nan=False, sort_keys=True)
+
+
 @quiet
 def alignment_signal_consensus(signals_json: str = "") -> str:
     """compute_signal_consensus. Provenance: cited.
 
-    The default list is the three-way split in test_harmonic_math. No pillar agent is built.
+    The default list is the three-way split in test_harmonic_math. That fixture is not a live market reading and not a lighthouse reading. No pillar agent is built.
 
     Args:
         signals_json: JSON list of signal names. Empty uses the split fixture. Label: cited.
@@ -68,10 +89,13 @@ def alignment_signal_consensus(signals_json: str = "") -> str:
         return _unavailable(parsed)
     if not parsed or not all(isinstance(item, str) for item in parsed):
         return _unavailable("signals must be a non-empty list of strings")
-    return _call(
-        "alignment/harmonic_resonance.py",
-        "compute_signal_consensus",
-        {"signals": parsed},
+    return _annotate(
+        _call(
+            "alignment/harmonic_resonance.py",
+            "compute_signal_consensus",
+            {"signals": parsed},
+        ),
+        parsed == SPLIT_SIGNALS,
     )
 
 
@@ -80,7 +104,9 @@ def alignment_consonance_read(ratio: float = 1.0) -> str:
     """consonance_score. Provenance: cited.
 
     This is the inventory entry point, called through the pin check. The helper
-    alignment_consonance is a separate tool and is not this call.
+    alignment_consonance is a separate tool and is not this call. The default
+    ratio 1.0 is unison in test_harmonic_math. That fixture is not a live market
+    reading and not a lighthouse reading.
 
     Args:
         ratio: Frequency ratio. The default 1.0 is unison in test_harmonic_math. Label: cited.
@@ -89,7 +115,10 @@ def alignment_consonance_read(ratio: float = 1.0) -> str:
     number = _finite(ratio)
     if number is None:
         return _unavailable("ratio is missing")
-    return _call("alignment/harmonic_resonance.py", "consonance_score", {"ratio": number})
+    return _annotate(
+        _call("alignment/harmonic_resonance.py", "consonance_score", {"ratio": number}),
+        number == 1.0,
+    )
 
 
 @quiet
@@ -97,7 +126,8 @@ def alignment_frequency_harmony(frequencies_json: str = "") -> str:
     """analyse_frequency_harmony. Provenance: cited.
 
     fundamental_hz is omitted, so the function uses its own FUNDAMENTAL_HZ.
-    The default map is the six pillar frequencies in test_harmonic_math.
+    The default map is the six pillar frequencies in test_harmonic_math. That
+    fixture is not a live market reading and not a lighthouse reading.
 
     Args:
         frequencies_json: JSON object of name to Hz. Empty uses that map. Label: cited.
@@ -113,10 +143,13 @@ def alignment_frequency_harmony(frequencies_json: str = "") -> str:
         if number is None:
             return _unavailable(f"{key} is not a frequency")
         frequencies[str(key)] = number
-    return _call(
-        "alignment/harmonic_resonance.py",
-        "analyse_frequency_harmony",
-        {"pillar_frequencies": frequencies},
+    return _annotate(
+        _call(
+            "alignment/harmonic_resonance.py",
+            "analyse_frequency_harmony",
+            {"pillar_frequencies": frequencies},
+        ),
+        frequencies == PILLAR_FREQUENCIES,
     )
 
 
@@ -124,7 +157,8 @@ def alignment_frequency_harmony(frequencies_json: str = "") -> str:
 def alignment_phase_coherence(phases_json: str = "") -> str:
     """compute_phase_coherence. Provenance: cited.
 
-    The default phases are the aligned triple in test_harmonic_math.
+    The default phases are the aligned triple in test_harmonic_math. That fixture
+    is not a live market reading and not a lighthouse reading.
 
     Args:
         phases_json: JSON list of radians. Empty uses that triple. Label: cited.
@@ -140,10 +174,13 @@ def alignment_phase_coherence(phases_json: str = "") -> str:
         if number is None:
             return _unavailable("phases must be numbers")
         phases.append(number)
-    return _call(
-        "alignment/harmonic_resonance.py",
-        "compute_phase_coherence",
-        {"phases_rad": phases},
+    return _annotate(
+        _call(
+            "alignment/harmonic_resonance.py",
+            "compute_phase_coherence",
+            {"phases_rad": phases},
+        ),
+        phases == ALIGNED_PHASES,
     )
 
 
@@ -177,7 +214,8 @@ def alignment_derive_phase(frequency_hz: float = 528.0, t: float = 0.0, signal: 
 def alignment_geometric_mean(values_json: str = "") -> str:
     """geometric_mean. Provenance: cited.
 
-    The default is the four ones in test_harmonic_math.
+    The default is the four ones in test_harmonic_math. That fixture is not a
+    live market reading and not a lighthouse reading.
 
     Args:
         values_json: JSON list of numbers. Empty uses that list. Label: cited.
@@ -193,7 +231,10 @@ def alignment_geometric_mean(values_json: str = "") -> str:
         if number is None:
             return _unavailable("values must be numbers")
         values.append(number)
-    return _call("alignment/harmonic_resonance.py", "geometric_mean", {"values": values})
+    return _annotate(
+        _call("alignment/harmonic_resonance.py", "geometric_mean", {"values": values}),
+        values == GEOMETRIC_ONES,
+    )
 
 
 @quiet
@@ -202,6 +243,8 @@ def alignment_full_analysis(pillar_results_json: str = "", t: float = 0.0) -> st
 
     t is passed, so the function does not read the clock. The default stack is the
     perfect six-pillar stack in test_harmonic_math, including frequency_hz 528.
+    lighthouse_cleared, dominant_signal, and alignment_score from that fixture
+    are not a live market reading and not a lighthouse reading.
 
     Args:
         pillar_results_json: JSON list of pillar result objects. Empty uses that stack. Label: cited.
@@ -217,10 +260,13 @@ def alignment_full_analysis(pillar_results_json: str = "", t: float = 0.0) -> st
         return _unavailable(parsed)
     if not all(isinstance(item, dict) for item in parsed):
         return _unavailable("pillar_results must be a list of objects")
-    return _call(
-        "alignment/harmonic_resonance.py",
-        "full_harmonic_analysis",
-        {"pillar_results": parsed, "t": moment},
+    return _annotate(
+        _call(
+            "alignment/harmonic_resonance.py",
+            "full_harmonic_analysis",
+            {"pillar_results": parsed, "t": moment},
+        ),
+        moment == 0.0 and parsed == PERFECT_STACK,
     )
 
 
@@ -298,21 +344,6 @@ def alignment_pillar_factory() -> str:
     return _call("alignment/pillar_alignment.py", "get_pillar_alignment", {})
 
 
-@quiet
-def alignment_unified_factory() -> str:
-    """get_unified_directive. Provenance: cited.
-
-    The constructor auto-wires and swallows a missing queen bridge, miner bridge,
-    or thought bus. This tool does not fill those in. If the call fails, the
-    result is unavailable. No order is sent.
-
-    Args:
-        none: This tool takes no inputs. Label: cited, get_unified_directive.
-    """
-
-    return _call("alignment/unified_directive.py", "get_unified_directive", {})
-
-
 TOOLS: list[Any] = [
     alignment_signal_consensus,
     alignment_consonance_read,
@@ -325,5 +356,4 @@ TOOLS: list[Any] = [
     alignment_cycle_to_dict,
     alignment_directive_to_dict,
     alignment_pillar_factory,
-    alignment_unified_factory,
 ]

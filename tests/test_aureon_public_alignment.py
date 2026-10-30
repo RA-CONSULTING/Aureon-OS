@@ -128,7 +128,6 @@ def test_alignment_fixed_inputs_and_refused_entry_points() -> None:
         alignment_harmonic_to_dict,
         alignment_pillar_factory,
         alignment_signal_consensus,
-        alignment_unified_factory,
     )
     from aureon_public.body import body_call
 
@@ -154,11 +153,11 @@ def test_alignment_fixed_inputs_and_refused_entry_points() -> None:
     assert directive["result"]["timestamp"] == 0.0
     assert directive["result"]["dominant_frequency_hz"] == 528.0
 
-    for raw in (alignment_pillar_factory(), alignment_unified_factory()):
-        body = _load(raw)
-        assert body["status"] == "cited"
-        assert body["called"] is True
-        assert "consciousness_" not in raw
+    pillar = _load(alignment_pillar_factory())
+    assert pillar["status"] == "cited"
+    assert pillar["called"] is True
+    assert "consciousness_" not in json.dumps(pillar)
+    assert pillar["result"]["fields"]["config"]["fields"]["auto_load_pillars"] is False
 
     missing = _load(alignment_signal_consensus("not-json"))
     assert missing["status"] == "unavailable"
@@ -182,6 +181,76 @@ def test_alignment_fixed_inputs_and_refused_entry_points() -> None:
     assert trading.get("called") is not True
 
 
+def test_default_fixtures_are_not_live_readings() -> None:
+    from aureon_public.alignment_layer import (
+        FIXTURE_NOTE,
+        FIXTURE_SOURCE,
+        alignment_consonance_read,
+        alignment_full_analysis,
+        alignment_signal_consensus,
+    )
+
+    default_full = _load(alignment_full_analysis())
+    assert default_full["input_source"] == FIXTURE_SOURCE
+    assert default_full["input_note"] == FIXTURE_NOTE
+    note = default_full["input_note"].lower()
+    assert "not a live market reading" in note
+    assert "not a lighthouse reading" in note
+    assert default_full["result"]["lighthouse_cleared"] is True
+    assert default_full["result"]["dominant_signal"] == "BUY"
+    assert default_full["result"]["alignment_score"] == 0.9898
+
+    other = _load(alignment_consonance_read(2.0))
+    assert "input_source" not in other
+    split = _load(alignment_signal_consensus())
+    assert split["input_source"] == FIXTURE_SOURCE
+
+
+def test_stage1_tools_do_not_import_queen_miner_or_swarm_motion() -> None:
+    import subprocess
+    import sys
+
+    code = """
+import sys
+sys.path.insert(0, sys.argv[1])
+from aureon_public.alignment_layer import TOOLS
+from aureon_public.call_worker import _call
+from aureon_public.body import dotted_for
+import aureon_public.body as body
+
+def inline(module, symbol, arguments, timeout):
+    del timeout
+    try:
+        return "ok", _call(dotted_for(module), symbol, arguments, module)
+    except Exception as exc:
+        return "error", f"{type(exc).__name__}: {exc}"
+
+body._call_in_subprocess = inline
+names = [fn.__name__ for fn in TOOLS]
+if "alignment_unified_factory" in names:
+    raise SystemExit("alignment_unified_factory is still a stage-1 tool")
+for fn in TOOLS:
+    fn()
+bad = [
+    name for name in sys.modules
+    if name == "aureon.miner" or name.startswith("aureon.miner.")
+    or name == "aureon.queen" or name.startswith("aureon.queen.")
+    or name == "aureon.swarm_motion" or name.startswith("aureon.swarm_motion.")
+]
+if bad:
+    raise SystemExit("imported " + ", ".join(sorted(bad)))
+"""
+    mcp = str(ROOT / "mcp")
+    completed = subprocess.run(
+        [sys.executable, "-c", code, mcp],
+        cwd=str(ROOT),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr + completed.stdout
+
+
 def test_alignment_measured_record_is_a_pinned_run() -> None:
     from aureon_public.guard_loader import PINNED_COMMIT
 
@@ -194,9 +263,28 @@ def test_alignment_measured_record_is_a_pinned_run() -> None:
     assert "python3.12" in record["environment"]["aureon_file"] or record["environment"][
         "python"
     ].startswith("/tmp/aureon-public-venv/")
+    assert "alignment_unified_factory" not in record["calls"]
+    fixture_calls = {
+        "alignment_consonance_read",
+        "alignment_frequency_harmony",
+        "alignment_full_analysis",
+        "alignment_geometric_mean",
+        "alignment_phase_coherence",
+        "alignment_signal_consensus",
+    }
     for name, call in record["calls"].items():
         body = json.loads(call["text"])
         assert body["aureon_source"]["kind"] == "pinned", name
         assert body["aureon_source"]["commit"] == PINNED_COMMIT
         assert "consciousness_" not in call["text"]
         assert call["isError"] is False
+        if name in fixture_calls:
+            source = "tests/stress/stress_test_inhouse_ai.py::test_harmonic_math"
+            assert call["input_source"] == source
+            assert body["input_source"] == source
+            assert "not a live market reading" in call["input_note"].lower()
+            assert "not a lighthouse reading" in body["input_note"].lower()
+    full = json.loads(record["calls"]["alignment_full_analysis"]["text"])
+    assert full["result"]["lighthouse_cleared"] is True
+    assert full["result"]["dominant_signal"] == "BUY"
+    assert full["result"]["alignment_score"] == 0.9898

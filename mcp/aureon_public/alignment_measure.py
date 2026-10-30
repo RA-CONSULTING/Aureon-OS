@@ -81,11 +81,20 @@ async def _session(out_path: Path) -> dict[str, Any]:
             for fn in TOOLS:
                 arguments = _defaults(fn)
                 result = await session.call_tool(fn.__name__, arguments)
-                calls[fn.__name__] = {
+                text = _text_content(result)
+                record_call = {
                     "arguments": arguments,
                     "isError": result.isError,
-                    "text": _text_content(result),
+                    "text": text,
                 }
+                try:
+                    body = json.loads(text)
+                except json.JSONDecodeError:
+                    body = None
+                if isinstance(body, dict) and body.get("input_source"):
+                    record_call["input_note"] = body.get("input_note")
+                    record_call["input_source"] = body["input_source"]
+                calls[fn.__name__] = record_call
     record = {"calls": calls, "environment": _environment()}
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")

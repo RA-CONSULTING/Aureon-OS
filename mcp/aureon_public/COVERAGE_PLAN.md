@@ -99,9 +99,15 @@ These packages are stage 4 because they are on the refused-imports fence or an i
 - `trading`
 - `unified_margin_trader`
 
+## Stage 4
+
+`alignment/unified_directive.py` `get_unified_directive` is not a stage-1 tool. Queen is stage 4. Miner is stage 3. Both are open at stage 4, so this entry point waits there. It is not called by a tool in this run.
+
+Calling `get_unified_directive` constructs `UnifiedHarmonicDirective` with auto-wire on. That constructs `QueenAIBridge` and `MinerAIBridge`. Each bridge loads `AureonBrainAdapter` as the reasoning backend when the Ollama switchboard is missing or unhealthy, and each bridge wires itself to a `ThoughtBus`. The constructor imports `aureon.queen`, `aureon.miner`, and `aureon.swarm_motion`.
+
 ## This run
 
-`alignment` is the first stage-1 package. The new tools call its deterministic entry points through `dispatch`, which keeps `PinnedAureonFinder`, the pin blob check, and the operator fence. `PillarAlignment` and `UnifiedHarmonicDirective` are not allowlisted: their constructors wire the thought bus and other packages. `run_synthetic_cycle` stays refused because the name fence rejects `run_`.
+`alignment` is the first stage-1 package. The new tools call its deterministic entry points through `dispatch`, which keeps `PinnedAureonFinder`, the pin blob check, and the operator fence. `get_pillar_alignment` stays, with `auto_load_pillars` false: it builds a `ThoughtBus` and does not load pillar agents. `get_unified_directive` is not one of these tools. `PillarAlignment` and `UnifiedHarmonicDirective` are not allowlisted. `run_synthetic_cycle` stays refused because the name fence rejects `run_`.
 
 The pin stays `8aa6a2d971cc529484e2a5e261e28afafab4e4f4`. The alignment modules at this checkout match that pin, so the tools do not need a newer commit. `GUARD_BLOB` and `INVENTORY_SHA256` are unchanged.
 

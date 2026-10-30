@@ -193,12 +193,22 @@ def render() -> str:
     )
     for name in sorted(FENCE):
         lines.append(f"- `{name}`")
+    by_name = {row["package"]: row for row in rows}
+    queen_stage = by_name["queen"]["stage"]
+    miner_stage = by_name["miner"]["stage"]
+    both_open = max(queen_stage, miner_stage)
     lines.extend(
         [
             "",
+            f"## Stage {both_open}",
+            "",
+            f"`alignment/unified_directive.py` `get_unified_directive` is not a stage-1 tool. Queen is stage {queen_stage}. Miner is stage {miner_stage}. Both are open at stage {both_open}, so this entry point waits there. It is not called by a tool in this run.",
+            "",
+            "Calling `get_unified_directive` constructs `UnifiedHarmonicDirective` with auto-wire on. That constructs `QueenAIBridge` and `MinerAIBridge`. Each bridge loads `AureonBrainAdapter` as the reasoning backend when the Ollama switchboard is missing or unhealthy, and each bridge wires itself to a `ThoughtBus`. The constructor imports `aureon.queen`, `aureon.miner`, and `aureon.swarm_motion`.",
+            "",
             "## This run",
             "",
-            "`alignment` is the first stage-1 package. The new tools call its deterministic entry points through `dispatch`, which keeps `PinnedAureonFinder`, the pin blob check, and the operator fence. `PillarAlignment` and `UnifiedHarmonicDirective` are not allowlisted: their constructors wire the thought bus and other packages. `run_synthetic_cycle` stays refused because the name fence rejects `run_`.",
+            "`alignment` is the first stage-1 package. The new tools call its deterministic entry points through `dispatch`, which keeps `PinnedAureonFinder`, the pin blob check, and the operator fence. `get_pillar_alignment` stays, with `auto_load_pillars` false: it builds a `ThoughtBus` and does not load pillar agents. `get_unified_directive` is not one of these tools. `PillarAlignment` and `UnifiedHarmonicDirective` are not allowlisted. `run_synthetic_cycle` stays refused because the name fence rejects `run_`.",
             "",
             "The pin stays `8aa6a2d971cc529484e2a5e261e28afafab4e4f4`. The alignment modules at this checkout match that pin, so the tools do not need a newer commit. `GUARD_BLOB` and `INVENTORY_SHA256` are unchanged.",
             "",
