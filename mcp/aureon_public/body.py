@@ -94,9 +94,7 @@ _OPERATOR_ALLOWLIST = {
 # A method call constructs its class. An unlisted constructor is not run.
 _CONSTRUCTOR_ALLOWLIST: set[tuple[str, str]] = set()
 _NAME_CONTAINS = ("write", "save", "export", "dump", "start", "run")
-_WORKER_LOCK = threading.Lock()
-_LIVE_WORKERS = 0
-WORKER_CAP = 4
+_WORKER_SLOTS = threading.BoundedSemaphore(4)
 
 
 def enabled_stage() -> int:
@@ -356,12 +354,13 @@ def _checkout_load(module: str) -> str | None:
 
 
 def _worker_env() -> dict[str, str]:
-    """Minimal child environment. Server secrets are not copied across."""
+    """Minimal child environment. Parent secrets and extras are not copied across."""
 
     package_root = str(Path(__file__).resolve().parents[1])
-    return {
+    env: dict[str, str] = {
         "PATH": os.environ.get("PATH", ""),
         "HOME": os.environ.get("HOME", ""),
+        "TMPDIR": os.environ.get("TMPDIR", "") or tempfile.gettempdir(),
         "PYTHONPATH": package_root,
         "AUREON_AUDIT_MODE": "1",
         "AUREON_DISABLE_REAL_ORDERS": "1",
@@ -370,6 +369,11 @@ def _worker_env() -> dict[str, str]:
         "AUREON_ENABLE_AUTONOMOUS_CONTROL": "0",
         "AUREON_ACTIVATE_ON_IMPORT": "0",
     }
+    for key in ("LANG", "LC_ALL", "LC_CTYPE", "PYTHONHASHSEED"):
+        value = os.environ.get(key)
+        if value:
+            env[key] = value
+    return env
 
 
 def _worker_argv() -> list[str]:
@@ -395,20 +399,12 @@ def _worker_cwd() -> str:
     return tempfile.gettempdir()
 
 
-def _acquire_worker() -> str | None:
-    global _LIVE_WORKERS
-    with _WORKER_LOCK:
-        if _LIVE_WORKERS >= WORKER_CAP:
-            return f"live worker cap {WORKER_CAP} reached"
-        _LIVE_WORKERS += 1
-    return None
+def _acquire_worker() -> None:
+    _WORKER_SLOTS.acquire()
 
 
 def _release_worker() -> None:
-    global _LIVE_WORKERS
-    with _WORKER_LOCK:
-        if _LIVE_WORKERS > 0:
-            _LIVE_WORKERS -= 1
+    _WORKER_SLOTS.release()
 
 
 def _call_in_subprocess(module: str, symbol: str, arguments: dict[str, Any], timeout: float) -> tuple[str, Any]:
@@ -419,9 +415,7 @@ def _call_in_subprocess(module: str, symbol: str, arguments: dict[str, Any], tim
     checkout_error = _checkout_load(module)
     if checkout_error:
         return "error", checkout_error
-    cap = _acquire_worker()
-    if cap:
-        return "capped", cap
+    _acquire_worker()
     payload = json.dumps(
         {
             "dotted": dotted_for(module),

@@ -288,7 +288,7 @@ def test_accounting_writers_are_refused_on_the_operator_path(monkeypatch: pytest
         assert body.get("live_orders") == "refused"
 
 
-def test_live_worker_cap_refuses_calls_past_four(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_live_worker_cap_waits_when_four_workers_are_busy(monkeypatch: pytest.MonkeyPatch) -> None:
     import threading
     import time
 
@@ -317,30 +317,33 @@ def test_live_worker_cap_refuses_calls_past_four(monkeypatch: pytest.MonkeyPatch
         return real_popen(cmd, **kwargs)
 
     monkeypatch.setattr("aureon_public.body.subprocess.Popen", guarded)
-    reasons: list[str] = []
+    results: list[str] = []
 
     def run() -> None:
         body = _load(body_call("harmonic/rainbow_reference.py", "solfeggio_ladder"))
-        if body.get("status") != "cited":
-            reasons.append(str(body.get("reason")))
+        results.append(str(body.get("status")))
 
     threads = [threading.Thread(target=run) for _ in range(6)]
     for thread in threads:
         thread.start()
-    deadline = time.time() + 20
-    while time.time() < deadline and (len(started) < 4 or not reasons):
+    deadline = time.time() + 5
+    while time.time() < deadline and len(started) < 4:
         time.sleep(0.05)
+    assert len(started) == 4
+    time.sleep(0.3)
+    assert len(started) == 4
     hold.set()
     for thread in threads:
-        thread.join(timeout=5)
-    assert len(started) <= 4
-    assert any("live worker cap 4 reached" in reason for reason in reasons)
+        thread.join(timeout=10)
+    assert len(started) == 6
+    assert results.count("cited") == 6
 
 
 def test_worker_env_hides_a_server_sentinel(monkeypatch: pytest.MonkeyPatch) -> None:
     import subprocess as subprocess_module
 
     monkeypatch.setenv("AUREON_SENTINEL_SECRET", "do-not-leak")
+    monkeypatch.setenv("KRAKEN_API_KEY", "x")
     seen: dict[str, dict[str, str]] = {}
     real = subprocess_module.Popen
 
@@ -357,12 +360,14 @@ def test_worker_env_hides_a_server_sentinel(monkeypatch: pytest.MonkeyPatch) -> 
     assert body["status"] == "cited"
     env = seen["env"]
     assert "AUREON_SENTINEL_SECRET" not in env
+    assert "KRAKEN_API_KEY" not in env
     assert "do-not-leak" not in json.dumps(env)
     assert env["AUREON_DISABLE_REAL_ORDERS"] == "1"
     assert "PYTHONPATH" in env
-    assert set(env) <= {
+    allowed = {
         "PATH",
         "HOME",
+        "TMPDIR",
         "PYTHONPATH",
         "AUREON_AUDIT_MODE",
         "AUREON_DISABLE_REAL_ORDERS",
@@ -370,7 +375,12 @@ def test_worker_env_hides_a_server_sentinel(monkeypatch: pytest.MonkeyPatch) -> 
         "AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS",
         "AUREON_ENABLE_AUTONOMOUS_CONTROL",
         "AUREON_ACTIVATE_ON_IMPORT",
+        "LANG",
+        "LC_ALL",
+        "LC_CTYPE",
+        "PYTHONHASHSEED",
     }
+    assert set(env) <= allowed
 
 
 def test_listener_backed_ssrf_does_not_connect() -> None:
@@ -655,6 +665,35 @@ def test_edited_guard_does_not_run(tmp_path: Path, monkeypatch: pytest.MonkeyPat
     with pytest.raises(ImportError, match="differs from pin"):
         guard_loader.apply_space_guard()
     assert not marker.exists()
+
+
+def test_pinned_finder_is_installed_before_guard_executes(monkeypatch: pytest.MonkeyPatch) -> None:
+    import aureon_public.guard_loader as guard_loader
+    import aureon_public.pin_blob as pin_blob
+    from aureon_public.pin_blob import PinnedAureonFinder, _SameBytesLoader
+
+    monkeypatch.setattr(guard_loader, "_DONE", False)
+    seen: list[str] = []
+
+    real_install = pin_blob.install_pinned_aureon_finder
+
+    def install(root: object = None, commit: object = None) -> object:
+        seen.append("finder")
+        return real_install(root, commit)
+
+    monkeypatch.setattr(pin_blob, "install_pinned_aureon_finder", install)
+
+    original_exec = _SameBytesLoader.exec_module
+
+    def exec_module(self: _SameBytesLoader, module: object) -> None:
+        seen.append("guard")
+        assert seen == ["finder", "guard"]
+        assert any(isinstance(finder, PinnedAureonFinder) for finder in sys.meta_path)
+        return original_exec(self, module)
+
+    monkeypatch.setattr(_SameBytesLoader, "exec_module", exec_module)
+    guard_loader.apply_space_guard()
+    assert seen == ["finder", "guard"]
 
 
 def test_preseeded_aureon_module_is_refused() -> None:

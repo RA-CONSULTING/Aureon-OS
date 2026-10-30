@@ -54,6 +54,9 @@ def apply_space_guard() -> None:
             raise ImportError(f"{guard_path.name} is not in this checkout") from exc
         if git_blob_sha1(data) != GUARD_BLOB:
             raise ImportError(GUARD_MISMATCH)
+        from aureon_public.pin_blob import install_pinned_aureon_finder
+
+        install_pinned_aureon_finder(root)
         loader = _SameBytesLoader(data, str(guard_path))
         spec = importlib.util.spec_from_loader(
             "aureon_hf_space_guard",
