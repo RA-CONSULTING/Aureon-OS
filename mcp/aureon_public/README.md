@@ -34,7 +34,7 @@ Each figure is reachable public functions and methods out of the public function
 | command_centers | 0 | 0 |
 | connectors | 0 | 0 |
 | conversion | 0 | 0 |
-| core | 125 | 452 |
+| core | 109 | 452 |
 | data_feeds | 11 | 118 |
 | decoders | 10 | 80 |
 | evaluation | 7 | 10 |
@@ -58,7 +58,7 @@ Each figure is reachable public functions and methods out of the public function
 | plumber | 52 | 271 |
 | portals | 11 | 51 |
 | portfolio | 0 | 0 |
-| queen | 132 | 566 |
+| queen | 131 | 566 |
 | s51 | 1 | 24 |
 | saas | 0 | 0 |
 | scanners | 0 | 0 |

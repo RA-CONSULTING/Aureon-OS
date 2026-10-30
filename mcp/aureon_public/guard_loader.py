@@ -21,6 +21,9 @@ from aureon_public.paths import repo_root, space_guard
 
 _DONE = False
 PINNED_COMMIT = "a00f744d2e686e916e45b81dd4222408c368e305"
+# guard.py is not in commit a00f744d. This is the git blob of the committed file.
+GUARD_BLOB = "176cc0b54d61fdfa770743c4fbbf52a97e120fc7"
+GUARD_MISMATCH = "checkout guard.py differs from pin a00f744d"
 
 
 def _same(path: str, root: Path) -> bool:
@@ -43,12 +46,27 @@ def apply_space_guard() -> None:
     real_chdir = os.chdir
     os.chdir = lambda *_args, **_kwargs: None  # type: ignore[method-assign]
     try:
-        spec = importlib.util.spec_from_file_location("aureon_hf_space_guard", guard_path)
-        if spec is None or spec.loader is None:
+        from aureon_public.pin_blob import _SameBytesLoader, git_blob_sha1
+
+        try:
+            data = guard_path.read_bytes()
+        except OSError as exc:
+            raise ImportError(f"{guard_path.name} is not in this checkout") from exc
+        if git_blob_sha1(data) != GUARD_BLOB:
+            raise ImportError(GUARD_MISMATCH)
+        loader = _SameBytesLoader(data, str(guard_path))
+        spec = importlib.util.spec_from_loader(
+            "aureon_hf_space_guard",
+            loader,
+            origin=str(guard_path),
+        )
+        if spec is None:
             raise ImportError(f"cannot load {guard_path}")
+        spec.has_location = True
         module = importlib.util.module_from_spec(spec)
+        module.__file__ = str(guard_path)
         sys.modules["aureon_hf_space_guard"] = module
-        spec.loader.exec_module(module)
+        loader.exec_module(module)
     finally:
         os.chdir = real_chdir
     if Path.cwd() != cwd:

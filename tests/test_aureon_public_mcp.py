@@ -526,13 +526,13 @@ def test_pinned_source_reads_once_and_executes_those_bytes(tmp_path: Path, monke
     assert load_pinned_source("pinned_bytes_changed", changed, "", "mismatch") == "expected blob is required"
 
 
-def test_spec_from_file_location_is_only_the_space_guard() -> None:
+def test_spec_from_file_location_is_not_used_under_mcp() -> None:
     import ast
 
     root = ROOT / "mcp"
     offenders: list[str] = []
     for path in root.rglob("*.py"):
-        if path.name == "guard_loader.py":
+        if any(part in {"build", "__pycache__"} for part in path.parts):
             continue
         tree = ast.parse(path.read_text(encoding="utf-8"))
         for node in ast.walk(tree):
@@ -544,9 +544,6 @@ def test_spec_from_file_location_is_only_the_space_guard() -> None:
             if name == "spec_from_file_location":
                 offenders.append(f"{path.relative_to(root)}:{node.lineno}")
     assert offenders == []
-    guard = (root / "aureon_public" / "guard_loader.py").read_text(encoding="utf-8")
-    assert "spec_from_file_location" in guard
-    assert "space_guard" in guard
 
 
 def test_subprocess_body_call_ignores_stray_module_in_repo_root() -> None:

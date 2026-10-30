@@ -1,9 +1,9 @@
 """Git-blob check for a file loaded from the checkout beside a pinned aureon.
 
-Every checkout load goes through ``load_pinned_source``. That helper requires
-the expected blob, reads the file once, and executes those same bytes.
-``guard_loader`` is the only ``spec_from_file_location`` call, and it loads
-``huggingface/hnc-field/guard.py`` rather than an aureon module.
+Every checkout load goes through ``load_pinned_source`` or the pinned finder.
+Those helpers require the expected blob, read the file once, and execute
+those same bytes. ``huggingface/hnc-field/guard.py`` is checked the same way.
+Nothing under ``mcp/`` uses ``spec_from_file_location``.
 """
 
 from __future__ import annotations
@@ -154,6 +154,56 @@ class PinnedAureonFinder:
         if path.name == "__init__.py":
             spec.submodule_search_locations = [str(path.parent)]
         return spec
+
+
+def _loaded_by_finder(module: object) -> bool:
+    loader = getattr(getattr(module, "__spec__", None), "loader", None)
+    return isinstance(loader, _SameBytesLoader)
+
+
+def refuse_preseeded_aureon() -> None:
+    """Raise when an ``aureon`` module is already loaded by another loader.
+
+    ``import`` returns a ``sys.modules`` hit without calling the finder.
+    A guard or a caller that plants a fake module first would skip the blob check.
+    """
+
+    for name, module in list(sys.modules.items()):
+        if module is None:
+            continue
+        if name != "aureon" and not name.startswith("aureon."):
+            continue
+        if not _loaded_by_finder(module):
+            raise ImportError(f"{name} was not loaded through the pinned finder")
+
+
+def import_through_finder(dotted: str) -> ModuleType:
+    """Import ``dotted`` and each parent through ``PinnedAureonFinder``.
+
+    ``find_spec`` on the full name is not used. That call imports parent
+    packages before any blob check. A parent already in ``sys.modules`` from
+    another loader is refused rather than reused.
+    """
+
+    if dotted != "aureon" and not dotted.startswith("aureon."):
+        raise ImportError("only an aureon module can be loaded")
+    install_pinned_aureon_finder()
+    parts = dotted.split(".")
+    for index in range(1, len(parts) + 1):
+        name = ".".join(parts[:index])
+        existing = sys.modules.get(name)
+        if existing is not None:
+            if not _loaded_by_finder(existing):
+                raise ImportError(f"{name} was not loaded through the pinned finder")
+            continue
+        importlib.import_module(name)
+        loaded = sys.modules.get(name)
+        if loaded is None or not _loaded_by_finder(loaded):
+            raise ImportError(f"{name} was not loaded through the pinned finder")
+    module = sys.modules.get(dotted)
+    if module is None:
+        raise ImportError(f"{dotted} could not be loaded")
+    return module
 
 
 def install_pinned_aureon_finder(root: Path | None = None, commit: str | None = None) -> PinnedAureonFinder:

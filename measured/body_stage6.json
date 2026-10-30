@@ -115,7 +115,7 @@
     },
     "core": {
       "public_entry_points": 365,
-      "reachable": 95
+      "reachable": 79
     },
     "generated": {
       "public_entry_points": 4,
