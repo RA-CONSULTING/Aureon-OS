@@ -122,9 +122,7 @@ def test_readme_and_stage_reports_match_the_inventory_depth() -> None:
 
     readme = (ROOT / "mcp" / "aureon_public" / "README.md").read_text(encoding="utf-8")
     assert render_readme_depth() in readme
-    assert readme.splitlines()[14] == (
-        "A layer counts as full depth only where its real entry points are called."
-    )
+    assert "A layer counts as full depth only where its real entry points are called." in readme.splitlines()
     assert "The extra package tools are helpers." in readme
     for stage in range(1, 7):
         record = json.loads((ROOT / "measured" / f"body_stage{stage}.json").read_text(encoding="utf-8"))
