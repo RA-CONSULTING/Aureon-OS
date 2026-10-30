@@ -1,4 +1,7 @@
 # aureon is pinned to the commit the Spaces and the measured brain run use.
-mcp==1.30.0
+# mcp==1.30.0,<2 installs 1.30.0 and excludes every 2.x release.
+# MCP 2 renamed FastMCP to MCPServer. Migration is a later decision.
+# The check and the sources are in mcp/aureon_public/COVERAGE_PLAN.md.
+mcp==1.30.0,<2
 numpy>=1.26
 aureon @ git+https://github.com/RA-CONSULTING/Aureon-OS.git@8aa6a2d971cc529484e2a5e261e28afafab4e4f4

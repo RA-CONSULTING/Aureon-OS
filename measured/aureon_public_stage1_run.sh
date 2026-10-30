@@ -9,12 +9,19 @@
 # measured/aureon_public_alignment.json and measured/aureon_public_stage1.json.
 # test-requirements.txt is pytest, pytest-timeout, flask, pandas, and scipy.
 # It is not the public server runtime.
+#
+# measurement_stamp refuses a dirty tree. The two measure processes stamp
+# before they write. Both outputs stay in a temp directory until both stamps
+# have finished, then this script copies them into measured/.
 set -eu
 ROOT="$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)"
 VENV="${VENV:-/tmp/aureon-public-venv}"
 WORK="${WORK:-/tmp/aureon-public-measure}"
 ALIGN_OUT="${ALIGN_OUT:-$ROOT/measured/aureon_public_alignment.json}"
 OUT="${OUT:-$ROOT/measured/aureon_public_stage1.json}"
+STAGE_TMP="$(mktemp -d "${TMPDIR:-/tmp}/aureon-stage1.XXXXXX")"
+cleanup() { rm -rf "$STAGE_TMP"; }
+trap cleanup EXIT
 python3.12 -m venv "$VENV"
 "$VENV/bin/python" -m pip install -U pip
 "$VENV/bin/python" -m pip install -r "$ROOT/mcp/aureon_public/requirements.txt"
@@ -22,5 +29,7 @@ python3.12 -m venv "$VENV"
 "$VENV/bin/python" -m pip install -e "$ROOT/mcp" --no-deps
 mkdir -p "$WORK"
 cd "$WORK"
-env -u PYTHONPATH "$VENV/bin/python" -m aureon_public.alignment_measure --out "$ALIGN_OUT"
-env -u PYTHONPATH "$VENV/bin/python" -m aureon_public.stage1_measure --out "$OUT"
+env -u PYTHONPATH "$VENV/bin/python" -m aureon_public.alignment_measure --out "$STAGE_TMP/alignment.json"
+env -u PYTHONPATH "$VENV/bin/python" -m aureon_public.stage1_measure --out "$STAGE_TMP/stage1.json"
+cp "$STAGE_TMP/alignment.json" "$ALIGN_OUT"
+cp "$STAGE_TMP/stage1.json" "$OUT"
