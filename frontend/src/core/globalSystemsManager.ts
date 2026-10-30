@@ -47,9 +47,9 @@ export interface GlobalState {
   totalEquity: number | null;
   equityNote: string | null;
   availableBalance: number;
-  totalTrades: number;
-  winningTrades: number;
-  totalPnl: number;
+  totalTrades: number | null;
+  winningTrades: number | null;
+  totalPnl: number | null;
   gasTankBalance: number;
   recentTrades: Array<{
     time: string;
@@ -180,9 +180,9 @@ export interface GlobalState {
   maxPositions: number;              // Max concurrent positions
   activePositions: Array<{
     symbol: string;
-    entryPrice: number;
-    currentPrice: number;
-    pnlPercent: number;
+    entryPrice: number | null;
+    currentPrice: number | null;
+    pnlPercent: number | null;
     side: 'LONG' | 'SHORT';
     exchange?: string;
     tradeId?: string;
@@ -191,13 +191,13 @@ export interface GlobalState {
   shadowTrades?: Array<{
     symbol: string;
     side: 'LONG' | 'SHORT';
-    entryPrice: number;
-    currentPrice: number;
-    movePercent: number;
-    targetMovePercent: number;
+    entryPrice: number | null;
+    currentPrice: number | null;
+    movePercent: number | null;
+    targetMovePercent: number | null;
     exchange?: string;
     validated?: boolean;
-    ageSeconds?: number;
+    ageSeconds?: number | null;
   }>;
 
   unifiedMarketSummary?: {

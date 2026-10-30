@@ -162,6 +162,32 @@ const sumFinite = (...values: Array<number | null>): number | null => {
   return present.length ? present.reduce((sum, value) => sum + value, 0) : null;
 };
 
+type TradeStatsSnapshot = {
+  total: number | null;
+  wins: number | null;
+  winRate: number | null;
+  totalPnl: number | null;
+};
+
+const NULL_TRADE_STATS: TradeStatsSnapshot = {
+  total: null,
+  wins: null,
+  winRate: null,
+  totalPnl: null,
+};
+
+const positionMovePercent = (
+  entryPrice: number | null,
+  currentPrice: number | null,
+  invertForShort = false,
+): number | null => {
+  if (entryPrice == null || currentPrice == null || entryPrice <= 0) return null;
+  const rawPct = ((currentPrice - entryPrice) / entryPrice) * 100;
+  return invertForShort ? -rawPct : rawPct;
+};
+
+const formatEquityLog = (value: number | null) => (value == null ? 'unavailable' : value.toFixed(2));
+
 const toStringList = (value: unknown): string[] =>
   Array.isArray(value) ? value.map((item) => String(item ?? '')).filter(Boolean) : [];
 
@@ -301,25 +327,25 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
   }, []);
 
   // Fetch trade statistics from trade_records (populated by Python)
-  const fetchTradeStats = useCallback(async () => {
+  const fetchTradeStats = useCallback(async (): Promise<TradeStatsSnapshot> => {
     try {
       const { data: trades, error } = await supabase
         .from('trade_records')
         .select('id, is_win, pnl')
         .eq('user_id', LIVE_FEED_USER_ID);
 
-      if (error || !trades) {
-        return { total: 0, wins: 0, winRate: 0, totalPnl: 0 };
+      if (error || !trades || trades.length === 0) {
+        return NULL_TRADE_STATS;
       }
 
       const total = trades.length;
       const wins = trades.filter(t => t.is_win === true).length;
-      const winRate = total > 0 ? (wins / total) * 100 : 0;
+      const winRate = (wins / total) * 100;
       const totalPnl = sumFinite(...trades.map((t) => firstFinite(t.pnl)));
 
       return { total, wins, winRate, totalPnl };
     } catch (err) {
-      return { total: 0, wins: 0, winRate: 0, totalPnl: 0 };
+      return NULL_TRADE_STATS;
     }
   }, []);
 
@@ -380,15 +406,14 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
 
         const krakenPositions = Array.isArray(kraken.positions) ? kraken.positions.map((p: any) => {
           const entryPrice = firstFinite(p.entry_price);
-          const currentPrice = firstFinite(p.current_price, entryPrice);
-          const rawPct = entryPrice > 0 ? ((currentPrice - entryPrice) / entryPrice) * 100 : 0;
+          const currentPrice = firstFinite(p.current_price);
           const sideRaw = String(p.side || '').toUpperCase();
           const isShort = sideRaw === 'SELL' || sideRaw === 'SHORT';
           return {
             symbol: String(p.symbol || p.pair || ''),
             entryPrice,
             currentPrice,
-            pnlPercent: isShort ? -rawPct : rawPct,
+            pnlPercent: positionMovePercent(entryPrice, currentPrice, isShort),
             side: (isShort ? 'SHORT' : 'LONG') as 'LONG' | 'SHORT',
             exchange: 'kraken',
             tradeId: String(p.trade_id || p.transaction_id || ''),
@@ -399,7 +424,7 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
         const capitalPositions = Array.isArray(capital.positions) ? capital.positions.map((p: any) => ({
           symbol: String(p.symbol || ''),
           entryPrice: firstFinite(p.entry_price),
-          currentPrice: firstFinite(p.current_price, p.entry_price),
+          currentPrice: firstFinite(p.current_price),
           pnlPercent: firstFinite(p.pnl_pct),
           side: (String(p.direction || 'BUY').toUpperCase() === 'SELL' ? 'SHORT' : 'LONG') as 'LONG' | 'SHORT',
           exchange: 'capital',
@@ -413,7 +438,7 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
           symbol: String(s.symbol || s.pair || ''),
           side: (String(s.side || s.direction || 'BUY').toUpperCase() === 'SELL' ? 'SHORT' : 'LONG') as 'LONG' | 'SHORT',
           entryPrice: firstFinite(s.entry_price),
-          currentPrice: firstFinite(s.current_price, s.entry_price),
+          currentPrice: firstFinite(s.current_price),
           movePercent: firstFinite(s.current_move_pct),
           targetMovePercent: firstFinite(s.target_move_pct),
           exchange: 'kraken',
@@ -425,7 +450,7 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
           symbol: String(s.symbol || ''),
           side: (String(s.direction || 'BUY').toUpperCase() === 'SELL' ? 'SHORT' : 'LONG') as 'LONG' | 'SHORT',
           entryPrice: firstFinite(s.entry_price),
-          currentPrice: firstFinite(s.current_price, s.entry_price),
+          currentPrice: firstFinite(s.current_price),
           movePercent: firstFinite(s.current_move_pct),
           targetMovePercent: firstFinite(s.target_move_pct),
           exchange: 'capital',
@@ -510,7 +535,10 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
           winningTrades,
           totalPnl,
           cyclePnl: totalPnl,
-          cyclePnlPercent: (totalEquity ?? 0) > 0 ? (totalPnl / (totalEquity ?? 0)) * 100 : 0,
+          cyclePnlPercent:
+            totalEquity != null && totalEquity > 0 && totalPnl != null
+              ? (totalPnl / totalEquity) * 100
+              : null,
           avgHoldTimeMinutes: firstFinite(kraken.avg_hold_time),
           activePositions,
           shadowTrades,
@@ -586,14 +614,13 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
 
       const mappedPositions = (localState.positions || []).map((p) => {
         const entryPrice = firstFinite(p.entry_price);
-        const currentPrice = Number(p.current_price || entryPrice);
-        const rawPct = entryPrice > 0 ? ((currentPrice - entryPrice) / entryPrice) * 100 : 0;
+        const currentPrice = firstFinite(p.current_price);
         const isShort = String(p.side || '').toUpperCase() === 'SELL';
         return {
           symbol: p.symbol,
           entryPrice,
           currentPrice,
-          pnlPercent: isShort ? -rawPct : rawPct,
+          pnlPercent: positionMovePercent(entryPrice, currentPrice, isShort),
           side: (isShort ? 'SHORT' : 'LONG') as 'LONG' | 'SHORT',
         };
       });
@@ -668,7 +695,7 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
       });
 
       console.log('[TerminalSync] Local trader synced:', {
-        equity: firstFinite(localState.portfolio_value).toFixed(2),
+        equity: formatEquityLog(firstFinite(localState.portfolio_value)),
         trades: localState.total_trades ?? null,
         wins: localState.wins ?? null,
         positions: mappedPositions.length,
@@ -691,19 +718,24 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
     }
 
     // Map positions to display format
-    const mappedPositions = positions.map(p => ({
-      symbol: p.symbol,
-      entryPrice: Number(p.entry_price),
-      currentPrice: Number(p.current_price) || Number(p.entry_price),
-      pnlPercent: p.current_price != null && p.entry_price != null && Number(p.entry_price) !== 0
-        ? ((Number(p.current_price) - Number(p.entry_price)) / Number(p.entry_price)) * 100
-        : null,
-      side: (p.side === 'BUY' ? 'LONG' : 'SHORT') as 'LONG' | 'SHORT',
-    }));
+    const mappedPositions = positions.map((p) => {
+      const entryPrice = firstFinite(p.entry_price);
+      const currentPrice = firstFinite(p.current_price);
+      const isShort = p.side !== 'BUY';
+      return {
+        symbol: p.symbol,
+        entryPrice,
+        currentPrice,
+        pnlPercent: positionMovePercent(entryPrice, currentPrice, isShort),
+        side: (isShort ? 'SHORT' : 'LONG') as 'LONG' | 'SHORT',
+      };
+    });
 
     // Determine Gaia state from HNC data
     const gaiaState = hncState?.distortion_power > 0 ? 'DISTORTION' : 
                       (session.current_coherence ?? -1) > 0.45 ? 'COHERENT' : 'NEUTRAL';
+
+    const cyclePnl = session.total_pnl_usdt ?? tradeStats.totalPnl;
 
     // Update global state with REAL data from Python
     globalSystemsManager.setPartialState({
@@ -717,10 +749,11 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
       totalTrades: session.total_trades ?? tradeStats.total ?? null,
       winningTrades: session.winning_trades ?? tradeStats.wins ?? null,
       totalPnl: session.total_pnl_usdt ?? tradeStats.totalPnl ?? null,
-      cyclePnl: session.total_pnl_usdt ?? tradeStats.totalPnl ?? null,
-      cyclePnlPercent: session.total_equity_usdt > 0 && (session.total_pnl_usdt ?? tradeStats.totalPnl) != null
-        ? ((session.total_pnl_usdt ?? tradeStats.totalPnl ?? 0) / session.total_equity_usdt) * 100
-        : null,
+      cyclePnl: cyclePnl ?? null,
+      cyclePnlPercent:
+        session.total_equity_usdt > 0 && cyclePnl != null
+          ? (cyclePnl / session.total_equity_usdt) * 100
+          : null,
       avgHoldTimeMinutes: runtimeStats?.avg_hold_time_minutes ?? null,
       recentTrades: Array.isArray(session.recent_trades) ? (session.recent_trades as Array<any>).map((trade) => ({
         time: String(trade?.time || ''),
@@ -787,11 +820,16 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
       statusLines: runtimeStats?.status_lines || [],
     });
 
+    const dbWinRate =
+      tradeStats.total != null && tradeStats.total > 0 && tradeStats.wins != null
+        ? `${((tradeStats.wins / tradeStats.total) * 100).toFixed(1)}%`
+        : 'unavailable';
+
     console.log('[TerminalSync] DB data synced:', { 
       equity: session.total_equity_usdt == null ? 'unavailable' : Number(session.total_equity_usdt).toFixed(2),
-      trades: session.total_trades || tradeStats.total,
-      wins: session.winning_trades || tradeStats.wins,
-      winRate: ((session.winning_trades || tradeStats.wins) / Math.max(1, session.total_trades || tradeStats.total) * 100).toFixed(1) + '%',
+      trades: session.total_trades ?? tradeStats.total ?? 'unavailable',
+      wins: session.winning_trades ?? tradeStats.wins ?? 'unavailable',
+      winRate: dbWinRate,
       coherence: session.current_coherence == null ? 'unavailable' : `${(session.current_coherence * 100).toFixed(1)}%`,
       positions: positions.length,
     });
