@@ -11,12 +11,16 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "mcp"))
 
-from aureon_public.body import body_call, body_call_operator, body_registry, body_surface, enabled_stage  # noqa: E402
-from aureon_public.pin_blob import checkout_blob_refusal  # noqa: E402
-from aureon_public.guard_loader import PINNED_COMMIT  # noqa: E402
-from aureon_public.paths import repo_root  # noqa: E402
+# Populated by tests/conftest.py before tests in this module run (not at collection time).
+body_call: object
+body_call_operator: object
+body_registry: object
+body_surface: object
+enabled_stage: object
+checkout_blob_refusal: object
+PINNED_COMMIT: str
+repo_root: object
 
 pytestmark = pytest.mark.timeout(180)
 

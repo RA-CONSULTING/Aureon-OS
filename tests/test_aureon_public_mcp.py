@@ -11,16 +11,16 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "mcp"))
 
-from aureon_public import surfaces, tools  # noqa: E402
-from aureon_public.guard_loader import (  # noqa: E402
-    PINNED_COMMIT,
-    aureon_source,
-    describe_aureon_source,
-)
-from aureon_public.server import SERVER_INSTRUCTIONS, build_server  # noqa: E402
-from aureon_public.text import SERVER_PLAIN  # noqa: E402
+# Populated by tests/conftest.py before tests in this module run (not at collection time).
+tools: object
+surfaces: object
+PINNED_COMMIT: str
+aureon_source: object
+describe_aureon_source: object
+SERVER_INSTRUCTIONS: str
+build_server: object
+SERVER_PLAIN: str
 
 pytestmark = pytest.mark.timeout(180)
 
@@ -600,3 +600,10 @@ def test_space_entry_points_call_enforce_public_pin() -> None:
         call_at = text.index("enforce_public_pin()")
         assert call_at > main_at
         assert "demo.launch(" in text[call_at:]
+
+
+def test_pinned_finder_not_on_meta_path_after_teardown() -> None:
+    from tests.support import mcp_isolation
+
+    mcp_isolation.teardown_guard_leaks()
+    assert mcp_isolation.pinned_finders_on_meta_path() == []
