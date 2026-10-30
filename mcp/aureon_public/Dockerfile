@@ -20,9 +20,13 @@ RUN apt-get update \
 
 # Full history of main so git rev-parse of the aureon pin still resolves.
 # A shallow clone would omit that commit.
+# AUREON_REF is required. It must be the merge that carries the ten stage-1
+# entry-point fix (bc-ee01). That merge is not on main yet. Do not pass
+# cf43882e. This image has not been built under Docker.
 ARG AUREON_REPO=https://github.com/RA-CONSULTING/Aureon-OS.git
-ARG AUREON_REF=cf43882e012906460527d28ca80e6fda50f7d256
-RUN git clone --branch main --single-branch "$AUREON_REPO" /opt/aureon-os \
+ARG AUREON_REF
+RUN test -n "$AUREON_REF" \
+    && git clone --branch main --single-branch "$AUREON_REPO" /opt/aureon-os \
     && git -C /opt/aureon-os checkout "$AUREON_REF"
 
 # Overlay this directory so the image runs the scaffold beside the Dockerfile,

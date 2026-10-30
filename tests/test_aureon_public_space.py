@@ -248,11 +248,11 @@ def test_rate_limit_and_body_limit_return_429() -> None:
     ) as server:
         headers = {"Authorization": f"Bearer {key}"}
         oversized = httpx.post(server.url, content=b"x" * 64, headers=headers, timeout=10)
-        assert oversized.status_code == 429
+        assert oversized.status_code == 413
         assert oversized.json()["error"] == "body_too_large"
 
 
-def test_request_timeout_returns_429() -> None:
+def test_request_timeout_returns_504() -> None:
     import asyncio
 
     from aureon_public.http_guard import HttpLimits, PublicHttpMiddleware
@@ -286,8 +286,174 @@ def test_request_timeout_returns_429() -> None:
             return await client.post("/mcp", content=b"{}")
 
     response = asyncio.run(post())
-    assert response.status_code == 429
+    assert response.status_code == 504
     assert response.json()["error"] == "timeout"
+
+
+def _limits(**overrides: object):
+    from aureon_public.http_guard import HttpLimits
+
+    values = {
+        "api_key": "",
+        "max_body_bytes": 1000,
+        "rate_limit": 2,
+        "rate_window_s": 60.0,
+        "timeout_s": 5.0,
+        "trusted_hops": 1,
+        "max_clients": 32,
+    }
+    values.update(overrides)
+    return HttpLimits(**values)
+
+
+async def _middleware_status(middleware, headers: dict[str, str], body: bytes = b"{}") -> int:
+    raw = [(key.lower().encode("latin1"), value.encode("latin1")) for key, value in headers.items()]
+    scope = {
+        "type": "http",
+        "method": "POST",
+        "path": "/mcp",
+        "headers": raw,
+        "client": ("127.0.0.1", 9),
+    }
+    sent = {"done": False}
+
+    async def receive():
+        if sent["done"]:
+            return {"type": "http.disconnect"}
+        sent["done"] = True
+        return {"type": "http.request", "body": body, "more_body": False}
+
+    messages = []
+
+    async def send(message):
+        messages.append(message)
+
+    await middleware(scope, receive, send)
+    start = next(message for message in messages if message["type"] == "http.response.start")
+    return int(start["status"])
+
+
+def test_changing_x_forwarded_for_first_hop_shares_one_bucket() -> None:
+    """Replay: limit 2, four requests, only the first X-Forwarded-For hop changes."""
+
+    import asyncio
+
+    from aureon_public.http_guard import PublicHttpMiddleware
+
+    async def ok(scope, receive, send):
+        while True:
+            message = await receive()
+            if message.get("type") == "http.request" and not message.get("more_body", False):
+                break
+        await send({"type": "http.response.start", "status": 200, "headers": []})
+        await send({"type": "http.response.body", "body": b"ok"})
+
+    middleware = PublicHttpMiddleware(ok, _limits())
+
+    async def statuses() -> list[int]:
+        found = []
+        for index in range(4):
+            found.append(
+                await _middleware_status(
+                    middleware,
+                    {"x-forwarded-for": f"203.0.113.{index}, 198.51.100.10"},
+                )
+            )
+        return found
+
+    codes = asyncio.run(statuses())
+    assert codes[:2] != [429, 429]
+    assert codes[2] == 429
+    assert codes[3] == 429
+
+
+def test_open_mode_random_bearers_share_one_bucket() -> None:
+    """Replay: open mode, limit 2, Bearer x1 through x4."""
+
+    import asyncio
+
+    from aureon_public.http_guard import PublicHttpMiddleware
+
+    async def ok(scope, receive, send):
+        while True:
+            message = await receive()
+            if message.get("type") == "http.request" and not message.get("more_body", False):
+                break
+        await send({"type": "http.response.start", "status": 200, "headers": []})
+        await send({"type": "http.response.body", "body": b"ok"})
+
+    middleware = PublicHttpMiddleware(ok, _limits(api_key=""))
+
+    async def statuses() -> list[int]:
+        found = []
+        for index in range(1, 5):
+            found.append(await _middleware_status(middleware, {"authorization": f"Bearer x{index}"}))
+        return found
+
+    codes = asyncio.run(statuses())
+    assert codes[2] == 429
+    assert codes[3] == 429
+
+
+def test_chunked_post_without_content_length_over_the_cap_is_413() -> None:
+    import asyncio
+
+    from aureon_public.http_guard import PublicHttpMiddleware
+
+    called = {"app": False}
+
+    async def ok(scope, receive, send):
+        called["app"] = True
+        await send({"type": "http.response.start", "status": 200, "headers": []})
+        await send({"type": "http.response.body", "body": b"ok"})
+
+    middleware = PublicHttpMiddleware(ok, _limits(max_body_bytes=8, rate_limit=10))
+    chunks = [
+        {"type": "http.request", "body": b"12345", "more_body": True},
+        {"type": "http.request", "body": b"67890abc", "more_body": False},
+    ]
+
+    async def post() -> int:
+        index = {"n": 0}
+
+        async def receive():
+            if index["n"] >= len(chunks):
+                return {"type": "http.disconnect"}
+            message = chunks[index["n"]]
+            index["n"] += 1
+            return message
+
+        messages = []
+
+        async def send(message):
+            messages.append(message)
+
+        scope = {
+            "type": "http",
+            "method": "POST",
+            "path": "/mcp",
+            "headers": [],
+            "client": ("127.0.0.1", 9),
+        }
+        await middleware(scope, receive, send)
+        start = next(message for message in messages if message["type"] == "http.response.start")
+        return int(start["status"])
+
+    assert asyncio.run(post()) == 413
+    assert called["app"] is False
+
+
+def test_rate_limiter_table_stays_bounded() -> None:
+    from aureon_public.http_guard import RateLimiter
+
+    clock = {"now": 0.0}
+    limiter = RateLimiter(2, 30.0, max_clients=4, now=lambda: clock["now"])
+    for index in range(200):
+        assert limiter.allow(f"client-{index}") is True
+    assert len(limiter._hits) <= 4
+    clock["now"] = 31.0
+    assert limiter.allow("after-window") is True
+    assert set(limiter._hits) == {"after-window"}
 
 
 def test_space_record_is_an_authenticated_local_session() -> None:
@@ -346,3 +512,7 @@ def test_scaffold_bakes_no_key_and_quotes_the_plan() -> None:
     assert "refused 4310" in readme
     assert "Other arguments have not been swept." in readme
     assert "alive" not in readme.lower()
+    assert "has not been built under Docker" in readme
+    assert "bc-ee01" in readme
+    assert "ARG AUREON_REF=cf43882e" not in dockerfile
+    assert "bc-ee01" in dockerfile

@@ -13,6 +13,8 @@ import hmac
 import json
 import os
 import time
+from collections import OrderedDict
+from collections.abc import Callable
 from dataclasses import dataclass
 
 LOCAL_BIND = "127.0.0.1"
@@ -20,6 +22,8 @@ _DEFAULT_RATE_LIMIT = 120
 _DEFAULT_RATE_WINDOW_S = 60.0
 _DEFAULT_MAX_BODY = 1_048_576
 _DEFAULT_TIMEOUT_S = 30.0
+_DEFAULT_TRUSTED_HOPS = 1
+_DEFAULT_MAX_CLIENTS = 4096
 
 
 @dataclass(frozen=True)
@@ -31,26 +35,55 @@ class HttpLimits:
     rate_limit: int
     rate_window_s: float
     timeout_s: float
+    trusted_hops: int = _DEFAULT_TRUSTED_HOPS
+    max_clients: int = _DEFAULT_MAX_CLIENTS
 
 
 class RateLimiter:
-    """Fixed window of request starts, keyed by client id."""
+    """Fixed window of request starts, keyed by client id.
 
-    def __init__(self, limit: int, window_s: float) -> None:
+    Expired windows are dropped. The table keeps at most ``max_clients``
+    ids and evicts the least recently used id when a new one arrives.
+    """
+
+    def __init__(
+        self,
+        limit: int,
+        window_s: float,
+        max_clients: int = _DEFAULT_MAX_CLIENTS,
+        now: Callable[[], float] | None = None,
+    ) -> None:
         self.limit = limit
         self.window_s = window_s
-        self._hits: dict[str, list[float]] = {}
+        self.max_clients = max_clients
+        self._now = now or time.monotonic
+        self._hits: OrderedDict[str, list[float]] = OrderedDict()
 
     def allow(self, client_id: str) -> bool:
-        now = time.monotonic()
-        window = self.window_s
-        hits = [stamp for stamp in self._hits.get(client_id, []) if now - stamp < window]
+        now = self._now()
+        self._evict_expired(now)
+        if client_id in self._hits:
+            self._hits.move_to_end(client_id)
+        elif len(self._hits) >= self.max_clients:
+            self._hits.popitem(last=False)
+        hits = [stamp for stamp in self._hits.get(client_id, []) if now - stamp < self.window_s]
         if len(hits) >= self.limit:
             self._hits[client_id] = hits
+            self._hits.move_to_end(client_id)
             return False
         hits.append(now)
         self._hits[client_id] = hits
+        self._hits.move_to_end(client_id)
         return True
+
+    def _evict_expired(self, now: float) -> None:
+        expired = [
+            client_id
+            for client_id, hits in self._hits.items()
+            if not hits or now - hits[-1] >= self.window_s
+        ]
+        for client_id in expired:
+            del self._hits[client_id]
 
 
 def _positive_int(name: str, default: int) -> int:
@@ -88,7 +121,22 @@ def load_http_limits() -> HttpLimits:
         rate_limit=_positive_int("AUREON_PUBLIC_RATE_LIMIT", _DEFAULT_RATE_LIMIT),
         rate_window_s=_positive_float("AUREON_PUBLIC_RATE_WINDOW_S", _DEFAULT_RATE_WINDOW_S),
         timeout_s=_positive_float("AUREON_PUBLIC_REQUEST_TIMEOUT_S", _DEFAULT_TIMEOUT_S),
+        trusted_hops=_nonnegative_int("AUREON_PUBLIC_TRUSTED_HOPS", _DEFAULT_TRUSTED_HOPS),
+        max_clients=_positive_int("AUREON_PUBLIC_RATE_MAX_CLIENTS", _DEFAULT_MAX_CLIENTS),
     )
+
+
+def _nonnegative_int(name: str, default: int) -> int:
+    raw = os.environ.get(name, "").strip()
+    if not raw:
+        return default
+    try:
+        value = int(raw)
+    except ValueError as exc:
+        raise SystemExit(f"{name} must be a non-negative integer") from exc
+    if value < 0:
+        raise SystemExit(f"{name} must be a non-negative integer")
+    return value
 
 
 def public_bind_allowed(host: str) -> bool:
@@ -141,19 +189,49 @@ def _key_matches(presented: str, expected: str) -> bool:
     return hmac.compare_digest(presented_bytes, expected_bytes)
 
 
-def _client_id(scope: dict, headers: dict[str, str]) -> str:
-    """Bearer hash when a token is sent, otherwise the forwarded or socket address."""
-
-    presented = _bearer(headers.get("authorization", ""))
-    if presented is not None:
-        digest = hashlib.sha256(presented.encode("utf-8")).hexdigest()
-        return f"bearer:{digest}"
-    forwarded = headers.get("x-forwarded-for", "").split(",")[0].strip()
-    if forwarded:
-        return f"ip:{forwarded}"
+def _socket_peer(scope: dict) -> str:
     client = scope.get("client")
-    host = client[0] if isinstance(client, (list, tuple)) and client else "unknown"
-    return f"ip:{host}"
+    if isinstance(client, (list, tuple)) and client and client[0]:
+        return str(client[0])
+    return "unknown"
+
+
+def _forwarded_hops(value: str) -> list[str]:
+    return [part.strip() for part in value.split(",") if part.strip()]
+
+
+def client_address(scope: dict, headers: dict[str, str], trusted_hops: int) -> str:
+    """Address appended by the trusted proxy, or the socket peer.
+
+    The first ``X-Forwarded-For`` value is the one a client can set. Hugging
+    Face appends the peer it saw, so that address is the last hop when
+    ``trusted_hops`` is 1. ``trusted_hops`` counts those appended hops from
+    the right. A shorter list has no trusted append, and the socket peer is
+    used instead.
+    """
+
+    peer = _socket_peer(scope)
+    if trusted_hops <= 0:
+        return peer
+    hops = _forwarded_hops(headers.get("x-forwarded-for", ""))
+    if len(hops) < trusted_hops:
+        return peer
+    return hops[-trusted_hops]
+
+
+def _client_id(scope: dict, headers: dict[str, str], limits: HttpLimits) -> str:
+    """Bucket by address. The bearer is the id only when it matches the configured key.
+
+    Open mode has no configured key, so a presented bearer is never the client id.
+    """
+
+    address = client_address(scope, headers, limits.trusted_hops)
+    if limits.api_key:
+        presented = _bearer(headers.get("authorization", ""))
+        if presented is not None and _key_matches(presented, limits.api_key):
+            digest = hashlib.sha256(presented.encode("utf-8")).hexdigest()
+            return f"bearer:{digest}"
+    return f"ip:{address}"
 
 
 def _content_length(headers: dict[str, str]) -> int | None:
@@ -183,7 +261,11 @@ class PublicHttpMiddleware:
     def __init__(self, app, limits: HttpLimits, limiter: RateLimiter | None = None) -> None:
         self.app = app
         self.limits = limits
-        self.limiter = limiter if limiter is not None else RateLimiter(limits.rate_limit, limits.rate_window_s)
+        self.limiter = limiter if limiter is not None else RateLimiter(
+            limits.rate_limit,
+            limits.rate_window_s,
+            max_clients=limits.max_clients,
+        )
 
     async def __call__(self, scope, receive, send) -> None:
         if scope.get("type") != "http":
@@ -194,11 +276,7 @@ class PublicHttpMiddleware:
             await self.app(scope, receive, send)
             return
         headers = _header_map(scope)
-        length = _content_length(headers)
-        if length is not None and length > self.limits.max_body_bytes:
-            await _reject(send, 429, "body_too_large")
-            return
-        client_id = _client_id(scope, headers)
+        client_id = _client_id(scope, headers, self.limits)
         if not self.limiter.allow(client_id):
             retry_after = str(max(1, int(self.limits.rate_window_s)))
             await _reject(send, 429, "rate_limit", retry_after=retry_after)
@@ -209,6 +287,14 @@ class PublicHttpMiddleware:
                 await _reject(send, 401, "unauthorized")
                 return
         method = scope.get("method", "GET")
+        if method == "POST":
+            declared = _content_length(headers)
+            if declared is not None and declared > self.limits.max_body_bytes:
+                await _reject(send, 413, "body_too_large")
+                return
+            receive = await _bounded_receive(receive, self.limits.max_body_bytes, send)
+            if receive is None:
+                return
         if method != "POST":
             await self.app(scope, receive, send)
             return
@@ -228,4 +314,47 @@ class PublicHttpMiddleware:
         except TimeoutError:
             if started:
                 raise
-            await _reject(send, 429, "timeout")
+            await _reject(send, 504, "timeout")
+
+
+async def _bounded_receive(receive, max_body: int, send):
+    """Buffer a POST body and reject it once the arrived bytes pass the cap.
+
+    Chunked requests omit content-length. The count is the bytes ``receive``
+    yields, not the header.
+    """
+
+    buffered: list[dict] = []
+    total = 0
+    empty_spins = 0
+    while True:
+        message = await receive()
+        kind = message.get("type")
+        if kind != "http.request":
+            buffered.append(message)
+            if kind == "http.disconnect":
+                break
+            continue
+        chunk = message.get("body") or b""
+        total += len(chunk)
+        if total > max_body:
+            await _reject(send, 413, "body_too_large")
+            return None
+        buffered.append(message)
+        if not message.get("more_body", False):
+            break
+        if not chunk:
+            empty_spins += 1
+            if empty_spins > 8:
+                break
+    index = 0
+
+    async def replay():
+        nonlocal index
+        if index < len(buffered):
+            message = buffered[index]
+            index += 1
+            return message
+        return await receive()
+
+    return replay
