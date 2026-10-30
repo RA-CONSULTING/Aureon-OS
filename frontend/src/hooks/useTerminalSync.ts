@@ -315,7 +315,7 @@ export function useTerminalSync(enabled: boolean = true, intervalMs: number = 50
       const total = trades.length;
       const wins = trades.filter(t => t.is_win === true).length;
       const winRate = total > 0 ? (wins / total) * 100 : 0;
-      const totalPnl = trades.reduce((sum, t) => sum + (t.pnl ?? 0), 0);
+      const totalPnl = sumFinite(...trades.map((t) => firstFinite(t.pnl)));
 
       return { total, wins, winRate, totalPnl };
     } catch (err) {

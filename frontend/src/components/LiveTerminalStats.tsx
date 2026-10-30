@@ -8,6 +8,15 @@ const safeNumber = (value: unknown, fallback = 0): number => {
   return Number.isFinite(num) ? num : fallback;
 };
 
+const finiteOrNull = (value: unknown, ...fallbacks: unknown[]): number | null => {
+  for (const candidate of [value, ...fallbacks]) {
+    if (candidate === null || candidate === undefined || candidate === '') continue;
+    const num = Number(candidate);
+    if (Number.isFinite(num)) return num;
+  }
+  return null;
+};
+
 const formatSigned = (value: unknown, digits = 2, prefix = '') => {
   if (value == null || value === '') return 'unavailable';
   const num = typeof value === 'number' ? value : Number(value);
@@ -57,9 +66,9 @@ const PositionLine = ({
 }: {
   symbol: string;
   side: 'LONG' | 'SHORT';
-  entryPrice: number;
-  currentPrice: number;
-  pnlPercent: number;
+  entryPrice: number | null;
+  currentPrice: number | null;
+  pnlPercent: number | null;
   exchange?: string;
   tradeId?: string;
 }) => (
@@ -97,13 +106,13 @@ const ShadowLine = ({
 }: {
   symbol: string;
   side: 'LONG' | 'SHORT';
-  entryPrice: number;
-  currentPrice: number;
-  movePercent: number;
-  targetMovePercent: number;
+  entryPrice: number | null;
+  currentPrice: number | null;
+  movePercent: number | null;
+  targetMovePercent: number | null;
   exchange?: string;
   validated?: boolean;
-  ageSeconds?: number;
+  ageSeconds?: number | null;
 }) => (
   <div className="rounded border border-border/40 bg-background/60 px-3 py-2">
     <div className="flex items-center justify-between gap-3 font-mono text-[11px]">
@@ -368,9 +377,9 @@ export function LiveTerminalStats() {
                   key={`kraken-${pos.symbol}-${pos.tradeId || index}`}
                   symbol={pos.symbol}
                   side={pos.side}
-                  entryPrice={safeNumber(pos.entryPrice)}
-                  currentPrice={safeNumber(pos.currentPrice, safeNumber(pos.entryPrice))}
-                  pnlPercent={safeNumber(pos.pnlPercent)}
+                  entryPrice={finiteOrNull(pos.entryPrice)}
+                  currentPrice={finiteOrNull(pos.currentPrice, pos.entryPrice)}
+                  pnlPercent={finiteOrNull(pos.pnlPercent)}
                   exchange={pos.exchange}
                   tradeId={pos.tradeId}
                 />
@@ -387,13 +396,13 @@ export function LiveTerminalStats() {
                   key={`kraken-shadow-${shadow.symbol}-${index}`}
                   symbol={shadow.symbol}
                   side={shadow.side}
-                  entryPrice={safeNumber(shadow.entryPrice)}
-                  currentPrice={safeNumber(shadow.currentPrice, safeNumber(shadow.entryPrice))}
-                  movePercent={safeNumber(shadow.movePercent)}
-                  targetMovePercent={safeNumber(shadow.targetMovePercent)}
+                  entryPrice={finiteOrNull(shadow.entryPrice)}
+                  currentPrice={finiteOrNull(shadow.currentPrice, shadow.entryPrice)}
+                  movePercent={finiteOrNull(shadow.movePercent)}
+                  targetMovePercent={finiteOrNull(shadow.targetMovePercent)}
                   exchange={shadow.exchange}
                   validated={Boolean(shadow.validated)}
-                  ageSeconds={safeNumber(shadow.ageSeconds)}
+                  ageSeconds={finiteOrNull(shadow.ageSeconds)}
                 />
               ))
             ) : (
