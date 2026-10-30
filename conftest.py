@@ -20,6 +20,8 @@ from pathlib import Path
 
 import pytest
 
+pytest_plugins = ["tests.support.mcp_plugin"]
+
 # These are standalone diagnostic SCRIPTS, not pytest modules: each defines
 # ZERO test functions and runs its whole scenario at module level, so the only
 # thing pytest collection gets from importing them is the side effects —

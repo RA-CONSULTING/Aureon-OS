@@ -1,4 +1,8 @@
-"""Pytest hooks for the tests/ tree (MCP guard isolation lives here, not in repo-root conftest)."""
+"""Pytest fixtures that keep the Space import guard inside MCP tests.
+
+Loaded from the repository conftest via pytest_plugins so tests/conftest.py
+does not shadow ``from conftest import``.
+"""
 
 from __future__ import annotations
 
