@@ -15,6 +15,7 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
 from aureon_public import paths
+from aureon_public.body import enabled_stage, probes_for
 from aureon_public.guard_loader import apply_space_guard
 
 
@@ -74,6 +75,18 @@ async def _session(out_path: Path) -> dict[str, Any]:
                 ("qgita_analyze", {}),
                 ("organism_replay_read", {}),
                 ("organism_catalog", {}),
+                ("package_dispositions", {}),
+                ("hnc_substrate_eval", {}),
+                ("hnc_echo_eval", {}),
+                ("hnc_observer_eval", {}),
+                ("hnc_potential_eval", {}),
+                ("hnc_translate_project", {}),
+                ("qgita_ftcp_detect", {}),
+                ("qgita_lighthouse_coherence", {}),
+                ("membrane_screen", {}),
+                ("repository_layers_hold", {}),
+                ("evidence_predict_next", {}),
+                ("source_names", {"package": "core"}),
             ):
                 result = await session.call_tool(name, arguments)
                 calls[name] = {
@@ -83,6 +96,40 @@ async def _session(out_path: Path) -> dict[str, Any]:
                 }
             # The class default is multiverse on. Record the other committed path
             # beside it so the two coherences are not mixed.
+            for stage in range(1, enabled_stage() + 1):
+                for probe in probes_for(stage):
+                    arguments = {
+                        "module": probe["module"],
+                        "symbol": probe["symbol"],
+                        "arguments_json": json.dumps(probe.get("arguments") or {}),
+                    }
+                    result = await session.call_tool("body_call", arguments)
+                    calls[f"body_call:{probe['symbol']}"] = {
+                        "arguments": arguments,
+                        "isError": result.isError,
+                        "text": _text_content(result),
+                    }
+            depth = await session.call_tool("body_depth", {})
+            calls["body_depth"] = {
+                "arguments": {},
+                "isError": depth.isError,
+                "text": _text_content(depth),
+            }
+            surface = await session.call_tool(
+                "body_surface",
+                {
+                    "module": "harmonic/aureon_harmonic_reality.py",
+                    "symbol": "HarmonicSubstrate",
+                },
+            )
+            calls["body_surface:HarmonicSubstrate"] = {
+                "arguments": {
+                    "module": "harmonic/aureon_harmonic_reality.py",
+                    "symbol": "HarmonicSubstrate",
+                },
+                "isError": surface.isError,
+                "text": _text_content(surface),
+            }
             off = await session.call_tool("hnc_reality_step", {"enable_multiverse": False})
             calls["hnc_reality_step_multiverse_off"] = {
                 "arguments": {"enable_multiverse": False},

@@ -6,7 +6,76 @@ This process is a read-only FastMCP server named `aureon-public`. It exposes the
 
 `aureon` is pinned to commit `a00f744d2e686e916e45b81dd4222408c368e305`, the same pin as the Hugging Face Spaces. A local checkout run uses its own commit, not the pin. The MCP SDK pin is `mcp==1.30.0` in `requirements.txt` and `pyproject.toml`. That is the version this server was installed and tested with. `mcp==1.30.0` provides `FastMCP` (`mcp.server.fastmcp`). MCP 2 renamed that class.
 
-Any public hosting, including the future aureon-public Space, must set `AUREON_PUBLIC_REQUIRE_PIN=1`. That refuses to start unless `aureon_source` is kind `pinned` at `a00f744d2e686e916e45b81dd4222408c368e305`. Local runs leave the variable unset and keep the visible `aureon_source` label.
+Any public hosting, including the future aureon-public Space, must set `AUREON_PUBLIC_REQUIRE_PIN=1`. That refuses to start unless `aureon_source` is kind `pinned` at `a00f744d2e686e916e45b81dd4222408c368e305`. Local runs leave the variable unset and keep the visible `aureon_source` label. Each Hugging Face Space entry point calls `enforce_public_pin()` itself before `demo.launch`.
+
+The operator process is separate: `python -m aureon_operator`. It stays off unless `AUREON_OPERATOR_MCP=1`, speaks stdio only, and refuses live orders. It does not import `aureon.trading` or the other blocked packages.
+
+`repo_root()` and `aureon_source()` raise `FileNotFoundError` when the process is not inside a checkout that contains `huggingface/hnc-field/guard.py` and `aureon/core/hnc_field.py`. This server needs that checkout. It does not invent a 'no checkout' status.
+
+A layer counts as full depth only where its real entry points are called.
+Each figure is reachable public functions and methods out of the public functions and methods in the pinned `docs/mcp/inventory.json`.
+
+| Package | Reachable | Public entry points |
+| --- | ---: | ---: |
+| accounting | 0 | 0 |
+| alignment | 9 | 24 |
+| analytics | 37 | 167 |
+| appliance | 2 | 7 |
+| approval | 20 | 42 |
+| atn | 0 | 28 |
+| autonomous | 0 | 0 |
+| bio | 96 | 206 |
+| bots | 0 | 0 |
+| bots_intelligence | 0 | 0 |
+| bridges | 0 | 0 |
+| briefing | 7 | 34 |
+| code_architect | 0 | 0 |
+| cognition | 1 | 14 |
+| command_centers | 0 | 0 |
+| connectors | 0 | 0 |
+| conversion | 0 | 0 |
+| core | 109 | 452 |
+| data_feeds | 11 | 118 |
+| decoders | 10 | 80 |
+| evaluation | 7 | 10 |
+| exchanges | 0 | 0 |
+| gates | 6 | 12 |
+| generated | 0 | 4 |
+| governance | 41 | 105 |
+| grants | 9 | 44 |
+| harmonic | 58 | 278 |
+| identity | 0 | 0 |
+| inhouse_ai | 0 | 0 |
+| integrations | 7 | 65 |
+| intelligence | 36 | 274 |
+| launch | 0 | 0 |
+| miner | 0 | 0 |
+| monitors | 0 | 158 |
+| observability | 4 | 9 |
+| observer | 29 | 63 |
+| operator | 0 | 0 |
+| organism | 1 | 1 |
+| plumber | 52 | 271 |
+| portals | 11 | 51 |
+| portfolio | 0 | 0 |
+| queen | 131 | 566 |
+| s51 | 1 | 24 |
+| saas | 0 | 0 |
+| scanners | 0 | 0 |
+| search | 2 | 5 |
+| simulation | 18 | 200 |
+| strategies | 0 | 0 |
+| swarm | 10 | 41 |
+| swarm_motion | 0 | 10 |
+| trading | 0 | 0 |
+| unified_margin_trader | 0 | 0 |
+| utils | 59 | 455 |
+| vault | 20 | 195 |
+| wisdom | 72 | 375 |
+
+The extra package tools are helpers. A helper call is not that layer's cognition.
+
+`body_call` runs one inventoried function or method. `body_surface` reads a module or class and does not construct it. `body_depth` reports the same ratio as this table. `body_registry` names the servers. The operator tool is `body_call_operator`. Live orders stay refused. A checkout file is imported only when its git blob matches pin `a00f744d`. The plan and the call rules are in `docs/mcp/REGISTRY.md`.
 
 Licence: MIT, the same licence as the repository `LICENSE`.
 

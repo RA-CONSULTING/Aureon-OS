@@ -10,12 +10,10 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from aureon_public.guard_loader import apply_space_guard, aureon_source
 from aureon_public import paths
+from aureon_public.guard_loader import aureon_source
 from aureon_public.quiet import quiet
 from aureon_public.text import AURIS_FOUR, HOLD_LINE
-
-apply_space_guard()
 
 _AURIS_FIELDS = ("volatility", "momentum", "volume", "spread")
 
@@ -49,8 +47,20 @@ def _omit_public_keys(body: dict[str, Any]) -> dict[str, Any]:
     return body
 
 
+def _strip_consciousness(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {
+            str(key): _strip_consciousness(item)
+            for key, item in value.items()
+            if not str(key).startswith("consciousness_")
+        }
+    if isinstance(value, list):
+        return [_strip_consciousness(item) for item in value]
+    return value
+
+
 def _dumps(payload: dict[str, Any]) -> str:
-    body = _plain(payload)
+    body = _strip_consciousness(_plain(payload))
     body["aureon_source"] = aureon_source()
     return json.dumps(body, ensure_ascii=False, allow_nan=False, sort_keys=True)
 

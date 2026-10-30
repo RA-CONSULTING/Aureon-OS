@@ -11,16 +11,16 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "mcp"))
 
-from aureon_public import surfaces, tools  # noqa: E402
-from aureon_public.guard_loader import (  # noqa: E402
-    PINNED_COMMIT,
-    aureon_source,
-    describe_aureon_source,
-)
-from aureon_public.server import SERVER_INSTRUCTIONS, build_server  # noqa: E402
-from aureon_public.text import SERVER_PLAIN  # noqa: E402
+# Populated by tests/conftest.py before tests in this module run (not at collection time).
+tools: object
+surfaces: object
+PINNED_COMMIT: str
+aureon_source: object
+describe_aureon_source: object
+SERVER_INSTRUCTIONS: str
+build_server: object
+SERVER_PLAIN: str
 
 pytestmark = pytest.mark.timeout(180)
 
@@ -226,14 +226,13 @@ def test_canonical_and_blend_default_do_not_require_state() -> None:
 
 
 def test_catalog_and_import_blocker() -> None:
+    from tests.support.mcp_isolation import import_blocked_in_fresh_guarded_process
+
     catalog = _load(tools.organism_catalog())
     assert catalog["seats"]
     assert catalog["nodes"]
     assert catalog["systems"]
-    import importlib
-
-    with pytest.raises(ImportError):
-        importlib.import_module("aureon.trading")
+    import_blocked_in_fresh_guarded_process("aureon.trading")
 
 
 def test_aureon_source_pinned_commit_comes_from_direct_url(tmp_path: Path) -> None:
@@ -295,8 +294,10 @@ def test_tool_output_and_server_info_name_the_aureon_that_ran() -> None:
 def test_registered_names() -> None:
     server = build_server()
     tools_listed = asyncio.run(server.list_tools())
+    from aureon_public.layers import public_layer_tools
+
     names = sorted(item.name for item in tools_listed)
-    assert names == [
+    expected = {
         "auris_coherence",
         "auris_nodes",
         "hnc_blend_read",
@@ -306,7 +307,13 @@ def test_registered_names() -> None:
         "organism_catalog",
         "organism_replay_read",
         "qgita_analyze",
-    ]
+        *(fn.__name__ for fn in public_layer_tools()),
+        "body_call",
+        "body_depth",
+        "body_registry",
+        "body_surface",
+    }
+    assert set(names) == expected
     hnc = next(item for item in tools_listed if item.name == "hnc_reality_step")
     assert hnc.description is not None
     assert "multiverse on" in hnc.description
@@ -315,8 +322,288 @@ def test_registered_names() -> None:
     uris = sorted(str(item.uri) for item in resources)
     assert "aureon://auris/nodes" in uris
     assert "aureon://replay/auris" in uris
-    assert len(uris) == 12
+    assert "aureon://packages" in uris
+    assert "aureon://body/depth" in uris
+    assert "aureon://body/registry" in uris
+    assert len(uris) == 15
     prompts = asyncio.run(server.list_prompts())
     prompt_names = sorted(item.name for item in prompts)
     assert "explain_auris_four_meanings" in prompt_names
     assert len(prompt_names) == 4
+
+
+def test_each_new_layer_tool_is_labelled_and_omits_consciousness_keys() -> None:
+    calls = {
+        "package_dispositions": layers_call("package_dispositions"),
+        "hnc_substrate_eval": layers_call("hnc_substrate_eval"),
+        "hnc_echo_eval": layers_call("hnc_echo_eval"),
+        "hnc_observer_eval": layers_call("hnc_observer_eval"),
+        "hnc_potential_eval": layers_call("hnc_potential_eval"),
+        "hnc_translate_project": layers_call("hnc_translate_project"),
+        "qgita_ftcp_detect": layers_call("qgita_ftcp_detect"),
+        "qgita_lighthouse_coherence": layers_call("qgita_lighthouse_coherence"),
+        "membrane_screen": layers_call("membrane_screen"),
+        "repository_layers_hold": layers_call("repository_layers_hold"),
+        "evidence_predict_next": layers_call("evidence_predict_next"),
+        "source_names": layers_call("source_names", "core"),
+    }
+    for name, body in calls.items():
+        assert body.get("provenance") in {"cited", "inferred", "cited-unverified", "speculative"}, name
+        assert "aureon_source" in body
+        assert "consciousness_level" not in body
+        assert "consciousness_psi" not in body
+        flat = json.dumps(body)
+        assert "consciousness_" not in flat
+    assert calls["evidence_predict_next"]["human_eval"] == "not run. HOLD"
+    assert calls["qgita_ftcp_detect"]["detection_rate"] == "HOLD"
+    assert calls["repository_layers_hold"]["may_act"] is False
+    rows = calls["package_dispositions"]["packages"]
+    assert len(rows) == 54
+    assert {row["package"] for row in rows if row["kind"] == "operator"} >= {
+        "trading",
+        "exchanges",
+        "bots",
+        "bots_intelligence",
+        "bridges",
+        "scanners",
+    }
+
+
+def layers_call(name: str, package: str | None = None) -> dict:
+    from aureon_public import layers
+
+    fn = getattr(layers, name)
+    if package is None:
+        return _load(fn())
+    return _load(fn(package))
+
+
+def test_source_names_refuses_blocked_packages_and_guard_still_blocks_import() -> None:
+    from aureon_public.layers import source_names
+    from tests.support.mcp_isolation import import_blocked_in_fresh_guarded_process
+
+    for package in (
+        "trading",
+        "exchanges",
+        "bots",
+        "bots_intelligence",
+        "bridges",
+        "scanners",
+        "unified_margin_trader",
+    ):
+        body = _load(source_names(package))
+        assert body["status"] == "unavailable"
+    for module in (
+        "aureon.exchanges",
+        "aureon.trading",
+        "aureon.bots",
+        "aureon.bots_intelligence",
+        "aureon.bridges",
+        "aureon.scanners",
+        "unified_margin_trader",
+    ):
+        import_blocked_in_fresh_guarded_process(module)
+
+
+def test_operator_server_stays_off_without_the_flag_and_is_stdio_only(monkeypatch: pytest.MonkeyPatch) -> None:
+    from aureon_operator.server import main as operator_main
+    from aureon_operator.server import refuse_live_order
+
+    monkeypatch.delenv("AUREON_OPERATOR_MCP", raising=False)
+    with pytest.raises(SystemExit):
+        operator_main([])
+    monkeypatch.setenv("AUREON_OPERATOR_MCP", "1")
+    with pytest.raises(SystemExit):
+        operator_main(["--transport", "streamable-http"])
+    body = _load(refuse_live_order("BTCUSDT"))
+    assert body["live_orders"] == "refused"
+    assert body["status"] == "unavailable"
+
+
+def test_new_package_tools_and_membrane_paths(monkeypatch: pytest.MonkeyPatch) -> None:
+    import sys
+
+    from aureon_public import layers
+    from aureon_public.more_layers import TOOLS
+
+    for fn in TOOLS:
+        body = _load(fn())
+        assert body.get("provenance") in {"cited", "inferred", "cited-unverified"}, fn.__name__
+        assert "consciousness_" not in json.dumps(body)
+        assert body.get("status") in {"cited", "inferred", "unavailable"}
+        assert str(body.get("label", "")).startswith("helper.")
+    fear = _load(getattr(sys.modules["aureon_public.more_layers"], "analytics_fear_greed")())
+    tick = _load(getattr(sys.modules["aureon_public.more_layers"], "data_feed_parse_tick")())
+    assert fear["label"] == (
+        "helper. inferred. derive_fear_greed on a fixed 40-step fixture ramp, not market data. Not a backtest."
+    )
+    assert tick["label"] == (
+        "helper. inferred. parse_binance_tick on one fixture tick, not market data. No socket was opened."
+    )
+    live = _load(layers.membrane_screen("hello"))
+    assert live["status"] == "cited"
+    assert live["provenance"] == "cited"
+    assert "loaded from checkout" in live["label"]
+    assert "blob check" in live["label"]
+    monkeypatch.setattr(layers, "_load_phenolic_fingerprint", lambda: "phenolic_fingerprint.py is not in this checkout")
+    sys.modules.pop("aureon.bio.mcp_membrane", None)
+    blocked = _load(layers.membrane_screen("hello"))
+    assert blocked["status"] == "unavailable"
+    assert blocked["provenance"] == "cited-unverified"
+    assert "phenolic_fingerprint" in blocked["reason"]
+    rows = _load(layers.package_dispositions())["packages"]
+    kinds = {row["package"]: row["kind"] for row in rows}
+    assert kinds["cognition"] == "cognition_logic_flow"
+    assert kinds["queen"] == "queen_zpe_ground"
+    assert kinds["swarm"] == "swarm_voice_for_gamma"
+    assert kinds["observer"] == "observer_kp_sample"
+    assert kinds["gates"] == "gates_reading"
+    assert kinds["atn"] == "excluded"
+    assert kinds["identity"] == "excluded"
+    assert all(row["reason"].startswith("Helper only.") for row in rows if row["package"] in {
+        "alignment", "atn", "cognition", "queen", "vault"
+    })
+
+
+def test_phenolic_blob_matches_pin_and_a_changed_copy_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import sys
+
+    from aureon_public import layers, paths
+    from aureon_public.pin_blob import PINNED_PHENOLIC_BLOB, git_blob_sha1
+
+    original = paths.repo_root() / "phenolic_fingerprint.py"
+    assert git_blob_sha1(original.read_bytes()) == PINNED_PHENOLIC_BLOB
+    sys.modules.pop("phenolic_fingerprint", None)
+    assert layers._load_phenolic_fingerprint() is None
+    matched = _load(layers.membrane_screen("hello"))
+    assert matched["status"] == "cited"
+
+    (tmp_path / "phenolic_fingerprint.py").write_bytes(original.read_bytes() + b"\n# not the pin\n")
+    reason = layers._load_phenolic_fingerprint(tmp_path)
+    assert reason == "checkout phenolic_fingerprint differs from pin a00f744d"
+    monkeypatch.setattr(layers.paths, "repo_root", lambda: tmp_path)
+    refused = _load(layers.membrane_screen("hello"))
+    assert refused["status"] == "unavailable"
+    assert refused["reason"] == "checkout phenolic_fingerprint differs from pin a00f744d"
+
+
+def test_pinned_source_reads_once_and_executes_those_bytes(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import sys
+
+    from aureon_public.pin_blob import git_blob_sha1, load_pinned_source
+
+    path = tmp_path / "pinned_bytes_probe.py"
+    path.write_text("VALUE = 1\n", encoding="utf-8")
+    expected = git_blob_sha1(path.read_bytes())
+    real_read = Path.read_bytes
+    reads: list[Path] = []
+
+    def read_once(self: Path) -> bytes:
+        data = real_read(self)
+        if self == path:
+            reads.append(self)
+            path.write_text("VALUE = 2\n", encoding="utf-8")
+        return data
+
+    monkeypatch.setattr(Path, "read_bytes", read_once)
+    sys.modules.pop("pinned_bytes_probe", None)
+    assert load_pinned_source("pinned_bytes_probe", path, expected, "mismatch") is None
+    assert reads == [path]
+    assert sys.modules["pinned_bytes_probe"].VALUE == 1
+    sys.modules.pop("pinned_bytes_probe", None)
+
+    changed = tmp_path / "pinned_bytes_changed.py"
+    changed.write_bytes(path.read_bytes())
+    sys.modules.pop("pinned_bytes_changed", None)
+    refusal = load_pinned_source("pinned_bytes_changed", changed, expected, "mismatch")
+    assert refusal == "mismatch"
+    assert "pinned_bytes_changed" not in sys.modules
+    assert load_pinned_source("pinned_bytes_changed", changed, "", "mismatch") == "expected blob is required"
+
+
+def test_spec_from_file_location_is_not_used_under_mcp() -> None:
+    import ast
+
+    root = ROOT / "mcp"
+    offenders: list[str] = []
+    for path in root.rglob("*.py"):
+        if any(part in {"build", "__pycache__"} for part in path.parts):
+            continue
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            name = ""
+            if isinstance(node, ast.Name):
+                name = node.id
+            elif isinstance(node, ast.Attribute):
+                name = node.attr
+            if name == "spec_from_file_location":
+                offenders.append(f"{path.relative_to(root)}:{node.lineno}")
+    assert offenders == []
+
+
+def test_subprocess_body_call_ignores_stray_module_in_repo_root() -> None:
+    import importlib
+
+    from aureon_public.body import body_call
+
+    modules_before = set(sys.modules)
+    root = ROOT
+    shadow = root / "aureon.py"
+    shadow.write_text(
+        'raise ImportError("stray repo-root aureon.py was imported")\n',
+        encoding="utf-8",
+    )
+    try:
+        body = _load(body_call("harmonic/rainbow_reference.py", "solfeggio_ladder"))
+        assert body["status"] == "cited"
+        assert body.get("called") is True
+    finally:
+        shadow.unlink(missing_ok=True)
+        for name in list(sys.modules):
+            if name not in modules_before and (
+                name == "aureon" or name.startswith("aureon.")
+            ):
+                sys.modules.pop(name, None)
+        importlib.invalidate_caches()
+
+
+def test_import_checked_refuses_disallowed_parent_package() -> None:
+    from aureon_public.body import _import_checked
+
+    loaded, refusal = _import_checked("exchanges/single_currency_equity.py")
+    assert loaded is None
+    assert refusal is not None
+    assert "exchanges" in refusal
+
+
+def test_import_checked_has_no_import_module_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
+    import importlib
+
+    from aureon_public.body import _import_checked
+
+    def forbidden(name: str, *args: object, **kwargs: object) -> object:
+        raise AssertionError(f"importlib.import_module must not be used; got {name!r}")
+
+    monkeypatch.setattr(importlib, "import_module", forbidden)
+    loaded, refusal = _import_checked("harmonic/rainbow_reference.py")
+    assert loaded is not None
+    assert refusal is None
+    assert hasattr(loaded, "solfeggio_ladder")
+
+
+def test_space_entry_points_call_enforce_public_pin() -> None:
+    for name in ("hnc-field", "auris-coherence", "qgita-snr", "organism-replay"):
+        text = (ROOT / "huggingface" / name / "app.py").read_text(encoding="utf-8")
+        main_at = text.index('if __name__ == "__main__":')
+        call_at = text.index("enforce_public_pin()")
+        assert call_at > main_at
+        assert "demo.launch(" in text[call_at:]
+
+
+def test_pinned_finder_not_on_meta_path_after_teardown() -> None:
+    from tests.support import mcp_isolation
+
+    mcp_isolation.teardown_guard_leaks()
+    assert mcp_isolation.pinned_finders_on_meta_path() == []

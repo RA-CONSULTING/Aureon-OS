@@ -1,0 +1,440 @@
+{
+  "called": 45,
+  "calls": [
+    {
+      "called": true,
+      "module": "harmonic/rainbow_reference.py",
+      "package": "harmonic",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "solfeggio_ladder"
+    },
+    {
+      "called": true,
+      "module": "harmonic/rainbow_reference.py",
+      "package": "harmonic",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "love_centrality"
+    },
+    {
+      "called": true,
+      "module": "harmonic/aureon_harmonic_reality.py",
+      "package": "harmonic",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "HarmonicSubstrate.evaluate"
+    },
+    {
+      "called": true,
+      "module": "harmonic/aureon_harmonic_reality.py",
+      "package": "harmonic",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "CausalEcho.evaluate"
+    },
+    {
+      "called": true,
+      "module": "core/hnc_field.py",
+      "package": "core",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "blend_field"
+    },
+    {
+      "called": true,
+      "module": "core/hnc_params.py",
+      "package": "core",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "load_params"
+    },
+    {
+      "called": true,
+      "module": "wisdom/aureon_qgita_framework.py",
+      "package": "wisdom",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_qgita_analyzer"
+    },
+    {
+      "called": true,
+      "module": "utils/aureon_queen_hive_mind.py",
+      "package": "utils",
+      "probe": true,
+      "reason": null,
+      "status": "cited",
+      "symbol": "QueenHiveMind.read_auris_nodes"
+    },
+    {
+      "called": true,
+      "module": "core/hnc_field.py",
+      "package": "core",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "canonical_field_reading"
+    },
+    {
+      "called": true,
+      "module": "core/hnc_field.py",
+      "package": "core",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "read_subfields"
+    },
+    {
+      "called": true,
+      "module": "core/hnc_params.py",
+      "package": "core",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "apply_to_lambda_engine"
+    },
+    {
+      "called": true,
+      "module": "harmonic/aureon_harmonic_alphabet.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "encode_win"
+    },
+    {
+      "called": true,
+      "module": "harmonic/aureon_harmonic_alphabet.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "encode_loss"
+    },
+    {
+      "called": true,
+      "module": "harmonic/aureon_harmonic_chain_master.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_chain_master"
+    },
+    {
+      "called": true,
+      "module": "harmonic/aureon_harmonic_counter_frequency.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_counter_frequency"
+    },
+    {
+      "called": true,
+      "module": "harmonic/aureon_harmonic_fusion.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_harmonic_fusion"
+    },
+    {
+      "called": true,
+      "module": "harmonic/aureon_harmonic_fusion.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "initialize_harmonic_fusion"
+    },
+    {
+      "called": true,
+      "module": "harmonic/aureon_harmonic_momentum_wave.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "run_harmonic_wave_scan"
+    },
+    {
+      "called": true,
+      "module": "harmonic/aureon_harmonic_signal_chain.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "run_harmonic_poem_demo"
+    },
+    {
+      "called": false,
+      "module": "harmonic/aureon_hft_harmonic_mycelium.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": "RuntimeError: There is no current event loop in thread 'Thread-23 (runner)'.",
+      "status": "unavailable",
+      "symbol": "get_hft_engine"
+    },
+    {
+      "called": true,
+      "module": "harmonic/aureon_planetary_harmonic_sweep.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_planetary_sweep"
+    },
+    {
+      "called": true,
+      "module": "harmonic/aureon_schumann_resonance_bridge.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_schumann_bridge"
+    },
+    {
+      "called": true,
+      "module": "harmonic/aureon_schumann_resonance_bridge.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_earth_blessing"
+    },
+    {
+      "called": true,
+      "module": "harmonic/auris_voice_filter.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_auris_voice_filter"
+    },
+    {
+      "called": true,
+      "module": "harmonic/auris_voice_filter.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "reset_auris_voice_filter"
+    },
+    {
+      "called": true,
+      "module": "harmonic/dj_resonance.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "load_dj_set"
+    },
+    {
+      "called": true,
+      "module": "harmonic/dj_resonance.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_dj_resonance_engine"
+    },
+    {
+      "called": true,
+      "module": "harmonic/dj_resonance.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "reset_dj_resonance_engine"
+    },
+    {
+      "called": true,
+      "module": "harmonic/earth_resonance_engine.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_earth_engine"
+    },
+    {
+      "called": true,
+      "module": "harmonic/global_harmonic_field.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_global_field"
+    },
+    {
+      "called": true,
+      "module": "harmonic/global_harmonic_field.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "compute_global_omega"
+    },
+    {
+      "called": true,
+      "module": "harmonic/hnc_symbolic_route_seal.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "utc_now"
+    },
+    {
+      "called": true,
+      "module": "harmonic/phi_bridge.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_phi_bridge"
+    },
+    {
+      "called": true,
+      "module": "harmonic/phi_bridge.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "reset_phi_bridge"
+    },
+    {
+      "called": true,
+      "module": "harmonic/phi_bridge_mesh.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_phi_bridge_mesh"
+    },
+    {
+      "called": true,
+      "module": "harmonic/phi_bridge_mesh.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "reset_phi_bridge_mesh"
+    },
+    {
+      "called": true,
+      "module": "harmonic/phi_swarm_router.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_phi_swarm_router"
+    },
+    {
+      "called": true,
+      "module": "harmonic/phi_swarm_router.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "reset_phi_swarm_router"
+    },
+    {
+      "called": true,
+      "module": "harmonic/rainbow_reference.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "verify_rainbow"
+    },
+    {
+      "called": true,
+      "module": "harmonic/rainbow_reference.py",
+      "package": "harmonic",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "rainbow_json"
+    },
+    {
+      "called": true,
+      "module": "utils/aureon_queen_dream_engine.py",
+      "package": "utils",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "create_queen_dream_engine"
+    },
+    {
+      "called": true,
+      "module": "utils/aureon_queen_hive_mind.py",
+      "package": "utils",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "create_queen_hive_mind"
+    },
+    {
+      "called": true,
+      "module": "utils/aureon_queen_hive_mind.py",
+      "package": "utils",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_existing_queen"
+    },
+    {
+      "called": true,
+      "module": "utils/aureon_queen_hive_mind.py",
+      "package": "utils",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_queen"
+    },
+    {
+      "called": true,
+      "module": "utils/aureon_queen_research_engine.py",
+      "package": "utils",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_research_engine"
+    },
+    {
+      "called": true,
+      "module": "utils/aureon_queen_voice_stream.py",
+      "package": "utils",
+      "probe": false,
+      "reason": null,
+      "status": "cited",
+      "symbol": "get_happiness_engine"
+    }
+  ],
+  "enabled_through": 1,
+  "entry_points": {
+    "core": {
+      "public_entry_points": 23,
+      "reachable": 7
+    },
+    "harmonic": {
+      "public_entry_points": 278,
+      "reachable": 58
+    },
+    "utils": {
+      "public_entry_points": 119,
+      "reachable": 14
+    },
+    "wisdom": {
+      "public_entry_points": 40,
+      "reachable": 10
+    }
+  },
+  "stage": 1,
+  "tried": 46
+}

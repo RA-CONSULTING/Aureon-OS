@@ -16,7 +16,8 @@ dependencies = [
 
 [project.scripts]
 aureon-public = "aureon_public.server:main"
+aureon-operator = "aureon_operator.server:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["aureon_public*"]
+include = ["aureon_public*", "aureon_operator*"]

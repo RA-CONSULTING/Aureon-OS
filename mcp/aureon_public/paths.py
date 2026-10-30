@@ -9,7 +9,11 @@ _AUREON = Path("aureon") / "core" / "hnc_field.py"
 
 
 def repo_root() -> Path:
-    """Directory that contains both the Space guard and the aureon package."""
+    """Directory that contains both the Space guard and the aureon package.
+
+    Raises FileNotFoundError when this process is not inside that checkout.
+    The server needs the checkout, the same as the earlier public server.
+    """
 
     here = Path(__file__).resolve()
     for parent in here.parents:
