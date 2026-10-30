@@ -127,6 +127,27 @@ def build_server(host: str = "127.0.0.1", port: int = 8077) -> FastMCP:
     return server
 
 
+def streamable_http_config(app: object, host: str, port: int):
+    """Uvicorn config that does not rewrite the client from forwarded headers.
+
+    Uvicorn's default ``proxy_headers`` trusts ``X-Forwarded-For`` from
+    127.0.0.1 and replaces ``scope["client"]`` before this process's middleware
+    runs. ``proxy_headers=False`` and an empty ``forwarded_allow_ips`` leave
+    that header for ``http_guard`` only.
+    """
+
+    import uvicorn
+
+    return uvicorn.Config(
+        app,
+        host=host,
+        port=port,
+        log_level="warning",
+        proxy_headers=False,
+        forwarded_allow_ips="",
+    )
+
+
 def serve_streamable_http(server: FastMCP, host: str, port: int) -> None:
     """Listen with the bearer check and the rate, size, and timeout limits."""
 
@@ -135,8 +156,7 @@ def serve_streamable_http(server: FastMCP, host: str, port: int) -> None:
     from aureon_public.http_guard import PublicHttpMiddleware, load_http_limits
 
     app = PublicHttpMiddleware(server.streamable_http_app(), load_http_limits())
-    config = uvicorn.Config(app, host=host, port=port, log_level="warning")
-    uvicorn.Server(config).run()
+    uvicorn.Server(streamable_http_config(app, host, port)).run()
 
 
 def main(argv: list[str] | None = None) -> None:

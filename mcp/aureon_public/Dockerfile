@@ -26,7 +26,9 @@ RUN apt-get update \
 # aureon pin. Do not set cf43882e as a standing default.
 ARG AUREON_REPO=https://github.com/RA-CONSULTING/Aureon-OS.git
 ARG AUREON_REF
+# The first Hugging Face build log must show the AUREON_REF build arg.
 RUN test -n "$AUREON_REF" \
+    && echo "AUREON_REF=${AUREON_REF}" \
     && git clone --branch main --single-branch "$AUREON_REPO" /opt/aureon-os \
     && git -C /opt/aureon-os checkout "$AUREON_REF" \
     && git config --system --add safe.directory /opt/aureon-os

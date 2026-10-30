@@ -803,6 +803,138 @@ def test_space_record_is_an_authenticated_local_session() -> None:
     assert record["entry_check"]["closed_packages_reachable"]["exchanges"] == 0
 
 
+_UVICORN_APP = """
+import sys
+
+import uvicorn
+
+from aureon_public.http_guard import PublicHttpMiddleware, load_http_limits
+from aureon_public.server import streamable_http_config
+
+
+async def ok(scope, receive, send):
+    if scope.get("type") != "http":
+        return
+    if scope.get("method") == "POST":
+        while True:
+            message = await receive()
+            if message.get("type") == "http.request" and not message.get("more_body", False):
+                break
+    body = b"ok"
+    await send(
+        {
+            "type": "http.response.start",
+            "status": 200,
+            "headers": [
+                (b"content-type", b"text/plain"),
+                (b"content-length", str(len(body)).encode("ascii")),
+            ],
+        }
+    )
+    await send({"type": "http.response.body", "body": body})
+
+
+app = PublicHttpMiddleware(ok, load_http_limits())
+uvicorn.Server(streamable_http_config(app, "127.0.0.1", int(sys.argv[1]))).run()
+"""
+
+
+def test_uvicorn_rotating_single_hop_and_open_gets() -> None:
+    """Charlie: real uvicorn, rotating single-hop addresses, and four open GETs.
+
+    proxy_headers stays off. With no trusted proxy hops, five different
+    single-hop values share the socket and do not all return 200. Four GETs
+    from four addresses return 405 and leave a later POST able to succeed.
+    """
+
+    from aureon_public.server import streamable_http_config
+
+    config = streamable_http_config(object(), "127.0.0.1", 9)
+    assert config.proxy_headers is False
+    assert config.forwarded_allow_ips == ""
+
+    script = Path(tempfile.mkdtemp(prefix="aureon-uvicorn-")) / "app.py"
+    script.write_text(_UVICORN_APP, encoding="utf-8")
+
+    def serve(port: int, **env_updates: str) -> subprocess.Popen[str]:
+        env = _base_env(**env_updates)
+        proc = subprocess.Popen(
+            [sys.executable, str(script), str(port)],
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+        deadline = time.monotonic() + 10
+        while time.monotonic() < deadline:
+            if _port_open(port):
+                return proc
+            if proc.poll() is not None:
+                output = proc.stdout.read() if proc.stdout is not None else ""
+                raise AssertionError(output or f"uvicorn exited {proc.returncode}")
+            time.sleep(0.05)
+        proc.terminate()
+        raise AssertionError("uvicorn did not listen")
+
+    def stop(proc: subprocess.Popen[str]) -> None:
+        if proc.poll() is None:
+            proc.terminate()
+            try:
+                proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait(timeout=5)
+
+    port = _free_port()
+    proc = serve(
+        port,
+        AUREON_PUBLIC_RATE_LIMIT="2",
+        AUREON_PUBLIC_TRUSTED_PROXY_HOPS="0",
+        AUREON_PUBLIC_MAX_INFLIGHT="8",
+    )
+    try:
+        codes = []
+        for index in range(5):
+            response = httpx.post(
+                f"http://127.0.0.1:{port}/mcp",
+                headers={"x-forwarded-for": f"203.0.113.{index}"},
+                content=b"{}",
+                timeout=5,
+            )
+            codes.append(response.status_code)
+        assert codes[:2] == [200, 200]
+        assert codes[2:] == [429, 429, 429]
+    finally:
+        stop(proc)
+
+    port = _free_port()
+    proc = serve(
+        port,
+        AUREON_PUBLIC_RATE_LIMIT="20",
+        AUREON_PUBLIC_TRUSTED_PROXY_HOPS="1",
+        AUREON_PUBLIC_MAX_INFLIGHT="4",
+    )
+    try:
+        gets = []
+        for index in range(4):
+            response = httpx.get(
+                f"http://127.0.0.1:{port}/mcp",
+                headers={"x-forwarded-for": f"198.51.100.{index}"},
+                timeout=5,
+            )
+            gets.append(response.status_code)
+        posted = httpx.post(
+            f"http://127.0.0.1:{port}/mcp",
+            headers={"x-forwarded-for": "192.0.2.20"},
+            content=b"{}",
+            timeout=5,
+        )
+        assert gets == [405, 405, 405, 405]
+        assert posted.status_code == 200
+    finally:
+        stop(proc)
+
+
 def test_scaffold_bakes_no_key_and_quotes_the_plan() -> None:
     dockerfile = (ROOT / "mcp" / "aureon_public" / "Dockerfile").read_text(encoding="utf-8")
     requirements = (ROOT / "mcp" / "aureon_public" / "requirements.txt").read_text(encoding="utf-8")
@@ -826,6 +958,8 @@ def test_scaffold_bakes_no_key_and_quotes_the_plan() -> None:
     assert "Other arguments have not been swept." in readme
     assert "alive" not in readme.lower()
     assert "The measured session was taken without Docker." in readme
+    assert "The first Hugging Face build log must show the `AUREON_REF` build arg." in readme
+    assert 'echo "AUREON_REF=${AUREON_REF}"' in dockerfile
     assert "#225" in readme
     assert "ARG AUREON_REF=cf43882e" not in dockerfile
     assert "#225" in dockerfile
