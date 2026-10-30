@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import subprocess
 import sys
 from pathlib import Path
 from types import ModuleType
@@ -17,16 +18,26 @@ def ensure_mcp_path() -> None:
 
 
 def pinned_finders_on_meta_path() -> list[Any]:
-    from aureon_public.pin_blob import PinnedAureonFinder
-
+    if "aureon_public" not in sys.modules:
+        return []
+    ensure_mcp_path()
+    try:
+        from aureon_public.pin_blob import PinnedAureonFinder
+    except ImportError:
+        return []
     return [finder for finder in sys.meta_path if isinstance(finder, PinnedAureonFinder)]
 
 
 def teardown_guard_leaks() -> None:
     """Remove MCP guard finders and the loaded Space guard module from this process."""
 
-    from aureon_public.pin_blob import PinnedAureonFinder
-
+    if "aureon_public" not in sys.modules:
+        return
+    ensure_mcp_path()
+    try:
+        from aureon_public.pin_blob import PinnedAureonFinder
+    except ImportError:
+        return
     sys.meta_path[:] = [
         finder
         for finder in sys.meta_path
@@ -39,6 +50,34 @@ def teardown_guard_leaks() -> None:
         guard_loader._DONE = False
     except ImportError:
         pass
+
+
+def import_blocked_in_fresh_guarded_process(module: str) -> None:
+    """Apply the Space guard in a new interpreter and expect ``module`` import to fail."""
+
+    code = (
+        "import importlib\n"
+        "import sys\n"
+        f"sys.path.insert(0, {_MCP_PATH!r})\n"
+        "from aureon_public.guard_loader import apply_space_guard\n"
+        "apply_space_guard()\n"
+        "try:\n"
+        f"    importlib.import_module({module!r})\n"
+        "except ImportError:\n"
+        "    raise SystemExit(0)\n"
+        "raise SystemExit('import was not blocked')\n"
+    )
+    completed = subprocess.run(
+        [sys.executable, "-I", "-c", code],
+        cwd=str(_REPO_ROOT),
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0:
+        raise AssertionError(
+            f"expected ImportError importing {module!r} under guard; "
+            f"exit={completed.returncode} stderr={completed.stderr!r} stdout={completed.stdout!r}"
+        )
 
 
 def load_public_test_bindings(module: ModuleType) -> None:

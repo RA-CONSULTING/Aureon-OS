@@ -226,14 +226,13 @@ def test_canonical_and_blend_default_do_not_require_state() -> None:
 
 
 def test_catalog_and_import_blocker() -> None:
+    from tests.support.mcp_isolation import import_blocked_in_fresh_guarded_process
+
     catalog = _load(tools.organism_catalog())
     assert catalog["seats"]
     assert catalog["nodes"]
     assert catalog["systems"]
-    import importlib
-
-    with pytest.raises(ImportError):
-        importlib.import_module("aureon.trading")
+    import_blocked_in_fresh_guarded_process("aureon.trading")
 
 
 def test_aureon_source_pinned_commit_comes_from_direct_url(tmp_path: Path) -> None:
@@ -381,6 +380,7 @@ def layers_call(name: str, package: str | None = None) -> dict:
 
 def test_source_names_refuses_blocked_packages_and_guard_still_blocks_import() -> None:
     from aureon_public.layers import source_names
+    from tests.support.mcp_isolation import import_blocked_in_fresh_guarded_process
 
     for package in (
         "trading",
@@ -393,8 +393,6 @@ def test_source_names_refuses_blocked_packages_and_guard_still_blocks_import() -
     ):
         body = _load(source_names(package))
         assert body["status"] == "unavailable"
-    import importlib
-
     for module in (
         "aureon.exchanges",
         "aureon.trading",
@@ -404,8 +402,7 @@ def test_source_names_refuses_blocked_packages_and_guard_still_blocks_import() -
         "aureon.scanners",
         "unified_margin_trader",
     ):
-        with pytest.raises(ImportError):
-            importlib.import_module(module)
+        import_blocked_in_fresh_guarded_process(module)
 
 
 def test_operator_server_stays_off_without_the_flag_and_is_stdio_only(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -551,6 +548,7 @@ def test_subprocess_body_call_ignores_stray_module_in_repo_root() -> None:
 
     from aureon_public.body import body_call
 
+    modules_before = set(sys.modules)
     root = ROOT
     shadow = root / "aureon.py"
     shadow.write_text(
@@ -564,7 +562,9 @@ def test_subprocess_body_call_ignores_stray_module_in_repo_root() -> None:
     finally:
         shadow.unlink(missing_ok=True)
         for name in list(sys.modules):
-            if name == "aureon" or name.startswith("aureon."):
+            if name not in modules_before and (
+                name == "aureon" or name.startswith("aureon.")
+            ):
                 sys.modules.pop(name, None)
         importlib.invalidate_caches()
 
