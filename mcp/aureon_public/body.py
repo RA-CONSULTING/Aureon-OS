@@ -95,6 +95,8 @@ _OPERATOR_ALLOWLIST = {
 _CONSTRUCTOR_ALLOWLIST: set[tuple[str, str]] = set()
 _NAME_CONTAINS = ("write", "save", "export", "dump", "start", "run")
 _WORKER_SLOTS = threading.BoundedSemaphore(4)
+WORKER_WAIT_SECONDS = 10.0
+WORKER_REAP_SECONDS = 2.0
 
 
 def enabled_stage() -> int:
@@ -399,8 +401,8 @@ def _worker_cwd() -> str:
     return tempfile.gettempdir()
 
 
-def _acquire_worker() -> None:
-    _WORKER_SLOTS.acquire()
+def _acquire_worker() -> bool:
+    return _WORKER_SLOTS.acquire(timeout=WORKER_WAIT_SECONDS)
 
 
 def _release_worker() -> None:
@@ -415,7 +417,6 @@ def _call_in_subprocess(module: str, symbol: str, arguments: dict[str, Any], tim
     checkout_error = _checkout_load(module)
     if checkout_error:
         return "error", checkout_error
-    _acquire_worker()
     payload = json.dumps(
         {
             "dotted": dotted_for(module),
@@ -424,7 +425,14 @@ def _call_in_subprocess(module: str, symbol: str, arguments: dict[str, Any], tim
             "arguments": arguments,
         }
     ).encode("utf-8")
+    slot_acquired = False
     try:
+        if not _acquire_worker():
+            return (
+                "busy",
+                f"live worker cap 4 not available within {WORKER_WAIT_SECONDS:g}s",
+            )
+        slot_acquired = True
         process = subprocess.Popen(
             _worker_argv(),
             stdin=subprocess.PIPE,
@@ -441,7 +449,10 @@ def _call_in_subprocess(module: str, symbol: str, arguments: dict[str, Any], tim
                 os.killpg(process.pid, signal.SIGKILL)
             except ProcessLookupError:
                 pass
-            process.communicate()
+            try:
+                process.communicate(timeout=WORKER_REAP_SECONDS)
+            except subprocess.TimeoutExpired:
+                pass
             return "timeout", f"exceeded {timeout:g}s"
         if process.returncode not in {0, None}:
             text = stdout.decode("utf-8", errors="replace").strip()
@@ -455,7 +466,8 @@ def _call_in_subprocess(module: str, symbol: str, arguments: dict[str, Any], tim
             return "ok", body.get("result")
         return "error", str(body.get("error") or "worker failed")[:240]
     finally:
-        _release_worker()
+        if slot_acquired:
+            _release_worker()
 
 
 def _constructor_refusal(module: str, class_name: str) -> str | None:

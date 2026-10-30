@@ -455,6 +455,114 @@ def test_timeout_kills_the_worker_and_names_the_real_limit(monkeypatch: pytest.M
         os.kill(pids[0], 0)
 
 
+def _worker_slots_all_free() -> bool:
+    from aureon_public.body import _WORKER_SLOTS
+
+    acquired = 0
+    for _ in range(4):
+        if not _WORKER_SLOTS.acquire(blocking=False):
+            break
+        acquired += 1
+    for _ in range(acquired):
+        _WORKER_SLOTS.release()
+    return acquired == 4
+
+
+def test_payload_build_failure_does_not_leak_worker_slots(monkeypatch: pytest.MonkeyPatch) -> None:
+    import json as json_module
+
+    from aureon_public.body import _call_in_subprocess
+
+    assert _worker_slots_all_free()
+
+    def boom(*_args: object, **_kwargs: object) -> str:
+        raise TypeError("payload not serialisable")
+
+    monkeypatch.setattr(json_module, "dumps", boom)
+    with pytest.raises(TypeError, match="payload not serialisable"):
+        _call_in_subprocess("harmonic/rainbow_reference.py", "solfeggio_ladder", {}, 1.0)
+    assert _worker_slots_all_free()
+
+
+def test_fifth_call_returns_busy_when_slots_stay_full(monkeypatch: pytest.MonkeyPatch) -> None:
+    import threading
+    import time
+
+    import aureon_public.body as body_module
+    from aureon_public.body import _call_in_subprocess
+
+    monkeypatch.setattr(body_module, "WORKER_WAIT_SECONDS", 0.15)
+    hold = threading.Event()
+    real_popen = __import__("subprocess").Popen
+
+    class _Held:
+        pid = os.getpid()
+        returncode = 0
+
+        def communicate(self, payload: bytes | None = None, timeout: float | None = None) -> tuple[bytes, bytes]:
+            del payload, timeout
+            hold.wait(30)
+            return (b'{"ok": true, "result": 1}', b"")
+
+    def guarded(cmd: object, **kwargs: object) -> object:
+        if isinstance(cmd, (list, tuple)) and any("call_worker" in str(part) for part in cmd):
+            return _Held()
+        return real_popen(cmd, **kwargs)
+
+    monkeypatch.setattr(body_module.subprocess, "Popen", guarded)
+    threads = [
+        threading.Thread(
+            target=_call_in_subprocess,
+            args=("harmonic/rainbow_reference.py", "solfeggio_ladder", {}, 5.0),
+        )
+        for _ in range(4)
+    ]
+    for thread in threads:
+        thread.start()
+    time.sleep(0.2)
+    state, message = _call_in_subprocess("harmonic/rainbow_reference.py", "solfeggio_ladder", {}, 5.0)
+    assert state == "busy"
+    assert "live worker cap 4" in message
+    hold.set()
+    for thread in threads:
+        thread.join(timeout=5)
+    assert _worker_slots_all_free()
+
+
+def test_communicate_after_killpg_uses_a_short_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
+    import subprocess as subprocess_module
+    import time
+
+    from aureon_public.body import WORKER_REAP_SECONDS, _call_in_subprocess
+
+    calls: list[str | None] = []
+    real_popen = subprocess_module.Popen
+
+    class _Hung:
+        pid = 999_999
+        returncode = -9
+
+        def communicate(self, payload: bytes | None = None, timeout: float | None = None) -> tuple[bytes, bytes]:
+            if payload is not None:
+                raise subprocess_module.TimeoutExpired(cmd="worker", timeout=0.1)
+            calls.append(timeout)
+            raise subprocess_module.TimeoutExpired(cmd="reap", timeout=timeout)
+
+    def guarded(cmd: object, **kwargs: object) -> object:
+        if isinstance(cmd, (list, tuple)) and any("call_worker" in str(part) for part in cmd):
+            return _Hung()
+        return real_popen(cmd, **kwargs)
+
+    monkeypatch.setattr("aureon_public.body.subprocess.Popen", guarded)
+    started = time.time()
+    state, message = _call_in_subprocess("harmonic/rainbow_reference.py", "solfeggio_ladder", {}, 0.2)
+    elapsed = time.time() - started
+    assert state == "timeout"
+    assert message == "exceeded 0.2s"
+    assert calls == [WORKER_REAP_SECONDS]
+    assert elapsed < WORKER_REAP_SECONDS + 2.0
+
+
 def test_operator_rows_outside_the_allowlist_are_refused(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("AUREON_OPERATOR_MCP", "1")
     rows = (
