@@ -58,11 +58,15 @@ export function TradingReadinessCheck() {
     });
 
     // Check 3: Coherence Level
-    const coherenceOk = globalState.coherence >= 0.35;
+    const coherenceFinite =
+      typeof globalState.coherence === 'number' && Number.isFinite(globalState.coherence);
+    const coherenceOk = coherenceFinite && globalState.coherence >= 0.35;
     results.push({
       name: 'Coherence Level',
-      status: coherenceOk ? 'pass' : 'warn',
-      message: `Γ = ${(globalState.coherence * 100).toFixed(1)}% (min: 35%)`,
+      status: !coherenceFinite ? 'warn' : coherenceOk ? 'pass' : 'warn',
+      message: coherenceFinite
+        ? `Γ = ${(globalState.coherence * 100).toFixed(1)}% (min: 35%)`
+        : 'Γ = unavailable (min: 35%)',
     });
 
     // Check 4: Exchange Credentials

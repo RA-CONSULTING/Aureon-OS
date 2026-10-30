@@ -17,7 +17,11 @@ export function PrismFrequencyPanel() {
   
   useEffect(() => {
     // Compute prism output from global state
-    if (globalState.coherence > 0 || globalState.lambda !== 0) {
+    const coherenceFinite =
+      typeof globalState.coherence === 'number' && Number.isFinite(globalState.coherence);
+    const lambdaFinite =
+      typeof globalState.lambda === 'number' && Number.isFinite(globalState.lambda);
+    if (coherenceFinite && lambdaFinite) {
       const output = thePrism.transform({
         lambda: globalState.lambda,
         coherence: globalState.coherence,
@@ -29,6 +33,8 @@ export function PrismFrequencyPanel() {
         baseFrequency: 432,
       });
       setPrismOutput(output);
+    } else {
+      setPrismOutput(null);
     }
   }, [globalState]);
   

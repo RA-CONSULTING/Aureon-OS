@@ -53,6 +53,11 @@ export default function LiveDataDashboard() {
       ? ((tradingState.winningTrades / tradingState.totalTrades) * 100).toFixed(1)
       : null;
 
+  const coherenceFinite =
+    typeof quantumState.coherence === 'number' && Number.isFinite(quantumState.coherence);
+  const lambdaFinite =
+    typeof quantumState.lambda === 'number' && Number.isFinite(quantumState.lambda);
+
   return (
     <div className="min-h-screen bg-background p-4">
       {/* Header */}
@@ -144,13 +149,19 @@ export default function LiveDataDashboard() {
         />
         <StatCard 
           title="Coherence Γ" 
-          value={quantumState.coherence.toFixed(3)}
+          value={coherenceFinite ? quantumState.coherence.toFixed(3) : 'unavailable'}
           icon={<RefreshCw className="w-4 h-4" />}
-          status={quantumState.coherence >= 0.45 ? 'success' : 'warning'}
+          status={
+            !coherenceFinite
+              ? 'neutral'
+              : quantumState.coherence >= 0.45
+                ? 'success'
+                : 'warning'
+          }
         />
         <StatCard 
           title="Lambda Λ" 
-          value={quantumState.lambda.toFixed(2)}
+          value={lambdaFinite ? quantumState.lambda.toFixed(2) : 'unavailable'}
           icon={<Zap className="w-4 h-4" />}
           status="neutral"
         />

@@ -22,11 +22,20 @@ interface CinematicHUDProps {
 }
 
 export function CinematicHUD({ state, hiveMood, activeScanner, onNarratorEvent }: CinematicHUDProps) {
-  const winRate = state.totalTrades > 0
-    ? (state.winningTrades / state.totalTrades) * 100
-    : 0;
+  const winRate =
+    typeof state.totalTrades === 'number' &&
+    state.totalTrades > 0 &&
+    typeof state.winningTrades === 'number'
+      ? (state.winningTrades / state.totalTrades) * 100
+      : null;
 
   const c = state.consciousness;
+  const hudCoherence = c.available ? c.psi : state.coherence;
+  const hudLambda = c.available ? c.lambdaT : state.lambda;
+  const coherenceForDisplay =
+    typeof hudCoherence === 'number' && Number.isFinite(hudCoherence) ? hudCoherence : null;
+  const lambdaForDisplay =
+    typeof hudLambda === 'number' && Number.isFinite(hudLambda) ? hudLambda : null;
 
   return (
     <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
@@ -36,7 +45,7 @@ export function CinematicHUD({ state, hiveMood, activeScanner, onNarratorEvent }
         totalPnl={state.totalPnl}
         cyclePnlPercent={state.cyclePnlPercent}
         winRate={winRate}
-        coherence={c.available ? c.psi : state.coherence}
+        coherence={coherenceForDisplay}
         totalTrades={state.totalTrades}
         isActive={state.isActive}
         krakenConnected={state.ecosystemHealth === 'connected'}
@@ -58,8 +67,8 @@ export function CinematicHUD({ state, hiveMood, activeScanner, onNarratorEvent }
 
       {/* Metrics panel */}
       <HUDMetricsPanel
-        coherence={c.available ? c.psi : state.coherence}
-        lambda={c.available ? c.lambdaT : state.lambda}
+        coherence={coherenceForDisplay}
+        lambda={lambdaForDisplay}
         lighthouseSignal={state.lighthouseSignal}
         prismState={state.prismState}
         hncFrequency={state.hncFrequency}
@@ -79,7 +88,7 @@ export function CinematicHUD({ state, hiveMood, activeScanner, onNarratorEvent }
 
       {/* Ambient soundscape controls */}
       <AmbientSoundscape
-        coherence={c.available ? c.psi : state.coherence}
+        coherence={coherenceForDisplay ?? 0}
         psi={c.psi}
         fearLevel={c.fearLevel}
         gaiaFrequency={state.gaiaFrequency}

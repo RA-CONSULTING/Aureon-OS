@@ -29,8 +29,8 @@ export interface GlobalState {
   isAuthenticated: boolean;
   
   // Quantum state
-  coherence: number;
-  lambda: number;
+  coherence: number | null;
+  lambda: number | null;
   lighthouseSignal: number;
   dominantNode: string;
   prismLevel: number;
@@ -46,7 +46,7 @@ export interface GlobalState {
   isActive: boolean;
   totalEquity: number | null;
   equityNote: string | null;
-  availableBalance: number;
+  availableBalance: number | null;
   totalTrades: number | null;
   winningTrades: number | null;
   totalPnl: number | null;
@@ -157,7 +157,7 @@ export interface GlobalState {
   // HNC (Harmonic Neural Coherence)
   hncFrequency: number;              // Current HNC Hz
   hncMarketState: 'CONSOLIDATION' | 'TRENDING' | 'VOLATILE' | 'BREAKOUT';
-  hncCoherencePercent: number;       // HNC coherence %
+  hncCoherencePercent: number | null;       // HNC coherence %
   hncModifier: number;               // Position modifier (0.8x, 1.0x, etc)
   
   // Mycelium Swarm Intelligence
@@ -733,12 +733,12 @@ class GlobalSystemsManager {
       this.updateState({ 
         exchangeState: state,
         // Sync balance to trading state
-        totalEquity: state.totalEquityUsd || 0,
-        availableBalance: state.totalEquityUsd || 0,
+        totalEquity: state.totalEquityUsd ?? null,
+        availableBalance: state.totalEquityUsd ?? null,
       });
       
       // Update Capital Pool with new equity
-      if (state.totalEquityUsd > 0) {
+      if (state.totalEquityUsd != null && state.totalEquityUsd > 0) {
         capitalPool.updateEquity(state.totalEquityUsd, 0);
         console.log(`💰 [GlobalSystems] Balance synced: $${state.totalEquityUsd.toFixed(2)}`);
       }
