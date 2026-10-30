@@ -238,6 +238,59 @@ def install_sweep_guard() -> None:
         _guard_path(dst)
         return _REAL["replace"](src, dst, *args, **kwargs)
 
+    def _rmdir(path: object, *args: object, **kwargs: object) -> None:
+        _guard_path(path)
+        return _REAL["rmdir"](path, *args, **kwargs)
+
+    def _truncate(path: object, length: int) -> None:
+        _guard_path(path)
+        return _REAL["truncate"](path, length)
+
+    def _chmod(path: object, mode: int, *args: object, **kwargs: object) -> None:
+        _guard_path(path)
+        return _REAL["chmod"](path, mode, *args, **kwargs)
+
+    def _lchmod(path: object, mode: int) -> None:
+        _guard_path(path)
+        return _REAL["lchmod"](path, mode)
+
+    def _chown(path: object, uid: int, gid: int, *args: object, **kwargs: object) -> None:
+        _guard_path(path)
+        return _REAL["chown"](path, uid, gid, *args, **kwargs)
+
+    def _symlink(src: object, dst: object, *args: object, **kwargs: object) -> None:
+        _guard_path(dst)
+        return _REAL["symlink"](src, dst, *args, **kwargs)
+
+    def _link(src: object, dst: object, *args: object, **kwargs: object) -> None:
+        _guard_path(src)
+        _guard_path(dst)
+        return _REAL["link"](src, dst, *args, **kwargs)
+
+    def _utime(path: object, times: object = None, *args: object, **kwargs: object) -> None:
+        _guard_path(path)
+        return _REAL["utime"](path, times, *args, **kwargs)
+
+    def _fd_path(fd: object) -> str | None:
+        try:
+            return os.readlink(f"/proc/self/fd/{int(fd)}")
+        except (OSError, TypeError, ValueError):
+            return None
+
+    def _guard_fd(fd: object) -> None:
+        path = _fd_path(fd)
+        if path is None:
+            _note_write(f"fd:{fd}")
+        _guard_path(path)
+
+    def _ftruncate(fd: object, length: int) -> None:
+        _guard_fd(fd)
+        return _REAL["ftruncate"](fd, length)
+
+    def _fchmod(fd: object, mode: int) -> None:
+        _guard_fd(fd)
+        return _REAL["fchmod"](fd, mode)
+
     def _rmtree(path: object, *args: object, **kwargs: object) -> None:
         _guard_path(path)
         return _REAL["rmtree"](path, *args, **kwargs)
@@ -296,7 +349,13 @@ def install_sweep_guard() -> None:
             "create_connection": socket.create_connection,
             "execv": os.execv,
             "execve": os.execve,
+            "chmod": os.chmod,
+            "chown": os.chown,
+            "fchmod": getattr(os, "fchmod", None),
             "fork": getattr(os, "fork", None),
+            "ftruncate": getattr(os, "ftruncate", None),
+            "lchmod": getattr(os, "lchmod", None),
+            "link": os.link,
             "forkpty": getattr(os, "forkpty", None),
             "makedirs": os.makedirs,
             "mkdir": os.mkdir,
@@ -309,7 +368,11 @@ def install_sweep_guard() -> None:
             "remove": os.remove,
             "rename": os.rename,
             "replace": os.replace,
+            "rmdir": os.rmdir,
             "rmtree": shutil.rmtree,
+            "symlink": os.symlink,
+            "truncate": getattr(os, "truncate", None),
+            "utime": os.utime,
             "socket": socket.socket,
             "subprocess_popen": subprocess.Popen,
             "system": os.system,
@@ -337,6 +400,20 @@ def install_sweep_guard() -> None:
     os.remove = _remove  # type: ignore[assignment]
     os.rename = _rename  # type: ignore[assignment]
     os.replace = _replace  # type: ignore[assignment]
+    os.rmdir = _rmdir  # type: ignore[assignment]
+    os.chmod = _chmod  # type: ignore[assignment]
+    os.chown = _chown  # type: ignore[assignment]
+    os.symlink = _symlink  # type: ignore[assignment]
+    os.link = _link  # type: ignore[assignment]
+    os.utime = _utime  # type: ignore[assignment]
+    if _REAL.get("truncate") is not None:
+        os.truncate = _truncate  # type: ignore[assignment]
+    if _REAL.get("ftruncate") is not None:
+        os.ftruncate = _ftruncate  # type: ignore[assignment]
+    if _REAL.get("fchmod") is not None:
+        os.fchmod = _fchmod  # type: ignore[assignment]
+    if _REAL.get("lchmod") is not None:
+        os.lchmod = _lchmod  # type: ignore[assignment]
     shutil.rmtree = _rmtree  # type: ignore[assignment]
     shutil.move = _move  # type: ignore[assignment]
     if _REAL.get("fork") is not None:
@@ -398,6 +475,15 @@ def uninstall_sweep_guard() -> None:
     os.remove = _REAL["remove"]
     os.rename = _REAL["rename"]
     os.replace = _REAL["replace"]
+    os.rmdir = _REAL["rmdir"]
+    os.chmod = _REAL["chmod"]
+    os.chown = _REAL["chown"]
+    os.symlink = _REAL["symlink"]
+    os.link = _REAL["link"]
+    os.utime = _REAL["utime"]
+    for name in ("truncate", "ftruncate", "fchmod", "lchmod"):
+        if _REAL.get(name) is not None:
+            setattr(os, name, _REAL[name])
     shutil.rmtree = _REAL["rmtree"]
     shutil.move = _REAL["move"]
     for name in (

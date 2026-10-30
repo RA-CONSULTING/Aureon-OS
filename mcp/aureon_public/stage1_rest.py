@@ -471,6 +471,43 @@ def swarm_actualization_to_dict() -> str:
     )
 
 
+# Copied from tests/test_swarm_hive.py::test_agent_keeps_a_normalized_soft_simplex.
+_HIVE_ACTIONS = ["hold", "advance", "retreat"]
+_HIVE_CONTEXT = [0.4, 0.2, -0.1, 0.3, 0.0, 0.1, -0.2, 0.05]
+_HIVE_SOURCE = "tests/test_swarm_hive.py::test_agent_keeps_a_normalized_soft_simplex"
+
+
+@quiet
+def swarm_agent_update() -> str:
+    """SwarmAgent.update on the hive test's first context.
+
+    The agent id, role, actions, and CONTEXT are that test. The cluster is
+    empty and the echo is absent, as the loop starts. The function returns None.
+
+    Args:
+        none: The fixture is fixed. Label: cited.
+    """
+
+    return label_result(
+        _call(
+            "swarm/agent.py",
+            "SwarmAgent.update",
+            {
+                "cluster_states": [],
+                "context": _HIVE_CONTEXT,
+                "echo": None,
+                "init": {
+                    "actions": _HIVE_ACTIONS,
+                    "agent_id": "a1",
+                    "role": "research",
+                },
+            },
+        ),
+        _HIVE_SOURCE,
+        "The first update in that test. Empty cluster and no echo. The return is None.",
+    )
+
+
 TOOLS: list[Any] = [
     generated_default_inputs,
     generated_normalized,
@@ -479,6 +516,7 @@ TOOLS: list[Any] = [
     swarm_voice_read,
     swarm_steer_flow,
     swarm_build_seat,
+    swarm_agent_update,
     swarm_agent_substrate,
     swarm_agent_to_dict,
     swarm_agent_propose,

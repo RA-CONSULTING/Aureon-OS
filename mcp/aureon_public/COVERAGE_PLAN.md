@@ -19,8 +19,8 @@ That pytest command is the gate. It runs in `/tmp/aureon-public-venv`, the venv 
 
 `--write` rewrites this file from the same function. `measured/aureon_public_stage1_run.sh` installs `mcp/aureon_public/requirements.txt` and `mcp/aureon_public/test-requirements.txt`, then rewrites both `measured/aureon_public_alignment.json` and `measured/aureon_public_stage1.json`. It writes those two files under a temp directory first and copies them into `measured/` only after both stamps have finished. `measurement_stamp` raises `RuntimeError` when `git status --porcelain` is not empty, so the second stamp must not see the first file. `test-requirements.txt` is the test install: pytest, pytest-timeout, flask, pandas, and scipy. It is not the public server runtime. `measured/aureon_public_stage2_sweep.sh` and `measured/aureon_public_call_sweep.sh` copy the checkout with `cp -a` under an ordinary temp parent, place fake `NEXUS-LIVE-FEED-` and `Aureon-Trading--Project-Sero` checkouts beside that copy, block sockets, and rewrite their measured records. Each sweep record names the pin, the `aureon/` tree hash beside that pin, the `aureon_source` kind, and that temp parent. `measured/aureon_public_protocol_run.sh` starts this server over stdio and over Streamable HTTP bound to `127.0.0.1`, with `AUREON_PUBLIC_REQUIRE_PIN=1`. An MCP SDK 1.30.0 client calls `tools/list`, `resources/list`, `prompts/list`, and one `tools/call` (`alignment_consonance_read` with ratio 1.0). The raw pages are `measured/aureon_public_protocol.json`. These measured records name `code_commit`, the parent of the commit that contains the record file. A record cannot name the commit that adds the file.
 
-Listed symbols: 20083. Public entry points: 4388. Reachable now: 78. Tested: 68. Refused: 4310. The plan on main recorded 879 reachable. An earlier draft head of the stage-1 PR recorded 89 reachable, before the call sweep. Methods open because a constructor is allowlisted: 19. The refused-imports fence is unchanged.
-Reachable means `public_entry_refusal` returns None. Tested means a public tool calls that entry point and `tests/test_aureon_public_stage1.py` or `tests/test_aureon_public_stage2.py` exercises the tool. Refused means a public entry point the server will not run. Plan stages 3 and 4 stay closed. The call sweep calls every entry point that was still reachable, with no arguments, and calls each stage-2 entry point again with the real arguments in `stage2_arguments.py`. It refuses one that opens a connection, starts a process, writes outside the sandbox, or loads queen, miner, swarm_motion, inhouse_ai, ollama_config, or an HTTP client. `get_unified_directive` is refused that way. It does not build the queen and miner bridges.
+Listed symbols: 20083. Public entry points: 4388. Reachable now: 69. Tested: 69. Refused: 4319. The plan on main recorded 879 reachable. An earlier draft head of the stage-1 PR recorded 89 reachable, before the call sweep. Methods open because a constructor is allowlisted: 16. The refused-imports fence is unchanged.
+Reachable means `public_entry_refusal` returns None. Tested means a public tool calls that entry point and `tests/test_aureon_public_stage1.py` or `tests/test_aureon_public_stage2.py` exercises the tool. Refused means a public entry point the server will not run. Plan stages 3 and 4 stay closed. The call sweep calls every entry point that was still reachable, with no arguments, and calls each stage-2 entry point again with the real arguments in `stage2_arguments.py`. `SwarmAgent.update` is also called with the hive fixture named below. It refuses one that opens a connection, starts a process, writes outside the sandbox, or loads queen, miner, swarm_motion, inhouse_ai, ollama_config, or an HTTP client. `get_unified_directive` is refused that way. It does not build the queen and miner bridges.
 
 ## Stage order
 
@@ -43,7 +43,7 @@ Stage 2 is open. A stage-2 module whose import loads an adapter or an HTTP clien
 | ---: | --- | ---: | ---: | ---: | ---: | ---: |
 | 1 | alignment | 36 | 24 | 11 | 11 | 13 |
 | 1 | generated | 8 | 4 | 4 | 4 | 0 |
-| 1 | swarm | 79 | 41 | 24 | 14 | 17 |
+| 1 | swarm | 79 | 41 | 15 | 15 | 26 |
 | 2 | atn | 57 | 28 | 0 | 0 | 28 |
 | 2 | cognition | 44 | 14 | 1 | 1 | 13 |
 | 2 | conversion | 170 | 0 | 0 | 0 | 0 |
@@ -120,8 +120,8 @@ Calling `get_unified_directive` constructs `UnifiedHarmonicDirective` with auto-
 `alignment` stays the first stage-1 package. `get_pillar_alignment` stays, with `auto_load_pillars` false. `get_unified_directive` is not a stage-1 tool. This run opens `generated` and `swarm`. `organism` is not opened.
 Generated was on the more_layers exclusion list. It is open because `aureon/generated/research_cinema/harmonic_nexus_score_model.py` imports only dataclasses and its module docstring calls it a deterministic helper, not trading authority. The four entry points are `build_default_inputs`, `HarmonicNexusScoreInputs.normalized`, `harmonic_nexus_score`, and `score_breakdown`. `tests/generated/test_harmonic_nexus_score_model.py` shows all-ones inputs score 100.0. That 100 is the weighted sum in that file. It does not score any Aureon or HNC claim and cannot be quoted as evidence.
 `body_call` refuses `organism/repository_layers.py` `compose_repository_layers`. With the checkout beside `NEXUS-LIVE-FEED-` and `Aureon-Trading--Project-Sero`, that call uses `Path(__file__).parents[3]`, independent of `AUREON_REPOS_ROOT`, and execs those sibling modules outside the pin. One call also loads `core.organism_composition`, and through that `aureon.inhouse_ai.llm_adapter`, `agent_runner`, `orchestrator`, `aureon.ollama_config`, and `aureon.autonomous.aureon_internal_coding_workforce`. `inhouse_ai` stays excluded. Organism reachable is 0.
-`body_call` refuses `swarm/capability_grid.py` `build_lane`. `build_lane("fintech")` imports `aureon.accounting`, and that package init reaches `aureon.autonomous.aureon_internal_coding_workforce`, which imports `aureon.inhouse_ai` and `aureon.ollama_config`. Swarm's other entry points stay. Swarm reachable is 24.
-The other swarm tools use fixtures from the swarm tests or fixed example arguments. Classes that need nested agent instances stay off the constructor allowlist: Cluster, Company, Zone, FleadhCompany, VisitorAgent, and WorkerAgent. Name-blocked `run_` entry points stay refused. Properties such as SwarmAgent.purity are not given tools because the worker calls methods. `validate_seat_receipt` stays reachable through `body_call` and is not a second tool: the public result cap would drop receipt fields before another call.
+`body_call` refuses `swarm/capability_grid.py` `build_lane`. `build_lane("fintech")` imports `aureon.accounting`, and that package init reaches `aureon.autonomous.aureon_internal_coding_workforce`, which imports `aureon.inhouse_ai` and `aureon.ollama_config`. Swarm reachable is 15.
+The swarm tools use fixtures from the swarm tests or fixed example arguments. `SwarmAgent.update` uses the first call in `tests/test_swarm_hive.py` `test_agent_keeps_a_normalized_soft_simplex`: agent `a1`, role `research`, actions hold, advance, and retreat, CONTEXT `[0.4, 0.2, -0.1, 0.3, 0.0, 0.1, -0.2, 0.05]`, an empty cluster, and no echo. The function returns None. Classes that need nested agent instances stay off the constructor allowlist: Cluster, Company, Zone, FleadhCompany, VisitorAgent, and WorkerAgent. Name-blocked `run_` entry points stay refused. `SwarmAgent.purity` and `ClusterCoherence.warm` are properties. The worker calls methods, so `body_call` and `dispatch` refuse them. `CausalEchoBus.possibilities` is refused because one call cannot park an ensemble and then read it. `issue_auris_node_receipt` needs a `TrustedAurisNodeResolver` that is not built from JSON. `validate_auris_node_receipt`, `validate_hnc_evidence`, `validate_provider_moment`, `validate_council_receipt`, and `validate_seat_receipt` are refused: the receipt is assembled by the test harness, and the public result cap would drop its fields.
 Stage 2 tools call through `dispatch`. The inputs are the tests and committed files named on each tool. `atn` stays excluded because its modules load an HTTP client. `conversion` has no public function or method and stays excluded. The constructor allowlist, the `__post_init__` refusal, the `AUREON_PUBLIC_SWEEP` start refusal, and the pin check are unchanged.
 Import refusals:
 - `atn/aureon_atn_backtest.py`: module import loads an adapter or http client
@@ -147,8 +147,8 @@ These five were reachable and had no tool. `body_call` and `dispatch` refuse the
 ## Count reconciliation
 
 Main `c1ae468d` recorded reachable 85. Stage 1 was 39 (alignment 11, generated 4, swarm 24). Stage 2 was 46 (atn 0, cognition 1, conversion 0, decoders 5, evaluation 7, gates 3, observer 29, s51 1). 39 + 46 = 85. Tested on that main was the 29 stage-1 tool entry points below. Stage 2 tested was 0. Registering a tool does not add a reachable row. The tool calls an entry point that was already reachable.
-Stage 1 reachable now: 39. Stage 2 reachable now: 39. 39 + 39 = 78.
-Stage 1 tested now: 29. Stage 2 tested now: 39. 29 + 39 = 68.
+Stage 1 reachable now: 30. Stage 2 reachable now: 39. 30 + 39 = 69.
+Stage 1 tested now: 30. Stage 2 tested now: 39. 30 + 39 = 69.
 Every stage-1 entry point that was tested on main is still tested. None dropped out:
 No stage-1 tested entry point dropped out.
 - `alignment/harmonic_resonance.py` `HarmonicAnalysis.to_dict`
@@ -169,6 +169,7 @@ No stage-1 tested entry point dropped out.
 - `swarm/agent.py` `SwarmAgent.propose`
 - `swarm/agent.py` `SwarmAgent.substrate`
 - `swarm/agent.py` `SwarmAgent.to_dict`
+- `swarm/agent.py` `SwarmAgent.update`
 - `swarm/coherence.py` `ClusterCoherence.gamma`
 - `swarm/coherence.py` `ClusterCoherence.to_dict`
 - `swarm/druidic_council.py` `CouncilReceipt.to_dict`
@@ -180,18 +181,8 @@ No stage-1 tested entry point dropped out.
 - `swarm/memory_bus.py` `CausalEchoBus.to_dict`
 - `swarm/queen_gate.py` `Actualization.to_dict`
 - `swarm/steering.py` `SteeringField.steer`
-Stage 1 still has reachable entry points that were not tested on main and are not tested now. This run did not remove them from tested, because they were not tested:
-- `swarm/agent.py` `SwarmAgent.purity`
-- `swarm/agent.py` `SwarmAgent.update`
-- `swarm/auris_node_receipts.py` `issue_auris_node_receipt`
-- `swarm/auris_node_receipts.py` `validate_auris_node_receipt`
-- `swarm/auris_node_receipts.py` `validate_hnc_evidence`
-- `swarm/auris_node_receipts.py` `validate_provider_moment`
-- `swarm/coherence.py` `ClusterCoherence.warm`
-- `swarm/druidic_council.py` `validate_council_receipt`
-- `swarm/druidic_council.py` `validate_seat_receipt`
-- `swarm/memory_bus.py` `CausalEchoBus.possibilities`
-Stage 2 reachable fell by 7, from 46 to 39. The call sweep refused `self_coder_report`. Five reachable entry points had no tool. `log_blocked_fallback` would write a fallback log for an event that did not happen, so `body_call` refuses it.
+Stage 1 has no reachable entry point left untested.
+Stage 2 reachable fell by 7, from 46 to 39, on the stage-2 run. The call sweep refused `self_coder_report`. Five reachable entry points had no tool. `log_blocked_fallback` would write a fallback log for an event that did not happen, so `body_call` refuses it. This follow-up then closes the 10 stage-1 points that were reachable and not tested. Nine are refused. `SwarmAgent.update` is tested on the hive fixture.
 - `evaluation/measured_proof.py` `self_coder_report`: call loads a banned chain or opens a connection.
 - `decoders/book_of_ur.py` `test_phi_resonance_me`: untested stage-2 entry point is not called.
 - `observer/momentum.py` `set_momentum_tracker`: untested stage-2 entry point is not called.
@@ -199,7 +190,17 @@ Stage 2 reachable fell by 7, from 46 to 39. The call sweep refused `self_coder_r
 - `observer/wave_predictor.py` `make_predictor`: untested stage-2 entry point is not called.
 - `observer/wave_predictor.py` `set_wave_predictor`: untested stage-2 entry point is not called.
 - `observer/live_data_policy.py` `log_blocked_fallback`: fallback log is not emitted for an event that did not happen.
-Those seven are the only entry points that left the reachable set since main `c1ae468d`. 85 - 7 = 78. Stage 2's remaining 39 reachable entry points are the 39 tested tools. 39 + 39 = 78 reachable. 29 + 39 = 68 tested.
+- `swarm/agent.py` `SwarmAgent.purity`: property is not called; the worker calls methods.
+- `swarm/auris_node_receipts.py` `issue_auris_node_receipt`: trusted resolver is not built from JSON.
+- `swarm/auris_node_receipts.py` `validate_auris_node_receipt`: receipt is assembled by the test harness; the public result cap would drop its fields.
+- `swarm/auris_node_receipts.py` `validate_hnc_evidence`: receipt is assembled by the test harness; the public result cap would drop its fields.
+- `swarm/auris_node_receipts.py` `validate_provider_moment`: receipt is assembled by the test harness; the public result cap would drop its fields.
+- `swarm/capability_grid.py` `build_lane`: stage 4 entry point is not called.
+- `swarm/coherence.py` `ClusterCoherence.warm`: property is not called; the worker calls methods.
+- `swarm/druidic_council.py` `validate_council_receipt`: receipt is assembled by the test harness; the public result cap would drop its fields.
+- `swarm/druidic_council.py` `validate_seat_receipt`: receipt is assembled by the test harness; the public result cap would drop its fields.
+- `swarm/memory_bus.py` `CausalEchoBus.possibilities`: one call cannot park an ensemble and read it.
+Main `cf43882e` recorded reachable 78 and tested 68. This follow-up refuses nine stage-1 entry points and tests `SwarmAgent.update`. Reachable and tested are both 69. 30 + 39 = 69.
 
 The pin stays `8aa6a2d971cc529484e2a5e261e28afafab4e4f4`. The alignment modules at this checkout match that pin, so the tools do not need a newer commit. `GUARD_BLOB` and `INVENTORY_SHA256` are unchanged.
 
