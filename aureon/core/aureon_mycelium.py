@@ -784,11 +784,16 @@ class MyceliumNetwork:
         """Convert governing metrics into a growth/portfolio governor for the ONE GOAL."""
         m = self.governing_metrics or {}
 
-        def _f(key: str, default: float = 0.0) -> float:
+        def _f(key: str, default: float = 0.0) -> float | None:
+            if key in m and m[key] is None:
+                return None
             try:
-                return float(m.get(key, default) or default)
-            except Exception:
+                number = float(m.get(key, default))
+            except (TypeError, ValueError):
                 return float(default)
+            if number != number or number in (float("inf"), float("-inf")):
+                return None
+            return number
 
         total_equity = _f("total_equity", 0.0)
         total_cash = _f("total_cash", 0.0)
@@ -806,6 +811,15 @@ class MyceliumNetwork:
             "max_positions_total": 12,
             "reason": "baseline",
         }
+
+        if total_cash is None or total_equity is None or realized_pnl_total is None or win_rate is None or drawdown_pct is None:
+            governor.update({
+                "allow_entries": False,
+                "entry_budget_scale": 0.0,
+                "max_entries_per_cycle": 0,
+                "reason": "equity_unread",
+            })
+            return governor
 
         # Hard constraint: if basically no cash, don’t try to expand
         if total_cash < 1.0:

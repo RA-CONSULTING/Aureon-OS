@@ -672,12 +672,24 @@ def _synthetic_rows(runtime: dict[str, Any], root: Path = REPO_ROOT) -> list[dic
             wire="exchange_action_plan",
             path="aureon/exchanges/capital_cfd_trader.py",
             present=bool(capital_risk),
-            active=bool(_as_float(capital_risk.get("stress_buffer_before_gbp"), 0.0) >= 0.0),
+            active=bool(
+                capital_risk.get("stress_buffer_before_gbp") is not None
+                and _as_float(capital_risk.get("stress_buffer_before_gbp"), 0.0) >= 0.0
+            ),
             fed=bool(capital_risk),
             runtime=runtime,
             evidence_source="state/unified_runtime_status.json#capital_risk_envelope.stress_buffer_before_gbp",
             stage="exchange_action_plan",
-            extra_blockers=[] if _as_float(capital_risk.get("stress_buffer_before_gbp"), 0.0) >= 0.0 else ["capital_stress_buffer_negative"],
+            extra_blockers=(
+                []
+                if capital_risk.get("stress_buffer_before_gbp") is not None
+                and _as_float(capital_risk.get("stress_buffer_before_gbp"), 0.0) >= 0.0
+                else [
+                    "capital_stress_buffer_unread"
+                    if capital_risk.get("stress_buffer_before_gbp") is None
+                    else "capital_stress_buffer_negative"
+                ]
+            ),
         ),
         _row(
             name="CapitalDynamicLaneControl",
