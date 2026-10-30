@@ -835,9 +835,9 @@ class MindThoughtActionHub:
         print(f"   • Categories: {len(self.registry.get_category_stats())}")
         print(f"   • Dashboards: {len([s for s in self.registry.systems.values() if s.is_dashboard])}")
         if self.queen:
-            print(f"   • Queen Hive Mind: 229 patterns")
+            print(f"   • Queen Hive Mind")
         if self.prob_nexus:
-            print(f"   • Probability Nexus: 79.6% win rate")
+            print(f"   • Probability Nexus")
         if self.ultimate_intel:
             print(f"   • Ultimate Intelligence")
         print(f"{'='*80}\n")
