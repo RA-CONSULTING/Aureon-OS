@@ -81,6 +81,18 @@ def _note_write(path: object) -> None:
     raise OSError("write blocked outside sandbox")
 
 
+def _pin_git(command: object) -> bool:
+    """True for the loader's ``git rev-parse <pin>:<path>`` and nothing else."""
+
+    if not isinstance(command, (list, tuple)) or len(command) < 3:
+        return False
+    if Path(str(command[0])).name != "git" or str(command[1]) != "rev-parse":
+        return False
+    spec = str(command[2])
+    pin = "8aa6a2d971cc529484e2a5e261e28afafab4e4f4"
+    return spec.startswith(pin + ":") and " " not in spec
+
+
 def _note_process(kind: str, detail: object) -> None:
     text = f"{kind} {detail}"[:200]
     if text not in _PROCESSES:
@@ -142,6 +154,10 @@ def install_sweep_guard() -> None:
 
     def _popen(*args: object, **kwargs: object) -> object:
         command = args[0] if args else kwargs.get("args")
+        # The pinned loader reads blob ids with git rev-parse. That is the
+        # server's pin check, not the module starting a process.
+        if _pin_git(command):
+            return _REAL["subprocess_popen"](*args, **kwargs)
         _note_process("Popen", command)
         raise AssertionError("unreachable")
 
