@@ -720,6 +720,139 @@ def test_spike_chunked_50000_against_2000_is_refused() -> None:
     assert called["app"] is False
 
 
+def _post_asgi_chunks(middleware, chunks: list[dict]) -> tuple[int, bytes]:
+    import asyncio
+
+    async def post() -> tuple[int, bytes]:
+        index = {"n": 0}
+
+        async def receive():
+            if index["n"] >= len(chunks):
+                return {"type": "http.disconnect"}
+            message = chunks[index["n"]]
+            index["n"] += 1
+            return message
+
+        messages = []
+
+        async def send(message):
+            messages.append(message)
+
+        scope = {
+            "type": "http",
+            "method": "POST",
+            "path": "/mcp",
+            "headers": [],
+            "client": ("127.0.0.1", 9),
+        }
+        await middleware(scope, receive, send)
+        start = next(message for message in messages if message["type"] == "http.response.start")
+        body = b"".join(
+            message.get("body") or b""
+            for message in messages
+            if message.get("type") == "http.response.body"
+        )
+        return int(start["status"]), body
+
+    return asyncio.run(post())
+
+
+def test_twenty_empty_chunks_then_oversize_body_is_413() -> None:
+    """Spike: empty more_body frames must not stop the byte count."""
+
+    from aureon_public.http_guard import PublicHttpMiddleware
+
+    called = {"app": False}
+
+    async def ok(scope, receive, send):
+        called["app"] = True
+        await send({"type": "http.response.start", "status": 200, "headers": []})
+        await send({"type": "http.response.body", "body": b"ok"})
+
+    middleware = PublicHttpMiddleware(ok, _limits(max_body_bytes=8, rate_limit=10))
+    chunks = [{"type": "http.request", "body": b"", "more_body": True} for _ in range(20)]
+    chunks.append({"type": "http.request", "body": b"x" * 32, "more_body": False})
+    status, body = _post_asgi_chunks(middleware, chunks)
+    assert status == 413
+    assert json.loads(body)["error"] == "body_too_large"
+    assert called["app"] is False
+
+
+def test_twenty_empty_chunks_then_a_small_body_still_reaches_the_app() -> None:
+    from aureon_public.http_guard import PublicHttpMiddleware
+
+    seen = {"body": b""}
+
+    async def ok(scope, receive, send):
+        body = b""
+        while True:
+            message = await receive()
+            if message.get("type") != "http.request":
+                break
+            body += message.get("body") or b""
+            if not message.get("more_body", False):
+                break
+        seen["body"] = body
+        await send({"type": "http.response.start", "status": 200, "headers": []})
+        await send({"type": "http.response.body", "body": b"ok"})
+
+    middleware = PublicHttpMiddleware(ok, _limits(max_body_bytes=8, rate_limit=10))
+    chunks = [{"type": "http.request", "body": b"", "more_body": True} for _ in range(20)]
+    chunks.append({"type": "http.request", "body": b"ok", "more_body": False})
+    status, body = _post_asgi_chunks(middleware, chunks)
+    assert status == 200
+    assert body == b"ok"
+    assert seen["body"] == b"ok"
+
+
+def test_unfinished_empty_body_returns_408() -> None:
+    """An idle drip is rejected. It is not passed through to the application."""
+
+    import asyncio
+
+    from aureon_public.http_guard import PublicHttpMiddleware
+
+    called = {"app": False}
+
+    async def ok(scope, receive, send):
+        called["app"] = True
+        await send({"type": "http.response.start", "status": 200, "headers": []})
+        await send({"type": "http.response.body", "body": b"ok"})
+
+    middleware = PublicHttpMiddleware(ok, _limits(max_body_bytes=8, rate_limit=10, timeout_s=0.05))
+
+    async def post() -> tuple[int, bytes]:
+        async def receive():
+            await asyncio.Event().wait()
+            return {"type": "http.request", "body": b"x" * 32, "more_body": False}
+
+        messages = []
+
+        async def send(message):
+            messages.append(message)
+
+        scope = {
+            "type": "http",
+            "method": "POST",
+            "path": "/mcp",
+            "headers": [],
+            "client": ("127.0.0.1", 9),
+        }
+        await middleware(scope, receive, send)
+        start = next(message for message in messages if message["type"] == "http.response.start")
+        body = b"".join(
+            message.get("body") or b""
+            for message in messages
+            if message.get("type") == "http.response.body"
+        )
+        return int(start["status"]), body
+
+    status, body = asyncio.run(post())
+    assert status == 408
+    assert json.loads(body)["error"] == "body_timeout"
+    assert called["app"] is False
+
+
 def test_inflight_cap_returns_503_busy() -> None:
     import asyncio
 
@@ -804,12 +937,50 @@ def test_space_record_is_an_authenticated_local_session() -> None:
 
 
 _UVICORN_APP = """
+import os
 import sys
 
 import uvicorn
 
 from aureon_public.http_guard import PublicHttpMiddleware, load_http_limits
 from aureon_public.server import streamable_http_config
+
+
+def _install_empty_body_frames() -> None:
+    # A chunk size of 0 ends an HTTP body, so a socket client cannot send
+    # twenty non-terminating empty chunks and then more bytes. The frames are
+    # inserted on the HTTP cycle receive that _bounded_receive reads. The
+    # switch is this test process only.
+    count = int(os.environ.get("AUREON_TEST_EMPTY_BODY_FRAMES", "0") or "0")
+    if count <= 0:
+        return
+    from uvicorn.protocols.http.h11_impl import RequestResponseCycle as H11Cycle
+
+    cycles = [H11Cycle]
+    try:
+        from uvicorn.protocols.http.httptools_impl import RequestResponseCycle as ToolsCycle
+    except ImportError:
+        ToolsCycle = None
+    if ToolsCycle is not None:
+        cycles.append(ToolsCycle)
+
+    def wrap(cycle) -> None:
+        original = cycle.receive
+
+        async def receive(self, _original=original, _count=count):
+            left = getattr(self, "_aureon_empty_left", _count)
+            if left > 0:
+                self._aureon_empty_left = left - 1
+                return {"type": "http.request", "body": b"", "more_body": True}
+            return await _original(self)
+
+        cycle.receive = receive
+
+    for cycle in cycles:
+        wrap(cycle)
+
+
+_install_empty_body_frames()
 
 
 async def ok(scope, receive, send):
@@ -935,6 +1106,80 @@ def test_uvicorn_rotating_single_hop_and_open_gets() -> None:
         stop(proc)
 
 
+def test_uvicorn_twenty_empty_chunks_then_oversize_is_413() -> None:
+    """Spike, through real uvicorn: twenty empty frames, then a body over the cap.
+
+    The HTTP body is chunked and has no content-length, so the declared-length
+    check cannot answer 413 on its own. The empty frames come from the HTTP
+    cycle receive inside this server process.
+    """
+
+    script = Path(tempfile.mkdtemp(prefix="aureon-uvicorn-")) / "app.py"
+    script.write_text(_UVICORN_APP, encoding="utf-8")
+    port = _free_port()
+    env = _base_env(
+        AUREON_PUBLIC_RATE_LIMIT="20",
+        AUREON_PUBLIC_MAX_BODY_BYTES="16",
+        AUREON_PUBLIC_REQUEST_TIMEOUT_S="5",
+        AUREON_TEST_EMPTY_BODY_FRAMES="20",
+    )
+    proc = subprocess.Popen(
+        [sys.executable, str(script), str(port)],
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+    try:
+        deadline = time.monotonic() + 10
+        while time.monotonic() < deadline:
+            if _port_open(port):
+                break
+            if proc.poll() is not None:
+                output = proc.stdout.read() if proc.stdout is not None else ""
+                raise AssertionError(output or f"uvicorn exited {proc.returncode}")
+            time.sleep(0.05)
+        else:
+            raise AssertionError("uvicorn did not listen")
+        payload = b"x" * 64
+        raw = (
+            b"POST /mcp HTTP/1.1\r\n"
+            b"Host: 127.0.0.1\r\n"
+            b"Transfer-Encoding: chunked\r\n"
+            b"Connection: close\r\n"
+            b"\r\n"
+            + f"{len(payload):x}\r\n".encode("ascii")
+            + payload
+            + b"\r\n0\r\n\r\n"
+        )
+        with socket.create_connection(("127.0.0.1", port), timeout=5) as sock:
+            sock.sendall(raw)
+            sock.settimeout(5)
+            data = b""
+            while b"\r\n\r\n" not in data or (
+                b"content-length: " in data.lower()
+                and len(data.split(b"\r\n\r\n", 1)[1])
+                < int(data.lower().split(b"content-length: ", 1)[1].split(b"\r\n", 1)[0])
+            ):
+                piece = sock.recv(4096)
+                if not piece:
+                    break
+                data += piece
+        status = int(data.split(b" ", 2)[1])
+        body = data.split(b"\r\n\r\n", 1)[1]
+        assert status == 413
+        assert json.loads(body)["error"] == "body_too_large"
+        assert body != b"ok"
+    finally:
+        if proc.poll() is None:
+            proc.terminate()
+            try:
+                proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait(timeout=5)
+
+
 def test_scaffold_bakes_no_key_and_quotes_the_plan() -> None:
     dockerfile = (ROOT / "mcp" / "aureon_public" / "Dockerfile").read_text(encoding="utf-8")
     requirements = (ROOT / "mcp" / "aureon_public" / "requirements.txt").read_text(encoding="utf-8")
@@ -959,6 +1204,8 @@ def test_scaffold_bakes_no_key_and_quotes_the_plan() -> None:
     assert "alive" not in readme.lower()
     assert "The measured session was taken without Docker." in readme
     assert "The first Hugging Face build log must show the `AUREON_REF` build arg." in readme
+    assert "HTTP 408" in readme
+    assert "`body_timeout`" in readme
     assert 'echo "AUREON_REF=${AUREON_REF}"' in dockerfile
     assert "#225" in readme
     assert "ARG AUREON_REF=cf43882e" not in dockerfile

@@ -357,7 +357,12 @@ class PublicHttpMiddleware:
             if declared is not None and declared > self.limits.max_body_bytes:
                 await _reject(send, 413, "body_too_large")
                 return
-            receive = await _bounded_receive(receive, self.limits.max_body_bytes, send)
+            receive = await _bounded_receive(
+                receive,
+                self.limits.max_body_bytes,
+                send,
+                self.limits.timeout_s,
+            )
             if receive is None:
                 return
         if not await self._acquire_inflight():
@@ -399,18 +404,29 @@ class PublicHttpMiddleware:
             self._inflight -= 1
 
 
-async def _bounded_receive(receive, max_body: int, send):
+async def _bounded_receive(receive, max_body: int, send, timeout_s: float):
     """Buffer a POST body and reject it once the arrived bytes pass the cap.
 
-    Chunked requests omit content-length. The count is the bytes ``receive``
-    yields, not the header.
+    Chunked requests omit content-length. Every message is counted until
+    ``more_body`` is false or the client disconnects. Empty chunks do not
+    stop the count, and the unread remainder is not passed through.
+    ``timeout_s`` bounds the whole read. An idle or unfinished body returns
+    HTTP 408 instead of handing the stream to the application.
     """
 
     buffered: list[dict] = []
     total = 0
-    empty_spins = 0
+    deadline = asyncio.get_running_loop().time() + timeout_s
     while True:
-        message = await receive()
+        remaining = deadline - asyncio.get_running_loop().time()
+        if remaining <= 0:
+            await _reject(send, 408, "body_timeout")
+            return None
+        try:
+            message = await asyncio.wait_for(receive(), timeout=remaining)
+        except TimeoutError:
+            await _reject(send, 408, "body_timeout")
+            return None
         kind = message.get("type")
         if kind != "http.request":
             buffered.append(message)
@@ -425,10 +441,6 @@ async def _bounded_receive(receive, max_body: int, send):
         buffered.append(message)
         if not message.get("more_body", False):
             break
-        if not chunk:
-            empty_spins += 1
-            if empty_spins > 8:
-                break
     index = 0
 
     async def replay():
