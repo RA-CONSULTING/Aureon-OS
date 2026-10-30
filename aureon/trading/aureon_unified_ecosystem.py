@@ -14285,10 +14285,10 @@ class AureonKrakenEcosystem:
         self.position_splitter = PositionSplitter()
         self.prime_sizer = PrimeSizer()
         
-        # 🔮 NEXUS PREDICTOR - 79.6% Win Rate Validated! 🔮
+        # 🔮 NEXUS PREDICTOR
         if NEXUS_PREDICTOR_AVAILABLE:
             self.nexus_predictor = NexusPredictor()
-            print("   🔮 Nexus Predictor initialized (79.6% validated)")
+            print("   🔮 Nexus Predictor initialized")
         else:
             self.nexus_predictor = None
             
@@ -19501,7 +19501,7 @@ class AureonKrakenEcosystem:
             if coherence < 0.05:
                 continue
 
-            # 🔮 NEXUS PREDICTOR - 79.6% WIN RATE VALIDATED! 🔮
+            # 🔮 NEXUS PREDICTOR
             nexus_pred_prob = 0.5
             nexus_pred_edge = 0.0
             nexus_pred_patterns = []
@@ -19993,7 +19993,7 @@ class AureonKrakenEcosystem:
                     'emotion_band': emotion_band,
                     'chakra_alignment': chakra_alignment,
                     'symbolic_alignment': symbolic_alignment,
-                    # 🔮 NEXUS PREDICTOR fields (79.6% validated!)
+                    # 🔮 NEXUS PREDICTOR fields
                     'nexus_prob': nexus_pred_prob,
                     'nexus_edge': nexus_pred_edge,
                     'nexus_patterns': nexus_pred_patterns,

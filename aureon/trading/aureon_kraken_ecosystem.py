@@ -77,11 +77,11 @@ except ImportError:
     _penny_engine = None
     _startup_print("⚠️ Sandbox Evolution not available - using defaults")
 
-# 🔮 NEXUS PREDICTOR - 79.6% Win Rate Validated Over 11 Years!
+# 🔮 NEXUS PREDICTOR
 try:
     from aureon.intelligence.nexus_predictor import NexusPredictor
     NEXUS_AVAILABLE = True
-    _startup_print("🔮 Nexus Predictor loaded - 79.6% win rate validated!")
+    _startup_print("🔮 Nexus Predictor loaded")
 except ImportError:
     NEXUS_AVAILABLE = False
     _startup_print("⚠️ Nexus Predictor not available")
@@ -1097,10 +1097,10 @@ class AureonKrakenEcosystem:
         self.position_splitter = PositionSplitter()
         self.prime_sizer = PrimeSizer()
         
-        # 🔮 NEXUS PREDICTOR - 79.6% Win Rate! 🔮
+        # 🔮 NEXUS PREDICTOR
         if NEXUS_AVAILABLE:
             self.nexus = NexusPredictor()
-            print("   🔮 Nexus Predictor initialized (79.6% validated)")
+            print("   🔮 Nexus Predictor initialized")
         else:
             self.nexus = None
 
@@ -1912,7 +1912,7 @@ class AureonKrakenEcosystem:
             if coherence < CONFIG['ENTRY_COHERENCE']:
                 continue
             
-            # 🔮 NEXUS PREDICTION - 79.6% WIN RATE VALIDATED! 🔮
+            # 🔮 NEXUS PREDICTION
             nexus_prediction = None
             nexus_prob = 0.5
             nexus_edge = 0.0
@@ -1927,7 +1927,7 @@ class AureonKrakenEcosystem:
                 nexus_edge = nexus_prediction.get('edge', 0.0)
                 should_trade = nexus_prediction.get('should_trade', True)
                 
-                # Skip if Nexus says NO (validated 79.6% accuracy!)
+                # Skip if Nexus says NO
                 if not should_trade or nexus_prob < 0.55:
                     continue
             

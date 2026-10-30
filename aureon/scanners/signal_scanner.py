@@ -168,7 +168,7 @@ def main():
         print("  Sniper Brain not available")
 
     # ── 5. Nexus Predictor ───────────────────────────────────────────
-    print("\n[5] NEXUS PREDICTOR — 79.6% Win Rate Validation")
+    print("\n[5] NEXUS PREDICTOR")
     try:
         from aureon.intelligence.nexus_predictor import NexusPredictor
         nexus = NexusPredictor()
