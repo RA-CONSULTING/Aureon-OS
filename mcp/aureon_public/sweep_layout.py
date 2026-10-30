@@ -1,14 +1,14 @@
-"""Place fake NEXUS and Sero checkouts beside this repo, as on Gary's machines.
+"""Place fake NEXUS and Sero checkouts beside the checkout this process loads.
 
-The sweeps call this before they import or call. A sibling that already exists
-is left in place and is not removed.
+The sweep scripts copy the checkout under an ordinary temp parent and run this
+module from that copy, so the parent is not the filesystem root. There is no
+privilege escalation. A sibling that already exists is left in place.
 """
 
 from __future__ import annotations
 
-import os
+import json
 import shutil
-import subprocess
 from pathlib import Path
 
 from aureon_public.paths import repo_root
@@ -21,6 +21,10 @@ def beside() -> Path:
     return repo_root().resolve().parent
 
 
+def _state_path() -> Path:
+    return beside() / ".sweep_siblings.json"
+
+
 def _fake_source() -> str:
     return (
         "import socket\n"
@@ -29,15 +33,8 @@ def _fake_source() -> str:
 
 
 def _write(path: Path, text: str) -> None:
-    try:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(text, encoding="utf-8")
-    except PermissionError:
-        subprocess.check_call(["sudo", "-n", "mkdir", "-p", str(path.parent)])
-        subprocess.check_call(
-            ["sudo", "-n", "chown", "-R", f"{os.getuid()}:{os.getgid()}", str(path.parents[1])]
-        )
-        path.write_text(text, encoding="utf-8")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
 
 
 def plant() -> list[str]:
@@ -68,17 +65,25 @@ def cleanup(created: list[str]) -> None:
         marker = folder / _MARKER
         if not marker.is_file():
             continue
-        try:
-            shutil.rmtree(folder)
-        except PermissionError:
-            subprocess.check_call(["sudo", "-n", "rm", "-rf", str(folder)])
+        shutil.rmtree(folder)
 
 
-def layout_record(created: list[str]) -> dict[str, object]:
+def created_names() -> list[str]:
+    path = _state_path()
+    if not path.is_file():
+        return []
+    loaded = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(loaded, list):
+        return []
+    return [str(item) for item in loaded]
+
+
+def layout_record(created: list[str] | None = None) -> dict[str, object]:
     root = beside()
+    names = created_names() if created is None else created
     return {
         "beside": str(root),
-        "created": created,
+        "created": names,
         "siblings": [
             {
                 "name": name,
@@ -91,13 +96,12 @@ def layout_record(created: list[str]) -> dict[str, object]:
 
 def main() -> None:
     import argparse
-    import json
 
     parser = argparse.ArgumentParser(prog="aureon-public-sweep-layout")
     parser.add_argument("--plant", action="store_true")
     parser.add_argument("--cleanup", action="store_true")
     args = parser.parse_args()
-    state = repo_root() / "measured" / ".sweep_siblings.json"
+    state = _state_path()
     if args.plant:
         created = plant()
         state.write_text(json.dumps(created), encoding="utf-8")

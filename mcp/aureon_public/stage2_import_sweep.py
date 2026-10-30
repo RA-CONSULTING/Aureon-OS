@@ -158,7 +158,6 @@ def _one(module: str, timeout: float) -> dict[str, Any]:
 
 def build_record(timeout: float) -> dict[str, Any]:
     from aureon_public.guard_loader import PINNED_COMMIT, aureon_source
-    from aureon_public.paths import repo_root
     from aureon_public.sweep_layout import layout_record
 
     source = aureon_source()
@@ -178,19 +177,13 @@ def build_record(timeout: float) -> dict[str, Any]:
                 "socket": bool(sockets),
             }
         )
-    created_path = repo_root() / "measured" / ".sweep_siblings.json"
-    created: list[str] = []
-    if created_path.is_file():
-        loaded = json.loads(created_path.read_text(encoding="utf-8"))
-        if isinstance(loaded, list):
-            created = [str(item) for item in loaded]
     return {
         "adapters": list(ADAPTER_MARKERS),
         "aureon_source": source,
         "http_clients": sorted(HTTP_ROOTS | set(HTTP_PREFIXES)),
-        "layout": layout_record(created),
+        "layout": layout_record(),
         "modules": modules,
-        "pin": source.get("commit") or PINNED_COMMIT,
+        "pin": PINNED_COMMIT,
         "sockets": "blocked",
     }
 

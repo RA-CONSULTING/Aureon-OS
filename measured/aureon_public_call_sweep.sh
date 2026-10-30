@@ -6,8 +6,10 @@
 # that call opens a connection or loads queen, miner, swarm_motion, inhouse_ai,
 # ollama_config, or an HTTP client.
 #
-# This script places fake NEXUS-LIVE-FEED- and Aureon-Trading--Project-Sero
-# checkouts beside the repo before the sweep, then removes the ones it created.
+# The checkout is copied under an ordinary temp parent. Fake NEXUS-LIVE-FEED-
+# and Aureon-Trading--Project-Sero folders are placed beside that copy. The
+# temp parent is removed when the script exits. Nothing is created at the
+# filesystem root.
 #
 # Uses the venv from measured/aureon_public_stage1_run.sh when it is already
 # present. Otherwise this script installs the same runtime and test requirements.
@@ -23,6 +25,13 @@ if [ ! -x "$VENV/bin/python" ]; then
   "$VENV/bin/python" -m pip install -r "$ROOT/mcp/aureon_public/test-requirements.txt"
   "$VENV/bin/python" -m pip install -e "$ROOT/mcp" --no-deps
 fi
-"$VENV/bin/python" -m aureon_public.sweep_layout --plant
-trap '"$VENV/bin/python" -m aureon_public.sweep_layout --cleanup' EXIT
-env -u PYTHONPATH "$VENV/bin/python" -m aureon_public.call_sweep --out "$OUT"
+PARENT="$(mktemp -d "${TMPDIR:-/tmp}/aureon-sweep-parent.XXXXXX")"
+cleanup_parent() {
+  rm -rf "$PARENT"
+}
+trap cleanup_parent EXIT
+mkdir -p "$PARENT/Aureon-OS"
+cp -al "$ROOT/." "$PARENT/Aureon-OS/"
+PYTHONPATH="$PARENT/Aureon-OS/mcp" "$VENV/bin/python" -m aureon_public.sweep_layout --plant
+env -u AUREON_PUBLIC_SWEEP PYTHONPATH="$PARENT/Aureon-OS/mcp" \
+  "$VENV/bin/python" -m aureon_public.call_sweep --out "$OUT"

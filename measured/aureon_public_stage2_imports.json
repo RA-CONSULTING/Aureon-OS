@@ -4,8 +4,8 @@
     "ollama_config"
   ],
   "aureon_source": {
-    "commit": "8aa6a2d971cc529484e2a5e261e28afafab4e4f4",
-    "kind": "pinned"
+    "commit": "9acf67dc61bb6eb4dce8ebef20c8c5c6f3192a9a",
+    "kind": "checkout"
   },
   "http_clients": [
     "aiohttp",
@@ -19,7 +19,7 @@
     "websockets"
   ],
   "layout": {
-    "beside": "/",
+    "beside": "/tmp/aureon-sweep-parent.YjenyX",
     "created": [
       "NEXUS-LIVE-FEED-",
       "Aureon-Trading--Project-Sero"

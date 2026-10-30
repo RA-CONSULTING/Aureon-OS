@@ -385,8 +385,17 @@ def _checkout_load(module: str) -> str | None:
 # The count is how many worker results included a modules list, including an empty one.
 reported_worker_modules: list[str] = []
 reported_worker_module_reports = 0
-# Last worker sweep block. Set only while AUREON_PUBLIC_SWEEP=1.
+# Last worker sweep block. Set only while this process is measuring.
 last_sweep_report: dict[str, Any] | None = None
+# In-process only. The environment and a client cannot set this.
+_sweep_measuring = False
+
+
+def enable_sweep_measurement() -> None:
+    """Let this process call past the call-sweep gate. Not an environment switch."""
+
+    global _sweep_measuring
+    _sweep_measuring = True
 
 
 def _worker_env() -> dict[str, str]:
@@ -405,17 +414,12 @@ def _worker_env() -> dict[str, str]:
         "AUREON_ENABLE_AUTONOMOUS_CONTROL": "0",
         "AUREON_ACTIVATE_ON_IMPORT": "0",
     }
-    for key in (
-        "LANG",
-        "LC_ALL",
-        "LC_CTYPE",
-        "PYTHONHASHSEED",
-        "AUREON_PUBLIC_REPORT_MODULES",
-        "AUREON_PUBLIC_SWEEP",
-    ):
+    for key in ("LANG", "LC_ALL", "LC_CTYPE", "PYTHONHASHSEED", "AUREON_PUBLIC_REPORT_MODULES"):
         value = os.environ.get(key)
         if value:
             env[key] = value
+    if _sweep_measuring:
+        env["AUREON_PUBLIC_SWEEP"] = "1"
     return env
 
 
@@ -508,10 +512,10 @@ def _call_in_subprocess(module: str, symbol: str, arguments: dict[str, Any], tim
             global reported_worker_module_reports
             reported_worker_module_reports += 1
             reported_worker_modules.extend(str(item) for item in modules)
-        if os.environ.get("AUREON_PUBLIC_SWEEP") == "1" and isinstance(body, dict):
+        sweep = body.get("sweep") if isinstance(body, dict) else None
+        if isinstance(sweep, dict):
             global last_sweep_report
-            sweep = body.get("sweep")
-            last_sweep_report = sweep if isinstance(sweep, dict) else {}
+            last_sweep_report = sweep
         if body.get("ok") is True:
             return "ok", body.get("result")
         return "error", str(body.get("error") or "worker failed")[:240]
@@ -674,11 +678,11 @@ def _call_sweep_table() -> dict[tuple[str, str], dict[str, Any]] | None:
 def _call_sweep_refusal(module: str, symbol: str) -> str | None:
     """Refuse a call the sweep saw open a socket or load the banned chain.
 
-    ``AUREON_PUBLIC_SWEEP=1`` skips this gate so the reproduce script can call
-    the same entry points again.
+    Only ``enable_sweep_measurement`` in this process skips the gate. An
+    environment variable cannot.
     """
 
-    if os.environ.get("AUREON_PUBLIC_SWEEP") == "1":
+    if _sweep_measuring:
         return None
     table = _call_sweep_table()
     if table is None:

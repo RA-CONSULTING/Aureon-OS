@@ -56,7 +56,9 @@ def _tested_stage1_tools() -> set[tuple[str, str]]:
 def reachable_entries() -> list[dict[str, Any]]:
     """Entry points body_call will run while the call-sweep gate is open."""
 
-    os.environ["AUREON_PUBLIC_SWEEP"] = "1"
+    import aureon_public.body as body_module
+
+    body_module.enable_sweep_measurement()
     from aureon_public.body import _inventory, _plan_stage, public_entry_refusal
 
     seen: set[tuple[str, str]] = set()
@@ -83,9 +85,9 @@ def reachable_entries() -> list[dict[str, Any]]:
 
 
 def child_main(module: str, symbol: str) -> None:
-    os.environ["AUREON_PUBLIC_SWEEP"] = "1"
     import aureon_public.body as body_module
 
+    body_module.enable_sweep_measurement()
     text = body_module.body_call(module, symbol)
     try:
         body = json.loads(text)
@@ -120,7 +122,7 @@ def _one(module: str, symbol: str, timeout: float) -> dict[str, Any]:
         text=True,
         timeout=timeout,
         check=False,
-        env={**os.environ, "AUREON_PUBLIC_SWEEP": "1", "PYTHONPATH": ""},
+        env={key: value for key, value in os.environ.items() if key != "AUREON_PUBLIC_SWEEP"},
     )
     if not completed.stdout.strip():
         return {
@@ -145,7 +147,6 @@ def _one(module: str, symbol: str, timeout: float) -> dict[str, Any]:
 
 def build_record(timeout: float) -> dict[str, Any]:
     from aureon_public.guard_loader import PINNED_COMMIT, aureon_source
-    from aureon_public.paths import repo_root
     from aureon_public.sweep_layout import layout_record
 
     source = aureon_source()
@@ -173,17 +174,11 @@ def build_record(timeout: float) -> dict[str, Any]:
                 "tested_stage1_tool": key in tested,
             }
         )
-    created_path = repo_root() / "measured" / ".sweep_siblings.json"
-    created: list[str] = []
-    if created_path.is_file():
-        loaded = json.loads(created_path.read_text(encoding="utf-8"))
-        if isinstance(loaded, list):
-            created = [str(item) for item in loaded]
     return {
         "aureon_source": source,
         "entries": entries,
-        "layout": layout_record(created),
-        "pin": source.get("commit") or PINNED_COMMIT,
+        "layout": layout_record(),
+        "pin": PINNED_COMMIT,
         "sockets": "blocked",
     }
 

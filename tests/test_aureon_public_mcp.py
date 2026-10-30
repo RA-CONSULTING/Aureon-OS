@@ -200,6 +200,18 @@ def test_canonical_and_blend_omit_consciousness_keys() -> None:
     assert rebuilt.consciousness_psi is None
 
 
+def test_server_will_not_start_when_the_sweep_variable_is_set(monkeypatch: pytest.MonkeyPatch) -> None:
+    from aureon_public.server import build_server, main, refuse_sweep_environment
+
+    monkeypatch.setenv("AUREON_PUBLIC_SWEEP", "1")
+    with pytest.raises(SystemExit, match="AUREON_PUBLIC_SWEEP"):
+        refuse_sweep_environment()
+    with pytest.raises(SystemExit, match="AUREON_PUBLIC_SWEEP"):
+        build_server()
+    with pytest.raises(SystemExit, match="AUREON_PUBLIC_SWEEP"):
+        main([])
+
+
 def test_require_pin_blocks_every_source_except_the_pin(monkeypatch: pytest.MonkeyPatch) -> None:
     from aureon_public.server import enforce_public_pin
 
