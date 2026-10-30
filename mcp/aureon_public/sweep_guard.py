@@ -74,6 +74,16 @@ def _outside(path: object) -> bool:
     return resolved != sandbox and sandbox not in resolved.parents
 
 
+def _harmless_device(path: object) -> bool:
+    """``/dev/null`` is the pin check's stderr sink, not a module write."""
+
+    try:
+        text = os.fspath(path)
+    except TypeError:
+        return False
+    return str(text) in {"/dev/null", "/dev/zero", "/dev/stdout", "/dev/stderr"}
+
+
 def _note_write(path: object) -> None:
     text = str(path)[:200]
     if text not in _WRITES:
@@ -132,13 +142,13 @@ def install_sweep_guard() -> None:
         raise OSError("socket blocked")
 
     def _open(file: object, mode: object = "r", *args: object, **kwargs: object) -> object:
-        if _write_mode(mode) and _outside(file):
+        if _write_mode(mode) and not _harmless_device(file) and _outside(file):
             _note_write(file)
         return _REAL["open"](file, mode, *args, **kwargs)
 
     def _os_open(path: object, flags: int, *args: object, **kwargs: object) -> int:
         writing = flags & (os.O_WRONLY | os.O_RDWR | os.O_APPEND)
-        if writing and _outside(path):
+        if writing and not _harmless_device(path) and _outside(path):
             _note_write(path)
         return _REAL["os_open"](path, flags, *args, **kwargs)
 
