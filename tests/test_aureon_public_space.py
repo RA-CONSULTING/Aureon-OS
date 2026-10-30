@@ -290,6 +290,45 @@ def test_request_timeout_returns_429() -> None:
     assert response.json()["error"] == "timeout"
 
 
+def test_space_record_is_an_authenticated_local_session() -> None:
+    from aureon_public.guard_loader import PINNED_COMMIT
+    from aureon_public.measurement_stamp import CODE_COMMIT_NOTE, PIN_AUREON_TREE
+
+    record = json.loads((ROOT / "measured" / "aureon_public_space.json").read_text(encoding="utf-8"))
+    environment = record["environment"]
+    assert environment["auth"] == "bearer"
+    assert environment["api_key_stored"] is False
+    assert environment["docker"] == "not installed"
+    assert environment["entry"] == "python -m aureon_public.space"
+    assert environment["observer_mode"] == "dry_run"
+    assert environment["open"] == "unset"
+    assert environment["require_pin"] == "1"
+    assert environment["mcp"] == "1.30.0"
+    assert environment["aureon_source"] == {"commit": PINNED_COMMIT, "kind": "pinned"}
+    assert environment["aureon_tree"] == PIN_AUREON_TREE
+    assert environment["pin_aureon_tree"] == PIN_AUREON_TREE
+    assert environment["code_commit_note"] == CODE_COMMIT_NOTE
+    assert len(environment["code_commit"]) == 40
+    http = record["streamable_http"]
+    assert http["host"] == "127.0.0.1"
+    assert http["url"] == f"http://127.0.0.1:{http['port']}/mcp"
+    assert http["initialize"]["serverInfo"]["name"] == "aureon-public"
+    names = [item["name"] for item in http["tools_list"][0]["tools"]]
+    assert "alignment_consonance_read" in names
+    assert "body_call" in names
+    by_name = {item["name"]: item for item in http["tools_call"]}
+    consonance = json.loads(by_name["alignment_consonance_read"]["result"]["content"][0]["text"])
+    assert consonance["called"] is True
+    assert consonance["result"] == 1.0
+    queen = json.loads(by_name["body_call"]["result"]["content"][0]["text"])
+    assert queen.get("called") is not True
+    assert queen["reason"] == "plan stage 4 is not open"
+    assert record["entry_check"]["ok"] is True
+    assert record["entry_check"]["closed_packages_reachable"]["miner"] == 0
+    assert record["entry_check"]["closed_packages_reachable"]["queen"] == 0
+    assert record["entry_check"]["closed_packages_reachable"]["exchanges"] == 0
+
+
 def test_scaffold_bakes_no_key_and_quotes_the_plan() -> None:
     dockerfile = (ROOT / "mcp" / "aureon_public" / "Dockerfile").read_text(encoding="utf-8")
     requirements = (ROOT / "mcp" / "aureon_public" / "requirements.txt").read_text(encoding="utf-8")
