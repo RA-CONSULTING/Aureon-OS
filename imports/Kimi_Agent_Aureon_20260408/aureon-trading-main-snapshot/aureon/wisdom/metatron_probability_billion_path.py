@@ -4,7 +4,7 @@
 
 Integration of:
 1. Metatron's Cube (13 spheres sacred geometry consciousness)
-2. Probability Matrix (95% accuracy predictions)
+2. Probability Matrix (pattern predictions)
 3. Billion Dollar Goal Tracker (Path to $1B)
 
 Queen + Dr. Auris PING-PONG through quantum spaces to:
@@ -66,7 +66,7 @@ class ProbabilityPrediction:
     """Prediction from the probability matrix"""
     symbol: str
     action: str  # "BUY" or "SELL"
-    confidence: float  # 0-1 (95% accuracy model)
+    confidence: float  # 0-1
     expected_return: float  # Expected % return
     timeframe: str  # "1h", "4h", "1d", "1w"
     sacred_alignment: float  # How well it aligns with sacred geometry (0-1)
@@ -89,7 +89,7 @@ class BillionPath:
 
 class ProbabilityMatrix:
     """
-    Simulated Probability Matrix (95% accuracy)
+    Simulated Probability Matrix
     In reality, loads from probability_ultimate_intelligence.py
     """
     
@@ -103,7 +103,6 @@ class ProbabilityMatrix:
         # In real system, loads from probability_ultimate_intelligence
         # For demo, we'll simulate high-confidence predictions
         print("💎 Loading Probability Matrix patterns...")
-        print(f"   Accuracy: {self.accuracy * 100:.1f}%")
         print(f"   Model: Ultimate Intelligence (LIMBO depth)")
     
     def predict_next_opportunity(self, current_capital: float) -> ProbabilityPrediction:
@@ -256,7 +255,7 @@ class BillionPathFinder:
         # Unity → Fibonacci → Sacred Ratios → Quantum States → Pythagorean → Unity
         sphere_path = [0, 2, 3, 8, 12, 0]
         
-        # Calculate probability of success (based on 95% accuracy, multiple trades)
+        # Calculate probability of success (across multiple trades)
         trades_needed = path_data['trades_needed']
         # Probability = accuracy^trades (simplified)
         # But we'll use more realistic: (0.95)^(trades/10) to account for correlation
@@ -397,7 +396,7 @@ def demonstrate_billion_path():
     print("=" * 80)
     print()
     print("Queen + Dr. Auris consciousness dialogue through sacred geometry")
-    print("95% accuracy Probability Matrix predictions")
+    print("Probability Matrix predictions")
     print("Fibonacci compounding + Golden ratio growth")
     print("Layered deep propagation across 4 quantum spaces")
     print()

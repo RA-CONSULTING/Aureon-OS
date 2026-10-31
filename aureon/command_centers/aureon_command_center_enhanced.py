@@ -466,13 +466,13 @@ ENHANCED_HTML = """
                 
                 const metrics = status.metadata || {};
                 const metricsStr = Object.entries(metrics)
-                    .map(([k, v]) => `${k}: ${typeof v === 'number' ? v.toFixed(2) : v}`)
+                    .map(([k, v]) => `${k}: ${v === null || v === undefined ? 'no data' : (typeof v === 'number' ? v.toFixed(2) : v)}`)
                     .join(' | ');
                 
                 item.innerHTML = `
                     <div class="system-name">${status.status === 'ONLINE' ? '🟢' : '🔴'} ${name}</div>
-                    ${status.confidence > 0 ? `<span class="system-metric">Conf: ${(status.confidence * 100).toFixed(0)}%</span>` : ''}
-                    ${status.accuracy > 0 ? `<span class="system-metric">Acc: ${(status.accuracy * 100).toFixed(0)}%</span>` : ''}
+                    ${status.confidence === null ? `<span class="system-metric">Conf: no data</span>` : (status.confidence > 0 ? `<span class="system-metric">Conf: ${(status.confidence * 100).toFixed(0)}%</span>` : '')}
+                    ${status.accuracy === null ? `<span class="system-metric">Acc: no data</span>` : (status.accuracy > 0 ? `<span class="system-metric">Acc: ${(status.accuracy * 100).toFixed(0)}%</span>` : '')}
                     ${status.signals_sent > 0 ? `<span class="system-metric">Signals: ${status.signals_sent}</span>` : ''}
                     ${metricsStr ? `<div class="system-metric" style="margin-top: 3px;">${metricsStr}</div>` : ''}
                 `;
@@ -538,7 +538,7 @@ ENHANCED_HTML = """
                     <span class="signal-type ${signal.signal_type}">${signal.signal_type}</span>
                 </div>
                 <div style="font-size: 0.85em; color: #888;">
-                    ${signal.source} | Conf: ${(signal.confidence * 100).toFixed(0)}% | Score: ${signal.score.toFixed(2)}
+                    ${signal.source} | Conf: ${signal.confidence == null ? 'no data' : (signal.confidence * 100).toFixed(0) + '%'} | Score: ${signal.score == null ? 'no data' : signal.score.toFixed(2)}
                 </div>
                 <div style="margin-top: 5px; font-size: 0.9em;">${signal.reason}</div>
             `;

@@ -4,7 +4,7 @@
 "SHOW ME THE MATH. PROVE IT CAN BE DONE."
 
 Uses:
-- Probability Ultimate Intelligence (95% accuracy system)
+- Probability Ultimate Intelligence
 - Probability Intelligence Matrix (prevents mistakes)
 - Real market volatility patterns
 - Actual win/loss distributions
@@ -32,7 +32,7 @@ try:
         PatternStats
     )
     ULTIMATE_INTEL_AVAILABLE = True
-    print("✅ Probability Ultimate Intelligence LOADED (95% accuracy)")
+    print("✅ Probability Ultimate Intelligence LOADED")
 except ImportError:
     ULTIMATE_INTEL_AVAILABLE = False
     print("⚠️ Running without Ultimate Intelligence")

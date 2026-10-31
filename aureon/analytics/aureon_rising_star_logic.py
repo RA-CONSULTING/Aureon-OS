@@ -7,7 +7,7 @@
 
 Stage 1: SCAN - Map entire market using ALL intelligence systems
   - Quantum scoring (luck, inception, phantom, etc.)
-  - Probability Ultimate Intelligence (95% accuracy)
+  - Probability Ultimate Intelligence
   - Wave Scanner momentum
   - Firm intelligence (smart money tracking)
   - Whale signals
@@ -54,7 +54,7 @@ class RisingStarCandidate:
     price: float
     score: float                    # Combined intelligence score (0-1)
     quantum_boost: float            # Quantum systems multiplier
-    probability_win: float          # 95% accuracy prediction
+    probability_win: float          # pattern prediction
     momentum_strength: float        # Wave scanner momentum
     firm_alignment: float           # Smart money alignment (0-1)
     volume_24h: float = 0.0

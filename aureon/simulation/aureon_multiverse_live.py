@@ -261,7 +261,7 @@ try:
         UltimatePrediction
     )
     PROBABILITY_AVAILABLE = True
-    _safe_print("🔱 Probability Intelligence WIRED! (95% accuracy)")
+    _safe_print("🔱 Probability Intelligence WIRED!")
 except ImportError:
     PROBABILITY_AVAILABLE = False
     ultimate_predict = None

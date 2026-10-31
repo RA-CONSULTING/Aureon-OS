@@ -4,7 +4,7 @@
 
 Purpose:
 - Consume REAL Binance WebSocket cache data (ws_cache/ws_prices.json)
-- Use Queen's 95% accuracy probability matrices
+- Use Queen's probability matrices
 - Dr. Auris validation on all predictions
 - Harmonic Hz resonance analysis
 - Generate and validate TRUTH-BASED predictions
@@ -152,7 +152,7 @@ def main():
     print(f"📺 AUREON LIVE TV STATION - TRUTH PREDICTION ENGINE")
     print(f"   Cache: {WS_CACHE_PATH}")
     print(f"   Delay: {STREAM_DELAY_SECONDS}s | Prediction horizon: {PREDICTION_HORIZON_SECONDS}s")
-    print(f"   ✅ Queen's 95% accuracy matrices")
+    print(f"   ✅ Queen's probability matrices")
     print(f"   ✅ Dr. Auris validation")
     print(f"   ✅ Harmonic Hz resonance analysis")
     print(f"   REAL DATA ONLY - waiting for Binance WS cache...\n")

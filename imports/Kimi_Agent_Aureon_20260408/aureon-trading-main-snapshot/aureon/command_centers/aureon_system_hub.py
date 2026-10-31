@@ -141,7 +141,7 @@ class SystemRegistry:
             },
             {
                 "name": "Probability & Prediction",
-                "description": "95% accuracy ML, coherence validation",
+                "description": "ML prediction, coherence validation",
                 "color": "#98D8C8",
                 "icon": "🎯"
             },

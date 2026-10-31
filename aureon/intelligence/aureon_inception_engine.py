@@ -36,7 +36,7 @@ this system has ecosystems within ecosystems, each level smarter/deeper.
 │   │   │ │   │ │   │  (The Limitless Pill)             │       │         │                             │
 │   │   │ │   │ │   │  Raw math equations               │       │         │                             │
 │   │   │ │   │ │   │  Pattern recognition              │       │         │                             │
-│   │   │ │   │ │   │  95% accuracy core                │       │         │                             │
+│   │   │ │   │ │   │  pattern core                     │       │         │                             │
 │   │   │ │   │ │   │                                   │       │         │                             │
 │   │   │ │   │ │   └───────────────────────────────────┘       │         │                             │
 │   │   │ │   │ │                                               │         │                             │

@@ -144,7 +144,7 @@ except ImportError as e:
     OPS_CORE_AVAILABLE = False
     print(f"⚠️  Operational Core not available: {e}")
 
-# 💎 PROBABILITY ULTIMATE INTELLIGENCE - 95% Accuracy Pattern Learning 💎
+# 💎 PROBABILITY ULTIMATE INTELLIGENCE - Pattern Learning 💎
 try:
     from aureon.strategies.probability_ultimate_intelligence import (
         get_ultimate_intelligence, ultimate_predict, record_ultimate_outcome,
@@ -152,7 +152,7 @@ try:
     )
     ULTIMATE_INTELLIGENCE_AVAILABLE = True
     ULTIMATE_INTEL = get_ultimate_intelligence()
-    print("💎 Unified Ecosystem: Ultimate Intelligence WIRED! (95% accuracy)")
+    print("💎 Unified Ecosystem: Ultimate Intelligence WIRED!")
 except ImportError:
     ULTIMATE_INTELLIGENCE_AVAILABLE = False
     ULTIMATE_INTEL = None
@@ -498,11 +498,11 @@ except ImportError:
         def __init__(self, client, pulse): pass
         def update(self): pass
 
-# 🔮 NEXUS PREDICTOR - 79.6% Win Rate Validated Over 11 Years!
+# 🔮 NEXUS PREDICTOR
 try:
     from aureon.intelligence.nexus_predictor import NexusPredictor
     NEXUS_PREDICTOR_AVAILABLE = True
-    print("🔮 Nexus Predictor loaded - 79.6% win rate validated!")
+    print("🔮 Nexus Predictor loaded")
 except ImportError:
     NEXUS_PREDICTOR_AVAILABLE = False
     print("⚠️  Nexus Predictor not available")
@@ -14271,10 +14271,10 @@ class AureonKrakenEcosystem:
         self.position_splitter = PositionSplitter()
         self.prime_sizer = PrimeSizer()
         
-        # 🔮 NEXUS PREDICTOR - 79.6% Win Rate Validated! 🔮
+        # 🔮 NEXUS PREDICTOR
         if NEXUS_PREDICTOR_AVAILABLE:
             self.nexus_predictor = NexusPredictor()
-            print("   🔮 Nexus Predictor initialized (79.6% validated)")
+            print("   🔮 Nexus Predictor initialized")
         else:
             self.nexus_predictor = None
             
@@ -19487,7 +19487,7 @@ class AureonKrakenEcosystem:
             if coherence < 0.05:
                 continue
 
-            # 🔮 NEXUS PREDICTOR - 79.6% WIN RATE VALIDATED! 🔮
+            # 🔮 NEXUS PREDICTOR
             nexus_pred_prob = 0.5
             nexus_pred_edge = 0.0
             nexus_pred_patterns = []
@@ -19979,7 +19979,7 @@ class AureonKrakenEcosystem:
                     'emotion_band': emotion_band,
                     'chakra_alignment': chakra_alignment,
                     'symbolic_alignment': symbolic_alignment,
-                    # 🔮 NEXUS PREDICTOR fields (79.6% validated!)
+                    # 🔮 NEXUS PREDICTOR fields
                     'nexus_prob': nexus_pred_prob,
                     'nexus_edge': nexus_pred_edge,
                     'nexus_patterns': nexus_pred_patterns,

@@ -78,13 +78,13 @@ try:
 except ImportError:
     PROBABILITY_NEXUS_AVAILABLE = False
 
-# 💎 ULTIMATE INTELLIGENCE - 95% Accuracy
+# 💎 ULTIMATE INTELLIGENCE
 try:
     from probability_ultimate_intelligence import (
         get_ultimate_intelligence, ultimate_predict, record_ultimate_outcome
     )
     ULTIMATE_INTELLIGENCE_AVAILABLE = True
-    print("💎 Ultimate Intelligence LOADED - 95% accuracy!")
+    print("💎 Ultimate Intelligence LOADED")
 except ImportError:
     ULTIMATE_INTELLIGENCE_AVAILABLE = False
 

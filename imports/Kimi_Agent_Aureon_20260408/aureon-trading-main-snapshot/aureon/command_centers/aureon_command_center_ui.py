@@ -16,7 +16,7 @@ Combines ALL existing models and systems into ONE dashboard:
    - Queen Hive Mind (neural control)
    - Mycelium Network (distributed intelligence)
    - Probability Nexus (80%+ win rate)
-   - Ultimate Intelligence (95% accuracy)
+   - Ultimate Intelligence
    - Timeline Oracle (7-day vision)
    - Quantum Mirror Scanner
 

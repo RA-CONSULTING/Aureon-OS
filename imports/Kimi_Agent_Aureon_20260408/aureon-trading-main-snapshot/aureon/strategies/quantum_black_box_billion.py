@@ -169,7 +169,7 @@ class QuantumBlackBox:
         self.prob_matrix = ProbabilityMatrix()
         print("   ✅ Queen Black Box ready")
         print("   ✅ Dr. Auris Black Box ready")
-        print("   ✅ Probability Matrix: 95% accuracy")
+        print("   ✅ Probability Matrix")
         
         # Exchanges
         print("\n🔗 Connecting exchanges...")

@@ -133,7 +133,7 @@ except ImportError:
     PROB_MATRIX = None
     logging.debug("Probability Intelligence Matrix not available for Patriots")
 
-# 💎 PROBABILITY ULTIMATE INTELLIGENCE - 95% Accuracy Pattern Learning
+# 💎 PROBABILITY ULTIMATE INTELLIGENCE - Pattern Learning
 try:
     from aureon.strategies.probability_ultimate_intelligence import (
         get_ultimate_intelligence, ultimate_predict, record_ultimate_outcome,

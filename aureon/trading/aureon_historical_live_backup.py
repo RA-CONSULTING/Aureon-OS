@@ -7,7 +7,7 @@ LIVE DEPLOYMENT: Historical patterns meet real trading.
 FULL ECOSYSTEM INTEGRATION:
 - 🍄 Mycelium Neural Network (distributed intelligence)
 - 🧠 Thought Bus (unified consciousness)
-- 💎 Probability Ultimate Intelligence (95% accuracy)
+- 💎 Probability Ultimate Intelligence
 - 🛡️ Immune System (self-healing)
 - 🐙 Global Orchestrator (coordination)
 - 📊 Memory Core (persistent learning)
@@ -82,7 +82,7 @@ try:
     )
     from aureon.strategies.probability_intelligence_matrix import ProbabilityIntelligenceMatrix
     PROBABILITY_AVAILABLE = True
-    print("✅ Probability Systems: CONNECTED (95% accuracy)")
+    print("✅ Probability Systems: CONNECTED")
 except ImportError as e:
     PROBABILITY_AVAILABLE = False
     print(f"⚠️  Probability Systems: {e}")
@@ -214,7 +214,7 @@ class AureonHistoricalLive:
     
     Integrates:
     - Historical pattern detection (87.5% win rate proven)
-    - Probability systems (95% accuracy)
+    - Probability systems
     - Multi-exchange execution
     - Real-time risk management
     - Compound position sizing
@@ -300,7 +300,7 @@ class AureonHistoricalLive:
         if PROBABILITY_AVAILABLE:
             try:
                 self.ultimate_intel = get_ultimate_intelligence()
-                print("✅ Probability Ultimate Intelligence: ACTIVE (95% accuracy)")
+                print("✅ Probability Ultimate Intelligence: ACTIVE")
             except Exception as e:
                 print(f"⚠️  Probability Intelligence: {e}")
             

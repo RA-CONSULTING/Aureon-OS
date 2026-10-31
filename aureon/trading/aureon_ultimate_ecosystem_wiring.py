@@ -8,7 +8,7 @@
 "When the mycelium connects every cell, the organism becomes unstoppable."
 
 This module wires EVERYTHING together:
-- 💎 Probability Ultimate Intelligence (95% accuracy, 97% F1 score)
+- 💎 Probability Ultimate Intelligence (97% F1 score)
 - 🧠 Probability Intelligence Matrix (prevents mistakes)
 - 🎯 ETA Verification System (tracks predictions)
 - 🔬 Improved ETA Calculator (velocity decay model)
@@ -22,7 +22,7 @@ WIRING ARCHITECTURE:
 
     ┌─────────────────────────────────────────────────────────────────────────┐
     │                    💎 PROBABILITY ULTIMATE INTELLIGENCE 💎               │
-    │               (95% accuracy • 97% F1 • Pattern learning)                │
+    │               (97% F1 • Pattern learning)                               │
     └────────────────────────────────┬────────────────────────────────────────┘
                                      │
          ┌───────────────────────────┼───────────────────────────┐
@@ -232,7 +232,7 @@ class AureonUltimateEcosystem:
     The ULTIMATE Ecosystem - connects all Aureon systems with 
     Probability Ultimate Intelligence at the core.
     
-    95% accuracy. 97% F1 score. Zero mercy for bad trades.
+    97% F1 score. Zero mercy for bad trades.
     """
     
     def __init__(self, initial_capital: float = 100.0):

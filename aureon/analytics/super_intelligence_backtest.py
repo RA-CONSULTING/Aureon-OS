@@ -6,7 +6,7 @@
 GOAL: 99.99%+ Win Rate by layering ALL prediction systems
 
 SYSTEMS INTEGRATED:
-1. 💎 Probability Ultimate Intelligence (95% accuracy pattern learning)
+1. 💎 Probability Ultimate Intelligence (pattern learning)
 2. 🔫 Unified Sniper Brain (100% trained parameters)
 3. ⚗️ QGITA Framework (Fibonacci structural analysis)
 4. 🗼 Lighthouse Metrics (spectral coherence analysis)
@@ -51,7 +51,7 @@ from collections import defaultdict
 # IMPORT ALL INTELLIGENCE SYSTEMS
 # ═══════════════════════════════════════════════════════════════════════════
 
-# 1. Probability Ultimate Intelligence (95% accuracy)
+# 1. Probability Ultimate Intelligence
 PROB_INTEL_AVAILABLE = False
 try:
     from aureon.strategies.probability_ultimate_intelligence import ProbabilityUltimateIntelligence
@@ -221,7 +221,7 @@ class SuperIntelligenceGate:
         confidences: List[float] = []
         
         # ─────────────────────────────────────────────────────────────────
-        # 1. PROBABILITY ULTIMATE INTELLIGENCE (95% accuracy)
+        # 1. PROBABILITY ULTIMATE INTELLIGENCE
         # ─────────────────────────────────────────────────────────────────
         if self.prob_intel is not None:
             try:

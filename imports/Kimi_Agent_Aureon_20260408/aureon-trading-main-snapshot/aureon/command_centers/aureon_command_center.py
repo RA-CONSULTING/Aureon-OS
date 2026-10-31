@@ -587,7 +587,7 @@ def run_flight_check() -> Dict[str, FlightCheckResult]:
         ping_ms = (time.perf_counter() - start) * 1000
         results['Ultimate Intelligence'] = FlightCheckResult(
             'Ultimate Intelligence', 'GO', ping_ms, ping_ts, True,
-            f"✅ 95% accuracy, {patterns} patterns"
+            f"✅ {patterns} patterns"
         )
     except Exception as e:
         results['Ultimate Intelligence'] = FlightCheckResult(

@@ -39,7 +39,7 @@ class NexusPredictor:
     """
     🔮 PRODUCTION-READY PREDICTOR 🔮
 
-    VALIDATED: 79.6% average win rate over 11 YEARS (2013-2024)
+    Pattern predictor. No measured win rate is attached here.
     Tested on 98,049 candles across ALL market conditions:
     - Bull markets (2017, 2021): 76-80%
     - Bear markets (2018, 2022): 77%

@@ -343,7 +343,7 @@ class PredictionBus:
     Collects prediction results as UnifiedSignals.
 
     Connects these previously-orphaned predictors:
-    - NexusPredictor (79.6% win rate) -> was standalone, not in decision fusion
+    - NexusPredictor -> was standalone, not in decision fusion
     - HNC Probability Matrix -> generated daily forecasts nobody consumed
     - Whale Hunter predictions -> generated predictions nothing acted on
     - Quantum Telescope -> orphaned predictions
@@ -393,7 +393,7 @@ class PredictionBus:
 
         # Weight map: proven systems get more weight
         weight_map = {
-            'nexus_predictor': 3.0,       # 79.6% validated
+            'nexus_predictor': 3.0,       # pattern predictor
             'probability_ultimate': 2.5,   # 95% claimed
             'hnc_matrix': 2.0,
             'imperial': 1.5,
@@ -1087,7 +1087,7 @@ def adapt_imperial_predictability(data_signals: Dict[str, UnifiedSignal],
 
 def adapt_probability_ultimate(data_signals: Dict[str, UnifiedSignal],
                                 symbol: str) -> Optional[UnifiedSignal]:
-    """Adapter: Probability Ultimate Intelligence (95% accuracy) -> UnifiedSignal"""
+    """Adapter: Probability Ultimate Intelligence -> UnifiedSignal"""
     global _ultimate_instance
     try:
         if _ultimate_instance is None:
