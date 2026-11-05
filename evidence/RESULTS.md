@@ -10,9 +10,9 @@ The run calls `HarmonicRealityField.step`, `QueenHiveMind.get_auris_coherence`, 
 make evidence
 ```
 
-That target runs `PYTHONHASHSEED=0 PYTHONPATH=. python3 -m aureon.evidence --check`. The check rebuilds every committed output and requires the bytes to match. `evidence/environment.json` is included, except the field `commit_sha`, which is `git rev-parse HEAD` at run time and is allowed to differ. There is no numeric tolerance. The match is for the Python, NumPy, and platform recorded below.
+That target runs `PYTHONHASHSEED=0 PYTHONPATH=. python3 -m aureon.evidence --check`. The check rebuilds every committed output and requires the bytes to match, including `evidence/output/hnc_head_anchor.json`, `evidence/output/hnc_head_anchor.id`, and `evidence/output/hnc_head_anchor.tsr.b64`. `evidence/environment.json` is included, except the field `commit_sha`, which is `git rev-parse HEAD` at run time and is allowed to differ. The timestamp token is read from the git note `refs/notes/aureon-hnc-head` on HEAD. Fetch it with `git fetch origin refs/notes/aureon-hnc-head:refs/notes/aureon-hnc-head` when a clone does not have that ref. There is no numeric tolerance. The match is for the Python, NumPy, and platform recorded below.
 
-Dependencies used by the imported implementations: NumPy, and `python-dotenv` because `QueenHiveMind` imports it. This command does not install packages and does not call a network API.
+Dependencies used by the imported implementations: NumPy, and `python-dotenv` because `QueenHiveMind` imports it. This command does not install packages and does not call a network API. The HNC head token was requested once and is checked locally.
 
 ## Recorded environment
 
@@ -49,6 +49,31 @@ These belong to the harness. They are not formulas of the three systems.
 
 Formula versus multiverse, maximum absolute difference: 6.23589.
 The echo figure is the magnitude ratio from CausalEcho.get_echo_magnitude_ratio. JSON value 0.9999999999957911. It is not a correlation. Sample rate 1927 Hz, requested 1927 Hz.
+
+## HNC head anchor
+
+Receipt 3 only. This is a measured binding of the fixed-seed formula series. It is not a go-live clearance and it does not say the system is alive.
+
+| item | value |
+| --- | --- |
+| tag | measured |
+| anchor id | 548596463d7b4dddeeba274562b212960f879baf475ee135c7d2fd3468f58e11 |
+| gen time | 2026-11-05T19:40:18Z |
+| provider | http://timestamp.digicert.com |
+| policy | 2.16.840.1.114412.7.1 |
+| serial | 4c04ef96999f7e3d25072a00af832eba |
+| TSA ordering flag | no |
+| sequence | 1 |
+| previous head | dfcdb9ee381a7ffe511da7d621df739884ea74c3fd4c9790069f5d584478291c |
+| git note | refs/notes/aureon-hnc-head |
+| formula series sha256 | 0a69c024c3a7b849857314ef710f11439eb13a30cd7c45f05429becea574f5c2 |
+| public require-pin | 34864ff0547d2cff03e707414743a3b0cc8770b5 |
+| HNC identity changed | false |
+| go-live | HOLD |
+| system alive | false |
+| orders placed | false |
+
+The anchor id is the SHA-256 of the RFC 3161 token. The same token bytes are the git note on HEAD. `make evidence` requires those bytes and does not contact the timestamp authority. A working-tree edit does not move the note.
 
 ## Auris
 
@@ -124,6 +149,8 @@ Measured: a figure this run computed. Inferred: a comparison or a reading of the
 | hnc.formula.nyquist | measured | true | Every substrate mode is strictly below the Nyquist rate 963.5 Hz. The rate used is 1927 Hz (requested 1927). That rate is floor(2 * highest mode) + 1 when the request would not already clear Nyquist. |
 | hnc.multiverse.seeds | inferred | true | The class-default multiverse path is unchanged across the recorded seeds and a repeat. |
 | hnc.multiverse.versus_formula | measured | true | Maximum absolute difference between the seed-0 formula series and the seed-0 multiverse series is 6.23589. Multiverse coherence 0.843088, state coherent. |
+| hnc.head_anchor | measured | true | Receipt 3 binds the formula-path series sha256 0a69c024c3a7b849857314ef710f11439eb13a30cd7c45f05429becea574f5c2 to RFC 3161 anchor 548596463d7b4dddeeba274562b212960f879baf475ee135c7d2fd3468f58e11 at 2026-11-05T19:40:18Z. Sequence 1. Public require-pin 34864ff0547d2cff03e707414743a3b0cc8770b5 is unchanged. The run does not report the system alive, does not place an order, and leaves go-live HOLD. |
+| hnc.head_anchor.identity | inferred | true | The measured formula series sha256 matches the series recorded for public pin 34864ff0547d2cff03e707414743a3b0cc8770b5, so this receipt does not publish a new HNC identity. |
 | auris.dependency | measured | true | Input-guard checks 0 mismatches out of 567 node readings. |
 | auris.coherence_versus_null | inferred | true | Numeric coherence was returned on 55 cases. Status matched the null input on 8 of 63 cases. |
 | auris.nodes_without_readings | measured | true | Nodes with no numeric reading on any case: none. Cases with a numeric coherence: 55 of 63. get_auris_coherence still returns no_data when any required input is missing. |

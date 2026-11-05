@@ -32,7 +32,12 @@ def _claim(claim_id: str, tag: str, statement: str, *, asserted: bool = True) ->
     }
 
 
-def build_claims(hnc: dict[str, Any], auris: dict[str, Any], qgita: dict[str, Any]) -> list[dict[str, Any]]:
+def build_claims(
+    hnc: dict[str, Any],
+    auris: dict[str, Any],
+    qgita: dict[str, Any],
+    anchor: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
     formula = hnc["formula"]
     multiverse = hnc["multiverse"]
     baselines = formula["baselines"]
@@ -152,6 +157,33 @@ def build_claims(hnc: dict[str, Any], auris: dict[str, Any], qgita: dict[str, An
             ),
         )
     )
+    if anchor is not None:
+        external = anchor["external"]
+        claims.append(
+            _claim(
+                "hnc.head_anchor",
+                "measured",
+                (
+                    "Receipt 3 binds the formula-path series sha256 "
+                    f"{anchor['measurement']['formula_series_sha256']} "
+                    f"to RFC 3161 anchor {anchor['anchor_id']} at {external['gen_time']}. "
+                    f"Sequence {anchor['sequence']}. "
+                    f"Public require-pin {anchor['public_require_pin']} is unchanged. "
+                    "The run does not report the system alive, does not place an order, and leaves go-live HOLD."
+                ),
+            )
+        )
+        if anchor["hnc_identity_changed"]:
+            identity = (
+                "The measured formula series differs from the series recorded at the public pin. "
+                "AUREON_PUBLIC_REQUIRE_PIN was not moved."
+            )
+        else:
+            identity = (
+                "The measured formula series sha256 matches the series recorded for public pin "
+                f"{anchor['public_require_pin']}, so this receipt does not publish a new HNC identity."
+            )
+        claims.append(_claim("hnc.head_anchor.identity", "inferred", identity))
 
     claims.append(
         _claim(
@@ -319,12 +351,54 @@ def _table(headers: list[str], rows: list[list[Any]]) -> str:
     return "\n".join([head, rule, *body])
 
 
+def _anchor_lines(anchor: dict[str, Any] | None) -> list[str]:
+    if anchor is None:
+        return []
+    external = anchor["external"]
+    ordering = "yes" if external["tsa_ordering"] else "no"
+    return [
+        "## HNC head anchor",
+        "",
+        "Receipt 3 only. This is a measured binding of the fixed-seed formula series. "
+        "It is not a go-live clearance and it does not say the system is alive.",
+        "",
+        _table(
+            ["item", "value"],
+            [
+                ["tag", anchor["tag"]],
+                ["anchor id", anchor["anchor_id"]],
+                ["gen time", external["gen_time"]],
+                ["provider", external["provider"]],
+                ["policy", external["policy_oid"]],
+                ["serial", external["serial_hex"]],
+                ["TSA ordering flag", ordering],
+                ["sequence", anchor["sequence"]],
+                ["previous head", anchor["prev_anchor_id"]],
+                ["git note", anchor["note_ref"]],
+                ["formula series sha256", anchor["measurement"]["formula_series_sha256"]],
+                ["public require-pin", anchor["public_require_pin"]],
+                ["HNC identity changed", anchor["hnc_identity_changed"]],
+                ["go-live", anchor["go_live"]],
+                ["system alive", anchor["system_alive"]],
+                ["orders placed", anchor["orders_placed"]],
+            ],
+        ),
+        "",
+        "The anchor id is the SHA-256 of the RFC 3161 token. "
+        "The same token bytes are the git note on HEAD. "
+        "`make evidence` requires those bytes and does not contact the timestamp authority. "
+        "A working-tree edit does not move the note.",
+        "",
+    ]
+
+
 def render_results(
     hnc: dict[str, Any],
     auris: dict[str, Any],
     qgita: dict[str, Any],
     claims: list[dict[str, Any]],
     environment: dict[str, Any],
+    anchor: dict[str, Any] | None = None,
 ) -> str:
     formula = hnc["formula"]
     multiverse = hnc["multiverse"]
@@ -348,13 +422,19 @@ def render_results(
         "```",
         "",
         "That target runs `PYTHONHASHSEED=0 PYTHONPATH=. python3 -m aureon.evidence --check`. "
-        "The check rebuilds every committed output and requires the bytes to match. "
+        "The check rebuilds every committed output and requires the bytes to match, including "
+        "`evidence/output/hnc_head_anchor.json`, `evidence/output/hnc_head_anchor.id`, and "
+        "`evidence/output/hnc_head_anchor.tsr.b64`. "
         "`evidence/environment.json` is included, except the field `commit_sha`, which is "
         "`git rev-parse HEAD` at run time and is allowed to differ. "
+        "The timestamp token is read from the git note `refs/notes/aureon-hnc-head` on HEAD. "
+        "Fetch it with `git fetch origin refs/notes/aureon-hnc-head:refs/notes/aureon-hnc-head` "
+        "when a clone does not have that ref. "
         "There is no numeric tolerance. The match is for the Python, NumPy, and platform recorded below.",
         "",
         "Dependencies used by the imported implementations: NumPy, and `python-dotenv` because "
-        "`QueenHiveMind` imports it. This command does not install packages and does not call a network API.",
+        "`QueenHiveMind` imports it. This command does not install packages and does not call a network API. "
+        "The HNC head token was requested once and is checked locally.",
         "",
         "## Recorded environment",
         "",
@@ -452,6 +532,7 @@ def render_results(
             f"Sample rate {fmt(formula['sample_rate'])} Hz, requested {fmt(formula['sample_rate_requested'])} Hz."
         ),
         "",
+        *_anchor_lines(anchor),
         "## Auris",
         "",
         _table(

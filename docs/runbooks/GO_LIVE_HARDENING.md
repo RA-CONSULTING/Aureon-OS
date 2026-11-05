@@ -20,6 +20,43 @@ Go-live requires all of the following, none inferred from a local test pass:
 Until those receipts exist, the correct outcome is `HOLD`, not a partially
 configured listener.
 
+## Receipt 3 — durable HNC evidence
+
+Measured for this receipt only. Go-live is not clear.
+
+The fixed-seed formula path in `aureon.evidence.hnc` is unchanged. Its series
+sha256 matches the series recorded at public pin
+`34864ff0547d2cff03e707414743a3b0cc8770b5`. This receipt does not publish a new
+HNC identity and does not move `AUREON_PUBLIC_REQUIRE_PIN`. No market series
+is fetched.
+
+The measured commitment is covered by one RFC 3161 timestamp from
+`http://timestamp.digicert.com`. The token bytes are the git note
+`refs/notes/aureon-hnc-head` on the commit that records them. `make evidence`
+reads that note, verifies the token locally against the system trust store,
+and requires these bytes:
+
+- `evidence/output/hnc_head_anchor.id` — the anchor id, SHA-256 of the token
+- `evidence/output/hnc_head_anchor.json` — the measured record
+- `evidence/output/hnc_head_anchor.tsr.b64` — the token
+
+A working-tree edit does not move the note or the committed blob. Sequence 1
+points at the genesis id. The timestamp authority's ordering flag is no, so
+the monotonic rule is this chain: a later head must use the next sequence,
+name this anchor id as `prev_anchor_id`, and carry a verified `gen_time` that
+is strictly later. This receipt does not append a later head.
+
+This receipt does not set `external_head_anchor_attested` on the local
+intrusion ledger. That flag stays false. The system is not reported alive.
+Live trading stays off. No order is placed.
+
+Still HOLD, with no receipt from this change:
+
+- native process containment with a zero-network default
+- exact target-source measurement and immutable release provenance
+- complete source-boundary census closure
+- authenticated deployment receipt and provider-side read-back
+
 Operator contract names are not injected by go-live: `AUREON_OPERATOR_ENV`,
 `AUREON_OPERATOR_API_KEY`, `AUREON_OPERATOR_RATE_RPS`,
 `AUREON_OPERATOR_RATE_BURST`, `AUREON_OPERATOR_MAX_BODY`,

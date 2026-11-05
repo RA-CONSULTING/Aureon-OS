@@ -15,6 +15,7 @@ from typing import Any
 
 from aureon.evidence.auris import RANDOM_SEED as AURIS_RANDOM_SEED
 from aureon.evidence.hnc import GAUSSIAN_SEED, SEEDS, SHUFFLE_SEED
+from aureon.evidence.hnc_anchor import AnchorError, assemble, attach_note, stamp_files
 from aureon.evidence.qgita import CALIBRATION_SEED_START, MASTER_SEED
 from aureon.evidence.report import build_claims, render_results
 from aureon.evidence.serialize import dump
@@ -29,6 +30,7 @@ SOURCE_FILES = (
     "aureon/evidence/__main__.py",
     "aureon/evidence/auris.py",
     "aureon/evidence/hnc.py",
+    "aureon/evidence/hnc_anchor.py",
     "aureon/evidence/metrics.py",
     "aureon/evidence/qgita.py",
     "aureon/evidence/report.py",
@@ -113,9 +115,11 @@ def _environment(root: Path) -> dict[str, Any]:
         "check_command": "PYTHONHASHSEED=0 PYTHONPATH=. python3 -m aureon.evidence --check",
         "make_target": "make evidence",
         "byte_contract": (
-            "evidence/RESULTS.md and evidence/output match byte-for-byte. "
+            "evidence/RESULTS.md and evidence/output match byte-for-byte, including the "
+            "HNC head anchor JSON, id, and timestamp token. "
             "evidence/environment.json matches after commit_sha is set to the committed value. "
             "commit_sha is git rev-parse HEAD at generation and is the one allowed difference. "
+            "The timestamp token is read from refs/notes/aureon-hnc-head and is not requested again. "
             "No numeric tolerance. The contract is this Python, NumPy, and platform."
         ),
         "process_env": PROCESS_ENV,
@@ -123,7 +127,7 @@ def _environment(root: Path) -> dict[str, Any]:
     }
 
 
-def build(root: Path | None = None) -> dict[str, str]:
+def build(root: Path | None = None, *, require_note: bool = True) -> dict[str, str]:
     """Return the evidence files as text, keyed by repo-relative path."""
 
     root = Path(root or ROOT)
@@ -133,12 +137,24 @@ def build(root: Path | None = None) -> dict[str, str]:
     from aureon.evidence.qgita import run_qgita
 
     hnc = run_hnc()
+    try:
+        anchor_files = assemble(root, hnc["summary"], require_note=require_note)
+    except AnchorError as exc:
+        raise SystemExit(str(exc)) from exc
+    anchor = json.loads(anchor_files["evidence/output/hnc_head_anchor.json"])
     auris = run_auris()
     qgita = run_qgita()
     environment = _environment(root)
-    claims = build_claims(hnc["summary"], auris["summary"], qgita["summary"])
-    results = render_results(hnc["summary"], auris["summary"], qgita["summary"], claims, environment)
-    return {
+    claims = build_claims(hnc["summary"], auris["summary"], qgita["summary"], anchor)
+    results = render_results(
+        hnc["summary"],
+        auris["summary"],
+        qgita["summary"],
+        claims,
+        environment,
+        anchor,
+    )
+    files = {
         "evidence/environment.json": dump(environment),
         "evidence/RESULTS.md": results,
         "evidence/output/claims.json": dump(claims),
@@ -151,6 +167,8 @@ def build(root: Path | None = None) -> dict[str, str]:
         "evidence/output/qgita_trials.csv": qgita["trials_csv"],
         "evidence/output/qgita_calibration.csv": qgita["calibration_csv"],
     }
+    files.update(anchor_files)
+    return files
 
 
 def _first_diff(committed: str, fresh: str) -> str:
@@ -181,7 +199,7 @@ def _align_commit_sha(root: Path, files: dict[str, str]) -> dict[str, str]:
 
 def check(root: Path | None = None) -> int:
     root = Path(root or ROOT)
-    files = _align_commit_sha(root, build(root))
+    files = _align_commit_sha(root, build(root, require_note=True))
     mismatches: list[str] = []
     for relative, fresh in sorted(files.items()):
         path = root / relative
@@ -203,12 +221,35 @@ def check(root: Path | None = None) -> int:
 
 def write(root: Path | None = None) -> int:
     root = Path(root or ROOT)
-    files = build(root)
+    files = build(root, require_note=False)
     for relative, text in sorted(files.items()):
         path = root / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8")
         print(relative)
+    return 0
+
+
+def _stamp(root: Path) -> int:
+    _prepare()
+    from aureon.evidence.hnc import run_hnc
+
+    try:
+        files = stamp_files(root, run_hnc()["summary"])
+    except AnchorError as exc:
+        raise SystemExit(str(exc)) from exc
+    for relative in sorted(files):
+        print(relative)
+    print("timestamp requested once; make evidence does not request another")
+    return 0
+
+
+def _attach(root: Path) -> int:
+    try:
+        attach_note(root)
+    except AnchorError as exc:
+        raise SystemExit(str(exc)) from exc
+    print("refs/notes/aureon-hnc-head")
     return 0
 
 
@@ -220,9 +261,23 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="rebuild in memory and require the committed bytes, except commit_sha",
     )
+    parser.add_argument(
+        "--stamp-hnc-head",
+        action="store_true",
+        help="request one RFC 3161 timestamp for the measured HNC commitment and write the anchor files",
+    )
+    parser.add_argument(
+        "--attach-hnc-note",
+        action="store_true",
+        help="attach the committed HNC head token as refs/notes/aureon-hnc-head on HEAD",
+    )
     parser.add_argument("--root", type=Path, default=ROOT)
     args = parser.parse_args(argv)
     root = args.root.resolve()
+    if args.stamp_hnc_head:
+        return _stamp(root)
+    if args.attach_hnc_note:
+        return _attach(root)
     if args.write:
         status = write(root)
         if status != 0 or not args.check:

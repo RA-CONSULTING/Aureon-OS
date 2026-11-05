@@ -43,6 +43,18 @@
   },
   {
     "asserted": true,
+    "id": "hnc.head_anchor",
+    "statement": "Receipt 3 binds the formula-path series sha256 0a69c024c3a7b849857314ef710f11439eb13a30cd7c45f05429becea574f5c2 to RFC 3161 anchor 548596463d7b4dddeeba274562b212960f879baf475ee135c7d2fd3468f58e11 at 2026-11-05T19:40:18Z. Sequence 1. Public require-pin 34864ff0547d2cff03e707414743a3b0cc8770b5 is unchanged. The run does not report the system alive, does not place an order, and leaves go-live HOLD.",
+    "tag": "measured"
+  },
+  {
+    "asserted": true,
+    "id": "hnc.head_anchor.identity",
+    "statement": "The measured formula series sha256 matches the series recorded for public pin 34864ff0547d2cff03e707414743a3b0cc8770b5, so this receipt does not publish a new HNC identity.",
+    "tag": "inferred"
+  },
+  {
+    "asserted": true,
     "id": "auris.dependency",
     "statement": "Input-guard checks 0 mismatches out of 567 node readings.",
     "tag": "measured"
