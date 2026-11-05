@@ -20,10 +20,14 @@ def render_auris_markdown(report: dict[str, Any]) -> str:
     held = ", ".join(report.get("hold_nodes") or []) or "none"
     series_nodes = report.get("market_nodes_without_reading")
     if series_nodes is None:
-        series_line = "Series nodes without a reading: no series loaded."
+        series_line = "Window nodes without a reading: no series loaded."
     else:
         series_line = (
-            "Series nodes without a reading: " + (", ".join(series_nodes) or "none") + "."
+            "Window nodes without a reading: "
+            + (", ".join(series_nodes) or "none")
+            + ". That is one call on the whole pack and includes the latest spread print, "
+            "even when that print is after the OHLC bars. "
+            "Labelled bars are a separate clock: a spread print counts only at or before the decision close."
         )
     trade = report.get("trade_readiness") or {}
     lines = [

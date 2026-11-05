@@ -925,7 +925,10 @@ def render_brain_markdown(report: dict[str, Any]) -> str:
         (
             f"Auris coherence `{auris['coherence']}` with status `{auris['coherence_status']}`. "
             f"Zero-input nodes without a reading: {', '.join(auris['hold_nodes']) or 'none'}. "
-            f"Series nodes without a reading: {series_text}."
+            f"Window nodes without a reading: {series_text}. "
+            "The window is one call on the whole pack and includes the latest spread print, "
+            "even when that print is after the OHLC bars. "
+            "Labelled bars are a separate clock: a spread print counts only at or before the decision close."
         ),
         f"Trade readiness: **{auris['trade_readiness']['verdict']}**. {auris['trade_readiness']['reason']}",
         (

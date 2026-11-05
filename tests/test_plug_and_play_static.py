@@ -21,6 +21,38 @@ def test_install_script_uses_the_lockfile_and_does_not_read_dotenv() -> None:
     assert "cp .env" not in script
 
 
+def test_trade_view_keeps_orders_placed_for_the_smoke_gate() -> None:
+    import importlib.util
+
+    path = ROOT / "scripts" / "plug_and_play.py"
+    spec = importlib.util.spec_from_file_location("plug_and_play_under_test", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    full = {
+        "entries": 0,
+        "evidence_tag": "measured",
+        "filled_outcomes": 0,
+        "labels": [{"filled": False}],
+        "orders_placed": False,
+        "outcome_labels": "paper",
+        "paper_labels": 166,
+        "reason": "paper trade-outcome labels; measured fail; release boundary stays HOLD",
+        "release_boundary": "HOLD",
+        "verdict": "fail",
+    }
+    view = module._trade_view(full)
+    assert view["orders_placed"] is False
+    assert "labels" not in view
+    assert module._cognition_trade_failure(view) is None
+    dropped = dict(view)
+    dropped.pop("orders_placed")
+    assert module._cognition_trade_failure(dropped) == "cognition auris trade_readiness"
+    placed = dict(full)
+    placed["orders_placed"] = True
+    assert module._cognition_trade_failure(module._trade_view(placed)) == "cognition auris trade_readiness"
+
+
 def test_supervisor_keeps_trading_and_external_models_off() -> None:
     source = _text("scripts/plug_and_play.py")
     assert 'AUREON_LIVE_TRADING": "0"' in source

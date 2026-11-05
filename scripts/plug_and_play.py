@@ -198,12 +198,34 @@ def _trade_view(trade: object) -> dict[str, Any]:
         "entries": body.get("entries"),
         "evidence_tag": body.get("evidence_tag"),
         "filled_outcomes": body.get("filled_outcomes"),
+        "orders_placed": body.get("orders_placed"),
         "outcome_labels": body.get("outcome_labels"),
         "paper_labels": body.get("paper_labels"),
         "reason": body.get("reason"),
         "release_boundary": body.get("release_boundary"),
         "verdict": body.get("verdict"),
     }
+
+
+def _cognition_trade_failure(readiness: object) -> str | None:
+    """Smoke gate for the printed trade view. A missing orders_placed is a failure."""
+
+    body = readiness if isinstance(readiness, dict) else {}
+    verdict = body.get("verdict")
+    reason = str(body.get("reason") or "")
+    if body.get("release_boundary") != "HOLD" or body.get("orders_placed") is not False:
+        return "cognition auris trade_readiness"
+    if verdict in {"pass", "fail"}:
+        if body.get("outcome_labels") not in {"paper", "filled"}:
+            return "cognition auris trade_readiness"
+        if "no market series and no trade-outcome labels" in reason:
+            return "cognition auris trade_readiness"
+        return None
+    if verdict != "HOLD" or (
+        "no market series" not in reason and "no trade-outcome labels" not in reason
+    ):
+        return "cognition auris trade_readiness"
+    return None
 
 
 def cognition_view(report: dict[str, Any]) -> dict[str, Any]:
@@ -558,20 +580,10 @@ def smoke() -> int:
         if hnc.get("enable_multiverse") is not False or not _finite(hnc.get("coherence")):
             failures.append("cognition hnc")
         auris = cognition.get("auris") or {}
-        readiness = auris.get("trade_readiness") or {}
-        verdict = readiness.get("verdict")
-        reason = str(readiness.get("reason") or "")
-        if readiness.get("release_boundary") != "HOLD" or readiness.get("orders_placed") is not False:
-            failures.append("cognition auris trade_readiness")
-        elif verdict in {"pass", "fail"}:
-            if readiness.get("outcome_labels") not in {"paper", "filled"}:
-                failures.append("cognition auris trade_readiness")
-            elif "no market series and no trade-outcome labels" in reason:
-                failures.append("cognition auris trade_readiness")
-        elif verdict != "HOLD" or (
-            "no market series" not in reason and "no trade-outcome labels" not in reason
-        ):
-            failures.append("cognition auris trade_readiness")
+        readiness = _trade_view(auris.get("trade_readiness") or {})
+        trade_failure = _cognition_trade_failure(readiness)
+        if trade_failure:
+            failures.append(trade_failure)
         derived = (cognition.get("qgita") or {}).get("derived_series") or {}
         on_lambda = (cognition.get("qgita") or {}).get("on_hnc_series") or {}
         if derived.get("rates_verdict") != "HOLD" or on_lambda.get("rates_verdict") != "HOLD":
