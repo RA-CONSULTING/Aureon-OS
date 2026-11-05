@@ -144,3 +144,22 @@ HOLD.
 - durable HNC evidence with an external monotonic head anchor (HOLD)
 - complete source-boundary census closure (HOLD)
 - authenticated deployment receipt and provider-side read-back (absent)
+
+## Stage 8 — exchanges read surface
+
+This slice measures the public exchanges catalog. It does not clear go-live.
+
+`exchanges_gate` and `exchanges_surface` are on `aureon-public`. They read
+`docs/mcp/inventory.json` for package `exchanges`. They do not import
+`aureon.exchanges`. They do not place an order. They do not read keys.
+The decision is HOLD. An environment variable cannot select EXECUTE.
+Live orders on this surface stay refused when `AUREON_DISABLE_REAL_ORDERS`
+is unset and when it is set to `0`.
+
+The measured record is `measured/go_live_stage8_exchanges.json`.
+`docs/runbooks/GO_LIVE_STAGE8_EXCHANGES.md` names the same facts.
+This slice does not change `PINNED_COMMIT`. The orange release-boundary
+badge stays HOLD. This slice does not publish a Space and does not repeat
+the protocol or call-sweep records. `OPEN_PLAN_THROUGH` stays 2.
+`ENABLED_THROUGH` stays 6. Exchanges reachable stays 0.
+Plan stages 3 and 4 stay closed.

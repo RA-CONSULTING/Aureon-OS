@@ -203,4 +203,4 @@ Any client that speaks MCP stdio can use the same command. A client that speaks 
 
 ## What is not on this server
 
-Orders, exchange keys, `aureon.exchanges`, `aureon.trading`, `unified_margin_trader`, `aureon.bots`, `aureon.bots_intelligence`, `aureon.bridges`, `aureon.scanners`, circulation start, self-code, and self-repair are not tools. The operator Flask routes in `aureon/bio/mcp_transport.py` are a different process and are not widened here.
+Orders, exchange keys, imports of `aureon.exchanges`, `aureon.trading`, `unified_margin_trader`, `aureon.bots`, `aureon.bots_intelligence`, `aureon.bridges`, and `aureon.scanners`, circulation start, self-code, and self-repair are not tools. `exchanges_gate` and `exchanges_surface` read the exchanges rows in the pinned inventory. They do not import `aureon.exchanges`, do not place an order, and do not read keys. The decision on that surface is HOLD. `aureon://exchanges/surface` is the same catalog. The operator Flask routes in `aureon/bio/mcp_transport.py` are a different process and are not widened here.

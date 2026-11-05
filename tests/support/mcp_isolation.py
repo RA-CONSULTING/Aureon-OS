@@ -124,6 +124,7 @@ def load_public_test_bindings(module: ModuleType) -> None:
 def is_mcp_test_module(module_name: str) -> bool:
     base = module_name.rsplit(".", 1)[-1]
     if base in {
+        "test_aureon_public_exchanges_surface",
         "test_aureon_public_mcp",
         "test_aureon_public_alignment",
         "test_aureon_public_stage1",
