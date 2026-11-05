@@ -1,0 +1,504 @@
+{
+  "allow_path": {
+    "argv_omits_net": true,
+    "audit": {
+      "actor": "stage7-receipt",
+      "effect": "share-parent-netns",
+      "issued_at": "2026-11-05T19:45:32Z",
+      "policy": "allow",
+      "reason": "stage 7 receipt shows this grant shares the parent net namespace",
+      "schema": "aureon.containment.network-allow.v1"
+    },
+    "effect": "omits unshare --net and shares the parent network namespace",
+    "entry": "aureon.containment.native.authorize_network_allow",
+    "environment_variable_cannot_select_it": true,
+    "grant_id": "0a269d5154a714621db0f0e32eae751504a9441a8f925c67bebb983f2fb239e5",
+    "probe_connect_attempted": false,
+    "probe_net_ns_equals_parent": true,
+    "probe_started": true,
+    "taken_for_default_boot": false
+  },
+  "allowed_at_default": "none",
+  "child_net_ns": "net:[4026532213]",
+  "cold_boot_argv": [
+    "/usr/bin/unshare",
+    "--user",
+    "--map-root-user",
+    "--mount",
+    "--propagation",
+    "private",
+    "--pid",
+    "--fork",
+    "--mount-proc",
+    "--net",
+    "/usr/bin/python3",
+    "-I",
+    "/agent/repos/Aureon-OS/aureon/containment/_child_wrapper.py",
+    "/tmp/aureon-containment-565xcrdh/default/sidecar.json"
+  ],
+  "cold_boot_argv_has_net": true,
+  "cold_boot_command": "python -m aureon.containment.cold_boot",
+  "default_child": {
+    "child_env_names": [
+      "HOME",
+      "LANG",
+      "LC_ALL",
+      "PATH",
+      "PYTHONDONTWRITEBYTECODE",
+      "PYTHONNOUSERSITE",
+      "PYTHONUNBUFFERED"
+    ],
+    "deny_network": true,
+    "drop_caps": true,
+    "error": null,
+    "grant_id": null,
+    "probe": {
+      "caps": {
+        "CapAmb": "0000000000000000",
+        "CapBnd": "0000000000000000",
+        "CapEff": "0000000000000000",
+        "CapInh": "0000000000000000",
+        "CapPrm": "0000000000000000"
+      },
+      "default_route_ifaces": [],
+      "environ_names": [
+        "HOME",
+        "LANG",
+        "LC_ALL",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONNOUSERSITE",
+        "PYTHONUNBUFFERED"
+      ],
+      "etc_passwd": {
+        "contents_recorded": false,
+        "readable": true
+      },
+      "euid": 0,
+      "interfaces_proc_net_dev": [
+        "lo"
+      ],
+      "lo_before": {
+        "errno": null,
+        "flags": 8,
+        "ok": true,
+        "up": false
+      },
+      "lo_up_attempt": {
+        "errno": 1,
+        "error": "EPERM",
+        "ok": false
+      },
+      "marker": {
+        "contents_recorded": false,
+        "readable": true
+      },
+      "net_ns": "net:[4026532213]",
+      "probes": {
+        "libc_connect_1.1.1.1_443": {
+          "errno": 101,
+          "error": "ENETUNREACH",
+          "note": "libc connect syscall, not socket.socket",
+          "ok": false,
+          "rc": -1
+        },
+        "raw_icmp_create": {
+          "errno": 1,
+          "error": "EPERM",
+          "ok": false
+        },
+        "tcp6_2001:4860:4860::8888_53": {
+          "errno": 99,
+          "error": "EADDRNOTAVAIL",
+          "host": "2001:4860:4860::8888",
+          "ok": false,
+          "port": 53
+        },
+        "tcp_1.1.1.1_443": {
+          "errno": 101,
+          "error": "ENETUNREACH",
+          "host": "1.1.1.1",
+          "ok": false,
+          "port": 443
+        },
+        "tcp_1.1.1.1_443_after_socket_reload": {
+          "errno": 101,
+          "error": "ENETUNREACH",
+          "host": "1.1.1.1",
+          "ok": false,
+          "port": 443
+        },
+        "tcp_127.0.0.1_9": {
+          "errno": 101,
+          "error": "ENETUNREACH",
+          "host": "127.0.0.1",
+          "ok": false,
+          "port": 9
+        },
+        "udp_8.8.8.8_53": {
+          "errno": 101,
+          "error": "ENETUNREACH",
+          "host": "8.8.8.8",
+          "ok": false,
+          "payload": "single NUL byte, not a DNS query",
+          "port": 53
+        }
+      },
+      "schema": "aureon.containment.probe.v1",
+      "socket_module": "socket",
+      "socket_module_after_reload": "socket",
+      "socket_monkeypatch": false,
+      "sysfs_net": [
+        "lo"
+      ],
+      "user_ns": "user:[4026532210]"
+    },
+    "returncode": 0,
+    "started": true,
+    "stderr": "",
+    "wrapper": {
+      "cap_drop": {
+        "dropped": 41,
+        "errno": null,
+        "error": null,
+        "invalid_cap_numbers": 23,
+        "no_new_privs": true,
+        "no_new_privs_errno": null,
+        "ok": true,
+        "rc": 0
+      },
+      "caps_after": {
+        "CapAmb": "0000000000000000",
+        "CapBnd": "0000000000000000",
+        "CapEff": "0000000000000000",
+        "CapInh": "0000000000000000",
+        "CapPrm": "0000000000000000"
+      },
+      "caps_before": {
+        "CapAmb": "0000000000000000",
+        "CapBnd": "000001ffffffffff",
+        "CapEff": "000001ffffffffff",
+        "CapInh": "0000000000000000",
+        "CapPrm": "000001ffffffffff"
+      },
+      "deny_network": true,
+      "exec": true,
+      "schema": "aureon.containment.wrapper-status.v1",
+      "sysfs_after": [
+        "lo"
+      ],
+      "sysfs_before": [
+        "docker0",
+        "enp0s3",
+        "lo"
+      ],
+      "sysfs_remount": {
+        "errno": null,
+        "error": null,
+        "ok": true,
+        "rc": 0
+      }
+    }
+  },
+  "failures": [],
+  "finished_at": "2026-11-05T19:45:32Z",
+  "gap_before_capability_drop": {
+    "child_env_names": [
+      "HOME",
+      "LANG",
+      "LC_ALL",
+      "PATH",
+      "PYTHONDONTWRITEBYTECODE",
+      "PYTHONNOUSERSITE",
+      "PYTHONUNBUFFERED"
+    ],
+    "deny_network": true,
+    "drop_caps": false,
+    "error": null,
+    "grant_id": null,
+    "probe": {
+      "after_lo_up": {
+        "default_route_ifaces": [],
+        "tcp_1.1.1.1_443": {
+          "errno": 101,
+          "error": "ENETUNREACH",
+          "host": "1.1.1.1",
+          "ok": false,
+          "port": 443
+        },
+        "tcp_127.0.0.1_9": {
+          "errno": 111,
+          "error": "ECONNREFUSED",
+          "host": "127.0.0.1",
+          "ok": false,
+          "port": 9
+        }
+      },
+      "caps": {
+        "CapAmb": "0000000000000000",
+        "CapBnd": "000001ffffffffff",
+        "CapEff": "000001ffffffffff",
+        "CapInh": "0000000000000000",
+        "CapPrm": "000001ffffffffff"
+      },
+      "default_route_ifaces": [],
+      "environ_names": [
+        "HOME",
+        "LANG",
+        "LC_ALL",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONNOUSERSITE",
+        "PYTHONUNBUFFERED"
+      ],
+      "etc_passwd": {
+        "contents_recorded": false,
+        "readable": true
+      },
+      "euid": 0,
+      "interfaces_proc_net_dev": [
+        "lo"
+      ],
+      "lo_before": {
+        "errno": null,
+        "flags": 8,
+        "ok": true,
+        "up": false
+      },
+      "lo_up_attempt": {
+        "errno": null,
+        "error": null,
+        "flags_before": 8,
+        "ok": true
+      },
+      "marker": {
+        "contents_recorded": false,
+        "readable": true
+      },
+      "net_ns": "net:[4026532360]",
+      "probes": {
+        "libc_connect_1.1.1.1_443": {
+          "errno": 101,
+          "error": "ENETUNREACH",
+          "note": "libc connect syscall, not socket.socket",
+          "ok": false,
+          "rc": -1
+        },
+        "raw_icmp_create": {
+          "errno": null,
+          "error": null,
+          "ok": true,
+          "sent": false
+        },
+        "tcp6_2001:4860:4860::8888_53": {
+          "errno": 99,
+          "error": "EADDRNOTAVAIL",
+          "host": "2001:4860:4860::8888",
+          "ok": false,
+          "port": 53
+        },
+        "tcp_1.1.1.1_443": {
+          "errno": 101,
+          "error": "ENETUNREACH",
+          "host": "1.1.1.1",
+          "ok": false,
+          "port": 443
+        },
+        "tcp_1.1.1.1_443_after_socket_reload": {
+          "errno": 101,
+          "error": "ENETUNREACH",
+          "host": "1.1.1.1",
+          "ok": false,
+          "port": 443
+        },
+        "tcp_127.0.0.1_9": {
+          "errno": 101,
+          "error": "ENETUNREACH",
+          "host": "127.0.0.1",
+          "ok": false,
+          "port": 9
+        },
+        "udp_8.8.8.8_53": {
+          "errno": 101,
+          "error": "ENETUNREACH",
+          "host": "8.8.8.8",
+          "ok": false,
+          "payload": "single NUL byte, not a DNS query",
+          "port": 53
+        }
+      },
+      "schema": "aureon.containment.probe.v1",
+      "socket_module": "socket",
+      "socket_module_after_reload": "socket",
+      "socket_monkeypatch": false,
+      "sysfs_net": [
+        "lo"
+      ],
+      "user_ns": "user:[4026532211]"
+    },
+    "returncode": 0,
+    "started": true,
+    "stderr": "",
+    "wrapper": {
+      "cap_drop": {
+        "ok": false,
+        "skipped": true
+      },
+      "caps_after": {
+        "CapAmb": "0000000000000000",
+        "CapBnd": "000001ffffffffff",
+        "CapEff": "000001ffffffffff",
+        "CapInh": "0000000000000000",
+        "CapPrm": "000001ffffffffff"
+      },
+      "caps_before": {
+        "CapAmb": "0000000000000000",
+        "CapBnd": "000001ffffffffff",
+        "CapEff": "000001ffffffffff",
+        "CapInh": "0000000000000000",
+        "CapPrm": "000001ffffffffff"
+      },
+      "deny_network": true,
+      "exec": true,
+      "schema": "aureon.containment.wrapper-status.v1",
+      "sysfs_after": [
+        "lo"
+      ],
+      "sysfs_before": [
+        "docker0",
+        "enp0s3",
+        "lo"
+      ],
+      "sysfs_remount": {
+        "errno": null,
+        "error": null,
+        "ok": true,
+        "rc": 0
+      }
+    }
+  },
+  "gaps": [
+    {
+      "statement": "Before capability drop, mapped root set lo up. 127.0.0.1 then returned ECONNREFUSED. 1.1.1.1 stayed unreachable. The default payload drops capabilities first, and that same ioctl returns EPERM.",
+      "tag": "measured"
+    },
+    {
+      "statement": "Before capability drop, creating an ICMP raw socket returned ok=True errno=None error=None. No datagram was sent.",
+      "tag": "measured"
+    },
+    {
+      "statement": "The contained process is a new python -I. It does not import aureon and does not assign socket.socket. socket module at start: socket.",
+      "tag": "measured"
+    },
+    {
+      "statement": "mcp/aureon_public/sweep_guard.py replaces socket.socket in-process during a sweep. That is not a network namespace. This stage does not change that file or the public pin 34864ff0547d2cff03e707414743a3b0cc8770b5.",
+      "tag": "cited"
+    },
+    {
+      "statement": "No seccomp filter and no landlock are installed. A kernel flaw in user or network namespaces is outside this receipt.",
+      "tag": "inferred"
+    },
+    {
+      "statement": "Mapped root in a new user namespace is not treated as CAP_NET_ADMIN on the parent network namespace. This receipt does not flip a host interface to test that.",
+      "tag": "inferred"
+    },
+    {
+      "statement": "Before the sysfs remount, /sys/class/net listed docker0, enp0s3, lo. After remount it listed lo only. /proc/net/dev is the namespace device list and listed lo.",
+      "tag": "measured"
+    },
+    {
+      "statement": "Filesystem isolation is not this receipt. The go-live runbook was readable=True and /etc/passwd was readable=True. Contents were not recorded.",
+      "tag": "measured"
+    },
+    {
+      "statement": "Receipts 2, 3, 4, and 5 remain HOLD. The orange release-boundary badge is unchanged. scripts/linux/install-linux.sh still execs the isolated bootstrap and does not start this cold boot. No live Aureon instance is claimed. The system is not claimed alive.",
+      "tag": "cited"
+    },
+    {
+      "statement": "issued_at on the allow-path audit is this machine's UTC clock. It is not an external monotonic head.",
+      "tag": "measured"
+    }
+  ],
+  "git_head_at_measurement": "c68a89d2a184d99582bb24310b91e024323a212c",
+  "holds_remaining": [
+    {
+      "id": 2,
+      "item": "exact target-source measurement and immutable release provenance",
+      "status": "HOLD"
+    },
+    {
+      "id": 3,
+      "item": "durable HNC evidence with an external monotonic head anchor",
+      "status": "HOLD"
+    },
+    {
+      "id": 4,
+      "item": "complete source-boundary census closure",
+      "status": "HOLD"
+    },
+    {
+      "id": 5,
+      "item": "authenticated deployment receipt and provider-side read-back",
+      "status": "HOLD"
+    }
+  ],
+  "host_control": {
+    "application_payload": "none",
+    "bytes_read": 0,
+    "elapsed_ms": 0.434,
+    "errno": null,
+    "error": null,
+    "host": "1.1.1.1",
+    "ok": true,
+    "port": 443,
+    "tag": "measured",
+    "where": "measurer, outside the contained network namespace"
+  },
+  "kernel": "Linux cursor 6.12.94+ #1 SMP PREEMPT_DYNAMIC Mon Nov  2 21:34:19 UTC 2026 x86_64",
+  "live_trading": false,
+  "market_data_fetched": false,
+  "measurement_note": "source_sha256 binds the containment sources in this worktree. git_head_at_measurement is HEAD when the command ran. The commit that adds this file is not a second measurement. The UTC stamps are this machine's clock, not receipt 3.",
+  "orange_badge": "unchanged",
+  "orders_placed": false,
+  "parent_net_ns": "net:[4026531840]",
+  "pin": "34864ff0547d2cff03e707414743a3b0cc8770b5",
+  "pin_changed": false,
+  "python": "3.12.3",
+  "receipt": 1,
+  "release_boundary": "HOLD",
+  "require_pin_changed": false,
+  "schema": "aureon.measured.native-process-containment.v1",
+  "source_sha256": {
+    "aureon/containment/__init__.py": "b331f1ac9a63b8f2ba65f9b60deee5ccaa920e501b8b62c3ed1082a76cb44e3f",
+    "aureon/containment/__main__.py": "54fa0ca5376b8c14f5f1daf8c7354fcae1936516661c7ac8daa8cd0e0fc57144",
+    "aureon/containment/_child_probe.py": "bd2e74ef3e5986b543ee4cb5a8541b75dd788e23e0a06e33682c41c7fd241255",
+    "aureon/containment/_child_wrapper.py": "5796b7f7b388e046667142d3c972d047911cb39a48972d55101999cf5a9a1d49",
+    "aureon/containment/cold_boot.py": "72effd4ec1f894ba976d49f4254556f6aafae5720ec6cad43a25e5c66e51b055",
+    "aureon/containment/native.py": "440235d88b19e1bff74121d51b620c59aa027d2dccc599a691cfbd4267ce20b9"
+  },
+  "stage": 7,
+  "started_at": "2026-11-05T19:45:32Z",
+  "started_from": "c68a89d2a184d99582bb24310b91e024323a212c",
+  "tags": {
+    "allow_path_not_taken_for_default": "measured",
+    "allow_path_shares_parent_netns": "measured",
+    "capability_drop": "measured",
+    "cold_boot": "measured",
+    "localhost_at_default": "measured",
+    "loopback_admin_before_capability_drop": "measured",
+    "public_mcp_sweep_guard": "cited",
+    "release_boundary": "cited",
+    "system_alive": "not claimed",
+    "zero_network_default": "measured"
+  },
+  "title": "native process containment with a zero-network default",
+  "unchanged_sha256": {
+    "README.md": "8fb3bac853ba36d9d702a85bfff663d6e537e2744628dd60a52035a746264462",
+    "mcp/aureon_public/guard_loader.py": "63ab1288084187039019b17dfc47165dd4bfa16f9769f79d41281667e0dff7f0",
+    "mcp/aureon_public/pin_blob.py": "6b95802ae631a41c1b3b3489937dc3d38b8e8f89c1dd782fd6648c699a1ee812",
+    "mcp/aureon_public/sweep_guard.py": "b320268ba4b4138c2452869b732c519d220820339c15d19160c8e5322a7201b2",
+    "scripts/linux/install-linux.sh": "5242a98eb4fe88471a918eaa89725670aaf17de9100437a56f54410ae8f1167c"
+  },
+  "verdict": "pass",
+  "worktree_dirty_at_measurement": true
+}

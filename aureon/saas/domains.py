@@ -65,6 +65,8 @@ _FS_TO_PRODUCT: Dict[str, str] = {
     "grants": "research",
     "identity": "security",
     "plumber": "security",
+    # Stage-7 native process containment. Zero-network cold boot, not a live route.
+    "containment": "security",
     "portals": "security",
 }
 
