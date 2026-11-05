@@ -19,24 +19,56 @@ Trading research · autonomous operator · planetary/HNC research · a coding or
 
 ## Quick start in five minutes
 
-Python 3.11 or newer, Node.js 20 or newer, and a blank key file. On Debian or Ubuntu, install `python3-venv` first. `./install.sh` creates `.venv`, installs the pinned `requirements-plug.lock`, installs the dashboard with `npm ci` when `frontend/node_modules` is absent, and starts the local stack:
+Start here. Clone `main`, leave exchange keys unset, and run the guarded smoke. Live trading stays off. The orange release-boundary badge above stays **HOLD**. Go-live stays **HOLD**.
+
+Python 3.11 or newer, and Node.js 20 or newer, with `python3`, `node`, and `npm` on `PATH`. On Debian or Ubuntu, install `python3-venv` first. `./install.sh` checks that Python is 3.11 or newer and that `node` and `npm` exist. The clean-checkout workflow uses Node 20. A `.env` file is not required. `./install.sh` does not read `.env`.
+
+```bash
+git clone https://github.com/RA-CONSULTING/Aureon-OS.git
+cd Aureon-OS
+./install.sh --smoke
+```
+
+`./install.sh --smoke` creates `.venv`, installs the pinned `requirements-plug.lock`, and installs the dashboard with `npm ci --ignore-scripts --prefix frontend` when `frontend/node_modules` is absent. It starts the local stack, requests the endpoints, and stops. If a stack record is already present, `./install.sh --stop` clears that record before the smoke. Installer logs from pip, and from `npm ci` on a fresh tree, scroll before the banner. Go-live stays **HOLD**.
+
+During the smoke the stack binds, then the smoke stops it:
 
 - operator API on `http://127.0.0.1:8790/`
 - public MCP server on `http://127.0.0.1:8077/mcp`
 - dashboard on `http://127.0.0.1:5173/`
 - stack health and the in-process HNC / Auris / QGITA report on `http://127.0.0.1:8787/`
 
-The command leaves exchange keys unset and does not read `.env`. `AUREON_AUTONOMY_MODE=guarded` keeps live trading off. `AUREON_LLM_OFFLINE=1` keeps the operator off external model HTTP, so the provider line is the offline adapter. HNC, Auris, and QGITA run from this repository. The release boundary stays **HOLD**. Trade readiness on the committed public series is the measured brain-proof verdict.
+The smoke sets `AUREON_AUTONOMY_MODE=guarded`, `AUREON_LIVE_TRADING=0`, `AUREON_DISABLE_REAL_ORDERS=1`, and `AUREON_LLM_OFFLINE=1`. Exchange keys stay unset. The provider line is the offline adapter. No order is placed. HNC, Auris, and QGITA run from this repository. The first run installs from `requirements-plug.lock` and, on a fresh tree, from `frontend/package-lock.json`. Those installs fetch packages. External model HTTP stays off. Go-live stays **HOLD**.
 
-```bash
-git clone https://github.com/RA-CONSULTING/Aureon-OS.git
-cd Aureon-OS
-./install.sh
-```
+### Linux path
 
-Stop it with `./install.sh --stop`.
+On Linux the guarded smoke is `./install.sh --smoke` from the checkout. The script is bash.
 
-`./install.sh --smoke` boots that same stack, requests the endpoints, and stops. Installer logs from pip, and from `npm ci` on a fresh tree, scroll first. The stack then prints:
+`scripts/linux/install-linux.sh` execs `scripts/bootstrap/protected_bootstrap_v05.py --target-id linux-supervisor`. That entry is outside this smoke. Go-live stays **HOLD**. See [`docs/runbooks/GO_LIVE_HARDENING.md`](docs/runbooks/GO_LIVE_HARDENING.md).
+
+**Warning.** `scripts/linux/aureon-up.sh` can boot live trading when a full exchange key group is present in `.env`. When `.venv/bin/python` is missing, that script runs `production/install.sh`, which calls `scripts/launch/aureon-master.sh`. With autonomy left at the public default, that boot reports `trading_mode=live (exchange keys present)`. When `.venv/bin/python` is already present, `aureon-up.sh` runs `python -m aureon.autonomous.aureon_master_launcher --preflight` and sets `AUREON_LIVE_TRADING=0`. Go-live stays **HOLD**. The start-here command stays `./install.sh --smoke`.
+
+### What the guarded smoke covers
+
+`./install.sh --smoke` is the start-here check. Live trading stays off. Exchange keys stay unset. No order is placed. QGITA detection rate on that smoke stays **HOLD**. Go-live stays **HOLD**.
+
+### What stays HOLD
+
+- **Release boundary.** The orange badge stays HOLD. Supported launchers stop at terminal HOLD.
+- **Go-live: HOLD.** The guarded smoke leaves go-live on HOLD. See [`docs/runbooks/GO_LIVE_HARDENING.md`](docs/runbooks/GO_LIVE_HARDENING.md).
+- **Public MCP stages 3 and 4.** `OPEN_PLAN_THROUGH` is 2. Stages 1 and 2 are the open read-only surface. Miner is stage 3. Queen, exchanges, and trading are stage 4. `body_call` refuses a later plan stage with `plan stage N is not open`. Stages 3 and 4 stay closed until the pull requests that open them land. Go-live stays **HOLD**.
+
+### Require-pin
+
+The published pin is `bb04503119681adcf832f3c3e9b0cbf09fc7a938` (`PINNED_COMMIT` in `mcp/aureon_public/guard_loader.py`). This page does not move it.
+
+`AUREON_PUBLIC_REQUIRE_PIN=1` starts only when `aureon_source` is kind `pinned` at that commit. `python -m aureon_public.space` sets the variable. A clone of `main` reports kind `checkout` at the clone's own commit, so require-pin refuses that process. `./install.sh` leaves `AUREON_PUBLIC_REQUIRE_PIN` unset. The plug sets `AUREON_PUBLIC_OPEN=1` for the local MCP on `127.0.0.1`.
+
+Checkout files are still blob-checked against the pin. When `aureon/utils/aureon_queen_hive_mind.py` differs, `auris_coherence` returns `checkout aureon/utils/aureon_queen_hive_mind.py differs from pin` and the first 12 hex digits of the pin commit. The smoke accepts that error when the text contains `differs from pin`. A tool result whose `trade_readiness` is `HOLD` also passes that check. In the transcript below, `SMOKE PASSED` follows the pin refusal. The checkout stays kind `checkout`.
+
+The transcript below is an earlier run. The prefix `8aa6a2d971cc` on its `auris_coherence` line is that run's pin prefix. Process ids in the banner are from the run that produced it. A later run prints its own pids. `SMOKE PASSED` is the guarded-smoke banner. Go-live stays **HOLD**. With `reports/measured/market_series.json` loaded, the in-process report on `/api/cognition` runs `evaluate_brain`. Auris coherence is the pack reading and trade readiness is the paper-label verdict in that report. QGITA detection rate stays **HOLD**. Auris joined to Λ(t) stays **HOLD**: the formula-path Λ(t) is passed into `get_auris_coherence`, and that call does not change the coherence figure. The release boundary stays **HOLD**. The banner is from before that pack.
+
+The stack then prints:
 
 ```text
 {"autonomy_mode": "guarded", "banner": "aureon-plug", "exchange_keys": "unset", "external_llm": false, "live_trading": false, "ok": true, "pids": {"frontend": 3356, "mcp": 3355, "operator": 3354}, "service": "aureon-plug", "services": {"cognition": {"ok": true, "runner": "aureon.evaluation.brain_proof.evaluate_brain", "url": "http://127.0.0.1:8787/api/cognition"}, "frontend": {"ok": true, "status": 200, "url": "http://127.0.0.1:5173/"}, "mcp": {"ok": true, "status": 405, "url": "http://127.0.0.1:8077/mcp"}, "operator": {"ok": true, "providers": ["offline"], "ready": true, "status": 200, "url": "http://127.0.0.1:8790/healthz"}}}
@@ -59,21 +91,17 @@ SMOKE cognition {"auris": {"coherence": null, "hold_nodes": ["Clownfish", "Owl"]
 SMOKE PASSED
 ```
 
-Process ids in that banner are from the run that produced it. A later run prints its own pids. The public MCP `auris_coherence` tool returns the pin refusal above when `aureon/utils/aureon_queen_hive_mind.py` differs from the published pin. The in-process report on `/api/cognition` runs `evaluate_brain`. With `reports/measured/market_series.json` loaded, that report's Auris coherence is the pack reading and trade readiness is the measured paper-label verdict. QGITA detection rate stays **HOLD**. Auris joined to Λ(t) stays **HOLD**: the formula-path Λ(t) is passed into `get_auris_coherence`, and that call does not change the coherence figure. The release boundary stays **HOLD**. The smoke banner above is an earlier run, from before that pack.
-
-`python3 scripts/stage_plug_image.py` then `docker compose -f deploy/plug/docker-compose.yml up --build` is the container form of the same command. It uses host networking so the processes can bind `127.0.0.1`.
-
-The offline pytest commands are in the Five-minute quickstart section below.
+Go-live stays **HOLD**. The start-here command is `./install.sh --smoke`.
 
 Older notes in `docs/` (for example `docs/AUREON_MIND_STATUS.md`), `aureon-trading/docs/`, and `imports/` (including the `imports/Kimi_Agent_Aureon_20260408` snapshot) are earlier research writing and may repeat figures that have since been withdrawn. This README and `mcp/aureon_public` are the current, checked parts.
 
-> **Leave exchange keys unset.** `./install.sh` sets `AUREON_AUTONOMY_MODE=guarded` and skips `.env`. `scripts/launch/aureon-master.sh` and `production/install.sh` use the public autonomy default: a complete exchange key group in `.env` makes that boot live.
+> **Leave exchange keys unset.** `./install.sh --smoke` sets `AUREON_AUTONOMY_MODE=guarded` and skips `.env`. `scripts/linux/aureon-up.sh` can boot live trading when a full exchange key group is present in `.env`: with `.venv/bin/python` missing it runs `production/install.sh`, which calls `scripts/launch/aureon-master.sh`. Go-live stays **HOLD**.
 
 ---
 
 ## Five-minute quickstart
 
-A fresh clone, Python 3.11 or newer, and no API keys. This path does not start Docker, does not read exchange keys, and does not place an order. It installs the operator extra, runs the offline operator server tests, the connectome test, and the quickstart banner test, then prints the HNC measurement from `aureon.evaluation.brain_proof.evaluate_brain`. That function runs `HarmonicRealityField.step` for 100 steps with the multiverse extension off. The class default HarmonicRealityField() has the multiverse on, which gives coherence 0.857719 and LOCKED. It is deterministic: it takes no seed, so the same figures come back on every run.
+Offline pytest path for the same checkout. The guarded stack smoke is `./install.sh --smoke` in the quick start above. A fresh clone, Python 3.11 or newer, and no API keys. This path does not start Docker, does not read exchange keys, and does not place an order. The release boundary stays **HOLD**. Go-live stays **HOLD**. The path installs the operator extra, runs the offline operator server tests, the connectome test, and the quickstart banner test, then prints the HNC measurement from `aureon.evaluation.brain_proof.evaluate_brain`. That function runs `HarmonicRealityField.step` for 100 steps with the multiverse extension off. The class default HarmonicRealityField() has the multiverse on, which gives coherence 0.857719 and LOCKED. It is deterministic: it takes no seed, so the same figures come back on every run.
 
 Linux and macOS:
 
@@ -123,7 +151,7 @@ The longer operator preflight, containers, and the full offline suite are furthe
 
 ## Public MCP (stages 1 and 2 of 4)
 
-[`mcp/aureon_public/README.md`](mcp/aureon_public/README.md) is the public MCP surface. It is read-only. Stages 1 and 2 of 4 are open. Stages 3 and 4 stay closed.
+[`mcp/aureon_public/README.md`](mcp/aureon_public/README.md) is the public MCP surface. It is read-only. Stages 1 and 2 of 4 are open. `OPEN_PLAN_THROUGH` is 2. Stages 3 and 4 stay closed until the pull requests that open them land.
 
 ---
 
@@ -215,15 +243,13 @@ AUREON_LLM_OFFLINE=1 pytest tests/test_operator_*.py tests/test_saas_*.py tests/
 
 ### Current local verification boundary
 
-Everything needed to inspect source and run offline tests is in this repo. Do not
-inject exchange, model, hosting, or deployment credentials while validating the
-current release: the isolated operator bootstrap, containers, and supervisor
-entrypoints stay on **HOLD**.
+Everything needed to inspect source and run offline tests is in this repo. Leave
+exchange, model, hosting, and deployment credentials out of this check. The isolated
+operator bootstrap, containers, and supervisor entrypoints stay on **HOLD**.
+Go-live stays **HOLD**.
 
-The local installer is the path that brings a clone up. Linux and macOS:
-`bash production/install.sh`. Windows: `production\Install-AUREON.ps1` (or
-`production\install-windows.bat`). `bash scripts/linux/aureon-up.sh` calls that
-installer when the virtualenv is missing, then starts the same preflight.
+The clone command is `./install.sh --smoke` in the quick start above. Go-live stays **HOLD**.
+
 The shell is `http://127.0.0.1:5173/`. Dashboard and Command Center are tabs of
 the local console at `http://127.0.0.1:5173/console/local`. Every other
 dashboard and status page — the 8080 console, Orca on 8888, market status on
@@ -242,12 +268,11 @@ says `trading_mode=live (exchange keys present)`. The launcher does not place
 an order by itself. The thought bus health check is
 `http://127.0.0.1:8799/healthz`. The fusion seat keeps
 `http://127.0.0.1:8765/healthz`.
-A HOLD receipt proves only that the fail-closed preflight ran; it is not proof
-that the whole system is protected or production-ready.
+A HOLD receipt records that the fail-closed preflight ran. Go-live stays **HOLD**.
 
 ### Canonical organism launcher
 
-> **Stay on the five-minute quickstart. Do not add your own exchange keys.** This launcher defaults to full autonomy. If exchange keys are in `.env`, the boot can go live and trade.
+> **Stay on `./install.sh --smoke` in the quick start above. Leave exchange keys unset.** This launcher defaults to full autonomy. If exchange keys are in `.env`, the boot can go live and trade.
 
 The terminal-HOLD bootstraps stay holds. The organism launcher is a separate entry. Its default is full autonomy, and it does not place an order by itself:
 
@@ -275,7 +300,7 @@ scripts\launch\aureon-master.ps1
 
 `scripts\launch\aureon-master.bat` is the same entry. That one command writes `.env` from `.env.example` when `.env` is absent, installs Python requirements into `.venv`, Node packages for `frontend/`, and the self-host images when Docker answers, then starts the organism. An existing `.env` is left as it is. Paths follow the checkout.
 
-Do not add exchange keys to `.env`. A complete key group (Kraken, Binance, Alpaca, or Capital.com) makes the next boot live, and the health report says `trading_mode=live (exchange keys present)`. With no complete group the same boot stays in paper/public-data mode and the report says `trading_mode=paper/public-data (no exchange keys)`. Do not commit `.env`. The launcher does not place an order by itself. New users should stay on the five-minute quickstart.
+Leave exchange keys out of `.env`. A complete key group (Kraken, Binance, Alpaca, or Capital.com) makes the next boot live, and the health report says `trading_mode=live (exchange keys present)`. With no complete group the same boot stays in paper/public-data mode and the report says `trading_mode=paper/public-data (no exchange keys)`. Leave `.env` uncommitted. The launcher does not place an order by itself. New users stay on `./install.sh --smoke` in the quick start above.
 
 The boot is unrestricted by default. `AUREON_AUTONOMY_MODE` unset is `full`. Self-coding may edit any path except credential material, approves its own edits, and commits a patch after that patch's tests pass. Nothing is pushed. There is no kill switch and no kill file: `AUREON_SELF_REPAIR_KILL` and `state/SELF_REPAIR_KILL` do not stop a write or an order. Changes and order attempts are appended to `state/autonomy_audit.jsonl`. The unity exchange brain, the unified market trader, the Capital.com CFD trader, and the micro-profit labyrinth each record an attempt. Secret values are redacted. The same records are published on the circulation thought bus. The metacognition and self-repair loops consume them. After repeated failed self-changes, metacognition raises a concern and lowers its confidence, and self-repair deprioritises a target that keeps failing. A self-patch whose tests fail stays applied. It is not reversed. Credentials are still never written into the repo or into a log.
 
@@ -397,6 +422,7 @@ Open-source repository traffic to date (verifiable in the repo's GitHub **Insigh
 
 | You are… | Start here |
 |---|---|
+| **Cloning the repo** | The quick start at the top of this file — `./install.sh --smoke` only, live trading off, go-live HOLD |
 | **Working on Aureon OS** | [`docs/AUREON_RULES.md`](docs/AUREON_RULES.md) — the shared rulebook |
 | **An investor or funder** | [`docs/investor/README.md`](docs/investor/README.md) — diligence path, capability categories, and claim discipline |
 | **A developer** | [`docs/INDEX.md`](docs/INDEX.md) · [`CAPABILITIES.md`](CAPABILITIES.md) · [`docs/SAAS_PLATFORM.md`](docs/SAAS_PLATFORM.md) |
