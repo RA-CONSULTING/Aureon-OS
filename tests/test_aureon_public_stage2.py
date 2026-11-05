@@ -163,14 +163,15 @@ def test_stage2_tools_call_real_entry_points() -> None:
 
 def test_stage2_sweep_records_match_body_call() -> None:
     from aureon_public.body import body_call, public_entry_refusal, lookup
-    from aureon_public.measurement_stamp import CODE_COMMIT_NOTE, PIN_AUREON_TREE
+    from aureon_public.measurement_stamp import CODE_COMMIT_NOTE
+    from tests.support.recorded_mcp_pin import RECORD_AUREON_TREE, RECORD_PIN
 
     calls = json.loads((ROOT / "measured" / "aureon_public_call_sweep.json").read_text(encoding="utf-8"))
     imports = json.loads((ROOT / "measured" / "aureon_public_stage2_imports.json").read_text(encoding="utf-8"))
     for record in (calls, imports):
-        assert record["pin"].startswith("ad9be6c3")
-        assert record["aureon_tree"] == PIN_AUREON_TREE
-        assert record["pin_aureon_tree"] == PIN_AUREON_TREE
+        assert record["pin"] == RECORD_PIN
+        assert record["aureon_tree"] == RECORD_AUREON_TREE
+        assert record["pin_aureon_tree"] == RECORD_AUREON_TREE
         assert record["code_commit_note"] == CODE_COMMIT_NOTE
         assert record["sockets"] == "blocked"
         assert record["processes"] == "blocked"

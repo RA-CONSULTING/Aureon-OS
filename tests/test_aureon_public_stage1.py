@@ -321,22 +321,22 @@ def test_stage1_defaults_are_labelled_and_not_live() -> None:
 
 
 def test_stage1_measured_record_is_pinned_and_labelled() -> None:
-    from aureon_public.guard_loader import PINNED_COMMIT
     from aureon_public.stage1_rest import TOOLS
+    from tests.support.recorded_mcp_pin import RECORD_AUREON_TREE, RECORD_PIN
 
     record = json.loads((ROOT / "measured" / "aureon_public_stage1.json").read_text(encoding="utf-8"))
-    from aureon_public.measurement_stamp import CODE_COMMIT_NOTE, PIN_AUREON_TREE
+    from aureon_public.measurement_stamp import CODE_COMMIT_NOTE
 
-    assert record["environment"]["aureon_direct_url"]["vcs_info"]["commit_id"] == PINNED_COMMIT
-    assert record["environment"]["aureon_tree"] == PIN_AUREON_TREE
-    assert record["environment"]["pin_aureon_tree"] == PIN_AUREON_TREE
+    assert record["environment"]["aureon_direct_url"]["vcs_info"]["commit_id"] == RECORD_PIN
+    assert record["environment"]["aureon_tree"] == RECORD_AUREON_TREE
+    assert record["environment"]["pin_aureon_tree"] == RECORD_AUREON_TREE
     assert record["environment"]["code_commit_note"] == CODE_COMMIT_NOTE
     assert len(record["environment"]["code_commit"]) == 40
     assert set(record["calls"]) == {fn.__name__ for fn in TOOLS}
     for name, call in record["calls"].items():
         body = json.loads(call["text"])
         assert body["aureon_source"]["kind"] == "pinned", name
-        assert body["aureon_source"]["commit"] == PINNED_COMMIT
+        assert body["aureon_source"]["commit"] == RECORD_PIN
         assert call["input_source"] == body["input_source"]
         assert "consciousness_" not in call["text"]
         assert call["isError"] is False

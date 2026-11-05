@@ -55,19 +55,19 @@ def test_mcp_requirement_stays_on_1_30_and_excludes_v2() -> None:
 
 
 def test_protocol_record_has_both_transports_and_the_pin() -> None:
-    from aureon_public.guard_loader import PINNED_COMMIT
-    from aureon_public.measurement_stamp import CODE_COMMIT_NOTE, PIN_AUREON_TREE
+    from aureon_public.measurement_stamp import CODE_COMMIT_NOTE
     from aureon_public.server import build_server
+    from tests.support.recorded_mcp_pin import RECORD_AUREON_TREE, RECORD_PIN
 
     record = _record()
     environment = record["environment"]
     assert environment["require_pin"] == "1"
     assert environment["mcp"] == "1.30.0"
     assert environment["aureon_source"]["kind"] == "pinned"
-    assert environment["aureon_source"]["commit"] == PINNED_COMMIT
-    assert environment["aureon_tree"] == PIN_AUREON_TREE
-    assert environment["pin_aureon_tree"] == PIN_AUREON_TREE
-    assert environment["pin"] == PINNED_COMMIT
+    assert environment["aureon_source"]["commit"] == RECORD_PIN
+    assert environment["aureon_tree"] == RECORD_AUREON_TREE
+    assert environment["pin_aureon_tree"] == RECORD_AUREON_TREE
+    assert environment["pin"] == RECORD_PIN
     assert environment["code_commit_note"] == CODE_COMMIT_NOTE
     assert len(environment["code_commit"]) == 40
     assert "site-packages" in environment["aureon_file"]
@@ -105,6 +105,6 @@ def test_protocol_record_has_both_transports_and_the_pin() -> None:
         assert body["result"] == 1.0
         assert body["label"] == "cited. alignment/harmonic_resonance.py consonance_score ran."
         assert body["aureon_source"]["kind"] == "pinned"
-        assert body["aureon_source"]["commit"] == PINNED_COMMIT
+        assert body["aureon_source"]["commit"] == RECORD_PIN
         assert body["input_source"] == "tests/stress/stress_test_inhouse_ai.py::test_harmonic_math"
         assert "consciousness_" not in json.dumps(body)
