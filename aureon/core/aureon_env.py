@@ -326,7 +326,22 @@ def bootstrap_credentials(
     presence **booleans only** for the runtime keys — never a value, never a
     length that could leak a short secret. Never raises: a missing keystore or
     dotenv degrades to "just what's already in the environment".
+
+    ``AUREON_PLUG_AND_PLAY=1`` skips ``.env``, the keystore, and the feature
+    switchboard. The local one-command boot sets that variable so exchange
+    keys and model keys stay out of the process.
     """
+    if os.environ.get("AUREON_PLUG_AND_PLAY") == "1":
+        present = {key: bool(info["set"]) for key, info in env_presence(HNC_RUNTIME_KEYS).items()}
+        return {
+            "loaded": False,
+            "loaded_paths": [],
+            "aliases_applied": 0,
+            "packets_decoded": 0,
+            "keystore_applied": False,
+            "present": present,
+            "plug_and_play": True,
+        }
     report = load_aureon_environment(repo_root, override=override)
 
     keystore_applied = False
