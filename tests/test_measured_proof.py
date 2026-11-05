@@ -44,7 +44,7 @@ def test_brain_proof_matches_the_committed_run_and_holds_without_labels():
     assert fresh["qgita"]["derived_series"]["evidence_tag"] == "cited-unverified"
     assert "public market data" in fresh["qgita"]["derived_series"]["provenance"]
     trade = fresh["auris"]["trade_readiness"]
-    assert trade["verdict"] in {"pass", "fail"}
+    assert trade["verdict"] == "fail"
     assert trade["evidence_tag"] == "measured"
     assert trade["outcome_labels"] == "paper"
     assert trade["filled_outcomes"] == 0
@@ -55,6 +55,19 @@ def test_brain_proof_matches_the_committed_run_and_holds_without_labels():
     assert "no trade-outcome labels" not in trade["reason"].casefold()
     assert trade["clownfish_readings"] == trade["paper_labels"]
     assert trade["owl_readings"] == trade["paper_labels"]
+    diagnosis = trade["diagnosis"]
+    assert diagnosis["evidence_tag"] == "measured"
+    assert diagnosis["orders_placed"] is False
+    assert diagnosis["live_trading"] is False
+    assert diagnosis["labelled_bars_with_coherence"] == 0
+    assert diagnosis["spread_clock"]["prints_at_or_before_last_labelled_close"] == 0
+    assert diagnosis["spread_clock"]["first_print_minus_last_labelled_close_seconds"] > 0
+    assert diagnosis["formula_ceiling"]["ready_marks"] == 0
+    assert diagnosis["formula_ceiling"]["highest_coherence"] < diagnosis["status_ladder"]["ready_threshold"]
+    assert diagnosis["ready_mark_below_sweep"] is True
+    assert diagnosis["window_matches_final_else"] is True
+    assert "Deer" in trade["nodes_without_reading_on_a_label"]
+    assert "does not invent outcome labels" in diagnosis["next_stage"]
     assert fresh["auris"]["nodes"]["Clownfish"]["data_status"] == "reading"
     assert fresh["auris"]["nodes"]["Owl"]["data_status"] == "reading"
     assert fresh["auris"]["market_data"] is not None
