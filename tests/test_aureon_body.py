@@ -137,7 +137,7 @@ def test_stage7_registry_names_servers_spaces_and_the_pin() -> None:
     assert body.get("called") is not True
     assert body["live_orders"] == "refused"
     assert body["enabled_through"] == enabled_stage()
-    assert body["pin"].startswith("8aa6a2d9")
+    assert body["pin"].startswith("ad9be6c3")
     assert "huggingface/hnc-field/app.py" in body["spaces"]
     assert "trading" in body["blocked_imports"]
     registry = (ROOT / "docs" / "mcp" / "REGISTRY.md").read_text(encoding="utf-8")
@@ -485,7 +485,7 @@ def test_call_sweep_record_names_the_pin_and_the_sibling_layout() -> None:
     )
     from aureon_public.measurement_stamp import CODE_COMMIT_NOTE, PIN_AUREON_TREE
 
-    assert record["pin"].startswith("8aa6a2d9")
+    assert record["pin"].startswith("ad9be6c3")
     assert record["aureon_tree"] == PIN_AUREON_TREE
     assert record["pin_aureon_tree"] == PIN_AUREON_TREE
     assert record["code_commit_note"] == CODE_COMMIT_NOTE
@@ -609,7 +609,7 @@ def test_stage2_import_sweep_matches_body_call() -> None:
     )
     from aureon_public.measurement_stamp import CODE_COMMIT_NOTE, PIN_AUREON_TREE
 
-    assert record["pin"].startswith("8aa6a2d9")
+    assert record["pin"].startswith("ad9be6c3")
     assert record["aureon_tree"] == PIN_AUREON_TREE
     assert record["pin_aureon_tree"] == PIN_AUREON_TREE
     assert record["code_commit_note"] == CODE_COMMIT_NOTE

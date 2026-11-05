@@ -460,7 +460,7 @@ def render() -> str:
             *_stage2_lines(),
             *_reconciliation_lines(),
             "",
-            "The pin stays `8aa6a2d971cc529484e2a5e261e28afafab4e4f4`. The alignment modules at this checkout match that pin, so the tools do not need a newer commit. `GUARD_BLOB` and `INVENTORY_SHA256` are unchanged.",
+            "The pin is `ad9be6c3179bba140fb7e88d5733616046110da9`. The alignment modules at this checkout match that pin. `GUARD_BLOB` is the git blob of `huggingface/hnc-field/guard.py`. `INVENTORY_SHA256` is unchanged.",
             "",
             "## MCP SDK",
             "",

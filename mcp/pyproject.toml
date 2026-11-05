@@ -11,7 +11,7 @@ license = { text = "MIT" }
 dependencies = [
   "mcp==1.30.0,<2",
   "numpy>=1.26",
-  "aureon @ git+https://github.com/RA-CONSULTING/Aureon-OS.git@8aa6a2d971cc529484e2a5e261e28afafab4e4f4",
+  "aureon @ git+https://github.com/RA-CONSULTING/Aureon-OS.git@ad9be6c3179bba140fb7e88d5733616046110da9",
 ]
 
 [project.scripts]

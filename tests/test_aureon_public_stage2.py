@@ -168,7 +168,7 @@ def test_stage2_sweep_records_match_body_call() -> None:
     calls = json.loads((ROOT / "measured" / "aureon_public_call_sweep.json").read_text(encoding="utf-8"))
     imports = json.loads((ROOT / "measured" / "aureon_public_stage2_imports.json").read_text(encoding="utf-8"))
     for record in (calls, imports):
-        assert record["pin"].startswith("8aa6a2d9")
+        assert record["pin"].startswith("ad9be6c3")
         assert record["aureon_tree"] == PIN_AUREON_TREE
         assert record["pin_aureon_tree"] == PIN_AUREON_TREE
         assert record["code_commit_note"] == CODE_COMMIT_NOTE
