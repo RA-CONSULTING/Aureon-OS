@@ -1,16 +1,115 @@
 {
   "auris": {
-    "coherence": null,
-    "coherence_status": "no_data",
+    "coherence": 0.5023340603593964,
+    "coherence_evidence": "measured",
+    "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
     "hold_nodes": [],
     "hold_reason": "every node returned a value when volatility, momentum, volume, and spread are present as 0",
-    "market_data": null,
-    "market_data_note": "no market series was supplied, so the omitted call is no_data",
-    "nodes": null,
+    "live_trading": false,
+    "market_data": {
+      "momentum": -0.05910772427954495,
+      "spread": 4.9876097274178236e-05,
+      "volatility": 0.0057184012087201355,
+      "volume": 0.2448478811568242
+    },
+    "market_data_note": "Loaded 168 closed 1h bars of XBTUSD from public:kraken (https://api.kraken.com/0/public/OHLC), 2026-10-29T19:00:00Z to 2026-11-05T19:00:00Z. Spread input clock: latest public bid/ask print, not an OHLC bar. The four inputs are the measured window statistics in the pack. Key material was not read. No order was sent.",
+    "market_nodes_without_reading": [],
+    "nodes": {
+      "CargoShip": {
+        "data_status": "reading",
+        "domain": "liquidity buffer",
+        "emoji": "\ud83d\udea2",
+        "freq": 936.0,
+        "value": 0.2448478811568242,
+        "weight": 0.7,
+        "weighted_value": 0.17139351680977694
+      },
+      "Clownfish": {
+        "data_status": "reading",
+        "domain": "connection",
+        "emoji": "\ud83d\udc20",
+        "freq": 963.0,
+        "value": 0.8,
+        "weight": 1.0,
+        "weighted_value": 0.8
+      },
+      "Deer": {
+        "data_status": "reading",
+        "domain": "micro-shifts",
+        "emoji": "\ud83e\udd8c",
+        "freq": 639.0,
+        "value": 4.9876097274178236e-05,
+        "weight": 0.9,
+        "weighted_value": 4.488848754676041e-05
+      },
+      "Dolphin": {
+        "data_status": "reading",
+        "domain": "waveform carrier",
+        "emoji": "\ud83d\udc2c",
+        "freq": 528.0,
+        "value": 0.4076864665308842,
+        "weight": 1.5,
+        "weighted_value": 0.6115296997963263
+      },
+      "Falcon": {
+        "data_status": "reading",
+        "domain": "speed & attack",
+        "emoji": "\ud83e\udd85",
+        "freq": 285.0,
+        "value": 0.11482977134272873,
+        "weight": 1.2,
+        "weighted_value": 0.13779572561127448
+      },
+      "Hummingbird": {
+        "data_status": "reading",
+        "domain": "high-freq lock",
+        "emoji": "\ud83d\udc26",
+        "freq": 396.0,
+        "value": 0.3817182116888177,
+        "weight": 0.8,
+        "weighted_value": 0.30537456935105417
+      },
+      "Owl": {
+        "data_status": "reading",
+        "domain": "pattern memory",
+        "emoji": "\ud83e\udd89",
+        "freq": 741.0,
+        "value": 0.5948425955553923,
+        "weight": 1.1,
+        "weighted_value": 0.6543268551109316
+      },
+      "Panda": {
+        "data_status": "reading",
+        "domain": "grounding safety",
+        "emoji": "\ud83d\udc3c",
+        "freq": 852.0,
+        "value": 0.9971407993956399,
+        "weight": 1.3,
+        "weighted_value": 1.2962830392143319
+      },
+      "Tiger": {
+        "data_status": "reading",
+        "domain": "cuts noise",
+        "emoji": "\ud83d\udc05",
+        "freq": 220.0,
+        "value": 0.795425279033024,
+        "weight": 1.0,
+        "weighted_value": 0.795425279033024
+      }
+    },
+    "omitted_call": {
+      "coherence": null,
+      "market_data": null,
+      "note": "get_auris_coherence(None) remains no_data. It is not the loaded series.",
+      "status": "no_data"
+    },
+    "orders_placed": false,
     "source": "aureon.utils.aureon_queen_hive_mind.QueenHiveMind.get_auris_coherence",
-    "status": "no_data",
+    "status": "\u26d4 COHERENCE BREAK - Do not trade",
     "trade_readiness": {
-      "reason": "no market series and no trade-outcome labels",
+      "outcome_labels": "missing",
+      "reason": "market series loaded from public:kraken XBTUSD 2026-10-29T19:00:00Z to 2026-11-05T19:00:00Z; nodes without a reading on this series: none; no trade-outcome labels; release boundary stays HOLD",
+      "release_boundary": "HOLD",
       "verdict": "HOLD"
     },
     "zero_input_probe": {
@@ -293,6 +392,40 @@
     "why_multiverse_is_off": "enable_multiverse=False is the master-formula branch already in step(). The class default turns the extension on. That extension is measured separately."
   },
   "live_trading": false,
+  "market_series": {
+    "authenticated": false,
+    "bar_count": 168,
+    "evidence_tag": "measured",
+    "fetched_at": "2026-11-05T19:41:55Z",
+    "interval": "1h",
+    "key_group": "public:kraken",
+    "key_material": "none",
+    "live_trading": false,
+    "orders_placed": false,
+    "path": "reports/measured/market_series.json",
+    "reason": null,
+    "source": "https://api.kraken.com/0/public/OHLC",
+    "spread_source": "https://api.kraken.com/0/public/Spread",
+    "spread_time_range": {
+      "clock": "public bid/ask print time",
+      "end": "2026-11-05T19:41:53Z",
+      "end_unix": 1793907713,
+      "note": "This is the venue's recent spread window, not a print for every OHLC bar.",
+      "prints": 250,
+      "start": "2026-11-05T19:41:24Z",
+      "start_unix": 1793907684
+    },
+    "symbol": "XBTUSD",
+    "time_range": {
+      "clock": "ohlc bar open time; end is the last kept bar open time plus the interval",
+      "end": "2026-11-05T19:00:00Z",
+      "end_unix": 1793905200,
+      "start": "2026-10-29T19:00:00Z",
+      "start_unix": 1793300400
+    },
+    "venue": "kraken",
+    "verdict": "loaded"
+  },
   "note": "These figures are the HNC master-formula path, Auris coherence, and the QGITA analyzer. They are not a claim that the system is conscious or alive.",
   "orders_placed": false,
   "qgita": {
@@ -416,6 +549,76 @@
       },
       "status": "complete",
       "timestamps": "step index times HarmonicRealityField.dt",
+      "valid_ftcps": [],
+      "verdict": "measured_counts_rates_hold"
+    },
+    "on_market_series": {
+      "authenticated": false,
+      "buffer_note": "QGITAMarketAnalyzer keeps a 1000-sample buffer; analyze sees that tail",
+      "coherence": {
+        "c_linear": 0.9068616963984821,
+        "c_nonlinear": 0.9082160188302917,
+        "c_phi": 0.2137423938118685,
+        "global_R": 0.9896538391020993,
+        "q_anomaly": 0.09844581291106369
+      },
+      "detection_rate": null,
+      "detection_threshold": 0.2,
+      "detector": {
+        "adaptive_threshold": true,
+        "alpha": 1.0,
+        "epsilon": 0.05,
+        "theta": 0.1
+      },
+      "evidence_tag": "measured",
+      "false_alarm_rate": null,
+      "ftcp_count": 0,
+      "key_group": "public:kraken",
+      "lhe_count": 0,
+      "lighthouse_events": [],
+      "lighthouse_intensity": 0.02803907142735328,
+      "lighthouse_threshold_sigma": 2.0,
+      "max_g_eff": 0.0,
+      "orders_placed": false,
+      "provenance": "https://api.kraken.com/0/public/OHLC XBTUSD 1h key-group public:kraken. 2026-10-29T19:00:00Z to 2026-11-05T19:00:00Z. Prices are bar closes. Timestamps are venue bar open times. No order was sent.",
+      "rates_reason": "this series has no signal-in-noise labels in the repo, so the analyzer counts are not a detection rate or a false-alarm rate",
+      "rates_verdict": "HOLD",
+      "regime": {
+        "description": "Market in ordered, stable regime",
+        "stability": 0.9896538391020993,
+        "state": "coherent"
+      },
+      "samples_analyzed": 168,
+      "samples_fed": 168,
+      "series": "XBTUSD",
+      "series_class": "public-market",
+      "signal_note": "the direction is the analyzer's return. It is not an order and it has no outcome label",
+      "signals": {
+        "confidence": 0.7399893749614498,
+        "direction": "BEARISH",
+        "event_type": null,
+        "risk_description": "Coherent regime - stable conditions",
+        "risk_level": "LOW",
+        "strength": 0.1401953571367664,
+        "structural_event": false
+      },
+      "source": "aureon.wisdom.aureon_qgita_framework.QGITAMarketAnalyzer.analyze",
+      "statistics": {
+        "lighthouse_mean": 0.0,
+        "lighthouse_std": 0.1,
+        "price_mean": 77887.97202380953,
+        "price_std": 1148.598760442977,
+        "total_samples": 168
+      },
+      "status": "complete",
+      "time_range": {
+        "clock": "ohlc bar open time; end is the last kept bar open time plus the interval",
+        "end": "2026-11-05T19:00:00Z",
+        "end_unix": 1793905200,
+        "start": "2026-10-29T19:00:00Z",
+        "start_unix": 1793300400
+      },
+      "timestamps": "venue bar open time in unix seconds; price is the bar close",
       "valid_ftcps": [],
       "verdict": "measured_counts_rates_hold"
     }

@@ -61,9 +61,12 @@ def _assert_measurement(proc: subprocess.CompletedProcess[str]) -> None:
         assert banned not in lowered, output
     for pattern in _ANCHORED:
         assert pattern.search(output) is None, output
-    assert "unified" in output
-    assert "0.9331334813083556" in output
-    assert "1.409626852655939" in output
+    assert "coherent" in output
+    assert "0.7739191103121901" in output
+    assert "1.1030284973375342" in output
+    assert "HOLD" in output
+    assert "no market series" not in output.casefold()
+    assert "public:" in output
 
 
 @pytest.mark.timeout(180)

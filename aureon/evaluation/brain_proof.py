@@ -6,14 +6,17 @@ The class default turns the extension on. ``project_to_3d`` uses 0 when no
 residual is supplied, and three constructions of that default match, so the
 extension is measured beside the formula branch.
 
-Auris coherence is ``QueenHiveMind.get_auris_coherence``. This harness has
-no market series, so the omitted call is no_data. A zero-input probe names
-any node that stays without a value when the four market fields are present
-as 0. There is no trade-outcome label.
+Auris coherence is ``QueenHiveMind.get_auris_coherence``. When
+``reports/measured/market_series.json`` is a loaded public pack, that call
+receives the pack's volatility, momentum, volume, and spread. When the pack
+is absent or HOLD, the omitted call is no_data. A zero-input probe still
+names any node that stays without a value when the four market fields are
+present as 0. There is no trade-outcome label, so trade readiness stays HOLD.
 
 QGITA is ``QGITAMarketAnalyzer`` constructed with its own defaults, then
-``analyze``. Detection rate and false-alarm rate stay HOLD: neither the
-ephemeris column nor the formula series carries signal-in-noise labels.
+``analyze``. The public pack is fed beside the derived column and the formula
+series. Detection rate and false-alarm rate stay HOLD: none of those series
+carries signal-in-noise labels.
 
 No formula, threshold, or result is introduced here. Live trading stays off.
 These figures are not a claim that the system is conscious or alive.
@@ -21,9 +24,13 @@ These figures are not a claim that the system is conscious or alive.
 
 from __future__ import annotations
 
+import contextlib
 import csv
+import io
 from pathlib import Path
 from typing import Any
+
+from aureon.evaluation.market_series import load_market_series, series_summary
 
 DERIVED_SERIES = "data/de440_timeseries.csv"
 DERIVED_COLUMN = "Lambda"
@@ -165,20 +172,76 @@ def _run_hnc() -> dict[str, Any]:
     }
 
 
-def _run_auris() -> dict[str, Any]:
+def _texture(pack: dict[str, Any]) -> dict[str, float]:
+    inputs = pack.get("auris_inputs") if isinstance(pack.get("auris_inputs"), dict) else {}
+    texture: dict[str, float] = {}
+    for key in _INPUTS:
+        value = _optional_float(inputs.get(key))
+        if value is not None and key in inputs:
+            texture[key] = value
+    return texture
+
+
+def _spread_clock(pack: dict[str, Any]) -> str:
+    field = (pack.get("fields") or {}).get("spread") if isinstance(pack.get("fields"), dict) else None
+    if isinstance(field, dict) and field.get("value") is not None:
+        return str(field.get("clock") or "latest public bid/ask print")
+    return "not supplied, so a node that needs spread stays without a reading"
+
+
+def _run_auris(pack: dict[str, Any]) -> dict[str, Any]:
     queen = _reader()
-    coherence, status = queen.get_auris_coherence(None)
-    zeros = {key: 0.0 for key in _INPUTS}
+    omitted_coherence, omitted_status = queen.get_auris_coherence(None)
+    zeros = dict.fromkeys(_INPUTS, 0.0)
     probed = queen.read_auris_nodes(zeros)
     hold = sorted(name for name, item in probed.items() if item.get("value") is None)
+    loaded = pack.get("verdict") == "loaded"
+    texture = _texture(pack) if loaded else {}
+    if loaded:
+        coherence, status = queen.get_auris_coherence(texture)
+        raw_nodes = queen.read_auris_nodes(texture)
+        nodes = _plain(raw_nodes)
+        missing = sorted(name for name, item in raw_nodes.items() if item.get("value") is None)
+        window = pack.get("time_range") if isinstance(pack.get("time_range"), dict) else {}
+        market_note = (
+            f"Loaded {pack.get('bar_count')} closed {pack.get('interval')} bars of {pack.get('symbol')} "
+            f"from {pack.get('key_group')} ({pack.get('source')}), "
+            f"{window.get('start')} to {window.get('end')}. "
+            f"Spread input clock: {_spread_clock(pack)}. "
+            "The four inputs are the measured window statistics in the pack. "
+            "Key material was not read. No order was sent."
+        )
+        missing_text = ", ".join(missing) if missing else "none"
+        trade_reason = (
+            f"market series loaded from {pack.get('key_group')} {pack.get('symbol')} "
+            f"{window.get('start')} to {window.get('end')}; "
+            f"nodes without a reading on this series: {missing_text}; "
+            "no trade-outcome labels; release boundary stays HOLD"
+        )
+        market_data: dict[str, float] | None = texture
+    else:
+        coherence, status = omitted_coherence, omitted_status
+        nodes = None
+        missing = None
+        market_data = None
+        market_note = "no market series was supplied, so the omitted call is no_data"
+        trade_reason = "no market series and no trade-outcome labels"
     return {
         "source": "aureon.utils.aureon_queen_hive_mind.QueenHiveMind.get_auris_coherence",
-        "market_data": None,
-        "market_data_note": "no market series was supplied, so the omitted call is no_data",
+        "market_data": market_data,
+        "market_data_note": market_note,
         "status": status,
-        "nodes": None,
+        "nodes": nodes,
         "coherence": None if coherence is None else float(coherence),
         "coherence_status": status,
+        "coherence_evidence": "measured" if loaded and coherence is not None else "no_data",
+        "market_nodes_without_reading": missing,
+        "omitted_call": {
+            "coherence": None if omitted_coherence is None else float(omitted_coherence),
+            "market_data": None,
+            "note": "get_auris_coherence(None) remains no_data. It is not the loaded series.",
+            "status": omitted_status,
+        },
         "zero_input_probe": {
             "inputs": zeros,
             "note": "clamp-bound probe of the existing formulas, not a market reading; node values are not published",
@@ -190,9 +253,13 @@ def _run_auris() -> dict[str, Any]:
             if hold
             else "every node returned a value when volatility, momentum, volume, and spread are present as 0"
         ),
+        "live_trading": False,
+        "orders_placed": False,
         "trade_readiness": {
+            "outcome_labels": "missing",
+            "reason": trade_reason,
+            "release_boundary": "HOLD",
             "verdict": "HOLD",
-            "reason": "no market series and no trade-outcome labels",
         },
     }
 
@@ -245,7 +312,7 @@ def _run_qgita(values: list[float], times: list[float], series_name: str) -> dic
     from aureon.wisdom.aureon_qgita_framework import QGITAMarketAnalyzer
 
     analyzer = QGITAMarketAnalyzer()
-    for stamp, value in zip(times, values):
+    for stamp, value in zip(times, values, strict=True):
         analyzer.feed_price(float(value), timestamp=float(stamp))
     raw = analyzer.analyze()
     stage1 = raw.get("stage1") if isinstance(raw.get("stage1"), dict) else {}
@@ -291,6 +358,44 @@ def _run_qgita(values: list[float], times: list[float], series_name: str) -> dic
         ),
         "orders_placed": False,
     }
+
+
+def _market_qgita(pack: dict[str, Any]) -> dict[str, Any]:
+    source = "aureon.wisdom.aureon_qgita_framework.QGITAMarketAnalyzer.analyze"
+    if pack.get("verdict") != "loaded":
+        return {
+            "source": source,
+            "series": "reports/measured/market_series.json",
+            "series_class": "public-market",
+            "evidence_tag": "hold",
+            "key_group": pack.get("key_group"),
+            "verdict": "HOLD",
+            "reason": pack.get("reason") or "no market series was loaded",
+            "detection_rate": None,
+            "false_alarm_rate": None,
+            "rates_verdict": "HOLD",
+            "orders_placed": False,
+            "authenticated": False,
+        }
+    bars = pack.get("bars") if isinstance(pack.get("bars"), list) else []
+    values = [float(bar["close"]) for bar in bars]
+    times = [float(bar["open_time"]) for bar in bars]
+    window = pack.get("time_range") if isinstance(pack.get("time_range"), dict) else {}
+    record = _run_qgita(values, times, str(pack.get("symbol") or "market_series"))
+    record["series_class"] = "public-market"
+    record["evidence_tag"] = "measured"
+    record["key_group"] = pack.get("key_group")
+    record["authenticated"] = False
+    record["time_range"] = window
+    record["timestamps"] = "venue bar open time in unix seconds; price is the bar close"
+    record["provenance"] = (
+        f"{pack.get('source')} {pack.get('symbol')} {pack.get('interval')} "
+        f"key-group {pack.get('key_group')}. "
+        f"{window.get('start')} to {window.get('end')}. "
+        "Prices are bar closes. Timestamps are venue bar open times. No order was sent."
+    )
+    record["verdict"] = "measured_counts_rates_hold"
+    return record
 
 
 def _load_lambda(root: Path) -> dict[str, Any]:
@@ -343,11 +448,21 @@ def _load_lambda(root: Path) -> dict[str, Any]:
 
 
 def evaluate_brain(root: Path | None = None) -> dict[str, Any]:
-    """Run the HNC formula, Auris coherence, and the QGITA analyzer."""
+    """Run the HNC formula, Auris coherence, and the QGITA analyzer.
 
+    Importing the measured modules prints relay banners. Those lines are not
+    part of the measurement, so they are kept off the returned report's stdout.
+    """
+
+    with contextlib.redirect_stdout(io.StringIO()):
+        return _evaluate_brain(root)
+
+
+def _evaluate_brain(root: Path | None = None) -> dict[str, Any]:
     root = Path(root or Path.cwd())
+    pack = load_market_series(root)
     hnc = _run_hnc()
-    auris = _run_auris()
+    auris = _run_auris(pack)
     loaded = _load_lambda(root)
     provenance = (
         f"{DERIVED_SERIES} column {DERIVED_COLUMN} is a precomputed derived series. "
@@ -400,10 +515,12 @@ def evaluate_brain(root: Path | None = None) -> dict[str, Any]:
         "cognition": "internal",
         "note": _NOTE,
         "hnc": hnc,
+        "market_series": series_summary(pack),
         "auris": auris,
         "qgita": {
             "derived_series": derived,
             "on_hnc_series": on_lambda,
+            "on_market_series": _market_qgita(pack),
         },
         "together": {
             "qgita_on_the_formula_series": "measured_counts_rates_hold",
@@ -420,6 +537,9 @@ def render_brain_markdown(report: dict[str, Any]) -> str:
     auris = report["auris"]
     public = report["qgita"]["derived_series"]
     on_lambda = report["qgita"]["on_hnc_series"]
+    on_market = report["qgita"].get("on_market_series") or {}
+    series_nodes = auris.get("market_nodes_without_reading")
+    series_text = "no series loaded" if series_nodes is None else (", ".join(series_nodes) or "none")
     lines = [
         "# HNC, Auris coherence, and QGITA",
         "",
@@ -434,7 +554,8 @@ def render_brain_markdown(report: dict[str, Any]) -> str:
         f"Multiverse extension: **{hnc['multiverse_extension']['verdict']}**. {hnc['multiverse_extension']['reason']}",
         (
             f"Auris coherence `{auris['coherence']}` with status `{auris['coherence_status']}`. "
-            f"Nodes without a reading: {', '.join(auris['hold_nodes']) or 'none'}."
+            f"Zero-input nodes without a reading: {', '.join(auris['hold_nodes']) or 'none'}. "
+            f"Series nodes without a reading: {series_text}."
         ),
         f"Trade readiness: **{auris['trade_readiness']['verdict']}**. {auris['trade_readiness']['reason']}",
         (
@@ -449,6 +570,14 @@ def render_brain_markdown(report: dict[str, Any]) -> str:
             f"lighthouse events `{on_lambda.get('lhe_count')}`. "
             f"Detection rate **{on_lambda.get('rates_verdict')}**. "
             f"Clock: {on_lambda.get('timestamps', '')}"
+        ),
+        (
+            f"QGITA on the public series `{on_market.get('series')}` ({on_market.get('evidence_tag')}, "
+            f"key group `{on_market.get('key_group')}`): "
+            f"status `{on_market.get('status', on_market.get('verdict'))}`, "
+            f"FTCP count `{on_market.get('ftcp_count')}`, lighthouse events `{on_market.get('lhe_count')}`. "
+            f"Detection rate **{on_market.get('rates_verdict')}**. "
+            f"Clock: {on_market.get('timestamps', '')}"
         ),
         (
             "Auris is not joined to Λ(t): **"
