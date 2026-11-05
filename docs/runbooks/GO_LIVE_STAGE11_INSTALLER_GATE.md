@@ -1,7 +1,7 @@
 # Stage 11 installer gate
 
 The orange release-boundary badge stays HOLD. `go_live_clear` is not stored as
-a true flag in this checkout. The system is not claimed alive. The public pin is not moved. No order is placed.
+a true flag in this checkout. The system is not claimed alive. This stage's pin is not moved. No order is placed.
 
 `scripts/bootstrap/go_live_stage11_gate.py` is the check. It imports only the
 Python standard library. It does not import Aureon on the HOLD path. Run it
@@ -97,13 +97,17 @@ is true and a later change may update the badge. This checkout does not.
 
 ## This checkout
 
-The receipt artifacts are the ones from stage 7 tip
-`bb04503119681adcf832f3c3e9b0cbf09fc7a938`. This change does not replace
-them. The gate compares them with the checked-out HEAD, so they also fail
-on any descendant commit that leaves them in place. Receipt 1's measurement
-head is `c68a89d2a184d99582bb24310b91e024323a212c` and the worktree was dirty
-at measurement. Receipts 2 and 4 record that same older tip, and receipt 4
-still names `post_pin_checkout_not_in_closure`. Receipt 3's git note is not
-on `bb045031` (the published note is on `7d26871ff007ec6c84be657297827fc813fe7428`,
-which is not this history). Receipt 5's artifact is absent. `go_live_clear`
-is false. The badge stays HOLD. Pin re-publish is not this change.
+Rebased onto main tip `29fab7f21fc93da40224566dd8f34faacb3d74d4`. That parent
+published require-pin `bb04503119681adcf832f3c3e9b0cbf09fc7a938` and
+remeasured receipts 2 and 4 at tip `b2b0310362597dc520114de86d8700c0c50758d5`.
+This stage does not replace those artifacts and does not move the pin again.
+The gate compares them with the checked-out HEAD.
+
+Receipt 1's measurement head is `c68a89d2a184d99582bb24310b91e024323a212c`
+and the worktree was dirty at measurement. Receipts 2 and 4 name pin
+`bb045031` and tip `b2b03103`, so they are not this HEAD. The stage 11
+checklist still requires pin `34864ff0547d2cff03e707414743a3b0cc8770b5`,
+which those two receipts no longer name. Receipt 4 also has
+`source_boundary_closed` false. Receipt 3's git note is not on this history
+(the published note is on `7d26871ff007ec6c84be657297827fc813fe7428`).
+Receipt 5's artifact is absent. `go_live_clear` is false. The badge stays HOLD.

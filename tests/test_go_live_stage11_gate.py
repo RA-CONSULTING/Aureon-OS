@@ -361,7 +361,10 @@ def test_release_scripts_keep_the_hold_exec_last() -> None:
 def test_runbook_lists_the_same_receipt_paths() -> None:
     text = RUNBOOK.read_text(encoding="utf-8")
     hardening = HARDENING.read_text(encoding="utf-8")
-    assert "Receipts 2–5 remain HOLD" in hardening
+    assert (
+        "Receipts 2–5 remain HOLD" in hardening
+        or "Receipts 2, 3, 4, and 5 remain HOLD" in hardening
+    )
     assert "go_live_clear" in text
     assert "HOLD-orange" in text or "badge stays HOLD" in text
     assert "not claimed alive" in text
