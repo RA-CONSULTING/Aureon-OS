@@ -176,6 +176,11 @@ def test_brain_proof_consumes_a_pack_and_names_deer_when_spread_is_absent(tmp_pa
     qgita = _market_qgita(loaded)
     assert qgita["evidence_tag"] == "measured"
     assert qgita["rates_verdict"] == "HOLD"
+    assert qgita["detection_rate"] is None
+    assert qgita["false_alarm_rate"] is None
+    assert "synthetic_planted" in qgita["rates_reason"]
+    assert qgita.get("tag") != "synthetic_planted"
+    assert "signal_in_noise" not in qgita
     assert qgita["orders_placed"] is False
     assert qgita["samples_fed"] == 12
 

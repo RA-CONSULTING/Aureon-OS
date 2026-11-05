@@ -151,7 +151,7 @@
     "max_g_eff": 0.0,
     "orders_placed": false,
     "provenance": "https://api.kraken.com/0/public/OHLC XBTUSD 1h key-group public:kraken. 2026-10-29T19:00:00Z to 2026-11-05T19:00:00Z. Prices are bar closes. Timestamps are venue bar open times. No order was sent.",
-    "rates_reason": "this series has no signal-in-noise labels in the repo, so the analyzer counts are not a detection rate or a false-alarm rate",
+    "rates_reason": "this series has no market signal-in-noise labels. Seeded shuffles and planted impulses are tagged synthetic_planted and are not written here. These analyzer counts are not a detection rate or a false-alarm rate.",
     "rates_verdict": "HOLD",
     "regime": {
       "description": "Market in ordered, stable regime",
