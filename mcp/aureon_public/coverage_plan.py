@@ -366,6 +366,14 @@ def _reconciliation_lines() -> list[str]:
     return lines
 
 
+def _miner_plan_lines() -> list[str]:
+    """Miner-only section. The stages 1 and 2 counts above stay as they are."""
+
+    from aureon_public.miner_surface import plan_lines
+
+    return plan_lines()
+
+
 def render() -> str:
     rows = plan_rows()
     listed = sum(row["listed"] for row in rows)
@@ -463,6 +471,7 @@ def render() -> str:
             "The pin is `bb04503119681adcf832f3c3e9b0cbf09fc7a938`. The alignment modules at this checkout match that pin. `GUARD_BLOB` is the git blob of `huggingface/hnc-field/guard.py`. The inventory sha256 above is the committed inventory. It is not a rescan that adds symbols present in this pin's `aureon/` tree and absent from `docs/mcp/inventory.json`. The previous published pin is `34864ff0547d2cff03e707414743a3b0cc8770b5`. This pin is main tip `bb04503119681adcf832f3c3e9b0cbf09fc7a938`. The call sweep behind reachable and tested was not repeated. `measured/aureon_public_call_sweep.json` still names pin `ad9be6c3179bba140fb7e88d5733616046110da9` and aureon tree `2b89d73db122486e2537047baa9b342f3a0249be`. This file does not publish a new reachable count. Plan stages 3 and 4 stay closed.",
             "`evidence` is listed by that closure. It is plan stage 4. `evidence/report.py` `render_results` contains `dotenv` inside `python-dotenv`, and the scanner's key sentence puts the package at stage 4. Those public functions are refused. `harmonic/aureon_harmonic_reality.py` gained `sample_rate_below_nyquist` and `CausalEcho.get_echo_magnitude_ratio`. Harmonic was already plan stage 4, so those two are refused. `exchanges/single_currency_equity.py` gained four operator functions on the refused-imports fence. None of these additions is a new reachable entry point. Stages 3 and 4 were not opened.",
             "",
+            *_miner_plan_lines(),
             "## MCP SDK",
             "",
             "This server imports `FastMCP` from `mcp.server.fastmcp` and passes `host`, `port`, and `streamable_http_path` to that constructor. The requirement is `mcp==1.30.0,<2` in `mcp/aureon_public/requirements.txt` and `mcp/pyproject.toml`. That specifier matches 1.30.0 and excludes every 2.x release. Migration to SDK v2 is a later decision.",

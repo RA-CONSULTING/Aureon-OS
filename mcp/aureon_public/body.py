@@ -580,7 +580,13 @@ def _call_in_subprocess(module: str, symbol: str, arguments: dict[str, Any], tim
 
 def _constructor_refusal(module: str, class_name: str) -> str | None:
     from aureon_public.inventory_scan import source_is_risky
+    from aureon_public.miner_surface import miner_constructor_allowed
 
+    if miner_constructor_allowed(module, class_name):
+        source = _function_source(module, f"{class_name}.__init__")
+        if source_is_risky(source):
+            return "constructor failed the risk scan"
+        return None
     if (module, class_name) not in _CONSTRUCTOR_ALLOWLIST:
         return "constructor is not allowlisted"
     source = _function_source(module, f"{class_name}.__init__")
@@ -761,6 +767,10 @@ def public_entry_refusal(row: dict[str, Any]) -> str | None:
 
 
 def _public_entry_refusal(row: dict[str, Any]) -> str | None:
+    if str(row.get("package") or "") == "miner" and row.get("kind") in {"function", "method"}:
+        from aureon_public.miner_surface import miner_entry_refusal
+
+        return miner_entry_refusal(row)
     if row["server"] != "public":
         return "operator entry point is not on aureon-public"
     if row["package"] in _BLOCKED:

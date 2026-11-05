@@ -207,6 +207,14 @@ Main `cf43882e` recorded reachable 78 and tested 68. This follow-up refuses nine
 The pin is `bb04503119681adcf832f3c3e9b0cbf09fc7a938`. The alignment modules at this checkout match that pin. `GUARD_BLOB` is the git blob of `huggingface/hnc-field/guard.py`. The inventory sha256 above is the committed inventory. It is not a rescan that adds symbols present in this pin's `aureon/` tree and absent from `docs/mcp/inventory.json`. The previous published pin is `34864ff0547d2cff03e707414743a3b0cc8770b5`. This pin is main tip `bb04503119681adcf832f3c3e9b0cbf09fc7a938`. The call sweep behind reachable and tested was not repeated. `measured/aureon_public_call_sweep.json` still names pin `ad9be6c3179bba140fb7e88d5733616046110da9` and aureon tree `2b89d73db122486e2537047baa9b342f3a0249be`. This file does not publish a new reachable count. Plan stages 3 and 4 stay closed.
 `evidence` is listed by that closure. It is plan stage 4. `evidence/report.py` `render_results` contains `dotenv` inside `python-dotenv`, and the scanner's key sentence puts the package at stage 4. Those public functions are refused. `harmonic/aureon_harmonic_reality.py` gained `sample_rate_below_nyquist` and `CausalEcho.get_echo_magnitude_ratio`. Harmonic was already plan stage 4, so those two are refused. `exchanges/single_currency_equity.py` gained four operator functions on the refused-imports fence. None of these additions is a new reachable entry point. Stages 3 and 4 were not opened.
 
+## Miner surface
+
+This section is the miner read gate. Queen and exchanges are outside it. The counts in the table above stay on the inventory server field. Miner there is operator, so that row stays at public entry points 0. `package_depth` keeps miner reachable at 0. `OPEN_PLAN_THROUGH` stays 2. The pin stays `34864ff0547d2cff03e707414743a3b0cc8770b5`. Go-live stays HOLD. The stages 1 and 2 call sweep file is not rewritten. No order is sent.
+
+`measured/aureon_public_miner_sweep.json` is missing. No miner entry point is open. `body_call` refuses each miner function and method with `miner call sweep record is missing`.
+
+Reproduce the miner sweep with `bash measured/aureon_public_miner_sweep.sh`.
+
 ## MCP SDK
 
 This server imports `FastMCP` from `mcp.server.fastmcp` and passes `host`, `port`, and `streamable_http_path` to that constructor. The requirement is `mcp==1.30.0,<2` in `mcp/aureon_public/requirements.txt` and `mcp/pyproject.toml`. That specifier matches 1.30.0 and excludes every 2.x release. Migration to SDK v2 is a later decision.

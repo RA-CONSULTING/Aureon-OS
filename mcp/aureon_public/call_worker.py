@@ -184,12 +184,28 @@ def _install_sweep_guard() -> None:
 
 
 def _sweep_modules() -> list[str]:
+    """Banned imports visible after one call.
+
+    ``AUREON_PUBLIC_MINER_SURFACE=1`` is set only by the miner sweep. That
+    sweep is calling ``aureon.miner`` on purpose, so those module names are
+    not a side effect. Queen, swarm_motion, inhouse_ai, ollama_config, and
+    HTTP clients stay banned. The stages 1 and 2 sweep does not set the flag.
+    """
+
     from aureon_public.stage2_import_sweep import is_http_client
 
+    allow_miner_target = os.environ.get("AUREON_PUBLIC_MINER_SURFACE") == "1"
     banned = []
     for name in sys.modules:
-        if any(marker in name for marker in ("inhouse_ai", "ollama_config")):
+        miner_name = name == "aureon.miner" or name.startswith("aureon.miner.")
+        # miner_inhouse_ai_bridge contains the letters inhouse_ai. That file is
+        # the miner target. aureon.inhouse_ai itself stays banned.
+        if any(marker in name for marker in ("inhouse_ai", "ollama_config")) and not (
+            allow_miner_target and miner_name
+        ):
             banned.append(name)
+            continue
+        if miner_name and allow_miner_target:
             continue
         if name in {"aureon.queen", "aureon.miner", "aureon.swarm_motion"} or name.startswith(
             ("aureon.queen.", "aureon.miner.", "aureon.swarm_motion.")
