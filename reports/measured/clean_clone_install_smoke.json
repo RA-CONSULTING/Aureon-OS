@@ -1,0 +1,269 @@
+{
+  "schema": "aureon.clean-clone-install-smoke.v1",
+  "verdict": "pass",
+  "what_passed": "./install.sh --smoke on a full clone of 7de64166bc532170a5a95a842e623a4b894cebd2",
+  "release_boundary": "HOLD",
+  "go_live_clear": false,
+  "live_trading": false,
+  "orders_placed": false,
+  "autonomy_mode": "guarded",
+  "exchange_keys": "unset",
+  "external_llm": false,
+  "system_alive": false,
+  "authenticated_deployment_receipt": false,
+  "started_from": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
+  "git_head_at_measurement": "7de64166bc532170a5a95a842e623a4b894cebd2",
+  "receipt_commit_is_a_second_measurement": false,
+  "clock": "this machine's UTC clock. It is a local stamp. Receipt 3's external monotonic head stays a separate HOLD.",
+  "host": {
+    "os": "Ubuntu 24.04.5 LTS",
+    "kernel": "Linux 6.12.94+ x86_64 GNU/Linux",
+    "python": "Python 3.12.3",
+    "python_executable": "/usr/bin/python3",
+    "node": "v22.23.4",
+    "node_executable": "/home/ubuntu/.nvm/versions/node/v22.23.4/bin/node",
+    "npm": "10.9.9",
+    "python3_venv": {
+      "present_on_image": false,
+      "installed_before_the_runs": true,
+      "command": "sudo DEBIAN_FRONTEND=noninteractive apt-get install -y python3-venv python3-pip",
+      "packages": [
+        "python3-venv 3.12.3-0ubuntu2.1",
+        "python3.12-venv 3.12.3-1ubuntu0.17"
+      ],
+      "why": "README quick start says Debian or Ubuntu needs python3-venv before ./install.sh. dpkg listed python3-venv as not installed."
+    }
+  },
+  "public_remote": {
+    "url": "https://github.com/RA-CONSULTING/Aureon-OS.git",
+    "ls_remote_head": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
+    "pin_commit": "34864ff0547d2cff03e707414743a3b0cc8770b5",
+    "pin_fetch": {
+      "command": "git fetch --depth 1 origin 34864ff0547d2cff03e707414743a3b0cc8770b5",
+      "from": "https://github.com/RA-CONSULTING/Aureon-OS.git",
+      "result": "commit present",
+      "aureon_init_blob": "5141a6ed0a0e1ee1cf8861b73071029481df07bd"
+    }
+  },
+  "commands": [
+    {
+      "name": "debian_venv_prerequisite",
+      "argv": [
+        "sudo",
+        "DEBIAN_FRONTEND=noninteractive",
+        "apt-get",
+        "install",
+        "-y",
+        "python3-venv",
+        "python3-pip"
+      ],
+      "result": "pass"
+    },
+    {
+      "name": "public_head",
+      "argv": [
+        "git",
+        "ls-remote",
+        "origin",
+        "HEAD"
+      ],
+      "result": "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
+    },
+    {
+      "name": "depth1_public_clone",
+      "documented_command": false,
+      "argv": [
+        "git",
+        "clone",
+        "--depth",
+        "1",
+        "https://github.com/RA-CONSULTING/Aureon-OS.git"
+      ],
+      "then": "./install.sh --smoke",
+      "result": "fail"
+    },
+    {
+      "name": "full_clone_of_public_tip_before_fix",
+      "argv": [
+        "git",
+        "clone",
+        "--no-local",
+        "file:///agent/repos/Aureon-OS"
+      ],
+      "head": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
+      "tree": "9ce6c0252d27617fb2a7775b7197537efa2388d7",
+      "then": "./install.sh --smoke",
+      "result": "fail"
+    },
+    {
+      "name": "documented_guarded_smoke_after_fix",
+      "argv": [
+        "git",
+        "clone",
+        "--no-local",
+        "file:///agent/repos/Aureon-OS"
+      ],
+      "head": "7de64166bc532170a5a95a842e623a4b894cebd2",
+      "tree": "5a3c7f3682addcdf80cc260b82dfbb91037945ba",
+      "then": "./install.sh --smoke",
+      "result": "pass",
+      "exit_code": 0,
+      "started_at": "2026-11-05T20:47:16Z",
+      "ended_at": "2026-11-05T20:47:35Z"
+    }
+  ],
+  "smoke_environment": {
+    "wrapper": "env -i HOME USER=ubuntu LOGNAME=ubuntu LANG=C.UTF-8 LC_ALL=C.UTF-8 TERM=xterm PATH=<nvm node>:…/usr/bin:… bash --noprofile --norc -c './install.sh --smoke'",
+    "dotenv_present": false,
+    "parent_credentials_passed_in": false,
+    "why_env_i": "The measurement shell did not inherit agent or GitHub credentials. ./install.sh does not read them. AUREON_AUTONOMY_MODE=guarded is set inside scripts/plug_and_play.py."
+  },
+  "runs": {
+    "depth1_public_clone": {
+      "documented_command": false,
+      "clone": "git clone --depth 1 https://github.com/RA-CONSULTING/Aureon-OS.git",
+      "head": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
+      "tree": "9ce6c0252d27617fb2a7775b7197537efa2388d7",
+      "shell_exit": 1,
+      "log_sha256": "b197f0db7c96b779e4f026161063b7a5b07bbd116fc51ba1afdae25e4f16b232",
+      "failure": "a child exited early: code 1. MCP log: ImportError: aureon is not an aureon module path",
+      "cause_measured": "PinnedAureonFinder asks git for 34864ff:aureon/__init__.py. That commit is not in a depth-1 clone, so the finder refuses the import.",
+      "evidence_tag": "measured"
+    },
+    "full_clone_public_tip": {
+      "documented_shape": "full clone, then ./install.sh --smoke, live trading off",
+      "clone": "git clone --no-local file:///agent/repos/Aureon-OS at bb045031",
+      "same_tree_as_github_depth1_clone": true,
+      "tree": "9ce6c0252d27617fb2a7775b7197537efa2388d7",
+      "pin_is_ancestor": true,
+      "shell_exit_captured": false,
+      "log_sha256": "b7fac7d312d2c20144f4820311c95c560fc845e3fd522879fd6cd407b529d082",
+      "failure": "SMOKE FAILED — cognition endpoint. HTTP 500 {\"error\": \"ModuleNotFoundError\", \"ok\": false}",
+      "cause_measured": "python scripts/plug_and_play.py sets sys.path[0] to scripts/. Replaying that path raises ModuleNotFoundError: No module named 'aureon'. PYTHONPATH is applied to child processes. os.environ['PYTHONPATH'] does not rebuild this process's sys.path. /api/cognition imports aureon in this process.",
+      "other_smoke_checks_printed_before_the_failure": [
+        "{\"autonomy_mode\": \"guarded\", \"banner\": \"aureon-plug\", \"exchange_keys\": \"unset\", \"external_llm\": false, \"live_trading\": false, \"ok\": true, \"pids\": {\"frontend\": 3540, \"mcp\": 3539, \"operator\": 3538}, \"service\": \"aureon-plug\", \"services\": {\"cognition\": {\"ok\": true, \"runner\": \"aureon.evaluation.brain_proof.evaluate_brain\", \"url\": \"http://127.0.0.1:8787/api/cognition\"}, \"frontend\": {\"ok\": true, \"status\": 200, \"url\": \"http://127.0.0.1:5173/\"}, \"mcp\": {\"ok\": true, \"status\": 405, \"url\": \"http://127.0.0.1:8077/mcp\"}, \"operator\": {\"ok\": true, \"providers\": [\"offline\"], \"ready\": true, \"status\": 200, \"url\": \"http://127.0.0.1:8790/healthz\"}}}",
+        "SMOKE healthz 200 {\"autonomy_mode\": \"guarded\", \"exchange_keys\": \"unset\", \"external_llm\": false, \"live_trading\": false, \"ok\": true, \"service\": \"aureon-plug\", \"services\": {\"cognition\": {\"ok\": true, \"runner\": \"aureon.evaluation.brain_proof.evaluate_brain\", \"url\": \"http://127.0.0.1:8787/api/cognition\"}, \"frontend\": {\"ok\": true, \"status\": 200, \"url\": \"http://127.0.0.1:5173/\"}, \"mcp\": {\"ok\": true, \"status\": 405, \"url\": \"http://127.0.0.1:8077/mcp\"}, \"operator\": {\"ok\": true, \"providers\": [\"offline\"], \"ready\": true, \"status\": 200, \"url\": \"http://127.0.0.1:8790/healthz\"}}}",
+        "SMOKE operator 200 {\"ok\":true,\"providers\":[{\"adapter\":\"AureonStubAdapter\",\"model\":\"\",\"name\":\"offline\"}],\"service\":\"aureon-operator\"}",
+        "SMOKE readyz 200 {\"checks\":{\"cognition\":true,\"providers\":true,\"real_data_policy\":{\"probe_report_path\":\"\",\"probe_report_status\":\"missing\",\"probe_summary\":{\"blocked\":0,\"cached_real\":0,\"live\":0,\"no_data\":0,\"operational_ready\":0,\"real_derived\":0,\"test_fixture\":0},\"simulation_fallback_allowed\":false,\"source_registry_count\":19,\"truth_statuses\":[\"cached_real\",\"live\",\"no_data\",\"real_derived\",\"test_fixture\"]},\"repo_index\":true},\"ready\":true}",
+        "SMOKE frontend 200 aureon_os=True",
+        "SMOKE mcp_initialize {\"name\": \"aureon-public\", \"version\": \"1.30.0\"}",
+        "SMOKE mcp_tools auris_coherence hnc_reality_step qgita_analyze",
+        "SMOKE hnc {\"coherence\": 0.7739191103121901, \"enable_multiverse\": false, \"status\": \"inferred\"}",
+        "SMOKE qgita {\"detection_rate\": \"HOLD\", \"false_alarm_rate\": \"HOLD\", \"ftcp_count\": 0, \"status\": \"complete\"}",
+        "SMOKE auris_mcp {\"aureon_source\": {\"commit\": \"bb04503119681adcf832f3c3e9b0cbf09fc7a938\", \"kind\": \"checkout\"}, \"auris\": \"coherence evaluator\", \"auris_to_lambda\": \"HOLD\", \"coherence\": null, \"label\": \"inferred. get_auris_coherence returned no complete nine-node reading. Auris-to-Lambda link: HOLD.\", \"missing_nodes\": [\"CargoShip\", \"Clownfish\", \"Deer\", \"Dolphin\", \"Falcon\", \"Hummingbird\", \"Owl\", \"Panda\", \"Tiger\"], \"sta",
+        "SMOKE cognition 500 b'{\"error\": \"ModuleNotFoundError\", \"ok\": false}\\n'",
+        "SMOKE FAILED",
+        " - cognition endpoint"
+      ],
+      "evidence_tag": "measured"
+    },
+    "full_clone_after_fix": {
+      "clone": "git clone --no-local file:///agent/repos/Aureon-OS",
+      "head": "7de64166bc532170a5a95a842e623a4b894cebd2",
+      "parent": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
+      "tree": "5a3c7f3682addcdf80cc260b82dfbb91037945ba",
+      "pin_is_ancestor": true,
+      "dotenv_present_before": false,
+      "venv_present_before": false,
+      "node_modules_present_before": false,
+      "shell_exit": 0,
+      "started_at": "2026-11-05T20:47:16Z",
+      "ended_at": "2026-11-05T20:47:35Z",
+      "duration_note": "19 seconds on this machine. The pip log says Using cached for the wheels. An earlier failed run on this same machine had already downloaded them. npm ci added 548 packages in 5s. This duration is not a cold-cache measurement.",
+      "log_sha256": "6465c3a293c1ad093f929b7f059eb66782daf5b3dd89652ab1b01ed3e66d9830",
+      "log_bytes": 18747,
+      "git_status_porcelain_after": "",
+      "lines": [
+        "{\"autonomy_mode\": \"guarded\", \"banner\": \"aureon-plug\", \"exchange_keys\": \"unset\", \"external_llm\": false, \"live_trading\": false, \"ok\": true, \"pids\": {\"frontend\": 4702, \"mcp\": 4701, \"operator\": 4700}, \"service\": \"aureon-plug\", \"services\": {\"cognition\": {\"ok\": true, \"runner\": \"aureon.evaluation.brain_proof.evaluate_brain\", \"url\": \"http://127.0.0.1:8787/api/cognition\"}, \"frontend\": {\"ok\": true, \"status\": 200, \"url\": \"http://127.0.0.1:5173/\"}, \"mcp\": {\"ok\": true, \"status\": 405, \"url\": \"http://127.0.0.1:8077/mcp\"}, \"operator\": {\"ok\": true, \"providers\": [\"offline\"], \"ready\": true, \"status\": 200, \"url\": \"http://127.0.0.1:8790/healthz\"}}}",
+        "SMOKE healthz 200 {\"autonomy_mode\": \"guarded\", \"exchange_keys\": \"unset\", \"external_llm\": false, \"live_trading\": false, \"ok\": true, \"service\": \"aureon-plug\", \"services\": {\"cognition\": {\"ok\": true, \"runner\": \"aureon.evaluation.brain_proof.evaluate_brain\", \"url\": \"http://127.0.0.1:8787/api/cognition\"}, \"frontend\": {\"ok\": true, \"status\": 200, \"url\": \"http://127.0.0.1:5173/\"}, \"mcp\": {\"ok\": true, \"status\": 405, \"url\": \"http://127.0.0.1:8077/mcp\"}, \"operator\": {\"ok\": true, \"providers\": [\"offline\"], \"ready\": true, \"status\": 200, \"url\": \"http://127.0.0.1:8790/healthz\"}}}",
+        "SMOKE operator 200 {\"ok\":true,\"providers\":[{\"adapter\":\"AureonStubAdapter\",\"model\":\"\",\"name\":\"offline\"}],\"service\":\"aureon-operator\"}",
+        "SMOKE readyz 200 {\"checks\":{\"cognition\":true,\"providers\":true,\"real_data_policy\":{\"probe_report_path\":\"\",\"probe_report_status\":\"missing\",\"probe_summary\":{\"blocked\":0,\"cached_real\":0,\"live\":0,\"no_data\":0,\"operational_ready\":0,\"real_derived\":0,\"test_fixture\":0},\"simulation_fallback_allowed\":false,\"source_registry_count\":19,\"truth_statuses\":[\"cached_real\",\"live\",\"no_data\",\"real_derived\",\"test_fixture\"]},\"repo_index\":true},\"ready\":true}",
+        "SMOKE frontend 200 aureon_os=True",
+        "SMOKE mcp_initialize {\"name\": \"aureon-public\", \"version\": \"1.30.0\"}",
+        "SMOKE mcp_tools auris_coherence hnc_reality_step qgita_analyze",
+        "SMOKE hnc {\"coherence\": 0.7739191103121901, \"enable_multiverse\": false, \"status\": \"inferred\"}",
+        "SMOKE qgita {\"detection_rate\": \"HOLD\", \"false_alarm_rate\": \"HOLD\", \"ftcp_count\": 0, \"status\": \"complete\"}",
+        "SMOKE auris_mcp {\"aureon_source\": {\"commit\": \"7de64166bc532170a5a95a842e623a4b894cebd2\", \"kind\": \"checkout\"}, \"auris\": \"coherence evaluator\", \"auris_to_lambda\": \"HOLD\", \"coherence\": null, \"label\": \"inferred. get_auris_coherence returned no complete nine-node reading. Auris-to-Lambda link: HOLD.\", \"missing_nodes\": [\"CargoShip\", \"Clownfish\", \"Deer\", \"Dolphin\", \"Falcon\", \"Hummingbird\", \"Owl\", \"Panda\", \"Tiger\"], \"sta",
+        "SMOKE cognition {\"auris\": {\"coherence\": 0.5023340603593964, \"hold_nodes\": [], \"status\": \"\\u26d4 COHERENCE BREAK - Do not trade\", \"trade_readiness\": {\"entries\": 0, \"evidence_tag\": \"measured\", \"filled_outcomes\": 0, \"orders_placed\": false, \"outcome_labels\": \"paper\", \"paper_labels\": 166, \"reason\": \"paper trade-outcome labels: 166 next-bar close-to-close returns from public:kraken XBTUSD; the prices are measured and the outcomes are paper; filled outcomes: 0; Clownfish readings 166 of 166; Owl readings 166 of 166; nodes without a reading on a labelled bar: Deer; ready-to-trade paper entries: 0; entries with a higher next close: 0; entries without a higher next close: 0; a spread print is used only when its time is at or before the decision close; window call status: \\u26d4 COHERENCE BREAK - Do not trade; measured fail: get_auris_coherence did not mark any labelled bar ready to trade; release boundary stays HOLD\", \"release_boundary\": \"HOLD\", \"verdict\": \"fail\"}}, \"cognition\": \"internal\", \"external_llm\": false, \"hnc\": {\"coherence\": 0.7739191103121901, \"enable_multiverse\": false, \"lambda_last\": 1.1030284973375342, \"multiverse_extension_verdict\": \"measured\", \"state\": \"coherent\", \"steps\": 100}, \"live_trading\": false, \"orders_placed\": false, \"qgita\": {\"derived_ftcp_count\": 0, \"derived_rates_verdict\": \"HOLD\", \"derived_status\": \"complete\", \"derived_verdict\": \"measured_counts_rates_hold\", \"on_hnc_ftcp_count\": 0, \"on_hnc_rates_verdict\": \"HOLD\", \"on_hnc_status\": \"complete\"}, \"schema\": \"aureon.brain-proof.v1\", \"together\": {\"auris_joined_to_lambda\": {\"cited\": {\"auris_role_value_names_lambda\": false, \"evidence_tag\": \"cited\", \"get_auris_coherence_names_lambda\": false, \"keys_read_by_auris_role_value\": [\"momentum\", \"spread\", \"volatility\", \"volume\"], \"source\": \"aureon.utils.aureon_queen_hive_mind.QueenHiveMind._auris_role_value and QueenHiveMind.get_auris_coherence\"}, \"evidence_tag\": \"inferred\", \"go_live\": \"HOLD\", \"measurement\": {\"calls_compared_with_texture\": 300, \"evidence_tag\": \"measured\", \"keys_passed\": [\"lambda\", \"lambda_t\", \"lambda_current\"], \"lambda_last\": 1.1030284973375342, \"lambda_max\": 1.1030284973375342, \"lambda_min\": 0.1992387112134208, \"lambda_source\": \"aureon.harmonic.aureon_harmonic_reality.HarmonicRealityField.step\", \"live_trading\": false, \"omitted_call\": {\"coherence\": null, \"evidence_tag\": \"measured\", \"status\": \"no_data\"}, \"only_lambda\": {\"lambda\": {\"coherence\": null, \"evidence_tag\": \"measured\", \"status\": \"no_data\"}, \"lambda_current\": {\"coherence\": null, \"evidence_tag\": \"measured\", \"status\": \"no_data\"}, \"lambda_t\": {\"coherence\": null, \"evidence_tag\": \"measured\", \"status\": \"no_data\"}}, \"only_lambda_matches_omitted_call\": true, \"orders_placed\": false, \"samples\": 100, \"texture_call\": {\"coherence\": 0.5023340603593964, \"evidence_tag\": \"measured\", \"status\": \"\\u26d4 COHERENCE BREAK - Do not trade\"}, \"texture_with_lambda_matches_texture\": true}, \"reason\": \"HarmonicRealityField.step \\u039b(t) was passed into get_auris_coherence under the keys lambda, lambda_t, lambda_current. Each only-lambda call returned coherence null and status 'no_data', the same as get_auris_coherence(None). Beside the loaded market texture, coherence stayed 0.5023340603593964 with status '\\u26d4 COHERENCE BREAK - Do not trade' for all 100 formula-series samples under those keys (300 calls). Cited from _auris_role_value, the keys read are momentum, spread, volatility, volume. Neither _auris_role_value nor get_auris_coherence names lambda. On this formula series the coherence figure was unchanged by those keys. No formula was added. No order was placed. Go-live stays HOLD.\", \"verdict\": \"HOLD\"}, \"qgita_on_the_formula_series\": \"measured_counts_rates_hold\"}}",
+        "SMOKE PASSED"
+      ],
+      "shutdown_warning": "After SMOKE PASSED, CPython printed resource_tracker: There appear to be 1 leaked shared_memory objects to clean up at shutdown. The shell exit code stayed 0.",
+      "evidence_tag": "measured"
+    },
+    "depth1_of_fix_commit_objects_only": {
+      "command": "git clone --depth 1 --bare file:///agent/repos/Aureon-OS",
+      "head": "7de64166bc532170a5a95a842e623a4b894cebd2",
+      "pin_commit_present": false,
+      "cat_file_exit": 128,
+      "smoke_rerun": false,
+      "note": "A depth-1 clone of the fix commit still does not contain pin 34864ff. The MCP failure mode was measured on the depth-1 clone of bb045031. This object check was not a second ./install.sh --smoke.",
+      "evidence_tag": "measured"
+    }
+  },
+  "fix": {
+    "files": [
+      "scripts/plug_and_play.py",
+      "tests/test_plug_and_play_static.py"
+    ],
+    "plug_and_play_sha256_at_measurement": "074958ec277ae9cbd88dc3a3f0faa635d71f41431d8d36f4208e71dce8667497",
+    "change": "ensure_checkout_importable() puts the checkout and mcp/ on sys.path in the supervisor before evaluate_brain. Child PYTHONPATH is unchanged. Live-trading flags are unchanged.",
+    "tests": "pytest tests/test_plug_and_play_static.py tests/test_credential_bootstrap.py — both green on the plug venv"
+  },
+  "hold_unchanged": {
+    "readme_badge": "release boundary HOLD",
+    "readme_badge_present": true,
+    "release_boundary_v02_sha256": "8691b938dc8df60e89c7360c90c24079eda259754a0ea36810cce925580e05f4",
+    "release_boundary_v02_sha256_unchanged_by_smoke": true,
+    "production_ready_false_literals": 4,
+    "go_live_clear_values": {
+      "evidence/output/hnc_head_anchor.json": [
+        {
+          "path": "go_live_clear",
+          "value": false
+        },
+        {
+          "path": "measurement.go_live_clear",
+          "value": false
+        }
+      ],
+      "measured/go_live_stage6_provenance.json": [
+        {
+          "path": "go_live_clear",
+          "value": false
+        }
+      ],
+      "measured/go_live_stage6_source_census.json": [
+        {
+          "path": "go_live_clear",
+          "value": false
+        }
+      ],
+      "aureon/evidence/hnc_anchor.py": {
+        "go_live_clear_false_literals": 2
+      }
+    },
+    "go_live_file_sha256": {
+      "measured/go_live_stage6_provenance.json": "545df4b08151186424b3c93634c93a40f5009595ad257cf33723afd9e307ee2f",
+      "measured/go_live_stage6_source_census.json": "9469ef5e8a7e953dda7d115992afe78322cf4574900a8a56b016f1be77c2cac1",
+      "evidence/output/hnc_head_anchor.json": "270e7d5b97331df9e772a902b984e42ebea24192edeb9b476c38d162b670bd16",
+      "aureon/evidence/hnc_anchor.py": "0fb6afb1006384c6febd41a924ad7706c9d84e80b511e484c76d58ffc9623b0d"
+    },
+    "go_live_file_sha256_unchanged_by_smoke": true,
+    "smoke_report": {
+      "trade_readiness_verdict": "fail",
+      "trade_readiness_release_boundary": "HOLD",
+      "qgita_detection_rate": "HOLD",
+      "qgita_false_alarm_rate": "HOLD",
+      "auris_joined_to_lambda": "HOLD",
+      "orders_placed": false,
+      "live_trading": false
+    }
+  },
+  "limits": [
+    "The passing command is ./install.sh --smoke on full clone 7de64166. Public tip bb045031 stops at the cognition ModuleNotFoundError.",
+    "The documented clone is a full git clone. A depth-1 clone omits pin 34864ff, and the public MCP child exits before the smoke checks.",
+    "SMOKE PASSED means the guarded local stack answered. production_ready stays false. go_live_clear stays false.",
+    "Exchange keys stayed unset. No .env was present. orders_placed stayed false.",
+    "This receipt was written after the measurement. git_head_at_measurement is 7de64166."
+  ]
+}
