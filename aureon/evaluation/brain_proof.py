@@ -31,9 +31,12 @@ does not change, the join stays HOLD.
 
 QGITA is ``QGITAMarketAnalyzer`` constructed with its own defaults, then
 ``analyze``. The public pack is fed beside the derived column and the formula
-series. Detection rate and false-alarm rate stay HOLD. None of those series
-carries market signal-in-noise labels. A planted-impulse harness, when a test
-runs one, is tagged synthetic_planted and is not written into these fields.
+series. FTCP and lighthouse counts are that call. Detection rate and
+false-alarm rate stay a measured HOLD: the receipt names the missing
+ingredient, an exogenous signal-present versus noise-only label on held-out
+trials. A planted-impulse harness, when a test runs one, is tagged
+synthetic_planted and is not written into these fields. The release boundary
+stays HOLD.
 
 The ready-to-trade mark is the status string ``get_auris_coherence`` already
 returns. A paper long is that mark. It passes only when every such paper
@@ -55,6 +58,12 @@ from pathlib import Path
 from typing import Any
 
 from aureon.evaluation.market_series import derive_fields, load_market_series, series_summary
+from aureon.evaluation.qgita_rate_receipt import (
+    DERIVED_EVENT_COLUMNS,
+    RATES_HOLD_VERDICT,
+    apply_rates_hold,
+    rates_hold_receipt,
+)
 
 DERIVED_SERIES = "data/de440_timeseries.csv"
 DERIVED_COLUMN = "Lambda"
@@ -955,14 +964,6 @@ def _market_qgita(pack: dict[str, Any]) -> dict[str, Any]:
     times = [float(bar["open_time"]) for bar in bars]
     window = pack.get("time_range") if isinstance(pack.get("time_range"), dict) else {}
     record = _run_qgita(values, times, str(pack.get("symbol") or "market_series"))
-    record["detection_rate"] = None
-    record["false_alarm_rate"] = None
-    record["rates_verdict"] = "HOLD"
-    record["rates_reason"] = (
-        "this series has no market signal-in-noise labels. "
-        "Seeded shuffles and planted impulses are tagged synthetic_planted and are not written here. "
-        "These analyzer counts are not a detection rate or a false-alarm rate."
-    )
     record["series_class"] = "public-market"
     record["evidence_tag"] = "measured"
     record["key_group"] = pack.get("key_group")
@@ -975,7 +976,19 @@ def _market_qgita(pack: dict[str, Any]) -> dict[str, Any]:
         f"{window.get('start')} to {window.get('end')}. "
         "Prices are bar closes. Timestamps are venue bar open times. No order was sent."
     )
-    record["verdict"] = "measured_counts_rates_hold"
+    field_names: list[str] = []
+    for bar in bars:
+        if isinstance(bar, dict):
+            field_names.extend(str(key) for key in bar)
+    apply_rates_hold(
+        record,
+        rates_hold_receipt(
+            samples=len(values),
+            field_names=field_names,
+            series_kind="public-market",
+            paper_outcomes_are_not_signal_labels=True,
+        ),
+    )
     return record
 
 
@@ -993,19 +1006,26 @@ def _load_lambda(root: Path) -> dict[str, Any]:
     last_dt = ""
     with path.open(encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle)
-        if reader.fieldnames is None or DERIVED_COLUMN not in reader.fieldnames:
+        fieldnames = list(reader.fieldnames or [])
+        if DERIVED_COLUMN not in fieldnames:
             return {
                 "verdict": "HOLD",
                 "path": DERIVED_SERIES,
                 "reason": f"column {DERIVED_COLUMN} is missing",
                 "values": [],
             }
+        event_positive_counts = {
+            name: 0 for name in DERIVED_EVENT_COLUMNS if name in fieldnames
+        }
         for row in reader:
             stamp = str(row.get("datetime") or "")
             try:
                 values.append(float(row[DERIVED_COLUMN]))
             except (TypeError, ValueError):
                 continue
+            for name in event_positive_counts:
+                if str(row.get(name) or "").strip() in {"1", "1.0"}:
+                    event_positive_counts[name] += 1
             if stamp and not first_dt:
                 first_dt = stamp
             if stamp:
@@ -1025,6 +1045,8 @@ def _load_lambda(root: Path) -> dict[str, Any]:
         "rows": len(values),
         "datetime_first": first_dt,
         "datetime_last": last_dt,
+        "field_names": fieldnames,
+        "event_positive_counts": event_positive_counts,
     }
 
 
@@ -1250,7 +1272,15 @@ def _evaluate_brain_body(root: Path) -> dict[str, Any]:
         derived["timestamps"] = (
             "sample index. analyze_price_stream uses range(len(prices)) when no timestamps are passed"
         )
-        derived["verdict"] = "measured_counts_rates_hold"
+        apply_rates_hold(
+            derived,
+            rates_hold_receipt(
+                samples=len(values),
+                field_names=list(loaded.get("field_names") or []),
+                series_kind="derived",
+                rejected_event_columns=dict(loaded.get("event_positive_counts") or {}),
+            ),
+        )
     hnc_values = list(hnc["series"])
     on_lambda = _run_qgita(
         hnc_values,
@@ -1258,7 +1288,14 @@ def _evaluate_brain_body(root: Path) -> dict[str, Any]:
         "hnc_lambda_series",
     )
     on_lambda["timestamps"] = "step index times HarmonicRealityField.dt"
-    on_lambda["verdict"] = "measured_counts_rates_hold"
+    apply_rates_hold(
+        on_lambda,
+        rates_hold_receipt(
+            samples=len(hnc_values),
+            field_names=[],
+            series_kind="formula",
+        ),
+    )
     return {
         "schema": "aureon.brain-proof.v1",
         "live_trading": False,
@@ -1275,13 +1312,21 @@ def _evaluate_brain_body(root: Path) -> dict[str, Any]:
             "on_market_series": _market_qgita(pack),
         },
         "together": {
-            "qgita_on_the_formula_series": "measured_counts_rates_hold",
+            "qgita_on_the_formula_series": RATES_HOLD_VERDICT,
             "auris_joined_to_lambda": _join_auris_to_lambda(
                 hnc_values,
                 auris.get("market_data") if isinstance(auris.get("market_data"), dict) else None,
             ),
         },
     }
+
+
+def _rate_line(block: dict[str, Any]) -> str:
+    receipt = block.get("rates_receipt") if isinstance(block.get("rates_receipt"), dict) else {}
+    ingredient = receipt.get("missing_ingredient")
+    if ingredient:
+        return f"Detection rate **{block.get('rates_verdict')}**. Missing ingredient: {ingredient}."
+    return f"Detection rate **{block.get('rates_verdict')}**."
 
 
 def render_brain_markdown(report: dict[str, Any]) -> str:
@@ -1317,13 +1362,13 @@ def render_brain_markdown(report: dict[str, Any]) -> str:
             f"QGITA on the derived series `{public.get('series')}` ({public.get('evidence_tag')}): "
             f"status `{public.get('status', public.get('verdict'))}`, "
             f"FTCP count `{public.get('ftcp_count')}`, lighthouse events `{public.get('lhe_count')}`. "
-            f"Detection rate **{public.get('rates_verdict')}**. "
+            f"{_rate_line(public)} "
             f"Clock: {public.get('timestamps', '')}"
         ),
         (
             f"QGITA on the formula series: FTCP count `{on_lambda.get('ftcp_count')}`, "
             f"lighthouse events `{on_lambda.get('lhe_count')}`. "
-            f"Detection rate **{on_lambda.get('rates_verdict')}**. "
+            f"{_rate_line(on_lambda)} "
             f"Clock: {on_lambda.get('timestamps', '')}"
         ),
         (
@@ -1331,7 +1376,7 @@ def render_brain_markdown(report: dict[str, Any]) -> str:
             f"key group `{on_market.get('key_group')}`): "
             f"status `{on_market.get('status', on_market.get('verdict'))}`, "
             f"FTCP count `{on_market.get('ftcp_count')}`, lighthouse events `{on_market.get('lhe_count')}`. "
-            f"Detection rate **{on_market.get('rates_verdict')}**. "
+            f"{_rate_line(on_market)} "
             f"Clock: {on_market.get('timestamps', '')}"
         ),
         (

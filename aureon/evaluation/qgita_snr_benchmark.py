@@ -1,7 +1,8 @@
 """QGITA analyzer output from the brain proof.
 
-Detection rate stays HOLD. The series has no market signal-in-noise labels.
-A planted-impulse harness is tagged synthetic_planted and is not a market rate.
+Detection rate stays a measured HOLD. The missing ingredient is an exogenous
+signal-present versus noise-only label on held-out trials. A planted-impulse
+harness is tagged synthetic_planted and is not a market rate.
 """
 
 from __future__ import annotations
@@ -34,6 +35,7 @@ def render_qgita_markdown(report: dict[str, Any]) -> str:
             f"Formula series: FTCP count `{on_lambda.get('ftcp_count')}`, "
             f"lighthouse events `{on_lambda.get('lhe_count')}`. "
             f"Detection rate **{on_lambda.get('rates_verdict')}**. "
+            f"{on_lambda.get('rates_reason', on_lambda.get('reason', ''))} "
             f"Clock: {on_lambda.get('timestamps', '')}"
         ),
         (

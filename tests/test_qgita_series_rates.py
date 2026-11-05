@@ -94,10 +94,14 @@ def test_market_record_does_not_receive_the_harness() -> None:
     pack = load_market_series(root)
     market = _market_qgita(pack)
     assert market["rates_verdict"] == "HOLD"
+    assert market["verdict"] == "measured_rates_hold"
     assert market["detection_rate"] is None
     assert market["false_alarm_rate"] is None
     assert "signal_in_noise" not in market
     assert "lighthouse_detection_rate" not in market
+    assert market["rates_receipt"]["planted_rates_copied"] is False
+    assert market["rates_receipt"]["rates_count_as_market_rate"] is False
+    assert "exogenous signal-present versus noise-only labels" in market["rates_receipt"]["missing_ingredient"]
     closes = [float(bar["close"]) for bar in pack["bars"]]
     harness = measure_signal_in_noise(closes)
     _assert_synthetic_planted(harness)
