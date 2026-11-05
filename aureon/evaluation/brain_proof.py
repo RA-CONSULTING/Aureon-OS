@@ -8,10 +8,14 @@ extension is measured beside the formula branch.
 
 Auris coherence is ``QueenHiveMind.get_auris_coherence``. When
 ``reports/measured/market_series.json`` is a loaded public pack, that call
-receives the pack's volatility, momentum, volume, and spread. When the pack
-is absent or HOLD, the omitted call is no_data. A zero-input probe still
-names any node that stays without a value when the four market fields are
-present as 0. There is no trade-outcome label, so trade readiness stays HOLD.
+receives the pack's volatility, momentum, volume, and spread. The same call
+is repeated at each closed bar on the bars and spread prints known at that
+bar's close. The next bar's close-to-close return is the outcome label.
+This checkout has no filled order for the series, so the label is paper.
+Trade readiness is then a measured pass or a measured fail. The release
+boundary stays HOLD. When the pack is absent or HOLD, the omitted call is
+no_data and trade readiness stays HOLD. A zero-input probe still names any
+node that stays without a value when the four market fields are present as 0.
 
 The same coherence method is then called with the formula-path Λ(t) series.
 The value is passed under the field names already used for that series:
@@ -24,8 +28,11 @@ QGITA is ``QGITAMarketAnalyzer`` constructed with its own defaults, then
 series. Detection rate and false-alarm rate stay HOLD: none of those series
 carries signal-in-noise labels.
 
-No formula, threshold, or result is introduced here. Live trading stays off.
-These figures are not a claim that the system is conscious or alive.
+The ready-to-trade mark is the status string ``get_auris_coherence`` already
+returns. A paper long is that mark. It passes only when every such paper
+long has a higher next close. Live trading stays off
+(``AUREON_DISABLE_REAL_ORDERS=1``). These figures are not a claim that the
+system is conscious or alive.
 """
 
 from __future__ import annotations
@@ -35,11 +42,12 @@ import contextlib
 import csv
 import inspect
 import io
+import os
 import textwrap
 from pathlib import Path
 from typing import Any
 
-from aureon.evaluation.market_series import load_market_series, series_summary
+from aureon.evaluation.market_series import derive_fields, load_market_series, series_summary
 
 DERIVED_SERIES = "data/de440_timeseries.csv"
 DERIVED_COLUMN = "Lambda"
@@ -50,6 +58,8 @@ _NOTE = (
     "They are not a claim that the system is conscious or alive."
 )
 _INPUTS = ("volatility", "momentum", "volume", "spread")
+_READY = "Ready to trade"
+_ORDERS_OFF = "AUREON_DISABLE_REAL_ORDERS=1"
 # Names this repo already uses for HarmonicRealityField Λ(t). "Lambda" is the
 # derived-column name and is not this series.
 _LAMBDA_KEYS = ("lambda", "lambda_t", "lambda_current")
@@ -201,6 +211,194 @@ def _spread_clock(pack: dict[str, Any]) -> str:
     return "not supplied, so a node that needs spread stays without a reading"
 
 
+def _known_prints(prints: list[Any], decision_close: int) -> list[dict[str, Any]]:
+    """Spread prints whose clock is at or before the decision close. Later prints stay out."""
+
+    known: list[dict[str, Any]] = []
+    for item in prints:
+        if not isinstance(item, dict):
+            continue
+        stamp = item.get("time")
+        if isinstance(stamp, bool) or stamp is None:
+            continue
+        try:
+            unix = int(stamp)
+        except (TypeError, ValueError):
+            continue
+        if unix <= decision_close:
+            known.append(item)
+    return known
+
+
+def _paper_outcome(move: float) -> str:
+    if move > 0.0:
+        return "up"
+    if move < 0.0:
+        return "down"
+    return "flat"
+
+
+def _paper_labels(queen: Any, pack: dict[str, Any]) -> list[dict[str, Any]]:
+    """One paper label per bar that has a later close.
+
+    The decision texture is ``derive_fields`` on bars through the decision
+    bar, plus spread prints at or before that bar's close. The label is the
+    next close against this close. No order is sent.
+    """
+
+    bars = pack.get("bars") if isinstance(pack.get("bars"), list) else []
+    prints = pack.get("spread_prints") if isinstance(pack.get("spread_prints"), list) else []
+    interval = _optional_count(pack.get("interval_seconds")) or 3600
+    labels: list[dict[str, Any]] = []
+    for index in range(1, len(bars) - 1):
+        decision = bars[index]
+        nxt = bars[index + 1]
+        window = bars[: index + 1]
+        if not isinstance(decision, dict) or not isinstance(nxt, dict):
+            continue
+        close = _optional_float(decision.get("close"))
+        nxt_close = _optional_float(nxt.get("close"))
+        if close is None or close <= 0.0 or nxt_close is None or isinstance(decision.get("open_time"), bool):
+            continue
+        open_unix = _optional_count(decision.get("open_time"))
+        if open_unix is None:
+            continue
+        decision_close = open_unix + interval
+        derived = derive_fields(window, _known_prints(prints, decision_close))
+        inputs = derived.get("auris_inputs") if isinstance(derived.get("auris_inputs"), dict) else {}
+        texture: dict[str, float] = {}
+        for key in _INPUTS:
+            if key not in inputs:
+                continue
+            value = _optional_float(inputs.get(key))
+            if value is not None:
+                texture[key] = value
+        coherence, status = queen.get_auris_coherence(texture)
+        nodes = queen.read_auris_nodes(texture)
+        missing = sorted(name for name, item in nodes.items() if item.get("value") is None)
+        move = (nxt_close - close) / close
+        clownfish = nodes.get("Clownfish") if isinstance(nodes.get("Clownfish"), dict) else {}
+        owl = nodes.get("Owl") if isinstance(nodes.get("Owl"), dict) else {}
+        labels.append(
+            {
+                "clownfish": str(clownfish.get("data_status") or "no_data"),
+                "coherence": None if coherence is None else float(coherence),
+                "coherence_status": status,
+                "decision_close_unix": decision_close,
+                "entered": bool(coherence is not None and isinstance(status, str) and _READY in status),
+                "filled": False,
+                "next_bar_return": move,
+                "nodes_without_reading": missing,
+                "open_time": open_unix,
+                "outcome_kind": "paper",
+                "owl": str(owl.get("data_status") or "no_data"),
+                "paper_outcome": _paper_outcome(move),
+                "return_evidence": "measured",
+                "spread_known_at_decision": "spread" in texture,
+            }
+        )
+    return labels
+
+
+def _trade_readiness(
+    pack: dict[str, Any],
+    labels: list[dict[str, Any]] | None,
+    *,
+    window_status: str,
+) -> dict[str, Any]:
+    """Score paper labels with the method's own ready-to-trade status."""
+
+    base = {
+        "entries": 0,
+        "entries_not_higher": 0,
+        "entries_with_higher_close": 0,
+        "evidence_tag": "no_data",
+        "filled_outcomes": 0,
+        "filled_outcome_note": "this checkout has no filled order outcome for this series",
+        "live_trading": False,
+        "orders_placed": False,
+        "outcome_labels": "missing",
+        "paper_labels": 0,
+        "real_orders": _ORDERS_OFF,
+        "release_boundary": "HOLD",
+    }
+    if labels is None:
+        base["reason"] = "no market series and no trade-outcome labels"
+        base["verdict"] = "HOLD"
+        return base
+    if not labels:
+        window = pack.get("time_range") if isinstance(pack.get("time_range"), dict) else {}
+        base["reason"] = (
+            f"market series loaded from {pack.get('key_group')} {pack.get('symbol')} "
+            f"{window.get('start')} to {window.get('end')}; "
+            "a next-bar paper label could not be formed; filled outcomes: 0; "
+            "release boundary stays HOLD"
+        )
+        base["verdict"] = "HOLD"
+        return base
+    entries = [row for row in labels if row.get("entered")]
+    higher = sum(1 for row in entries if row.get("paper_outcome") == "up")
+    not_higher = len(entries) - higher
+    clownfish_reading = sum(1 for row in labels if row.get("clownfish") == "reading")
+    owl_reading = sum(1 for row in labels if row.get("owl") == "reading")
+    held = sorted({name for row in labels for name in row.get("nodes_without_reading") or []})
+    held_text = ", ".join(held) if held else "none"
+    if entries and higher == len(entries):
+        verdict = "pass"
+        because = "measured pass: every paper long the method marked ready to trade had a higher next close"
+    elif not entries:
+        verdict = "fail"
+        because = "measured fail: get_auris_coherence did not mark any labelled bar ready to trade"
+    else:
+        verdict = "fail"
+        because = (
+            "measured fail: a paper long the method marked ready to trade "
+            "did not have a higher next close"
+        )
+    reason = (
+        f"paper trade-outcome labels: {len(labels)} next-bar close-to-close returns "
+        f"from {pack.get('key_group')} {pack.get('symbol')}; "
+        "the prices are measured and the outcomes are paper; "
+        "filled outcomes: 0; "
+        f"Clownfish readings {clownfish_reading} of {len(labels)}; "
+        f"Owl readings {owl_reading} of {len(labels)}; "
+        f"nodes without a reading on a labelled bar: {held_text}; "
+        f"ready-to-trade paper entries: {len(entries)}; "
+        f"entries with a higher next close: {higher}; "
+        f"entries without a higher next close: {not_higher}; "
+        "a spread print is used only when its time is at or before the decision close; "
+        f"window call status: {window_status}; "
+        f"{because}; "
+        "release boundary stays HOLD"
+    )
+    return {
+        "clownfish_readings": clownfish_reading,
+        "entries": len(entries),
+        "entries_not_higher": not_higher,
+        "entries_with_higher_close": higher,
+        "evidence_tag": "measured",
+        "filled_outcomes": 0,
+        "filled_outcome_note": (
+            "this checkout has no filled order outcome for this series; the labels are paper"
+        ),
+        "label_clock": (
+            "decision at the close of bar i uses bars through i and spread prints at or before that close; "
+            "the paper label is the next close against this close"
+        ),
+        "labels": labels,
+        "live_trading": False,
+        "nodes_without_reading_on_a_label": held,
+        "orders_placed": False,
+        "outcome_labels": "paper",
+        "owl_readings": owl_reading,
+        "paper_labels": len(labels),
+        "real_orders": _ORDERS_OFF,
+        "reason": reason,
+        "release_boundary": "HOLD",
+        "verdict": verdict,
+    }
+
+
 def _run_auris(pack: dict[str, Any]) -> dict[str, Any]:
     queen = _reader()
     omitted_coherence, omitted_status = queen.get_auris_coherence(None)
@@ -223,21 +421,15 @@ def _run_auris(pack: dict[str, Any]) -> dict[str, Any]:
             "The four inputs are the measured window statistics in the pack. "
             "Key material was not read. No order was sent."
         )
-        missing_text = ", ".join(missing) if missing else "none"
-        trade_reason = (
-            f"market series loaded from {pack.get('key_group')} {pack.get('symbol')} "
-            f"{window.get('start')} to {window.get('end')}; "
-            f"nodes without a reading on this series: {missing_text}; "
-            "no trade-outcome labels; release boundary stays HOLD"
-        )
         market_data: dict[str, float] | None = texture
+        trade = _trade_readiness(pack, _paper_labels(queen, pack), window_status=str(status))
     else:
         coherence, status = omitted_coherence, omitted_status
         nodes = None
         missing = None
         market_data = None
         market_note = "no market series was supplied, so the omitted call is no_data"
-        trade_reason = "no market series and no trade-outcome labels"
+        trade = _trade_readiness(pack, None, window_status=str(status))
     return {
         "source": "aureon.utils.aureon_queen_hive_mind.QueenHiveMind.get_auris_coherence",
         "market_data": market_data,
@@ -267,12 +459,7 @@ def _run_auris(pack: dict[str, Any]) -> dict[str, Any]:
         ),
         "live_trading": False,
         "orders_placed": False,
-        "trade_readiness": {
-            "outcome_labels": "missing",
-            "reason": trade_reason,
-            "release_boundary": "HOLD",
-            "verdict": "HOLD",
-        },
+        "trade_readiness": trade,
     }
 
 
@@ -631,6 +818,18 @@ def evaluate_brain(root: Path | None = None) -> dict[str, Any]:
 
 def _evaluate_brain(root: Path | None = None) -> dict[str, Any]:
     root = Path(root or Path.cwd())
+    previous_orders = os.environ.get("AUREON_DISABLE_REAL_ORDERS")
+    os.environ["AUREON_DISABLE_REAL_ORDERS"] = "1"
+    try:
+        return _evaluate_brain_body(root)
+    finally:
+        if previous_orders is None:
+            os.environ.pop("AUREON_DISABLE_REAL_ORDERS", None)
+        else:
+            os.environ["AUREON_DISABLE_REAL_ORDERS"] = previous_orders
+
+
+def _evaluate_brain_body(root: Path) -> dict[str, Any]:
     pack = load_market_series(root)
     hnc = _run_hnc()
     auris = _run_auris(pack)

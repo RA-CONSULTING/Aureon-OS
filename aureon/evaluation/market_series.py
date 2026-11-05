@@ -780,7 +780,9 @@ def render_market_markdown(pack: dict[str, Any]) -> str:
             "",
             "Per-bar `range_fraction` and `return` are on the bars. The first bar has no return. "
             "Nothing missing is filled with zero.",
-            "Trade-outcome labels: **HOLD**. Signal-in-noise labels: **HOLD**. Release boundary: **HOLD**.",
+            "Filled trade outcomes are not in this pack. "
+            "Brain proof derives paper labels from these bar returns. "
+            "Signal-in-noise labels: **HOLD**. Release boundary: **HOLD**.",
             "",
             "JSON is the harness input. The CSV files are the same bars and the same spread prints.",
             "",

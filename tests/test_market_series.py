@@ -161,9 +161,16 @@ def test_brain_proof_consumes_a_pack_and_names_deer_when_spread_is_absent(tmp_pa
     assert report["coherence_status"] == "no_data"
     reason = report["trade_readiness"]["reason"].casefold()
     assert "no market series" not in reason
+    assert "no trade-outcome labels" not in reason
     assert "deer" in reason
-    assert report["trade_readiness"]["verdict"] == "HOLD"
+    assert report["trade_readiness"]["verdict"] == "fail"
+    assert report["trade_readiness"]["evidence_tag"] == "measured"
+    assert report["trade_readiness"]["outcome_labels"] == "paper"
+    assert report["trade_readiness"]["filled_outcomes"] == 0
     assert report["trade_readiness"]["release_boundary"] == "HOLD"
+    assert report["trade_readiness"]["orders_placed"] is False
+    assert report["trade_readiness"]["clownfish_readings"] == report["trade_readiness"]["paper_labels"]
+    assert report["trade_readiness"]["owl_readings"] == report["trade_readiness"]["paper_labels"]
     assert report["orders_placed"] is False
     assert report["omitted_call"]["status"] == "no_data"
     qgita = _market_qgita(loaded)
@@ -203,7 +210,21 @@ def test_full_fixture_gives_clownfish_and_owl_a_reading() -> None:
     assert nodes["Clownfish"]["data_status"] == "reading"
     assert nodes["Owl"]["data_status"] == "reading"
     assert nodes["Deer"]["value"] == pytest.approx(pack["auris_inputs"]["spread"])
-    assert "no market series" not in report["trade_readiness"]["reason"].casefold()
+    trade = report["trade_readiness"]
+    reason = trade["reason"].casefold()
+    assert "no market series" not in reason
+    assert "no trade-outcome labels" not in reason
+    assert trade["verdict"] in {"pass", "fail"}
+    assert trade["evidence_tag"] == "measured"
+    assert trade["outcome_labels"] == "paper"
+    assert trade["filled_outcomes"] == 0
+    assert trade["release_boundary"] == "HOLD"
+    assert trade["orders_placed"] is False
+    assert trade["paper_labels"] > 0
+    assert trade["clownfish_readings"] == trade["paper_labels"]
+    assert trade["owl_readings"] == trade["paper_labels"]
+    assert all(row["filled"] is False and row["outcome_kind"] == "paper" for row in trade["labels"])
+    assert all(row["return_evidence"] == "measured" for row in trade["labels"])
 
 
 def test_committed_pack_is_public_and_the_pin_stays() -> None:
@@ -230,8 +251,21 @@ def test_committed_pack_is_public_and_the_pin_stays() -> None:
     assert float(rows[-1]["open_time"]) == pytest.approx(pack["bars"][-1]["open_time"])
     report = _run_auris(pack)
     assert report["market_data"] is not None
-    assert "no market series" not in report["trade_readiness"]["reason"].casefold()
-    assert report["trade_readiness"]["verdict"] == "HOLD"
+    trade = report["trade_readiness"]
+    reason = trade["reason"].casefold()
+    assert "no market series" not in reason
+    assert "no trade-outcome labels" not in reason
+    assert trade["verdict"] in {"pass", "fail"}
+    assert trade["evidence_tag"] == "measured"
+    assert trade["outcome_labels"] == "paper"
+    assert trade["filled_outcomes"] == 0
+    assert trade["release_boundary"] == "HOLD"
+    assert trade["orders_placed"] is False
+    assert trade["real_orders"] == "AUREON_DISABLE_REAL_ORDERS=1"
+    assert trade["clownfish_readings"] == trade["paper_labels"]
+    assert trade["owl_readings"] == trade["paper_labels"]
+    assert "Clownfish" not in trade["nodes_without_reading_on_a_label"]
+    assert "Owl" not in trade["nodes_without_reading_on_a_label"]
     if "volatility" in report["market_data"]:
         assert "Clownfish" not in report["market_nodes_without_reading"]
     if "momentum" in report["market_data"]:

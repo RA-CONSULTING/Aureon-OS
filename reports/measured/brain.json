@@ -107,10 +107,3016 @@
     "source": "aureon.utils.aureon_queen_hive_mind.QueenHiveMind.get_auris_coherence",
     "status": "\u26d4 COHERENCE BREAK - Do not trade",
     "trade_readiness": {
-      "outcome_labels": "missing",
-      "reason": "market series loaded from public:kraken XBTUSD 2026-10-29T19:00:00Z to 2026-11-05T19:00:00Z; nodes without a reading on this series: none; no trade-outcome labels; release boundary stays HOLD",
+      "clownfish_readings": 166,
+      "entries": 0,
+      "entries_not_higher": 0,
+      "entries_with_higher_close": 0,
+      "evidence_tag": "measured",
+      "filled_outcome_note": "this checkout has no filled order outcome for this series; the labels are paper",
+      "filled_outcomes": 0,
+      "label_clock": "decision at the close of bar i uses bars through i and spread prints at or before that close; the paper label is the next close against this close",
+      "labels": [
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793307600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.001898190941502707,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793304000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793311200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.00035484046752766175,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793307600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793314800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.01370043622838029,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793311200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793318400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.009367609254498753,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793314800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793322000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.005570174072805444,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793318400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793325600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.00398607028270437,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793322000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793329200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.014356560455584097,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793325600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793332800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.00023445877817494158,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793329200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793336400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.00402969627413214,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793332800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793340000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0012119665752376092,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793336400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793343600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.00559123343527017,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793340000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793347200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.001964347037206026,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793343600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793350800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.004131578846008024,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793347200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793354400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0018178044274496203,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793350800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793358000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.00572920621153037,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793354400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793361600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0008348228557672023,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793358000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793365200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.004118903763785719,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793361600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793368800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.001066124384641132,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793365200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793372400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0050512388117783654,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793368800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793376000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0033867066600928013,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793372400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793379600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0023038968102878144,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793376000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793383200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.006995149216436961,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793379600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793386800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0036287486830100554,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793383200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793390400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -3.907379476917942e-06,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793386800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793394000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0027260590667839263,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793390400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793397600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0030090820993572886,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793394000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793401200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.005282648381611085,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793397600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793404800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.002532242375100869,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793401200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793408400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.002016801077005442,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793404800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793412000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0008660900500624482,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793408400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793415600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.003782146303353081,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793412000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793419200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0001843720055778646,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793415600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793422800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0012176694481802841,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793419200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793426400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0016207203259074089,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793422800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793430000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0007041961807712266,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793426400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793433600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.00027203200132647985,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793430000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793437200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0014154767424091712,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793433600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793440800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0006802272424545316,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793437200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793444400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0027900536399459823,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793440800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793448000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0010001277582555707,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793444400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793451600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.000527045984762208,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793448000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793455200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0010546478174219265,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793451600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793458800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0022641939081539447,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793455200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793462400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0002568895452410725,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793458800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793466000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0010376188454295622,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793462400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793469600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0010030232513166667,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793466000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793473200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0007084995425079616,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793469600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793476800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.00018209337645036497,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793473200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793480400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.001325261209501139,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793476800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793484000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0015518315611322683,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793480400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793487600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.00046511026989315386,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793484000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793491200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0015457726926404315,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793487600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793494800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0005041472883710347,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793491200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793498400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.00011598565901762723,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793494800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793502000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0007216048491845865,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793498400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793505600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0003772817174173188,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793502000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793509200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.001043891049181186,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793505600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793512800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0015211286440225034,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793509200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793516400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0008512058749896059,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793512800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793520000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.004009087264466123,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793516400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793523600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0018967123652335579,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793520000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793527200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0011514739636093569,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793523600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793530800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0008678103962657357,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793527200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793534400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0009058250331493415,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793530800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793538000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0019226045568943055,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793534400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793541600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0003054861722581122,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793538000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793545200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.000732686276824418,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793541600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793548800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.001971099950818809,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793545200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793552400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0021287011975066363,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793548800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793556000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0011250573124229094,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793552400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793559600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0010684653571645143,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793556000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793563200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0013360448952273454,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793559600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793566800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.00021080829556362595,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793563200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793570400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0006724145467821603,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793566800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793574000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.006588435693599674,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793570400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793577600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.002828505403940773,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793574000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793581200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0036017375499725066,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793577600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793584800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0005223572744956664,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793581200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793588400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0022402405929042453,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793584800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793592000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0028096434707630975,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793588400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793595600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0005670881937090784,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793592000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793599200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0026261880146146404,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793595600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793602800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0006880663413833733,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793599200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793606400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0017514818998576923,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793602800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793610000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0020543290023896776,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793606400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793613600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0013403072061071836,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793610000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793617200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0010313025363878072,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793613600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793620800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0011763586621137945,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793617200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793624400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0016037914350330068,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793620800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793628000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0011244546394998426,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793624400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793631600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0041696685878963285,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793628000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793635200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.00022867064837814492,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793631600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793638800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.004343151621348396,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793635200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793642400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.002086953813168353,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793638800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793646000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0008908911903216702,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793642400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793649600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.00425298020473562,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793646000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793653200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0009004247655959442,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793649600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793656800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0010873604130404264,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793653200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793660400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0013948418202489263,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793656800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793664000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.004408170504905068,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793660400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793667600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.00034409417532961625,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793664000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793671200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.00519046647953631,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793667600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793674800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0028255189802018957,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793671200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793678400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.00014452353455077617,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793674800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793682000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0038403857569855966,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793678400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793685600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.000875585793032428,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793682000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793689200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.003152255235882867,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793685600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793692800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.002620797922137528,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793689200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793696400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.005865880888758702,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793692800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793700000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0008850834200871804,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793696400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793703600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.000451889365017568,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793700000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793707200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.004075338550598077,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793703600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793710800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.00023289243345422177,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793707200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793714400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.00020706371997737831,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793710800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793718000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0041900254870566355,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793714400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793721600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0007398947647933087,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793718000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793725200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0010729558452264789,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793721600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793728800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0007182212869441953,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793725200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793732400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.000325173877698454,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793728800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793736000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0032210128195535874,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793732400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793739600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.00033559679010035533,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793736000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793743200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.00014910409007951132,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793739600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793746800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.005845494842286018,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793743200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793750400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0026535043197032666,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793746800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793754000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.002611294431874831,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793750400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793757600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.011495597665781426,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793754000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793761200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.004375282742948484,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793757600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793764800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.011858825377912458,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793761200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793768400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.004540678474932566,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793764800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793772000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.00327579122015801,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793768400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793775600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.001728202310090414,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793772000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793779200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.004612978889757548,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793775600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793782800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0011980265096855683,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793779200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793786400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.002725937280449565,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793782800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793790000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0016064021687065121,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793786400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793793600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0022520712037288684,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793790000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793797200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0008708907639539626,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793793600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793800800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.012590734680996076,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793797200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793804400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.012013986243411504,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793800800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793808000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0032867256681305542,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793804400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793811600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0014403778040140954,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793808000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793815200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0008500406351782771,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793811600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793818800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.004576436707157985,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793815200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793822400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0017931911293976093,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793818800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793826000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0013228124566714433,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793822400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793829600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.00602400620738342,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793826000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793833200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.002538269339268739,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793829600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793836800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.000481099143718077,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793833200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793840400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.001632713920936315,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793836800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793844000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.001404276592867678,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793840400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793847600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0003503205681652655,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793844000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793851200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0003839964210041591,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793847600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793854800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0014955506435965183,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793851200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793858400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.003066548968292443,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793854800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793862000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0032607373461794836,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793858400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793865600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0016574950281376384,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793862000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793869200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.0005868092248398967,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793865600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793872800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.002419521370158158,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793869200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793876400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.0012744206810294263,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793872800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793880000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.008836111612730476,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793876400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793883600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -4.900359359679063e-05,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793880000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793887200,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.017426029220138736,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793883600,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793890800,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.029325291929310403,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793887200,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793894400,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.005264669535270465,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793890800,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793898000,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": -0.006095531167023658,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793894400,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "down",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        },
+        {
+          "clownfish": "reading",
+          "coherence": null,
+          "coherence_status": "no_data",
+          "decision_close_unix": 1793901600,
+          "entered": false,
+          "filled": false,
+          "next_bar_return": 0.00177750350424007,
+          "nodes_without_reading": [
+            "Deer"
+          ],
+          "open_time": 1793898000,
+          "outcome_kind": "paper",
+          "owl": "reading",
+          "paper_outcome": "up",
+          "return_evidence": "measured",
+          "spread_known_at_decision": false
+        }
+      ],
+      "live_trading": false,
+      "nodes_without_reading_on_a_label": [
+        "Deer"
+      ],
+      "orders_placed": false,
+      "outcome_labels": "paper",
+      "owl_readings": 166,
+      "paper_labels": 166,
+      "real_orders": "AUREON_DISABLE_REAL_ORDERS=1",
+      "reason": "paper trade-outcome labels: 166 next-bar close-to-close returns from public:kraken XBTUSD; the prices are measured and the outcomes are paper; filled outcomes: 0; Clownfish readings 166 of 166; Owl readings 166 of 166; nodes without a reading on a labelled bar: Deer; ready-to-trade paper entries: 0; entries with a higher next close: 0; entries without a higher next close: 0; a spread print is used only when its time is at or before the decision close; window call status: \u26d4 COHERENCE BREAK - Do not trade; measured fail: get_auris_coherence did not mark any labelled bar ready to trade; release boundary stays HOLD",
       "release_boundary": "HOLD",
-      "verdict": "HOLD"
+      "verdict": "fail"
     },
     "zero_input_probe": {
       "inputs": {

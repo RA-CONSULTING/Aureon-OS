@@ -26,7 +26,7 @@ Python 3.11 or newer, Node.js 20 or newer, and a blank key file. On Debian or Ub
 - dashboard on `http://127.0.0.1:5173/`
 - stack health and the in-process HNC / Auris / QGITA report on `http://127.0.0.1:8787/`
 
-The command leaves exchange keys unset and does not read `.env`. `AUREON_AUTONOMY_MODE=guarded` keeps live trading off. `AUREON_LLM_OFFLINE=1` keeps the operator off external model HTTP, so the provider line is the offline adapter. HNC, Auris, and QGITA run from this repository. Trade readiness stays **HOLD**.
+The command leaves exchange keys unset and does not read `.env`. `AUREON_AUTONOMY_MODE=guarded` keeps live trading off. `AUREON_LLM_OFFLINE=1` keeps the operator off external model HTTP, so the provider line is the offline adapter. HNC, Auris, and QGITA run from this repository. The release boundary stays **HOLD**. Trade readiness on the committed public series is the measured brain-proof verdict.
 
 ```bash
 git clone https://github.com/RA-CONSULTING/Aureon-OS.git
@@ -59,7 +59,7 @@ SMOKE cognition {"auris": {"coherence": null, "hold_nodes": ["Clownfish", "Owl"]
 SMOKE PASSED
 ```
 
-Process ids in that banner are from the run that produced it. A later run prints its own pids. The public MCP `auris_coherence` tool returns the pin refusal above when `aureon/utils/aureon_queen_hive_mind.py` differs from the published pin. The in-process report on `/api/cognition` runs `evaluate_brain`. With `reports/measured/market_series.json` loaded, that report's Auris coherence is the pack reading and trade readiness stays **HOLD**. QGITA detection rate stays **HOLD**. Auris joined to Λ(t) stays **HOLD**: the formula-path Λ(t) is passed into `get_auris_coherence`, and that call does not change the coherence figure. The smoke banner above is an earlier run, from before that pack.
+Process ids in that banner are from the run that produced it. A later run prints its own pids. The public MCP `auris_coherence` tool returns the pin refusal above when `aureon/utils/aureon_queen_hive_mind.py` differs from the published pin. The in-process report on `/api/cognition` runs `evaluate_brain`. With `reports/measured/market_series.json` loaded, that report's Auris coherence is the pack reading and trade readiness is the measured paper-label verdict. QGITA detection rate stays **HOLD**. Auris joined to Λ(t) stays **HOLD**: the formula-path Λ(t) is passed into `get_auris_coherence`, and that call does not change the coherence figure. The release boundary stays **HOLD**. The smoke banner above is an earlier run, from before that pack.
 
 `python3 scripts/stage_plug_image.py` then `docker compose -f deploy/plug/docker-compose.yml up --build` is the container form of the same command. It uses host networking so the processes can bind `127.0.0.1`.
 
@@ -101,7 +101,7 @@ pytest tests/test_operator_server.py tests/test_connectome.py tests/test_quickst
 python -c "from aureon.evaluation.brain_proof import evaluate_brain, render_brain_markdown; print(render_brain_markdown(evaluate_brain()))"
 ```
 
-The measurement below is from a run of that command with no keys. The HNC figures are the committed formula path (`reports/measured/brain.json`). Auris uses the public series in `reports/measured/market_series.json` when that pack is loaded. Trade readiness stays **HOLD** because there are still no trade-outcome labels.
+The measurement below is from a run of that command with no keys. The HNC figures are the committed formula path (`reports/measured/brain.json`). Auris uses the public series in `reports/measured/market_series.json` when that pack is loaded. Trade readiness is a measured **fail** on 166 paper next-bar labels: `get_auris_coherence` did not mark any labelled bar ready to trade, and this checkout has no filled order outcome. Clownfish and Owl have a reading on every labelled bar. The release boundary stays **HOLD**.
 
 ```text
 # HNC, Auris coherence, and QGITA
@@ -112,7 +112,7 @@ No outside model was called. Live trading stayed off. No order was placed.
 HNC formula path, multiverse off: state `coherent`, coherence `0.7739191103121901`, last Λ(t) `1.1030284973375342`, steps `100`.
 Multiverse extension: **measured**. project_to_3d sets noise to 0 when no observed residual is supplied. TranslationMap.noise_level is stored and is not read by that method. Three constructions of the default HarmonicRealityField returned the same series.
 Auris coherence `0.5023340603593964` with status `⛔ COHERENCE BREAK - Do not trade`. Zero-input nodes without a reading: none. Series nodes without a reading: none.
-Trade readiness: **HOLD**. market series loaded from public:kraken XBTUSD 2026-10-29T19:00:00Z to 2026-11-05T19:00:00Z; nodes without a reading on this series: none; no trade-outcome labels; release boundary stays HOLD
+Trade readiness: **fail**. paper trade-outcome labels: 166 next-bar close-to-close returns from public:kraken XBTUSD; the prices are measured and the outcomes are paper; filled outcomes: 0; Clownfish readings 166 of 166; Owl readings 166 of 166; nodes without a reading on a labelled bar: Deer; ready-to-trade paper entries: 0; entries with a higher next close: 0; entries without a higher next close: 0; a spread print is used only when its time is at or before the decision close; window call status: ⛔ COHERENCE BREAK - Do not trade; measured fail: get_auris_coherence did not mark any labelled bar ready to trade; release boundary stays HOLD
 QGITA on the derived series `data/de440_timeseries.csv` (cited-unverified): status `complete`, FTCP count `0`, lighthouse events `0`. Detection rate **HOLD**. Clock: sample index. analyze_price_stream uses range(len(prices)) when no timestamps are passed
 QGITA on the formula series: FTCP count `0`, lighthouse events `0`. Detection rate **HOLD**. Clock: step index times HarmonicRealityField.dt
 QGITA on the public series `XBTUSD` (measured, key group `public:kraken`): status `complete`, FTCP count `0`, lighthouse events `0`. Detection rate **HOLD**. Clock: venue bar open time in unix seconds; price is the bar close

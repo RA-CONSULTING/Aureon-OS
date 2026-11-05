@@ -43,10 +43,27 @@ def test_brain_proof_matches_the_committed_run_and_holds_without_labels():
     assert fresh["qgita"]["derived_series"]["series_class"] == "derived"
     assert fresh["qgita"]["derived_series"]["evidence_tag"] == "cited-unverified"
     assert "public market data" in fresh["qgita"]["derived_series"]["provenance"]
-    assert fresh["auris"]["trade_readiness"]["verdict"] == "HOLD"
-    assert fresh["auris"]["trade_readiness"]["release_boundary"] == "HOLD"
+    trade = fresh["auris"]["trade_readiness"]
+    assert trade["verdict"] in {"pass", "fail"}
+    assert trade["evidence_tag"] == "measured"
+    assert trade["outcome_labels"] == "paper"
+    assert trade["filled_outcomes"] == 0
+    assert trade["release_boundary"] == "HOLD"
+    assert trade["orders_placed"] is False
+    assert trade["real_orders"] == "AUREON_DISABLE_REAL_ORDERS=1"
+    assert "no market series" not in trade["reason"].casefold()
+    assert "no trade-outcome labels" not in trade["reason"].casefold()
+    assert trade["clownfish_readings"] == trade["paper_labels"]
+    assert trade["owl_readings"] == trade["paper_labels"]
+    assert fresh["auris"]["nodes"]["Clownfish"]["data_status"] == "reading"
+    assert fresh["auris"]["nodes"]["Owl"]["data_status"] == "reading"
     assert fresh["auris"]["market_data"] is not None
-    assert "no market series" not in fresh["auris"]["trade_readiness"]["reason"].casefold()
+    index = _load("index.json")
+    assert index["auris_trade_readiness"] == trade["verdict"]
+    assert index["auris_trade_readiness_evidence"] == "measured"
+    assert index["auris_trade_outcome_labels"] == "paper"
+    assert index["auris_filled_outcomes"] == 0
+    assert index["release_boundary"] == "HOLD"
     assert str(fresh["market_series"]["key_group"]).startswith("public:")
     assert fresh["market_series"]["authenticated"] is False
     assert fresh["market_series"]["orders_placed"] is False

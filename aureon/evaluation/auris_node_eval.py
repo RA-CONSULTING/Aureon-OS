@@ -34,8 +34,9 @@ def render_auris_markdown(report: dict[str, Any]) -> str:
         f"Nodes without a reading when the four market fields are present as 0: {held}.",
         series_line,
         f"Trade readiness: **{trade.get('verdict')}**. {trade.get('reason', '')}",
-        "This is the method's coherence, not a hit rate and not a trade result.",
-        "Release boundary stays HOLD. No order was sent.",
+        "This coherence is the method's return. It is not a hit rate. "
+        "Paper labels, when present, are next-bar closes and are not fills.",
+        "Release boundary stays HOLD. No order was sent. This is not a claim that the system is alive.",
         "",
     ]
     return "\n".join(lines)

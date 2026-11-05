@@ -21,7 +21,7 @@ Auris inputs are one window texture, not a substitute for a missing node:
 - `spread` `4.9876097274178236e-05` tag `measured`. (ask - bid) / ((ask + bid) / 2) of the latest print. Clock: latest public bid/ask print, not an OHLC bar.
 
 Per-bar `range_fraction` and `return` are on the bars. The first bar has no return. Nothing missing is filled with zero.
-Trade-outcome labels: **HOLD**. Signal-in-noise labels: **HOLD**. Release boundary: **HOLD**.
+Filled trade outcomes are not in this pack. Brain proof derives paper labels from these bar returns. Signal-in-noise labels: **HOLD**. Release boundary: **HOLD**.
 
 JSON is the harness input. The CSV files are the same bars and the same spread prints.
 
