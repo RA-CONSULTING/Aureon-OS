@@ -11,8 +11,8 @@ Historical listener and environment guidance is withdrawn.
 
 Go-live requires all of the following. Receipt 1 is measured (stage 7).
 Receipt 3 is the DigiCert section below. Receipts 2 and 4 are remeasured
-below and do not clear go-live. Receipt 5 is absent. None of these is
-inferred into a clear:
+below and do not clear go-live. Receipt 5 is a stage 10 HOLD skip. None of
+these is inferred into a clear:
 
 - native process containment with a zero-network default (receipt 1, measured;
   see below);
@@ -23,11 +23,12 @@ inferred into a clear:
 - complete source-boundary census closure (receipt 4, remeasured, the pin
   tree is not closed, HOLD);
 - authenticated deployment receipt and provider-side read-back (receipt 5,
-  absent, HOLD).
+  stage 10 skip, HOLD).
 
-Until receipt 5 exists, the correct outcome is `HOLD`, not a partially
-configured listener. The orange release-boundary badge stays HOLD.
-`go_live_clear` stays false. This document does not say the system is alive.
+Until receipt 5 is a provider read-back, the correct outcome is `HOLD`, not
+a partially configured listener. The stage 10 file is a skip. The orange
+release-boundary badge stays HOLD. `go_live_clear` stays false. This
+document does not say the system is alive.
 
 ## Receipt 3 — durable HNC evidence
 
@@ -64,7 +65,7 @@ intrusion ledger. That flag stays false. The system is not reported alive.
 Live trading stays off. No order is placed.
 
 Still HOLD. Receipt 1 is measured separately. Receipts 2 and 4 are
-remeasured and do not clear. Receipt 5 is absent:
+remeasured and do not clear. Receipt 5 is a skip:
 
 - exact target-source measurement and immutable release provenance
 - complete source-boundary census closure
@@ -82,8 +83,9 @@ does not change the `aureon/` bytes the digest measures. They do not clear
 go-live. `go_live_clear` is false. Receipt 3 is the DigiCert section above
 and is not part of this stage. Receipt 1 is measured at
 `reports/measured/native_process_containment.json` and is not rewritten here.
-Receipt 5 is absent. The census does not close the pin tree: symbols in that
-tree are absent from `docs/mcp/inventory.json` and were not added. That
+Receipt 5 is a stage 10 skip and is not part of this stage. The census
+does not close the pin tree: symbols in that tree are absent from
+`docs/mcp/inventory.json` and were not added. That
 includes `aureon/evidence/hnc_anchor.py` and
 `aureon/evaluation/market_series.py`. `http_get` stays unlisted so evaluation
 is not moved to plan stage 4. Plan stages 3 and 4 stay closed. Reachable
@@ -132,15 +134,68 @@ Compose, Supervisor, systemd, shell, package, desktop, and cloud routes still
 stop at the isolated bootstrap before target import. `scripts/linux/install-linux.sh`
 still execs that bootstrap. No live instance is claimed.
 
+## Receipt 5 — authenticated deployment (stage 10)
+
+Receipt 5 is not complete. The measured file is a HOLD skip.
+
+The runner is:
+
+```bash
+python scripts/validation/go_live_receipt5.py
+python scripts/validation/go_live_receipt5.py --check
+```
+
+`--check` re-reads `reports/measured/go_live_receipt5_deployment.json` and
+`reports/measured/go_live_receipt5_deployment.md` and probes this machine for
+provider auth. It does not deploy. The JSON is the record. This paragraph is
+not the measurement.
+
+At tip `29fab7f21fc93da40224566dd8f34faacb3d74d4` the probe found no Hugging
+Face token and no Google Cloud credential. No deploy was attempted. No
+provider API was called. The read-back digest is null. A localhost process
+was not substituted for a provider.
+
+A Hugging Face token does not upload by itself. Upload also requires
+`AUREON_RECEIPT5_ALLOW_HF_UPLOAD=1`. Before any upload, the runner reads the
+existing Space. `create_repo(..., exist_ok=True)` does not change privacy,
+hardware, or SDK on a Space that already exists, so the runner does not use
+that as a check. It refuses the upload when the existing Space is not
+private, the hardware is not `cpu-basic`, or the SDK is not `gradio`. A new
+Space is created only under that opt-in, then read back, and refused before
+upload if those settings did not stick. The Space stays private unless
+`AUREON_RECEIPT5_HF_PUBLIC=1`, and that public opt-in does not relax the
+check on a Space that already exists. Cloud Run is not created unless
+`AUREON_RECEIPT5_ALLOW_CLOUD_RUN_DEPLOY=1` and a service, project, region,
+and image are already set.
+
+If the upload finishes and a later read fails, the receipt stays incomplete
+and keeps a null digest. It records that the provider was called and the
+upload happened. Those flags do not stay false after the upload.
+
+The public pin recorded on this receipt is the published require-pin
+`bb04503119681adcf832f3c3e9b0cbf09fc7a938` (`PINNED_COMMIT` in
+`mcp/aureon_public/guard_loader.py` at this tip). This receipt does not move
+it. `evidence/output/hnc_head_anchor.json` `public_require_pin` stays
+`34864ff0547d2cff03e707414743a3b0cc8770b5`. That field is receipt 3. This
+receipt does not rewrite it.
+
+`go_live_clear` stays false. The orange release-boundary badge stays HOLD.
+A later badge flip is stage 11 and a separate PR. This file does not report
+the system alive. Official installers are unchanged. Receipts 1–4 were not
+re-run here.
+
+Live trading stays off. No order is placed. No tunnel is opened. MCP plan
+stages 3 and 4 stay closed.
+
 ## Receipts 2, 3, 4, and 5 remain HOLD
 
-Go-live stays HOLD until receipt 5 exists: an authenticated deployment
-receipt and provider-side read-back. Receipts 2 and 4 were remeasured and
-do not supply that receipt. Receipt 3 is the DigiCert section above and
-does not clear go-live. `go_live_clear` is false. The orange badge stays
-HOLD.
+Receipt 5 does not clear the release. Receipts 2 and 4 were remeasured and
+do not supply a provider read-back. Receipt 3 is the DigiCert section above
+and does not clear go-live. These stay open, and this change does not
+re-judge them:
 
 - exact target-source measurement and immutable release provenance (HOLD)
 - durable HNC evidence with an external monotonic head anchor (HOLD)
 - complete source-boundary census closure (HOLD)
-- authenticated deployment receipt and provider-side read-back (absent)
+- authenticated deployment receipt and provider-side read-back (skip only;
+  see receipt 5)

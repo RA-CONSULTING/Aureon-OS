@@ -1,0 +1,103 @@
+{
+  "schema": "aureon.go-live.deployment-receipt.v1",
+  "stage": 10,
+  "receipt": 5,
+  "title": "authenticated deployment receipt and provider-side read-back",
+  "decision": "HOLD",
+  "outcome": "skip",
+  "receipt_5_complete": false,
+  "go_live_clear": false,
+  "system_alive_claimed": false,
+  "release_boundary": "HOLD",
+  "orange_badge": "unchanged",
+  "badge_flip": "stage 11 / separate PR",
+  "pin": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
+  "pin_changed": false,
+  "pin_measured_at": "29fab7f21fc93da40224566dd8f34faacb3d74d4",
+  "pin_source": "mcp/aureon_public/guard_loader.py PINNED_COMMIT at started_from; published require-pin. evidence/output/hnc_head_anchor.json public_require_pin stays the receipt 3 value and is not rewritten. This receipt does not move the pin",
+  "started_from": "29fab7f21fc93da40224566dd8f34faacb3d74d4",
+  "git_head_at_measurement": "29fab7f21fc93da40224566dd8f34faacb3d74d4",
+  "worktree_dirty_at_measurement": true,
+  "provider": null,
+  "auth_method": null,
+  "missing_provider_auth": [
+    "env:HF_TOKEN",
+    "env:HUGGING_FACE_HUB_TOKEN",
+    "file:~/.cache/huggingface/token",
+    "file:~/.huggingface/token",
+    "file:~/.config/huggingface/token",
+    "command:gcloud",
+    "env:GOOGLE_APPLICATION_CREDENTIALS",
+    "file:~/.config/gcloud/application_default_credentials.json",
+    "file:~/.config/gcloud/credentials.db"
+  ],
+  "unused_provider_auth": [],
+  "blocker": "Authenticated deploy was not attempted. Missing provider auth: env:HF_TOKEN, env:HUGGING_FACE_HUB_TOKEN, file:~/.cache/huggingface/token, file:~/.huggingface/token, file:~/.config/huggingface/token, command:gcloud, env:GOOGLE_APPLICATION_CREDENTIALS, file:~/.config/gcloud/application_default_credentials.json, file:~/.config/gcloud/credentials.db. Present and unused: none. No provider API was called. No provider read-back was fabricated.",
+  "deploy_attempted": false,
+  "deploy_performed": false,
+  "deploy_timestamp": null,
+  "deploy_timestamp_source": null,
+  "resource_id": null,
+  "provider_api": null,
+  "provider_api_called": false,
+  "provider_status": null,
+  "provider_readback_digest": null,
+  "provider_readback": null,
+  "healthy": false,
+  "localhost_substituted_for_provider": false,
+  "live_trading": false,
+  "orders_placed": false,
+  "market_data_fetched": false,
+  "tunnels_opened": false,
+  "secrets_recorded": false,
+  "mcp_stages_3_and_4_opened": false,
+  "installers_switched_on": false,
+  "receipts_1_to_4_reverified": false,
+  "scaffold": {
+    "path": "huggingface/hnc-field",
+    "file_count": 5,
+    "files": [
+      {
+        "path": "README.md",
+        "sha256": "7537eb8e7a0bb53f86056d9d15f0b31841abee273e652e9127bb49f626c61249",
+        "size": 1971
+      },
+      {
+        "path": "app.py",
+        "sha256": "60600b3efc28fac0f7142a15d6ce857eabdf30854a189097e7cee95bc89430b7",
+        "size": 14413
+      },
+      {
+        "path": "guard.py",
+        "sha256": "1cf30204f1d6ebc5f6769a97baed0687e2e3286f303d3bfadd167c63374969a6",
+        "size": 1959
+      },
+      {
+        "path": "replay/brain.json",
+        "sha256": "fafa3834b4c441af957f65c49540ba1880a1e879c589a30a2d0bbb7021383e0f",
+        "size": 14000
+      },
+      {
+        "path": "requirements.txt",
+        "sha256": "dcc8bcbfcc64839d9b37d8eb544df39db642c6531c5ea1592ee8b8974211a61a",
+        "size": 233
+      }
+    ],
+    "sha256": "655a0317ca3dd9703312ca96285c2df8857b22238187d359baa78747ebfa7060",
+    "source": "local-worktree"
+  },
+  "spend_guard": "A Hugging Face token does not upload. Upload also requires AUREON_RECEIPT5_ALLOW_HF_UPLOAD=1. Hardware must stay cpu-basic. A new Space stays private unless AUREON_RECEIPT5_HF_PUBLIC=1. An existing Space is refused unless it is already private, cpu-basic, and gradio. create_repo exist_ok does not change those settings and is not the check. Cloud Run is not created unless AUREON_RECEIPT5_ALLOW_CLOUD_RUN_DEPLOY=1 and AUREON_RECEIPT5_CLOUD_RUN_SERVICE, AUREON_RECEIPT5_GCP_PROJECT, AUREON_RECEIPT5_CLOUD_RUN_REGION, and AUREON_RECEIPT5_CLOUD_RUN_IMAGE are set.",
+  "auth_probe": {
+    "hf_token_present": false,
+    "hf_auth_method": null,
+    "hf_upload_opt_in": false,
+    "gcloud_on_path": false,
+    "gcloud_active_account": false,
+    "gcp_credential_present": false,
+    "cloud_run_deploy_opt_in": false,
+    "unreadable_provider_auth": []
+  },
+  "runner": "scripts/validation/go_live_receipt5.py",
+  "measured_at": "2026-11-05T20:58:55Z",
+  "measurement_note": "git_head_at_measurement is HEAD when this command ran. The commit that adds this file is not a second measurement. provider_readback_digest is sha256 of the redacted provider payload. A null digest means this run has no provider payload. The UTC stamps are this machine's clock, not receipt 3. The pin value was read at started_from. This command does not move it. Receipts 1-4 were not re-run."
+}
