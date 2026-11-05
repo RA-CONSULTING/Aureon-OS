@@ -32,5 +32,7 @@ plug-compose:
 	docker compose -f deploy/plug/docker-compose.yml up --build
 
 # Rebuild the HNC, Auris, and QGITA evidence and require the committed bytes.
+# The HNC head token is read from refs/notes/aureon-hnc-head. This target does not
+# request a new timestamp and does not enable trading.
 evidence:
 	PYTHONHASHSEED=0 PYTHONPATH=. python3 -m aureon.evidence --check
