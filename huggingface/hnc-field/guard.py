@@ -62,7 +62,7 @@ if _ROOT is not None and str(_ROOT) not in sys.path:
 
 UNAVAILABLE = "unavailable"
 LICENCE = "MIT"
-COMMIT = "34864ff0547d2cff03e707414743a3b0cc8770b5"
+COMMIT = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
 BRAIN_FILE = "reports/measured/brain.json"
 
 

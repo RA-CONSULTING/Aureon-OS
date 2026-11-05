@@ -13,8 +13,8 @@ from pathlib import Path
 from aureon_public.guard_loader import PINNED_COMMIT
 from aureon_public.paths import repo_root
 
-# git rev-parse 34864ff0547d2cff03e707414743a3b0cc8770b5:aureon
-PIN_AUREON_TREE = "3ba0cab4a5e193b01943e5e6e0be25077ff759f6"
+# git rev-parse bb04503119681adcf832f3c3e9b0cbf09fc7a938:aureon
+PIN_AUREON_TREE = "a5114a7e5ecb4e9a51df57d58355e72882cf0a3c"
 CODE_COMMIT_NOTE = (
     "This is the parent of the commit that contains this record. "
     "The record cannot name the commit that adds the file."

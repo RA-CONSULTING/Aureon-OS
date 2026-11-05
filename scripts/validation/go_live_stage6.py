@@ -2,13 +2,14 @@
 """Stage 6 go-live receipts 2 and 4.
 
 Receipt 2 is an exact content measurement of the pinned release tree, bound
-to pin 34864ff0 and tip c68a89d2. Receipt 4 compares the public inventory
-with an AST scan of the paths in that pin tree. Files added on the checkout
-after the pin are named and left out of the inventory. Neither receipt calls
-Aureon, places an order, or publishes a new reachable count.
+to pin bb045031 and tip b2b03103. Receipt 4 compares the public inventory
+with an AST scan of the paths in that pin tree. Symbols in the pin tree that
+are absent from the inventory stay unlisted. Neither receipt calls Aureon,
+places an order, or publishes a new reachable count.
 
 The sweep files under measured/aureon_public_*.json stay as they are. They
 name an older pin. This script reads them and does not rewrite them.
+Receipt 1 at reports/measured/native_process_containment.json stays as measured.
 """
 
 from __future__ import annotations
@@ -22,8 +23,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-PIN = "34864ff0547d2cff03e707414743a3b0cc8770b5"
-TIP = "c68a89d2a184d99582bb24310b91e024323a212c"
+PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
+TIP = "b2b0310362597dc520114de86d8700c0c50758d5"
 PROVENANCE_SCHEMA = "aureon.go-live.release-provenance.v1"
 CENSUS_SCHEMA = "aureon.go-live.source-boundary-census.v1"
 TREE_SCHEMA = "aureon.go-live.release-tree.v1"
@@ -32,14 +33,13 @@ CENSUS_PATH = Path("measured/go_live_stage6_source_census.json")
 CENSUS_MARKDOWN = Path("docs/runbooks/GO_LIVE_STAGE6_SOURCE_CENSUS.md")
 SWEEP_PATH = Path("measured/aureon_public_call_sweep.json")
 COMPARE_FIELDS = ("package", "server", "form", "safety", "stage", "required", "async")
-# Checkout paths that are not in the pin tree. Listing market_series.http_get
-# would mark evaluation as a live public fetch and move that package from plan
-# stage 2 to plan stage 4, which changes the reachable count. This stage does
-# not do that.
-POST_PIN_CHECKOUT_PATHS = (
-    "aureon/evaluation/market_series.py",
-    "aureon/evidence/hnc_anchor.py",
-)
+# Checkout paths that are not in the pin tree. At pin bb045031 the previous
+# exclusions (market_series, hnc_anchor, containment, qgita_series_rates) are
+# inside the pin. They are scanned and left out of the inventory. Listing
+# market_series.http_get would mark evaluation as a live public fetch and move
+# that package from plan stage 2 to plan stage 4, which changes the reachable
+# count. This stage does not do that.
+POST_PIN_CHECKOUT_PATHS = ()
 
 
 def _git(*args: str) -> str:
@@ -273,10 +273,17 @@ def build_provenance() -> dict[str, object]:
         "go_live_clear": False,
         "inventory_blobs_match": pin_inventory_blob == tip_inventory_blob,
         "lineage_note": (
-            "Tip c68a89d2 is the pin-move commit this stage started from. "
-            "The commit that adds this digest is not the pin and is not that tip. "
-            "The digest binds the pin and tip git objects, not the working tree."
+            f"Pin {PIN} is the prior main tip. "
+            f"Tip {TIP} is the commit that retargets published require-pin "
+            "strings onto that pin. The commit that adds this digest is not "
+            "the pin and is not that tip. The digest binds the pin and tip "
+            "git objects, not the working tree. The previous receipt named pin "
+            "34864ff0547d2cff03e707414743a3b0cc8770b5 and tip "
+            "c68a89d2a184d99582bb24310b91e024323a212c."
         ),
+        "receipt_1_measured": True,
+        "receipt_1_path": "reports/measured/native_process_containment.json",
+        "receipt_5_state": "absent",
         "measured_call_sweep": sweep,
         "pin": PIN,
         "pin_aureon_tree": pin_aureon,
@@ -458,16 +465,9 @@ def build_census(provenance: dict[str, object]) -> dict[str, object]:
             added_other.append(item)
     sweep = provenance["measured_call_sweep"]
     assert isinstance(sweep, dict)
-    key_match = next(
-        (
-            item.get("key_pattern_match")
-            for item in added_other
-            if item["module"] == "evidence/report.py" and item["symbol"] == "render_results"
-        ),
-        None,
-    )
-    if key_match != "dotenv":
-        raise SystemExit(f"evidence key pattern match is {key_match!r}, expected dotenv")
+    evidence_key = _key_token("evidence/report.py", "render_results")
+    if evidence_key != "dotenv":
+        raise SystemExit(f"evidence key pattern match is {evidence_key!r}, expected dotenv")
     delta = provenance["aureon_delta_since_measured_pin"]
     assert isinstance(delta, list)
     modified = [str(item["path"]) for item in delta if isinstance(item, dict) and item.get("status") != "A"]
@@ -510,14 +510,15 @@ def build_census(provenance: dict[str, object]) -> dict[str, object]:
             ),
         },
         {
-            "id": "receipts_1_and_5_absent",
+            "id": "receipt_5_absent",
             "text": (
-                "Receipts 1, 3, and 5 are not produced by this stage. Native "
-                "zero-network containment and an authenticated deployment receipt "
-                "are absent. Receipt 3 is the DigiCert head anchor in "
+                "Receipt 1 is measured at reports/measured/native_process_containment.json. "
+                "This stage does not rewrite that record. Receipts 2 and 4 are this "
+                "remeasurement. Receipt 3 is the DigiCert head anchor in "
                 "docs/runbooks/GO_LIVE_HARDENING.md. This stage does not append a "
                 "later head, does not set external_head_anchor_attested, and does "
-                "not report the system alive. Decision remains HOLD. "
+                "not report the system alive. Receipt 5, an authenticated deployment "
+                "receipt and provider-side read-back, is absent. Decision remains HOLD. "
                 "go_live_clear is false."
             ),
         },
@@ -526,20 +527,36 @@ def build_census(provenance: dict[str, object]) -> dict[str, object]:
             "text": (
                 f"Inventory sha256 at pin {PIN} is {provenance['pin_inventory_sha256']}. "
                 f"The closure inventory sha256 is {_sha256(inventory_bytes)}. "
-                "Tip c68a89d2 did not change the inventory blob. The symbols added "
-                "here were already in the pin aureon tree, which matches the tip aureon tree."
+                + (
+                    f"Tip {TIP} did not change the inventory blob. "
+                    if provenance["inventory_blobs_match"]
+                    else f"Tip {TIP} changed the inventory blob. "
+                )
+                + (
+                    "No inventory rows were added since the pin inventory. "
+                    if not added_keys
+                    else (
+                        f"{len(added_keys)} inventory rows differ from the pin inventory. "
+                    )
+                )
+                + (
+                    "The pin aureon tree matches the tip aureon tree."
+                    if provenance["aureon_trees_match"]
+                    else "The pin aureon tree does not match the tip aureon tree."
+                )
             ),
         },
         {
-            "id": "post_pin_checkout_not_in_closure",
+            "id": "pin_tree_symbols_outside_inventory",
             "text": (
-                "These checkout paths are not in the pin tree this closure measures: "
-                + ", ".join(f"`{path}`" for path in POST_PIN_CHECKOUT_PATHS)
-                + ". They are not added to the inventory. "
+                f"{len(unlisted)} symbols are in the pin aureon tree and are not in "
+                "docs/mcp/inventory.json. They were not added. "
                 "`evaluation/market_series.py` `http_get` is a live public fetch. "
                 "Listing that row would move the evaluation package from plan stage 2 "
                 "to plan stage 4 and would change the reachable count. Reachable stays "
-                "the prior sweep's 69. Plan stages 3 and 4 stay closed. The pin is not moved."
+                "the prior sweep's 69. Plan stages 3 and 4 stay closed. The unlisted paths are "
+                + ", ".join(f"`{path}`" for path in sorted({_row_path(key[0]) for key in unlisted}))
+                + "."
             ),
         },
     ]

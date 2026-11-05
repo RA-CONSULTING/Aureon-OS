@@ -1,7 +1,8 @@
 """Identity stored in measured/aureon_public_*.json.
 
 Those files are the #230 measurement at ad9be6c3. Moving the published pin
-does not rewrite them and does not create a new measurement.
+does not rewrite them and does not create a new measurement. The published
+pin later moved to 34864ff0 and then to bb045031. These records stay here.
 """
 
 RECORD_PIN = "ad9be6c3179bba140fb7e88d5733616046110da9"

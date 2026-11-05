@@ -82,7 +82,7 @@ Upload only the `huggingface/` folders. Do not upload `.env`, `.git`, keys, or t
 The Space `requirements.txt` installs the package with:
 
 ```bash
-pip install "aureon @ git+https://github.com/RA-CONSULTING/Aureon-OS.git@34864ff0547d2cff03e707414743a3b0cc8770b5"
+pip install "aureon @ git+https://github.com/RA-CONSULTING/Aureon-OS.git@bb04503119681adcf832f3c3e9b0cbf09fc7a938"
 ```
 
-That pin is commit `34864ff0547d2cff03e707414743a3b0cc8770b5`. It is the commit the Spaces and the public server install. It is main at the squash-merge of #232, which includes the #230 pin and the #231 plug-and-play boot. The recorded brain runs in this bundle were produced at `a00f744d2e686e916e45b81dd4222408c368e305`. The git+ install brings the whole repo, trading modules included, and only the Spaces switch them off.
+That pin is commit `bb04503119681adcf832f3c3e9b0cbf09fc7a938`. It is the commit the Spaces and the public server install. It is main at the stage-7 containment squash (#238). The published require-pin names that prior tip, the same way #233 named `34864ff0547d2cff03e707414743a3b0cc8770b5`. The recorded brain runs in this bundle were produced at `a00f744d2e686e916e45b81dd4222408c368e305`. The git+ install brings the whole repo, trading modules included, and only the Spaces switch them off.
