@@ -1,6 +1,8 @@
 # Twelve layers
 
-Go-live is terminal HOLD. There is no supported live instance in this checkout, and exchange keys in `.env` do not clear it. `AUREON_AUTONOMY_MODE` is a separate switch, documented in `AUTONOMY.md`: unset is `full` in that note, and `guarded` puts the self-repair denylist back. Neither value is a production start. The orange release-boundary badge stays HOLD. See `docs/runbooks/GO_LIVE_HARDENING.md`.
+The public default is full mode (`AUREON_AUTONOMY_MODE` unset). Trading is live when the operator's own exchange keys are in `.env`. The live routes are active, and they are not on hold: with exchange keys in `.env`, the launcher boots into live trading. There is no verified live track record. `AUREON_AUTONOMY_MODE=guarded` puts the denylist back. That switch is documented in `AUTONOMY.md`.
+
+Go-live is terminal HOLD. Receipt 1 is measured. Receipts 2–5 remain open. Keys and the launcher boot live trading, and that boot is not a go-live clearance and not production-ready. The orange release-boundary badge stays HOLD. See `docs/runbooks/GO_LIVE_HARDENING.md`.
 
 ## Self-repair fail-safe
 
@@ -52,7 +54,7 @@ Green hosted run IDs:
 
 Secret rotation is not a merge blocker. `ROTATE_KEYS.md` is still the inventory (provider, type, file, commit, never the value). Gitleaks still guards new commits, in the pre-commit hook and in the tree scan. History is not rewritten from this branch.
 
-Hosting is the end user's choice: any machine that can run `make up` or `make compose`. No cloud project and no provider credential is required. Those local scripts are not an approved production start, and they do not clear go-live. Live trading stays off. `may_act` is not a release. See `AUTONOMY.md` and `docs/runbooks/GO_LIVE_HARDENING.md`.
+Hosting is the end user's choice: any machine that can run `make up` or `make compose`. No cloud project and no provider credential is required. The public default is full mode (`AUREON_AUTONOMY_MODE` unset). The live routes are active: with exchange keys in `.env`, the launcher boots into live trading. There is no verified live track record. Those local scripts are not an approved production start, and they do not clear go-live. See `AUTONOMY.md` and `docs/runbooks/GO_LIVE_HARDENING.md`.
 
 Deploy notes below describe what the local scripts are written to do. They are not an approved production start. Go-live stays HOLD.
 

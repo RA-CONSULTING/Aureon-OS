@@ -17,6 +17,11 @@ provenance, an external monotonic HNC head anchor
 and an authenticated provider read-back. Signed packaging is not a clearance
 in this checkout. The orange release-boundary badge stays HOLD.
 
+The live routes are active, and they are not on hold. With exchange keys in
+`.env`, the launcher boots into live trading. There is no verified live track
+record. The public default is full mode (`AUREON_AUTONOMY_MODE` unset). That
+boot is not a go-live clearance and not production-ready.
+
 Canonical launcher paths, still unapproved and not a start command:
 `scripts/launchers/AUREON_PRODUCTION_LIVE.cmd`,
 `scripts/launchers/AUREON_WAKE_UP_FULL_AUTONOMOUS.ps1`,

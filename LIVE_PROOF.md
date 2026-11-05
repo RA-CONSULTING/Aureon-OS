@@ -1,8 +1,8 @@
-# Aureon Trading System — designed path (go-live HOLD; no verified live track record)
+# Aureon Trading System — Live Path (routes active; no verified live track record)
 
-> **What the trading path is designed to do. There is no verified live track record. Go-live is terminal HOLD. Exchange keys in `.env` do not boot a supported live session. The orange release-boundary badge stays HOLD.**
+> **What the trading path is designed to do. There is no verified live track record yet. The live routes are active, and they are not on hold: with exchange keys in `.env`, the launcher boots into live trading.**
 
-> **The run boundary is [`RUNNING.md`](RUNNING.md). There is no approved production start.**
+> Go-live is terminal HOLD. Receipt 1 is measured. Receipts 2–5 remain open. That boot is not a go-live clearance and not production-ready. The orange release-boundary badge stays HOLD. The run boundary for the release is [`RUNNING.md`](RUNNING.md).
 >
 > ℹ️ Some `4_output/...json` paths below refer to runtime-generated state files. These are produced when the system runs — you won't find them at those paths until you've executed the relevant module. The JSON paths in this doc reflect logical organization, not necessarily on-disk location of pre-existing files. To find runtime artifacts on your install, search by filename:
 > ```bash
@@ -13,7 +13,7 @@
 
 ## Status
 
-Earlier drafts of this note quoted backtest and paper-trading totals as if they were a verified record. They were not. Those P&L amounts, win rates, and trade counts are not repeated here. Live performance is not yet measured. There is no verified live track record. Go-live stays HOLD. Exchange keys in `.env` are not a start.
+Earlier drafts of this note quoted backtest and paper-trading totals as if they were a verified record. They were not. Those P&L amounts, win rates, and trade counts are not repeated here. Live performance is not yet measured. There is no verified live track record. The live routes are active: with exchange keys in `.env`, the launcher boots into live trading. Go-live stays HOLD. That boot is not a go-live clearance and not production-ready.
 
 ---
 
@@ -23,7 +23,7 @@ Earlier drafts of this note quoted backtest and paper-trading totals as if they 
 |-------|----------------------------------|-----------------|
 | **Stage 1: Backtesting** | Replay historical candles through HNC signals and write a results file | none yet |
 | **Stage 2: Paper trading** | Simulate fills against market data and store a trade record with HNC fields | none yet |
-| **Stage 3: Live trading** | Designed to place orders on a connected exchange. This checkout does not clear that. Go-live stays HOLD. | none yet |
+| **Stage 3: Live trading** | Live routes are active. With exchange keys in `.env`, the launcher boots into live trading. Go-live stays HOLD. That boot is not a go-live clearance. | none yet |
 | **Stage 4: Verification** | Compare a predicted time-to-target with the fill that actually happened | none yet |
 
 ---
@@ -94,7 +94,7 @@ What the book design names. None of this is a cleared production path:
    - Position size from account equity
    - Cross-exchange margin tracking
 
-There is no verified live track record. Go-live stays HOLD. Exchange keys in `.env` do not boot a supported live session. This note does not arm one.
+There is no verified live track record. The live routes are active. With exchange keys in `.env`, the launcher boots into live trading. This note does not arm one. Go-live stays HOLD. That boot is not a go-live clearance and not production-ready.
 
 ---
 
@@ -271,7 +271,7 @@ Performance figures from these files are not quoted. There is no verified live t
 
 ## Takeaway
 
-The design names a historical replay, a paper simulation, position fields, and a timing check against a fill. Go-live stays HOLD. Exchange keys in `.env` do not boot a supported live session. The orange release-boundary badge stays HOLD.
+The design names a historical replay, a paper simulation, position fields, and a timing check against a fill. The live routes are active. With exchange keys in `.env`, the launcher boots into live trading. There is no verified live track record. Go-live stays HOLD. That boot is not a go-live clearance and not production-ready. The orange release-boundary badge stays HOLD.
 
 Measured P&L, win rate, and trade counts are not yet measured. There is no verified live track record.
 

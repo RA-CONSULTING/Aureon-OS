@@ -1,12 +1,14 @@
 # Aureon capability map (go-live HOLD)
 
-This document maps designed public surfaces and module names. It is not a measured live system, not a production clearance, and not a validation. Go-live is terminal HOLD. The orange release-boundary badge stays HOLD. For the run boundary, see [RUNNING.md](RUNNING.md) and [QUICK_START.md](QUICK_START.md). For how the subsystems are drawn, see [SYSTEM_OVERVIEW.md](SYSTEM_OVERVIEW.md).
+This document maps designed public surfaces and module names. It is not a measured live track record, not a production clearance, and not a validation. Go-live is terminal HOLD. Receipt 1 is measured. Receipts 2–5 remain open. The orange release-boundary badge stays HOLD. For the run boundary, see [RUNNING.md](RUNNING.md) and [QUICK_START.md](QUICK_START.md). For how the subsystems are drawn, see [SYSTEM_OVERVIEW.md](SYSTEM_OVERVIEW.md).
 
-Names in the tables below, including "live" and "validated", are design labels. They are not a measured validation and not a statement that a process is running.
+The live routes are active, and they are not on hold. With exchange keys in `.env`, the launcher boots into live trading. There is no verified live track record. The public default is full mode (`AUREON_AUTONOMY_MODE` unset). That boot is not a go-live clearance and not production-ready.
 
-## Canonical launcher paths (not an approved start)
+Names in the tables below, including "live" and "validated", are design labels. They are not a measured validation.
 
-Historical invocation text. Withdrawn as a start command. These paths do not clear HOLD.
+## Canonical launcher paths (not a go-live clearance)
+
+With exchange keys in `.env`, the launcher boots into live trading. These paths do not clear HOLD.
 
 ```powershell
 .\scripts\launchers\AUREON_PRODUCTION_LIVE.cmd -WaitForRefresh -MarketStatusPort 8791
