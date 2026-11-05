@@ -87,7 +87,7 @@ _ROWS: list[dict[str, Any]] | None = None
 _INDEX: dict[tuple[str, str], dict[str, Any]] | None = None
 _INVENTORY_REFUSAL: str | None = None
 # sha256 of the committed docs/mcp/inventory.json. A different file is not loaded.
-INVENTORY_SHA256 = "4bc19ea9b5444a7b8a9abbd3fabf635d083bd25bea6c1b2d6eab2605b4f5716b"
+INVENTORY_SHA256 = "be5e14d73ae1130a16d04d355478a1474bf1f1b2c405c9d2196444eca8a391dc"
 _LEAKY_PARAMS = {"url", "path", "out", "file", "host"}
 # Operator-scoped rows are refused unless named here. No portfolio or accounting key reader.
 _OPERATOR_ALLOWLIST = {

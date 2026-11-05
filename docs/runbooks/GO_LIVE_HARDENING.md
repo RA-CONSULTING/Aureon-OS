@@ -57,6 +57,20 @@ Still HOLD, with no receipt from this change:
 - complete source-boundary census closure
 - authenticated deployment receipt and provider-side read-back
 
+## Stage 6 artifacts
+
+Receipt 2 is `measured/go_live_stage6_provenance.json`. Receipt 4 is
+`measured/go_live_stage6_source_census.json` and
+`docs/runbooks/GO_LIVE_STAGE6_SOURCE_CENSUS.md`. They measure pin
+`34864ff0547d2cff03e707414743a3b0cc8770b5` and tip
+`c68a89d2a184d99582bb24310b91e024323a212c`. They do not clear go-live.
+Receipt 3 is the DigiCert section above and is not part of this stage.
+Receipts 1 and 5 are absent. The census closes the pin tree. This checkout
+also has `aureon/evidence/hnc_anchor.py` and
+`aureon/evaluation/market_series.py`. Those paths are named in the census
+and are not added to the inventory. Plan stages 3 and 4 stay closed.
+Decision remains `HOLD`.
+
 Operator contract names are not injected by go-live: `AUREON_OPERATOR_ENV`,
 `AUREON_OPERATOR_API_KEY`, `AUREON_OPERATOR_RATE_RPS`,
 `AUREON_OPERATOR_RATE_BURST`, `AUREON_OPERATOR_MAX_BODY`,
