@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aureon OS public front door — go-live HOLD</title>
+  <meta name="description" content="Repository reading copy for Aureon OS. Live routes are active. Keys in .env boot live. No verified live track record. Guarded smoke ./install.sh --smoke leaves trading off for that run. Go-live is HOLD. GitHub Pages is off. Applicant: R&amp;A Consulting NI696693, trading as Aureon Zorza Technologies. Homepage: https://aureonzorzatechnologies.pl">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="assets/front-door.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <p class="hold" role="status">Go-live is HOLD. This checkout is never production ready and never a validated deployment. GitHub Pages is off. This scaffold does not enable it.</p>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./">Aureon OS<small>Public front door · reading copy</small></a>
+      <nav aria-label="Front door">
+        <ul class="nav-links">
+          <li><a href="./" aria-current="page">Front door</a></li>
+          <li><a href="install/">Guarded install</a></li>
+          <li><a href="status/">Go-live HOLD</a></li>
+          <li><a href="#license">MIT license</a></li>
+          <li><a href="https://aureonzorzatechnologies.pl/">Company homepage</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <h1>Public front door</h1>
+    <p class="lede">This page lives in the Aureon OS repository so a stranger can see where to start. It is a reading copy. It is not a hosted service, and publishing these files does not clear go-live.</p>
+    <p>Applicant: R&amp;A Consulting and Brokerage Services Ltd, company number NI696693, trading as Aureon Zorza Technologies. Company homepage: <a href="https://aureonzorzatechnologies.pl/">https://aureonzorzatechnologies.pl</a>. The pages under <code>website/</code> are the source for that homepage. This folder does not replace it.</p>
+
+    <dl class="facts">
+      <div><dt>Go-live</dt><dd>HOLD</dd></div>
+      <div><dt>Production readiness</dt><dd>false</dd></div>
+      <div><dt>Live routes</dt><dd>active</dd></div>
+      <div><dt>Verified live track record</dt><dd>none</dd></div>
+      <div><dt>Guarded smoke</dt><dd>./install.sh --smoke</dd></div>
+      <div><dt>License</dt><dd>MIT</dd></div>
+      <div><dt>GitHub Pages</dt><dd>off</dd></div>
+      <div><dt>Homepage</dt><dd><a href="https://aureonzorzatechnologies.pl/">aureonzorzatechnologies<wbr>.pl</a></dd></div>
+    </dl>
+
+    <h2>Live routes</h2>
+    <div class="panel">
+      <p>The live routes are active. With exchange keys in <code>.env</code>, the launcher boots into live trading. There is no verified live track record.</p>
+      <p>The start-here command is the guarded smoke <code>./install.sh --smoke</code>. It does not read <code>.env</code>, leaves exchange keys unset, and keeps live trading off for that run. That smoke is not a statement that every launcher has trading off.</p>
+      <p><code>scripts/linux/aureon-up.sh</code> can boot live trading when a full exchange key group is present in <code>.env</code>. When <code>.venv/bin/python</code> is missing, that script runs <code>production/install.sh</code>, which calls <code>scripts/launch/aureon-master.sh</code>. With autonomy left at the public default, that boot reports <code>trading_mode=live (exchange keys present)</code>. Go-live stays HOLD. That boot is not a deployment receipt.</p>
+    </div>
+
+    <h2>Start here</h2>
+    <ol class="steps">
+      <li>Clone <a href="https://github.com/RA-CONSULTING/Aureon-OS">github.com/RA-CONSULTING/Aureon-OS</a>.</li>
+      <li>Run <a href="install/"><code>./install.sh --smoke</code></a>. Leave exchange keys unset. Live trading stays off for that smoke.</li>
+      <li>Read the <a href="#license">MIT license</a> before you copy or ship anything.</li>
+      <li>Treat go-live as <a href="status/">HOLD</a>. A local smoke is not a deployment receipt.</li>
+    </ol>
+
+    <h2>What is already in the repository</h2>
+    <div class="panel">
+      <p><code>website/</code> is the company site source. Its canonical URL is the homepage above. Uploading it is a separate Home.pl path and is not this page.</p>
+      <p><code>public/</code> holds repository assets. It is not a GitHub Pages site.</p>
+      <p><code>netlify/functions/</code> is function source. This page does not claim a Netlify production site.</p>
+      <p>GitHub Pages was off when this scaffold was added (<code>has_pages: false</code>). <a href="https://github.com/RA-CONSULTING/Aureon-OS/blob/main/.github/workflows/pages-gated.yml"><code>.github/workflows/pages-gated.yml</code></a> has no push trigger. The upload job stays skipped unless the dispatch confirm is exactly <code>GARY-YES-DEPLOY-PAGES</code> and the repository variable <code>AUREON_PAGES_DEPLOY</code> is <code>gary-yes</code>. This file does not turn the Pages feature on, and it does not deploy.</p>
+    </div>
+
+    <h2 id="license">MIT license</h2>
+    <p>The repository license is the MIT License, copyright (c) 2025 R&amp;A Consulting. The software is provided “AS IS”, without warranty. The full text is <a href="https://github.com/RA-CONSULTING/Aureon-OS/blob/main/LICENSE"><code>LICENSE</code></a> at the repository root. In this checkout the same file is <a href="../LICENSE"><code>LICENSE</code></a>.</p>
+    <p>Machine-readable facts for this folder: <a href="status.json"><code>status.json</code></a>.</p>
+  </main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>R&amp;A Consulting and Brokerage Services Ltd · NI696693 · trading as Aureon Zorza Technologies. Go-live HOLD. GitHub Pages off.</p>
+    </div>
+  </footer>
+</body>
+</html>

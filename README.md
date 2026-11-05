@@ -428,11 +428,16 @@ Open-source repository traffic to date (verifiable in the repo's GitHub **Insigh
 
 ---
 
+## Public front door
+
+Strangers can open [`site/index.html`](site/index.html). That reading copy matches this file. The live routes are active. With exchange keys in `.env`, the launcher boots into live trading. There is no verified live track record. The start-here command on that page is `./install.sh --smoke`, which leaves keys unset and keeps live trading off for that run. Go-live stays HOLD. This checkout is never production ready and never a validated deployment. GitHub Pages is off. [`.github/workflows/pages-gated.yml`](.github/workflows/pages-gated.yml) is dispatch-gated behind `GARY-YES-DEPLOY-PAGES` and does not deploy. The applicant is R&A Consulting and Brokerage Services Ltd, company no. NI696693, trading as Aureon Zorza Technologies. The company homepage is [aureonzorzatechnologies.pl](https://aureonzorzatechnologies.pl).
+
 ## Where to go next
 
 | You are… | Start here |
 |---|---|
 | **Cloning the repo** | The quick start at the top of this file — `./install.sh --smoke` only, live trading off, go-live HOLD |
+| **Opening the public front door** | [`site/index.html`](site/index.html) — live routes active, `.env` keys boot live, no verified live track record. Guarded smoke `./install.sh --smoke`. Go-live HOLD. GitHub Pages is off. |
 | **Working on Aureon OS** | [`docs/AUREON_RULES.md`](docs/AUREON_RULES.md) — the shared rulebook |
 | **An investor or funder** | [`docs/investor/README.md`](docs/investor/README.md) — diligence path, capability categories, and claim discipline |
 | **A developer** | [`docs/INDEX.md`](docs/INDEX.md) · [`CAPABILITIES.md`](CAPABILITIES.md) · [`docs/SAAS_PLATFORM.md`](docs/SAAS_PLATFORM.md) |

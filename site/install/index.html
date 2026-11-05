@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guarded install — Aureon OS front door</title>
+  <meta name="description" content="Clone Aureon OS and run ./install.sh --smoke. The smoke leaves trading off. Live routes are active: keys in .env boot live. No verified live track record. Go-live remains HOLD.">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="../assets/front-door.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <p class="hold" role="status">Go-live is HOLD. This checkout is never production ready and never a validated deployment. GitHub Pages is off. This scaffold does not enable it.</p>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="../">Aureon OS<small>Public front door · reading copy</small></a>
+      <nav aria-label="Front door">
+        <ul class="nav-links">
+          <li><a href="../">Front door</a></li>
+          <li><a href="./" aria-current="page">Guarded install</a></li>
+          <li><a href="../status/">Go-live HOLD</a></li>
+          <li><a href="../#license">MIT license</a></li>
+          <li><a href="https://aureonzorzatechnologies.pl/">Company homepage</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <h1>Clone and guarded install</h1>
+    <p class="lede">The start-here command is the guarded smoke. It is a local checkout check. It does not clear go-live.</p>
+    <div class="panel">
+      <p>The live routes are active. With exchange keys in <code>.env</code>, the launcher boots into live trading. There is no verified live track record.</p>
+      <p>The smoke below does not read <code>.env</code>, leaves exchange keys unset, and keeps live trading off for that run. That is the smoke. It is not a statement that every launcher has trading off.</p>
+    </div>
+    <p>You need Python 3.11 or newer, Node.js 20 or newer, and npm. On Debian or Ubuntu, install <code>python3-venv</code> first. <code>install.sh</code> is a bash script. From Windows, run it with bash.</p>
+
+    <pre><code>git clone https://github.com/RA-CONSULTING/Aureon-OS.git
+cd Aureon-OS
+./install.sh --smoke</code></pre>
+
+    <h2>What <code>./install.sh</code> does</h2>
+    <ul>
+      <li>Creates <code>.venv</code> when it is missing, then installs the pinned <code>requirements-plug.lock</code>.</li>
+      <li>Runs <code>npm ci --ignore-scripts --prefix frontend</code> when the dashboard toolchain is absent.</li>
+      <li>Starts <code>scripts/plug_and_play.py</code>.</li>
+      <li>Does not read <code>.env</code> and does not copy <code>.env.example</code> into <code>.env</code>.</li>
+      <li>Sets <code>AUREON_AUTONOMY_MODE=guarded</code>, <code>AUREON_LIVE_TRADING=0</code>, and <code>AUREON_LLM_OFFLINE=1</code>.</li>
+      <li>Drops credential-shaped variables from the child environment.</li>
+    </ul>
+    <p>If the stack starts, it binds loopback on that same machine:</p>
+    <ul>
+      <li>Operator API: <code>http://127.0.0.1:8790/</code></li>
+      <li>Public MCP: <code>http://127.0.0.1:8077/mcp</code></li>
+      <li>Dashboard: <code>http://127.0.0.1:5173/</code></li>
+      <li>Stack health: <code>http://127.0.0.1:8787/</code></li>
+    </ul>
+    <p>Those addresses are not a public service. Stop the stack with <code>./install.sh --stop</code>.</p>
+
+    <h2>What the smoke covers</h2>
+    <p><code>./install.sh --smoke</code> starts that same guarded stack, requests the local endpoints, and stops. A passing smoke checks the local process. It does not place an order. It is not deployment validation, and go-live stays HOLD. <code>./install.sh</code> without <code>--smoke</code> starts the same guarded stack and leaves it running until <code>./install.sh --stop</code>.</p>
+
+    <div class="panel">
+      <h2>Other launchers can boot live</h2>
+      <p><code>scripts/linux/aureon-up.sh</code> can boot live trading when a full exchange key group is present in <code>.env</code>. When <code>.venv/bin/python</code> is missing, that script runs <code>production/install.sh</code>, which calls <code>scripts/launch/aureon-master.sh</code> (Windows: <code>aureon-master.ps1</code> and <code>aureon-master.bat</code>). With autonomy left at the public default, that boot reports <code>trading_mode=live (exchange keys present)</code>. Leave exchange keys unset. Strangers stay on <code>./install.sh --smoke</code>. Go-live stays HOLD.</p>
+    </div>
+
+    <p>Checkout file: <a href="../../install.sh"><code>install.sh</code></a>. Same file on GitHub: <a href="https://github.com/RA-CONSULTING/Aureon-OS/blob/main/install.sh"><code>install.sh</code></a>. The supervisor contract is <a href="https://github.com/RA-CONSULTING/Aureon-OS/blob/main/scripts/plug_and_play.py"><code>scripts/plug_and_play.py</code></a>.</p>
+  </main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Applicant: R&amp;A Consulting and Brokerage Services Ltd, NI696693, trading as Aureon Zorza Technologies. The live routes are active. There is no verified live track record. Go-live HOLD. Company homepage: <a href="https://aureonzorzatechnologies.pl/">https://aureonzorzatechnologies.pl</a>.</p>
+    </div>
+  </footer>
+</body>
+</html>

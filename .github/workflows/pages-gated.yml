@@ -1,0 +1,85 @@
+name: Pages scaffold (deploy gated)
+
+# GATED SCAFFOLD. Committing this file does not enable GitHub Pages.
+# The only trigger is workflow_dispatch. Product go-live stays HOLD
+# even if a later run uploads the static site/ folder.
+# Deploy runs only when both gates match:
+#   inputs.confirm == GARY-YES-DEPLOY-PAGES
+#   vars.AUREON_PAGES_DEPLOY == gary-yes
+# This commit sets neither value and does not call the Pages API.
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type GARY-YES-DEPLOY-PAGES to request a Pages upload. The default HOLD skips deploy."
+        required: true
+        default: HOLD
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aureon-pages-gated
+  cancel-in-progress: false
+
+jobs:
+  hold:
+    name: pages deploy stays HOLD
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Record the gate
+        env:
+          CONFIRM: ${{ inputs.confirm }}
+          PAGES_VAR: ${{ vars.AUREON_PAGES_DEPLOY }}
+        run: |
+          set -eu
+          echo "### Pages scaffold" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Product go-live stays HOLD. This workflow does not enable GitHub Pages." >> "$GITHUB_STEP_SUMMARY"
+          if [ "$CONFIRM" = "GARY-YES-DEPLOY-PAGES" ] && [ "$PAGES_VAR" = "gary-yes" ]; then
+            echo "Both Gary gates match. The deploy job may upload site/." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "HOLD. No upload." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  deploy:
+    name: upload site only after Gary yes
+    needs: hold
+    if: >
+      github.event_name == 'workflow_dispatch' &&
+      inputs.confirm == 'GARY-YES-DEPLOY-PAGES' &&
+      vars.AUREON_PAGES_DEPLOY == 'gary-yes'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Refuse unless both Gary gates still match
+        env:
+          CONFIRM: ${{ inputs.confirm }}
+          PAGES_VAR: ${{ vars.AUREON_PAGES_DEPLOY }}
+        run: |
+          set -eu
+          if [ "$CONFIRM" != "GARY-YES-DEPLOY-PAGES" ] || [ "$PAGES_VAR" != "gary-yes" ]; then
+            echo "HOLD. Refusing to upload. GitHub Pages stays off."
+            exit 1
+          fi
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload the front-door folder
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
