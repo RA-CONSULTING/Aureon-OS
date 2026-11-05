@@ -13,6 +13,12 @@ is absent or HOLD, the omitted call is no_data. A zero-input probe still
 names any node that stays without a value when the four market fields are
 present as 0. There is no trade-outcome label, so trade readiness stays HOLD.
 
+The same coherence method is then called with the formula-path Λ(t) series.
+The value is passed under the field names already used for that series:
+``lambda``, ``lambda_t``, and ``lambda_current``. No conversion into
+volatility, momentum, volume, or spread is added. If the returned coherence
+does not change, the join stays HOLD.
+
 QGITA is ``QGITAMarketAnalyzer`` constructed with its own defaults, then
 ``analyze``. The public pack is fed beside the derived column and the formula
 series. Detection rate and false-alarm rate stay HOLD: none of those series
@@ -24,9 +30,12 @@ These figures are not a claim that the system is conscious or alive.
 
 from __future__ import annotations
 
+import ast
 import contextlib
 import csv
+import inspect
 import io
+import textwrap
 from pathlib import Path
 from typing import Any
 
@@ -41,6 +50,9 @@ _NOTE = (
     "They are not a claim that the system is conscious or alive."
 )
 _INPUTS = ("volatility", "momentum", "volume", "spread")
+# Names this repo already uses for HarmonicRealityField Λ(t). "Lambda" is the
+# derived-column name and is not this series.
+_LAMBDA_KEYS = ("lambda", "lambda_t", "lambda_current")
 
 
 def _optional_count(value: Any) -> int | None:
@@ -447,6 +459,165 @@ def _load_lambda(root: Path) -> dict[str, Any]:
     }
 
 
+def _method_tree(method: Any) -> ast.AST:
+    return ast.parse(textwrap.dedent(inspect.getsource(method)))
+
+
+def _tree_names_lambda(tree: ast.AST) -> bool:
+    needles = set(_LAMBDA_KEYS)
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Name) and node.id in needles:
+            return True
+        if isinstance(node, ast.Attribute) and node.attr in needles:
+            return True
+        if isinstance(node, ast.Constant) and isinstance(node.value, str) and node.value in needles:
+            return True
+    return False
+
+
+def _cited_auris_input_keys(tree: ast.AST) -> list[str]:
+    """String keys ``_auris_role_value`` passes to ``_auris_input``. Cited from that method."""
+
+    keys: list[str] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call) or len(node.args) < 2:
+            continue
+        func = node.func
+        name = func.attr if isinstance(func, ast.Attribute) else None
+        if name != "_auris_input":
+            continue
+        arg = node.args[1]
+        if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
+            keys.append(arg.value)
+    return sorted(set(keys))
+
+
+def _coherence_call(queen: Any, market: dict[str, float] | None) -> dict[str, Any]:
+    coherence, status = queen.get_auris_coherence(market)
+    return {
+        "coherence": None if coherence is None else float(coherence),
+        "evidence_tag": "measured",
+        "status": status,
+    }
+
+
+def _join_auris_to_lambda(series: list[float], texture: dict[str, float] | None) -> dict[str, Any]:
+    """Pass formula-path Λ(t) into ``get_auris_coherence`` and record what that call returns.
+
+    The market-texture formulas already in ``_auris_role_value`` are not changed.
+    A lambda key the method does not read leaves the coherence figure where it was.
+    """
+
+    from aureon.utils.aureon_queen_hive_mind import QueenHiveMind
+
+    queen = _reader()
+    omitted = _coherence_call(queen, None)
+    role_tree = _method_tree(QueenHiveMind._auris_role_value)
+    coherence_tree = _method_tree(QueenHiveMind.get_auris_coherence)
+    keys_read = _cited_auris_input_keys(role_tree)
+    role_names_lambda = _tree_names_lambda(role_tree)
+    names_lambda = _tree_names_lambda(coherence_tree)
+    values = [float(item) for item in series]
+    lambda_last = values[-1]
+    only_lambda = {
+        key: _coherence_call(queen, {key: lambda_last})
+        for key in _LAMBDA_KEYS
+    }
+    only_matches_omitted = all(
+        item["coherence"] is None and item["status"] == omitted["status"]
+        for item in only_lambda.values()
+    )
+    supplied = dict(texture or {})
+    texture_call = _coherence_call(queen, supplied) if supplied else None
+    matches_texture = True
+    compared = 0
+    if texture_call is not None:
+        base_coherence = texture_call["coherence"]
+        base_status = texture_call["status"]
+        for value in values:
+            for key in _LAMBDA_KEYS:
+                market = dict(supplied)
+                market[key] = value
+                coherence, status = queen.get_auris_coherence(market)
+                coherence = None if coherence is None else float(coherence)
+                compared += 1
+                if coherence != base_coherence or status != base_status:
+                    matches_texture = False
+    lambda_keys_are_read = any(key in keys_read for key in _LAMBDA_KEYS)
+    consumed = (
+        names_lambda
+        or role_names_lambda
+        or lambda_keys_are_read
+        or not only_matches_omitted
+        or not matches_texture
+    )
+    measurement = {
+        "calls_compared_with_texture": compared,
+        "evidence_tag": "measured",
+        "keys_passed": list(_LAMBDA_KEYS),
+        "lambda_last": lambda_last,
+        "lambda_max": max(values),
+        "lambda_min": min(values),
+        "lambda_source": "aureon.harmonic.aureon_harmonic_reality.HarmonicRealityField.step",
+        "live_trading": False,
+        "only_lambda": only_lambda,
+        "only_lambda_matches_omitted_call": only_matches_omitted,
+        "omitted_call": omitted,
+        "orders_placed": False,
+        "samples": len(values),
+        "texture_call": texture_call,
+        "texture_with_lambda_matches_texture": matches_texture if texture_call is not None else None,
+    }
+    cited = {
+        "auris_role_value_names_lambda": role_names_lambda,
+        "evidence_tag": "cited",
+        "get_auris_coherence_names_lambda": names_lambda,
+        "keys_read_by_auris_role_value": keys_read,
+        "source": (
+            "aureon.utils.aureon_queen_hive_mind.QueenHiveMind._auris_role_value "
+            "and QueenHiveMind.get_auris_coherence"
+        ),
+    }
+    if consumed:
+        verdict = "HOLD"
+        reason = (
+            "HarmonicRealityField.step Λ(t) was passed into get_auris_coherence "
+            "and the reading changed, or the method names that field. "
+            "This path does not add a formula, so that change is not claimed as a join. "
+            "No order was placed. Go-live stays HOLD."
+        )
+        evidence_tag = "measured"
+    else:
+        verdict = "HOLD"
+        texture_text = (
+            f"Beside the loaded market texture, coherence stayed {texture_call['coherence']} "
+            f"with status {texture_call['status']!r} for all {len(values)} formula-series samples "
+            f"under those keys ({compared} calls)."
+            if texture_call is not None
+            else "No market texture was loaded, so the beside-texture comparison was not run."
+        )
+        reason = (
+            "HarmonicRealityField.step Λ(t) was passed into get_auris_coherence "
+            f"under the keys {', '.join(_LAMBDA_KEYS)}. "
+            f"Each only-lambda call returned coherence null and status {omitted['status']!r}, "
+            "the same as get_auris_coherence(None). "
+            f"{texture_text} "
+            f"Cited from _auris_role_value, the keys read are {', '.join(keys_read)}. "
+            "Neither _auris_role_value nor get_auris_coherence names lambda. "
+            "On this formula series the coherence figure was unchanged by those keys. "
+            "No formula was added. No order was placed. Go-live stays HOLD."
+        )
+        evidence_tag = "inferred"
+    return {
+        "cited": cited,
+        "evidence_tag": evidence_tag,
+        "go_live": "HOLD",
+        "measurement": measurement,
+        "reason": reason,
+        "verdict": verdict,
+    }
+
+
 def evaluate_brain(root: Path | None = None) -> dict[str, Any]:
     """Run the HNC formula, Auris coherence, and the QGITA analyzer.
 
@@ -524,10 +695,10 @@ def _evaluate_brain(root: Path | None = None) -> dict[str, Any]:
         },
         "together": {
             "qgita_on_the_formula_series": "measured_counts_rates_hold",
-            "auris_joined_to_lambda": {
-                "verdict": "HOLD",
-                "reason": "no function in the repo passes Λ(t) into get_auris_coherence",
-            },
+            "auris_joined_to_lambda": _join_auris_to_lambda(
+                hnc_values,
+                auris.get("market_data") if isinstance(auris.get("market_data"), dict) else None,
+            ),
         },
     }
 
@@ -580,7 +751,7 @@ def render_brain_markdown(report: dict[str, Any]) -> str:
             f"Clock: {on_market.get('timestamps', '')}"
         ),
         (
-            "Auris is not joined to Λ(t): **"
+            "Auris joined to Λ(t): **"
             f"{report['together']['auris_joined_to_lambda']['verdict']}**. "
             f"{report['together']['auris_joined_to_lambda']['reason']}"
         ),

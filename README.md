@@ -59,7 +59,7 @@ SMOKE cognition {"auris": {"coherence": null, "hold_nodes": ["Clownfish", "Owl"]
 SMOKE PASSED
 ```
 
-Process ids in that banner are from the run that produced it. A later run prints its own pids. The public MCP `auris_coherence` tool returns the pin refusal above when `aureon/utils/aureon_queen_hive_mind.py` differs from the published pin. The in-process report on `/api/cognition` runs `evaluate_brain`. With `reports/measured/market_series.json` loaded, that report's Auris coherence is the pack reading and trade readiness stays **HOLD**. QGITA detection rate stays **HOLD**. Auris joined to Λ(t) stays **HOLD**. The smoke banner above is an earlier run, from before that pack.
+Process ids in that banner are from the run that produced it. A later run prints its own pids. The public MCP `auris_coherence` tool returns the pin refusal above when `aureon/utils/aureon_queen_hive_mind.py` differs from the published pin. The in-process report on `/api/cognition` runs `evaluate_brain`. With `reports/measured/market_series.json` loaded, that report's Auris coherence is the pack reading and trade readiness stays **HOLD**. QGITA detection rate stays **HOLD**. Auris joined to Λ(t) stays **HOLD**: the formula-path Λ(t) is passed into `get_auris_coherence`, and that call does not change the coherence figure. The smoke banner above is an earlier run, from before that pack.
 
 `python3 scripts/stage_plug_image.py` then `docker compose -f deploy/plug/docker-compose.yml up --build` is the container form of the same command. It uses host networking so the processes can bind `127.0.0.1`.
 
@@ -116,7 +116,7 @@ Trade readiness: **HOLD**. market series loaded from public:kraken XBTUSD 2026-1
 QGITA on the derived series `data/de440_timeseries.csv` (cited-unverified): status `complete`, FTCP count `0`, lighthouse events `0`. Detection rate **HOLD**. Clock: sample index. analyze_price_stream uses range(len(prices)) when no timestamps are passed
 QGITA on the formula series: FTCP count `0`, lighthouse events `0`. Detection rate **HOLD**. Clock: step index times HarmonicRealityField.dt
 QGITA on the public series `XBTUSD` (measured, key group `public:kraken`): status `complete`, FTCP count `0`, lighthouse events `0`. Detection rate **HOLD**. Clock: venue bar open time in unix seconds; price is the bar close
-Auris is not joined to Λ(t): **HOLD**. no function in the repo passes Λ(t) into get_auris_coherence
+Auris joined to Λ(t): **HOLD**. HarmonicRealityField.step Λ(t) was passed into get_auris_coherence under the keys lambda, lambda_t, lambda_current. Each only-lambda call returned coherence null and status 'no_data', the same as get_auris_coherence(None). Beside the loaded market texture, coherence stayed 0.5023340603593964 with status '⛔ COHERENCE BREAK - Do not trade' for all 100 formula-series samples under those keys (300 calls). Cited from _auris_role_value, the keys read are momentum, spread, volatility, volume. Neither _auris_role_value nor get_auris_coherence names lambda. On this formula series the coherence figure was unchanged by those keys. No formula was added. No order was placed. Go-live stays HOLD.
 ```
 
 The longer operator preflight, containers, and the full offline suite are further down.
