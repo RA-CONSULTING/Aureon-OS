@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Go-live HOLD — Aureon OS front door</title>
+  <meta name="description" content="Aureon OS go-live is HOLD. Receipt 1 measured a zero-network cold boot. Receipts 2 through 5 remain HOLD. GitHub Pages is off.">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="../assets/front-door.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <p class="hold" role="status">Go-live is HOLD. This checkout is never production ready and never a validated deployment. GitHub Pages is off. This scaffold does not enable it.</p>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="../">Aureon OS<small>Public front door · reading copy</small></a>
+      <nav aria-label="Front door">
+        <ul class="nav-links">
+          <li><a href="../">Front door</a></li>
+          <li><a href="../install/">Guarded install</a></li>
+          <li><a href="./" aria-current="page">Go-live HOLD</a></li>
+          <li><a href="../#license">MIT license</a></li>
+          <li><a href="https://aureonzorzatechnologies.pl/">Company homepage</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <h1>Go-live is HOLD</h1>
+    <p class="lede">The release boundary stays HOLD. Nothing on this page is a provider-side deployment receipt. Reading it, opening the files on GitHub, or passing a local smoke leaves that outcome on HOLD.</p>
+    <p>The live routes are active. With exchange keys in <code>.env</code>, the launcher boots into live trading. There is no verified live track record. The guarded smoke keeps live trading off for that run only. <code>go_live_clear</code> is false.</p>
+
+    <dl class="facts">
+      <div><dt>Outcome</dt><dd>HOLD</dd></div>
+      <div><dt>production_ready</dt><dd>false</dd></div>
+      <div><dt>Deployment validation</dt><dd>none</dd></div>
+      <div><dt>GitHub Pages</dt><dd>off</dd></div>
+    </dl>
+
+    <h2>Receipt 1</h2>
+    <p>Stage 7 measured a native zero-network cold boot. The record is <a href="../../reports/measured/native_process_containment.md"><code>reports/measured/native_process_containment.md</code></a>. That record keeps the release boundary at HOLD. Live trading on it is false. No order is placed. Receipt 1 does not switch the official installers on, and it is not deployment validation.</p>
+
+    <h2>Receipts 2, 3, 4, and 5 remain HOLD</h2>
+    <p>Go-live stays HOLD until receipt 5 exists: an authenticated deployment receipt and provider-side read-back. Receipts 2 and 4 were remeasured and do not supply that receipt. Receipt 3 does not clear go-live. <code>go_live_clear</code> is false. The runbook is the source for that outcome.</p>
+    <ul>
+      <li>Exact target-source measurement and immutable release provenance (HOLD).</li>
+      <li>Durable HNC evidence with an external monotonic head anchor (HOLD).</li>
+      <li>Complete source-boundary census closure (HOLD).</li>
+      <li>Authenticated deployment receipt and provider-side read-back (absent).</li>
+    </ul>
+    <p>The runbook is <a href="../../docs/runbooks/GO_LIVE_HARDENING.md"><code>docs/runbooks/GO_LIVE_HARDENING.md</code></a>. On GitHub: <a href="https://github.com/RA-CONSULTING/Aureon-OS/blob/main/docs/runbooks/GO_LIVE_HARDENING.md">GO_LIVE_HARDENING.md</a>.</p>
+
+    <h2>Pages scaffold</h2>
+    <div class="panel">
+      <p>GitHub Pages is off. <code>.github/workflows/pages-gated.yml</code> is a gated scaffold. It runs only by hand. The default confirm value is <code>HOLD</code>. The upload job is skipped unless both of these are true:</p>
+      <ol>
+        <li>The dispatch input <code>confirm</code> is exactly <code>GARY-YES-DEPLOY-PAGES</code>.</li>
+        <li>The repository variable <code>AUREON_PAGES_DEPLOY</code> is exactly <code>gary-yes</code>.</li>
+      </ol>
+      <p>This commit sets neither value. The workflow does not call the GitHub API to enable Pages. Gary turning both gates on would upload this static folder only. That upload would still leave product go-live on HOLD. There is no CNAME and no claim that <code>aureonzorzatechnologies.pl</code> is served from Pages. The homepage stays <a href="https://aureonzorzatechnologies.pl/">https://aureonzorzatechnologies.pl</a>.</p>
+    </div>
+
+    <p>Facts file: <a href="../status.json"><code>site/status.json</code></a>. License: <a href="../#license">MIT</a>.</p>
+  </main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>HOLD is the outcome. A green local check is not a go-live.</p>
+    </div>
+  </footer>
+</body>
+</html>

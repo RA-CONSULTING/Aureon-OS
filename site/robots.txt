@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /
+
+# Reading copy only. GitHub Pages is off. The company homepage is
+# https://aureonzorzatechnologies.pl
