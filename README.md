@@ -376,6 +376,8 @@ distributed response — is told in the creator's own voice in
 - 🤝 **Community**: a supporter of Street Soccer NI / Homeless World Cup (Norway 2025). → [`COMPANY.md`](COMPANY.md)
 - 🌐 Website: [aureonzorzatechnologies.pl](https://aureonzorzatechnologies.pl)
 - 📄 License: [MIT](LICENSE) · © 2025 R&A Consulting and Brokerage Services Ltd
+- 📚 Cite this source: [`CITATION.cff`](CITATION.cff) — Aureon OS / Harmonic Nexus Core. Rights holder R&A Consulting and Brokerage Services Ltd, company no. **NI696693**. The package version in that file is not a go-live clearance. The release boundary stays **HOLD**.
+- 💬 Discussions: [`docs/COMMUNITY.md`](docs/COMMUNITY.md) — welcome for [GitHub Discussions](https://github.com/RA-CONSULTING/Aureon-OS/discussions). A thread is about the source. Go-live stays **HOLD**.
 - Full company details: [`COMPANY.md`](COMPANY.md)
 
 ### Early interest
@@ -404,6 +406,8 @@ Open-source repository traffic to date (verifiable in the repo's GitHub **Insigh
 | **Checking what the numbers mean** | [`docs/architecture/DATA_PROVENANCE_AUDIT.md`](docs/architecture/DATA_PROVENANCE_AUDIT.md) — which readings are live, which are withheld as `no_data`, and which generated feeds are opt-in |
 | **Browsing the whole repo** | [`docs/REPO_SITEMAP.md`](docs/REPO_SITEMAP.md) · the console's `#repo-map` tab |
 | **Contributing** | [`CONTRIBUTING.md`](CONTRIBUTING.md) · [`SECURITY.md`](SECURITY.md) · [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) |
+| **Talking with the community** | [`docs/COMMUNITY.md`](docs/COMMUNITY.md) — Discussions welcome. Go-live stays **HOLD** |
+| **Citing the source** | [`CITATION.cff`](CITATION.cff) — Aureon OS / HNC / R&A Consulting, company no. NI696693 |
 
 ---
 

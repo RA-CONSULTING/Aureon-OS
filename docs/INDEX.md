@@ -123,5 +123,7 @@ Master table of contents for all project documentation.
 | Document | Description |
 |----------|-------------|
 | [Contributing Guide](CONTRIBUTING.md) | How to contribute |
+| [Community](COMMUNITY.md) | Discussions welcome. Go-live stays HOLD |
+| [Citation](../CITATION.cff) | Cite Aureon OS / HNC. Rights holder R&A Consulting, NI696693 |
 | [Code of Conduct](CODE_OF_CONDUCT.md) | Community standards |
 | [Changelog](CHANGELOG.md) | Version history |

@@ -20,6 +20,7 @@ mypy aureon/operator/ aureon/saas/         # strict-tier types
 - Preserve the creator's voice in research/synthesis docs; keep quantitative claims
   pre-registered and falsifiable (see [`docs/CLAIMS_AND_EVIDENCE.md`](docs/CLAIMS_AND_EVIDENCE.md)).
 - Never commit secrets. See [`SECURITY.md`](SECURITY.md).
+- Questions and conversation belong in [GitHub Discussions](https://github.com/RA-CONSULTING/Aureon-OS/discussions). Read [`docs/COMMUNITY.md`](docs/COMMUNITY.md) first. The release boundary stays HOLD.
 
 By contributing you agree your contributions are licensed under the repository's
 [MIT License](LICENSE).
