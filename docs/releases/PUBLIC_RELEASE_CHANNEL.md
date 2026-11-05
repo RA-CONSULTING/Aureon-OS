@@ -2,7 +2,7 @@
 
 This channel keeps draft release notes and a draft workflow. It publishes nothing.
 
-Current lineage tip these notes were written against: `29fab7f21fc93da40224566dd8f34faacb3d74d4`.
+Current lineage tip these notes were written against: `08f04936088689e29b7995d89530b21b425c35f9`.
 
 | Fact | Value |
 | --- | --- |
