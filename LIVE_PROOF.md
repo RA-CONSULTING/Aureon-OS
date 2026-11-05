@@ -1,8 +1,8 @@
-# Aureon Trading System — Live Path (routes active; no verified live track record)
+# Aureon Trading System — designed path (go-live HOLD; no verified live track record)
 
-> **What the trading path is designed to do. There is no verified live track record yet. The live routes are active: with exchange keys in `.env`, the launcher boots into live trading.**
+> **What the trading path is designed to do. There is no verified live track record. Go-live is terminal HOLD. Exchange keys in `.env` do not boot a supported live session. The orange release-boundary badge stays HOLD.**
 
-> 🚀 **To actually RUN the system, see [`RUNNING.md`](RUNNING.md).**
+> **The run boundary is [`RUNNING.md`](RUNNING.md). There is no approved production start.**
 >
 > ℹ️ Some `4_output/...json` paths below refer to runtime-generated state files. These are produced when the system runs — you won't find them at those paths until you've executed the relevant module. The JSON paths in this doc reflect logical organization, not necessarily on-disk location of pre-existing files. To find runtime artifacts on your install, search by filename:
 > ```bash
@@ -13,7 +13,7 @@
 
 ## Status
 
-Earlier drafts of this note quoted backtest and paper-trading totals as if they were a verified record. They were not. Those P&L amounts, win rates, and trade counts are not repeated here. Live performance is not yet measured. There is no verified live track record. The live routes are active: with exchange keys in `.env`, the launcher boots into live trading.
+Earlier drafts of this note quoted backtest and paper-trading totals as if they were a verified record. They were not. Those P&L amounts, win rates, and trade counts are not repeated here. Live performance is not yet measured. There is no verified live track record. Go-live stays HOLD. Exchange keys in `.env` are not a start.
 
 ---
 
@@ -23,7 +23,7 @@ Earlier drafts of this note quoted backtest and paper-trading totals as if they 
 |-------|----------------------------------|-----------------|
 | **Stage 1: Backtesting** | Replay historical candles through HNC signals and write a results file | none yet |
 | **Stage 2: Paper trading** | Simulate fills against market data and store a trade record with HNC fields | none yet |
-| **Stage 3: Live trading** | Live routes are active. With exchange keys in `.env`, the launcher boots into live trading. | none yet |
+| **Stage 3: Live trading** | Designed to place orders on a connected exchange. This checkout does not clear that. Go-live stays HOLD. | none yet |
 | **Stage 4: Verification** | Compare a predicted time-to-target with the fill that actually happened | none yet |
 
 ---
@@ -77,7 +77,7 @@ Designed state file: `4_output/portfolio_management/portfolio_truth.json`
 
 The live book is designed to list positions per exchange. Kraken and Binance are the adapters this path names. Each position is designed to carry units, cost, value, and a P&L field. No account snapshot is quoted here.
 
-What the production path is designed to provide:
+What the book design names. None of this is a cleared production path:
 
 1. **Multi-exchange coordination**
    - Position tracking across Kraken and Binance at the same time
@@ -85,7 +85,7 @@ What the production path is designed to provide:
    - A place to record an arbitrage candidate
 
 2. **Real-time updates**
-   - Live balance monitoring
+   - Balance monitoring, as a designed field
    - Position P&L tracking
    - Entry price versus current price
 
@@ -94,7 +94,7 @@ What the production path is designed to provide:
    - Position size from account equity
    - Cross-exchange margin tracking
 
-There is no verified live track record. The live routes are active. With exchange keys in `.env`, the launcher boots into live trading. This note does not arm one.
+There is no verified live track record. Go-live stays HOLD. Exchange keys in `.env` do not boot a supported live session. This note does not arm one.
 
 ---
 
@@ -195,9 +195,9 @@ No win rate, drawdown, or P&L comparison with any other framework is claimed. A 
 
 ---
 
-## How to run a measured pass
+## Module paths (not an approved start)
 
-These commands start the stages. They do not turn an old note into a verified record. Treat any JSON they write as unmeasured until the run is reproduced and the raw output is kept.
+These are the module paths the stages name. They are not an approved run, they do not clear HOLD, and they do not turn an old note into a verified record. Treat any JSON a later run might write as unmeasured until that run is reproduced and the raw output is kept.
 
 ### Backtesting
 
@@ -216,20 +216,20 @@ cat 4_output/performance_metrics/backtest_margin_results.json
 ### Paper trading
 
 ```bash
-# Start paper trading simulation
-python scripts/aureon_ignition.py    # safe dry-run mode (default)
+# Historical ignition path. Not an approved start.
+python scripts/aureon_ignition.py
 
-# Monitor in real-time
+# Portfolio tracker module. Not a live session.
 python3 aureon/portfolio/live_portfolio_growth_tracker.py
 
 # View trade history
 cat 4_output/trade_outputs/paper_trade_history.json
 ```
 
-### Live book
+### Book paths (not a start)
 
 ```bash
-# View current portfolio state
+# Portfolio-state module. Not a start, and not a live book.
 python3 scripts/diagnostics/check_portfolio.py
 
 # View recent trades
@@ -242,13 +242,13 @@ python3 aureon/bots/king_accounting.py
 ### Trade checks
 
 ```bash
-# Run trade validation
+# Trade-check module. Not a validation of the release.
 python3 aureon/portfolio/trade_profit_validator.py
 
 # View audit trail
 cat 4_output/performance_metrics/trade_history_audit.json
 
-# Verify ETA predictions
+# ETA history file the design names. Not a verified prediction.
 cat 4_output/trade_outputs/eta_verification_history.json
 ```
 
@@ -271,7 +271,7 @@ Performance figures from these files are not quoted. There is no verified live t
 
 ## Takeaway
 
-The trading path is built to replay history, paper-trade against market data, track live positions, and check a timing prediction against the fill. The live routes are active. With exchange keys in `.env`, the launcher boots into live trading.
+The design names a historical replay, a paper simulation, position fields, and a timing check against a fill. Go-live stays HOLD. Exchange keys in `.env` do not boot a supported live session. The orange release-boundary badge stays HOLD.
 
 Measured P&L, win rate, and trade counts are not yet measured. There is no verified live track record.
 
@@ -284,7 +284,7 @@ What the design uses, in place of a plain moving-average stack:
 
 ---
 
-**Last Updated:** 2026-10-30
+**Last Updated:** 2026-11-05
 **Repository:** gary-leckey/aureon-trading
 **Architect:** Gary LeCkey
 **Model:** PEFCφS (Position of Echo-Feedback Cognitive φ-Substrate)

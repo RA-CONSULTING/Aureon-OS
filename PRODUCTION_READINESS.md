@@ -1,6 +1,6 @@
 # Twelve layers
 
-The public default is full mode (`AUREON_AUTONOMY_MODE` unset). Trading is live when the operator's own exchange keys are in `.env`. `AUREON_AUTONOMY_MODE=guarded` puts the denylist back. That switch is documented in `AUTONOMY.md`.
+Go-live is terminal HOLD. There is no supported live instance in this checkout, and exchange keys in `.env` do not clear it. `AUREON_AUTONOMY_MODE` is a separate switch, documented in `AUTONOMY.md`: unset is `full` in that note, and `guarded` puts the self-repair denylist back. Neither value is a production start. The orange release-boundary badge stays HOLD. See `docs/runbooks/GO_LIVE_HARDENING.md`.
 
 ## Self-repair fail-safe
 
@@ -37,9 +37,9 @@ The market-data WebSocket notes remain in `docs/runbooks/PRODUCTION_READINESS.md
 
 ## Twelve layers
 
-Checked 22 Oct 2026. Nothing is PROVEN without a green CI run. GitHub Actions on `c90d087f` did not start: every Actions job failed in about two seconds because the account is locked due to a billing issue. Local smoke is not that green run.
+Checked 22 Oct 2026. Nothing is PROVEN without a green CI run. GitHub Actions on `c90d087f` did not start: every Actions job failed in about two seconds because the account is locked due to a billing issue. Local smoke is not that green run. A local pass is not a go-live clearance, and this note does not re-measure those commands on the current tip.
 
-The four jobs that have to finish green on the hosted runner are `fusion tests` (Aureon Fusion CI), `compile + offline test suite (3.12)` (Aureon CI), `Supabase functions and RLS policy contract`, and `Frontend typecheck, lint, build, and E2E`. The same frontend specs also sit in Frontend CI as `strict tier (build · shell lint · smoke E2E)`. Those commands pass on this machine: fusion pytest (one skip, reason `optional torch backend not installed`), `compileall` plus the offline product suite, the four Supabase contract tests with `--disable-socket`, and the frontend typecheck, lint, build, and 19 Playwright specs. A hosted run ID is added under "Green hosted run IDs" only after that job finishes green. The RLS contract is still policy text: a green copy of it would not be a live Postgres apply.
+The four jobs that have to finish green on the hosted runner are `fusion tests` (Aureon Fusion CI), `compile + offline test suite (3.12)` (Aureon CI), `Supabase functions and RLS policy contract`, and `Frontend typecheck, lint, build, and E2E`. The same frontend specs also sit in Frontend CI as `strict tier (build · shell lint · smoke E2E)`. On that 22 Oct 2026 check, those commands were recorded as passing on that machine: fusion pytest (one skip, reason `optional torch backend not installed`), `compileall` plus the offline product suite, the four Supabase contract tests with `--disable-socket`, and the frontend typecheck, lint, build, and 19 Playwright specs. That record is not a current pass. A hosted run ID is added under "Green hosted run IDs" only after that job finishes green. The RLS contract is still policy text: a green copy of it would not be a live Postgres apply.
 
 Green hosted run IDs:
 
@@ -52,7 +52,9 @@ Green hosted run IDs:
 
 Secret rotation is not a merge blocker. `ROTATE_KEYS.md` is still the inventory (provider, type, file, commit, never the value). Gitleaks still guards new commits, in the pre-commit hook and in the tree scan. History is not rewritten from this branch.
 
-Hosting is the end user's choice: any machine that can run `make up` or `make compose`. No cloud project and no provider credential is required. The public default stays guarded: live trading stays off and `may_act` stays false until the owner sets `AUREON_AUTONOMY_MODE=full` in local state. See `AUTONOMY.md`.
+Hosting is the end user's choice: any machine that can run `make up` or `make compose`. No cloud project and no provider credential is required. Those local scripts are not an approved production start, and they do not clear go-live. Live trading stays off. `may_act` is not a release. See `AUTONOMY.md` and `docs/runbooks/GO_LIVE_HARDENING.md`.
+
+Deploy notes below describe what the local scripts are written to do. They are not an approved production start. Go-live stays HOLD.
 
 Deploy:
 
@@ -88,9 +90,9 @@ Ten of the twelve layers are local-only. CI/CD is missing. Security/RLS is polic
 
 The economic-mutation census still lists live-capable unguarded blockers in `scripts/validation/economic_mutation_allowlist.json`. Every live-capable-unguarded-blocker entry is an inventory classification, not a guard. These entries are safe only while live trading is off. Each one must get a structural guard before live trading can ever be armed. Setting `AUREON_LIVE_TRADING` or `AUREON_FUSION_ARM_LIVE`, or creating `aureon_fusion/state/capital_release.flag`, while any of those entries remain fails the gate `unguarded_economic_mutations_block_live_trading`.
 
-Faculty launcher: `python3 -m aureon_fusion.fleet_launcher --check`. It exits 2 when `AUREON_LIVE_TRADING` is set or `aureon_fusion/state/capital_release.flag` exists. The unity supervisor in tmux session `unity-supervisor` is the process manager that keeps the paper-mode organs alive.
+Faculty launcher: `python3 -m aureon_fusion.fleet_launcher --check`. It exits 2 when `AUREON_LIVE_TRADING` is set or `aureon_fusion/state/capital_release.flag` exists. The unity supervisor in tmux session `unity-supervisor` is the process manager named for paper-mode organs. This note does not claim that session is running, and it is not a go-live clearance.
 
-Exchange tests that arm a live executor are marked `live` and are excluded unless pytest is run with `-m live`. They are not part of the default suite. Every `live` and `windows` marker states its reason (`tests/test_quarantined_marker_reasons.py`). The optional plant-atlas GPU test is skipped with the reason `optional torch backend not installed`. Voice and release contract tests also run on the Windows CI job.
+Exchange tests that arm a live executor are marked `live` and are excluded unless pytest is run with `-m live`. They are not part of the default suite. Every `live` and `windows` marker states its reason (`tests/test_quarantined_marker_reasons.py`). The optional plant-atlas GPU test is skipped with the reason `optional torch backend not installed`. Voice and release contract tests are named on the Windows CI job. That listing is not a green hosted run.
 
 ## Gary-leckey/aureon-trading
 
