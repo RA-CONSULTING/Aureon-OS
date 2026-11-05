@@ -1,0 +1,462 @@
+{
+  "added_other_symbols": [
+    {
+      "full_body_stage": 6,
+      "kind": "module",
+      "module": "evidence/__init__.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "safety": "module surface; import is lazy and blob-checked when the file is the checkout",
+      "server": "public",
+      "symbol": "__init__"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "function",
+      "module": "evidence/__init__.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "safety": "process, loop, or UI start; own flag; status and stop",
+      "server": "operator",
+      "symbol": "main"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "module",
+      "module": "evidence/__main__.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "safety": "module surface; import is lazy and blob-checked when the file is the checkout",
+      "server": "public",
+      "symbol": "__main__"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "module",
+      "module": "evidence/auris.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "safety": "module surface; import is lazy and blob-checked when the file is the checkout",
+      "server": "public",
+      "symbol": "auris"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "function",
+      "module": "evidence/auris.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "safety": "full-body scan found a risky token; the public server refuses it",
+      "server": "operator",
+      "symbol": "run_auris"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "module",
+      "module": "evidence/hnc.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "safety": "module surface; import is lazy and blob-checked when the file is the checkout",
+      "server": "public",
+      "symbol": "hnc"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "module",
+      "module": "evidence/metrics.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "safety": "module surface; import is lazy and blob-checked when the file is the checkout",
+      "server": "public",
+      "symbol": "metrics"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "module",
+      "module": "evidence/qgita.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "safety": "module surface; import is lazy and blob-checked when the file is the checkout",
+      "server": "public",
+      "symbol": "qgita"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "function",
+      "module": "evidence/qgita.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "safety": "full-body scan found a risky token; the public server refuses it",
+      "server": "operator",
+      "symbol": "run_qgita"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "function",
+      "module": "evidence/report.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "safety": "full-body scan found a risky token; the public server refuses it",
+      "server": "operator",
+      "symbol": "build_claims"
+    },
+    {
+      "full_body_stage": 6,
+      "key_pattern_match": "dotenv",
+      "kind": "function",
+      "module": "evidence/report.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "safety": "reads keys from env only; never logged or returned",
+      "server": "operator",
+      "symbol": "render_results"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "module",
+      "module": "evidence/report.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "safety": "module surface; import is lazy and blob-checked when the file is the checkout",
+      "server": "public",
+      "symbol": "report"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "function",
+      "module": "evidence/runner.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "safety": "full-body scan found a risky token; the public server refuses it",
+      "server": "operator",
+      "symbol": "check"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "function",
+      "module": "evidence/runner.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "safety": "process, loop, or UI start; own flag; status and stop",
+      "server": "operator",
+      "symbol": "main"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "module",
+      "module": "evidence/runner.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "safety": "module surface; import is lazy and blob-checked when the file is the checkout",
+      "server": "public",
+      "symbol": "runner"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "function",
+      "module": "evidence/runner.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "safety": "full-body scan found a risky token; the public server refuses it",
+      "server": "operator",
+      "symbol": "write"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "module",
+      "module": "evidence/serialize.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "safety": "module surface; import is lazy and blob-checked when the file is the checkout",
+      "server": "public",
+      "symbol": "serialize"
+    },
+    {
+      "full_body_stage": 5,
+      "kind": "function",
+      "module": "exchanges/single_currency_equity.py",
+      "package": "exchanges",
+      "plan_stage": 4,
+      "safety": "order-capable path; live_orders refused; no live send",
+      "server": "operator",
+      "symbol": "assemble_sterling_snapshot"
+    },
+    {
+      "full_body_stage": 5,
+      "kind": "function",
+      "module": "exchanges/single_currency_equity.py",
+      "package": "exchanges",
+      "plan_stage": 4,
+      "safety": "order-capable path; live_orders refused; no live send",
+      "server": "operator",
+      "symbol": "currency_amount_map"
+    },
+    {
+      "full_body_stage": 5,
+      "kind": "function",
+      "module": "exchanges/single_currency_equity.py",
+      "package": "exchanges",
+      "plan_stage": 4,
+      "safety": "order-capable path; live_orders refused; no live send",
+      "server": "operator",
+      "symbol": "gbp_field_from_accounts"
+    },
+    {
+      "full_body_stage": 5,
+      "kind": "function",
+      "module": "exchanges/single_currency_equity.py",
+      "package": "exchanges",
+      "plan_stage": 4,
+      "safety": "order-capable path; live_orders refused; no live send",
+      "server": "operator",
+      "symbol": "nonnegative_amount"
+    }
+  ],
+  "added_public_entry_points": [
+    {
+      "full_body_stage": 6,
+      "kind": "function",
+      "module": "evidence/auris.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "refusal": "plan stage 4 is not open",
+      "safety": "runs from inputs or committed files; no keys and no repo write",
+      "server": "public",
+      "symbol": "expects_value"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "function",
+      "module": "evidence/hnc.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "refusal": "plan stage 4 is not open",
+      "safety": "runs from inputs or committed files; no keys and no repo write",
+      "server": "public",
+      "symbol": "run_hnc"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "function",
+      "module": "evidence/metrics.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "refusal": "plan stage 4 is not open",
+      "safety": "runs from inputs or committed files; no keys and no repo write",
+      "server": "public",
+      "symbol": "auroc"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "function",
+      "module": "evidence/metrics.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "refusal": "plan stage 4 is not open",
+      "safety": "runs from inputs or committed files; no keys and no repo write",
+      "server": "public",
+      "symbol": "auroc_interval"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "function",
+      "module": "evidence/metrics.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "refusal": "plan stage 4 is not open",
+      "safety": "runs from inputs or committed files; no keys and no repo write",
+      "server": "public",
+      "symbol": "fraction_above"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "function",
+      "module": "evidence/metrics.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "refusal": "plan stage 4 is not open",
+      "safety": "runs from inputs or committed files; no keys and no repo write",
+      "server": "public",
+      "symbol": "rates"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "function",
+      "module": "evidence/metrics.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "refusal": "plan stage 4 is not open",
+      "safety": "runs from inputs or committed files; no keys and no repo write",
+      "server": "public",
+      "symbol": "upper_threshold"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "function",
+      "module": "evidence/metrics.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "refusal": "plan stage 4 is not open",
+      "safety": "runs from inputs or committed files; no keys and no repo write",
+      "server": "public",
+      "symbol": "wilson_interval"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "function",
+      "module": "evidence/report.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "refusal": "plan stage 4 is not open",
+      "safety": "runs from inputs or committed files; no keys and no repo write",
+      "server": "public",
+      "symbol": "fmt"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "function",
+      "module": "evidence/report.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "refusal": "plan stage 4 is not open",
+      "safety": "runs from inputs or committed files; no keys and no repo write",
+      "server": "public",
+      "symbol": "with_ci"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "function",
+      "module": "evidence/runner.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "refusal": "plan stage 4 is not open",
+      "safety": "runs from inputs or committed files; no keys and no repo write",
+      "server": "public",
+      "symbol": "build"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "function",
+      "module": "evidence/serialize.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "refusal": "plan stage 4 is not open",
+      "safety": "runs from inputs or committed files; no keys and no repo write",
+      "server": "public",
+      "symbol": "cell"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "function",
+      "module": "evidence/serialize.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "refusal": "plan stage 4 is not open",
+      "safety": "runs from inputs or committed files; no keys and no repo write",
+      "server": "public",
+      "symbol": "csv_text"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "function",
+      "module": "evidence/serialize.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "refusal": "plan stage 4 is not open",
+      "safety": "runs from inputs or committed files; no keys and no repo write",
+      "server": "public",
+      "symbol": "dump"
+    },
+    {
+      "full_body_stage": 6,
+      "kind": "function",
+      "module": "evidence/serialize.py",
+      "package": "evidence",
+      "plan_stage": 4,
+      "refusal": "plan stage 4 is not open",
+      "safety": "runs from inputs or committed files; no keys and no repo write",
+      "server": "public",
+      "symbol": "plain"
+    },
+    {
+      "full_body_stage": 1,
+      "kind": "method",
+      "module": "harmonic/aureon_harmonic_reality.py",
+      "package": "harmonic",
+      "plan_stage": 4,
+      "refusal": "plan stage 4 is not open",
+      "safety": "runs from inputs or committed files; no keys and no repo write",
+      "server": "public",
+      "symbol": "CausalEcho.get_echo_magnitude_ratio"
+    },
+    {
+      "full_body_stage": 1,
+      "kind": "function",
+      "module": "harmonic/aureon_harmonic_reality.py",
+      "package": "harmonic",
+      "plan_stage": 4,
+      "refusal": "plan stage 4 is not open",
+      "safety": "runs from inputs or committed files; no keys and no repo write",
+      "server": "public",
+      "symbol": "sample_rate_below_nyquist"
+    }
+  ],
+  "added_since_pin_inventory": 38,
+  "coverage_plan_open_through": 2,
+  "coverage_plan_stages_3_and_4_open": false,
+  "decision": "HOLD",
+  "field_drift": [],
+  "full_body_enabled_through": 6,
+  "go_live_clear": false,
+  "inventory_sha256": "be5e14d73ae1130a16d04d355478a1474bf1f1b2c405c9d2196444eca8a391dc",
+  "inventory_symbol_count": 20121,
+  "missing_from_source": [],
+  "open_gaps": [
+    {
+      "id": "sweep_not_repeated",
+      "text": "The call sweep was not repeated at pin 34864ff0547d2cff03e707414743a3b0cc8770b5. measured/aureon_public_call_sweep.json still names pin ad9be6c3179bba140fb7e88d5733616046110da9 and aureon tree 2b89d73db122486e2537047baa9b342f3a0249be. Reachable and tested figures in COVERAGE_PLAN.md are that record plus public_entry_refusal. This stage does not publish a new reachable count."
+    },
+    {
+      "id": "brain_proof_blob",
+      "text": "`aureon/evaluation/brain_proof.py` blob at the measured aureon tree is `7c9d20e1e580130e363674894a9c77eef8776e44` and at pin `34864ff0547d2cff03e707414743a3b0cc8770b5` is `89d874ebfe2fc8b8e73113b86fe6524b3ee71322`. Public function source text added: none. Removed: none. Changed: none. `render_brain_markdown` is one of those public functions. This stage did not call it and did not call `evaluate_brain`."
+    },
+    {
+      "id": "plan_stages_3_and_4_closed",
+      "text": "Coverage-plan stages above 2 stay closed. Full-body ENABLED_THROUGH is 6. That full-body number is not an opening of coverage-plan stages 3 and 4. 17 public entry points added since the pin inventory are refused. evidence is plan stage 4 because render_results matches the scanner key pattern. Harmonic stays plan stage 4. Exchanges stay plan stage 4. The matched token in `render_results` is `dotenv`, from the letters inside `python-dotenv`."
+    },
+    {
+      "id": "changed_blobs_not_recalled",
+      "text": "These existing files differ in git blob between the measured aureon tree and the pin. The census compares symbol names and scanner fields. It does not re-call them: `aureon/core/aureon_env.py`, `aureon/evaluation/brain_proof.py`, `aureon/harmonic/aureon_harmonic_reality.py`, `aureon/utils/aureon_queen_hive_mind.py`."
+    },
+    {
+      "id": "receipts_1_and_5_absent",
+      "text": "Receipts 1, 3, and 5 are not produced by this stage. Native zero-network containment and an authenticated deployment receipt are absent. Receipt 3 is the DigiCert head anchor in docs/runbooks/GO_LIVE_HARDENING.md. This stage does not append a later head, does not set external_head_anchor_attested, and does not report the system alive. Decision remains HOLD. go_live_clear is false."
+    },
+    {
+      "id": "pin_inventory_predates_closure",
+      "text": "Inventory sha256 at pin 34864ff0547d2cff03e707414743a3b0cc8770b5 is 4bc19ea9b5444a7b8a9abbd3fabf635d083bd25bea6c1b2d6eab2605b4f5716b. The closure inventory sha256 is be5e14d73ae1130a16d04d355478a1474bf1f1b2c405c9d2196444eca8a391dc. Tip c68a89d2 did not change the inventory blob. The symbols added here were already in the pin aureon tree, which matches the tip aureon tree."
+    },
+    {
+      "id": "post_pin_checkout_not_in_closure",
+      "text": "These checkout paths are not in the pin tree this closure measures: `aureon/evaluation/market_series.py`, `aureon/evidence/hnc_anchor.py`. They are not added to the inventory. `evaluation/market_series.py` `http_get` is a live public fetch. Listing that row would move the evaluation package from plan stage 2 to plan stage 4 and would change the reachable count. Reachable stays the prior sweep's 69. Plan stages 3 and 4 stay closed. The pin is not moved."
+    }
+  ],
+  "pin": "34864ff0547d2cff03e707414743a3b0cc8770b5",
+  "pin_aureon_tree": "3ba0cab4a5e193b01943e5e6e0be25077ff759f6",
+  "pin_inventory_sha256": "4bc19ea9b5444a7b8a9abbd3fabf635d083bd25bea6c1b2d6eab2605b4f5716b",
+  "post_pin_checkout_paths": [
+    "aureon/evaluation/market_series.py",
+    "aureon/evidence/hnc_anchor.py"
+  ],
+  "provenance_digest": "7e3eda4b28d3fbb00e03ea00ad863c625fc68c423a0a01f4218ca0a3179040d9",
+  "provenance_path": "measured/go_live_stage6_provenance.json",
+  "reachable_count": null,
+  "receipt": 4,
+  "removed_since_pin_inventory": [],
+  "scan_symbol_count": 20121,
+  "schema": "aureon.go-live.source-boundary-census.v1",
+  "source_boundary_closed": true,
+  "tip": "c68a89d2a184d99582bb24310b91e024323a212c",
+  "tip_aureon_tree": "3ba0cab4a5e193b01943e5e6e0be25077ff759f6",
+  "unlisted_in_inventory": []
+}

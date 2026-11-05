@@ -26,7 +26,7 @@ def test_coverage_plan_matches_the_inventory() -> None:
     assert INVENTORY_SHA256 in text
     rows = plan_rows()
     depth = package_depth()
-    assert sum(row["listed"] for row in rows) == 20083
+    assert sum(row["listed"] for row in rows) == 20121
     assert sum(row["public_entry_points"] for row in rows) == sum(
         item["public_entry_points"] for item in depth.values()
     )

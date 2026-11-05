@@ -2,7 +2,7 @@
 
 Counts are the pinned `docs/mcp/inventory.json`. A public entry point is a public function or method. Reachable means `public_entry_refusal` returns None, so `body_call` will run it. A listed module or class is not an entry point. The sha256 below is `INVENTORY_SHA256`. A different inventory file is not loaded.
 
-Inventory sha256: `4bc19ea9b5444a7b8a9abbd3fabf635d083bd25bea6c1b2d6eab2605b4f5716b`
+Inventory sha256: `be5e14d73ae1130a16d04d355478a1474bf1f1b2c405c9d2196444eca8a391dc`
 
 Reproduce:
 
@@ -20,7 +20,7 @@ That pytest command is the gate. It runs in `/tmp/aureon-public-venv`, the venv 
 
 `--write` rewrites this file from the same function. `measured/aureon_public_stage1_run.sh` installs `mcp/aureon_public/requirements.txt` and `mcp/aureon_public/test-requirements.txt`, then rewrites both `measured/aureon_public_alignment.json` and `measured/aureon_public_stage1.json`. It writes those two files under a temp directory first and copies them into `measured/` only after both stamps have finished. `measurement_stamp` raises `RuntimeError` when `git status --porcelain` is not empty, so the second stamp must not see the first file. `test-requirements.txt` is the test install: pytest, pytest-timeout, flask, pandas, and scipy. It is not the public server runtime. `measured/aureon_public_stage2_sweep.sh` and `measured/aureon_public_call_sweep.sh` copy the checkout with `cp -a` under an ordinary temp parent, place fake `NEXUS-LIVE-FEED-` and `Aureon-Trading--Project-Sero` checkouts beside that copy, block sockets, and rewrite their measured records. Each sweep record names the pin, the `aureon/` tree hash beside that pin, the `aureon_source` kind, and that temp parent. `measured/aureon_public_protocol_run.sh` starts this server over stdio and over Streamable HTTP bound to `127.0.0.1`, with `AUREON_PUBLIC_REQUIRE_PIN=1`. An MCP SDK 1.30.0 client calls `tools/list`, `resources/list`, `prompts/list`, and one `tools/call` (`alignment_consonance_read` with ratio 1.0). The raw pages are `measured/aureon_public_protocol.json`. `measured/aureon_public_space_run.sh` starts `python -m aureon_public.space` with `AUREON_PUBLIC_API_KEY` set and records the same client calling `tools/list` and `tools/call` on `127.0.0.1`. The raw pages are `measured/aureon_public_space.json`. These measured records name `code_commit`, the parent of the commit that contains the record file. A record cannot name the commit that adds the file.
 
-Listed symbols: 20083. Public entry points: 4388. Reachable now: 69. Tested: 69. Refused: 4319. The plan on main recorded 879 reachable. An earlier draft head of the stage-1 PR recorded 89 reachable, before the call sweep. Methods open because a constructor is allowlisted: 16. The refused-imports fence is unchanged.
+Listed symbols: 20121. Public entry points: 4405. Reachable now: 69. Tested: 69. Refused: 4336. The plan on main recorded 879 reachable. An earlier draft head of the stage-1 PR recorded 89 reachable, before the call sweep. Methods open because a constructor is allowlisted: 16. The refused-imports fence is unchanged.
 Reachable means `public_entry_refusal` returns None. Tested means a public tool calls that entry point and `tests/test_aureon_public_stage1.py` or `tests/test_aureon_public_stage2.py` exercises the tool. Refused means a public entry point the server will not run. Plan stages 3 and 4 stay closed. The call sweep calls every entry point that was still reachable, with no arguments, and calls each stage-2 entry point again with the real arguments in `stage2_arguments.py`. `SwarmAgent.update` is also called with the hive fixture named below. It refuses one that opens a connection, starts a process, writes outside the sandbox, or loads queen, miner, swarm_motion, inhouse_ai, ollama_config, or an HTTP client. `get_unified_directive` is refused that way. It does not build the queen and miner bridges.
 
 ## Stage order
@@ -69,10 +69,11 @@ Stage 2 is open. A stage-2 module whose import loads an adapter or an HTTP clien
 | 4 | connectors | 47 | 0 | 0 | 0 | 0 |
 | 4 | core | 986 | 452 | 0 | 0 | 452 |
 | 4 | data_feeds | 251 | 118 | 0 | 0 | 118 |
-| 4 | exchanges | 643 | 0 | 0 | 0 | 0 |
+| 4 | evidence | 32 | 15 | 0 | 0 | 15 |
+| 4 | exchanges | 647 | 0 | 0 | 0 | 0 |
 | 4 | governance | 204 | 105 | 0 | 0 | 105 |
 | 4 | grants | 77 | 44 | 0 | 0 | 44 |
-| 4 | harmonic | 605 | 278 | 0 | 0 | 278 |
+| 4 | harmonic | 607 | 280 | 0 | 0 | 280 |
 | 4 | identity | 16 | 0 | 0 | 0 | 0 |
 | 4 | inhouse_ai | 145 | 0 | 0 | 0 | 0 |
 | 4 | integrations | 167 | 65 | 0 | 0 | 65 |
@@ -203,7 +204,8 @@ Stage 2 reachable fell by 7, from 46 to 39, on the stage-2 run. The call sweep r
 - `swarm/memory_bus.py` `CausalEchoBus.possibilities`: one call cannot park an ensemble and read it.
 Main `cf43882e` recorded reachable 78 and tested 68. This follow-up refuses nine stage-1 entry points and tests `SwarmAgent.update`. Reachable and tested are both 69. 30 + 39 = 69.
 
-The pin is `34864ff0547d2cff03e707414743a3b0cc8770b5`. The alignment modules at this checkout match that pin. `GUARD_BLOB` is the git blob of `huggingface/hnc-field/guard.py`. `INVENTORY_SHA256` is unchanged.
+The pin is `34864ff0547d2cff03e707414743a3b0cc8770b5`. The alignment modules at this checkout match that pin. `GUARD_BLOB` is the git blob of `huggingface/hnc-field/guard.py`. The inventory sha256 above is the source-boundary closure of that pin's `aureon/` tree plus `unified_margin_trader/`. Commit 34864ff0 stored the previous inventory blob. Tip `c68a89d2a184d99582bb24310b91e024323a212c` did not change `aureon/` or that inventory blob. The call sweep behind reachable and tested was not repeated. `measured/aureon_public_call_sweep.json` still names pin `ad9be6c3179bba140fb7e88d5733616046110da9` and aureon tree `2b89d73db122486e2537047baa9b342f3a0249be`. This file does not publish a new reachable count. Plan stages 3 and 4 stay closed.
+`evidence` is listed by that closure. It is plan stage 4. `evidence/report.py` `render_results` contains `dotenv` inside `python-dotenv`, and the scanner's key sentence puts the package at stage 4. Those public functions are refused. `harmonic/aureon_harmonic_reality.py` gained `sample_rate_below_nyquist` and `CausalEcho.get_echo_magnitude_ratio`. Harmonic was already plan stage 4, so those two are refused. `exchanges/single_currency_equity.py` gained four operator functions on the refused-imports fence. None of these additions is a new reachable entry point. Stages 3 and 4 were not opened.
 
 ## MCP SDK
 

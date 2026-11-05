@@ -51,12 +51,13 @@ HOLD stays explicit: trade readiness, the Auris-to-Lambda link, QGITA detection 
 | data_feeds | 251 | 172 | 79 | 4 |
 | decoders | 161 | 151 | 10 | 4 |
 | evaluation | 20 | 16 | 4 | 3 |
-| exchanges | 643 | 0 | 643 | 5 |
+| evidence | 32 | 24 | 8 | 6 |
+| exchanges | 647 | 0 | 647 | 5 |
 | gates | 24 | 21 | 3 | 2 |
 | generated | 8 | 8 | 0 | 6 |
 | governance | 204 | 186 | 18 | 2 |
 | grants | 77 | 62 | 15 | 6 |
-| harmonic | 605 | 436 | 169 | 1 |
+| harmonic | 607 | 438 | 169 | 1 |
 | identity | 16 | 0 | 16 | 3 |
 | inhouse_ai | 145 | 0 | 145 | 6 |
 | integrations | 167 | 110 | 57 | 6 |
@@ -86,11 +87,11 @@ HOLD stays explicit: trade readiness, the Auris-to-Lambda link, QGITA detection 
 | vault | 418 | 298 | 120 | 3 |
 | wisdom | 755 | 576 | 179 | 1,6 |
 
-Total symbols: 20083. Packages: 55.
+Total symbols: 20121. Packages: 56.
 
-Stage totals: 1=1224, 2=1888, 3=1064, 4=1373, 5=6786, 6=7748.
+Stage totals: 1=1226, 2=1888, 3=1064, 4=1373, 5=6790, 6=7780.
 
-Server totals: operator=13152, public=6931.
+Server totals: operator=13164, public=6957.
 
 ## Every public module, class, and function
 
@@ -6246,6 +6247,38 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 3 | public | resource | module | `evaluation/qgita_snr_benchmark.py` | `qgita_snr_benchmark` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 3 | public | tool | function | `evaluation/qgita_snr_benchmark.py` | `evaluate_qgita_snr` | runs from inputs or committed files; no keys and no repo write |
 | 3 | public | tool | function | `evaluation/qgita_snr_benchmark.py` | `render_qgita_markdown` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | resource | module | `evidence/__init__.py` | `__init__` | module surface; import is lazy and blob-checked when the file is the checkout |
+| 6 | operator | tool | function | `evidence/__init__.py` | `main` | process, loop, or UI start; own flag; status and stop |
+| 6 | public | resource | module | `evidence/__main__.py` | `__main__` | module surface; import is lazy and blob-checked when the file is the checkout |
+| 6 | public | resource | module | `evidence/auris.py` | `auris` | module surface; import is lazy and blob-checked when the file is the checkout |
+| 6 | public | tool | function | `evidence/auris.py` | `expects_value` | runs from inputs or committed files; no keys and no repo write |
+| 6 | operator | tool | function | `evidence/auris.py` | `run_auris` | full-body scan found a risky token; the public server refuses it |
+| 6 | public | resource | module | `evidence/hnc.py` | `hnc` | module surface; import is lazy and blob-checked when the file is the checkout |
+| 6 | public | tool | function | `evidence/hnc.py` | `run_hnc` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | resource | module | `evidence/metrics.py` | `metrics` | module surface; import is lazy and blob-checked when the file is the checkout |
+| 6 | public | tool | function | `evidence/metrics.py` | `auroc` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | function | `evidence/metrics.py` | `wilson_interval` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | function | `evidence/metrics.py` | `auroc_interval` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | function | `evidence/metrics.py` | `rates` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | function | `evidence/metrics.py` | `upper_threshold` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | function | `evidence/metrics.py` | `fraction_above` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | resource | module | `evidence/qgita.py` | `qgita` | module surface; import is lazy and blob-checked when the file is the checkout |
+| 6 | operator | tool | function | `evidence/qgita.py` | `run_qgita` | full-body scan found a risky token; the public server refuses it |
+| 6 | public | resource | module | `evidence/report.py` | `report` | module surface; import is lazy and blob-checked when the file is the checkout |
+| 6 | public | tool | function | `evidence/report.py` | `with_ci` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | function | `evidence/report.py` | `fmt` | runs from inputs or committed files; no keys and no repo write |
+| 6 | operator | tool | function | `evidence/report.py` | `build_claims` | full-body scan found a risky token; the public server refuses it |
+| 6 | operator | tool | function | `evidence/report.py` | `render_results` | reads keys from env only; never logged or returned |
+| 6 | public | resource | module | `evidence/runner.py` | `runner` | module surface; import is lazy and blob-checked when the file is the checkout |
+| 6 | public | tool | function | `evidence/runner.py` | `build` | runs from inputs or committed files; no keys and no repo write |
+| 6 | operator | tool | function | `evidence/runner.py` | `check` | full-body scan found a risky token; the public server refuses it |
+| 6 | operator | tool | function | `evidence/runner.py` | `write` | full-body scan found a risky token; the public server refuses it |
+| 6 | operator | tool | function | `evidence/runner.py` | `main` | process, loop, or UI start; own flag; status and stop |
+| 6 | public | resource | module | `evidence/serialize.py` | `serialize` | module surface; import is lazy and blob-checked when the file is the checkout |
+| 6 | public | tool | function | `evidence/serialize.py` | `plain` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | function | `evidence/serialize.py` | `dump` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | function | `evidence/serialize.py` | `cell` | runs from inputs or committed files; no keys and no repo write |
+| 6 | public | tool | function | `evidence/serialize.py` | `csv_text` | runs from inputs or committed files; no keys and no repo write |
 | 5 | operator | resource | module | `exchanges/__init__.py` | `__init__` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 5 | operator | resource | module | `exchanges/alpaca_buy_sell_smoke.py` | `alpaca_buy_sell_smoke` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 5 | operator | tool | function | `exchanges/alpaca_buy_sell_smoke.py` | `main` | order-capable path; live_orders refused; no live send |
@@ -6856,7 +6889,11 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 5 | operator | resource | module | `exchanges/orca_reader_observations.py` | `orca_reader_observations` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 5 | operator | tool | function | `exchanges/orca_reader_observations.py` | `build_orca_reader_observations` | order-capable path; live_orders refused; no live send |
 | 5 | operator | resource | module | `exchanges/single_currency_equity.py` | `single_currency_equity` | module surface; import is lazy and blob-checked when the file is the checkout |
+| 5 | operator | tool | function | `exchanges/single_currency_equity.py` | `nonnegative_amount` | order-capable path; live_orders refused; no live send |
 | 5 | operator | tool | function | `exchanges/single_currency_equity.py` | `gbp_equity_from_balances` | order-capable path; live_orders refused; no live send |
+| 5 | operator | tool | function | `exchanges/single_currency_equity.py` | `currency_amount_map` | order-capable path; live_orders refused; no live send |
+| 5 | operator | tool | function | `exchanges/single_currency_equity.py` | `gbp_field_from_accounts` | order-capable path; live_orders refused; no live send |
+| 5 | operator | tool | function | `exchanges/single_currency_equity.py` | `assemble_sterling_snapshot` | order-capable path; live_orders refused; no live send |
 | 5 | operator | resource | module | `exchanges/unified_market_status_server.py` | `unified_market_status_server` | module surface; import is lazy and blob-checked when the file is the checkout |
 | 5 | operator | resource | class | `exchanges/unified_market_status_server.py` | `StatusHandler` | order-capable path; live_orders refused; no live send |
 | 5 | operator | tool | method | `exchanges/unified_market_status_server.py` | `StatusHandler.do_OPTIONS` | order-capable path; live_orders refused; no live send |
@@ -7342,6 +7379,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 1 | public | tool | function | `harmonic/aureon_harmonic_momentum_wave.py` | `run_harmonic_wave_scan` | runs from inputs or committed files; no keys and no repo write |
 | 1 | operator | tool | function | `harmonic/aureon_harmonic_momentum_wave.py` | `run_continuous_scan` | process, loop, or UI start; own flag; status and stop |
 | 1 | public | resource | module | `harmonic/aureon_harmonic_reality.py` | `aureon_harmonic_reality` | module surface; import is lazy and blob-checked when the file is the checkout |
+| 1 | public | tool | function | `harmonic/aureon_harmonic_reality.py` | `sample_rate_below_nyquist` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | resource | class | `harmonic/aureon_harmonic_reality.py` | `RealityState` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | resource | class | `harmonic/aureon_harmonic_reality.py` | `EchoType` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | resource | class | `harmonic/aureon_harmonic_reality.py` | `DimensionalEcho` | runs from inputs or committed files; no keys and no repo write |
@@ -7362,6 +7400,7 @@ Columns: stage, server, form, kind, module, symbol, safety.
 | 1 | operator | tool | method | `harmonic/aureon_harmonic_reality.py` | `HarmonicSubstrate.add_mode` | full-body scan found a risky token; the public server refuses it |
 | 1 | public | resource | class | `harmonic/aureon_harmonic_reality.py` | `CausalEcho` | runs from inputs or committed files; no keys and no repo write |
 | 1 | operator | tool | method | `harmonic/aureon_harmonic_reality.py` | `CausalEcho.evaluate` | full-body scan found a risky token; the public server refuses it |
+| 1 | public | tool | method | `harmonic/aureon_harmonic_reality.py` | `CausalEcho.get_echo_magnitude_ratio` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | tool | method | `harmonic/aureon_harmonic_reality.py` | `CausalEcho.get_echo_strength` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | tool | method | `harmonic/aureon_harmonic_reality.py` | `CausalEcho.reset` | runs from inputs or committed files; no keys and no repo write |
 | 1 | public | resource | class | `harmonic/aureon_harmonic_reality.py` | `ObserverNode` | runs from inputs or committed files; no keys and no repo write |

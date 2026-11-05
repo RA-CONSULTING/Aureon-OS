@@ -1199,7 +1199,7 @@ def test_scaffold_bakes_no_key_and_quotes_the_plan() -> None:
     assert "partial release covering stages 1 and 2 of 4" in readme
     assert "reachable now 69" in readme
     assert "tested 69" in readme
-    assert "refused 4319" in readme
+    assert "refused 4336" in readme
     assert "Other arguments have not been swept." in readme
     assert "alive" not in readme.lower()
     assert "The measured session was taken without Docker." in readme

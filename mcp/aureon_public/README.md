@@ -11,9 +11,9 @@ license: mit
 
 # aureon-public
 
-This is a partial release covering stages 1 and 2 of 4. Stages 3 and 4 stay closed. That includes miner, queen, exchanges, orders, and keys. `COVERAGE_PLAN.md` records the counts: listed symbols 20083, public entry points 4388, reachable now 69, tested 69, refused 4319. Stage 1 reachable now is 30 and stage 1 tested now is 30. Stage 2 reachable now is 39 and stage 2 tested now is 39. 30 + 39 = 69 reachable. 30 + 39 = 69 tested.
+This is a partial release covering stages 1 and 2 of 4. Stages 3 and 4 stay closed. That includes miner, queen, exchanges, orders, and keys. `COVERAGE_PLAN.md` records the counts: listed symbols 20121, public entry points 4405, reachable now 69, tested 69, refused 4336. Stage 1 reachable now is 30 and stage 1 tested now is 30. Stage 2 reachable now is 39 and stage 2 tested now is 39. 30 + 39 = 69 reachable. 30 + 39 = 69 tested. Reachable and tested are the committed call sweep at pin `ad9be6c3179bba140fb7e88d5733616046110da9`. They were not measured again at pin `34864ff0547d2cff03e707414743a3b0cc8770b5`.
 
-Miner is stage 3: 15 listed, 0 public entry points, reachable 0, tested 0, refused 0. Queen is stage 4: 1348 listed, 566 public entry points, reachable 0, tested 0, refused 566. Exchanges are stage 4: 643 listed, 0 public entry points, reachable 0, tested 0, refused 0. Accounting is stage 3 with reachable 0. Trading is stage 4 with reachable 0.
+Miner is stage 3: 15 listed, 0 public entry points, reachable 0, tested 0, refused 0. Queen is stage 4: 1348 listed, 566 public entry points, reachable 0, tested 0, refused 566. Exchanges are stage 4: 647 listed, 0 public entry points, reachable 0, tested 0, refused 0. Accounting is stage 3 with reachable 0. Trading is stage 4 with reachable 0. Evidence is stage 4: 32 listed, 15 public entry points, reachable 0, tested 0, refused 15. Harmonic public entry points are 280. Those evidence and harmonic additions are refused. They are not a new reachable count.
 
 The measured tests are the call sweep. It calls every entry point that was still reachable, with no arguments, and calls each stage-2 entry point again with the real arguments in `stage2_arguments.py`. Connections, process starts, and writes outside the sandbox are logged: the committed record says sockets blocked, processes blocked, and writes outside the sandbox blocked. A call that opens a connection, starts a process, writes outside the sandbox, or loads queen, miner, swarm_motion, inhouse_ai, ollama_config, or an HTTP client is refused. Other arguments have not been swept.
 
@@ -61,12 +61,13 @@ Each figure is reachable public functions and methods out of the public function
 | data_feeds | 0 | 118 |
 | decoders | 4 | 80 |
 | evaluation | 6 | 10 |
+| evidence | 0 | 15 |
 | exchanges | 0 | 0 |
 | gates | 3 | 12 |
 | generated | 4 | 4 |
 | governance | 0 | 105 |
 | grants | 0 | 44 |
-| harmonic | 0 | 278 |
+| harmonic | 0 | 280 |
 | identity | 0 | 0 |
 | inhouse_ai | 0 | 0 |
 | integrations | 0 | 65 |
