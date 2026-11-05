@@ -7,7 +7,7 @@ HOLD.
 | Purpose | Supported command | Expected result |
 |---|---|---|
 | Verify Linux boundary | `scripts/linux/aureon-up.sh` | terminal `linux-supervisor` HOLD |
-| Verify installer boundary | `scripts/linux/install-linux.sh` | terminal `linux-supervisor` HOLD |
+| Verify installer boundary | `scripts/linux/install-linux.sh` | stage 11 gate, then terminal `linux-supervisor` HOLD on this tip |
 | Inspect legacy status | `scripts/linux/aureon-status.sh` | read-only; no health claim |
 | Request legacy shutdown | `scripts/linux/aureon-down.sh` | socket acknowledgement or refusal; never raw PID kill |
 
