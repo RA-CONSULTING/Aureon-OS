@@ -1,0 +1,94 @@
+name: Source archive draft
+
+# Builds a git tree tar.gz, a zip, SHA256SUMS, and release-channel.json.
+# workflow_dispatch only. This file does not publish a GitHub Release and
+# does not create a tag. Go-live stays HOLD. The publish job waits for
+# Gary's own yes even after Charlie, Buzz, and Spike PASS.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-archive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Record go-live HOLD
+        run: |
+          set -euo pipefail
+          python packaging/release_channel.py check > channel-check.json || {
+            cat channel-check.json >&2
+            exit 1
+          }
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path("channel-check.json").read_text(encoding="utf-8"))
+          if report["problems"]:
+              raise SystemExit("channel check problems: " + "; ".join(report["problems"]))
+          if report["go_live"] != "HOLD" or report["go_live_clear"] is not False:
+              raise SystemExit("go-live must stay HOLD")
+          if report["production_publish_allowed"] is not False or report["published"] is not False:
+              raise SystemExit("this workflow does not publish")
+          if report["gary_yes_required"] is not True or report["triple_pass_publishes"] is not False:
+              raise SystemExit("triple PASS is not a publish")
+          if report["system_alive"] is not False or report["orders_placed"] is not False:
+              raise SystemExit("refusing an alive claim or an order")
+          if report["pin_moved"] is not False or report["live_trading"] is not False:
+              raise SystemExit("refusing a pin move or live trading")
+          print("channel check: go-live HOLD, publish still waiting for Gary")
+          PY
+
+      - name: Build source archives and checksums
+        run: python packaging/release_channel.py archive --dest dist/tip-channel
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aureon-os-tip-channel
+          path: dist/tip-channel/
+          if-no-files-found: error
+          retention-days: 90
+
+  publish:
+    needs: source-archive
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Wait for Gary's own yes
+        run: |
+          set -euo pipefail
+          set +e
+          python packaging/release_channel.py publish > publish-wait.json
+          status=$?
+          set -e
+          test "$status" -eq 3
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          body = json.loads(Path("publish-wait.json").read_text(encoding="utf-8"))
+          if body.get("published") is not False or body.get("go_live") != "HOLD":
+              raise SystemExit("publish gate left HOLD")
+          if body.get("go_live_clear") is not False or body.get("production_publish_allowed") is not False:
+              raise SystemExit("publish gate cleared go-live")
+          if body.get("gary_yes_required") is not True or body.get("triple_pass_publishes") is not False:
+              raise SystemExit("triple PASS must not publish")
+          print("Publish waits for Gary's own yes. Go-live stays HOLD. No release and no tag.")
+          PY
+          exit 3
