@@ -153,7 +153,7 @@ def _pin_git(command: object) -> bool:
     if Path(str(command[0])).name != "git" or str(command[1]) != "rev-parse":
         return False
     spec = str(command[2])
-    pin = "e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e"
+    pin = "ad9be6c3179bba140fb7e88d5733616046110da9"
     return spec.startswith(pin + ":") and " " not in spec
 
 

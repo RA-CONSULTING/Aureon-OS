@@ -203,7 +203,7 @@ Stage 2 reachable fell by 7, from 46 to 39, on the stage-2 run. The call sweep r
 - `swarm/memory_bus.py` `CausalEchoBus.possibilities`: one call cannot park an ensemble and read it.
 Main `cf43882e` recorded reachable 78 and tested 68. This follow-up refuses nine stage-1 entry points and tests `SwarmAgent.update`. Reachable and tested are both 69. 30 + 39 = 69.
 
-The pin is `e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e`. The alignment modules at this checkout match that pin. `GUARD_BLOB` is the git blob of `huggingface/hnc-field/guard.py`. `INVENTORY_SHA256` is unchanged.
+The pin is `ad9be6c3179bba140fb7e88d5733616046110da9`. The alignment modules at this checkout match that pin. `GUARD_BLOB` is the git blob of `huggingface/hnc-field/guard.py`. `INVENTORY_SHA256` is unchanged.
 
 ## MCP SDK
 
