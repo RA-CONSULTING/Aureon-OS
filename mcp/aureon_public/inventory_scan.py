@@ -156,6 +156,19 @@ def safety(pkg: str, name: str, src: str, stage: int) -> tuple[str, str]:
     return _honest_effect(name, server, text)
 
 
+def _read_override(rel: str, symbol: str, server: str, safe: str) -> tuple[str, str]:
+    """Stage 3 and 4 read gate. The safety sentence stays operator-scoped for miner and exchanges."""
+
+    from aureon_public.stage34_gate import READ_SAFETY, READ_SERVER_PUBLIC
+
+    key = (rel, symbol)
+    if key not in READ_SAFETY:
+        return server, safe
+    if key in READ_SERVER_PUBLIC or server == "public":
+        return "public", READ_SAFETY[key]
+    return server, safe
+
+
 def _honest_effect(name: str, server: str, text: str) -> tuple[str, str]:
     """Names that write or start are not 'no repo write'."""
 
@@ -265,6 +278,7 @@ def _scan_tree(pkg: str, rel: str, text: str, server_default: str | None = None)
                             stage,
                         )
                     )
+                    server, safe = _read_override(rel, f"{node.name}.{item.name}", server, safe)
                     rows.append(
                         {
                             "package": pkg,
@@ -285,6 +299,7 @@ def _scan_tree(pkg: str, rel: str, text: str, server_default: str | None = None)
                 if pkg == "unified_margin_trader"
                 else safety(pkg, node.name, _span(lines, node), stage)
             )
+            server, safe = _read_override(rel, node.name, server, safe)
             rows.append(
                 {
                     "package": pkg,

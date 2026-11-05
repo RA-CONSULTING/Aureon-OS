@@ -11,11 +11,11 @@ license: mit
 
 # aureon-public
 
-This is a partial release covering stages 1 and 2 of 4. Stages 3 and 4 stay closed. That includes miner, queen, exchanges, orders, and keys. `COVERAGE_PLAN.md` records the counts: listed symbols 20121, public entry points 4405, reachable now 69, tested 69, refused 4336. Stage 1 reachable now is 30 and stage 1 tested now is 30. Stage 2 reachable now is 39 and stage 2 tested now is 39. 30 + 39 = 69 reachable. 30 + 39 = 69 tested. Reachable and tested are the committed call sweep at pin `ad9be6c3179bba140fb7e88d5733616046110da9`. They were not measured again at pin `34864ff0547d2cff03e707414743a3b0cc8770b5` or at pin `bb04503119681adcf832f3c3e9b0cbf09fc7a938`.
+This is a partial release. Stages 1 and 2 are open. Miner and queen are open on a read gate. Exchange `body_call` stays refused. Orders and key values stay closed. `OPEN_PLAN_THROUGH` stays 2, so the other stage 3 and 4 entry points stay refused. `COVERAGE_PLAN.md` records the counts: listed symbols 20121, public entry points 4406, reachable now 71, tested 71, refused 4335. Stage 1 reachable now is 30 and stage 1 tested now is 30. Stage 2 reachable now is 39 and stage 2 tested now is 39. Stages 1 and 2 are reachable now 69 and tested now 69. 30 + 39 = 69 reachable. 30 + 39 = 69 tested. Stage 3 reachable now is 1 and stage 3 tested now is 1. Stage 4 reachable now is 1 and stage 4 tested now is 1. 30 + 39 + 1 + 1 = 71 reachable. 30 + 39 + 1 + 1 = 71 tested. Stages 1 and 2 are the committed call sweep at pin `ad9be6c3179bba140fb7e88d5733616046110da9`. That file was not rewritten at pin `bb04503119681adcf832f3c3e9b0cbf09fc7a938`. The stage 3 and 4 rows are `measured/aureon_public_stage34_call_sweep.json`.
 
-Miner is stage 3: 15 listed, 0 public entry points, reachable 0, tested 0, refused 0. Queen is stage 4: 1348 listed, 566 public entry points, reachable 0, tested 0, refused 566. Exchanges are stage 4: 647 listed, 0 public entry points, reachable 0, tested 0, refused 0. Accounting is stage 3 with reachable 0. Trading is stage 4 with reachable 0. Evidence is stage 4: 32 listed, 15 public entry points, reachable 0, tested 0, refused 15. Harmonic public entry points are 280. Those evidence and harmonic additions are refused. They are not a new reachable count.
+Miner is stage 3: 15 listed, 1 public entry point, reachable 1, tested 1, refused 0. That entry point is `MinerAIInsight.to_dict` on an empty insight. The bridge is not constructed. Queen is stage 4: 1348 listed, 566 public entry points, reachable 1, tested 1, refused 565. The reachable call is `compute_zpe_ground`. `queen/__init__.py` is not executed. Exchanges are stage 4: 647 listed, 0 public entry points, reachable 0, tested 0, refused 0. Exchange clients stay blocked. Accounting is stage 3 with reachable 0. Trading is stage 4 with reachable 0. Evidence is stage 4: 32 listed, 15 public entry points, reachable 0, tested 0, refused 15. Harmonic public entry points are 280. Those evidence and harmonic additions are refused. Key groups are labels, `redacted:<venue>` or `absent:<venue>`. Live orders stay refused.
 
-The measured tests are the call sweep. It calls every entry point that was still reachable, with no arguments, and calls each stage-2 entry point again with the real arguments in `stage2_arguments.py`. Connections, process starts, and writes outside the sandbox are logged: the committed record says sockets blocked, processes blocked, and writes outside the sandbox blocked. A call that opens a connection, starts a process, writes outside the sandbox, or loads queen, miner, swarm_motion, inhouse_ai, ollama_config, or an HTTP client is refused. Other arguments have not been swept.
+The measured tests are the call sweep. It calls every entry point that was still reachable, with no arguments, and calls each stage-2 entry point again with the real arguments in `stage2_arguments.py`. The stage 3 and 4 read gate is called again with the arguments in `stage34_gate.py`. Connections, process starts, and writes outside the sandbox are logged: the committed records say sockets blocked, processes blocked, and writes outside the sandbox blocked. A call that opens a connection, starts a process, writes outside the sandbox, or loads queen, miner, swarm_motion, inhouse_ai, ollama_config, or an HTTP client is refused, except the miner insight and the queen ground module. Exchange modules stay refused. Other arguments have not been swept.
 
 The Space entry is `python -m aureon_public.space`. It sets `AUREON_PUBLIC_REQUIRE_PIN=1` and `AUREON_OBSERVER_MODE=dry_run`, and it refuses to start when `AUREON_PUBLIC_SWEEP` is set. The image installs `requirements.txt` (`mcp==1.30.0,<2` and aureon pin `bb04503119681adcf832f3c3e9b0cbf09fc7a938`) and then the mcp package with `--no-deps`, the same runtime install as `measured/aureon_public_stage1_run.sh`. The image does not install test requirements and does not contain `AUREON_PUBLIC_API_KEY`.
 
@@ -73,7 +73,7 @@ Each figure is reachable public functions and methods out of the public function
 | integrations | 0 | 65 |
 | intelligence | 0 | 274 |
 | launch | 0 | 0 |
-| miner | 0 | 0 |
+| miner | 1 | 1 |
 | monitors | 0 | 158 |
 | observability | 0 | 9 |
 | observer | 24 | 63 |
@@ -82,7 +82,7 @@ Each figure is reachable public functions and methods out of the public function
 | plumber | 0 | 271 |
 | portals | 0 | 51 |
 | portfolio | 0 | 0 |
-| queen | 0 | 566 |
+| queen | 1 | 566 |
 | s51 | 1 | 24 |
 | saas | 0 | 0 |
 | scanners | 0 | 0 |

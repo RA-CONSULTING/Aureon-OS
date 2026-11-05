@@ -665,7 +665,6 @@ def test_stage2_calls_each_named_package() -> None:
         "observer": body_call("observer/live_data_policy.py", "simulation_fallback_allowed"),
     }
     closed = {
-        "queen": body_call("queen/temporal_ground.py", "compute_zpe_ground", json.dumps({"lambda_t": 0.0})),
         "governance": body_call(
             "governance/celtic_voice_bank.py",
             "seasonal_gate_for_date",

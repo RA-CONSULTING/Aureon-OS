@@ -87,7 +87,7 @@ _ROWS: list[dict[str, Any]] | None = None
 _INDEX: dict[tuple[str, str], dict[str, Any]] | None = None
 _INVENTORY_REFUSAL: str | None = None
 # sha256 of the committed docs/mcp/inventory.json. A different file is not loaded.
-INVENTORY_SHA256 = "be5e14d73ae1130a16d04d355478a1474bf1f1b2c405c9d2196444eca8a391dc"
+INVENTORY_SHA256 = "66e9e1ba8da5e11b032c0c27656b7847e88734cf3b030f838af2fd7aa1867bfd"
 _LEAKY_PARAMS = {"url", "path", "out", "file", "host"}
 # Operator-scoped rows are refused unless named here. No portfolio or accounting key reader.
 _OPERATOR_ALLOWLIST = {
@@ -156,6 +156,7 @@ _CONSTRUCTOR_ALLOWLIST: set[tuple[str, str]] = {
     ("swarm/memory_bus.py", "CausalEchoBus"),
     ("swarm/queen_gate.py", "Actualization"),
     ("swarm/steering.py", "SteeringField"),
+    ("miner/miner_inhouse_ai_bridge.py", "MinerAIInsight"),
 }
 _NAME_CONTAINS = ("write", "save", "export", "dump", "start", "run")
 _WORKER_SLOTS = threading.BoundedSemaphore(4)
@@ -221,6 +222,11 @@ def _outside(origin: Path, root: Path) -> bool:
 
 
 def _blocked_dotted_prefix(dotted: str) -> str | None:
+    from aureon_public.stage34_gate import is_read_dotted
+
+    # Exchange client modules stay blocked. The read gate does not import them.
+    if is_read_dotted(dotted):
+        return None
     parts = dotted.split(".")
     if parts[0] in _BLOCKED:
         return f"package {parts[0]} is not importable"
@@ -628,8 +634,11 @@ def _import_checked(module: str) -> tuple[Any | None, str | None]:
 
 
 def _safety_block(row: dict[str, Any], *, allow_fetch: bool, allow_write: bool) -> str | None:
+    from aureon_public.stage34_gate import is_read_key
+
     text = str(row.get("safety") or "")
-    if "live_orders" in text or row["package"] in _BLOCKED:
+    key = (str(row.get("module") or ""), str(row.get("symbol") or ""))
+    if "live_orders" in text or (row["package"] in _BLOCKED and not is_read_key(*key)):
         return "live orders are refused and the blocked import was not performed"
     if "reads keys" in text or "personal or key" in text or "never returned" in text:
         return "key or personal material is not read"
@@ -714,17 +723,23 @@ def _call_sweep_table() -> dict[tuple[str, str], dict[str, Any]] | None:
     global _CALL_SWEEP, _CALL_SWEEP_MISSING
     if _CALL_SWEEP is not None or _CALL_SWEEP_MISSING:
         return _CALL_SWEEP
-    path = repo_root() / "measured" / "aureon_public_call_sweep.json"
-    try:
-        loaded = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    table: dict[tuple[str, str], dict[str, Any]] = {}
+    found = False
+    root = repo_root() / "measured"
+    for name in ("aureon_public_call_sweep.json", "aureon_public_stage34_call_sweep.json"):
+        path = root / name
+        try:
+            loaded = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        found = True
+        if isinstance(loaded, dict):
+            for row in loaded.get("entries") or []:
+                if isinstance(row, dict) and row.get("module") and row.get("symbol"):
+                    table[(str(row["module"]), str(row["symbol"]))] = row
+    if not found:
         _CALL_SWEEP_MISSING = True
         return None
-    table: dict[tuple[str, str], dict[str, Any]] = {}
-    if isinstance(loaded, dict):
-        for row in loaded.get("entries") or []:
-            if isinstance(row, dict) and row.get("module") and row.get("symbol"):
-                table[(str(row["module"]), str(row["symbol"]))] = row
     _CALL_SWEEP = table
     return table
 
@@ -761,15 +776,18 @@ def public_entry_refusal(row: dict[str, Any]) -> str | None:
 
 
 def _public_entry_refusal(row: dict[str, Any]) -> str | None:
+    from aureon_public.stage34_gate import is_read_key
+
+    read = is_read_key(str(row.get("module") or ""), str(row.get("symbol") or ""))
     if row["server"] != "public":
         return "operator entry point is not on aureon-public"
-    if row["package"] in _BLOCKED:
+    if row["package"] in _BLOCKED and not read:
         return "blocked package is not imported on aureon-public"
     kind = _package_kind(str(row["package"]))
-    if kind in {"operator", "excluded"}:
+    if kind in {"operator", "excluded"} and not read:
         return f"package {row['package']} is {kind}"
     plan_stage = _plan_stage(str(row["package"]))
-    if plan_stage > OPEN_PLAN_THROUGH:
+    if plan_stage > OPEN_PLAN_THROUGH and not read:
         return f"plan stage {plan_stage} is not open"
     named = _ENTRY_REFUSAL.get((str(row["module"]), str(row["symbol"])))
     if named:

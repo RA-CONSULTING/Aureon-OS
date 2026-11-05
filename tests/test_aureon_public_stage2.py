@@ -190,11 +190,10 @@ def test_stage2_sweep_records_match_body_call() -> None:
         assert body["reason"] == row["refusal"]
 
 
-def test_stages_three_and_four_stay_closed() -> None:
+def test_stages_three_and_four_stay_closed_outside_the_read_gate() -> None:
     from aureon_public.body import body_call
 
     closed = {
-        "queen/temporal_ground.py": ("compute_zpe_ground", "plan stage 4 is not open"),
         "governance/celtic_voice_bank.py": ("seasonal_gate_for_date", "plan stage 4 is not open"),
         "organism/repository_layers.py": ("compose_repository_layers", "plan stage 4 is not open"),
         "swarm/capability_grid.py": ("build_lane", "stage 4 entry point is not called"),
