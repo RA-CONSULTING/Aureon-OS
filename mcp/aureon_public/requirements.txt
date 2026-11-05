@@ -4,4 +4,4 @@
 # The check and the sources are in mcp/aureon_public/COVERAGE_PLAN.md.
 mcp==1.30.0,<2
 numpy>=1.26
-aureon @ git+https://github.com/RA-CONSULTING/Aureon-OS.git@8aa6a2d971cc529484e2a5e261e28afafab4e4f4
+aureon @ git+https://github.com/RA-CONSULTING/Aureon-OS.git@e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e

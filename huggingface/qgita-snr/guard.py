@@ -62,7 +62,7 @@ if _ROOT is not None and str(_ROOT) not in sys.path:
 
 UNAVAILABLE = "unavailable"
 LICENCE = "MIT"
-COMMIT = "8aa6a2d971cc529484e2a5e261e28afafab4e4f4"
+COMMIT = "e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e"
 
 
 def show(value: object) -> object:
