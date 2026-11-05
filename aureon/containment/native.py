@@ -18,7 +18,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-PIN = "34864ff0547d2cff03e707414743a3b0cc8770b5"
+# Published require-pin. The stage-7 receipt still names historical pin
+# 34864ff0547d2cff03e707414743a3b0cc8770b5 and is not rewritten.
+PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
 STARTED_FROM = "c68a89d2a184d99582bb24310b91e024323a212c"
 
 _WRAPPER = Path(__file__).with_name("_child_wrapper.py")

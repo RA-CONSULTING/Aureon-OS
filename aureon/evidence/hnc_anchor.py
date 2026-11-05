@@ -5,19 +5,25 @@ The formula path is the fixed-seed ``HarmonicRealityField`` run already in
 not place an order.
 
 The head is an RFC 3161 timestamp over that measured commitment. ``make
-evidence`` reads the token from the git note ``refs/notes/aureon-hnc-head``
-and requires the committed bytes to match. A working-tree edit does not move
-the note or the committed blob. The public require-pin stays
-``34864ff0547d2cff03e707414743a3b0cc8770b5`` unless a measured series hash
-differs, and this module refuses to stamp that case.
+evidence`` reads sequence 1 from the git note ``refs/notes/aureon-hnc-head``
+and a later head from ``refs/notes/aureon-hnc-head-next``. It requires the
+committed bytes to match. A working-tree edit does not move either note or
+either committed blob. The timestamp records historical pin
+``34864ff0547d2cff03e707414743a3b0cc8770b5``. The published require-pin is
+``bb04503119681adcf832f3c3e9b0cbf09fc7a938``. This module does not move it.
+A series-hash change is refused rather than recorded as a new HNC identity.
 
-Go-live stays HOLD. The record does not say the system is alive.
+A later head is sequence 2 only: ``prev_anchor_id`` is the sequence 1 anchor
+id, and the verified ``gen_time`` is strictly later. The ledger flag
+``external_head_anchor_attested`` stays false. ``go_live_clear`` stays false.
+The record does not say the system is alive.
 """
 
 from __future__ import annotations
 
 import base64
 import hashlib
+import json
 import re
 import subprocess
 import tempfile
@@ -28,8 +34,27 @@ from typing import Any
 
 from aureon.evidence.serialize import dump
 
+# Pin inside the receipt 3 RFC 3161 commitment. Historical. Not the published pin.
 PUBLIC_PIN = "34864ff0547d2cff03e707414743a3b0cc8770b5"
-# Series sha256 of the formula path in evidence/output/hnc.json at that pin.
+PUBLISHED_PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
+# Series sha256 of the formula path in evidence/output/hnc.json at PUBLIC_PIN.
+
+
+def _identity_note(subject: str) -> str:
+    return (
+        "The measured formula series sha256 matches the series recorded for historical "
+        f"public pin {PUBLIC_PIN}. The published require-pin is {PUBLISHED_PIN}. "
+        f"{subject} does not publish a new HNC identity and does not move the published require-pin."
+    )
+
+
+def _refuse_new_identity() -> str:
+    return (
+        "Measured formula series sha256 differs from the series recorded for historical pin "
+        f"{PUBLIC_PIN} ({PIN_FORMULA_SERIES_SHA256}). "
+        f"The published require-pin stays {PUBLISHED_PIN}. "
+        "Refusing to record a new HNC identity."
+    )
 PIN_FORMULA_SERIES_SHA256 = "0a69c024c3a7b849857314ef710f11439eb13a30cd7c45f05429becea574f5c2"
 # SHA-256 of the RFC 3161 token bytes recorded for this head. Not a new HNC identity.
 EXPECTED_ANCHOR_ID = "548596463d7b4dddeeba274562b212960f879baf475ee135c7d2fd3468f58e11"
@@ -40,6 +65,13 @@ TSA_URL = "http://timestamp.digicert.com"
 TOKEN_REL = "evidence/output/hnc_head_anchor.tsr.b64"
 RECORD_REL = "evidence/output/hnc_head_anchor.json"
 ID_REL = "evidence/output/hnc_head_anchor.id"
+NEXT_NOTE_NAME = "aureon-hnc-head-next"
+NEXT_NOTE_REF = "refs/notes/aureon-hnc-head-next"
+NEXT_TOKEN_REL = "evidence/output/hnc_head_next.tsr.b64"
+NEXT_RECORD_REL = "evidence/output/hnc_head_next.json"
+NEXT_ID_REL = "evidence/output/hnc_head_next.id"
+# SHA-256 of the sequence-2 RFC 3161 token recorded for this head.
+EXPECTED_NEXT_ANCHOR_ID = "e02c59279b46e912a08b1add73f44b82970f535676d0011a3bcb769dfba68784"
 GENESIS = "aureon.evidence.hnc-head-anchor.genesis.v1"
 SCHEMA = "aureon.evidence.hnc-head-anchor.v1"
 COMMITMENT_SCHEMA = "aureon.evidence.hnc-measurement-commitment.v1"
@@ -278,36 +310,43 @@ def _git_bytes(root: Path, args: list[str]) -> bytes | None:
         return None
 
 
-def read_note(root: Path) -> bytes | None:
-    return _git_bytes(root, ["git", "notes", "--ref", NOTE_NAME, "show", "HEAD"])
+def read_note(root: Path, note_name: str = NOTE_NAME) -> bytes | None:
+    return _git_bytes(root, ["git", "notes", "--ref", note_name, "show", "HEAD"])
 
 
-def read_head_blob(root: Path) -> bytes | None:
-    return _git_bytes(root, ["git", "show", f"HEAD:{TOKEN_REL}"])
+def read_head_blob(root: Path, token_rel: str = TOKEN_REL) -> bytes | None:
+    return _git_bytes(root, ["git", "show", f"HEAD:{token_rel}"])
 
 
-def load_token_text(root: Path, *, require_note: bool) -> str:
+def load_token_text(
+    root: Path,
+    *,
+    require_note: bool,
+    note_name: str = NOTE_NAME,
+    note_ref: str = NOTE_REF,
+    token_rel: str = TOKEN_REL,
+) -> str:
     """Return the canonical token text from the note or the committed blob.
 
     The working tree is used only when neither git object exists, so a local
     edit cannot replace a note that is already attached.
     """
 
-    note = read_note(root)
-    head = read_head_blob(root)
+    note = read_note(root, note_name)
+    head = read_head_blob(root, token_rel)
     if note is not None and head is not None and note != head:
         raise AnchorError("git note and committed HNC head token differ")
     if require_note and note is None:
         raise AnchorError(
-            f"missing {NOTE_REF} on HEAD. "
-            f"Fetch it with: git fetch origin {NOTE_REF}:{NOTE_REF}"
+            f"missing {note_ref} on HEAD. "
+            f"Fetch it with: git fetch origin {note_ref}:{note_ref}"
         )
     if note is not None:
         raw = note
     elif head is not None:
         raw = head
     else:
-        path = root / TOKEN_REL
+        path = root / token_rel
         if not path.is_file():
             raise AnchorError(
                 "HNC head token is not in git. "
@@ -371,12 +410,7 @@ def anchor_record(
 ) -> dict[str, Any]:
     commitment = measurement_commitment(hnc_summary)
     if commitment["hnc_identity_changed"]:
-        raise AnchorError(
-            "Measured formula series sha256 differs from the public pin evidence "
-            f"{PIN_FORMULA_SERIES_SHA256}. This receipt will not move "
-            f"AUREON_PUBLIC_REQUIRE_PIN ({PUBLIC_PIN}). "
-            "Refusing to record a new HNC identity."
-        )
+        raise AnchorError(_refuse_new_identity())
     anchor_id = hashlib.sha256(token).hexdigest()
     if EXPECTED_ANCHOR_ID and anchor_id != EXPECTED_ANCHOR_ID:
         raise AnchorError(
@@ -397,12 +431,10 @@ def anchor_record(
         "external_llm": False,
         "market_series": False,
         "public_require_pin": PUBLIC_PIN,
+        "published_require_pin": PUBLISHED_PIN,
+        "recorded_pin_status": "historical",
         "hnc_identity_changed": False,
-        "hnc_identity_note": (
-            "The measured formula series sha256 matches the series recorded at the "
-            "public pin. This receipt does not publish a new HNC identity and does "
-            "not move AUREON_PUBLIC_REQUIRE_PIN."
-        ),
+        "hnc_identity_note": _identity_note("This receipt"),
         "sequence": 1,
         "prev_anchor_id": genesis_id(),
         "genesis": GENESIS,
@@ -445,6 +477,108 @@ def id_text(record: dict[str, Any]) -> str:
     return str(record["anchor_id"]) + "\n"
 
 
+def next_commitment(hnc_summary: dict[str, Any], previous: dict[str, Any]) -> dict[str, Any]:
+    """Sequence-1 commitment plus the next sequence and the previous anchor id.
+
+    ``external_head_anchor_attested`` is inside the timestamped bytes and is
+    false. The commitment keeps historical pin ``PUBLIC_PIN``. This function
+    does not move ``PUBLISHED_PIN``.
+    """
+
+    if int(previous.get("sequence", 0)) != 1:
+        raise AnchorError("the next head can follow sequence 1 only")
+    previous_id = previous.get("anchor_id")
+    if previous_id != EXPECTED_ANCHOR_ID:
+        raise AnchorError("the next head does not follow the recorded sequence 1 anchor")
+    commitment = dict(measurement_commitment(hnc_summary))
+    if commitment["hnc_identity_changed"]:
+        raise AnchorError(_refuse_new_identity())
+    commitment["sequence"] = 2
+    commitment["prev_anchor_id"] = previous_id
+    commitment["external_head_anchor_attested"] = False
+    return commitment
+
+
+def next_anchor_record(
+    hnc_summary: dict[str, Any],
+    previous: dict[str, Any],
+    token: bytes,
+    parsed: dict[str, Any],
+    token_text: str,
+) -> dict[str, Any]:
+    commitment = next_commitment(hnc_summary, previous)
+    anchor_id = hashlib.sha256(token).hexdigest()
+    if EXPECTED_NEXT_ANCHOR_ID and anchor_id != EXPECTED_NEXT_ANCHOR_ID:
+        raise AnchorError(
+            "timestamp token does not match the recorded next HNC head anchor id "
+            f"{EXPECTED_NEXT_ANCHOR_ID}"
+        )
+    measured = hashlib.sha256(commitment_bytes(commitment)).hexdigest()
+    record = {
+        "schema": SCHEMA,
+        "receipt": 3,
+        "receipt_name": "durable HNC evidence with an external monotonic head anchor",
+        "follow_on": "next monotonic head",
+        "tag": "measured",
+        "go_live": "HOLD",
+        "go_live_clear": False,
+        "system_alive": False,
+        "live_trading": False,
+        "orders_placed": False,
+        "external_llm": False,
+        "external_head_anchor_attested": False,
+        "market_series": False,
+        "public_require_pin": PUBLIC_PIN,
+        "published_require_pin": PUBLISHED_PIN,
+        "recorded_pin_status": "historical",
+        "hnc_identity_changed": False,
+        "hnc_identity_note": _identity_note("This follow-on"),
+        "sequence": 2,
+        "prev_anchor_id": previous["anchor_id"],
+        "previous_gen_time": previous["external"]["gen_time"],
+        "genesis": GENESIS,
+        "anchor_id": anchor_id,
+        "note_ref": NEXT_NOTE_REF,
+        "note_git_blob": git_blob_sha1(token_text.encode("ascii")),
+        "measurement_sha256": measured,
+        "measurement": commitment,
+        "external": {
+            "kind": "rfc3161",
+            "provider": TSA_URL,
+            "provider_contacted_by_check": False,
+            "policy_oid": parsed["policy_oid"],
+            "hash_algorithm": "sha256",
+            "gen_time": parsed["gen_time"],
+            "serial_hex": parsed["serial_hex"],
+            "tsa_ordering": parsed["tsa_ordering"],
+            "imprint_sha256": parsed["imprint_sha256"],
+            "token_sha256": anchor_id,
+            "verification": parsed["verification"],
+            "ca": parsed["ca"],
+        },
+        "binding": {
+            "token_source": (
+                f"{NEXT_NOTE_REF} on HEAD, equal to the committed blob {NEXT_TOKEN_REL}"
+            ),
+            "working_tree_is_not_the_source": True,
+            "monotonic_rule": (
+                "Sequence 2 names the sequence 1 anchor id as prev_anchor_id. "
+                "The verified gen_time is strictly later than sequence 1. "
+                "The timestamp authority's ordering flag is recorded as measured. "
+                "This chain is the monotonic rule. external_head_anchor_attested "
+                "stays false. This record does not say the system is alive and does "
+                "not clear go-live. A working-tree edit does not move the git note."
+            ),
+        },
+    }
+    validate_chain(record, previous)
+    if record["external_head_anchor_attested"] is not False:
+        raise AnchorError("external_head_anchor_attested is not false")
+    if record["system_alive"] is not False or record["go_live"] != "HOLD":
+        raise AnchorError("the next head must stay on HOLD and must not say the system is alive")
+    return record
+
+
 def assemble(root: Path, hnc_summary: dict[str, Any], *, require_note: bool) -> dict[str, str]:
     """Verify the external token and return the evidence files as text."""
 
@@ -476,10 +610,7 @@ def stamp_files(root: Path, hnc_summary: dict[str, Any]) -> dict[str, str]:
 
     commitment = measurement_commitment(hnc_summary)
     if commitment["hnc_identity_changed"]:
-        raise AnchorError(
-            "Measured formula series sha256 differs from the public pin evidence. "
-            f"Refusing to stamp a new HNC identity. Pin stays {PUBLIC_PIN}."
-        )
+        raise AnchorError(_refuse_new_identity())
     data = commitment_bytes(commitment)
     token = request_timestamp(data)
     text = canonical_token_text(token)
@@ -497,24 +628,97 @@ def stamp_files(root: Path, hnc_summary: dict[str, Any]) -> dict[str, str]:
     return files
 
 
-def attach_note(root: Path) -> None:
+def attach_note(
+    root: Path,
+    *,
+    note_name: str = NOTE_NAME,
+    token_rel: str = TOKEN_REL,
+) -> None:
     """Attach the committed token to HEAD. Refuses a dirty working-tree copy."""
 
-    path = root / TOKEN_REL
-    head = read_head_blob(root)
+    path = root / token_rel
+    head = read_head_blob(root, token_rel)
     if head is None:
-        raise AnchorError(f"{TOKEN_REL} is not committed on HEAD")
+        raise AnchorError(f"{token_rel} is not committed on HEAD")
     work = path.read_bytes()
     if work != head:
         raise AnchorError("working tree token differs from HEAD; the note was not moved")
     proc = subprocess.run(
-        ["git", "notes", "--ref", NOTE_NAME, "add", "-f", "-F", str(path), "HEAD"],
+        ["git", "notes", "--ref", note_name, "add", "-f", "-F", str(path), "HEAD"],
         cwd=root,
         capture_output=True,
     )
     if proc.returncode != 0:
         detail = proc.stderr.decode("utf-8", "replace").strip()
         raise AnchorError(f"git notes add failed: {detail}")
-    note = read_note(root)
+    note = read_note(root, note_name)
     if note != head:
         raise AnchorError("git note does not match the committed token")
+
+
+def assemble_next(
+    root: Path,
+    hnc_summary: dict[str, Any],
+    previous: dict[str, Any],
+    *,
+    require_note: bool,
+) -> dict[str, str]:
+    """Verify the sequence-2 token and return its evidence files as text."""
+
+    if EXPECTED_NEXT_ANCHOR_ID == "":
+        raise AnchorError("EXPECTED_NEXT_ANCHOR_ID is empty; the next head has not been recorded")
+    text = load_token_text(
+        root,
+        require_note=require_note,
+        note_name=NEXT_NOTE_NAME,
+        note_ref=NEXT_NOTE_REF,
+        token_rel=NEXT_TOKEN_REL,
+    )
+    token = decode_token_text(text)
+    commitment = commitment_bytes(next_commitment(hnc_summary, previous))
+    parsed = verify_timestamp(token, commitment)
+    record = next_anchor_record(hnc_summary, previous, token, parsed, text)
+    blob = subprocess.run(
+        ["git", "hash-object", "--stdin"],
+        input=text.encode("ascii"),
+        capture_output=True,
+        cwd=root,
+        check=False,
+    )
+    if blob.returncode != 0 or blob.stdout.decode("ascii").strip() != record["note_git_blob"]:
+        raise AnchorError("git hash-object of the next token text does not match note_git_blob")
+    return {
+        NEXT_TOKEN_REL: text,
+        NEXT_RECORD_REL: dump(record),
+        NEXT_ID_REL: id_text(record),
+    }
+
+
+def stamp_next(root: Path, hnc_summary: dict[str, Any]) -> dict[str, str]:
+    """Request one timestamp for sequence 2. Check does not call this.
+
+    Refuses when the formula series would move the public pin, when sequence 1
+    does not verify, or when the verified gen_time is not strictly later.
+    """
+
+    if EXPECTED_NEXT_ANCHOR_ID:
+        raise AnchorError(
+            "the next HNC head is already recorded; this command does not request another timestamp"
+        )
+    previous_files = assemble(root, hnc_summary, require_note=False)
+    previous = json.loads(previous_files[RECORD_REL])
+    data = commitment_bytes(next_commitment(hnc_summary, previous))
+    token = request_timestamp(data)
+    text = canonical_token_text(token)
+    parsed = verify_timestamp(token, data)
+    record = next_anchor_record(hnc_summary, previous, token, parsed, text)
+    files = {
+        NEXT_TOKEN_REL: text,
+        NEXT_RECORD_REL: dump(record),
+        NEXT_ID_REL: id_text(record),
+    }
+    for relative, contents in files.items():
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(contents, encoding="utf-8")
+    return files

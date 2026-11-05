@@ -11,10 +11,14 @@ import pytest
 
 from aureon.evidence.hnc_anchor import (
     EXPECTED_ANCHOR_ID,
+    EXPECTED_NEXT_ANCHOR_ID,
     GENESIS,
+    NEXT_NOTE_NAME,
+    NEXT_TOKEN_REL,
     NOTE_REF,
     PIN_FORMULA_SERIES_SHA256,
     PUBLIC_PIN,
+    PUBLISHED_PIN,
     TOKEN_REL,
     AnchorError,
     attach_note,
@@ -25,14 +29,18 @@ from aureon.evidence.hnc_anchor import (
     git_blob_sha1,
     load_token_text,
     measurement_commitment,
+    next_commitment,
     parse_timestamp_text,
+    stamp_next,
     validate_chain,
     verify_timestamp,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
 RECORD = ROOT / "evidence" / "output" / "hnc_head_anchor.json"
+NEXT_RECORD = ROOT / "evidence" / "output" / "hnc_head_next.json"
 TOKEN = ROOT / TOKEN_REL
+NEXT_TOKEN = ROOT / NEXT_TOKEN_REL
 OPEN_SSL_TEXT = """
 Status info:
 Status: Granted.
@@ -100,11 +108,14 @@ def test_public_pin_and_hold_are_unchanged() -> None:
     record = json.loads(RECORD.read_text(encoding="utf-8"))
     guard = (ROOT / "mcp/aureon_public/guard_loader.py").read_text(encoding="utf-8")
     space = (ROOT / "huggingface/hnc-field/guard.py").read_text(encoding="utf-8")
-    published = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
     assert PUBLIC_PIN == "34864ff0547d2cff03e707414743a3b0cc8770b5"
-    assert f'PINNED_COMMIT = "{published}"' in guard
-    assert f'COMMIT = "{published}"' in space
+    assert PUBLISHED_PIN == "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
+    assert f'PINNED_COMMIT = "{PUBLISHED_PIN}"' in guard
+    assert f'COMMIT = "{PUBLISHED_PIN}"' in space
     assert record["public_require_pin"] == PUBLIC_PIN
+    assert record["measurement"]["public_require_pin"] == PUBLIC_PIN
+    assert record["published_require_pin"] == PUBLISHED_PIN
+    assert record["recorded_pin_status"] == "historical"
     assert record["hnc_identity_changed"] is False
     assert record["measurement"]["formula_series_sha256"] == PIN_FORMULA_SERIES_SHA256
     assert record["measurement"]["hnc_identity_changed"] is False
@@ -166,3 +177,77 @@ def test_commitment_from_the_recorded_summary_matches_the_token() -> None:
     assert commitment == record["measurement"]
     assert commitment["market_series"] is False
     assert commitment["system_alive"] is False
+
+
+def test_next_head_is_sequence_two_with_a_later_verified_clock() -> None:
+    record = json.loads(RECORD.read_text(encoding="utf-8"))
+    nxt = json.loads(NEXT_RECORD.read_text(encoding="utf-8"))
+    summary = json.loads((ROOT / "evidence/output/hnc.json").read_text(encoding="utf-8"))
+    validate_chain(nxt, record)
+    assert next_commitment(summary, record) == nxt["measurement"]
+    assert nxt["sequence"] == 2
+    assert nxt["prev_anchor_id"] == record["anchor_id"] == EXPECTED_ANCHOR_ID
+    assert nxt["previous_gen_time"] == record["external"]["gen_time"] == "2026-11-05T19:40:18Z"
+    assert nxt["external"]["gen_time"] == "2026-11-05T20:44:49Z"
+    assert nxt["external"]["tsa_ordering"] is False
+    assert nxt["external"]["provider_contacted_by_check"] is False
+    assert nxt["anchor_id"] == EXPECTED_NEXT_ANCHOR_ID
+    assert nxt["external_head_anchor_attested"] is False
+    assert nxt["measurement"]["external_head_anchor_attested"] is False
+    assert nxt["system_alive"] is False
+    assert nxt["live_trading"] is False
+    assert nxt["orders_placed"] is False
+    assert nxt["go_live"] == "HOLD"
+    assert nxt["go_live_clear"] is False
+    assert nxt["market_series"] is False
+    assert nxt["public_require_pin"] == PUBLIC_PIN
+    assert nxt["measurement"]["public_require_pin"] == PUBLIC_PIN
+    assert nxt["published_require_pin"] == PUBLISHED_PIN
+    assert nxt["recorded_pin_status"] == "historical"
+    assert nxt["hnc_identity_changed"] is False
+    assert nxt["measurement"]["formula_series_sha256"] == PIN_FORMULA_SERIES_SHA256
+    assert (ROOT / "evidence/output/hnc_head_next.id").read_text(encoding="utf-8") == nxt["anchor_id"] + "\n"
+    token = decode_token_text(NEXT_TOKEN.read_text(encoding="utf-8"))
+    assert hashlib.sha256(token).hexdigest() == nxt["anchor_id"]
+    parsed = verify_timestamp(token, commitment_bytes(nxt["measurement"]))
+    assert parsed["gen_time"] == nxt["external"]["gen_time"]
+    assert parsed["serial_hex"] == nxt["external"]["serial_hex"]
+    assert parsed["imprint_sha256"] == nxt["measurement_sha256"]
+    runbook = (ROOT / "docs/runbooks/GO_LIVE_HARDENING.md").read_text(encoding="utf-8")
+    assert "Receipts 2, 3, 4, and 5 remain HOLD" in runbook
+    assert "external_head_anchor_attested" in runbook
+    assert "The system is not reported" in runbook
+    assert "go_live_clear" in runbook
+    assert PUBLIC_PIN in runbook
+    assert PUBLISHED_PIN in runbook
+    assert "historical" in runbook
+    assert "receipt 5" in runbook
+    guard = (ROOT / "mcp/aureon_public/guard_loader.py").read_text(encoding="utf-8")
+    assert f'PINNED_COMMIT = "{PUBLISHED_PIN}"' in guard
+
+
+def test_recorded_next_head_is_not_stamped_again(tmp_path: Path) -> None:
+    with pytest.raises(AnchorError, match="already recorded"):
+        stamp_next(tmp_path, {})
+
+
+def test_working_tree_edit_does_not_move_the_next_note(tmp_path: Path) -> None:
+    token_text = NEXT_TOKEN.read_text(encoding="utf-8")
+    target = tmp_path / NEXT_TOKEN_REL
+    target.parent.mkdir(parents=True)
+    target.write_text(token_text, encoding="utf-8")
+    _git(tmp_path, "init")
+    _git(tmp_path, "config", "user.email", "cursoragent@cursor.com")
+    _git(tmp_path, "config", "user.name", "Cursor Agent")
+    _git(tmp_path, "add", NEXT_TOKEN_REL)
+    _git(tmp_path, "commit", "-m", "next anchor token")
+    attach_note(tmp_path, note_name=NEXT_NOTE_NAME, token_rel=NEXT_TOKEN_REL)
+    target.write_text(canonical_token_text(b"\x30\x00"), encoding="utf-8")
+    loaded = load_token_text(
+        tmp_path,
+        require_note=True,
+        note_name=NEXT_NOTE_NAME,
+        note_ref="refs/notes/aureon-hnc-head-next",
+        token_rel=NEXT_TOKEN_REL,
+    )
+    assert loaded == token_text

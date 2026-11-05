@@ -44,14 +44,20 @@
   {
     "asserted": true,
     "id": "hnc.head_anchor",
-    "statement": "Receipt 3 binds the formula-path series sha256 0a69c024c3a7b849857314ef710f11439eb13a30cd7c45f05429becea574f5c2 to RFC 3161 anchor 548596463d7b4dddeeba274562b212960f879baf475ee135c7d2fd3468f58e11 at 2026-11-05T19:40:18Z. Sequence 1. Public require-pin 34864ff0547d2cff03e707414743a3b0cc8770b5 is unchanged. The run does not report the system alive, does not place an order, and leaves go-live HOLD.",
+    "statement": "Receipt 3 binds the formula-path series sha256 0a69c024c3a7b849857314ef710f11439eb13a30cd7c45f05429becea574f5c2 to RFC 3161 anchor 548596463d7b4dddeeba274562b212960f879baf475ee135c7d2fd3468f58e11 at 2026-11-05T19:40:18Z. Sequence 1. The timestamp records historical public pin 34864ff0547d2cff03e707414743a3b0cc8770b5. The published require-pin is bb04503119681adcf832f3c3e9b0cbf09fc7a938. go_live_clear stays false. The run does not report the system alive, does not place an order, and leaves go-live HOLD.",
     "tag": "measured"
   },
   {
     "asserted": true,
     "id": "hnc.head_anchor.identity",
-    "statement": "The measured formula series sha256 matches the series recorded for public pin 34864ff0547d2cff03e707414743a3b0cc8770b5, so this receipt does not publish a new HNC identity.",
+    "statement": "The measured formula series sha256 matches the series recorded for historical public pin 34864ff0547d2cff03e707414743a3b0cc8770b5. The published require-pin is bb04503119681adcf832f3c3e9b0cbf09fc7a938. This receipt does not publish a new HNC identity.",
     "tag": "inferred"
+  },
+  {
+    "asserted": true,
+    "id": "hnc.head_anchor.next",
+    "statement": "Receipt 3 follow-on binds sequence 2 to RFC 3161 anchor e02c59279b46e912a08b1add73f44b82970f535676d0011a3bcb769dfba68784 at 2026-11-05T20:44:49Z. prev_anchor_id is 548596463d7b4dddeeba274562b212960f879baf475ee135c7d2fd3468f58e11. Sequence 1 gen_time is 2026-11-05T19:40:18Z. The verified gen_time is strictly later. external_head_anchor_attested stays false. The timestamp records historical public pin 34864ff0547d2cff03e707414743a3b0cc8770b5. The published require-pin is bb04503119681adcf832f3c3e9b0cbf09fc7a938. go_live_clear stays false. The run does not report the system alive, does not place an order, and leaves go-live HOLD.",
+    "tag": "measured"
   },
   {
     "asserted": true,
