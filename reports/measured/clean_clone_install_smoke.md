@@ -122,3 +122,11 @@ No `./install.sh --smoke` was run on `29fab7f2` or on the replayed commits. `git
 - `measured/go_live_stage6_source_census.json` sha256 `2bc09488106c4a6a4d1fd231dc27ff8baab12c597a1f17b1dacf249eea8cc4f4`, `go_live_clear` false
 
 `evidence/output/hnc_head_anchor.json`, `aureon/evidence/hnc_anchor.py`, and `aureon/plumber/release_boundary_v02.py` still match the measurement hashes. `production_ready` stays false. Release boundary stays **HOLD**. `go_live_clear` stays false.
+
+## Rebase onto 08f04936
+
+This branch was rebased again onto `08f04936088689e29b7995d89530b21b425c35f9`. On this branch the path fix is `d50ca59ae66688ba9fba7d52cfa29fc1a0175c1b`, the original receipt is `a26ea6d85a8570f28dd91ff8b2f035f56989f4dd`, and the `29fab7f2` note is `19e57a21c4a035c91447a03b4f449b7310198a74`.
+
+No `./install.sh --smoke` was run. `git_head_at_measurement` stays `7de64166bc532170a5a95a842e623a4b894cebd2`.
+
+Read after this rebase, the stage-6 files, the HNC anchor, the release-boundary module, `guard_loader.py`, and `scripts/plug_and_play.py` are the same bytes as the `29fab7f2` read above. `PINNED_COMMIT` stays `bb04503119681adcf832f3c3e9b0cbf09fc7a938`. `go_live_clear` stays false. Release boundary stays **HOLD**.

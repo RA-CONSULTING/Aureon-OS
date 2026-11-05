@@ -265,7 +265,8 @@
     "SMOKE PASSED means the guarded local stack answered. production_ready stays false. go_live_clear stays false.",
     "Exchange keys stayed unset. No .env was present. orders_placed stayed false.",
     "This receipt was written after the measurement. git_head_at_measurement is 7de64166.",
-    "The branch was later rebased onto 29fab7f2. That rebase did not re-run ./install.sh --smoke. The passing measurement stays 7de64166."
+    "The branch was later rebased onto 29fab7f2. That rebase did not re-run ./install.sh --smoke. The passing measurement stays 7de64166.",
+    "The branch was rebased again onto 08f04936. That rebase did not re-run ./install.sh --smoke. go_live_clear stays false. The passing measurement stays 7de64166."
   ],
   "rebase": {
     "onto": "29fab7f21fc93da40224566dd8f34faacb3d74d4",
@@ -299,5 +300,26 @@
       "scripts/plug_and_play.py": "074958ec277ae9cbd88dc3a3f0faa635d71f41431d8d36f4208e71dce8667497"
     },
     "evidence_tag": "read of this worktree after the rebase. No ./install.sh --smoke was run on 29fab7f2 or on the replayed commits."
+  },
+  "rebase_onto_08f04936": {
+    "onto": "08f04936088689e29b7995d89530b21b425c35f9",
+    "replayed_fix": "d50ca59ae66688ba9fba7d52cfa29fc1a0175c1b",
+    "replayed_receipt": "a26ea6d85a8570f28dd91ff8b2f035f56989f4dd",
+    "replayed_29fab7f2_note": "19e57a21c4a035c91447a03b4f449b7310198a74",
+    "smoke_rerun": false,
+    "git_head_at_measurement": "7de64166bc532170a5a95a842e623a4b894cebd2",
+    "release_boundary": "HOLD",
+    "go_live_clear_on_this_tree": false,
+    "pin_on_this_tree": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
+    "same_bytes_as_the_29fab7f2_read": {
+      "measured/go_live_stage6_provenance.json": "33adba393aec6047e2dcc8cf90e5ad3984aa158355b5205c65f2f1109c7b4d94",
+      "measured/go_live_stage6_source_census.json": "2bc09488106c4a6a4d1fd231dc27ff8baab12c597a1f17b1dacf249eea8cc4f4",
+      "evidence/output/hnc_head_anchor.json": "270e7d5b97331df9e772a902b984e42ebea24192edeb9b476c38d162b670bd16",
+      "aureon/evidence/hnc_anchor.py": "0fb6afb1006384c6febd41a924ad7706c9d84e80b511e484c76d58ffc9623b0d",
+      "aureon/plumber/release_boundary_v02.py": "8691b938dc8df60e89c7360c90c24079eda259754a0ea36810cce925580e05f4",
+      "mcp/aureon_public/guard_loader.py": "6e674ddca3ed4d7c254cb41069d33660728b91c3436a821beab6558734bc7293",
+      "scripts/plug_and_play.py": "074958ec277ae9cbd88dc3a3f0faa635d71f41431d8d36f4208e71dce8667497"
+    },
+    "evidence_tag": "read of this worktree after the rebase onto 08f04936. No ./install.sh --smoke was run."
   }
 }
