@@ -46,6 +46,8 @@ On Linux the guarded smoke is `./install.sh --smoke` from the checkout. The scri
 
 `scripts/linux/install-linux.sh` execs `scripts/bootstrap/protected_bootstrap_v05.py --target-id linux-supervisor`. That entry is outside this smoke. Go-live stays **HOLD**. See [`docs/runbooks/GO_LIVE_HARDENING.md`](docs/runbooks/GO_LIVE_HARDENING.md).
 
+**Warning.** `scripts/linux/aureon-up.sh` can boot live trading when a full exchange key group is present in `.env`. When `.venv/bin/python` is missing, that script runs `production/install.sh`, which calls `scripts/launch/aureon-master.sh`. With autonomy left at the public default, that boot reports `trading_mode=live (exchange keys present)`. When `.venv/bin/python` is already present, `aureon-up.sh` runs `python -m aureon.autonomous.aureon_master_launcher --preflight` and sets `AUREON_LIVE_TRADING=0`. Go-live stays **HOLD**. The start-here command stays `./install.sh --smoke`.
+
 ### What the guarded smoke covers
 
 `./install.sh --smoke` is the start-here check. Live trading stays off. Exchange keys stay unset. No order is placed. QGITA detection rate on that smoke stays **HOLD**. Go-live stays **HOLD**.
@@ -93,7 +95,7 @@ Go-live stays **HOLD**. The start-here command is `./install.sh --smoke`.
 
 Older notes in `docs/` (for example `docs/AUREON_MIND_STATUS.md`), `aureon-trading/docs/`, and `imports/` (including the `imports/Kimi_Agent_Aureon_20260408` snapshot) are earlier research writing and may repeat figures that have since been withdrawn. This README and `mcp/aureon_public` are the current, checked parts.
 
-> **Leave exchange keys unset.** `./install.sh --smoke` sets `AUREON_AUTONOMY_MODE=guarded` and skips `.env`. Go-live stays **HOLD**.
+> **Leave exchange keys unset.** `./install.sh --smoke` sets `AUREON_AUTONOMY_MODE=guarded` and skips `.env`. `scripts/linux/aureon-up.sh` can boot live trading when a full exchange key group is present in `.env`: with `.venv/bin/python` missing it runs `production/install.sh`, which calls `scripts/launch/aureon-master.sh`. Go-live stays **HOLD**.
 
 ---
 
