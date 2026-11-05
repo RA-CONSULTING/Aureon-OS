@@ -159,13 +159,13 @@ def test_body_call_still_refuses_queen_miner_and_exchanges() -> None:
     assert depth["queen"]["reachable"] == 0
     assert depth["miner"]["reachable"] == 0
     assert depth["exchanges"]["reachable"] == 0
-    assert PINNED_COMMIT == "34864ff0547d2cff03e707414743a3b0cc8770b5"
+    assert PINNED_COMMIT == "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
 
 
 def test_sweep_record_matches_the_read_gate() -> None:
     assert RECORD.is_file(), "run measured/aureon_public_queen_stage8_sweep.sh"
     record = json.loads(RECORD.read_text(encoding="utf-8"))
-    assert record["pin"] == "34864ff0547d2cff03e707414743a3b0cc8770b5"
+    assert record["pin"] == "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
     assert record["live_orders"] == "off"
     assert record["orders_placed"] is False
     assert record["exchange_calls"] == "not_performed"
