@@ -1,0 +1,214 @@
+{
+  "attempts": [
+    {
+      "arguments": {},
+      "banned_modules": [],
+      "error": null,
+      "label": "default",
+      "processes": [
+        "Popen ['git', 'rev-parse', 'HEAD']"
+      ],
+      "refusal": null,
+      "refused": false,
+      "result": {
+        "economic_mutation": false,
+        "entry_floor": 0.938,
+        "exchange_calls": "not_performed",
+        "live_orders": "off",
+        "math_action": "HOLD",
+        "node_floor": 0.5,
+        "order_permission": "refused",
+        "orders_placed": false,
+        "pinned_entry_floor": 0.938,
+        "public_action": "HOLD",
+        "read_gated": true,
+        "reason": "no coherence reading was supplied",
+        "release_boundary": "HOLD",
+        "status": "cited"
+      },
+      "sandbox_writes": [],
+      "sockets": [],
+      "source_stamp_blocked": true,
+      "tool": "queen_charlie_gate",
+      "writes": []
+    },
+    {
+      "arguments": {
+        "coherence_gamma": 0.99
+      },
+      "banned_modules": [],
+      "error": null,
+      "label": "above_floor",
+      "processes": [
+        "Popen ['git', 'rev-parse', 'HEAD']"
+      ],
+      "refusal": null,
+      "refused": false,
+      "result": {
+        "coherence_gamma": 0.99,
+        "economic_mutation": false,
+        "entry_floor": 0.938,
+        "exchange_calls": "not_performed",
+        "live_orders": "off",
+        "math_action": "EXECUTE",
+        "node_floor": 0.5,
+        "order_permission": "refused",
+        "orders_placed": false,
+        "pinned_entry_floor": 0.938,
+        "public_action": "HOLD",
+        "read_gated": true,
+        "reason": "coherence 0.9900 is at or above the entry floor 0.938. The public server does not place an order.",
+        "release_boundary": "HOLD",
+        "status": "cited"
+      },
+      "sandbox_writes": [],
+      "sockets": [],
+      "source_stamp_blocked": true,
+      "tool": "queen_charlie_gate",
+      "writes": []
+    },
+    {
+      "arguments": {
+        "coherence_gamma": 0.938
+      },
+      "banned_modules": [],
+      "error": null,
+      "label": "at_floor",
+      "processes": [
+        "Popen ['git', 'rev-parse', 'HEAD']"
+      ],
+      "refusal": null,
+      "refused": false,
+      "result": {
+        "coherence_gamma": 0.938,
+        "economic_mutation": false,
+        "entry_floor": 0.938,
+        "exchange_calls": "not_performed",
+        "live_orders": "off",
+        "math_action": "EXECUTE",
+        "node_floor": 0.5,
+        "order_permission": "refused",
+        "orders_placed": false,
+        "pinned_entry_floor": 0.938,
+        "public_action": "HOLD",
+        "read_gated": true,
+        "reason": "coherence 0.9380 is at or above the entry floor 0.938. The public server does not place an order.",
+        "release_boundary": "HOLD",
+        "status": "cited"
+      },
+      "sandbox_writes": [],
+      "sockets": [],
+      "source_stamp_blocked": true,
+      "tool": "queen_charlie_gate",
+      "writes": []
+    },
+    {
+      "arguments": {
+        "coherence_gamma": 0.9379
+      },
+      "banned_modules": [],
+      "error": null,
+      "label": "below_floor",
+      "processes": [
+        "Popen ['git', 'rev-parse', 'HEAD']"
+      ],
+      "refusal": null,
+      "refused": false,
+      "result": {
+        "coherence_gamma": 0.9379,
+        "economic_mutation": false,
+        "entry_floor": 0.938,
+        "exchange_calls": "not_performed",
+        "live_orders": "off",
+        "math_action": "HOLD",
+        "node_floor": 0.5,
+        "order_permission": "refused",
+        "orders_placed": false,
+        "pinned_entry_floor": 0.938,
+        "public_action": "HOLD",
+        "read_gated": true,
+        "reason": "coherence 0.9379 is below the entry floor 0.938. The public server does not place an order.",
+        "release_boundary": "HOLD",
+        "status": "cited"
+      },
+      "sandbox_writes": [],
+      "sockets": [],
+      "source_stamp_blocked": true,
+      "tool": "queen_charlie_gate",
+      "writes": []
+    },
+    {
+      "arguments": {
+        "coherence_gamma": 0.99,
+        "lowest_node_confidence": 0.2
+      },
+      "banned_modules": [],
+      "error": null,
+      "label": "node_floor",
+      "processes": [
+        "Popen ['git', 'rev-parse', 'HEAD']"
+      ],
+      "refusal": null,
+      "refused": false,
+      "result": {
+        "coherence_gamma": 0.99,
+        "economic_mutation": false,
+        "entry_floor": 0.938,
+        "exchange_calls": "not_performed",
+        "live_orders": "off",
+        "lowest_node_confidence": 0.2,
+        "math_action": "HOLD",
+        "node_floor": 0.5,
+        "order_permission": "refused",
+        "orders_placed": false,
+        "pinned_entry_floor": 0.938,
+        "public_action": "HOLD",
+        "read_gated": true,
+        "reason": "node confidence 0.20 is below 0.5. The public server does not place an order.",
+        "release_boundary": "HOLD",
+        "status": "cited"
+      },
+      "sandbox_writes": [],
+      "sockets": [],
+      "source_stamp_blocked": true,
+      "tool": "queen_charlie_gate",
+      "writes": []
+    },
+    {
+      "arguments": {
+        "lambda_t": 0.0
+      },
+      "banned_modules": [],
+      "error": null,
+      "label": "zpe_read",
+      "processes": [
+        "Popen ['git', 'rev-parse', 'HEAD']"
+      ],
+      "refusal": null,
+      "refused": false,
+      "result": {
+        "status": "inferred",
+        "trade_readiness": "HOLD"
+      },
+      "sandbox_writes": [],
+      "sockets": [],
+      "source_stamp_blocked": true,
+      "tool": "queen_zpe_ground",
+      "writes": []
+    }
+  ],
+  "aureon_tree": "a5114a7e5ecb4e9a51df57d58355e72882cf0a3c",
+  "code_commit": "3fc014e70f44d01657497afb916d144aad9e8dce",
+  "code_commit_note": "This is the parent of the commit that contains this record. The record cannot name the commit that adds the file.",
+  "exchange_calls": "not_performed",
+  "live_orders": "off",
+  "orders_placed": false,
+  "pin": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
+  "pin_aureon_tree": "a5114a7e5ecb4e9a51df57d58355e72882cf0a3c",
+  "processes": "blocked",
+  "public_action": "HOLD",
+  "read_gated": true,
+  "scope": "queen public read gate only; miner and exchanges are not opened",
+  "sockets": "blocked",
+  "writes": "outside sandbox blocked"
+}
