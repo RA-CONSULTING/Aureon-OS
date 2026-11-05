@@ -121,5 +121,75 @@
     "timestamps": "step index times HarmonicRealityField.dt",
     "valid_ftcps": [],
     "verdict": "measured_counts_rates_hold"
+  },
+  "on_market_series": {
+    "authenticated": false,
+    "buffer_note": "QGITAMarketAnalyzer keeps a 1000-sample buffer; analyze sees that tail",
+    "coherence": {
+      "c_linear": 0.9068616963984821,
+      "c_nonlinear": 0.9082160188302917,
+      "c_phi": 0.2137423938118685,
+      "global_R": 0.9896538391020993,
+      "q_anomaly": 0.09844581291106369
+    },
+    "detection_rate": null,
+    "detection_threshold": 0.2,
+    "detector": {
+      "adaptive_threshold": true,
+      "alpha": 1.0,
+      "epsilon": 0.05,
+      "theta": 0.1
+    },
+    "evidence_tag": "measured",
+    "false_alarm_rate": null,
+    "ftcp_count": 0,
+    "key_group": "public:kraken",
+    "lhe_count": 0,
+    "lighthouse_events": [],
+    "lighthouse_intensity": 0.02803907142735328,
+    "lighthouse_threshold_sigma": 2.0,
+    "max_g_eff": 0.0,
+    "orders_placed": false,
+    "provenance": "https://api.kraken.com/0/public/OHLC XBTUSD 1h key-group public:kraken. 2026-10-29T19:00:00Z to 2026-11-05T19:00:00Z. Prices are bar closes. Timestamps are venue bar open times. No order was sent.",
+    "rates_reason": "this series has no signal-in-noise labels in the repo, so the analyzer counts are not a detection rate or a false-alarm rate",
+    "rates_verdict": "HOLD",
+    "regime": {
+      "description": "Market in ordered, stable regime",
+      "stability": 0.9896538391020993,
+      "state": "coherent"
+    },
+    "samples_analyzed": 168,
+    "samples_fed": 168,
+    "series": "XBTUSD",
+    "series_class": "public-market",
+    "signal_note": "the direction is the analyzer's return. It is not an order and it has no outcome label",
+    "signals": {
+      "confidence": 0.7399893749614498,
+      "direction": "BEARISH",
+      "event_type": null,
+      "risk_description": "Coherent regime - stable conditions",
+      "risk_level": "LOW",
+      "strength": 0.1401953571367664,
+      "structural_event": false
+    },
+    "source": "aureon.wisdom.aureon_qgita_framework.QGITAMarketAnalyzer.analyze",
+    "statistics": {
+      "lighthouse_mean": 0.0,
+      "lighthouse_std": 0.1,
+      "price_mean": 77887.97202380953,
+      "price_std": 1148.598760442977,
+      "total_samples": 168
+    },
+    "status": "complete",
+    "time_range": {
+      "clock": "ohlc bar open time; end is the last kept bar open time plus the interval",
+      "end": "2026-11-05T19:00:00Z",
+      "end_unix": 1793905200,
+      "start": "2026-10-29T19:00:00Z",
+      "start_unix": 1793300400
+    },
+    "timestamps": "venue bar open time in unix seconds; price is the bar close",
+    "valid_ftcps": [],
+    "verdict": "measured_counts_rates_hold"
   }
 }

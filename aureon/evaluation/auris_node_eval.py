@@ -18,6 +18,13 @@ def evaluate_auris_nodes(root: Path | None = None) -> dict[str, Any]:
 
 def render_auris_markdown(report: dict[str, Any]) -> str:
     held = ", ".join(report.get("hold_nodes") or []) or "none"
+    series_nodes = report.get("market_nodes_without_reading")
+    if series_nodes is None:
+        series_line = "Series nodes without a reading: no series loaded."
+    else:
+        series_line = (
+            "Series nodes without a reading: " + (", ".join(series_nodes) or "none") + "."
+        )
     trade = report.get("trade_readiness") or {}
     lines = [
         "# Auris coherence",
@@ -25,8 +32,10 @@ def render_auris_markdown(report: dict[str, Any]) -> str:
         f"Source `{report.get('source')}`. {report.get('market_data_note', '')}",
         f"Coherence `{report.get('coherence')}`. Status `{report.get('coherence_status')}`.",
         f"Nodes without a reading when the four market fields are present as 0: {held}.",
+        series_line,
         f"Trade readiness: **{trade.get('verdict')}**. {trade.get('reason', '')}",
         "This is the method's coherence, not a hit rate and not a trade result.",
+        "Release boundary stays HOLD. No order was sent.",
         "",
     ]
     return "\n".join(lines)
