@@ -2,14 +2,14 @@
 
 This channel keeps draft release notes and a draft workflow. It publishes nothing.
 
-Current lineage tip these notes were written against: `bb04503119681adcf832f3c3e9b0cbf09fc7a938`.
+Current lineage tip these notes were written against: `29fab7f21fc93da40224566dd8f34faacb3d74d4`.
 
 | Fact | Value |
 | --- | --- |
 | Go-live | HOLD |
 | Release boundary | HOLD |
 | Orange badge | `release boundary-HOLD-orange` in `README.md` |
-| Published pin | `34864ff0547d2cff03e707414743a3b0cc8770b5` |
+| Published pin | `bb04503119681adcf832f3c3e9b0cbf09fc7a938` |
 | Pin move in this change | none |
 | production go-live | not cleared |
 | System | not claimed alive |
@@ -30,7 +30,7 @@ The publish job then runs `python packaging/release_channel.py publish`. That co
 ## What Gary still has to do
 
 1. Read this pull request. The notes and the README show go-live as HOLD. Merge is his decision. This pull request is not merged here.
-2. Leave `PINNED_COMMIT` at `34864ff0547d2cff03e707414743a3b0cc8770b5` unless a separate pin pull request has already landed.
+2. Leave `PINNED_COMMIT` at `bb04503119681adcf832f3c3e9b0cbf09fc7a938`. This pull request does not move the pin.
 3. Do not create a production tag (`V2.2`, `v2.2.0`, or any tag whose name says production or go-live). This workflow will not create one.
 4. Optional: Actions → **Source archive draft** → **Run workflow**. Download `aureon-os-tip-channel` if he wants the checksummed archives. That run's publish job is red on purpose. The red job means publish is still waiting.
 5. Charlie PASS, Buzz PASS, and Spike PASS are not a publish. After those three, publish still waits for Gary's own yes on the exact head.
