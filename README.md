@@ -216,9 +216,9 @@ AUREON_LLM_OFFLINE=1 pytest tests/test_operator_*.py tests/test_saas_*.py tests/
 ### Current local verification boundary
 
 Everything needed to inspect source and run offline tests is in this repo. Do not
-inject exchange, model, hosting, or deployment credentials while validating the
+inject exchange, model, hosting, or deployment credentials while checking the
 current release: the isolated operator bootstrap, containers, and supervisor
-entrypoints stay on **HOLD**.
+entrypoints stay on **HOLD**. Go-live stays HOLD.
 
 The local installer is the path that brings a clone up. Linux and macOS:
 `bash production/install.sh`. Windows: `production\Install-AUREON.ps1` (or
@@ -242,8 +242,7 @@ says `trading_mode=live (exchange keys present)`. The launcher does not place
 an order by itself. The thought bus health check is
 `http://127.0.0.1:8799/healthz`. The fusion seat keeps
 `http://127.0.0.1:8765/healthz`.
-A HOLD receipt proves only that the fail-closed preflight ran; it is not proof
-that the whole system is protected or production-ready.
+A HOLD receipt proves only that the fail-closed preflight ran. Go-live stays HOLD.
 
 ### Canonical organism launcher
 

@@ -4,9 +4,9 @@ Lineage tip: `bb04503119681adcf832f3c3e9b0cbf09fc7a938` (stage 7, native zero-ne
 
 These notes describe that lineage. The source-archive manifest records the commit that was archived. After this pull request lands on main, that commit still has `bb04503119681adcf832f3c3e9b0cbf09fc7a938` as an ancestor. License: MIT (`LICENSE`).
 
-The release boundary stays HOLD. The orange release-boundary badge stays HOLD. production go-live is not cleared. Receipts 1-5 are not verified on this commit. The system is not claimed alive. No order is placed.
+The release boundary stays HOLD. The orange release-boundary badge stays HOLD. Go-live stays HOLD. production go-live is not cleared. Receipts 1-5 are not verified on this commit. The system is not claimed alive. No order is placed.
 
-The published GitHub Release `V2.1` (2026-07-13) is still the Latest release. It has zero uploaded assets and the title "Aureon OS v2.1 — Production Platform & Investor-Ready". These notes are the later tip. They become public only after the clicks in [PUBLIC_RELEASE_CHANNEL.md](PUBLIC_RELEASE_CHANNEL.md).
+The published GitHub Release `V2.1` (2026-07-13) is still the Latest release and has zero uploaded assets. These notes do not carry that release's title. They stay a draft until Gary's own yes, which is described in [PUBLIC_RELEASE_CHANNEL.md](PUBLIC_RELEASE_CHANNEL.md). Charlie, Buzz, and Spike PASS do not publish.
 
 ## What a stranger can run today
 
@@ -46,4 +46,4 @@ Receipts 1-5 are not verified on this commit. production go-live is not cleared.
 
 ## Archives
 
-A prerelease tag of the form `tip-` plus the leading lowercase hex digits of the archived commit can attach a source tar.gz, a source zip, `SHA256SUMS`, and `release-channel.json`. The manifest records `published: false`, `go_live_clear` from the receipt check, and `system_alive: false`. The workflow opens a draft pre-release. It does not publish. The clicks are in [PUBLIC_RELEASE_CHANNEL.md](PUBLIC_RELEASE_CHANNEL.md). The build command is in [packaging/SOURCE_ARCHIVE.md](../../packaging/SOURCE_ARCHIVE.md).
+`workflow_dispatch` on `.github/workflows/source-archive-release.yml` can build a source tar.gz, a source zip, `SHA256SUMS`, and `release-channel.json` as Actions artifacts. The manifest records `go_live` HOLD, `go_live_clear` false, `published` false, and `system_alive` false. The workflow does not open a GitHub Release and does not create a tag. Publish waits for Gary's own yes even after Charlie, Buzz, and Spike PASS. The steps are in [PUBLIC_RELEASE_CHANNEL.md](PUBLIC_RELEASE_CHANNEL.md). The build command is in [packaging/SOURCE_ARCHIVE.md](../../packaging/SOURCE_ARCHIVE.md).

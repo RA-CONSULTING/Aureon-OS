@@ -1,16 +1,12 @@
-name: Source archive draft prerelease
+name: Source archive draft
 
 # Builds a git tree tar.gz, a zip, SHA256SUMS, and release-channel.json.
-# workflow_dispatch uploads Actions artifacts only.
-# A tip-<hex> tag opens a draft prerelease. This file does not publish it
-# and does not create a tag. production go-live stays refused until receipts
-# 1-5 are verified on that commit. The system is not claimed alive.
+# workflow_dispatch only. This file does not publish a GitHub Release and
+# does not create a tag. Go-live stays HOLD. The publish job waits for
+# Gary's own yes even after Charlie, Buzz, and Spike PASS.
 
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - "tip-*"
 
 permissions:
   contents: read
@@ -27,7 +23,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Refuse a production publish on this commit
+      - name: Record go-live HOLD
         run: |
           set -euo pipefail
           python packaging/release_channel.py check > channel-check.json || {
@@ -40,28 +36,21 @@ jobs:
           report = json.loads(Path("channel-check.json").read_text(encoding="utf-8"))
           if report["problems"]:
               raise SystemExit("channel check problems: " + "; ".join(report["problems"]))
-          if report["production_publish_allowed"]:
-              raise SystemExit("receipts verified; this workflow still does not publish")
-          if report["go_live_clear"] is not False or report["system_alive"] is not False:
-              raise SystemExit("refusing a clear or alive channel report")
-          if report["pin_moved"] is not False or report["orders_placed"] is not False:
-              raise SystemExit("refusing a pin move or an order")
-          if report["live_trading"] is not False:
-              raise SystemExit("refusing a live-trading channel report")
-          print("channel check: production publish refused")
+          if report["go_live"] != "HOLD" or report["go_live_clear"] is not False:
+              raise SystemExit("go-live must stay HOLD")
+          if report["production_publish_allowed"] is not False or report["published"] is not False:
+              raise SystemExit("this workflow does not publish")
+          if report["gary_yes_required"] is not True or report["triple_pass_publishes"] is not False:
+              raise SystemExit("triple PASS is not a publish")
+          if report["system_alive"] is not False or report["orders_placed"] is not False:
+              raise SystemExit("refusing an alive claim or an order")
+          if report["pin_moved"] is not False or report["live_trading"] is not False:
+              raise SystemExit("refusing a pin move or live trading")
+          print("channel check: go-live HOLD, publish still waiting for Gary")
           PY
 
       - name: Build source archives and checksums
-        env:
-          RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
-        run: |
-          set -euo pipefail
-          if [ -n "${RELEASE_TAG}" ]; then
-            python packaging/release_channel.py accept-tag "${RELEASE_TAG}"
-            python packaging/release_channel.py archive --dest dist/tip-channel --tag "${RELEASE_TAG}"
-          else
-            python packaging/release_channel.py archive --dest dist/tip-channel
-          fi
+        run: python packaging/release_channel.py archive --dest dist/tip-channel
 
       - uses: actions/upload-artifact@v4
         with:
@@ -70,12 +59,9 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
-  draft-prerelease:
+  publish:
     needs: source-archive
-    if: startsWith(github.ref, 'refs/tags/tip-')
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -85,33 +71,24 @@ jobs:
         with:
           python-version: "3.12"
 
-      - uses: actions/download-artifact@v4
-        with:
-          name: aureon-os-tip-channel
-          path: dist/tip-channel
-
-      - name: Open a draft prerelease
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Wait for Gary's own yes
         run: |
           set -euo pipefail
-          tag="${GITHUB_REF_NAME}"
-          python packaging/release_channel.py accept-tag "$tag"
           set +e
-          python packaging/release_channel.py publish > publish-refusal.json
+          python packaging/release_channel.py publish > publish-wait.json
           status=$?
           set -e
           test "$status" -eq 3
           python - <<'PY'
           import json
           from pathlib import Path
-          body = json.loads(Path("publish-refusal.json").read_text(encoding="utf-8"))
-          if body.get("published") is not False or body.get("production_publish_allowed") is not False:
-              raise SystemExit("refusing to open a draft from a production-publish report")
+          body = json.loads(Path("publish-wait.json").read_text(encoding="utf-8"))
+          if body.get("published") is not False or body.get("go_live") != "HOLD":
+              raise SystemExit("publish gate left HOLD")
+          if body.get("go_live_clear") is not False or body.get("production_publish_allowed") is not False:
+              raise SystemExit("publish gate cleared go-live")
+          if body.get("gary_yes_required") is not True or body.get("triple_pass_publishes") is not False:
+              raise SystemExit("triple PASS must not publish")
+          print("Publish waits for Gary's own yes. Go-live stays HOLD. No release and no tag.")
           PY
-          gh release create "$tag" \
-            --draft \
-            --prerelease \
-            --title "Aureon OS ${tag} — prerelease, release boundary HOLD" \
-            --notes-file docs/releases/RELEASE_NOTES_tip.md \
-            dist/tip-channel/*
+          exit 3
