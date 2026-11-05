@@ -1,0 +1,34 @@
+cff-version: 1.2.0
+message: >-
+  If you use Aureon OS or the Harmonic Nexus Core (HNC) source in this
+  repository, cite it with the metadata in this file. The rights holder is
+  R&A Consulting and Brokerage Services Ltd, Companies House NI696693.
+  Go-live is HOLD. This citation names the source. It is not a production
+  release, a deployment receipt, or a claim that a live instance is running.
+type: software
+title: Aureon OS
+version: 2.1.0
+abstract: >-
+  Aureon OS is a local-first operating layer for evidence-heavy work, powered
+  by the Harmonic Nexus Core (HNC). HNC is the research framework in this
+  repository: pre-registered hypotheses with reproduction paths. The package
+  version 2.1.0 is the version string in pyproject.toml on this tree. It is
+  not a go-live clearance. The supported release boundary is HOLD. Rights
+  holder: R&A Consulting and Brokerage Services Ltd (Companies House
+  NI696693), trading as Aureon Zorza Technologies, Belfast, Northern Ireland.
+authors:
+  - given-names: Gary Anthony
+    family-names: Leckey
+    affiliation: R&A Consulting and Brokerage Services Ltd (Companies House NI696693)
+  - name: R&A Consulting and Brokerage Services Ltd
+    city: Belfast
+    region: Northern Ireland
+    country: GB
+    website: https://aureonzorzatechnologies.pl
+license: MIT
+repository-code: https://github.com/RA-CONSULTING/Aureon-OS
+url: https://github.com/RA-CONSULTING/Aureon-OS
+keywords:
+  - Aureon OS
+  - Harmonic Nexus Core
+  - HNC

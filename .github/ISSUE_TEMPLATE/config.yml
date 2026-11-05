@@ -1,5 +1,8 @@
 blank_issues_enabled: true
 contact_links:
+  - name: Questions and community
+    url: https://github.com/RA-CONSULTING/Aureon-OS/discussions
+    about: Ask about the source in Discussions. Read docs/COMMUNITY.md. Go-live is HOLD.
   - name: Security vulnerability (private)
     url: https://github.com/RA-CONSULTING/aureon-trading/security/advisories/new
     about: Report security issues privately — do not open a public issue.
