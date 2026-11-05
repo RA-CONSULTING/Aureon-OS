@@ -100,8 +100,10 @@ def test_public_pin_and_hold_are_unchanged() -> None:
     record = json.loads(RECORD.read_text(encoding="utf-8"))
     guard = (ROOT / "mcp/aureon_public/guard_loader.py").read_text(encoding="utf-8")
     space = (ROOT / "huggingface/hnc-field/guard.py").read_text(encoding="utf-8")
-    assert f'PINNED_COMMIT = "{PUBLIC_PIN}"' in guard
-    assert f'COMMIT = "{PUBLIC_PIN}"' in space
+    published = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
+    assert PUBLIC_PIN == "34864ff0547d2cff03e707414743a3b0cc8770b5"
+    assert f'PINNED_COMMIT = "{published}"' in guard
+    assert f'COMMIT = "{published}"' in space
     assert record["public_require_pin"] == PUBLIC_PIN
     assert record["hnc_identity_changed"] is False
     assert record["measurement"]["formula_series_sha256"] == PIN_FORMULA_SERIES_SHA256
