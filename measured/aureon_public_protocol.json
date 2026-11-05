@@ -3,22 +3,22 @@
     "aureon_direct_url": {
       "url": "https://github.com/RA-CONSULTING/Aureon-OS.git",
       "vcs_info": {
-        "commit_id": "e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e",
-        "requested_revision": "e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e",
+        "commit_id": "ad9be6c3179bba140fb7e88d5733616046110da9",
+        "requested_revision": "ad9be6c3179bba140fb7e88d5733616046110da9",
         "vcs": "git"
       }
     },
     "aureon_file": "/tmp/aureon-public-venv/lib/python3.12/site-packages/aureon/__init__.py",
     "aureon_source": {
-      "commit": "e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e",
+      "commit": "ad9be6c3179bba140fb7e88d5733616046110da9",
       "kind": "pinned"
     },
-    "aureon_tree": "5f191d31561227d6f64f5b94eb1444c77c3c9e2c",
-    "code_commit": "ad71a95d71eed7bae7da5c07a84da661a1371a11",
+    "aureon_tree": "2b89d73db122486e2537047baa9b342f3a0249be",
+    "code_commit": "ac19a1abc1093145b6a42bfba83d610611edb38c",
     "code_commit_note": "This is the parent of the commit that contains this record. The record cannot name the commit that adds the file.",
     "mcp": "1.30.0",
-    "pin": "e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e",
-    "pin_aureon_tree": "5f191d31561227d6f64f5b94eb1444c77c3c9e2c",
+    "pin": "ad9be6c3179bba140fb7e88d5733616046110da9",
+    "pin_aureon_tree": "2b89d73db122486e2537047baa9b342f3a0249be",
     "python": "/tmp/aureon-public-venv/bin/python",
     "require_pin": "1"
   },
@@ -41,7 +41,7 @@
           "listChanged": false
         }
       },
-      "instructions": "MCP lets outside models call Aureon's tools. No outside model or API becomes Aureon's reasoning. The cognition runs in Aureon's own code. This server is read-only. It does not place orders, read keys, start circulation, self-code, self-repair, or write the repository or state/. aureon_source={\"commit\": \"e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e\", \"kind\": \"pinned\"}",
+      "instructions": "MCP lets outside models call Aureon's tools. No outside model or API becomes Aureon's reasoning. The cognition runs in Aureon's own code. This server is read-only. It does not place orders, read keys, start circulation, self-code, self-repair, or write the repository or state/. aureon_source={\"commit\": \"ad9be6c3179bba140fb7e88d5733616046110da9\", \"kind\": \"pinned\"}",
       "protocolVersion": "2025-11-25",
       "serverInfo": {
         "icons": null,
@@ -275,13 +275,13 @@
           {
             "_meta": null,
             "annotations": null,
-            "text": "{\"aureon_source\": {\"commit\": \"e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed fixture from tests/stress/stress_test_inhouse_ai.py::test_harmonic_math. Not a live market reading and not a lighthouse reading.\", \"input_source\": \"tests/stress/stress_test_inhouse_ai.py::test_harmonic_math\", \"label\": \"cited. alignment/harmonic_resonance.py consonance_score ran.\", \"provenance\": \"cited\", \"result\": 1.0, \"status\": \"cited\"}",
+            "text": "{\"aureon_source\": {\"commit\": \"ad9be6c3179bba140fb7e88d5733616046110da9\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed fixture from tests/stress/stress_test_inhouse_ai.py::test_harmonic_math. Not a live market reading and not a lighthouse reading.\", \"input_source\": \"tests/stress/stress_test_inhouse_ai.py::test_harmonic_math\", \"label\": \"cited. alignment/harmonic_resonance.py consonance_score ran.\", \"provenance\": \"cited\", \"result\": 1.0, \"status\": \"cited\"}",
             "type": "text"
           }
         ],
         "isError": false,
         "structuredContent": {
-          "result": "{\"aureon_source\": {\"commit\": \"e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed fixture from tests/stress/stress_test_inhouse_ai.py::test_harmonic_math. Not a live market reading and not a lighthouse reading.\", \"input_source\": \"tests/stress/stress_test_inhouse_ai.py::test_harmonic_math\", \"label\": \"cited. alignment/harmonic_resonance.py consonance_score ran.\", \"provenance\": \"cited\", \"result\": 1.0, \"status\": \"cited\"}"
+          "result": "{\"aureon_source\": {\"commit\": \"ad9be6c3179bba140fb7e88d5733616046110da9\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed fixture from tests/stress/stress_test_inhouse_ai.py::test_harmonic_math. Not a live market reading and not a lighthouse reading.\", \"input_source\": \"tests/stress/stress_test_inhouse_ai.py::test_harmonic_math\", \"label\": \"cited. alignment/harmonic_resonance.py consonance_score ran.\", \"provenance\": \"cited\", \"result\": 1.0, \"status\": \"cited\"}"
         }
       }
     },
@@ -3834,7 +3834,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Call one public entry point from the inventory. Provenance: cited.\n\n    This runs the named function. It is not a helper. Modules and classes\n    are refused here. Operator, key, write, loop, and blocked packages are\n    not called. A checkout file is imported only when its git blob matches\n    pin e0f4ba1f.\n\n    Args:\n        module: Inventory module path, such as harmonic/rainbow_reference.py. Label: cited.\n        symbol: Function or Class.method. Label: cited.\n        arguments_json: JSON object of keyword arguments. Empty means none. Label: cited.\n    ",
+            "description": "Call one public entry point from the inventory. Provenance: cited.\n\n    This runs the named function. It is not a helper. Modules and classes\n    are refused here. Operator, key, write, loop, and blocked packages are\n    not called. A checkout file is imported only when its git blob matches\n    pin ad9be6c3.\n\n    Args:\n        module: Inventory module path, such as harmonic/rainbow_reference.py. Label: cited.\n        symbol: Function or Class.method. Label: cited.\n        arguments_json: JSON object of keyword arguments. Empty means none. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -3994,7 +3994,7 @@
           "listChanged": false
         }
       },
-      "instructions": "MCP lets outside models call Aureon's tools. No outside model or API becomes Aureon's reasoning. The cognition runs in Aureon's own code. This server is read-only. It does not place orders, read keys, start circulation, self-code, self-repair, or write the repository or state/. aureon_source={\"commit\": \"e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e\", \"kind\": \"pinned\"}",
+      "instructions": "MCP lets outside models call Aureon's tools. No outside model or API becomes Aureon's reasoning. The cognition runs in Aureon's own code. This server is read-only. It does not place orders, read keys, start circulation, self-code, self-repair, or write the repository or state/. aureon_source={\"commit\": \"ad9be6c3179bba140fb7e88d5733616046110da9\", \"kind\": \"pinned\"}",
       "protocolVersion": "2025-11-25",
       "serverInfo": {
         "icons": null,
@@ -4004,7 +4004,7 @@
         "websiteUrl": null
       }
     },
-    "port": 50167,
+    "port": 56269,
     "prompts_list": [
       {
         "_meta": null,
@@ -4229,13 +4229,13 @@
           {
             "_meta": null,
             "annotations": null,
-            "text": "{\"aureon_source\": {\"commit\": \"e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed fixture from tests/stress/stress_test_inhouse_ai.py::test_harmonic_math. Not a live market reading and not a lighthouse reading.\", \"input_source\": \"tests/stress/stress_test_inhouse_ai.py::test_harmonic_math\", \"label\": \"cited. alignment/harmonic_resonance.py consonance_score ran.\", \"provenance\": \"cited\", \"result\": 1.0, \"status\": \"cited\"}",
+            "text": "{\"aureon_source\": {\"commit\": \"ad9be6c3179bba140fb7e88d5733616046110da9\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed fixture from tests/stress/stress_test_inhouse_ai.py::test_harmonic_math. Not a live market reading and not a lighthouse reading.\", \"input_source\": \"tests/stress/stress_test_inhouse_ai.py::test_harmonic_math\", \"label\": \"cited. alignment/harmonic_resonance.py consonance_score ran.\", \"provenance\": \"cited\", \"result\": 1.0, \"status\": \"cited\"}",
             "type": "text"
           }
         ],
         "isError": false,
         "structuredContent": {
-          "result": "{\"aureon_source\": {\"commit\": \"e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed fixture from tests/stress/stress_test_inhouse_ai.py::test_harmonic_math. Not a live market reading and not a lighthouse reading.\", \"input_source\": \"tests/stress/stress_test_inhouse_ai.py::test_harmonic_math\", \"label\": \"cited. alignment/harmonic_resonance.py consonance_score ran.\", \"provenance\": \"cited\", \"result\": 1.0, \"status\": \"cited\"}"
+          "result": "{\"aureon_source\": {\"commit\": \"ad9be6c3179bba140fb7e88d5733616046110da9\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed fixture from tests/stress/stress_test_inhouse_ai.py::test_harmonic_math. Not a live market reading and not a lighthouse reading.\", \"input_source\": \"tests/stress/stress_test_inhouse_ai.py::test_harmonic_math\", \"label\": \"cited. alignment/harmonic_resonance.py consonance_score ran.\", \"provenance\": \"cited\", \"result\": 1.0, \"status\": \"cited\"}"
         }
       }
     },
@@ -7788,7 +7788,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Call one public entry point from the inventory. Provenance: cited.\n\n    This runs the named function. It is not a helper. Modules and classes\n    are refused here. Operator, key, write, loop, and blocked packages are\n    not called. A checkout file is imported only when its git blob matches\n    pin e0f4ba1f.\n\n    Args:\n        module: Inventory module path, such as harmonic/rainbow_reference.py. Label: cited.\n        symbol: Function or Class.method. Label: cited.\n        arguments_json: JSON object of keyword arguments. Empty means none. Label: cited.\n    ",
+            "description": "Call one public entry point from the inventory. Provenance: cited.\n\n    This runs the named function. It is not a helper. Modules and classes\n    are refused here. Operator, key, write, loop, and blocked packages are\n    not called. A checkout file is imported only when its git blob matches\n    pin ad9be6c3.\n\n    Args:\n        module: Inventory module path, such as harmonic/rainbow_reference.py. Label: cited.\n        symbol: Function or Class.method. Label: cited.\n        arguments_json: JSON object of keyword arguments. Empty means none. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -7927,6 +7927,6 @@
         ]
       }
     ],
-    "url": "http://127.0.0.1:50167/mcp"
+    "url": "http://127.0.0.1:56269/mcp"
   }
 }

@@ -4,11 +4,11 @@
     "ollama_config"
   ],
   "aureon_source": {
-    "commit": "ad71a95d71eed7bae7da5c07a84da661a1371a11",
+    "commit": "ac19a1abc1093145b6a42bfba83d610611edb38c",
     "kind": "checkout"
   },
-  "aureon_tree": "5f191d31561227d6f64f5b94eb1444c77c3c9e2c",
-  "code_commit": "ad71a95d71eed7bae7da5c07a84da661a1371a11",
+  "aureon_tree": "2b89d73db122486e2537047baa9b342f3a0249be",
+  "code_commit": "ac19a1abc1093145b6a42bfba83d610611edb38c",
   "code_commit_note": "This is the parent of the commit that contains this record. The record cannot name the commit that adds the file.",
   "http_clients": [
     "aiohttp",
@@ -22,7 +22,7 @@
     "websockets"
   ],
   "layout": {
-    "beside": "/tmp/aureon-sweep-parent.qDsB5Z",
+    "beside": "/tmp/aureon-sweep-parent.toCis4",
     "created": [
       "NEXUS-LIVE-FEED-",
       "Aureon-Trading--Project-Sero"
@@ -821,8 +821,8 @@
       "writes": []
     }
   ],
-  "pin": "e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e",
-  "pin_aureon_tree": "5f191d31561227d6f64f5b94eb1444c77c3c9e2c",
+  "pin": "ad9be6c3179bba140fb7e88d5733616046110da9",
+  "pin_aureon_tree": "2b89d73db122486e2537047baa9b342f3a0249be",
   "processes": "blocked",
   "sockets": "blocked",
   "writes": "outside sandbox blocked"
