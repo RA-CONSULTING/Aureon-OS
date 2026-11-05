@@ -1,16 +1,12 @@
 #!/usr/bin/env python3
 """
-🔮 NEXUS PREDICTOR - PRODUCTION READY 🔮
+🔮 NEXUS PREDICTOR 🔮
 ═══════════════════════════════════════════════════════════════════════════════
 
-VALIDATED: 77.2% WIN RATE on high-edge setups (>25% edge)
+No verified live track record yet.
 
-This is the PRODUCTION predictor that combines ALL subsystems:
-- Price Position (strongest: 76.6% at top 15%, 79.8% bearish at bottom 15%)
-- Momentum (6 & 12 candle)
-- Streaks (mean reversion)
-- Temporal patterns
-- Combo patterns (up to 85.7% edge!)
+This predictor combines price position, momentum, streaks,
+temporal patterns, and combo patterns.
 
 Usage:
     from nexus_predictor import NexusPredictor
@@ -37,25 +33,15 @@ import json
 
 class NexusPredictor:
     """
-    🔮 PRODUCTION-READY PREDICTOR 🔮
+    Pattern predictor.
 
-    Pattern predictor. No measured win rate is attached here.
-    Tested on 98,049 candles across ALL market conditions:
-    - Bull markets (2017, 2021): 76-80%
-    - Bear markets (2018, 2022): 77%
-    - Sideways (2019, 2023): 79-82%
-
-    Key patterns:
-    - pos_very_high (top 15%): 76.6% bullish
-    - pos_very_low (bottom 15%): 20.2% bullish (79.8% bearish)
-    - combo_high_price_low_mom: 76.5% bullish
-    - combo_low_price_high_mom: 14.3% bullish (85.7% bearish)
+    No verified live track record yet.
     """
 
-    # VALIDATED PATTERN PROBABILITIES
+    # Pattern priors (unvalidated)
     PATTERNS = {
-        # Price position - STRONGEST EDGE
-        'pos_very_high': 0.766,      # Top 15% of 24h range
+        # Price position
+        'pos_very_high': 0.766,      # Top 15% of 24h range (unvalidated prior)
         'pos_high': 0.543,           # Top 15-25%
         'pos_very_low': 0.202,       # Bottom 15%
         'pos_low': 0.325,            # Bottom 15-25%
@@ -78,9 +64,9 @@ class NexusPredictor:
         'streak_bear_3': 0.564,
         'streak_bear_4plus': 0.552,
 
-        # COMBO PATTERNS - HIGHEST EDGE!
-        'combo_high_price_low_mom': 0.765,     # 26.5% edge!
-        'combo_low_price_high_mom': 0.143,     # 35.7% edge! (bearish)
+        # COMBO PATTERNS
+        'combo_high_price_low_mom': 0.765,
+        'combo_low_price_high_mom': 0.143,
         'combo_bull_streak_high_pos': 0.595,
         'combo_bear_streak_low_pos': 0.470,
         'triple_overbought': 0.661,
@@ -126,8 +112,8 @@ class NexusPredictor:
 
         Args:
             min_edge: Minimum edge (distance from 50%) to recommend trade.
-                     Default 0.05 = 55%+ probability (GREEDY HOE MODE!)
-                     Was 0.20 = 70%+ (too restrictive!)
+                     Default threshold is 0.05.
+                     An earlier threshold of 0.20 was more restrictive.
         """
         self.min_edge = min_edge
         self.candle_history: deque = deque(maxlen=50)
@@ -329,7 +315,7 @@ class NexusPredictor:
         # CHECK ALL PATTERNS
         # ═══════════════════════════════════════════════════════════
 
-        # PRICE POSITION (Highest edge!)
+        # PRICE POSITION
         pos = candle['price_position']
         if pos >= 0.85:
             factors.append(self.PATTERNS['pos_very_high'])
@@ -669,7 +655,7 @@ if __name__ == "__main__":
     from datetime import timedelta
 
     print("\n" + "🔮"*35)
-    print("   NEXUS PREDICTOR - PRODUCTION TEST")
+    print("   NEXUS PREDICTOR - self-test")
     print("🔮"*35)
 
     # Fetch test data
