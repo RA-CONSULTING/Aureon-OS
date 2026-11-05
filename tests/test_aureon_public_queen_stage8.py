@@ -185,7 +185,8 @@ def test_sweep_record_matches_the_read_gate() -> None:
     for row in charlie:
         assert row["refused"] is False, row
         assert row["sockets"] == []
-        assert row["processes"] == []
+        assert row["processes"] == ["Popen ['git', 'rev-parse', 'HEAD']"]
+        assert row["source_stamp_blocked"] is True
         assert row["writes"] == []
         assert row["banned_modules"] == []
         result = row["result"]
@@ -205,8 +206,10 @@ def test_sweep_record_matches_the_read_gate() -> None:
     assert by_label["node_floor"] == "HOLD"
     zpe = [row for row in record["attempts"] if row["tool"] == "queen_zpe_ground"]
     assert len(zpe) == 1
+    assert zpe[0]["refused"] is False
     assert zpe[0]["banned_modules"] == []
     assert zpe[0]["sockets"] == []
+    assert zpe[0]["processes"] == ["Popen ['git', 'rev-parse', 'HEAD']"]
     assert zpe[0]["result"].get("trade_readiness") == "HOLD"
 
 
