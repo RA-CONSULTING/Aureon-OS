@@ -156,6 +156,50 @@ def test_env_examples_use_placeholder_names_only() -> None:
             assert value == "" or _PLACEHOLDER_VALUE.fullmatch(value), (relative, key, value)
 
 
+def test_public_env_does_not_overclaim_master_locks() -> None:
+    """Blank-key template values are not a lock on a full+keyed master boot.
+
+    The master launcher reads a complete key group from the root ``.env``,
+    the inherited shell, and ``aureon_radar/.env``. Exchange keys in ``.env``
+    make that boot live, and that boot overrides the disable and dry-run flags.
+    """
+
+    required = (
+        "Exchange keys in `.env` make that boot live",
+        "inherited shell",
+        "aureon_radar/.env",
+        "not a lock",
+        "full+keyed",
+        "AUREON_DRY_RUN",
+        "AUREON_DISABLE_REAL_ORDERS",
+    )
+    for relative in (
+        ".env.example",
+        "docs/PUBLIC_ENV.md",
+        "PORTABILITY.md",
+        "README.md",
+        "SECURITY.md",
+    ):
+        text = _text(relative)
+        for phrase in required:
+            assert phrase in text, (relative, phrase)
+        assert "Posture locks" not in text
+        assert "leaves these locks in place" not in text
+        assert "keep order execution off" not in text
+        assert "Live orders stay disabled" not in text
+        assert "ships live orders off" not in text
+        assert "Blank keeps that boot" not in text
+        assert "explicitly disabled" not in text
+    readme = _text("README.md")
+    assert "Live trading stays off" not in readme
+    assert "release%20boundary-HOLD-orange" in readme
+    assert "trading_mode=live (exchange keys present)" in readme
+    radar = _text("aureon_radar/.env.example")
+    assert "inherited shell" in radar
+    assert "not a lock" in radar
+    assert "Exchange keys in .env make that boot live" in radar
+
+
 def test_lockfile_pins_the_direct_requirements() -> None:
     direct = _text("requirements-plug.txt")
     lock = _text("requirements-plug.lock")

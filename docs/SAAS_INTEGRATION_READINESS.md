@@ -105,9 +105,9 @@ gated.
 
 This inventory is based on `.env.example`, `deploy/env.example`, and `app.yaml`.
 It lists variable names only, not secret values. Which names each public
-posture needs — guarded offline, read-only market fetch, and explicitly
-disabled live orders — is in [`PUBLIC_ENV.md`](PUBLIC_ENV.md). `.env.example`
-keeps secret lines blank (placeholder names only).
+posture needs — guarded offline, read-only market fetch, and the template's
+disable and dry-run flags — is in [`PUBLIC_ENV.md`](PUBLIC_ENV.md). `.env.example`
+keeps secret lines blank (placeholder names only). Those flags are not a lock: a full+keyed master boot overrides them. Exchange keys in `.env` make that boot live. A complete key group in the inherited shell or in `aureon_radar/.env` does the same when the root `.env` is blank.
 
 | Group | Variables | Source |
 |---|---|---|

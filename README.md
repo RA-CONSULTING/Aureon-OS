@@ -99,13 +99,13 @@ Older notes in `docs/` (for example `docs/AUREON_MIND_STATUS.md`), `aureon-tradi
 
 ### Which settings
 
-[`.env.example`](.env.example) and [`docs/PUBLIC_ENV.md`](docs/PUBLIC_ENV.md) name three postures. Secret lines in the template are blank placeholder names. A real key never goes in that file.
+[`.env.example`](.env.example) and [`docs/PUBLIC_ENV.md`](docs/PUBLIC_ENV.md) name three postures. Secret lines in the template are blank placeholder names. A real key never goes in that file. Exchange keys in `.env` make that boot live. A complete key group in the inherited shell, or in `aureon_radar/.env`, arms the same boot when the root `.env` is blank.
 
-| Posture | What it needs | Live orders |
+| Posture | What it needs | What the flags do |
 |---|---|---|
-| **Guarded offline** | No `.env`. `./install.sh` sets guarded autonomy, `AUREON_LLM_OFFLINE=1`, and real orders disabled in the process. | Off |
-| **Read-only market fetch** | No exchange key. `AUREON_DISABLE_REAL_ORDERS=1 PYTHONPATH=. python3 -m aureon.evaluation.market_series --out reports/measured` | Off |
-| **Live orders** | Explicitly disabled in the template: paper and demo on, order execution off, exchange key names blank. The template does not assign the live-trading switch. | Off |
+| **Guarded offline** | No `.env`. `./install.sh` sets guarded autonomy, `AUREON_LLM_OFFLINE=1`, and real orders disabled in that process. `./install.sh` skips `.env`. | Off for that process. |
+| **Read-only market fetch** | No exchange key. `AUREON_DISABLE_REAL_ORDERS=1 PYTHONPATH=. python3 -m aureon.evaluation.market_series --out reports/measured` | That command sends no order. |
+| **Template copy** | The copied file ships `AUREON_DISABLE_REAL_ORDERS` and `AUREON_DRY_RUN`, paper and demo venue URLs, blank exchange key names, and no live-trading assignment. | Those lines are the file. They are not a lock. A full+keyed master boot overrides the disable and dry-run flags. |
 
 ---
 
