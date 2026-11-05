@@ -30,7 +30,8 @@ BANNER = (
     "Release boundary: HOLD. This gallery is not a production-ready release. "
     "Live trading is off. No order is placed. The public pin and the orange badge stay."
 )
-PIN = "34864ff0547d2cff03e707414743a3b0cc8770b5"
+PUBLIC_PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
+CONTAINMENT_PIN = "34864ff0547d2cff03e707414743a3b0cc8770b5"
 FETCHED_AT = "2026-11-05T00:00:00Z"
 
 
@@ -112,7 +113,7 @@ def pin_and_badge_still_hold() -> None:
 
     guard = (ROOT / "mcp" / "aureon_public" / "guard_loader.py").read_text(encoding="utf-8")
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    if f'PINNED_COMMIT = "{PIN}"' not in guard:
+    if f'PINNED_COMMIT = "{PUBLIC_PIN}"' not in guard:
         raise RuntimeError("public pin text is not the recorded pin")
     if "release%20boundary-HOLD-orange" not in readme:
         raise RuntimeError("orange release-boundary badge is missing")
@@ -186,8 +187,8 @@ def run_cold_boot() -> int:
     from aureon.containment.native import PIN as native_pin
 
     print(BANNER)
-    if native_pin != PIN:
-        print("public pin constant does not match the gallery record")
+    if native_pin != CONTAINMENT_PIN:
+        print("containment pin constant does not match the gallery record")
         return 1
     child, parent_net_ns = cold_child()
     judged = judge_default(child, parent_net_ns)
@@ -199,8 +200,9 @@ def run_cold_boot() -> int:
         "python -m aureon.containment.cold_boot was not run. "
         "That command's measurer opens one control TCP handshake outside the namespace."
     )
-    print(f"public pin left at {native_pin}. pin_changed was not written.")
-    print("Receipts 2, 3, 4, and 5 stay HOLD.")
+    print(f"public require-pin left at {PUBLIC_PIN}. This gallery did not write it.")
+    print(f"containment pin left at {native_pin}. pin_changed was not written.")
+    print("Release boundary stays HOLD. Receipts 2, 3, 4, and 5 stay HOLD.")
     if judged["verdict"] != "pass" or judged["allowed_at_default"] != "none" or judged["failures"]:
         print(judged["failures"])
         return 1

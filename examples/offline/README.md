@@ -2,7 +2,7 @@
 
 Three checkout commands, run from committed fixtures. No live market fetch, no order, and no write to `reports/measured`.
 
-Release boundary: **HOLD**. This gallery is not a production-ready release. The public pin stays `34864ff0547d2cff03e707414743a3b0cc8770b5`. The orange release-boundary badge in `README.md` stays. Receipts 2, 3, 4, and 5 stay HOLD.
+Release boundary: **HOLD**. This gallery is not a production-ready release. The public require-pin stays `bb04503119681adcf832f3c3e9b0cbf09fc7a938`. The containment pin stays `34864ff0547d2cff03e707414743a3b0cc8770b5`. The orange release-boundary badge in `README.md` stays. `go_live_clear` stays false. Receipts 2, 3, 4, and 5 stay HOLD.
 
 Python 3.11 or newer, from the repository root. The commands set `AUREON_LLM_OFFLINE=1`, `AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1`, `AUREON_DISABLE_REAL_ORDERS=1`, and `AUREON_LIVE_TRADING=0` inside the process. `aureon.evaluation.market_series.http_get` is replaced with a function that raises, so a live GET fails closed.
 

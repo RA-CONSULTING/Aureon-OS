@@ -108,9 +108,10 @@ def test_cold_boot_judges_the_fixture_and_does_not_boot(locked_hashes: dict[str,
     assert "fixture judge verdict: pass" in output
     assert "allowed at default: none" in output
     assert "was not run" in output
+    assert "bb04503119681adcf832f3c3e9b0cbf09fc7a938" in output
     assert "34864ff0547d2cff03e707414743a3b0cc8770b5" in output
     assert "pin_changed was not written" in output
-    assert "Receipts 2, 3, 4, and 5 stay HOLD." in output
+    assert "Release boundary stays HOLD. Receipts 2, 3, 4, and 5 stay HOLD." in output
     assert locked_hashes["mcp/aureon_public/guard_loader.py"] == _sha(
         ROOT / "mcp/aureon_public/guard_loader.py"
     )
@@ -142,6 +143,8 @@ def test_gallery_docs_keep_the_hold_line() -> None:
         assert "not a production-ready release" in folded
         assert "is production ready" not in folded
         assert "hold" in folded
+    assert "bb04503119681adcf832f3c3e9b0cbf09fc7a938" in gallery
+    assert "go_live_clear" in gallery and "false" in gallery.casefold()
     assert "examples/README.md" in index
     assert "No live trading" in index
     assert (ROOT / "docs" / "examples" / "README.md").exists()
