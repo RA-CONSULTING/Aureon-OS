@@ -69,6 +69,7 @@ def test_miner_sweep_delta_matches_the_entries() -> None:
         "live_orders": "off",
         "mining": "off",
         "posture": "HOLD",
+        "public_action": "HOLD",
         "read_gated": True,
     }
     from aureon_public.guard_loader import PINNED_COMMIT
@@ -137,7 +138,8 @@ def test_body_call_runs_the_opened_read_and_refuses_the_bridge() -> None:
         assert body["result"]["confidence"] == 0.5
         assert body["result"]["category"] == ""
         assert "order_id" not in body["result"]
-        assert "live_orders" not in body
+        assert body["public_action"] == "HOLD"
+        assert body["live_orders"] == "off"
     for symbol in (
         "get_miner_ai_bridge",
         "MinerAIBridge.get_status",
@@ -151,7 +153,8 @@ def test_body_call_runs_the_opened_read_and_refuses_the_bridge() -> None:
         assert body.get("called") is not True
         assert body["status"] == "unavailable"
         assert body["reason"] == entry["refusal"]
-        assert body.get("live_orders") != "sent"
+        assert body["public_action"] == "HOLD"
+        assert body["live_orders"] == "off"
 
 
 def test_public_depth_pin_and_badge_stay() -> None:

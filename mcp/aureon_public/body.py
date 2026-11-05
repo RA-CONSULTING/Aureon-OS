@@ -895,9 +895,16 @@ def dispatch(
                 or reason.startswith("blocked package")
                 or reason.startswith("operator entry point")
             ):
-                return _refused(reason)
-            return _unavailable(reason)
-        return _invoke(row, arguments or {}, timeout, allow_fetch=False, allow_write=False)
+                text = _refused(reason)
+            else:
+                text = _unavailable(reason)
+        else:
+            text = _invoke(row, arguments or {}, timeout, allow_fetch=False, allow_write=False)
+        if str(row.get("package") or "") == "miner":
+            from aureon_public.miner_surface import stamp_public_hold
+
+            return stamp_public_hold(text)
+        return text
     return _unavailable("unknown server")
 
 

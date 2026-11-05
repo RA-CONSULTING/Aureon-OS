@@ -48,8 +48,27 @@ def charlie_trading_gate() -> dict[str, str | bool]:
         "live_orders": "off",
         "mining": "off",
         "posture": "HOLD",
+        "public_action": "HOLD",
         "read_gated": True,
     }
+
+
+def stamp_public_hold(text: str) -> str:
+    """Every public miner response is HOLD. No live order is sent."""
+
+    try:
+        body = json.loads(text)
+    except json.JSONDecodeError:
+        return text
+    if not isinstance(body, dict):
+        return text
+    if body.get("live_orders") == "sent":
+        body["called"] = False
+        body["reason"] = "live orders are refused"
+        body["status"] = "unavailable"
+    body["live_orders"] = "off"
+    body["public_action"] = "HOLD"
+    return json.dumps(body, ensure_ascii=False, allow_nan=False, sort_keys=True)
 
 
 def miner_constructor_allowed(module: str, class_name: str) -> bool:
@@ -317,7 +336,7 @@ def plan_lines() -> list[str]:
         f"The public table at measurement time listed miner reachable {table.get('miner_reachable')} and all-package reachable {table.get('reachable_all_packages')}. Those table figures are not republished from this sweep."
     )
     lines.append(
-        "`body_call` runs an opened read. `MinerAIInsight.to_dict` is that read. `MinerAIBridge` is not constructed. `get_miner_ai_bridge` and `MinerAIBridge.start` are not called. The posture stays HOLD."
+        "`body_call` runs an opened read. `MinerAIInsight.to_dict` is that read. `public_action` is HOLD. `live_orders` is off. `MinerAIBridge` is not constructed. `get_miner_ai_bridge` and `MinerAIBridge.start` are not called."
     )
     lines.append("Opened:")
     opened = [row for row in record.get("entries") or [] if isinstance(row, dict) and row.get("opened") is True]
