@@ -1,11 +1,11 @@
 {
   "aureon_source": {
-    "commit": "0c4a1abc922496a927f3304d552e9c7882177c49",
+    "commit": "1c9ee1a6879dc13efd6741a8bbf1f7ddf6405615",
     "kind": "checkout"
   },
   "aureon_tree": "a5114a7e5ecb4e9a51df57d58355e72882cf0a3c",
   "badge": "HOLD",
-  "code_commit": "0c4a1abc922496a927f3304d552e9c7882177c49",
+  "code_commit": "1c9ee1a6879dc13efd6741a8bbf1f7ddf6405615",
   "code_commit_note": "This is the parent of the commit that contains this record. The record cannot name the commit that adds the file.",
   "delta": {
     "baseline_public_entry_points": 0,
@@ -382,7 +382,7 @@
   "global_call_sweep_rewritten": false,
   "go_live_clear": false,
   "layout": {
-    "beside": "/tmp/aureon-miner-sweep-parent.ukmSe1",
+    "beside": "/tmp/aureon-miner-sweep-parent.dFZeQU",
     "created": [
       "NEXUS-LIVE-FEED-",
       "Aureon-Trading--Project-Sero"
@@ -400,8 +400,8 @@
   },
   "orders": "refused",
   "package": "miner",
-  "pin": "34864ff0547d2cff03e707414743a3b0cc8770b5",
-  "pin_aureon_tree": "3ba0cab4a5e193b01943e5e6e0be25077ff759f6",
+  "pin": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
+  "pin_aureon_tree": "a5114a7e5ecb4e9a51df57d58355e72882cf0a3c",
   "pin_moved": false,
   "processes": "blocked",
   "public_depth_republished": false,
