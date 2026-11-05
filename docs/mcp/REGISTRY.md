@@ -29,6 +29,8 @@ The inventory is `docs/mcp/FULL_BODY_PLAN.md` and `docs/mcp/inventory.json`. Eve
 | `body_depth` | tool and `aureon://body/depth` | Counts calls recorded in `measured/body_stageN.json`. |
 | `body_registry` | tool and `aureon://body/registry` | Names the servers, the pin, and the blocked imports. |
 | `body_call_operator` | operator tool | Same caller, operator rows only. Requires the operator flag. |
+| `exchanges_gate` | tool | Charlie HOLD gate for exchanges. EXECUTE is refused. No exchange import. |
+| `exchanges_surface` | tool and `aureon://exchanges/surface` | Reads the exchanges inventory. Does not construct, call, or import it. |
 
 A helper in `more_layers.py` is labelled `helper.` and is not that package's depth.
 
@@ -49,6 +51,8 @@ A helper in `more_layers.py` is labelled `helper.` and is not that package's dep
 5. Trading and exchange packages on the operator server. Live orders refused.
 6. The remaining packages. Launch, miner, SaaS, command centers, connectors, autonomous, code architect, in-house AI, and the operator package are listed and not called.
 7. This registry and the Space pin gate.
+
+Stage 8 is the exchanges read surface above. It does not raise `ENABLED_THROUGH`. It does not open plan stages 3 or 4. Exchanges stay on the refused-imports fence. `body_call` still returns `live_orders: refused` and does not import `aureon.exchanges`.
 
 Depth for a package is how many of its entry points a measured sweep actually ran. A row in the plan is not a call. Queen in stage 2 is `compute_zpe_ground` only. `get_swarm_hive` does not return within the call budget. The conversion goal scan is not called, because it fetches prices and prints an execute line. Identity is not read.
 

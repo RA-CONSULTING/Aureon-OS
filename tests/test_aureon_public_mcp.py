@@ -375,6 +375,8 @@ def test_registered_names() -> None:
         "body_depth",
         "body_registry",
         "body_surface",
+        "exchanges_gate",
+        "exchanges_surface",
     }
     assert set(names) == expected
     hnc = next(item for item in tools_listed if item.name == "hnc_reality_step")
@@ -388,7 +390,8 @@ def test_registered_names() -> None:
     assert "aureon://packages" in uris
     assert "aureon://body/depth" in uris
     assert "aureon://body/registry" in uris
-    assert len(uris) == 15
+    assert "aureon://exchanges/surface" in uris
+    assert len(uris) == 16
     prompts = asyncio.run(server.list_prompts())
     prompt_names = sorted(item.name for item in prompts)
     assert "explain_auris_four_meanings" in prompt_names

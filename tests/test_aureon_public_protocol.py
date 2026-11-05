@@ -85,15 +85,22 @@ def test_protocol_record_has_both_transports_and_the_pin() -> None:
     expected_resources = sorted(str(item.uri) for item in asyncio.run(server.list_resources()))
     expected_prompts = sorted(item.name for item in asyncio.run(server.list_prompts()))
 
+    # The protocol session was not re-recorded. Pin and Space publish stay
+    # where they were. The live server adds only the stage-8 exchanges read tools.
+    stage8_tools = {"exchanges_gate", "exchanges_surface"}
+    stage8_resources = {"aureon://exchanges/surface"}
     for transport in (record["stdio"], http):
         assert transport["initialize"]["serverInfo"]["name"] == "aureon-public"
-        assert sorted(_names(transport["tools_list"], "tools")) == expected_tools
-        assert "alignment_consonance_read" in _names(transport["tools_list"], "tools")
+        recorded_tools = set(_names(transport["tools_list"], "tools"))
+        assert set(expected_tools) - recorded_tools == stage8_tools
+        assert recorded_tools.isdisjoint(stage8_tools)
+        assert "alignment_consonance_read" in recorded_tools
         resource_uris = []
         for page in transport["resources_list"]:
             for item in page["resources"]:
                 resource_uris.append(str(item["uri"]))
-        assert sorted(resource_uris) == expected_resources
+        assert set(expected_resources) - set(resource_uris) == stage8_resources
+        assert stage8_resources.isdisjoint(resource_uris)
         assert sorted(_names(transport["prompts_list"], "prompts")) == expected_prompts
         call = transport["tools_call"]
         assert call["name"] == "alignment_consonance_read"

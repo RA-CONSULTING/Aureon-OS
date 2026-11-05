@@ -1102,7 +1102,14 @@ def body_registry() -> str:
                 "transport": "stdio",
             },
             "pin": PINNED_COMMIT,
-            "public_tools": ["body_call", "body_depth", "body_registry", "body_surface"],
+            "public_tools": [
+                "body_call",
+                "body_depth",
+                "body_registry",
+                "body_surface",
+                "exchanges_gate",
+                "exchanges_surface",
+            ],
             "spaces": [
                 "huggingface/hnc-field/app.py",
                 "huggingface/auris-coherence/app.py",
