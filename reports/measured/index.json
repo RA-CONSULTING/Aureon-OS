@@ -1,9 +1,12 @@
 {
   "auris_coherence": 0.5023340603593964,
+  "auris_filled_outcomes": 0,
   "auris_hold_nodes": [],
   "auris_joined_to_lambda": "HOLD",
   "auris_series_nodes_without_reading": [],
-  "auris_trade_readiness": "HOLD",
+  "auris_trade_outcome_labels": "paper",
+  "auris_trade_readiness": "fail",
+  "auris_trade_readiness_evidence": "measured",
   "dataset_solution_smoke": "measured",
   "files": [
     "auris_nodes.json",
