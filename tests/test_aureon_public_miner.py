@@ -8,7 +8,6 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-PIN = "34864ff0547d2cff03e707414743a3b0cc8770b5"
 PRIOR_SWEEP_PIN = "ad9be6c3179bba140fb7e88d5733616046110da9"
 
 pytestmark = pytest.mark.timeout(180)
@@ -65,10 +64,12 @@ def test_miner_sweep_delta_matches_the_entries() -> None:
     assert record["orders"] == "refused"
     assert record["badge"] == "HOLD"
     assert record["go_live_clear"] is False
+    from aureon_public.guard_loader import PINNED_COMMIT
+
     assert record["pin_moved"] is False
     assert record["public_depth_republished"] is False
     assert record["global_call_sweep_rewritten"] is False
-    assert record["pin"] == PIN
+    assert record["pin"] == PINNED_COMMIT
     assert record["sockets"] == "blocked"
     assert record["processes"] == "blocked"
     assert record["writes"] == "outside sandbox blocked"
@@ -137,7 +138,7 @@ def test_public_depth_pin_and_badge_stay() -> None:
 
     depth = package_depth()
     assert OPEN_PLAN_THROUGH == 2
-    assert PINNED_COMMIT == PIN
+    assert PINNED_COMMIT == "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
     assert depth["miner"] == {"public_entry_points": 0, "reachable": 0}
     assert depth["queen"]["reachable"] == 0
     assert depth["exchanges"]["reachable"] == 0

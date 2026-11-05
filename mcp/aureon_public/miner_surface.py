@@ -272,10 +272,13 @@ def plan_lines() -> list[str]:
     """Lines for COVERAGE_PLAN.md. Missing record stays an explicit gap."""
 
     record = load_record()
+    from aureon_public.guard_loader import PINNED_COMMIT
+
     lines = [
         "## Miner surface",
         "",
-        "This section is the miner read gate. Queen and exchanges are outside it. The counts in the table above stay on the inventory server field. Miner there is operator, so that row stays at public entry points 0. `package_depth` keeps miner reachable at 0. `OPEN_PLAN_THROUGH` stays 2. The pin stays `34864ff0547d2cff03e707414743a3b0cc8770b5`. Go-live stays HOLD. The stages 1 and 2 call sweep file is not rewritten. No order is sent.",
+        "This section is the miner read gate. Queen and exchanges are outside it. The counts in the table above stay on the inventory server field. Miner there is operator, so that row stays at public entry points 0. `package_depth` keeps miner reachable at 0. `OPEN_PLAN_THROUGH` stays 2. "
+        f"The pin stays `{PINNED_COMMIT}`. Go-live stays HOLD. The stages 1 and 2 call sweep file is not rewritten. No order is sent.",
         "",
     ]
     if record is None:
