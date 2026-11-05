@@ -81,6 +81,24 @@ COHERENCE_CRITICAL = 0.7    # Minimum for stable branch
 COHERENCE_HIGH = 0.85       # High self-organization
 COHERENCE_UNITY = 0.92      # LEV stabilization event
 
+def sample_rate_below_nyquist(frequencies: List[float], requested: float = 1000.0) -> float:
+    """Smallest rate, in hertz, that keeps every mode strictly below Nyquist.
+
+    A mode of frequency f is below Nyquist only when f < sample_rate / 2.
+    The historical request of 1000 Hz leaves 528 Hz and above at or past that
+    bound. The replacement is floor(2 * highest) + 1 when the request does not
+    already clear the bound, and the request itself when it does.
+    """
+
+    highest = max((float(freq) for freq in frequencies), default=0.0)
+    requested_rate = float(requested)
+    if highest <= 0.0:
+        return requested_rate
+    if requested_rate > highest * 2.0:
+        return requested_rate
+    return float(math.floor(highest * 2.0) + 1.0)
+
+
 # Substrate frequencies (Schumann modes + sacred frequencies)
 SUBSTRATE_FREQUENCIES = [
     7.83,   # Schumann fundamental
@@ -102,6 +120,9 @@ SUBSTRATE_FREQUENCIES = [
     852.0,  # Returning to spiritual order
     963.0,  # Divine consciousness / Unity
 ]
+
+# Default clock for the listed substrate. 963 Hz needs a rate above 1926 Hz.
+DEFAULT_SAMPLE_RATE = sample_rate_below_nyquist(SUBSTRATE_FREQUENCIES)
 
 
 class RealityState(Enum):
@@ -289,7 +310,7 @@ class CausalEcho:
     """
     
     def __init__(self, tau: float = DEFAULT_TAU, beta: float = DEFAULT_BETA, 
-                 sample_rate: float = 1000.0):
+                 sample_rate: float = DEFAULT_SAMPLE_RATE):
         """
         Initialize causal echo with delay and gain.
         
@@ -322,20 +343,28 @@ class CausalEcho:
         
         return self.beta * delayed_value
     
-    def get_echo_strength(self) -> float:
-        """Measure echo correlation (memory retention)"""
+    def get_echo_magnitude_ratio(self) -> float:
+        """Magnitude product of the current and delayed samples. Not a correlation.
+
+        The value is min(1, abs(current * delayed) / (abs(current) * abs(delayed) + 1e-10)).
+        It is near 1 whenever both samples are nonzero, including when they differ in sign
+        or have no linear association.
+        """
         if len(self.buffer) < 2:
             return 0.0
-        
+
         buffer_list = list(self.buffer)
         current = buffer_list[-1]
         delayed = buffer_list[0]
-        
-        # Correlation between current and delayed
+
         if abs(current) < 1e-10 or abs(delayed) < 1e-10:
             return 0.0
-        
+
         return min(1.0, abs(current * delayed) / (abs(current) * abs(delayed) + 1e-10))
+
+    def get_echo_strength(self) -> float:
+        """Existing name for get_echo_magnitude_ratio. Not a correlation."""
+        return self.get_echo_magnitude_ratio()
     
     def reset(self):
         """Reset the echo buffer"""
@@ -355,7 +384,7 @@ class ObserverNode:
     """
     
     def __init__(self, alpha: float = DEFAULT_ALPHA, g: float = DEFAULT_G,
-                 delta_t: float = DEFAULT_DELTA_T, sample_rate: float = 1000.0):
+                 delta_t: float = DEFAULT_DELTA_T, sample_rate: float = DEFAULT_SAMPLE_RATE):
         """
         Initialize observer node.
         
@@ -752,22 +781,35 @@ class HarmonicRealityField:
                  tau: float = DEFAULT_TAU,
                  g: float = DEFAULT_G,
                  delta_t: float = DEFAULT_DELTA_T,
-                 sample_rate: float = 1000.0,
+                 sample_rate: float = DEFAULT_SAMPLE_RATE,
                  frequencies: List[float] = None,
                  enable_multiverse: bool = True):
         """
         Initialize the complete Harmonic Reality Field.
+
+        A requested sample rate that would leave a substrate mode at or above
+        Nyquist is replaced by sample_rate_below_nyquist. The stored sample_rate
+        is the rate actually used.
         
         Args:
             enable_multiverse: Enable Translation Map & Dimensional Echoes
         """
-        self.sample_rate = sample_rate
-        self.dt = 1.0 / sample_rate
+        mode_frequencies = list(frequencies) if frequencies is not None else list(SUBSTRATE_FREQUENCIES)
+        self.sample_rate_requested = float(sample_rate)
+        self.sample_rate = sample_rate_below_nyquist(mode_frequencies, self.sample_rate_requested)
+        self.sample_rate_rule = (
+            "A mode is below Nyquist only when its frequency is strictly less than sample_rate/2. "
+            "If the request does not do that, sample_rate becomes floor(2 * highest mode) + 1, "
+            "the smallest integer hertz that does. The listed substrate tops out at 963 Hz, so a "
+            "request of 1000 Hz, or any request at or below 1926 Hz, is raised to 1927 Hz. "
+            "DEFAULT_SAMPLE_RATE is that raised rate."
+        )
+        self.dt = 1.0 / self.sample_rate
         
         # Initialize the three components
         self.substrate = HarmonicSubstrate(frequencies)
-        self.echo = CausalEcho(tau=tau, beta=beta, sample_rate=sample_rate)
-        self.observer = ObserverNode(alpha=alpha, g=g, delta_t=delta_t, sample_rate=sample_rate)
+        self.echo = CausalEcho(tau=tau, beta=beta, sample_rate=self.sample_rate)
+        self.observer = ObserverNode(alpha=alpha, g=g, delta_t=delta_t, sample_rate=self.sample_rate)
         
         # Multiversal extension (HNC multiversal framework)
         self.enable_multiverse = enable_multiverse

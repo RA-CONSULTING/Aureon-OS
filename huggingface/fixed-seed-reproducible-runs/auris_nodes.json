@@ -1,11 +1,8 @@
 {
   "coherence": null,
   "coherence_status": "no_data",
-  "hold_nodes": [
-    "Clownfish",
-    "Owl"
-  ],
-  "hold_reason": "these nodes have no value when volatility, momentum, volume, and spread are all present as 0; memory and symbiosis have no market input in read_auris_nodes",
+  "hold_nodes": [],
+  "hold_reason": "every node returned a value when volatility, momentum, volume, and spread are present as 0",
   "market_data": null,
   "market_data_note": "no market series was supplied, so the omitted call is no_data",
   "nodes": null,
@@ -22,10 +19,7 @@
       "volatility": 0.0,
       "volume": 0.0
     },
-    "nodes_without_reading": [
-      "Clownfish",
-      "Owl"
-    ],
+    "nodes_without_reading": [],
     "note": "clamp-bound probe of the existing formulas, not a market reading; node values are not published"
   }
 }

@@ -125,7 +125,7 @@ Args:
     tau: Echo delay passed to HarmonicRealityField. Label: cited, DEFAULT_TAU.
     g: Observer nonlinearity passed to HarmonicRealityField. Label: cited, DEFAULT_G.
     delta_t: Observer window passed to HarmonicRealityField. Label: cited, DEFAULT_DELTA_T.
-    sample_rate: Samples per second. Signature default 1000.0. Label: cited, HarmonicRealityField.__init__.
+    sample_rate: Samples per second. Omitted uses HarmonicRealityField's Nyquist-safe default. A request that would leave a substrate mode at or above Nyquist is raised inside the field. Label: cited, HarmonicRealityField.__init__.
     enable_multiverse: Class default is True (multiverse on). False selects the other committed brain path. Reported in the output. Label: cited.
     steps: Step count. Omitted uses the committed steps for the selected path. Values above that cap are unavailable. Label: cited, vendored brain.json steps.
 """
@@ -138,7 +138,7 @@ def hnc_reality_step(
     tau: float = 0.05,
     g: float = 1.5,
     delta_t: float = 0.01,
-    sample_rate: float = 1000.0,
+    sample_rate: float | None = None,
     enable_multiverse: bool = True,
     steps: int | None = None,
 ) -> str:
@@ -183,6 +183,10 @@ def hnc_reality_step(
         )
     else:
         chosen = steps
+    from aureon.harmonic.aureon_harmonic_reality import DEFAULT_SAMPLE_RATE, HarmonicRealityField
+
+    if sample_rate is None:
+        sample_rate = DEFAULT_SAMPLE_RATE
     numbers = {
         "alpha": _finite(alpha),
         "beta": _finite(beta),
@@ -207,8 +211,6 @@ def hnc_reality_step(
                 "steps_cap": cap,
             }
         )
-    from aureon.harmonic.aureon_harmonic_reality import HarmonicRealityField
-
     field = HarmonicRealityField(
         alpha=float(numbers["alpha"]),
         beta=float(numbers["beta"]),
@@ -497,8 +499,8 @@ def auris_nodes(
     A missing field is omitted. Nothing is filled with zero. Label: inferred.
 
     Args:
-        volatility: Optional Tiger and related input. Omitted stays omitted. Label: cited, _auris_input.
-        momentum: Optional Falcon and Dolphin input. Omitted stays omitted. Label: cited, _auris_input.
+        volatility: Optional Tiger, Hummingbird, Panda, and Clownfish input. Omitted stays omitted. Label: cited, _auris_input.
+        momentum: Optional Falcon, Dolphin, and Owl input. Omitted stays omitted. Label: cited, _auris_input.
         volume: Optional Falcon and CargoShip input. Omitted stays omitted. Label: cited, _auris_input.
         spread: Optional Deer input. Omitted stays omitted. Label: cited, _auris_input.
     """

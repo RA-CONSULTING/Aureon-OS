@@ -3,7 +3,7 @@
     "buffer_note": "QGITAMarketAnalyzer keeps a 1000-sample buffer; analyze sees that tail",
     "coherence": {
       "c_linear": 0.9397845342411165,
-      "c_nonlinear": 0.939211576612552,
+      "c_nonlinear": 0.9392115766125521,
       "c_phi": 0.9981536453722771,
       "global_R": 0.9088637891117479,
       "q_anomaly": 0.08971889898070065
@@ -25,7 +25,7 @@
     "ftcp_count": 0,
     "lhe_count": 0,
     "lighthouse_events": [],
-    "lighthouse_intensity": 0.037981718670486324,
+    "lighthouse_intensity": 0.03798171867048634,
     "lighthouse_threshold_sigma": 2.0,
     "max_g_eff": 0.0,
     "orders_placed": false,
@@ -48,7 +48,7 @@
       "event_type": null,
       "risk_description": "Coherent regime - stable conditions",
       "risk_level": "LOW",
-      "strength": 0.1899085933524316,
+      "strength": 0.18990859335243168,
       "structural_event": false
     },
     "source": "aureon.wisdom.aureon_qgita_framework.QGITAMarketAnalyzer.analyze",
@@ -67,11 +67,11 @@
   "on_hnc_series": {
     "buffer_note": "QGITAMarketAnalyzer keeps a 1000-sample buffer; analyze sees that tail",
     "coherence": {
-      "c_linear": 0.7292957394946138,
-      "c_nonlinear": 0.7290833566372417,
-      "c_phi": 0.6960989967718437,
-      "global_R": 0.7475569218975662,
-      "q_anomaly": 0.19159861444421625
+      "c_linear": 0.3769833493367066,
+      "c_nonlinear": 0.3708404638996669,
+      "c_phi": 0.2573442398061295,
+      "global_R": 0.8644095006572609,
+      "q_anomaly": 0.5597341106865349
     },
     "detection_rate": null,
     "detection_threshold": 0.2,
@@ -85,7 +85,7 @@
     "ftcp_count": 0,
     "lhe_count": 0,
     "lighthouse_events": [],
-    "lighthouse_intensity": 0.03716625878831031,
+    "lighthouse_intensity": 0.02889356313280752,
     "lighthouse_threshold_sigma": 2.0,
     "max_g_eff": 0.0,
     "orders_placed": false,
@@ -93,7 +93,7 @@
     "rates_verdict": "HOLD",
     "regime": {
       "description": "Market in ordered, stable regime",
-      "stability": 0.7475569218975662,
+      "stability": 0.8644095006572609,
       "state": "coherent"
     },
     "samples_analyzed": 100,
@@ -101,20 +101,20 @@
     "series": "hnc_lambda_series",
     "signal_note": "the direction is the analyzer's return. It is not an order and it has no outcome label",
     "signals": {
-      "confidence": 0.7052607725619787,
-      "direction": "BEARISH",
+      "confidence": 0.7162222448306634,
+      "direction": "BULLISH",
       "event_type": null,
       "risk_description": "Coherent regime - stable conditions",
       "risk_level": "LOW",
-      "strength": 0.1858312939415515,
+      "strength": 0.14446781566403757,
       "structural_event": false
     },
     "source": "aureon.wisdom.aureon_qgita_framework.QGITAMarketAnalyzer.analyze",
     "statistics": {
       "lighthouse_mean": 0.0,
       "lighthouse_std": 0.1,
-      "price_mean": 1.0651840869169222,
-      "price_std": 0.3891764963101128,
+      "price_mean": 0.7596199753534636,
+      "price_std": 0.16773365754413233,
       "total_samples": 100
     },
     "status": "complete",

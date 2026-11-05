@@ -7,10 +7,9 @@ residual is supplied, and three constructions of that default match, so the
 extension is measured beside the formula branch.
 
 Auris coherence is ``QueenHiveMind.get_auris_coherence``. This harness has
-no market series, so it does not supply a stand-in texture. The coherence
-figure is no_data. A zero-input probe names the nodes that stay without a
-value when the four market fields are present. There is no trade-outcome
-label.
+no market series, so the omitted call is no_data. A zero-input probe names
+any node that stays without a value when the four market fields are present
+as 0. There is no trade-outcome label.
 
 QGITA is ``QGITAMarketAnalyzer`` constructed with its own defaults, then
 ``analyze``. Detection rate and false-alarm rate stay HOLD: neither the
@@ -158,6 +157,8 @@ def _run_hnc() -> dict[str, Any]:
         "coherence": float(field.coherence),
         "boundedness": float(field.boundedness),
         "echo_strength": float(field.echo_strength),
+        "echo_strength_is_correlation": False,
+        "echo_figure": "CausalEcho.get_echo_magnitude_ratio, not a correlation",
         "state": str(field.state.value),
         "series": series,
         "dt": float(field.dt),
@@ -185,8 +186,9 @@ def _run_auris() -> dict[str, Any]:
         },
         "hold_nodes": hold,
         "hold_reason": (
-            "these nodes have no value when volatility, momentum, volume, and spread are all present as 0; "
-            "memory and symbiosis have no market input in read_auris_nodes"
+            "these nodes have no value when volatility, momentum, volume, and spread are all present as 0"
+            if hold
+            else "every node returned a value when volatility, momentum, volume, and spread are present as 0"
         ),
         "trade_readiness": {
             "verdict": "HOLD",

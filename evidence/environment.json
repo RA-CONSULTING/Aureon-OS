@@ -1,0 +1,57 @@
+{
+  "byte_contract": "evidence/RESULTS.md and evidence/output match byte-for-byte. evidence/environment.json matches after commit_sha is set to the committed value. commit_sha is git rev-parse HEAD at generation and is the one allowed difference. No numeric tolerance. The contract is this Python, NumPy, and platform.",
+  "check_command": "PYTHONHASHSEED=0 PYTHONPATH=. python3 -m aureon.evidence --check",
+  "command": "PYTHONHASHSEED=0 PYTHONPATH=. python3 -m aureon.evidence",
+  "commit_sha": "2def6909d4db323bd7650380bd5f2392023d6bc4",
+  "external_llm": false,
+  "live_trading": false,
+  "machine": "x86_64",
+  "make_target": "make evidence",
+  "numpy_seed_api": "numpy.random.seed set before each HNC construction",
+  "numpy_version": "1.26.4",
+  "orders_placed": false,
+  "platform": "Linux-6.12.94+-x86_64-with-glibc2.39",
+  "process_env": {
+    "AUREON_AUDIT_MODE": "1",
+    "AUREON_DISABLE_LIVE_BACKGROUND_STARTUP": "1",
+    "AUREON_DISABLE_REAL_ORDERS": "1",
+    "AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS": "1"
+  },
+  "python_full": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "python_implementation": "CPython",
+  "python_version": "3.12.3",
+  "pythonhashseed": "0",
+  "random_generator": "random.Random and random.gauss from the standard library",
+  "schema": "aureon.evidence.environment.v1",
+  "seeds": {
+    "auris_random": 20261105,
+    "hnc": [
+      0,
+      1,
+      7,
+      42,
+      20261105
+    ],
+    "hnc_gaussian": 20261105,
+    "hnc_repeat": 0,
+    "hnc_shuffle": 20261105,
+    "qgita_calibration_start": 50000000,
+    "qgita_master": 20261105,
+    "qgita_shuffle_offset": 50000
+  },
+  "source_sha256": {
+    "aureon/core/hnc_field.py": "c79f59a0522f56945a921218bcd1f6baec681a8534331d3baac48ab6304859d7",
+    "aureon/evidence/__init__.py": "fa63fd41cff1da33f95c561071c7f395370df6e2425c05ed98789dd845d1bdee",
+    "aureon/evidence/__main__.py": "307c25b00fcce023f3f12d0b7c0986d2e7e75314edc4b4786be4bd9ad7c588a9",
+    "aureon/evidence/auris.py": "c0f9909e885af399589ebb95b88dc9a2e56f06b19ce6390667b1ebfa8b37e75c",
+    "aureon/evidence/hnc.py": "e41236e40969dafc0872dd96641842633196a6c233f40cf37955b1417a0078f7",
+    "aureon/evidence/metrics.py": "d127511469d62222c3063f6e7e853288bb068656a0578fc8dc443c0a2d2e1c7c",
+    "aureon/evidence/qgita.py": "f1289f8929665c77623613804bc8e9e210b1b028c80faf58c1b1e5eb2048487f",
+    "aureon/evidence/report.py": "1a828d4d768042168957bc905ee7d60752801da7f36e6ae75485650c3afad9bb",
+    "aureon/evidence/runner.py": "2d6033ac11688ad4f4bdb76dddc0c2a7ade319bdeec9fdbcc9e4c7435bcd2d0d",
+    "aureon/evidence/serialize.py": "17b1070b3bf38dc98a7419b844e5d1b8d0c2eb270e325dfc07fb461ef1c7d368",
+    "aureon/harmonic/aureon_harmonic_reality.py": "13a99c734046ca1215cb24aeaaf2ec19f05eaeb817f4017a8d85643692f95ef5",
+    "aureon/utils/aureon_queen_hive_mind.py": "0404a7fcd5f02a420e52ee6d5900d3dd1ce308550d9045c978668db20d29d4f1",
+    "aureon/wisdom/aureon_qgita_framework.py": "9fd139f74af76560e67216c7cba50955bcce024aa76fce21dae801226f91846a"
+  }
+}

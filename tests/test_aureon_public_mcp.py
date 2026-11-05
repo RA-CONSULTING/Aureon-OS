@@ -142,11 +142,13 @@ def test_auris_coherence_is_no_data_and_lists_missing_nodes() -> None:
     assert len(empty["missing_nodes"]) == 9
 
     supplied = _load(tools.auris_coherence(volatility=0.2, momentum=0.1, volume=0.3, spread=0.05))
-    assert supplied["status"] == "no_data"
-    assert supplied["coherence"] is None
-    assert "Owl" in supplied["missing_nodes"]
-    assert "Clownfish" in supplied["missing_nodes"]
-    assert supplied["missing_nodes"] == ["Clownfish", "Owl"]
+    assert supplied["coherence"] is not None
+    assert supplied["missing_nodes"] == []
+    assert supplied["status"] != "no_data"
+    omitted = _load(tools.auris_coherence(volatility=0.2, volume=0.3, spread=0.05))
+    assert omitted["status"] == "no_data"
+    assert omitted["coherence"] is None
+    assert "Owl" in omitted["missing_nodes"]
 
 
 def test_auris_names_say_which_auris() -> None:
