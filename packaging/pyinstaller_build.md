@@ -1,5 +1,9 @@
 # Native package build — HOLD
 
+A Python wheel is a separate artifact. See [PIP_INSTALL.md](PIP_INSTALL.md).
+Building that wheel does not lift this native HOLD, and the installed console
+scripts still return go-live HOLD.
+
 No Aureon executable may currently be built, started, distributed, or
 registered for autostart from this checkout. The legacy launcher is a terminal
 HOLD shim and the post-build helper refuses to select or execute a binary.
