@@ -43,5 +43,5 @@ Not scored. The child handled the prompts, so those bytes exist in that process.
 - Receipt 4: complete source-boundary census closure — HOLD
 - Receipt 5: authenticated deployment receipt and provider-side read-back — HOLD
 
-Started from `c68a89d2a184d99582bb24310b91e024323a212c`. Git HEAD at measurement: `d449b8a9482c29b4a62ec1cd5adbddec36cb4d05`.
+Started from `c68a89d2a184d99582bb24310b91e024323a212c`. Git HEAD at measurement: `4836dfa483077e26be09b258d128517a5f820b26`.
 The child boots create_app with the local test ingress seam. operator_server.main is not called and no listener is bound. source_sha256 binds this stage's sources. git_head_at_measurement is HEAD when the command ran. The UTC stamps are this machine's clock, not receipt 3. go_live_clear stays false. aureon/operator/keystore.py is not listed in unchanged_sha256. This stage does not modify that file.
