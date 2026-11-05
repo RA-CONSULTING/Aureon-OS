@@ -149,6 +149,16 @@ Auris joined to Λ(t): **HOLD**. HarmonicRealityField.step Λ(t) was passed into
 
 The longer operator preflight, containers, and the full offline suite are further down.
 
+## Pip wheel
+
+A checkout is still the path for `./install.sh`, the dashboard, and the pytest commands above. The Python package also builds as a wheel. The git URL, the dry-run build, and the gated TestPyPI path are in [`packaging/PIP_INSTALL.md`](packaging/PIP_INSTALL.md).
+
+```bash
+python -m pip install 'aureon[operator] @ git+https://github.com/RA-CONSULTING/Aureon-OS.git'
+```
+
+That command does not upload anything. Public PyPI is refused. The console scripts from the wheel return a HOLD receipt and do not start a listener or place an order. Go-live stays HOLD.
+
 ## Public MCP (stages 1 and 2 of 4)
 
 [`mcp/aureon_public/README.md`](mcp/aureon_public/README.md) is the public MCP surface. It is read-only. Stages 1 and 2 of 4 are open. `OPEN_PLAN_THROUGH` is 2. Stages 3 and 4 stay closed until the pull requests that open them land.
@@ -321,7 +331,7 @@ bash production/install.sh
 
 Windows: `production\Install-AUREON.ps1`, or `production\install-windows.bat`. Running it again is safe. It installs Python, venv, Node, npm, git, and curl when apt, dnf, Homebrew, or winget can, writes `.env` from `.env.example` only when `.env` is absent, installs and builds the frontend, then calls the master launcher above. Docker images are used when the daemon answers. With no daemon the launcher uses its native fallbacks. When the UI answers, the installer prints `Aureon UI: http://127.0.0.1:5173/`.
 
-Installing from git (`pip install git+...`) brings the whole repo, trading modules included. A Hugging Face Space is planned, and nothing is hosted yet, so no Space is switching those modules off.
+`python -m pip install 'aureon[operator] @ git+https://github.com/RA-CONSULTING/Aureon-OS.git'` builds a wheel from the git tree. The installed files are the `aureon` package, trading modules included, and the inert console module. The frontend is not part of the wheel. The same HOLD applies: [`packaging/PIP_INSTALL.md`](packaging/PIP_INSTALL.md). A Hugging Face Space is planned, and nothing is hosted yet, so no Space is switching those modules off.
 
 `PyAudio` in `requirements.txt` needs the system audio headers (`portaudio`) before pip can build it. The Linux installer uses `requirements-linux.txt`, which leaves that package out and includes pytest, so `tests/test_preflight_snags.py` can run in the installer environment. Build the test virtualenv with `python -m venv --copies .venv`. A symlinked interpreter fails 32 evidence tests: `sys.executable` must be a real file inside the venv, which `--copies` provides and a symlink into another prefix does not. The installer creates `.venv` with `--copies`. Pytest prints a header note when the interpreter it is running is itself a symlink.
 
@@ -428,6 +438,7 @@ Open-source repository traffic to date (verifiable in the repo's GitHub **Insigh
 | **A developer** | [`docs/INDEX.md`](docs/INDEX.md) · [`CAPABILITIES.md`](CAPABILITIES.md) · [`docs/SAAS_PLATFORM.md`](docs/SAAS_PLATFORM.md) |
 | **A researcher** | [`docs/THE_SYNTHESIS.md`](docs/THE_SYNTHESIS.md) · [`docs/CLAIMS_AND_EVIDENCE.md`](docs/CLAIMS_AND_EVIDENCE.md) · [`docs/research/READING_PATHS.md`](docs/research/READING_PATHS.md) |
 | **Deployment status** | [`docs/runbooks/GO_LIVE_HARDENING.md`](docs/runbooks/GO_LIVE_HARDENING.md) · [`docs/deployment/`](docs/deployment/) — terminal HOLD; no supported listener or deploy route |
+| **Installing with pip** | [`packaging/PIP_INSTALL.md`](packaging/PIP_INSTALL.md) — git URL or a gated TestPyPI wheel. Go-live stays HOLD. |
 | **Running it for several users** | [`docs/architecture/MULTI_TENANT_AUTH.md`](docs/architecture/MULTI_TENANT_AUTH.md) — the account/instance boundary and how it is enforced |
 | **Checking what the numbers mean** | [`docs/architecture/DATA_PROVENANCE_AUDIT.md`](docs/architecture/DATA_PROVENANCE_AUDIT.md) — which readings are live, which are withheld as `no_data`, and which generated feeds are opt-in |
 | **Browsing the whole repo** | [`docs/REPO_SITEMAP.md`](docs/REPO_SITEMAP.md) · the console's `#repo-map` tab |
@@ -442,6 +453,9 @@ Open-source repository traffic to date (verifiable in the repo's GitHub **Insigh
 Quality evidence is suite- and revision-specific. Run the current offline tests
 and static checks rather than relying on historical pass counts or badges. A
 passing implementation suite does not override the terminal release HOLD.
+The Python wheel workflow builds a wheel and does not upload it. TestPyPI
+upload stays behind a manual gate. See [`packaging/PIP_INSTALL.md`](packaging/PIP_INSTALL.md).
+Go-live stays HOLD.
 
 The hosted GitHub Actions status badges below turn green once Actions is enabled on the
 organization (they reflect hosted runs, not the local gate):
