@@ -9,7 +9,7 @@ python packaging/release_channel.py archive --dest dist/tip-channel
 
 `dist/` is gitignored. The archives are not committed.
 
-`check` prints the pin, the lineage tip, and receipts 1-5. It exits 0 when the orange badge is still HOLD, `PINNED_COMMIT` still matches `PUBLISHED_PIN` in `packaging/release_channel.py`, and `docs/releases/RELEASE_NOTES_tip.md` still says production go-live is not cleared. A pin pull request updates both the constant in `mcp/aureon_public/guard_loader.py` and `PUBLISHED_PIN` here. This file does not move the pin.
+`check` prints the pin, the lineage tip, and receipts 1-5. It exits 0 when the orange badge is still HOLD, `PINNED_COMMIT` still matches `PUBLISHED_PIN` in `packaging/release_channel.py`, and `docs/releases/RELEASE_NOTES_tip.md` still says production go-live is not cleared. `PUBLISHED_PIN` is `bb04503119681adcf832f3c3e9b0cbf09fc7a938`. This file does not move the pin.
 
 `publish` always exits non-zero. Go-live stays HOLD. Charlie, Buzz, and Spike PASS do not publish. The command waits for Gary's own yes. It does not call GitHub and does not create a tag.
 

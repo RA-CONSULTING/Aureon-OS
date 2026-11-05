@@ -46,8 +46,8 @@ def test_tip_channel_refuses_production_publish() -> None:
     assert report["published"] is False
     assert report["pin_moved"] is False
     assert report["pin"] == channel.PUBLISHED_PIN
-    assert report["pin"] == "34864ff0547d2cff03e707414743a3b0cc8770b5"
-    assert report["lineage_tip"] == "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
+    assert report["pin"] == "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
+    assert report["lineage_tip"] == "29fab7f21fc93da40224566dd8f34faacb3d74d4"
     assert report["lineage_tip_is_ancestor"] is True
     assert report["orange_badge"] == "HOLD"
     assert report["release_boundary"] == "HOLD"
@@ -57,7 +57,7 @@ def test_tip_channel_refuses_production_publish() -> None:
     assert by_id[1]["bound_commit"] == "c68a89d2a184d99582bb24310b91e024323a212c"
     assert by_id[1]["release_boundary"] == "HOLD"
     assert by_id[2]["go_live_clear"] is False
-    assert by_id[2]["bound_commit"] == "c68a89d2a184d99582bb24310b91e024323a212c"
+    assert by_id[2]["bound_commit"] == "b2b0310362597dc520114de86d8700c0c50758d5"
     assert by_id[3]["go_live_clear"] is False
     assert by_id[4]["decision"] == "HOLD"
     assert by_id[5]["present"] is False
