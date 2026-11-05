@@ -1,16 +1,12 @@
 #!/usr/bin/env python3
 """
-🔮 NEXUS PREDICTOR - PRODUCTION READY 🔮
+🔮 NEXUS PREDICTOR 🔮
 ═══════════════════════════════════════════════════════════════════════════════
 
-VALIDATED: 77.2% WIN RATE on high-edge setups (>25% edge)
+No verified live track record yet.
 
-This is the PRODUCTION predictor that combines ALL subsystems:
-- Price Position (strongest: 76.6% at top 15%, 79.8% bearish at bottom 15%)
-- Momentum (6 & 12 candle)
-- Streaks (mean reversion)
-- Temporal patterns
-- Combo patterns (up to 85.7% edge!)
+This predictor combines price position, momentum, streaks,
+temporal patterns, and combo patterns.
 
 Usage:
     from aureon.intelligence.nexus_predictor import NexusPredictor
@@ -40,19 +36,9 @@ logger = logging.getLogger(__name__)
 
 class NexusPredictor:
     """
-    🔮 PRODUCTION-READY PREDICTOR 🔮
-    
-    Pattern predictor. No measured win rate is attached here.
-    Tested on 98,049 candles across ALL market conditions:
-    - Bull markets (2017, 2021): 76-80%
-    - Bear markets (2018, 2022): 77%
-    - Sideways (2019, 2023): 79-82%
-    
-    Key patterns:
-    - pos_very_high (top 15%): 76.6% bullish
-    - pos_very_low (bottom 15%): 20.2% bullish (79.8% bearish)
-    - combo_high_price_low_mom: 76.5% bullish
-    - combo_low_price_high_mom: 14.3% bullish (85.7% bearish)
+    Pattern predictor.
+
+    No verified live track record yet.
     """
     
     # VALIDATED PATTERN PROBABILITIES
