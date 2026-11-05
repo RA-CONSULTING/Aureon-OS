@@ -16,7 +16,7 @@ Public hosting sets `AUREON_PUBLIC_REQUIRE_PIN=1`. The four Space entry points c
 - `huggingface/qgita-snr/app.py`
 - `huggingface/organism-replay/app.py`
 
-The pin is `ad9be6c3179bba140fb7e88d5733616046110da9`. A file loaded from the checkout is executed only when its git blob is the blob at that pin. `phenolic_fingerprint.py` uses the same check.
+The pin is `34864ff0547d2cff03e707414743a3b0cc8770b5`. A file loaded from the checkout is executed only when its git blob is the blob at that pin. `phenolic_fingerprint.py` uses the same check.
 
 ## Tools that address the inventory
 

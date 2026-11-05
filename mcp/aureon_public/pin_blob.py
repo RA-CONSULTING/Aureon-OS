@@ -16,7 +16,7 @@ from pathlib import Path
 from types import ModuleType
 
 PINNED_PHENOLIC_BLOB = "325484e9299eecb427cf0063590b0a1d17c16f31"
-PHENOLIC_MISMATCH = "checkout phenolic_fingerprint differs from pin ad9be6c3"
+PHENOLIC_MISMATCH = "checkout phenolic_fingerprint differs from pin 34864ff0"
 
 
 def git_blob_sha1(data: bytes) -> str:

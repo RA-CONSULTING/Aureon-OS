@@ -898,8 +898,8 @@ def test_rate_limiter_table_stays_bounded() -> None:
 
 
 def test_space_record_is_an_authenticated_local_session() -> None:
-    from aureon_public.guard_loader import PINNED_COMMIT
-    from aureon_public.measurement_stamp import CODE_COMMIT_NOTE, PIN_AUREON_TREE
+    from aureon_public.measurement_stamp import CODE_COMMIT_NOTE
+    from tests.support.recorded_mcp_pin import RECORD_AUREON_TREE, RECORD_PIN
 
     record = json.loads((ROOT / "measured" / "aureon_public_space.json").read_text(encoding="utf-8"))
     environment = record["environment"]
@@ -911,9 +911,9 @@ def test_space_record_is_an_authenticated_local_session() -> None:
     assert environment["open"] == "unset"
     assert environment["require_pin"] == "1"
     assert environment["mcp"] == "1.30.0"
-    assert environment["aureon_source"] == {"commit": PINNED_COMMIT, "kind": "pinned"}
-    assert environment["aureon_tree"] == PIN_AUREON_TREE
-    assert environment["pin_aureon_tree"] == PIN_AUREON_TREE
+    assert environment["aureon_source"] == {"commit": RECORD_PIN, "kind": "pinned"}
+    assert environment["aureon_tree"] == RECORD_AUREON_TREE
+    assert environment["pin_aureon_tree"] == RECORD_AUREON_TREE
     assert environment["code_commit_note"] == CODE_COMMIT_NOTE
     assert len(environment["code_commit"]) == 40
     http = record["streamable_http"]
@@ -1195,7 +1195,7 @@ def test_scaffold_bakes_no_key_and_quotes_the_plan() -> None:
     assert "503" in readme
     assert "`busy`" in readme
     assert "mcp==1.30.0,<2" in requirements
-    assert "ad9be6c3179bba140fb7e88d5733616046110da9" in requirements
+    assert "34864ff0547d2cff03e707414743a3b0cc8770b5" in requirements
     assert "partial release covering stages 1 and 2 of 4" in readme
     assert "reachable now 69" in readme
     assert "tested 69" in readme

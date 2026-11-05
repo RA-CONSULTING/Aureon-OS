@@ -137,7 +137,7 @@ def test_stage7_registry_names_servers_spaces_and_the_pin() -> None:
     assert body.get("called") is not True
     assert body["live_orders"] == "refused"
     assert body["enabled_through"] == enabled_stage()
-    assert body["pin"].startswith("ad9be6c3")
+    assert body["pin"].startswith("34864ff0")
     assert "huggingface/hnc-field/app.py" in body["spaces"]
     assert "trading" in body["blocked_imports"]
     registry = (ROOT / "docs" / "mcp" / "REGISTRY.md").read_text(encoding="utf-8")
@@ -483,11 +483,12 @@ def test_call_sweep_record_names_the_pin_and_the_sibling_layout() -> None:
     record = json.loads(
         (ROOT / "measured" / "aureon_public_call_sweep.json").read_text(encoding="utf-8")
     )
-    from aureon_public.measurement_stamp import CODE_COMMIT_NOTE, PIN_AUREON_TREE
+    from aureon_public.measurement_stamp import CODE_COMMIT_NOTE
+    from tests.support.recorded_mcp_pin import RECORD_AUREON_TREE, RECORD_PIN
 
-    assert record["pin"].startswith("ad9be6c3")
-    assert record["aureon_tree"] == PIN_AUREON_TREE
-    assert record["pin_aureon_tree"] == PIN_AUREON_TREE
+    assert record["pin"] == RECORD_PIN
+    assert record["aureon_tree"] == RECORD_AUREON_TREE
+    assert record["pin_aureon_tree"] == RECORD_AUREON_TREE
     assert record["code_commit_note"] == CODE_COMMIT_NOTE
     assert len(record["code_commit"]) == 40
     assert record["aureon_source"]["kind"] in {"pinned", "checkout"}
@@ -607,11 +608,12 @@ def test_stage2_import_sweep_matches_body_call() -> None:
     record = json.loads(
         (ROOT / "measured" / "aureon_public_stage2_imports.json").read_text(encoding="utf-8")
     )
-    from aureon_public.measurement_stamp import CODE_COMMIT_NOTE, PIN_AUREON_TREE
+    from aureon_public.measurement_stamp import CODE_COMMIT_NOTE
+    from tests.support.recorded_mcp_pin import RECORD_AUREON_TREE, RECORD_PIN
 
-    assert record["pin"].startswith("ad9be6c3")
-    assert record["aureon_tree"] == PIN_AUREON_TREE
-    assert record["pin_aureon_tree"] == PIN_AUREON_TREE
+    assert record["pin"] == RECORD_PIN
+    assert record["aureon_tree"] == RECORD_AUREON_TREE
+    assert record["pin_aureon_tree"] == RECORD_AUREON_TREE
     assert record["code_commit_note"] == CODE_COMMIT_NOTE
     assert len(record["code_commit"]) == 40
     assert record["aureon_source"]["kind"] in {"pinned", "checkout"}

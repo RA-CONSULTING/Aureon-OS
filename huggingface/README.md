@@ -17,7 +17,7 @@ The brain runs are deterministic at commit `a00f744d`. Trade readiness, the Auri
 Install the modules from this repo:
 
 ```bash
-pip install "aureon @ git+https://github.com/RA-CONSULTING/Aureon-OS.git@ad9be6c3179bba140fb7e88d5733616046110da9"
+pip install "aureon @ git+https://github.com/RA-CONSULTING/Aureon-OS.git@34864ff0547d2cff03e707414743a3b0cc8770b5"
 ```
 
 The git+ install brings the whole repo, trading modules included, and only the Spaces switch them off.
