@@ -2,9 +2,24 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+
+# Charlie rule: a secret assignment is blank, or an obvious placeholder name.
+_PLACEHOLDER_VALUE = re.compile(
+    r"^(?:your_[a-z0-9_]+_here|REDACTED_[A-Z0-9_]+|PLACEHOLDER_[A-Z0-9_]+|<[^>\n]+>)$"
+)
+_REAL_KEY = re.compile(
+    r"sk-|AKIA[0-9A-Z]{4,}|ghp_|github_pat_|xox[baprs]-|AIza[0-9A-Za-z_\-]{10}|-----BEGIN "
+)
+_SECRET_SUFFIXES = ("_KEY", "_SECRET", "_TOKEN", "_PASSWORD", "_PASSWD")
+_ENV_EXAMPLES = (
+    ".env.example",
+    "aureon_radar/.env.example",
+    "sources/AUREON-QUANTUM-TRADING-SYSTEM-AQTS-/.env.example",
+)
 
 
 def _text(relative: str) -> str:
@@ -81,19 +96,64 @@ def test_ci_runs_the_smoke_from_a_clean_checkout() -> None:
     assert "ubuntu-latest" in workflow
 
 
-def test_env_example_has_no_secret_values() -> None:
-    for line in _text(".env.example").splitlines():
+def _assignments(relative: str) -> list[tuple[str, str]]:
+    found: list[tuple[str, str]] = []
+    for line in _text(relative).splitlines():
         stripped = line.strip()
         if not stripped or stripped.startswith("#") or "=" not in stripped:
             continue
         key, value = stripped.split("=", 1)
         key = key.strip()
         value = value.split("#", 1)[0].strip().strip('"').strip("'")
+        found.append((key, value))
+    return found
+
+
+def test_env_example_has_no_secret_values() -> None:
+    """Charlie rule: placeholder names only. The root template keeps secrets blank."""
+
+    root = _text(".env.example")
+    assert "Charlie rule" in root
+    assert "Guarded offline" in root
+    assert "Read-only market fetch" in root
+    assert "Live orders" in root
+    assert "\nAUREON_LIVE_TRADING=" not in f"\n{root}"
+    assert "AUREON_DISABLE_REAL_ORDERS=1" in root
+    assert "AUREON_DISABLE_EXCHANGE_MUTATIONS=1" in root
+    assert "AUREON_LLM_OFFLINE=1" in root
+    assert "ALPACA_PAPER=true" in root
+    assert "CAPITAL_DEMO=1" in root
+    assert "CAPITAL_DEMO_MODE=true" in root
+    assert "ALPACA_PAPER=false" not in root
+    assert "CAPITAL_DEMO_MODE=false" not in root
+    values = dict(_assignments(".env.example"))
+    for name in (
+        "BINANCE_API_KEY",
+        "BINANCE_API_SECRET",
+        "KRAKEN_API_KEY",
+        "KRAKEN_API_SECRET",
+        "ALPACA_API_KEY",
+        "ALPACA_SECRET_KEY",
+        "CAPITAL_API_KEY",
+        "CAPITAL_PASSWORD",
+    ):
+        assert values[name] == ""
+    for key, value in values.items():
         upper = key.upper()
-        if upper.endswith(("_KEY", "_SECRET", "_TOKEN", "_PASSWORD", "_PASSWD")):
+        if upper.endswith(_SECRET_SUFFIXES):
             assert value == "", key
-        assert "sk-" not in value
-        assert "AKIA" not in value
+        assert _REAL_KEY.search(value) is None
+
+
+def test_env_examples_use_placeholder_names_only() -> None:
+    for relative in _ENV_EXAMPLES:
+        text = _text(relative)
+        assert _REAL_KEY.search(text) is None, relative
+        for key, value in _assignments(relative):
+            upper = key.upper()
+            if not upper.endswith(_SECRET_SUFFIXES):
+                continue
+            assert value == "" or _PLACEHOLDER_VALUE.fullmatch(value), (relative, key, value)
 
 
 def test_lockfile_pins_the_direct_requirements() -> None:

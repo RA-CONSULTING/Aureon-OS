@@ -56,6 +56,7 @@ Master table of contents for all project documentation.
 | [Navigation Contract Validator](../scripts/validation/validate_repo_navigation_contract.py) | Verifies public manifests, repo counts, Supabase auth counts, and key navigation links |
 | [Navigation Guide](NAVIGATION_GUIDE.md) | Learning paths for traders, developers, researchers |
 | [Quick Start](QUICK_START.md) | Get running in 10 minutes |
+| [Public environment postures](PUBLIC_ENV.md) | Guarded offline, read-only market fetch, and explicitly disabled live orders. Placeholder names only in `.env.example`. |
 | [Windows Setup](windows/WINDOWS_SETUP_GUIDE.md) | Windows-specific installation |
 | [Linux Setup](linux/LINUX_SETUP_GUIDE.md) | Native full Linux version — install + one-command launcher + systemd |
 | [Scripts Index](SCRIPTS_INDEX.md) | Find the right startup script |

@@ -20,6 +20,7 @@ We will acknowledge your report within 48 hours and provide an estimated timelin
 
 - **NEVER** commit API keys, secrets, or credentials to the repository.
 - Use `.env` files (which are git-ignored) for local development.
+- `.env.example` uses placeholder names only. A real key value never goes in that file. See [`PUBLIC_ENV.md`](PUBLIC_ENV.md).
 - If you accidentally commit a key, revoke it immediately.
 
 ## Model-written benchmark code

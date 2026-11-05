@@ -14,3 +14,8 @@ for this repository, or contact R&A Consulting and Brokerage Services Ltd via
 Never commit credentials. This repository uses `.env` files (gitignored) and,
 in production, environment variables / a secrets manager. If you believe a
 secret was ever committed, treat it as compromised and rotate it immediately.
+
+`.env.example` uses placeholder names only. Secret lines there are blank, or
+an obvious placeholder name in a vendored template. A real key value never
+goes in that file. Guarded offline, read-only market fetch, and explicitly
+disabled live orders are named in [`docs/PUBLIC_ENV.md`](docs/PUBLIC_ENV.md).

@@ -37,7 +37,7 @@ This document describes the practical architecture of the unified trading engine
   - Simulation: [aureon_51_sim.py](../aureon_51_sim.py)
 
 ## Configuration & Safety
-- Environment file: [.env.example](../.env.example)
+- Environment file: [.env.example](../../.env.example). Public postures (guarded offline, read-only market fetch, explicitly disabled live orders) are in [`../PUBLIC_ENV.md`](../PUBLIC_ENV.md). Secret lines in the template are blank placeholder names. Live orders stay off: `AUREON_DISABLE_REAL_ORDERS=1`, `ALPACA_PAPER=true`, `CAPITAL_DEMO=1`.
   - `BINANCE_USE_TESTNET=true` to target testnet where supported.
   - `BINANCE_DRY_RUN=true` to disable live order placement.
   - `BINANCE_RISK_MAX_ORDER_USDT=25` to cap individual order size.

@@ -104,7 +104,10 @@ gated.
 ## Environment Variable Inventory
 
 This inventory is based on `.env.example`, `deploy/env.example`, and `app.yaml`.
-It lists variable names only, not secret values.
+It lists variable names only, not secret values. Which names each public
+posture needs — guarded offline, read-only market fetch, and explicitly
+disabled live orders — is in [`PUBLIC_ENV.md`](PUBLIC_ENV.md). `.env.example`
+keeps secret lines blank (placeholder names only).
 
 | Group | Variables | Source |
 |---|---|---|
