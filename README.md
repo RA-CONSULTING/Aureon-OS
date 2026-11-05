@@ -60,7 +60,7 @@ On Linux the guarded smoke is `./install.sh --smoke` from the checkout. The scri
 
 ### Require-pin
 
-The published pin stays `34864ff0547d2cff03e707414743a3b0cc8770b5` (`PINNED_COMMIT` in `mcp/aureon_public/guard_loader.py`).
+The published pin is `bb04503119681adcf832f3c3e9b0cbf09fc7a938` (`PINNED_COMMIT` in `mcp/aureon_public/guard_loader.py`). This page does not move it.
 
 `AUREON_PUBLIC_REQUIRE_PIN=1` starts only when `aureon_source` is kind `pinned` at that commit. `python -m aureon_public.space` sets the variable. A clone of `main` reports kind `checkout` at the clone's own commit, so require-pin refuses that process. `./install.sh` leaves `AUREON_PUBLIC_REQUIRE_PIN` unset. The plug sets `AUREON_PUBLIC_OPEN=1` for the local MCP on `127.0.0.1`.
 
