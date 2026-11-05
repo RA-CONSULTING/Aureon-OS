@@ -1,10 +1,10 @@
 {
   "aureon_source": {
-    "commit": "6d2da2c6a6ff677edbd8bdabd2af44ead4808ac1",
+    "commit": "ad71a95d71eed7bae7da5c07a84da661a1371a11",
     "kind": "checkout"
   },
-  "aureon_tree": "8aef927b7fe6276c187e4c73c79f0de012ad980d",
-  "code_commit": "6d2da2c6a6ff677edbd8bdabd2af44ead4808ac1",
+  "aureon_tree": "5f191d31561227d6f64f5b94eb1444c77c3c9e2c",
+  "code_commit": "ad71a95d71eed7bae7da5c07a84da661a1371a11",
   "code_commit_note": "This is the parent of the commit that contains this record. The record cannot name the commit that adds the file.",
   "entries": [
     {
@@ -3978,7 +3978,7 @@
     }
   ],
   "layout": {
-    "beside": "/tmp/aureon-sweep-parent.vhA9L8",
+    "beside": "/tmp/aureon-sweep-parent.fL0f6x",
     "created": [
       "NEXUS-LIVE-FEED-",
       "Aureon-Trading--Project-Sero"
@@ -3994,18 +3994,18 @@
       }
     ]
   },
-  "pin": "8aa6a2d971cc529484e2a5e261e28afafab4e4f4",
-  "pin_aureon_tree": "8aef927b7fe6276c187e4c73c79f0de012ad980d",
+  "pin": "e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e",
+  "pin_aureon_tree": "5f191d31561227d6f64f5b94eb1444c77c3c9e2c",
   "processes": "blocked",
   "sockets": "blocked",
   "user_dirs": {
-    "HOME": "/tmp/aureon-sweep-parent.vhA9L8/home",
-    "USERPROFILE": "/tmp/aureon-sweep-parent.vhA9L8/home",
-    "XDG_CACHE_HOME": "/tmp/aureon-sweep-parent.vhA9L8/home/.cache",
-    "XDG_CONFIG_HOME": "/tmp/aureon-sweep-parent.vhA9L8/home/.config",
-    "XDG_DATA_HOME": "/tmp/aureon-sweep-parent.vhA9L8/home/.local/share",
-    "XDG_RUNTIME_DIR": "/tmp/aureon-sweep-parent.vhA9L8/runtime",
-    "XDG_STATE_HOME": "/tmp/aureon-sweep-parent.vhA9L8/home/.local/state"
+    "HOME": "/tmp/aureon-sweep-parent.fL0f6x/home",
+    "USERPROFILE": "/tmp/aureon-sweep-parent.fL0f6x/home",
+    "XDG_CACHE_HOME": "/tmp/aureon-sweep-parent.fL0f6x/home/.cache",
+    "XDG_CONFIG_HOME": "/tmp/aureon-sweep-parent.fL0f6x/home/.config",
+    "XDG_DATA_HOME": "/tmp/aureon-sweep-parent.fL0f6x/home/.local/share",
+    "XDG_RUNTIME_DIR": "/tmp/aureon-sweep-parent.fL0f6x/runtime",
+    "XDG_STATE_HOME": "/tmp/aureon-sweep-parent.fL0f6x/home/.local/state"
   },
   "writes": "outside sandbox blocked"
 }

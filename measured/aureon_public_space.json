@@ -11,7 +11,7 @@
     "ok": true,
     "queen_call": {
       "aureon_source": {
-        "commit": "8aa6a2d971cc529484e2a5e261e28afafab4e4f4",
+        "commit": "e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e",
         "kind": "pinned"
       },
       "label": "cited. Not called.",
@@ -27,27 +27,27 @@
     "aureon_direct_url": {
       "url": "https://github.com/RA-CONSULTING/Aureon-OS.git",
       "vcs_info": {
-        "commit_id": "8aa6a2d971cc529484e2a5e261e28afafab4e4f4",
-        "requested_revision": "8aa6a2d971cc529484e2a5e261e28afafab4e4f4",
+        "commit_id": "e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e",
+        "requested_revision": "e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e",
         "vcs": "git"
       }
     },
     "aureon_file": "/tmp/aureon-public-venv/lib/python3.12/site-packages/aureon/__init__.py",
     "aureon_source": {
-      "commit": "8aa6a2d971cc529484e2a5e261e28afafab4e4f4",
+      "commit": "e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e",
       "kind": "pinned"
     },
-    "aureon_tree": "8aef927b7fe6276c187e4c73c79f0de012ad980d",
+    "aureon_tree": "5f191d31561227d6f64f5b94eb1444c77c3c9e2c",
     "auth": "bearer",
-    "code_commit": "bf95f81255de397e346391adbca26442ff01b18f",
+    "code_commit": "ad71a95d71eed7bae7da5c07a84da661a1371a11",
     "code_commit_note": "This is the parent of the commit that contains this record. The record cannot name the commit that adds the file.",
     "docker": "not installed",
     "entry": "python -m aureon_public.space",
     "mcp": "1.30.0",
     "observer_mode": "dry_run",
     "open": "unset",
-    "pin": "8aa6a2d971cc529484e2a5e261e28afafab4e4f4",
-    "pin_aureon_tree": "8aef927b7fe6276c187e4c73c79f0de012ad980d",
+    "pin": "e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e",
+    "pin_aureon_tree": "5f191d31561227d6f64f5b94eb1444c77c3c9e2c",
     "python": "/tmp/aureon-public-venv/bin/python",
     "require_pin": "1",
     "runtime": "local entry point python -m aureon_public.space; Docker is not installed on this machine"
@@ -72,7 +72,7 @@
           "listChanged": false
         }
       },
-      "instructions": "MCP lets outside models call Aureon's tools. No outside model or API becomes Aureon's reasoning. The cognition runs in Aureon's own code. This server is read-only. It does not place orders, read keys, start circulation, self-code, self-repair, or write the repository or state/. aureon_source={\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}",
+      "instructions": "MCP lets outside models call Aureon's tools. No outside model or API becomes Aureon's reasoning. The cognition runs in Aureon's own code. This server is read-only. It does not place orders, read keys, start circulation, self-code, self-repair, or write the repository or state/. aureon_source={\"commit\": \"e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e\", \"kind\": \"pinned\"}",
       "protocolVersion": "2025-11-25",
       "serverInfo": {
         "icons": null,
@@ -82,7 +82,7 @@
         "websiteUrl": null
       }
     },
-    "port": 57483,
+    "port": 47955,
     "tools_call": [
       {
         "arguments": {
@@ -95,13 +95,13 @@
             {
               "_meta": null,
               "annotations": null,
-              "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed fixture from tests/stress/stress_test_inhouse_ai.py::test_harmonic_math. Not a live market reading and not a lighthouse reading.\", \"input_source\": \"tests/stress/stress_test_inhouse_ai.py::test_harmonic_math\", \"label\": \"cited. alignment/harmonic_resonance.py consonance_score ran.\", \"provenance\": \"cited\", \"result\": 1.0, \"status\": \"cited\"}",
+              "text": "{\"aureon_source\": {\"commit\": \"e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed fixture from tests/stress/stress_test_inhouse_ai.py::test_harmonic_math. Not a live market reading and not a lighthouse reading.\", \"input_source\": \"tests/stress/stress_test_inhouse_ai.py::test_harmonic_math\", \"label\": \"cited. alignment/harmonic_resonance.py consonance_score ran.\", \"provenance\": \"cited\", \"result\": 1.0, \"status\": \"cited\"}",
               "type": "text"
             }
           ],
           "isError": false,
           "structuredContent": {
-            "result": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed fixture from tests/stress/stress_test_inhouse_ai.py::test_harmonic_math. Not a live market reading and not a lighthouse reading.\", \"input_source\": \"tests/stress/stress_test_inhouse_ai.py::test_harmonic_math\", \"label\": \"cited. alignment/harmonic_resonance.py consonance_score ran.\", \"provenance\": \"cited\", \"result\": 1.0, \"status\": \"cited\"}"
+            "result": "{\"aureon_source\": {\"commit\": \"e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e\", \"kind\": \"pinned\"}, \"called\": true, \"input_note\": \"Fixed fixture from tests/stress/stress_test_inhouse_ai.py::test_harmonic_math. Not a live market reading and not a lighthouse reading.\", \"input_source\": \"tests/stress/stress_test_inhouse_ai.py::test_harmonic_math\", \"label\": \"cited. alignment/harmonic_resonance.py consonance_score ran.\", \"provenance\": \"cited\", \"result\": 1.0, \"status\": \"cited\"}"
           }
         }
       },
@@ -118,13 +118,13 @@
             {
               "_meta": null,
               "annotations": null,
-              "text": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"provenance\": \"cited\", \"reason\": \"plan stage 4 is not open\", \"status\": \"unavailable\"}",
+              "text": "{\"aureon_source\": {\"commit\": \"e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"provenance\": \"cited\", \"reason\": \"plan stage 4 is not open\", \"status\": \"unavailable\"}",
               "type": "text"
             }
           ],
           "isError": false,
           "structuredContent": {
-            "result": "{\"aureon_source\": {\"commit\": \"8aa6a2d971cc529484e2a5e261e28afafab4e4f4\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"provenance\": \"cited\", \"reason\": \"plan stage 4 is not open\", \"status\": \"unavailable\"}"
+            "result": "{\"aureon_source\": {\"commit\": \"e0f4ba1f35bbf95ea395b4a912d3cc914e13a30e\", \"kind\": \"pinned\"}, \"label\": \"cited. Not called.\", \"provenance\": \"cited\", \"reason\": \"plan stage 4 is not open\", \"status\": \"unavailable\"}"
           }
         }
       }
@@ -3678,7 +3678,7 @@
           {
             "_meta": null,
             "annotations": null,
-            "description": "Call one public entry point from the inventory. Provenance: cited.\n\n    This runs the named function. It is not a helper. Modules and classes\n    are refused here. Operator, key, write, loop, and blocked packages are\n    not called. A checkout file is imported only when its git blob matches\n    pin 8aa6a2d9.\n\n    Args:\n        module: Inventory module path, such as harmonic/rainbow_reference.py. Label: cited.\n        symbol: Function or Class.method. Label: cited.\n        arguments_json: JSON object of keyword arguments. Empty means none. Label: cited.\n    ",
+            "description": "Call one public entry point from the inventory. Provenance: cited.\n\n    This runs the named function. It is not a helper. Modules and classes\n    are refused here. Operator, key, write, loop, and blocked packages are\n    not called. A checkout file is imported only when its git blob matches\n    pin e0f4ba1f.\n\n    Args:\n        module: Inventory module path, such as harmonic/rainbow_reference.py. Label: cited.\n        symbol: Function or Class.method. Label: cited.\n        arguments_json: JSON object of keyword arguments. Empty means none. Label: cited.\n    ",
             "execution": null,
             "icons": null,
             "inputSchema": {
@@ -3817,6 +3817,6 @@
         ]
       }
     ],
-    "url": "http://127.0.0.1:57483/mcp"
+    "url": "http://127.0.0.1:47955/mcp"
   }
 }
