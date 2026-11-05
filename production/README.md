@@ -27,4 +27,4 @@ Aureon UI is reachable: http://127.0.0.1:5173/ (HTTP 200)
 
 An existing `.env` is left alone. Credentials are not written into the repo. The installer does not place an order.
 
-`entrypoint.sh`, `Dockerfile`, `docker-compose.yml`, and `supervisord.conf` in this directory stay on the isolated hold. They are not this installer. `scripts/linux/install-linux.sh` stays on that hold as well.
+`entrypoint.sh`, `Dockerfile`, `docker-compose.yml`, and `supervisord.conf` in this directory stay on the isolated hold. They are not this installer. `scripts/linux/install-linux.sh` asks the stage 11 gate and, on this tip, still execs that isolated hold. `production/aureon.py` does the same before `production-supervisor`. Neither route is a go-live clear.
