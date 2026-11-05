@@ -1,0 +1,126 @@
+{
+  "schema": "aureon.off-hold.stage0.fingerprints.v1",
+  "purpose": "Hashes of the HOLD sources and measured files at checkout c68a89d2, before this pack was added. Later stages compare against these hashes. This stage does not edit the files.",
+  "files": [
+    {
+      "path": "reports/measured/index.json",
+      "locator": "full file at stage-0 checkout",
+      "git_blob": "7e4fb403ea940c87effbeecf614fca5781a2db58",
+      "sha256": "7481234933471ff44af7e20c1f6108d7c35a4d6806477dff5e1dd392eff9637c"
+    },
+    {
+      "path": "reports/measured/brain.json",
+      "locator": "full file at stage-0 checkout",
+      "git_blob": "fbe0c3b668e07f7cf847d0a50b340902c3c69125",
+      "sha256": "fafa3834b4c441af957f65c49540ba1880a1e879c589a30a2d0bbb7021383e0f"
+    },
+    {
+      "path": "reports/measured/brain.md",
+      "locator": "full file at stage-0 checkout",
+      "git_blob": "a89803578ea74f1907eeacbc7d6f177388d40328",
+      "sha256": "59331de231ed41b893dbc3214b8096214f071a1b5531f1bedd64b26f6b72d26b"
+    },
+    {
+      "path": "reports/measured/auris_nodes.json",
+      "locator": "full file at stage-0 checkout",
+      "git_blob": "afd9baa0258aac549d2fbf46fdd1274cd5c9b416",
+      "sha256": "e097736935e12f46aecaa595edba1eae5bb2b0dd056994b1343226a481f72720"
+    },
+    {
+      "path": "reports/measured/auris_nodes.md",
+      "locator": "full file at stage-0 checkout",
+      "git_blob": "efa0dfac14112beaf4f70764df2701f454b6c95a",
+      "sha256": "f4af0927b1e3e207148364ee0293ff2a9a7a926eba844c64cbd6f29786780f8e"
+    },
+    {
+      "path": "reports/measured/qgita_snr.json",
+      "locator": "full file at stage-0 checkout",
+      "git_blob": "fb1b75799acff11886bd2da3355ac5d3a9856441",
+      "sha256": "99c75fac8cbc12b4f775edcb5d7d9e0f458930b0a38e9c80cbded04f8f6fa43d"
+    },
+    {
+      "path": "reports/measured/qgita_snr.md",
+      "locator": "full file at stage-0 checkout",
+      "git_blob": "414171114e0cb630290b5b4ff24bc9da22f03470",
+      "sha256": "5124e9c8d74814de339203c2a5087c4d13165364fd298e878b18683d20537122"
+    },
+    {
+      "path": "reports/measured/organism.json",
+      "locator": "full file at stage-0 checkout",
+      "git_blob": "68a1573e6603e163a41899db394a061717346709",
+      "sha256": "398a0fe0a2d46c117b7de8d9fb593bd9d96b768749eae293fa0bc42ca742f8f6"
+    },
+    {
+      "path": "reports/measured/organism.md",
+      "locator": "full file at stage-0 checkout",
+      "git_blob": "95be91bb33298f1887565d3a294c38609af4f4d6",
+      "sha256": "dd1223118c51a37775a9c522350138aa5a4ae0d7f669b4b4537ac74ae3bf347f"
+    },
+    {
+      "path": "reports/measured/self_coder.json",
+      "locator": "full file at stage-0 checkout",
+      "git_blob": "e9edd0ef6df5801668dc921b46f9045e8d4a899e",
+      "sha256": "9f22194b38ba48cd73ec77cc8d403b5e9048091abdbf5d34971c05df2c30d1a3"
+    },
+    {
+      "path": "reports/measured/self_coder.md",
+      "locator": "full file at stage-0 checkout",
+      "git_blob": "064b6e722d72923a569819d2275ee62134feea99",
+      "sha256": "0aaec5eac3f49d6b4f89c1556561c8bd13094efe18024eeb656501a560a2e687"
+    },
+    {
+      "path": "evidence/RESULTS.md",
+      "locator": "full file at stage-0 checkout",
+      "git_blob": "0239db0a285ac2e68b975310d2d4be217648950f",
+      "sha256": "b6d0be7f7c3568338b6e5437cbce5847a3b2aef5bd493b592d1ca088602de4e1"
+    },
+    {
+      "path": "evidence/environment.json",
+      "locator": "full file at stage-0 checkout",
+      "git_blob": "23c0f2166af9e9f0d4500ad332a4e30d52997e98",
+      "sha256": "ed39490de053d1dfc9cf132adeecfd95211fb052f4a567f87cf37c6849507899"
+    },
+    {
+      "path": "evidence/output/claims.json",
+      "locator": "full file at stage-0 checkout",
+      "git_blob": "22d2858409096c64221efa61953654274374f28d",
+      "sha256": "721889ac18a5b06d71d7d871c411e351fdcb7b2ab2b75f0f8546dccd838c0560"
+    },
+    {
+      "path": "docs/runbooks/GO_LIVE_HARDENING.md",
+      "locator": "full file at stage-0 checkout",
+      "git_blob": "4bfaf97b6673dda1736c414e9d35637cf2f2b449",
+      "sha256": "47c99c15e58ab1e1b8632c074ac689fb187ccd669b930077cfe244dbfdc73c25"
+    },
+    {
+      "path": "docs/runbooks/PREFLIGHT_CHECKLIST.md",
+      "locator": "full file at stage-0 checkout",
+      "git_blob": "c39f5828dc71d3cac428dab9ce1cdfb645149cf9",
+      "sha256": "216109957183c8853e57459ccc499871b34f5a6bad336f16120215b33f90d0c6"
+    },
+    {
+      "path": "aureon/plumber/release_boundary_v02.py",
+      "locator": "full file at stage-0 checkout",
+      "git_blob": "85393b07054772b15d73ac99b4e72bdd7ca38426",
+      "sha256": "8691b938dc8df60e89c7360c90c24079eda259754a0ea36810cce925580e05f4"
+    },
+    {
+      "path": "mcp/aureon_public/body.py",
+      "locator": "full file at stage-0 checkout",
+      "git_blob": "298eea74b276f3651327ec9c596ac69c4899a7d0",
+      "sha256": "9d27f346708b56e849d27a3148422a69554a0f6510b943a9486da8e02b787e1e"
+    },
+    {
+      "path": "mcp/aureon_public/layers.py",
+      "locator": "full file at stage-0 checkout",
+      "git_blob": "1abb7a7910faf8581981c4435775f8c7747bf558",
+      "sha256": "618fc6b9994c6577a87a9811c98401c36ca6056ab2583b3b1204797cff6bcd26"
+    },
+    {
+      "path": "mcp/aureon_public/guard_loader.py",
+      "locator": "full file at stage-0 checkout",
+      "git_blob": "9d6dbb167d1e26beda9f5c13a44044603defd2bb",
+      "sha256": "63ab1288084187039019b17dfc47165dd4bfa16f9769f79d41281667e0dff7f0"
+    }
+  ]
+}

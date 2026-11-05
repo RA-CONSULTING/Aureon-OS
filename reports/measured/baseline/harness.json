@@ -1,0 +1,52 @@
+{
+  "schema": "aureon.off-hold.stage0.harness.v1",
+  "live_market_series_fetched": false,
+  "derived_series_read": "data/de440_timeseries.csv",
+  "derived_series_note": "Committed checkout file used by aureon.evaluation.brain_proof. Not a live market fetch.",
+  "derived_series_git_blob": "485a6f7a0c31ab92d034c1b716913c7fff1da5a8",
+  "derived_series_sha256": "3434145487dabb65913a843f0f74106a2e4f893c0255d5927b052af764573312",
+  "python_version": "3.12.3",
+  "python_full": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "numpy_version": "1.26.4",
+  "python_dotenv_version": "1.2.4",
+  "platform": "Linux-6.12.94+-x86_64-with-glibc2.39",
+  "committed_evidence_environment": {
+    "python_version": "3.12.3",
+    "numpy_version": "1.26.4",
+    "platform": "Linux-6.12.94+-x86_64-with-glibc2.39",
+    "commit_sha_recorded_in_file": "2def6909d4db323bd7650380bd5f2392023d6bc4",
+    "commit_sha_note": "make evidence allows commit_sha to differ. The byte compare excludes that field."
+  },
+  "environment_matches_committed_contract": true,
+  "evidence": {
+    "command": "make evidence",
+    "expanded": "PYTHONHASHSEED=0 PYTHONPATH=. python3 -m aureon.evidence --check",
+    "exit_code": 0,
+    "result": "evidence check: byte-for-byte match",
+    "stdout": "reports/measured/baseline/evidence_check.stdout.txt",
+    "stderr": "reports/measured/baseline/evidence_check.stderr.txt",
+    "float_tails": "reproduced; committed evidence bytes matched",
+    "stdout_preamble": "An import print ('Harmonic Fusion: Timeline Oracle WIRED') precedes the match line. It is not part of the byte contract.",
+    "stderr_warning": "aureon.trading.penny_profit_engine.thresholds hardcoded-threshold warning. The byte compare still passed."
+  },
+  "brain_proof": {
+    "module": "aureon.evaluation.brain_proof",
+    "command": "AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 PYTHONPATH=. python3 -c \"from aureon.evaluation.brain_proof import evaluate_brain, render_brain_markdown; print(render_brain_markdown(evaluate_brain()))\"",
+    "quickstart": "README.md Five-minute quickstart",
+    "exit_code": 0,
+    "matches_reports_measured_brain_json": true,
+    "rendered_markdown_found_in_stdout_and_matches_brain_md": true,
+    "stdout": "reports/measured/baseline/brain_proof.stdout.txt",
+    "stderr": "reports/measured/baseline/brain_proof.stderr.txt",
+    "summary": "reports/measured/baseline/brain_proof_summary.json",
+    "markdown": "reports/measured/baseline/brain_proof.md",
+    "float_tails": "reproduced; fresh evaluate_brain matched reports/measured/brain.json",
+    "requests_module": "missing; wisdom-engine warning only. The JSON match still held.",
+    "trade_readiness": "HOLD",
+    "qgita_rates": "HOLD",
+    "auris_joined_to_lambda": "HOLD",
+    "live_trading": false,
+    "orders_placed": false,
+    "external_llm": false
+  }
+}

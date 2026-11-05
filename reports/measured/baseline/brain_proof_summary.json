@@ -1,0 +1,32 @@
+{
+  "auris_coherence": null,
+  "auris_joined_to_lambda": {
+    "reason": "no function in the repo passes \u039b(t) into get_auris_coherence",
+    "verdict": "HOLD"
+  },
+  "auris_status": "no_data",
+  "external_llm": false,
+  "hnc_coherence": 0.7739191103121901,
+  "hnc_lambda_last": 1.1030284973375342,
+  "hnc_state": "coherent",
+  "hnc_steps": 100,
+  "hold_nodes": [],
+  "live_trading": false,
+  "matches_committed_brain_json": true,
+  "multiverse_extension": "measured",
+  "orders_placed": false,
+  "qgita_derived_detection_rate": null,
+  "qgita_derived_false_alarm_rate": null,
+  "qgita_derived_ftcp_count": 0,
+  "qgita_derived_lhe_count": 0,
+  "qgita_derived_rates_verdict": "HOLD",
+  "qgita_derived_status": "complete",
+  "qgita_on_hnc_detection_rate": null,
+  "qgita_on_hnc_false_alarm_rate": null,
+  "qgita_on_hnc_rates_verdict": "HOLD",
+  "schema": "aureon.brain-proof.v1",
+  "trade_readiness": {
+    "reason": "no market series and no trade-outcome labels",
+    "verdict": "HOLD"
+  }
+}

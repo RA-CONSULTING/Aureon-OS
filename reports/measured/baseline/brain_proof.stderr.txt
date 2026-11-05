@@ -1,0 +1,1 @@
+WARNING aureon.trading.penny_profit_engine.thresholds: 🪙 Using hardcoded penny profit thresholds

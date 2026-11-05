@@ -1,0 +1,3 @@
+⏳🔮 Harmonic Fusion: Timeline Oracle WIRED! (7-day vision)
+evidence check: byte-for-byte match
+commit_sha is not part of the byte compare

@@ -1,0 +1,108 @@
+{
+  "schema": "aureon.off-hold.stage0.pin.v1",
+  "published_pin": "34864ff0547d2cff03e707414743a3b0cc8770b5",
+  "published_pin_short": "34864ff0",
+  "pin_object_type": "commit",
+  "pin_subject": "Add fixed-seed HNC, Auris, and QGITA evidence runs (#232)",
+  "stage0_checkout": "c68a89d2a184d99582bb24310b91e024323a212c",
+  "stage0_subject": "Pin public MCP / Aureon tree to post-#232 main (#233)",
+  "stage0_tree": "5e3637100d03aabc6979f2479c1b40593907bb2c",
+  "pin_is_ancestor_of_checkout": true,
+  "shallow_clone": false,
+  "checkout_constants_name_published_pin": true,
+  "sources": [
+    {
+      "path": "mcp/aureon_public/guard_loader.py",
+      "locator": "line 23",
+      "git_blob": "9d6dbb167d1e26beda9f5c13a44044603defd2bb",
+      "sha256": "63ab1288084187039019b17dfc47165dd4bfa16f9769f79d41281667e0dff7f0",
+      "names_34864ff0": true
+    },
+    {
+      "path": "huggingface/hnc-field/guard.py",
+      "locator": "line 65",
+      "git_blob": "cd1f3003005edfde18d286157f226dd19583d7b0",
+      "sha256": "088f1aa743731ede31606d532474687770d6840a5361fe9b474e4e80ca5fe562",
+      "names_34864ff0": true
+    },
+    {
+      "path": "huggingface/auris-coherence/guard.py",
+      "locator": "line 65",
+      "git_blob": "bb89ccc6cb84be22ff7a3efe2ed8eb24a2b067c2",
+      "sha256": "3676eb7fbe7370c57049ed82bf8a461fe72349c2335ece86a70e354c13388e44",
+      "names_34864ff0": true
+    },
+    {
+      "path": "huggingface/organism-replay/guard.py",
+      "locator": "line 65",
+      "git_blob": "bb89ccc6cb84be22ff7a3efe2ed8eb24a2b067c2",
+      "sha256": "3676eb7fbe7370c57049ed82bf8a461fe72349c2335ece86a70e354c13388e44",
+      "names_34864ff0": true
+    },
+    {
+      "path": "huggingface/qgita-snr/guard.py",
+      "locator": "line 65",
+      "git_blob": "bb89ccc6cb84be22ff7a3efe2ed8eb24a2b067c2",
+      "sha256": "3676eb7fbe7370c57049ed82bf8a461fe72349c2335ece86a70e354c13388e44",
+      "names_34864ff0": true
+    },
+    {
+      "path": "mcp/aureon_public/requirements.txt",
+      "locator": "line 7",
+      "git_blob": "eea9722a87d8e891cbfb233d7d183ae347b2c604",
+      "sha256": "044d7f047c3e515000a7f13c4eaf3a8689ebc4c4abd40edb57863a601bb8c752",
+      "names_34864ff0": true
+    },
+    {
+      "path": "mcp/pyproject.toml",
+      "locator": "dependency pin",
+      "git_blob": "fd52aae7d5d2af55e2f9ba74cbafece4c7fa760d",
+      "sha256": "1d316abeac06e40aa84cf9e7019c6b9377785b274dcab62fd40b75c18b003a4c",
+      "names_34864ff0": true
+    },
+    {
+      "path": "huggingface/hnc-field/requirements.txt",
+      "locator": "line 4",
+      "git_blob": "e61d4aa1e3d0078cc6b213f88dca47572bfe7cdd",
+      "sha256": "15187b0e4ffb32c167332526b773df50f8a84f7c689dab5680f80c160bf2fbda",
+      "names_34864ff0": true
+    },
+    {
+      "path": "huggingface/auris-coherence/requirements.txt",
+      "locator": "line 4",
+      "git_blob": "e61d4aa1e3d0078cc6b213f88dca47572bfe7cdd",
+      "sha256": "15187b0e4ffb32c167332526b773df50f8a84f7c689dab5680f80c160bf2fbda",
+      "names_34864ff0": true
+    },
+    {
+      "path": "huggingface/organism-replay/requirements.txt",
+      "locator": "line 4",
+      "git_blob": "e61d4aa1e3d0078cc6b213f88dca47572bfe7cdd",
+      "sha256": "15187b0e4ffb32c167332526b773df50f8a84f7c689dab5680f80c160bf2fbda",
+      "names_34864ff0": true
+    },
+    {
+      "path": "huggingface/qgita-snr/requirements.txt",
+      "locator": "line 4",
+      "git_blob": "e61d4aa1e3d0078cc6b213f88dca47572bfe7cdd",
+      "sha256": "15187b0e4ffb32c167332526b773df50f8a84f7c689dab5680f80c160bf2fbda",
+      "names_34864ff0": true
+    }
+  ],
+  "aureon_tree_head": "3ba0cab4a5e193b01943e5e6e0be25077ff759f6",
+  "aureon_tree_pin": "3ba0cab4a5e193b01943e5e6e0be25077ff759f6",
+  "expected_pin_aureon_tree": "3ba0cab4a5e193b01943e5e6e0be25077ff759f6",
+  "aureon_tree_matches_pin": true,
+  "aureon_diff_against_pin_exit": 0,
+  "guard_blob_constant": "cd1f3003005edfde18d286157f226dd19583d7b0",
+  "guard_blob_head": "cd1f3003005edfde18d286157f226dd19583d7b0",
+  "guard_blob_inside_pin_commit": "571e1ca2c55a06a8966a2bbd0621898c6f636a91",
+  "guard_head_matches_constant": true,
+  "guard_bytes_equal_pin_commit": false,
+  "commit_string_inside_pin_guard": "ad9be6c3179bba140fb7e88d5733616046110da9",
+  "inventory_sha256_constant": "4bc19ea9b5444a7b8a9abbd3fabf635d083bd25bea6c1b2d6eab2605b4f5716b",
+  "inventory_sha256_file": "4bc19ea9b5444a7b8a9abbd3fabf635d083bd25bea6c1b2d6eab2605b4f5716b",
+  "inventory_matches_constant": true,
+  "open_plan_through": 2,
+  "note": "Checkout c68a89d2 names published pin 34864ff0 in PINNED_COMMIT, each Space guard COMMIT, and the public MCP requirements. The aureon/ tree at that checkout equals the aureon/ tree inside 34864ff0. Inside commit 34864ff0 itself those constants still name the previous pin ad9be6c3179bba140fb7e88d5733616046110da9. Commit c68a89d2 is the retarget onto 34864ff0. GUARD_BLOB matches the checkout guard.py. It does not match the blob of guard.py inside the pin commit, because that file still carries the previous COMMIT string. The loader checks the constant bytes; it is not a path lookup inside PINNED_COMMIT. This stage does not move the pin."
+}
