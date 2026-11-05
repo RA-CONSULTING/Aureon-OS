@@ -1,5 +1,7 @@
 {
   "schema": "aureon.off-hold.stage0.pin.v1",
+  "record_status": "historical",
+  "published_require_pin_now": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
   "published_pin": "34864ff0547d2cff03e707414743a3b0cc8770b5",
   "published_pin_short": "34864ff0",
   "pin_object_type": "commit",
@@ -104,5 +106,5 @@
   "inventory_sha256_file": "4bc19ea9b5444a7b8a9abbd3fabf635d083bd25bea6c1b2d6eab2605b4f5716b",
   "inventory_matches_constant": true,
   "open_plan_through": 2,
-  "note": "Checkout c68a89d2 names published pin 34864ff0 in PINNED_COMMIT, each Space guard COMMIT, and the public MCP requirements. The aureon/ tree at that checkout equals the aureon/ tree inside 34864ff0. Inside commit 34864ff0 itself those constants still name the previous pin ad9be6c3179bba140fb7e88d5733616046110da9. Commit c68a89d2 is the retarget onto 34864ff0. GUARD_BLOB matches the checkout guard.py. It does not match the blob of guard.py inside the pin commit, because that file still carries the previous COMMIT string. The loader checks the constant bytes; it is not a path lookup inside PINNED_COMMIT. This stage does not move the pin."
+  "note": "Historical measurement. The published require-pin is now bb04503119681adcf832f3c3e9b0cbf09fc7a938. Checkout c68a89d2 names published pin 34864ff0 in PINNED_COMMIT, each Space guard COMMIT, and the public MCP requirements. The aureon/ tree at that checkout equals the aureon/ tree inside 34864ff0. Inside commit 34864ff0 itself those constants still name the previous pin ad9be6c3179bba140fb7e88d5733616046110da9. Commit c68a89d2 is the retarget onto 34864ff0. GUARD_BLOB matches the checkout guard.py. It does not match the blob of guard.py inside the pin commit, because that file still carries the previous COMMIT string. The loader checks the constant bytes; it is not a path lookup inside PINNED_COMMIT. This stage does not move the pin."
 }

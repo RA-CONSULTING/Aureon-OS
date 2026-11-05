@@ -37,6 +37,7 @@ def build_claims(
     auris: dict[str, Any],
     qgita: dict[str, Any],
     anchor: dict[str, Any] | None = None,
+    next_anchor: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     formula = hnc["formula"]
     multiverse = hnc["multiverse"]
@@ -168,22 +169,47 @@ def build_claims(
                     f"{anchor['measurement']['formula_series_sha256']} "
                     f"to RFC 3161 anchor {anchor['anchor_id']} at {external['gen_time']}. "
                     f"Sequence {anchor['sequence']}. "
-                    f"Public require-pin {anchor['public_require_pin']} is unchanged. "
+                    f"The timestamp records historical public pin {anchor['public_require_pin']}. "
+                    f"The published require-pin is {anchor['published_require_pin']}. "
+                    "go_live_clear stays false. "
                     "The run does not report the system alive, does not place an order, and leaves go-live HOLD."
                 ),
             )
         )
         if anchor["hnc_identity_changed"]:
             identity = (
-                "The measured formula series differs from the series recorded at the public pin. "
-                "AUREON_PUBLIC_REQUIRE_PIN was not moved."
+                "The measured formula series differs from the series recorded for historical pin "
+                f"{anchor['public_require_pin']}. The published require-pin is "
+                f"{anchor['published_require_pin']}."
             )
         else:
             identity = (
-                "The measured formula series sha256 matches the series recorded for public pin "
-                f"{anchor['public_require_pin']}, so this receipt does not publish a new HNC identity."
+                "The measured formula series sha256 matches the series recorded for historical public pin "
+                f"{anchor['public_require_pin']}. The published require-pin is "
+                f"{anchor['published_require_pin']}. This receipt does not publish a new HNC identity."
             )
         claims.append(_claim("hnc.head_anchor.identity", "inferred", identity))
+    if next_anchor is not None:
+        nxt = next_anchor["external"]
+        claims.append(
+            _claim(
+                "hnc.head_anchor.next",
+                "measured",
+                (
+                    "Receipt 3 follow-on binds sequence "
+                    f"{next_anchor['sequence']} to RFC 3161 anchor {next_anchor['anchor_id']} "
+                    f"at {nxt['gen_time']}. prev_anchor_id is {next_anchor['prev_anchor_id']}. "
+                    f"Sequence 1 gen_time is {next_anchor['previous_gen_time']}. "
+                    "The verified gen_time is strictly later. "
+                    "external_head_anchor_attested stays false. "
+                    f"The timestamp records historical public pin {next_anchor['public_require_pin']}. "
+                    f"The published require-pin is {next_anchor['published_require_pin']}. "
+                    "go_live_clear stays false. "
+                    "The run does not report the system alive, does not place an order, "
+                    "and leaves go-live HOLD."
+                ),
+            )
+        )
 
     claims.append(
         _claim(
@@ -376,9 +402,12 @@ def _anchor_lines(anchor: dict[str, Any] | None) -> list[str]:
                 ["previous head", anchor["prev_anchor_id"]],
                 ["git note", anchor["note_ref"]],
                 ["formula series sha256", anchor["measurement"]["formula_series_sha256"]],
-                ["public require-pin", anchor["public_require_pin"]],
+                ["recorded public pin", anchor["public_require_pin"]],
+                ["recorded pin status", anchor["recorded_pin_status"]],
+                ["published require-pin", anchor["published_require_pin"]],
                 ["HNC identity changed", anchor["hnc_identity_changed"]],
                 ["go-live", anchor["go_live"]],
+                ["go-live clear", anchor["go_live_clear"]],
                 ["system alive", anchor["system_alive"]],
                 ["orders placed", anchor["orders_placed"]],
             ],
@@ -392,6 +421,54 @@ def _anchor_lines(anchor: dict[str, Any] | None) -> list[str]:
     ]
 
 
+def _next_anchor_lines(anchor: dict[str, Any] | None) -> list[str]:
+    if anchor is None:
+        return []
+    external = anchor["external"]
+    ordering = "yes" if external["tsa_ordering"] else "no"
+    return [
+        "## HNC next head",
+        "",
+        "Receipt 3 follow-on. Sequence 2 of the same fixed-seed formula series. "
+        "It is not a go-live clearance, it does not set external_head_anchor_attested, "
+        "and it does not say the system is alive.",
+        "",
+        _table(
+            ["item", "value"],
+            [
+                ["tag", anchor["tag"]],
+                ["sequence", anchor["sequence"]],
+                ["anchor id", anchor["anchor_id"]],
+                ["previous anchor", anchor["prev_anchor_id"]],
+                ["previous gen time", anchor["previous_gen_time"]],
+                ["gen time", external["gen_time"]],
+                ["provider", external["provider"]],
+                ["policy", external["policy_oid"]],
+                ["serial", external["serial_hex"]],
+                ["TSA ordering flag", ordering],
+                ["git note", anchor["note_ref"]],
+                ["formula series sha256", anchor["measurement"]["formula_series_sha256"]],
+                ["recorded public pin", anchor["public_require_pin"]],
+                ["recorded pin status", anchor["recorded_pin_status"]],
+                ["published require-pin", anchor["published_require_pin"]],
+                ["HNC identity changed", anchor["hnc_identity_changed"]],
+                ["external head anchor attested", anchor["external_head_anchor_attested"]],
+                ["go-live", anchor["go_live"]],
+                ["go-live clear", anchor["go_live_clear"]],
+                ["system alive", anchor["system_alive"]],
+                ["orders placed", anchor["orders_placed"]],
+            ],
+        ),
+        "",
+        "The next anchor id is the SHA-256 of a second RFC 3161 token. "
+        "That token is the git note refs/notes/aureon-hnc-head-next on HEAD. "
+        "Sequence 1 stays on refs/notes/aureon-hnc-head. "
+        "`make evidence` verifies both locally and does not contact the timestamp authority. "
+        "A working-tree edit does not move either note.",
+        "",
+    ]
+
+
 def render_results(
     hnc: dict[str, Any],
     auris: dict[str, Any],
@@ -399,6 +476,7 @@ def render_results(
     claims: list[dict[str, Any]],
     environment: dict[str, Any],
     anchor: dict[str, Any] | None = None,
+    next_anchor: dict[str, Any] | None = None,
 ) -> str:
     formula = hnc["formula"]
     multiverse = hnc["multiverse"]
@@ -424,17 +502,21 @@ def render_results(
         "That target runs `PYTHONHASHSEED=0 PYTHONPATH=. python3 -m aureon.evidence --check`. "
         "The check rebuilds every committed output and requires the bytes to match, including "
         "`evidence/output/hnc_head_anchor.json`, `evidence/output/hnc_head_anchor.id`, and "
-        "`evidence/output/hnc_head_anchor.tsr.b64`. "
+        "`evidence/output/hnc_head_anchor.tsr.b64`, and the sequence 2 files "
+        "`evidence/output/hnc_head_next.json`, `evidence/output/hnc_head_next.id`, and "
+        "`evidence/output/hnc_head_next.tsr.b64`. "
         "`evidence/environment.json` is included, except the field `commit_sha`, which is "
         "`git rev-parse HEAD` at run time and is allowed to differ. "
-        "The timestamp token is read from the git note `refs/notes/aureon-hnc-head` on HEAD. "
-        "Fetch it with `git fetch origin refs/notes/aureon-hnc-head:refs/notes/aureon-hnc-head` "
-        "when a clone does not have that ref. "
+        "Sequence 1 is read from the git note `refs/notes/aureon-hnc-head` on HEAD. "
+        "Sequence 2 is read from `refs/notes/aureon-hnc-head-next` on HEAD. "
+        "Fetch them with `git fetch origin refs/notes/aureon-hnc-head:refs/notes/aureon-hnc-head` "
+        "and `git fetch origin refs/notes/aureon-hnc-head-next:refs/notes/aureon-hnc-head-next` "
+        "when a clone does not have those refs. "
         "There is no numeric tolerance. The match is for the Python, NumPy, and platform recorded below.",
         "",
         "Dependencies used by the imported implementations: NumPy, and `python-dotenv` because "
         "`QueenHiveMind` imports it. This command does not install packages and does not call a network API. "
-        "The HNC head token was requested once and is checked locally.",
+        "Each HNC head token was requested once and is checked locally.",
         "",
         "## Recorded environment",
         "",
@@ -533,6 +615,7 @@ def render_results(
         ),
         "",
         *_anchor_lines(anchor),
+        *_next_anchor_lines(next_anchor),
         "## Auris",
         "",
         _table(

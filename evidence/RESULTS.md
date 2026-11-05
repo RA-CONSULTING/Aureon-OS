@@ -10,9 +10,9 @@ The run calls `HarmonicRealityField.step`, `QueenHiveMind.get_auris_coherence`, 
 make evidence
 ```
 
-That target runs `PYTHONHASHSEED=0 PYTHONPATH=. python3 -m aureon.evidence --check`. The check rebuilds every committed output and requires the bytes to match, including `evidence/output/hnc_head_anchor.json`, `evidence/output/hnc_head_anchor.id`, and `evidence/output/hnc_head_anchor.tsr.b64`. `evidence/environment.json` is included, except the field `commit_sha`, which is `git rev-parse HEAD` at run time and is allowed to differ. The timestamp token is read from the git note `refs/notes/aureon-hnc-head` on HEAD. Fetch it with `git fetch origin refs/notes/aureon-hnc-head:refs/notes/aureon-hnc-head` when a clone does not have that ref. There is no numeric tolerance. The match is for the Python, NumPy, and platform recorded below.
+That target runs `PYTHONHASHSEED=0 PYTHONPATH=. python3 -m aureon.evidence --check`. The check rebuilds every committed output and requires the bytes to match, including `evidence/output/hnc_head_anchor.json`, `evidence/output/hnc_head_anchor.id`, and `evidence/output/hnc_head_anchor.tsr.b64`, and the sequence 2 files `evidence/output/hnc_head_next.json`, `evidence/output/hnc_head_next.id`, and `evidence/output/hnc_head_next.tsr.b64`. `evidence/environment.json` is included, except the field `commit_sha`, which is `git rev-parse HEAD` at run time and is allowed to differ. Sequence 1 is read from the git note `refs/notes/aureon-hnc-head` on HEAD. Sequence 2 is read from `refs/notes/aureon-hnc-head-next` on HEAD. Fetch them with `git fetch origin refs/notes/aureon-hnc-head:refs/notes/aureon-hnc-head` and `git fetch origin refs/notes/aureon-hnc-head-next:refs/notes/aureon-hnc-head-next` when a clone does not have those refs. There is no numeric tolerance. The match is for the Python, NumPy, and platform recorded below.
 
-Dependencies used by the imported implementations: NumPy, and `python-dotenv` because `QueenHiveMind` imports it. This command does not install packages and does not call a network API. The HNC head token was requested once and is checked locally.
+Dependencies used by the imported implementations: NumPy, and `python-dotenv` because `QueenHiveMind` imports it. This command does not install packages and does not call a network API. Each HNC head token was requested once and is checked locally.
 
 ## Recorded environment
 
@@ -67,13 +67,46 @@ Receipt 3 only. This is a measured binding of the fixed-seed formula series. It 
 | previous head | dfcdb9ee381a7ffe511da7d621df739884ea74c3fd4c9790069f5d584478291c |
 | git note | refs/notes/aureon-hnc-head |
 | formula series sha256 | 0a69c024c3a7b849857314ef710f11439eb13a30cd7c45f05429becea574f5c2 |
-| public require-pin | 34864ff0547d2cff03e707414743a3b0cc8770b5 |
+| recorded public pin | 34864ff0547d2cff03e707414743a3b0cc8770b5 |
+| recorded pin status | historical |
+| published require-pin | bb04503119681adcf832f3c3e9b0cbf09fc7a938 |
 | HNC identity changed | false |
 | go-live | HOLD |
+| go-live clear | false |
 | system alive | false |
 | orders placed | false |
 
 The anchor id is the SHA-256 of the RFC 3161 token. The same token bytes are the git note on HEAD. `make evidence` requires those bytes and does not contact the timestamp authority. A working-tree edit does not move the note.
+
+## HNC next head
+
+Receipt 3 follow-on. Sequence 2 of the same fixed-seed formula series. It is not a go-live clearance, it does not set external_head_anchor_attested, and it does not say the system is alive.
+
+| item | value |
+| --- | --- |
+| tag | measured |
+| sequence | 2 |
+| anchor id | e02c59279b46e912a08b1add73f44b82970f535676d0011a3bcb769dfba68784 |
+| previous anchor | 548596463d7b4dddeeba274562b212960f879baf475ee135c7d2fd3468f58e11 |
+| previous gen time | 2026-11-05T19:40:18Z |
+| gen time | 2026-11-05T20:44:49Z |
+| provider | http://timestamp.digicert.com |
+| policy | 2.16.840.1.114412.7.1 |
+| serial | 440da40635433708f26fb41ac8da2f71 |
+| TSA ordering flag | no |
+| git note | refs/notes/aureon-hnc-head-next |
+| formula series sha256 | 0a69c024c3a7b849857314ef710f11439eb13a30cd7c45f05429becea574f5c2 |
+| recorded public pin | 34864ff0547d2cff03e707414743a3b0cc8770b5 |
+| recorded pin status | historical |
+| published require-pin | bb04503119681adcf832f3c3e9b0cbf09fc7a938 |
+| HNC identity changed | false |
+| external head anchor attested | false |
+| go-live | HOLD |
+| go-live clear | false |
+| system alive | false |
+| orders placed | false |
+
+The next anchor id is the SHA-256 of a second RFC 3161 token. That token is the git note refs/notes/aureon-hnc-head-next on HEAD. Sequence 1 stays on refs/notes/aureon-hnc-head. `make evidence` verifies both locally and does not contact the timestamp authority. A working-tree edit does not move either note.
 
 ## Auris
 
@@ -149,8 +182,9 @@ Measured: a figure this run computed. Inferred: a comparison or a reading of the
 | hnc.formula.nyquist | measured | true | Every substrate mode is strictly below the Nyquist rate 963.5 Hz. The rate used is 1927 Hz (requested 1927). That rate is floor(2 * highest mode) + 1 when the request would not already clear Nyquist. |
 | hnc.multiverse.seeds | inferred | true | The class-default multiverse path is unchanged across the recorded seeds and a repeat. |
 | hnc.multiverse.versus_formula | measured | true | Maximum absolute difference between the seed-0 formula series and the seed-0 multiverse series is 6.23589. Multiverse coherence 0.843088, state coherent. |
-| hnc.head_anchor | measured | true | Receipt 3 binds the formula-path series sha256 0a69c024c3a7b849857314ef710f11439eb13a30cd7c45f05429becea574f5c2 to RFC 3161 anchor 548596463d7b4dddeeba274562b212960f879baf475ee135c7d2fd3468f58e11 at 2026-11-05T19:40:18Z. Sequence 1. Public require-pin 34864ff0547d2cff03e707414743a3b0cc8770b5 is unchanged. The run does not report the system alive, does not place an order, and leaves go-live HOLD. |
-| hnc.head_anchor.identity | inferred | true | The measured formula series sha256 matches the series recorded for public pin 34864ff0547d2cff03e707414743a3b0cc8770b5, so this receipt does not publish a new HNC identity. |
+| hnc.head_anchor | measured | true | Receipt 3 binds the formula-path series sha256 0a69c024c3a7b849857314ef710f11439eb13a30cd7c45f05429becea574f5c2 to RFC 3161 anchor 548596463d7b4dddeeba274562b212960f879baf475ee135c7d2fd3468f58e11 at 2026-11-05T19:40:18Z. Sequence 1. The timestamp records historical public pin 34864ff0547d2cff03e707414743a3b0cc8770b5. The published require-pin is bb04503119681adcf832f3c3e9b0cbf09fc7a938. go_live_clear stays false. The run does not report the system alive, does not place an order, and leaves go-live HOLD. |
+| hnc.head_anchor.identity | inferred | true | The measured formula series sha256 matches the series recorded for historical public pin 34864ff0547d2cff03e707414743a3b0cc8770b5. The published require-pin is bb04503119681adcf832f3c3e9b0cbf09fc7a938. This receipt does not publish a new HNC identity. |
+| hnc.head_anchor.next | measured | true | Receipt 3 follow-on binds sequence 2 to RFC 3161 anchor e02c59279b46e912a08b1add73f44b82970f535676d0011a3bcb769dfba68784 at 2026-11-05T20:44:49Z. prev_anchor_id is 548596463d7b4dddeeba274562b212960f879baf475ee135c7d2fd3468f58e11. Sequence 1 gen_time is 2026-11-05T19:40:18Z. The verified gen_time is strictly later. external_head_anchor_attested stays false. The timestamp records historical public pin 34864ff0547d2cff03e707414743a3b0cc8770b5. The published require-pin is bb04503119681adcf832f3c3e9b0cbf09fc7a938. go_live_clear stays false. The run does not report the system alive, does not place an order, and leaves go-live HOLD. |
 | auris.dependency | measured | true | Input-guard checks 0 mismatches out of 567 node readings. |
 | auris.coherence_versus_null | inferred | true | Numeric coherence was returned on 55 cases. Status matched the null input on 8 of 63 cases. |
 | auris.nodes_without_readings | measured | true | Nodes with no numeric reading on any case: none. Cases with a numeric coherence: 55 of 63. get_auris_coherence still returns no_data when any required input is missing. |
