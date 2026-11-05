@@ -6,9 +6,11 @@ A clone of this repository is the organism. Setup and the master launcher do not
 scripts/launch/aureon-master.sh
 ```
 
-Windows: `scripts/launch/aureon-master.ps1` and `scripts/launch/aureon-master.bat`.
+Windows organism launcher: `scripts/launch/aureon-master.ps1` and `scripts/launch/aureon-master.bat`.
 
-What that entry does on a machine that has never seen this tree:
+Windows guarded smoke (live trading off, `.env` unread, release boundary **HOLD**): `install.cmd --smoke`. That path is separate from the organism launcher. The procedure is in [Windows guarded smoke](#windows-guarded-smoke) and [`docs/windows/GUARDED_SMOKE.md`](docs/windows/GUARDED_SMOKE.md).
+
+What the organism launcher does on a machine that has never seen this tree:
 
 1. If `.env` is absent, it copies `.env.example` and applies a safe overlay. The template's secret lines are blank placeholder names (Charlie rule: never a real key value). The copy does not assign the live-trading switch. It ships `AUREON_DISABLE_REAL_ORDERS=1`, `AUREON_DRY_RUN=1`, `DRY_RUN=1`, `ALPACA_PAPER=true`, and `CAPITAL_DEMO` / `CAPITAL_DEMO_MODE` on demo. Those disable and dry-run lines are the file's values. They are not a lock. When autonomy is full and a complete exchange key group is present, the launcher's last write overrides those disable and dry-run flags. That is a full+keyed master boot. Exchange keys in `.env` make that boot live. A blank root `.env` is not the only source: a complete key group in the inherited shell, or in `aureon_radar/.env`, arms the same boot. QuickBooks mutation stays `false` and the environment stays `sandbox`. Empty keys in the copy stay empty. An existing `.env` is not rewritten and is not committed. The three postures are in [`docs/PUBLIC_ENV.md`](docs/PUBLIC_ENV.md).
 2. `SERO_WORKSPACE` for every child is the checkout being launched. It is not written into `.env`, so moving the checkout does not leave a stale absolute path behind.
@@ -41,7 +43,7 @@ Windows. This host's Docker engine is Linux. One attempt:
 docker run --rm --platform windows/amd64 mcr.microsoft.com/windows/nanoserver:ltsc2022
 ```
 
-The daemon pulled the image and refused to start it: `unable to find user ContainerUser: no matching entries in passwd file` (exit 125). A Windows container cannot run here. Path logic for Windows is still covered by the repo-relative `Path(__file__)` / `SERO_WORKSPACE` resolution, which does not name a profile. The shell wrappers remain `scripts/launch/aureon-master.ps1` and `aureon-master.bat`.
+The daemon pulled the image and refused to start it: `unable to find user ContainerUser: no matching entries in passwd file` (exit 125). A Windows container cannot run here. Path logic for Windows is still covered by the repo-relative `Path(__file__)` / `SERO_WORKSPACE` resolution, which does not name a profile. The shell wrappers for the organism launcher remain `scripts/launch/aureon-master.ps1` and `aureon-master.bat`. The guarded stack for a Windows stranger is `install.cmd`, in the section below. This host did not execute that smoke. Supported go-live stays **HOLD**.
 
 ## What still names a machine
 
@@ -61,4 +63,29 @@ These are not consulted as the launcher's host path. They stay because rewriting
 | `aureon/autonomous/aureon_agent_core.py` | Windows disk usage is `C:\`, the system drive, not a profile. |
 | `aureon/trading/bounded_binance_roundtrip.py`, `aureon/autonomous/aureon_coding_capability_unblocker.py` | The name "Gary Leckey" is an identity check in those modules, not a filesystem path. |
 
-Hosted CI and GitHub Actions are not part of this path. A billing lock on the forge does not gate a local start.
+Hosted CI and GitHub Actions are not part of the organism-launcher path. A billing lock on the forge does not gate a local start.
+
+## Windows guarded smoke
+
+A Windows machine that has never seen this tree can boot the same local stack as `./install.sh` without the organism launcher. From the checkout, in Command Prompt or PowerShell:
+
+```bat
+install.cmd --smoke
+```
+
+`powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 --smoke` is the same command. `install.cmd` sets `ExecutionPolicy Bypass` for that process only. The step-by-step page is [`docs/windows/GUARDED_SMOKE.md`](docs/windows/GUARDED_SMOKE.md).
+
+What that command does:
+
+1. Requires Python 3.11 or newer (`py -3`, otherwise `python`) and Node.js 20 or newer, already on `PATH`. Python and Node stay the operator's to install. winget stays outside this command.
+2. Creates `.venv` when `.venv\Scripts\python.exe` is absent, then installs `requirements-plug.lock`. The organism launcher stays out of this command.
+3. Runs `npm ci --ignore-scripts --prefix frontend` when `frontend\node_modules\vite\bin\vite.js` is absent.
+4. Starts `scripts\plug_and_play.py`. That supervisor sets `AUREON_AUTONOMY_MODE=guarded`, `AUREON_LIVE_TRADING=0`, and `AUREON_LLM_OFFLINE=1`, strips credential-shaped variables, and leaves `.env` unread. An existing `.env` stays on disk, unmodified. Exchange keys stay unset for this process.
+5. `--smoke` requests the local endpoints and then stops. `--stop` stops a stack this supervisor recorded. With no flags the stack stays up until `--stop`.
+
+On Windows the supervisor starts each child in its own process group and stops the tree with `taskkill /T`, then `taskkill /F /T`. The dashboard command is `node frontend\node_modules\vite\bin\vite.js`. POSIX still uses `start_new_session`, `os.killpg`, and `frontend/node_modules/.bin/vite`. `install.sh` is unchanged.
+
+`production\Install-AUREON.ps1` is a different installer. It can write `.env` and it calls the organism launcher. A complete exchange key group in `.env` can make that boot live. The guarded smoke command is `install.cmd`.
+
+Supported go-live stays **HOLD**. A log line `SMOKE PASSED` means the guarded local stack answered. Receipts 2–5 in [`docs/runbooks/GO_LIVE_HARDENING.md`](docs/runbooks/GO_LIVE_HARDENING.md) stay open. This checkout was prepared on Linux. It did not start a Windows container, and it did not execute `install.cmd --smoke`. The tests check the script contract. `.github/workflows/windows-contract.yml` parses `install.ps1` on `windows-latest` and runs those tests. That parse is not a smoke of the stack.
+
