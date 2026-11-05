@@ -1,0 +1,48 @@
+{
+  "bind_default": "127.0.0.1",
+  "can_pay": "not_queried",
+  "charlie_gate": "public Space and public listener need Gary's own yes; sign-in was not performed",
+  "dataset": "fixed-seed-reproducible-runs",
+  "decision": "HOLD",
+  "deploy_attempted": false,
+  "flavor": "cpu-basic",
+  "gary_yes": false,
+  "git_head_at_measurement": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
+  "go_live": "HOLD",
+  "go_live_clear": false,
+  "gradio_share": false,
+  "hf_cli": "absent",
+  "hf_org_present": false,
+  "is_pro": "not_queried",
+  "live_trading": false,
+  "measured_at": "2026-11-05T20:43:13Z",
+  "missing": [
+    "HF_TOKEN",
+    "GARY_YES"
+  ],
+  "orange_badge": "unchanged",
+  "orders_placed": false,
+  "pin_moved": false,
+  "pro_required": false,
+  "pro_status": "not_queried",
+  "public_listener_opened": false,
+  "public_require_pin": "34864ff0547d2cff03e707414743a3b0cc8770b5",
+  "reason": "HOLD-skip. Missing token: HF_TOKEN (also checked HUGGING_FACE_HUB_TOKEN). PRO was not queried. No sign-in was performed. This scaffold selects cpu-basic and does not select ZeroGPU, so a PRO plan is not required for these files. A Hub response that requires PRO stays HOLD. Gary's own yes was not set (AUREON_HF_GARY_YES). Charlie gate: a public Space and a public listener need that yes. Deploy was not attempted. The Space is not live. Go-live: HOLD.",
+  "schema": "aureon.hf_space.distribution.v1",
+  "sign_in_attempted": false,
+  "space_live": false,
+  "spaces": [
+    "hnc-field",
+    "auris-coherence",
+    "qgita-snr",
+    "organism-replay"
+  ],
+  "tag": "hold-skip",
+  "token_names_checked": [
+    "HF_TOKEN",
+    "HUGGING_FACE_HUB_TOKEN"
+  ],
+  "token_present": false,
+  "token_value_recorded": false,
+  "visibility_selected": "private"
+}

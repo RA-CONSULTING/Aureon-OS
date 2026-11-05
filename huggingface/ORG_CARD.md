@@ -12,7 +12,7 @@ QGITA detection rates: **HOLD**.
 Schumann f0: **null**. **HOLD**.
 HumanEval: **not run**.
 
-This card makes no track-record, return, or performance claim. Spaces do not contact an exchange and do not place orders.
+This card makes no track-record, return, or performance claim. Spaces do not contact an exchange and do not place orders. The Spaces are a local scaffold. They are not live. Go-live: **HOLD**.
 
 Dataset: `fixed-seed-reproducible-runs`.
 Spaces: `hnc-field`, `auris-coherence`, `qgita-snr`, `organism-replay`.
