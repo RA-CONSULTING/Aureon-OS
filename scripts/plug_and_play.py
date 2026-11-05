@@ -7,6 +7,10 @@ stack health server. The health server's ``/api/cognition`` runs
 No ``.env`` is read. Exchange keys and model keys are removed from the child
 environment. ``AUREON_AUTONOMY_MODE=guarded`` keeps live trading off.
 ``AUREON_LLM_OFFLINE=1`` keeps the operator off external model HTTP.
+
+POSIX children use a new session and ``os.killpg``. Windows children use a
+new process group and ``taskkill``. ``install.cmd`` is the Windows entry.
+Supported go-live stays HOLD.
 """
 
 from __future__ import annotations
@@ -42,6 +46,8 @@ STACK_URL = f"http://127.0.0.1:{STACK_PORT}"
 _SENSITIVE_PARTS = ("KEY", "SECRET", "TOKEN", "PASSWORD", "CREDENTIAL", "PASSWD")
 _CHILDREN: dict[str, subprocess.Popen[bytes]] = {}
 _STOPPING = False
+# 0x00000200. Linux CPython does not export this Windows creation flag.
+_CREATE_NEW_PROCESS_GROUP = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0x00000200)
 
 
 def _sensitive(name: str) -> bool:
@@ -317,6 +323,112 @@ def make_handler() -> type[BaseHTTPRequestHandler]:
     return Handler
 
 
+def _platform(platform: str | None) -> str:
+    return os.name if platform is None else platform
+
+
+def _popen_session_kwargs(platform: str | None = None) -> dict[str, Any]:
+    """Process-group flags. POSIX stays on ``start_new_session``."""
+
+    if _platform(platform) == "nt":
+        return {"creationflags": _CREATE_NEW_PROCESS_GROUP}
+    return {"start_new_session": True}
+
+
+def _stop_command(platform: str | None = None) -> str:
+    if _platform(platform) == "nt":
+        return r".\install.ps1 --stop"
+    return "./install.sh --stop"
+
+
+def _frontend_argv(platform: str | None = None) -> list[str]:
+    """Dashboard command. POSIX keeps the npm shim. Windows runs vite.js."""
+
+    if _platform(platform) == "nt":
+        vite_js = ROOT / "frontend" / "node_modules" / "vite" / "bin" / "vite.js"
+        if not vite_js.is_file():
+            raise SystemExit(f"dashboard binary missing: {vite_js}")
+        return [
+            "node",
+            str(vite_js),
+            "--host",
+            "127.0.0.1",
+            "--port",
+            str(FRONTEND_PORT),
+        ]
+    vite = ROOT / "frontend" / "node_modules" / ".bin" / "vite"
+    if not vite.is_file():
+        raise SystemExit(f"dashboard binary missing: {vite}")
+    return [str(vite), "--host", "127.0.0.1", "--port", str(FRONTEND_PORT)]
+
+
+def _tasklist_lists_pid(stdout: str, number: int) -> bool:
+    """True when ``tasklist /FO CSV`` names this pid in the second column."""
+
+    for line in stdout.splitlines():
+        fields = line.split('","')
+        if len(fields) >= 2 and fields[1] == str(number):
+            return True
+    return False
+
+
+def _taskkill(number: int, *, force: bool) -> None:
+    command = ["taskkill", "/T", "/PID", str(number)]
+    if force:
+        command.insert(1, "/F")
+    try:
+        subprocess.run(command, capture_output=True, check=False)
+    except OSError:
+        return
+
+
+def _windows_pid_alive(number: int) -> bool:
+    try:
+        result = subprocess.run(
+            ["tasklist", "/FI", f"PID eq {number}", "/FO", "CSV", "/NH"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except OSError:
+        return True
+    return _tasklist_lists_pid(result.stdout or "", number)
+
+
+def _stop_windows_pids(seen: set[int]) -> None:
+    for number in seen:
+        _taskkill(number, force=False)
+    time.sleep(0.4)
+    for number in seen:
+        if _windows_pid_alive(number) is False:
+            continue
+        _taskkill(number, force=True)
+
+
+def _stop_posix_pids(seen: set[int]) -> None:
+    for number in seen:
+        try:
+            os.killpg(number, signal.SIGTERM)
+        except OSError:
+            try:
+                os.kill(number, signal.SIGTERM)
+            except OSError:
+                pass
+    time.sleep(0.4)
+    for number in seen:
+        try:
+            os.kill(number, 0)
+        except OSError:
+            continue
+        try:
+            os.killpg(number, signal.SIGKILL)
+        except OSError:
+            try:
+                os.kill(number, signal.SIGKILL)
+            except OSError:
+                pass
+
+
 def _spawn(name: str, cmd: list[str], env: dict[str, str], cwd: Path) -> subprocess.Popen[bytes]:
     RUNTIME.mkdir(parents=True, exist_ok=True)
     log_path = RUNTIME / f"{name}.log"
@@ -327,15 +439,13 @@ def _spawn(name: str, cmd: list[str], env: dict[str, str], cwd: Path) -> subproc
         env=env,
         stdout=handle,
         stderr=subprocess.STDOUT,
-        start_new_session=True,
+        **_popen_session_kwargs(),
     )
     return proc
 
 
 def start_children() -> dict[str, int]:
-    vite = ROOT / "frontend" / "node_modules" / ".bin" / "vite"
-    if not vite.is_file():
-        raise SystemExit(f"dashboard binary missing: {vite}")
+    frontend_cmd = _frontend_argv()
     env = process_env()
     _CHILDREN["operator"] = _spawn(
         "operator",
@@ -361,7 +471,7 @@ def start_children() -> dict[str, int]:
     )
     _CHILDREN["frontend"] = _spawn(
         "frontend",
-        [str(vite), "--host", "127.0.0.1", "--port", str(FRONTEND_PORT)],
+        frontend_cmd,
         env,
         ROOT / "frontend",
     )
@@ -391,26 +501,10 @@ def stop_children() -> None:
         if number in seen or number <= 0:
             continue
         seen.add(number)
-        try:
-            os.killpg(number, signal.SIGTERM)
-        except OSError:
-            try:
-                os.kill(number, signal.SIGTERM)
-            except OSError:
-                pass
-    time.sleep(0.4)
-    for number in seen:
-        try:
-            os.kill(number, 0)
-        except OSError:
-            continue
-        try:
-            os.killpg(number, signal.SIGKILL)
-        except OSError:
-            try:
-                os.kill(number, signal.SIGKILL)
-            except OSError:
-                pass
+    if os.name == "nt":
+        _stop_windows_pids(seen)
+    else:
+        _stop_posix_pids(seen)
     if PIDS.is_file():
         PIDS.unlink()
     if PIDFILE.is_file():
@@ -610,7 +704,7 @@ def start(smoke_mode: bool) -> int:
     arm_this_process()
     RUNTIME.mkdir(parents=True, exist_ok=True)
     if PIDFILE.is_file():
-        raise SystemExit(f"stack already recorded in {PIDFILE}. Run ./install.sh --stop first.")
+        raise SystemExit(f"stack already recorded in {PIDFILE}. Run {_stop_command()} first.")
     try:
         server = ThreadingHTTPServer(("127.0.0.1", STACK_PORT), make_handler())
     except OSError as exc:

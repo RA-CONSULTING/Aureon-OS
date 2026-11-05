@@ -2,6 +2,8 @@
 
 > **New users: stay on the five-minute quickstart in the root README. Do not add your own exchange keys.** This installer calls the master launcher, which defaults to full autonomy. If exchange keys are in `.env`, that boot can go live and trade.
 
+Windows guarded smoke from the repo root is `install.cmd --smoke`. That command leaves `.env` unread and keeps live trading off. Supported go-live stays **HOLD**. The procedure is [`docs/windows/GUARDED_SMOKE.md`](../docs/windows/GUARDED_SMOKE.md). The installer in this directory is the organism launcher described below.
+
 `install.sh` is the Linux and macOS installer. `Install-AUREON.ps1` is the Windows installer. `install-windows.bat` and `Install-AUREON-Windows.bat` call that PowerShell script. Re-running any of them is safe.
 
 From a fresh clone:
