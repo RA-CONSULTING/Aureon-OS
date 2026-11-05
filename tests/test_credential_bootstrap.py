@@ -89,6 +89,21 @@ def test_bootstrap_never_leaks_secret_values(fake_repo):
     assert report["present"]["NASA_API_KEY"] is True
 
 
+def test_plug_and_play_skips_dotenv(fake_repo, monkeypatch):
+    monkeypatch.setenv("AUREON_PLUG_AND_PLAY", "1")
+    secret = "plug-must-not-load-this-key"
+    (fake_repo / ".env").write_text(f"OPENAI_API_KEY={secret}\n", encoding="utf-8")
+
+    report = aureon_env.bootstrap_credentials(repo_root=fake_repo)
+
+    assert report["loaded"] is False
+    assert report["keystore_applied"] is False
+    assert report["plug_and_play"] is True
+    assert report["present"]["OPENAI_API_KEY"] is False
+    assert "OPENAI_API_KEY" not in os.environ
+    assert secret not in json.dumps(report)
+
+
 def test_bootstrap_idempotent_and_never_raises(fake_repo):
     # no .env at all under this root → still succeeds, just nothing loaded
     r1 = aureon_env.bootstrap_credentials(repo_root=fake_repo)

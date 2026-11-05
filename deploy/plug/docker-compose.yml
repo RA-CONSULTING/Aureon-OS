@@ -1,0 +1,22 @@
+# Optional container form of ./install.sh.
+# Host networking keeps the processes on 127.0.0.1, which the operator requires
+# when no API key is set. Prepare the context first:
+#   python3 scripts/stage_plug_image.py
+#   docker compose -f deploy/plug/docker-compose.yml up --build
+name: aureon-plug
+
+services:
+  aureon:
+    build:
+      context: ./image
+      dockerfile: Dockerfile
+    network_mode: host
+    environment:
+      AUREON_PLUG_AND_PLAY: "1"
+      AUREON_LLM_OFFLINE: "1"
+      AUREON_LIVE_TRADING: "0"
+      AUREON_AUTONOMY_MODE: guarded
+      AUREON_DISABLE_REAL_ORDERS: "1"
+      AUREON_PUBLIC_OPEN: "1"
+    init: true
+    restart: "no"

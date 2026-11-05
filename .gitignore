@@ -120,6 +120,10 @@ RAINBOW-main/
 # Python virtual environments
 .venv*/
 venv*/
+
+# Plug-and-play runtime logs and the staged container context
+deploy/plug/runtime/
+deploy/plug/image/
 state/baton_relay.jsonl
 cached_candles_1yr_hourly.json
 russian_doll_state.tmp

@@ -17,9 +17,57 @@ Trading research · autonomous operator · planetary/HNC research · a coding or
 
 </div>
 
+## Quick start in five minutes
+
+Python 3.11 or newer, Node.js 20 or newer, and a blank key file. On Debian or Ubuntu, install `python3-venv` first. `./install.sh` creates `.venv`, installs the pinned `requirements-plug.lock`, installs the dashboard with `npm ci` when `frontend/node_modules` is absent, and starts the local stack:
+
+- operator API on `http://127.0.0.1:8790/`
+- public MCP server on `http://127.0.0.1:8077/mcp`
+- dashboard on `http://127.0.0.1:5173/`
+- stack health and the in-process HNC / Auris / QGITA report on `http://127.0.0.1:8787/`
+
+The command leaves exchange keys unset and does not read `.env`. `AUREON_AUTONOMY_MODE=guarded` keeps live trading off. `AUREON_LLM_OFFLINE=1` keeps the operator off external model HTTP, so the provider line is the offline adapter. HNC, Auris, and QGITA run from this repository. Trade readiness stays **HOLD**.
+
+```bash
+git clone https://github.com/RA-CONSULTING/Aureon-OS.git
+cd Aureon-OS
+./install.sh
+```
+
+Stop it with `./install.sh --stop`.
+
+`./install.sh --smoke` boots that same stack, requests the endpoints, and stops. Installer logs from pip, and from `npm ci` on a fresh tree, scroll first. The stack then prints:
+
+```text
+{"autonomy_mode": "guarded", "banner": "aureon-plug", "exchange_keys": "unset", "external_llm": false, "live_trading": false, "ok": true, "pids": {"frontend": 3356, "mcp": 3355, "operator": 3354}, "service": "aureon-plug", "services": {"cognition": {"ok": true, "runner": "aureon.evaluation.brain_proof.evaluate_brain", "url": "http://127.0.0.1:8787/api/cognition"}, "frontend": {"ok": true, "status": 200, "url": "http://127.0.0.1:5173/"}, "mcp": {"ok": true, "status": 405, "url": "http://127.0.0.1:8077/mcp"}, "operator": {"ok": true, "providers": ["offline"], "ready": true, "status": 200, "url": "http://127.0.0.1:8790/healthz"}}}
+operator   http://127.0.0.1:8790/healthz
+ready      http://127.0.0.1:8790/readyz
+mcp        http://127.0.0.1:8077/mcp
+frontend   http://127.0.0.1:5173/
+cognition  http://127.0.0.1:8787/api/cognition
+health     http://127.0.0.1:8787/healthz
+SMOKE healthz 200 {"autonomy_mode": "guarded", "exchange_keys": "unset", "external_llm": false, "live_trading": false, "ok": true, "service": "aureon-plug", "services": {"cognition": {"ok": true, "runner": "aureon.evaluation.brain_proof.evaluate_brain", "url": "http://127.0.0.1:8787/api/cognition"}, "frontend": {"ok": true, "status": 200, "url": "http://127.0.0.1:5173/"}, "mcp": {"ok": true, "status": 405, "url": "http://127.0.0.1:8077/mcp"}, "operator": {"ok": true, "providers": ["offline"], "ready": true, "status": 200, "url": "http://127.0.0.1:8790/healthz"}}}
+SMOKE operator 200 {"ok":true,"providers":[{"adapter":"AureonStubAdapter","model":"","name":"offline"}],"service":"aureon-operator"}
+SMOKE readyz 200 {"checks":{"cognition":true,"providers":true,"real_data_policy":{"probe_report_path":"","probe_report_status":"missing","probe_summary":{"blocked":0,"cached_real":0,"live":0,"no_data":0,"operational_ready":0,"real_derived":0,"test_fixture":0},"simulation_fallback_allowed":false,"source_registry_count":19,"truth_statuses":["cached_real","live","no_data","real_derived","test_fixture"]},"repo_index":true},"ready":true}
+SMOKE frontend 200 aureon_os=True
+SMOKE mcp_initialize {"name": "aureon-public", "version": "1.30.0"}
+SMOKE mcp_tools auris_coherence hnc_reality_step qgita_analyze
+SMOKE hnc {"coherence": 0.9331334813083556, "enable_multiverse": false, "status": "inferred"}
+SMOKE qgita {"detection_rate": "HOLD", "false_alarm_rate": "HOLD", "ftcp_count": 0, "status": "complete"}
+SMOKE auris_mcp Error executing tool auris_coherence: checkout aureon/utils/aureon_queen_hive_mind.py differs from pin 8aa6a2d971cc
+SMOKE cognition {"auris": {"coherence": null, "hold_nodes": ["Clownfish", "Owl"], "status": "no_data", "trade_readiness": {"reason": "no market series and no trade-outcome labels", "verdict": "HOLD"}}, "cognition": "internal", "external_llm": false, "hnc": {"coherence": 0.9331334813083556, "enable_multiverse": false, "lambda_last": 1.409626852655939, "multiverse_extension_verdict": "measured", "state": "unified", "steps": 100}, "live_trading": false, "orders_placed": false, "qgita": {"derived_ftcp_count": 0, "derived_rates_verdict": "HOLD", "derived_status": "complete", "derived_verdict": "measured_counts_rates_hold", "on_hnc_ftcp_count": 0, "on_hnc_rates_verdict": "HOLD", "on_hnc_status": "complete"}, "schema": "aureon.brain-proof.v1", "together": {"auris_joined_to_lambda": {"reason": "no function in the repo passes \u039b(t) into get_auris_coherence", "verdict": "HOLD"}, "qgita_on_the_formula_series": "measured_counts_rates_hold"}}
+SMOKE PASSED
+```
+
+Process ids in that banner are from the run that produced it. A later run prints its own pids. The public MCP `auris_coherence` tool returns the pin refusal above when `aureon/utils/aureon_queen_hive_mind.py` differs from pin `8aa6a2d9`. The in-process report on `/api/cognition` still runs and returns Auris status `no_data`. QGITA detection rate stays **HOLD**. Auris joined to Λ(t) stays **HOLD**.
+
+`python3 scripts/stage_plug_image.py` then `docker compose -f deploy/plug/docker-compose.yml up --build` is the container form of the same command. It uses host networking so the processes can bind `127.0.0.1`.
+
+The offline pytest commands are in the Five-minute quickstart section below.
+
 Older notes in `docs/` (for example `docs/AUREON_MIND_STATUS.md`), `aureon-trading/docs/`, and `imports/` (including the `imports/Kimi_Agent_Aureon_20260408` snapshot) are earlier research writing and may repeat figures that have since been withdrawn. This README and `mcp/aureon_public` are the current, checked parts.
 
-> **New users: stay on the five-minute quickstart. Do not add your own exchange keys.** The master launcher and the installer default to full autonomy. If exchange keys are in `.env`, that boot can go live and trade.
+> **Leave exchange keys unset.** `./install.sh` sets `AUREON_AUTONOMY_MODE=guarded` and skips `.env`. `scripts/launch/aureon-master.sh` and `production/install.sh` use the public autonomy default: a complete exchange key group in `.env` makes that boot live.
 
 ---
 
