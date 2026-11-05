@@ -2,7 +2,7 @@
 
 Decision: **HOLD**. Tag: `hold-skip`. The Space is not live.
 
-Measured at `bb04503119681adcf832f3c3e9b0cbf09fc7a938` on 2026-11-05T20:43:13Z. Go-live: **HOLD**. This receipt does not clear go-live. The orange release-boundary badge is unchanged. Public pin `34864ff0547d2cff03e707414743a3b0cc8770b5` is unchanged. No order was placed. Live trading is off.
+Measured at `bb04503119681adcf832f3c3e9b0cbf09fc7a938` on 2026-11-05T20:43:13Z. Go-live: **HOLD**. This receipt does not clear go-live. The orange release-boundary badge is unchanged. Public pin `bb04503119681adcf832f3c3e9b0cbf09fc7a938` is unchanged. No order was placed. Live trading is off.
 
 Missing: `HF_TOKEN`, `GARY_YES`.
 

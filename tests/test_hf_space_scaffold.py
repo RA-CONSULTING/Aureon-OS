@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-PIN = "34864ff0547d2cff03e707414743a3b0cc8770b5"
+PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
 TIP = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
 SPACES = ("hnc-field", "auris-coherence", "qgita-snr", "organism-replay")
 TOKEN = "hf_test_token_value_not_real"

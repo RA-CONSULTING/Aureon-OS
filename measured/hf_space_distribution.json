@@ -26,7 +26,7 @@
   "pro_required": false,
   "pro_status": "not_queried",
   "public_listener_opened": false,
-  "public_require_pin": "34864ff0547d2cff03e707414743a3b0cc8770b5",
+  "public_require_pin": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
   "reason": "HOLD-skip. Missing token: HF_TOKEN (also checked HUGGING_FACE_HUB_TOKEN). PRO was not queried. No sign-in was performed. This scaffold selects cpu-basic and does not select ZeroGPU, so a PRO plan is not required for these files. A Hub response that requires PRO stays HOLD. Gary's own yes was not set (AUREON_HF_GARY_YES). Charlie gate: a public Space and a public listener need that yes. Deploy was not attempted. The Space is not live. Go-live: HOLD.",
   "schema": "aureon.hf_space.distribution.v1",
   "sign_in_attempted": false,

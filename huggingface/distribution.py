@@ -15,7 +15,7 @@ import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
-PIN = "34864ff0547d2cff03e707414743a3b0cc8770b5"
+PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
 SOURCE_TIP_FALLBACK = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
 TOKEN_NAMES = ("HF_TOKEN", "HUGGING_FACE_HUB_TOKEN")
 SPACES = ("hnc-field", "auris-coherence", "qgita-snr", "organism-replay")
