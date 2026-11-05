@@ -97,10 +97,11 @@ is true and a later change may update the badge. This checkout does not.
 
 ## This checkout
 
-Rebased onto main tip `29fab7f21fc93da40224566dd8f34faacb3d74d4`. That parent
-published require-pin `bb04503119681adcf832f3c3e9b0cbf09fc7a938` and
-remeasured receipts 2 and 4 at tip `b2b0310362597dc520114de86d8700c0c50758d5`.
-This stage does not replace those artifacts and does not move the pin again.
+Rebased onto main tip `08f04936088689e29b7995d89530b21b425c35f9`. Stage 8
+on that tip does not clear go-live. The published require-pin remains
+`bb04503119681adcf832f3c3e9b0cbf09fc7a938`. Receipts 2 and 4 still record
+tip `b2b0310362597dc520114de86d8700c0c50758d5`. This stage does not replace
+those artifacts and does not move the pin again.
 The gate compares them with the checked-out HEAD.
 
 Receipt 1's measurement head is `c68a89d2a184d99582bb24310b91e024323a212c`
