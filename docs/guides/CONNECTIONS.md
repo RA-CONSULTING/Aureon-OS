@@ -121,4 +121,10 @@ unchanged — these are the *keyed* NCEI/Water-Data services, distinct endpoints
    confirms reachability.
 
 Everything here also works as plain environment variables — see `.env.example`.
+That template uses placeholder names only. Leave secret lines blank in the file
+that is committed. Real values belong in the gitignored `.env`. Exchange keys
+in `.env` make the master boot live. A complete key group in the inherited
+shell or in `aureon_radar/.env` does the same when the root `.env` is blank.
+The copied disable and dry-run flags are not a lock: a full+keyed master boot
+overrides them. The three public postures are in [`../PUBLIC_ENV.md`](../PUBLIC_ENV.md).
 The dashboard just makes it encrypted, testable, and visible in one place.

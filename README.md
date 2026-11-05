@@ -97,6 +97,16 @@ Older notes in `docs/` (for example `docs/AUREON_MIND_STATUS.md`), `aureon-tradi
 
 > **Leave exchange keys unset.** `./install.sh --smoke` sets `AUREON_AUTONOMY_MODE=guarded` and skips `.env`. `scripts/linux/aureon-up.sh` can boot live trading when a full exchange key group is present in `.env`: with `.venv/bin/python` missing it runs `production/install.sh`, which calls `scripts/launch/aureon-master.sh`. Go-live stays **HOLD**.
 
+### Which settings
+
+[`.env.example`](.env.example) and [`docs/PUBLIC_ENV.md`](docs/PUBLIC_ENV.md) name three postures. Secret lines in the template are blank placeholder names. A real key never goes in that file. Exchange keys in `.env` make that boot live. A complete key group in the inherited shell, or in `aureon_radar/.env`, arms the same boot when the root `.env` is blank.
+
+| Posture | What it needs | What the flags do |
+|---|---|---|
+| **Guarded offline** | No `.env`. `./install.sh` sets guarded autonomy, `AUREON_LLM_OFFLINE=1`, and real orders disabled in that process. `./install.sh` skips `.env`. | Off for that process. |
+| **Read-only market fetch** | No exchange key. `AUREON_DISABLE_REAL_ORDERS=1 PYTHONPATH=. python3 -m aureon.evaluation.market_series --out reports/measured` | That command sends no order. |
+| **Template copy** | The copied file ships `AUREON_DISABLE_REAL_ORDERS` and `AUREON_DRY_RUN`, paper and demo venue URLs, blank exchange key names, and no live-trading assignment. | Those lines are the file. They are not a lock. A full+keyed master boot overrides the disable and dry-run flags. |
+
 ---
 
 ## Five-minute quickstart
@@ -435,7 +445,7 @@ Open-source repository traffic to date (verifiable in the repo's GitHub **Insigh
 | **Cloning the repo** | The quick start at the top of this file — `./install.sh --smoke` only, live trading off, go-live HOLD |
 | **Working on Aureon OS** | [`docs/AUREON_RULES.md`](docs/AUREON_RULES.md) — the shared rulebook |
 | **An investor or funder** | [`docs/investor/README.md`](docs/investor/README.md) — diligence path, capability categories, and claim discipline |
-| **A developer** | [`docs/INDEX.md`](docs/INDEX.md) · [`CAPABILITIES.md`](CAPABILITIES.md) · [`docs/SAAS_PLATFORM.md`](docs/SAAS_PLATFORM.md) |
+| **A developer** | [`docs/INDEX.md`](docs/INDEX.md) · [`docs/PUBLIC_ENV.md`](docs/PUBLIC_ENV.md) · [`CAPABILITIES.md`](CAPABILITIES.md) · [`docs/SAAS_PLATFORM.md`](docs/SAAS_PLATFORM.md) |
 | **A researcher** | [`docs/THE_SYNTHESIS.md`](docs/THE_SYNTHESIS.md) · [`docs/CLAIMS_AND_EVIDENCE.md`](docs/CLAIMS_AND_EVIDENCE.md) · [`docs/research/READING_PATHS.md`](docs/research/READING_PATHS.md) |
 | **Deployment status** | [`docs/runbooks/GO_LIVE_HARDENING.md`](docs/runbooks/GO_LIVE_HARDENING.md) · [`docs/deployment/`](docs/deployment/) — terminal HOLD; no supported listener or deploy route |
 | **Installing with pip** | [`packaging/PIP_INSTALL.md`](packaging/PIP_INSTALL.md) — git URL or a gated TestPyPI wheel. Go-live stays HOLD. |
