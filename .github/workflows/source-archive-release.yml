@@ -1,0 +1,117 @@
+name: Source archive draft prerelease
+
+# Builds a git tree tar.gz, a zip, SHA256SUMS, and release-channel.json.
+# workflow_dispatch uploads Actions artifacts only.
+# A tip-<hex> tag opens a draft prerelease. This file does not publish it
+# and does not create a tag. production go-live stays refused until receipts
+# 1-5 are verified on that commit. The system is not claimed alive.
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "tip-*"
+
+permissions:
+  contents: read
+
+jobs:
+  source-archive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Refuse a production publish on this commit
+        run: |
+          set -euo pipefail
+          python packaging/release_channel.py check > channel-check.json || {
+            cat channel-check.json >&2
+            exit 1
+          }
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path("channel-check.json").read_text(encoding="utf-8"))
+          if report["problems"]:
+              raise SystemExit("channel check problems: " + "; ".join(report["problems"]))
+          if report["production_publish_allowed"]:
+              raise SystemExit("receipts verified; this workflow still does not publish")
+          if report["go_live_clear"] is not False or report["system_alive"] is not False:
+              raise SystemExit("refusing a clear or alive channel report")
+          if report["pin_moved"] is not False or report["orders_placed"] is not False:
+              raise SystemExit("refusing a pin move or an order")
+          if report["live_trading"] is not False:
+              raise SystemExit("refusing a live-trading channel report")
+          print("channel check: production publish refused")
+          PY
+
+      - name: Build source archives and checksums
+        env:
+          RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+        run: |
+          set -euo pipefail
+          if [ -n "${RELEASE_TAG}" ]; then
+            python packaging/release_channel.py accept-tag "${RELEASE_TAG}"
+            python packaging/release_channel.py archive --dest dist/tip-channel --tag "${RELEASE_TAG}"
+          else
+            python packaging/release_channel.py archive --dest dist/tip-channel
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aureon-os-tip-channel
+          path: dist/tip-channel/
+          if-no-files-found: error
+          retention-days: 90
+
+  draft-prerelease:
+    needs: source-archive
+    if: startsWith(github.ref, 'refs/tags/tip-')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: aureon-os-tip-channel
+          path: dist/tip-channel
+
+      - name: Open a draft prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          python packaging/release_channel.py accept-tag "$tag"
+          set +e
+          python packaging/release_channel.py publish > publish-refusal.json
+          status=$?
+          set -e
+          test "$status" -eq 3
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          body = json.loads(Path("publish-refusal.json").read_text(encoding="utf-8"))
+          if body.get("published") is not False or body.get("production_publish_allowed") is not False:
+              raise SystemExit("refusing to open a draft from a production-publish report")
+          PY
+          gh release create "$tag" \
+            --draft \
+            --prerelease \
+            --title "Aureon OS ${tag} — prerelease, release boundary HOLD" \
+            --notes-file docs/releases/RELEASE_NOTES_tip.md \
+            dist/tip-channel/*
