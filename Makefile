@@ -1,7 +1,7 @@
 # One-command self-host. Live trading stays off.
 # `make up` does not use Docker. `make compose` does.
 
-.PHONY: up down compose smoke plug plug-smoke plug-compose
+.PHONY: up down compose smoke plug plug-smoke plug-compose evidence
 
 up:
 	PYTHONPATH=. python3 scripts/selfhost_up.py
@@ -30,3 +30,7 @@ plug-smoke:
 plug-compose:
 	python3 scripts/stage_plug_image.py
 	docker compose -f deploy/plug/docker-compose.yml up --build
+
+# Rebuild the HNC, Auris, and QGITA evidence and require the committed bytes.
+evidence:
+	PYTHONHASHSEED=0 PYTHONPATH=. python3 -m aureon.evidence --check

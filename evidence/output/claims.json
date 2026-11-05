@@ -1,0 +1,92 @@
+[
+  {
+    "asserted": true,
+    "id": "hnc.formula.window",
+    "statement": "HarmonicRealityField.step with enable_multiverse false, 1000 steps, seed 0: state unified, coherence 0.994589, boundedness 0.663268, echo_strength 1, lambda min 0.199239, max 8.06523, finite true.",
+    "tag": "measured"
+  },
+  {
+    "asserted": true,
+    "id": "hnc.formula.seeds",
+    "statement": "The formula-path series is unchanged across the recorded seeds and a repeat of seed 0.",
+    "tag": "inferred"
+  },
+  {
+    "asserted": true,
+    "id": "hnc.formula.coherence_baselines",
+    "statement": "Formula-path coherence is higher than the shuffled-series baseline and the unit-Gaussian baseline under HarmonicRealityField._calculate_coherence. Measured coherence 0.994589, shuffled 0.136174, gaussian 0.106848, zeros 0.",
+    "tag": "inferred"
+  },
+  {
+    "asserted": true,
+    "id": "hnc.formula.echo_strength",
+    "statement": "CausalEcho.get_echo_strength returns min(1, abs(current*delayed) / (abs(current)*abs(delayed) + 1e-10)). This run measured 0.999999999998. The expression is near 1 whenever both samples are nonzero, so the figure is not a correlation.",
+    "tag": "inferred"
+  },
+  {
+    "asserted": true,
+    "id": "hnc.formula.nyquist",
+    "statement": "5 substrate modes are at or above the Nyquist rate 500 Hz for sample_rate 1000. Those modes are not represented as distinct frequencies by this discrete step. The mode frequencies are 528, 639, 741, 852, 963.",
+    "tag": "inferred"
+  },
+  {
+    "asserted": true,
+    "id": "hnc.multiverse.seeds",
+    "statement": "The class-default multiverse path is unchanged across the recorded seeds and a repeat.",
+    "tag": "inferred"
+  },
+  {
+    "asserted": true,
+    "id": "hnc.multiverse.versus_formula",
+    "statement": "Maximum absolute difference between the seed-0 formula series and the seed-0 multiverse series is 8.06509. Multiverse coherence 0.754003, state coherent.",
+    "tag": "measured"
+  },
+  {
+    "asserted": true,
+    "id": "auris.dependency",
+    "statement": "Input-guard checks 0 mismatches out of 567 node readings.",
+    "tag": "measured"
+  },
+  {
+    "asserted": true,
+    "id": "auris.coherence_versus_null",
+    "statement": "get_auris_coherence returned no number, and the same status as the null input, on every synthetic case (63 of 63). These inputs are not separated from the null baseline by the coherence figure.",
+    "tag": "inferred"
+  },
+  {
+    "asserted": true,
+    "id": "auris.nodes_without_readings",
+    "statement": "Nodes with no numeric reading on any case: Clownfish, Owl. get_auris_coherence returns no_data when any node value is missing, so a node that never reads is enough to withhold the coherence figure on these inputs.",
+    "tag": "inferred"
+  },
+  {
+    "asserted": true,
+    "id": "auris.baselines",
+    "statement": "Moving the seeded random inputs onto different keys changed node outputs (median distance 0.255844). The readings are key-sensitive on these cases. Median distance from the all-zero input on the same random cases is 0.444427.",
+    "tag": "inferred"
+  },
+  {
+    "asserted": true,
+    "id": "qgita.gates_versus_null",
+    "statement": "FTCP recall exceeded the FTCP false-alarm rate in 9 of 27 cells (tight_lattice -12 dB, tight_lattice -6 dB, tight_lattice 6 dB, tight_lattice 12 dB, tight_lattice 18 dB, tight_lattice 24 dB, tight_lattice 30 dB, tight_lattice 36 dB, off_lattice 6 dB). FTCP recall was below that false-alarm rate in 8 of 27 cells (tight_lattice 0 dB, mid_lattice 18 dB, mid_lattice 24 dB, mid_lattice 30 dB, mid_lattice 36 dB, off_lattice 24 dB, off_lattice 30 dB, off_lattice 36 dB). LHE recall exceeded the LHE false-alarm rate in 5 of 27 cells (tight_lattice 12 dB, tight_lattice 18 dB, tight_lattice 24 dB, tight_lattice 30 dB, tight_lattice 36 dB). A gate that ignores the injected impulse has recall near its false-alarm rate. The inequality is the raw counts. It is not a significance test, so a one-trial gap is listed and is not a detection result by itself. FTCPDetector raises its curvature threshold as (1 + std) when adaptive_threshold is on, and discrete curvature divides by the product of the adjacent knot gaps. Those are the detector's existing definitions. This run did not retune them.",
+    "tag": "inferred"
+  },
+  {
+    "asserted": true,
+    "id": "qgita.geff_versus_energy",
+    "statement": "max_g_eff AUROC exceeded the location-unknown energy detector AUROC in 4 of 27 cells (tight_lattice -12 dB, tight_lattice -6 dB, tight_lattice 6 dB, tight_lattice 12 dB). Higher scores were ranked as the injected class and were not flipped.",
+    "tag": "inferred"
+  },
+  {
+    "asserted": true,
+    "id": "qgita.placement",
+    "statement": "Maximum FTCP recall on the tight knot was 1. Maximum FTCP recall on the mid knot was 0.3125. Maximum FTCP recall off the lattice was 0.25. Minimum energy-detector AUROC off the lattice was 0.5.",
+    "tag": "measured"
+  },
+  {
+    "asserted": false,
+    "id": "not_claimed.alive_or_hold",
+    "statement": "Nothing measured here says that HNC, Auris, or QGITA is alive, conscious, or validated, and nothing here lifts deployment HOLD. Reading a coherence label or an AUROC as that decision would be speculative.",
+    "tag": "speculative"
+  }
+]

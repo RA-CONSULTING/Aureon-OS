@@ -1,0 +1,184 @@
+{
+  "cases": 63,
+  "coherence_status_cases": 63,
+  "coherence_status_matches_null": 63,
+  "dependency_checks": 567,
+  "dependency_mismatches": 0,
+  "distance_rule": "Mean absolute difference over nodes. A node missing on one side and present on the other counts as 1. Nodes missing on both sides are skipped.",
+  "external_llm": false,
+  "ground_truth": "Input guards transcribed from _auris_role_value and _auris_input. A role is expected to have a value only when every required field is present and finite. Memory and symbiosis have no required field. Numeric formulas are not reimplemented.",
+  "key_permutation_new_from_source": {
+    "momentum": "volatility",
+    "spread": "volume",
+    "volatility": "spread",
+    "volume": "momentum"
+  },
+  "key_shuffle_distances": [
+    0.3770728811466671,
+    0.3909415710419713,
+    0.1885553170838822,
+    0.22788183543129095,
+    0.33141585683524294,
+    0.24816701574017963,
+    0.20193998711050312,
+    0.31098791643532536,
+    0.30964923005618805,
+    0.23024519424241913,
+    0.20199805427247183,
+    0.3910634635337366,
+    0.2635207583702658,
+    0.11895772023810254,
+    0.18104541186474982,
+    0.2716251585397135
+  ],
+  "live_trading": false,
+  "median_distance_from_key_shuffle": 0.2558438870552227,
+  "median_distance_from_zero_input": 0.4444267368710709,
+  "node_source": "aureon.utils.aureon_queen_hive_mind.QueenHiveMind.read_auris_nodes",
+  "nodes": [
+    {
+      "cases": 63,
+      "missing": 3,
+      "node": "CargoShip",
+      "readings": 60,
+      "required_inputs": [
+        "volume"
+      ],
+      "role": "infrastructure",
+      "value_on_null": null,
+      "value_on_ones": 1.0,
+      "value_on_zeros": 0.0
+    },
+    {
+      "cases": 63,
+      "missing": 63,
+      "node": "Clownfish",
+      "readings": 0,
+      "required_inputs": [],
+      "role": "symbiosis",
+      "value_on_null": null,
+      "value_on_ones": null,
+      "value_on_zeros": null
+    },
+    {
+      "cases": 63,
+      "missing": 3,
+      "node": "Deer",
+      "readings": 60,
+      "required_inputs": [
+        "spread"
+      ],
+      "role": "sensing",
+      "value_on_null": null,
+      "value_on_ones": 1.0,
+      "value_on_zeros": 0.0
+    },
+    {
+      "cases": 63,
+      "missing": 3,
+      "node": "Dolphin",
+      "readings": 60,
+      "required_inputs": [
+        "momentum"
+      ],
+      "role": "emotion",
+      "value_on_null": null,
+      "value_on_ones": 0.5000000000000001,
+      "value_on_zeros": 0.5
+    },
+    {
+      "cases": 63,
+      "missing": 4,
+      "node": "Falcon",
+      "readings": 59,
+      "required_inputs": [
+        "momentum",
+        "volume"
+      ],
+      "role": "momentum",
+      "value_on_null": null,
+      "value_on_ones": 1.0,
+      "value_on_zeros": 0.0
+    },
+    {
+      "cases": 63,
+      "missing": 5,
+      "node": "Hummingbird",
+      "readings": 58,
+      "required_inputs": [
+        "volatility"
+      ],
+      "role": "stability",
+      "value_on_null": null,
+      "value_on_ones": 0.005940594059405941,
+      "value_on_zeros": 0.6
+    },
+    {
+      "cases": 63,
+      "missing": 63,
+      "node": "Owl",
+      "readings": 0,
+      "required_inputs": [],
+      "role": "memory",
+      "value_on_null": null,
+      "value_on_ones": null,
+      "value_on_zeros": null
+    },
+    {
+      "cases": 63,
+      "missing": 5,
+      "node": "Panda",
+      "readings": 58,
+      "required_inputs": [
+        "volatility"
+      ],
+      "role": "love",
+      "value_on_null": null,
+      "value_on_ones": 0.5,
+      "value_on_zeros": 1.0
+    },
+    {
+      "cases": 63,
+      "missing": 5,
+      "node": "Tiger",
+      "readings": 58,
+      "required_inputs": [
+        "volatility"
+      ],
+      "role": "volatility",
+      "value_on_null": null,
+      "value_on_ones": 0.0,
+      "value_on_zeros": 0.8
+    }
+  ],
+  "nodes_without_any_reading": [
+    "Clownfish",
+    "Owl"
+  ],
+  "null_coherence_status": "no_data",
+  "numeric_coherence_cases": 0,
+  "orders_placed": false,
+  "random_cases": 16,
+  "random_seed": 20261105,
+  "reader": "QueenHiveMind.__new__, so the constructor's runtime wiring is not started",
+  "schema": "aureon.evidence.auris.v1",
+  "source": "aureon.utils.aureon_queen_hive_mind.QueenHiveMind.get_auris_coherence",
+  "zero_input_distances": [
+    0.38021620209050483,
+    0.3799110476825933,
+    0.4452052822773008,
+    0.3320902917646617,
+    0.4767286184668051,
+    0.5026882173937705,
+    0.5165828539662203,
+    0.3899533242904572,
+    0.443648191464841,
+    0.37578397578492695,
+    0.4804604644567135,
+    0.44853303107208603,
+    0.3418532216655788,
+    0.48703941158915354,
+    0.5947817391731715,
+    0.4215647090573697
+  ]
+}

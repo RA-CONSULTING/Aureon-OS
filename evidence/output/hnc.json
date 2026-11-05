@@ -1,0 +1,187 @@
+{
+  "external_llm": false,
+  "formula": {
+    "baselines": {
+      "gaussian": "unit variance, length equal to the formula-path series, stdlib random.Random.gauss",
+      "gaussian_coherence": 0.10684755186220006,
+      "gaussian_seed": 20261105,
+      "method": "HarmonicRealityField._calculate_coherence",
+      "shuffle_seed": 20261105,
+      "shuffled_coherence": 0.13617444584197805,
+      "shuffled_sha256": "775ed7755d6bbb9035f35eaec735a6d84b403afe8f8ef0790706f830f9e32d5b",
+      "zero_coherence": 0.0
+    },
+    "boundedness": 0.6632682461448308,
+    "coherence": 0.9945891383492151,
+    "dt": 0.001,
+    "echo_strength": 0.9999999999981624,
+    "enable_multiverse": false,
+    "finite": true,
+    "first_half_max_abs": 6.005391322890798,
+    "head": [
+      0.1992387112134208,
+      0.2892291028444785,
+      0.33451943372236115,
+      0.3785721879169513,
+      0.5062239334010339,
+      0.4987187110596326,
+      0.551645888552706,
+      0.5287094705587239
+    ],
+    "max_abs": 8.065227669688742,
+    "max_abs_diff_across_seeds": 0.0,
+    "metrics_note": "HarmonicRealityField._update_metrics runs when the history length is a multiple of 100 and scores the last 1000 samples. 1000 steps is that window.",
+    "modes": 18,
+    "modes_at_or_above_nyquist": [
+      528.0,
+      639.0,
+      741.0,
+      852.0,
+      963.0
+    ],
+    "multiverse_max_abs_diff": 8.065093188661972,
+    "nyquist_hz": 500.0,
+    "parameters": {
+      "alpha": 0.85,
+      "alpha_plus_beta": 1.75,
+      "beta": 0.9,
+      "delta_t": 0.01,
+      "g": 1.5,
+      "tau": 0.05
+    },
+    "repeat_max_abs_diff": 0.0,
+    "repeat_seed": 0,
+    "sample_rate": 1000.0,
+    "second_half_max_abs": 8.065227669688742,
+    "seed": 0,
+    "seed_max_abs_diff": {
+      "0": 0.0,
+      "1": 0.0,
+      "20261105": 0.0,
+      "42": 0.0,
+      "7": 0.0
+    },
+    "seed_sha256": {
+      "0": "fe04d80ec9c1197d67e5b96e963b91b30f4bace3abb84a66bf408e1d61ffff5b",
+      "1": "fe04d80ec9c1197d67e5b96e963b91b30f4bace3abb84a66bf408e1d61ffff5b",
+      "20261105": "fe04d80ec9c1197d67e5b96e963b91b30f4bace3abb84a66bf408e1d61ffff5b",
+      "42": "fe04d80ec9c1197d67e5b96e963b91b30f4bace3abb84a66bf408e1d61ffff5b",
+      "7": "fe04d80ec9c1197d67e5b96e963b91b30f4bace3abb84a66bf408e1d61ffff5b"
+    },
+    "seeds": [
+      0,
+      1,
+      7,
+      42,
+      20261105
+    ],
+    "series_last": 7.562378504511411,
+    "series_max": 8.065227669688742,
+    "series_mean": 4.953630646963472,
+    "series_min": 0.1992387112134208,
+    "series_reference_seed": 0,
+    "sha256": "fe04d80ec9c1197d67e5b96e963b91b30f4bace3abb84a66bf408e1d61ffff5b",
+    "source": "aureon.harmonic.aureon_harmonic_reality.HarmonicRealityField.step",
+    "state": "unified",
+    "steps": 1000,
+    "tail": [
+      6.864575846586039,
+      6.920302888120804,
+      7.10301687730993,
+      7.134871704997707,
+      7.093645484341007,
+      7.128928716180151,
+      7.362763544609617,
+      7.562378504511411
+    ]
+  },
+  "live_trading": false,
+  "multiverse": {
+    "baselines": {
+      "note": "The shuffled, Gaussian, and zero coherences are scored on the formula path. They are not repeated on the multiverse path."
+    },
+    "boundedness": 0.21678609656751394,
+    "coherence": 0.7540025249529174,
+    "dt": 0.001,
+    "echo_strength": 0.9999788337618162,
+    "enable_multiverse": true,
+    "finite": true,
+    "first_half_max_abs": 0.042992719374520406,
+    "head": [
+      0.02256384045452104,
+      0.030155136258691827,
+      0.031395201106036254,
+      0.031782709525404046,
+      0.040731175505944565,
+      0.033181304418036336,
+      0.03243309341831676,
+      0.023357928212414492
+    ],
+    "max_abs": 0.042992719374520406,
+    "max_abs_diff_across_seeds": 0.0,
+    "metrics_note": "HarmonicRealityField._update_metrics runs when the history length is a multiple of 100 and scores the last 1000 samples. 1000 steps is that window.",
+    "modes": 18,
+    "modes_at_or_above_nyquist": [
+      528.0,
+      639.0,
+      741.0,
+      852.0,
+      963.0
+    ],
+    "nyquist_hz": 500.0,
+    "parameters": {
+      "alpha": 0.85,
+      "alpha_plus_beta": 1.75,
+      "beta": 0.9,
+      "delta_t": 0.01,
+      "g": 1.5,
+      "tau": 0.05
+    },
+    "repeat_max_abs_diff": 0.0,
+    "repeat_seed": 0,
+    "sample_rate": 1000.0,
+    "second_half_max_abs": 0.028593607728282452,
+    "seed": 0,
+    "seed_max_abs_diff": {
+      "0": 0.0,
+      "1": 0.0,
+      "20261105": 0.0,
+      "42": 0.0,
+      "7": 0.0
+    },
+    "seed_sha256": {
+      "0": "550c0cc6b64a4c0ffbe016aa1b48286df9487e5822cbd536814d370820058cb5",
+      "1": "550c0cc6b64a4c0ffbe016aa1b48286df9487e5822cbd536814d370820058cb5",
+      "20261105": "550c0cc6b64a4c0ffbe016aa1b48286df9487e5822cbd536814d370820058cb5",
+      "42": "550c0cc6b64a4c0ffbe016aa1b48286df9487e5822cbd536814d370820058cb5",
+      "7": "550c0cc6b64a4c0ffbe016aa1b48286df9487e5822cbd536814d370820058cb5"
+    },
+    "seeds": [
+      0,
+      1,
+      7,
+      42,
+      20261105
+    ],
+    "series_last": 0.008273761034921577,
+    "series_max": 0.040731175505944565,
+    "series_mean": 0.0006725843849429538,
+    "series_min": -0.042992719374520406,
+    "series_reference_seed": 0,
+    "sha256": "550c0cc6b64a4c0ffbe016aa1b48286df9487e5822cbd536814d370820058cb5",
+    "source": "aureon.harmonic.aureon_harmonic_reality.HarmonicRealityField.step",
+    "state": "coherent",
+    "steps": 1000,
+    "tail": [
+      -0.00030834331148118767,
+      -0.0007993223164602179,
+      -0.0005468721320424413,
+      -0.001405527248662363,
+      -0.0012084535681655176,
+      -0.0001636353285754801,
+      0.0019078177242595404,
+      0.008273761034921577
+    ]
+  },
+  "schema": "aureon.evidence.hnc.v1"
+}

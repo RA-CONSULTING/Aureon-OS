@@ -1,0 +1,1563 @@
+{
+  "calibration": {
+    "energy_calibration_false_alarm_rate": 0.046875,
+    "energy_threshold": 13.129238950898568,
+    "note": "Calibration nulls are not the evaluation nulls. The cell false-alarm rates for energy and oracle are on the evaluation nulls.",
+    "oracle_calibration_false_alarm_rate": 0.046875,
+    "oracle_index": 8,
+    "oracle_threshold": 2.502743940469048,
+    "seed_start": 50000000,
+    "tail": 0.05,
+    "threshold_index": "ceil((1 - tail) * n) - 1 on sorted null scores",
+    "trials": 64
+  },
+  "cells": [
+    {
+      "amplitude": 0.251188643150958,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 0.5,
+        "global_r": 0.51220703125,
+        "lighthouse": 0.53076171875,
+        "max_g_eff": 0.52587890625,
+        "oracle": 0.55078125,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.03125,
+        "fn": 31,
+        "fp": 1,
+        "precision": 0.5,
+        "recall": 0.03125,
+        "tn": 31,
+        "tp": 1
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.21875,
+        "fn": 23,
+        "fp": 7,
+        "precision": 0.5625,
+        "recall": 0.28125,
+        "tn": 25,
+        "tp": 9
+      },
+      "inject_index": 8,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 32,
+        "fp": 0,
+        "precision": null,
+        "recall": 0.0,
+        "tn": 32,
+        "tp": 0
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.09375,
+        "fn": 28,
+        "fp": 3,
+        "precision": 0.5714285714285714,
+        "recall": 0.125,
+        "tn": 29,
+        "tp": 4
+      },
+      "placement": "tight_lattice",
+      "shuffled_signal_ftcp_rate": 0.21875,
+      "signal_trials": 32,
+      "snr_db": -12
+    },
+    {
+      "amplitude": 0.5011872336272722,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 0.50537109375,
+        "global_r": 0.51123046875,
+        "lighthouse": 0.51318359375,
+        "max_g_eff": 0.5146484375,
+        "oracle": 0.5634765625,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.03125,
+        "fn": 31,
+        "fp": 1,
+        "precision": 0.5,
+        "recall": 0.03125,
+        "tn": 31,
+        "tp": 1
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.25,
+        "fn": 23,
+        "fp": 8,
+        "precision": 0.5294117647058824,
+        "recall": 0.28125,
+        "tn": 24,
+        "tp": 9
+      },
+      "inject_index": 8,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 32,
+        "fp": 0,
+        "precision": null,
+        "recall": 0.0,
+        "tn": 32,
+        "tp": 0
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.15625,
+        "fn": 28,
+        "fp": 5,
+        "precision": 0.4444444444444444,
+        "recall": 0.125,
+        "tn": 27,
+        "tp": 4
+      },
+      "placement": "tight_lattice",
+      "shuffled_signal_ftcp_rate": 0.25,
+      "signal_trials": 32,
+      "snr_db": -6
+    },
+    {
+      "amplitude": 1.0,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 0.515625,
+        "global_r": 0.5283203125,
+        "lighthouse": 0.498046875,
+        "max_g_eff": 0.5146484375,
+        "oracle": 0.6123046875,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.125,
+        "fn": 28,
+        "fp": 4,
+        "precision": 0.5,
+        "recall": 0.125,
+        "tn": 28,
+        "tp": 4
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.40625,
+        "fn": 20,
+        "fp": 13,
+        "precision": 0.48,
+        "recall": 0.375,
+        "tn": 19,
+        "tp": 12
+      },
+      "inject_index": 8,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 32,
+        "fp": 0,
+        "precision": null,
+        "recall": 0.0,
+        "tn": 32,
+        "tp": 0
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.1875,
+        "fn": 22,
+        "fp": 6,
+        "precision": 0.625,
+        "recall": 0.3125,
+        "tn": 26,
+        "tp": 10
+      },
+      "placement": "tight_lattice",
+      "shuffled_signal_ftcp_rate": 0.09375,
+      "signal_trials": 32,
+      "snr_db": 0
+    },
+    {
+      "amplitude": 1.9952623149688795,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 0.57080078125,
+        "global_r": 0.5595703125,
+        "lighthouse": 0.74462890625,
+        "max_g_eff": 0.7587890625,
+        "oracle": 0.904296875,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.0625,
+        "fn": 28,
+        "fp": 2,
+        "precision": 0.6666666666666666,
+        "recall": 0.125,
+        "tn": 30,
+        "tp": 4
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.15625,
+        "fn": 12,
+        "fp": 5,
+        "precision": 0.8,
+        "recall": 0.625,
+        "tn": 27,
+        "tp": 20
+      },
+      "inject_index": 8,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 32,
+        "fp": 0,
+        "precision": null,
+        "recall": 0.0,
+        "tn": 32,
+        "tp": 0
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.0625,
+        "fn": 9,
+        "fp": 2,
+        "precision": 0.92,
+        "recall": 0.71875,
+        "tn": 30,
+        "tp": 23
+      },
+      "placement": "tight_lattice",
+      "shuffled_signal_ftcp_rate": 0.25,
+      "signal_trials": 32,
+      "snr_db": 6
+    },
+    {
+      "amplitude": 3.9810717055349722,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 0.8642578125,
+        "global_r": 0.6044921875,
+        "lighthouse": 0.94140625,
+        "max_g_eff": 0.97900390625,
+        "oracle": 0.9951171875,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.125,
+        "fn": 13,
+        "fp": 4,
+        "precision": 0.8260869565217391,
+        "recall": 0.59375,
+        "tn": 28,
+        "tp": 19
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.15625,
+        "fn": 1,
+        "fp": 5,
+        "precision": 0.8611111111111112,
+        "recall": 0.96875,
+        "tn": 27,
+        "tp": 31
+      },
+      "inject_index": 8,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 30,
+        "fp": 0,
+        "precision": 1.0,
+        "recall": 0.0625,
+        "tn": 32,
+        "tp": 2
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.125,
+        "fn": 1,
+        "fp": 4,
+        "precision": 0.8857142857142857,
+        "recall": 0.96875,
+        "tn": 28,
+        "tp": 31
+      },
+      "placement": "tight_lattice",
+      "shuffled_signal_ftcp_rate": 0.09375,
+      "signal_trials": 32,
+      "snr_db": 12
+    },
+    {
+      "amplitude": 7.943282347242816,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 1.0,
+        "global_r": 0.58056640625,
+        "lighthouse": 0.9990234375,
+        "max_g_eff": 1.0,
+        "oracle": 1.0,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.0,
+        "fn": 0,
+        "fp": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "tn": 32,
+        "tp": 32
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.1875,
+        "fn": 0,
+        "fp": 6,
+        "precision": 0.8421052631578947,
+        "recall": 1.0,
+        "tn": 26,
+        "tp": 32
+      },
+      "inject_index": 8,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 22,
+        "fp": 0,
+        "precision": 1.0,
+        "recall": 0.3125,
+        "tn": 32,
+        "tp": 10
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.09375,
+        "fn": 0,
+        "fp": 3,
+        "precision": 0.9142857142857143,
+        "recall": 1.0,
+        "tn": 29,
+        "tp": 32
+      },
+      "placement": "tight_lattice",
+      "shuffled_signal_ftcp_rate": 0.28125,
+      "signal_trials": 32,
+      "snr_db": 18
+    },
+    {
+      "amplitude": 15.848931924611133,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 1.0,
+        "global_r": 0.640625,
+        "lighthouse": 1.0,
+        "max_g_eff": 1.0,
+        "oracle": 1.0,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.0625,
+        "fn": 0,
+        "fp": 2,
+        "precision": 0.9411764705882353,
+        "recall": 1.0,
+        "tn": 30,
+        "tp": 32
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.15625,
+        "fn": 0,
+        "fp": 5,
+        "precision": 0.8648648648648649,
+        "recall": 1.0,
+        "tn": 27,
+        "tp": 32
+      },
+      "inject_index": 8,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 5,
+        "fp": 0,
+        "precision": 1.0,
+        "recall": 0.84375,
+        "tn": 32,
+        "tp": 27
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.125,
+        "fn": 0,
+        "fp": 4,
+        "precision": 0.8888888888888888,
+        "recall": 1.0,
+        "tn": 28,
+        "tp": 32
+      },
+      "placement": "tight_lattice",
+      "shuffled_signal_ftcp_rate": 0.15625,
+      "signal_trials": 32,
+      "snr_db": 24
+    },
+    {
+      "amplitude": 31.622776601683793,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 1.0,
+        "global_r": 0.75,
+        "lighthouse": 1.0,
+        "max_g_eff": 1.0,
+        "oracle": 1.0,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.0625,
+        "fn": 0,
+        "fp": 2,
+        "precision": 0.9411764705882353,
+        "recall": 1.0,
+        "tn": 30,
+        "tp": 32
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.15625,
+        "fn": 0,
+        "fp": 5,
+        "precision": 0.8648648648648649,
+        "recall": 1.0,
+        "tn": 27,
+        "tp": 32
+      },
+      "inject_index": 8,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 3,
+        "fp": 0,
+        "precision": 1.0,
+        "recall": 0.90625,
+        "tn": 32,
+        "tp": 29
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.09375,
+        "fn": 0,
+        "fp": 3,
+        "precision": 0.9142857142857143,
+        "recall": 1.0,
+        "tn": 29,
+        "tp": 32
+      },
+      "placement": "tight_lattice",
+      "shuffled_signal_ftcp_rate": 0.125,
+      "signal_trials": 32,
+      "snr_db": 30
+    },
+    {
+      "amplitude": 63.09573444801933,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 1.0,
+        "global_r": 0.755859375,
+        "lighthouse": 1.0,
+        "max_g_eff": 1.0,
+        "oracle": 1.0,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.0,
+        "fn": 0,
+        "fp": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "tn": 32,
+        "tp": 32
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.0625,
+        "fn": 0,
+        "fp": 2,
+        "precision": 0.9411764705882353,
+        "recall": 1.0,
+        "tn": 30,
+        "tp": 32
+      },
+      "inject_index": 8,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 0,
+        "fp": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "tn": 32,
+        "tp": 32
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.0625,
+        "fn": 0,
+        "fp": 2,
+        "precision": 0.9411764705882353,
+        "recall": 1.0,
+        "tn": 30,
+        "tp": 32
+      },
+      "placement": "tight_lattice",
+      "shuffled_signal_ftcp_rate": 0.0,
+      "signal_trials": 32,
+      "snr_db": 36
+    },
+    {
+      "amplitude": 0.251188643150958,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 0.5,
+        "global_r": 0.5107421875,
+        "lighthouse": 0.5,
+        "max_g_eff": 0.5,
+        "oracle": 0.4697265625,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.0625,
+        "fn": 30,
+        "fp": 2,
+        "precision": 0.5,
+        "recall": 0.0625,
+        "tn": 30,
+        "tp": 2
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.25,
+        "fn": 24,
+        "fp": 8,
+        "precision": 0.5,
+        "recall": 0.25,
+        "tn": 24,
+        "tp": 8
+      },
+      "inject_index": 55,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 32,
+        "fp": 0,
+        "precision": null,
+        "recall": 0.0,
+        "tn": 32,
+        "tp": 0
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.09375,
+        "fn": 29,
+        "fp": 3,
+        "precision": 0.5,
+        "recall": 0.09375,
+        "tn": 29,
+        "tp": 3
+      },
+      "placement": "mid_lattice",
+      "shuffled_signal_ftcp_rate": 0.125,
+      "signal_trials": 32,
+      "snr_db": -12
+    },
+    {
+      "amplitude": 0.5011872336272722,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 0.5,
+        "global_r": 0.51220703125,
+        "lighthouse": 0.5,
+        "max_g_eff": 0.5,
+        "oracle": 0.5703125,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.0625,
+        "fn": 30,
+        "fp": 2,
+        "precision": 0.5,
+        "recall": 0.0625,
+        "tn": 30,
+        "tp": 2
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.15625,
+        "fn": 27,
+        "fp": 5,
+        "precision": 0.5,
+        "recall": 0.15625,
+        "tn": 27,
+        "tp": 5
+      },
+      "inject_index": 55,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 32,
+        "fp": 0,
+        "precision": null,
+        "recall": 0.0,
+        "tn": 32,
+        "tp": 0
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.09375,
+        "fn": 28,
+        "fp": 3,
+        "precision": 0.5714285714285714,
+        "recall": 0.125,
+        "tn": 29,
+        "tp": 4
+      },
+      "placement": "mid_lattice",
+      "shuffled_signal_ftcp_rate": 0.0625,
+      "signal_trials": 32,
+      "snr_db": -6
+    },
+    {
+      "amplitude": 1.0,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 0.51708984375,
+        "global_r": 0.51904296875,
+        "lighthouse": 0.5,
+        "max_g_eff": 0.5,
+        "oracle": 0.603515625,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.09375,
+        "fn": 29,
+        "fp": 3,
+        "precision": 0.5,
+        "recall": 0.09375,
+        "tn": 29,
+        "tp": 3
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.3125,
+        "fn": 22,
+        "fp": 10,
+        "precision": 0.5,
+        "recall": 0.3125,
+        "tn": 22,
+        "tp": 10
+      },
+      "inject_index": 55,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 32,
+        "fp": 0,
+        "precision": null,
+        "recall": 0.0,
+        "tn": 32,
+        "tp": 0
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.21875,
+        "fn": 22,
+        "fp": 7,
+        "precision": 0.5882352941176471,
+        "recall": 0.3125,
+        "tn": 25,
+        "tp": 10
+      },
+      "placement": "mid_lattice",
+      "shuffled_signal_ftcp_rate": 0.1875,
+      "signal_trials": 32,
+      "snr_db": 0
+    },
+    {
+      "amplitude": 1.9952623149688795,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 0.54345703125,
+        "global_r": 0.54931640625,
+        "lighthouse": 0.5,
+        "max_g_eff": 0.5,
+        "oracle": 0.837890625,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.09375,
+        "fn": 29,
+        "fp": 3,
+        "precision": 0.5,
+        "recall": 0.09375,
+        "tn": 29,
+        "tp": 3
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.3125,
+        "fn": 22,
+        "fp": 10,
+        "precision": 0.5,
+        "recall": 0.3125,
+        "tn": 22,
+        "tp": 10
+      },
+      "inject_index": 55,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 32,
+        "fp": 0,
+        "precision": null,
+        "recall": 0.0,
+        "tn": 32,
+        "tp": 0
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.0625,
+        "fn": 16,
+        "fp": 2,
+        "precision": 0.8888888888888888,
+        "recall": 0.5,
+        "tn": 30,
+        "tp": 16
+      },
+      "placement": "mid_lattice",
+      "shuffled_signal_ftcp_rate": 0.15625,
+      "signal_trials": 32,
+      "snr_db": 6
+    },
+    {
+      "amplitude": 3.9810717055349722,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 0.91552734375,
+        "global_r": 0.568359375,
+        "lighthouse": 0.5,
+        "max_g_eff": 0.5,
+        "oracle": 0.9990234375,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.0,
+        "fn": 10,
+        "fp": 0,
+        "precision": 1.0,
+        "recall": 0.6875,
+        "tn": 32,
+        "tp": 22
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.28125,
+        "fn": 23,
+        "fp": 9,
+        "precision": 0.5,
+        "recall": 0.28125,
+        "tn": 23,
+        "tp": 9
+      },
+      "inject_index": 55,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 32,
+        "fp": 0,
+        "precision": null,
+        "recall": 0.0,
+        "tn": 32,
+        "tp": 0
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.125,
+        "fn": 0,
+        "fp": 4,
+        "precision": 0.8888888888888888,
+        "recall": 1.0,
+        "tn": 28,
+        "tp": 32
+      },
+      "placement": "mid_lattice",
+      "shuffled_signal_ftcp_rate": 0.28125,
+      "signal_trials": 32,
+      "snr_db": 12
+    },
+    {
+      "amplitude": 7.943282347242816,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 1.0,
+        "global_r": 0.6103515625,
+        "lighthouse": 0.478515625,
+        "max_g_eff": 0.470703125,
+        "oracle": 1.0,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.03125,
+        "fn": 0,
+        "fp": 1,
+        "precision": 0.9696969696969697,
+        "recall": 1.0,
+        "tn": 31,
+        "tp": 32
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.25,
+        "fn": 26,
+        "fp": 8,
+        "precision": 0.42857142857142855,
+        "recall": 0.1875,
+        "tn": 24,
+        "tp": 6
+      },
+      "inject_index": 55,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 32,
+        "fp": 0,
+        "precision": null,
+        "recall": 0.0,
+        "tn": 32,
+        "tp": 0
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.03125,
+        "fn": 0,
+        "fp": 1,
+        "precision": 0.9696969696969697,
+        "recall": 1.0,
+        "tn": 31,
+        "tp": 32
+      },
+      "placement": "mid_lattice",
+      "shuffled_signal_ftcp_rate": 0.21875,
+      "signal_trials": 32,
+      "snr_db": 18
+    },
+    {
+      "amplitude": 15.848931924611133,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 1.0,
+        "global_r": 0.8203125,
+        "lighthouse": 0.48779296875,
+        "max_g_eff": 0.48486328125,
+        "oracle": 1.0,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.0625,
+        "fn": 0,
+        "fp": 2,
+        "precision": 0.9411764705882353,
+        "recall": 1.0,
+        "tn": 30,
+        "tp": 32
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.0625,
+        "fn": 31,
+        "fp": 2,
+        "precision": 0.3333333333333333,
+        "recall": 0.03125,
+        "tn": 30,
+        "tp": 1
+      },
+      "inject_index": 55,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 32,
+        "fp": 0,
+        "precision": null,
+        "recall": 0.0,
+        "tn": 32,
+        "tp": 0
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.03125,
+        "fn": 0,
+        "fp": 1,
+        "precision": 0.9696969696969697,
+        "recall": 1.0,
+        "tn": 31,
+        "tp": 32
+      },
+      "placement": "mid_lattice",
+      "shuffled_signal_ftcp_rate": 0.09375,
+      "signal_trials": 32,
+      "snr_db": 24
+    },
+    {
+      "amplitude": 31.622776601683793,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 1.0,
+        "global_r": 0.7255859375,
+        "lighthouse": 0.33935546875,
+        "max_g_eff": 0.390625,
+        "oracle": 1.0,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.03125,
+        "fn": 0,
+        "fp": 1,
+        "precision": 0.9696969696969697,
+        "recall": 1.0,
+        "tn": 31,
+        "tp": 32
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.21875,
+        "fn": 32,
+        "fp": 7,
+        "precision": 0.0,
+        "recall": 0.0,
+        "tn": 25,
+        "tp": 0
+      },
+      "inject_index": 55,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 32,
+        "fp": 0,
+        "precision": null,
+        "recall": 0.0,
+        "tn": 32,
+        "tp": 0
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.0625,
+        "fn": 0,
+        "fp": 2,
+        "precision": 0.9411764705882353,
+        "recall": 1.0,
+        "tn": 30,
+        "tp": 32
+      },
+      "placement": "mid_lattice",
+      "shuffled_signal_ftcp_rate": 0.0625,
+      "signal_trials": 32,
+      "snr_db": 30
+    },
+    {
+      "amplitude": 63.09573444801933,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 1.0,
+        "global_r": 0.8759765625,
+        "lighthouse": 0.36865234375,
+        "max_g_eff": 0.359375,
+        "oracle": 1.0,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.0625,
+        "fn": 0,
+        "fp": 2,
+        "precision": 0.9411764705882353,
+        "recall": 1.0,
+        "tn": 30,
+        "tp": 32
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.28125,
+        "fn": 32,
+        "fp": 9,
+        "precision": 0.0,
+        "recall": 0.0,
+        "tn": 23,
+        "tp": 0
+      },
+      "inject_index": 55,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 32,
+        "fp": 0,
+        "precision": null,
+        "recall": 0.0,
+        "tn": 32,
+        "tp": 0
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.1875,
+        "fn": 0,
+        "fp": 6,
+        "precision": 0.8421052631578947,
+        "recall": 1.0,
+        "tn": 26,
+        "tp": 32
+      },
+      "placement": "mid_lattice",
+      "shuffled_signal_ftcp_rate": 0.0,
+      "signal_trials": 32,
+      "snr_db": 36
+    },
+    {
+      "amplitude": 0.251188643150958,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 0.50244140625,
+        "global_r": 0.50634765625,
+        "lighthouse": 0.5,
+        "max_g_eff": 0.5,
+        "oracle": 0.5068359375,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.09375,
+        "fn": 29,
+        "fp": 3,
+        "precision": 0.5,
+        "recall": 0.09375,
+        "tn": 29,
+        "tp": 3
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.15625,
+        "fn": 27,
+        "fp": 5,
+        "precision": 0.5,
+        "recall": 0.15625,
+        "tn": 27,
+        "tp": 5
+      },
+      "inject_index": 72,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 32,
+        "fp": 0,
+        "precision": null,
+        "recall": 0.0,
+        "tn": 32,
+        "tp": 0
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.15625,
+        "fn": 25,
+        "fp": 5,
+        "precision": 0.5833333333333334,
+        "recall": 0.21875,
+        "tn": 27,
+        "tp": 7
+      },
+      "placement": "off_lattice",
+      "shuffled_signal_ftcp_rate": 0.28125,
+      "signal_trials": 32,
+      "snr_db": -12
+    },
+    {
+      "amplitude": 0.5011872336272722,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 0.5,
+        "global_r": 0.50390625,
+        "lighthouse": 0.5,
+        "max_g_eff": 0.5,
+        "oracle": 0.5673828125,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.03125,
+        "fn": 31,
+        "fp": 1,
+        "precision": 0.5,
+        "recall": 0.03125,
+        "tn": 31,
+        "tp": 1
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.125,
+        "fn": 28,
+        "fp": 4,
+        "precision": 0.5,
+        "recall": 0.125,
+        "tn": 28,
+        "tp": 4
+      },
+      "inject_index": 72,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 32,
+        "fp": 0,
+        "precision": null,
+        "recall": 0.0,
+        "tn": 32,
+        "tp": 0
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.125,
+        "fn": 26,
+        "fp": 4,
+        "precision": 0.6,
+        "recall": 0.1875,
+        "tn": 28,
+        "tp": 6
+      },
+      "placement": "off_lattice",
+      "shuffled_signal_ftcp_rate": 0.25,
+      "signal_trials": 32,
+      "snr_db": -6
+    },
+    {
+      "amplitude": 1.0,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 0.51123046875,
+        "global_r": 0.513671875,
+        "lighthouse": 0.5,
+        "max_g_eff": 0.5,
+        "oracle": 0.5478515625,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.03125,
+        "fn": 31,
+        "fp": 1,
+        "precision": 0.5,
+        "recall": 0.03125,
+        "tn": 31,
+        "tp": 1
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.25,
+        "fn": 24,
+        "fp": 8,
+        "precision": 0.5,
+        "recall": 0.25,
+        "tn": 24,
+        "tp": 8
+      },
+      "inject_index": 72,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 32,
+        "fp": 0,
+        "precision": null,
+        "recall": 0.0,
+        "tn": 32,
+        "tp": 0
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.125,
+        "fn": 28,
+        "fp": 4,
+        "precision": 0.5,
+        "recall": 0.125,
+        "tn": 28,
+        "tp": 4
+      },
+      "placement": "off_lattice",
+      "shuffled_signal_ftcp_rate": 0.21875,
+      "signal_trials": 32,
+      "snr_db": 0
+    },
+    {
+      "amplitude": 1.9952623149688795,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 0.576171875,
+        "global_r": 0.5537109375,
+        "lighthouse": 0.52099609375,
+        "max_g_eff": 0.51318359375,
+        "oracle": 0.806640625,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.15625,
+        "fn": 25,
+        "fp": 5,
+        "precision": 0.5833333333333334,
+        "recall": 0.21875,
+        "tn": 27,
+        "tp": 7
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.21875,
+        "fn": 24,
+        "fp": 7,
+        "precision": 0.5333333333333333,
+        "recall": 0.25,
+        "tn": 25,
+        "tp": 8
+      },
+      "inject_index": 72,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 32,
+        "fp": 0,
+        "precision": null,
+        "recall": 0.0,
+        "tn": 32,
+        "tp": 0
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.1875,
+        "fn": 11,
+        "fp": 6,
+        "precision": 0.7777777777777778,
+        "recall": 0.65625,
+        "tn": 26,
+        "tp": 21
+      },
+      "placement": "off_lattice",
+      "shuffled_signal_ftcp_rate": 0.21875,
+      "signal_trials": 32,
+      "snr_db": 6
+    },
+    {
+      "amplitude": 3.9810717055349722,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 0.841796875,
+        "global_r": 0.5625,
+        "lighthouse": 0.5,
+        "max_g_eff": 0.5,
+        "oracle": 0.9970703125,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.03125,
+        "fn": 14,
+        "fp": 1,
+        "precision": 0.9473684210526315,
+        "recall": 0.5625,
+        "tn": 31,
+        "tp": 18
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.125,
+        "fn": 28,
+        "fp": 4,
+        "precision": 0.5,
+        "recall": 0.125,
+        "tn": 28,
+        "tp": 4
+      },
+      "inject_index": 72,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 32,
+        "fp": 0,
+        "precision": null,
+        "recall": 0.0,
+        "tn": 32,
+        "tp": 0
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.09375,
+        "fn": 0,
+        "fp": 3,
+        "precision": 0.9142857142857143,
+        "recall": 1.0,
+        "tn": 29,
+        "tp": 32
+      },
+      "placement": "off_lattice",
+      "shuffled_signal_ftcp_rate": 0.09375,
+      "signal_trials": 32,
+      "snr_db": 12
+    },
+    {
+      "amplitude": 7.943282347242816,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 1.0,
+        "global_r": 0.626953125,
+        "lighthouse": 0.5,
+        "max_g_eff": 0.5,
+        "oracle": 1.0,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.0625,
+        "fn": 0,
+        "fp": 2,
+        "precision": 0.9411764705882353,
+        "recall": 1.0,
+        "tn": 30,
+        "tp": 32
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.15625,
+        "fn": 27,
+        "fp": 5,
+        "precision": 0.5,
+        "recall": 0.15625,
+        "tn": 27,
+        "tp": 5
+      },
+      "inject_index": 72,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 32,
+        "fp": 0,
+        "precision": null,
+        "recall": 0.0,
+        "tn": 32,
+        "tp": 0
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.21875,
+        "fn": 0,
+        "fp": 7,
+        "precision": 0.8205128205128205,
+        "recall": 1.0,
+        "tn": 25,
+        "tp": 32
+      },
+      "placement": "off_lattice",
+      "shuffled_signal_ftcp_rate": 0.28125,
+      "signal_trials": 32,
+      "snr_db": 18
+    },
+    {
+      "amplitude": 15.848931924611133,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 1.0,
+        "global_r": 0.7470703125,
+        "lighthouse": 0.4404296875,
+        "max_g_eff": 0.4404296875,
+        "oracle": 1.0,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.125,
+        "fn": 0,
+        "fp": 4,
+        "precision": 0.8888888888888888,
+        "recall": 1.0,
+        "tn": 28,
+        "tp": 32
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.1875,
+        "fn": 30,
+        "fp": 6,
+        "precision": 0.25,
+        "recall": 0.0625,
+        "tn": 26,
+        "tp": 2
+      },
+      "inject_index": 72,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 32,
+        "fp": 0,
+        "precision": null,
+        "recall": 0.0,
+        "tn": 32,
+        "tp": 0
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.09375,
+        "fn": 0,
+        "fp": 3,
+        "precision": 0.9142857142857143,
+        "recall": 1.0,
+        "tn": 29,
+        "tp": 32
+      },
+      "placement": "off_lattice",
+      "shuffled_signal_ftcp_rate": 0.1875,
+      "signal_trials": 32,
+      "snr_db": 24
+    },
+    {
+      "amplitude": 31.622776601683793,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 1.0,
+        "global_r": 0.7880859375,
+        "lighthouse": 0.39306640625,
+        "max_g_eff": 0.42431640625,
+        "oracle": 1.0,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.09375,
+        "fn": 0,
+        "fp": 3,
+        "precision": 0.9142857142857143,
+        "recall": 1.0,
+        "tn": 29,
+        "tp": 32
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.1875,
+        "fn": 31,
+        "fp": 6,
+        "precision": 0.14285714285714285,
+        "recall": 0.03125,
+        "tn": 26,
+        "tp": 1
+      },
+      "inject_index": 72,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 32,
+        "fp": 0,
+        "precision": null,
+        "recall": 0.0,
+        "tn": 32,
+        "tp": 0
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.15625,
+        "fn": 0,
+        "fp": 5,
+        "precision": 0.8648648648648649,
+        "recall": 1.0,
+        "tn": 27,
+        "tp": 32
+      },
+      "placement": "off_lattice",
+      "shuffled_signal_ftcp_rate": 0.09375,
+      "signal_trials": 32,
+      "snr_db": 30
+    },
+    {
+      "amplitude": 63.09573444801933,
+      "auroc": {
+        "c_linear": 0.5,
+        "c_phi": 0.5,
+        "energy": 1.0,
+        "global_r": 0.8583984375,
+        "lighthouse": 0.39111328125,
+        "max_g_eff": 0.390625,
+        "oracle": 1.0,
+        "q_anomaly": 0.5
+      },
+      "energy": {
+        "false_alarm_rate": 0.0625,
+        "fn": 0,
+        "fp": 2,
+        "precision": 0.9411764705882353,
+        "recall": 1.0,
+        "tn": 30,
+        "tp": 32
+      },
+      "ftcp": {
+        "false_alarm_rate": 0.21875,
+        "fn": 32,
+        "fp": 7,
+        "precision": 0.0,
+        "recall": 0.0,
+        "tn": 25,
+        "tp": 0
+      },
+      "inject_index": 72,
+      "lhe": {
+        "false_alarm_rate": 0.0,
+        "fn": 32,
+        "fp": 0,
+        "precision": null,
+        "recall": 0.0,
+        "tn": 32,
+        "tp": 0
+      },
+      "null_trials": 32,
+      "oracle": {
+        "false_alarm_rate": 0.125,
+        "fn": 0,
+        "fp": 4,
+        "precision": 0.8888888888888888,
+        "recall": 1.0,
+        "tn": 28,
+        "tp": 32
+      },
+      "placement": "off_lattice",
+      "shuffled_signal_ftcp_rate": 0.03125,
+      "signal_trials": 32,
+      "snr_db": 36
+    }
+  ],
+  "detector_defaults": {
+    "adaptive_threshold": true,
+    "alpha": 1.0,
+    "epsilon": 0.05,
+    "lighthouse_threshold_sigma": 2.0,
+    "theta": 0.1
+  },
+  "external_llm": false,
+  "harness": {
+    "auroc": "Mann-Whitney, ties count 1/2, higher score ranks as the injected class",
+    "energy_detector": "max of squared samples; location unknown; harness baseline",
+    "master_seed": 20261105,
+    "noise": "random.Random(seed).gauss(0, 1), one generator per trial",
+    "null_and_signal_share_noise": true,
+    "oracle_detector": "squared sample at the known injection index; harness baseline",
+    "positive_call": "score > threshold for baselines; ftcp_count > 0 or lhe_count > 0 for QGITA",
+    "qgita_thresholds": "constructor defaults; not tuned on these trials",
+    "samples": 180,
+    "scores_not_flipped": true,
+    "shuffle": "stdlib Random(seed + 50000).shuffle of the signal trial",
+    "signal": "one-sample impulse added to unit-variance Gaussian noise",
+    "snr_db": "10 * log10(A**2 / 1) = 20 * log10(A), with noise variance 1",
+    "snr_grid_db": [
+      -12,
+      -6,
+      0,
+      6,
+      12,
+      18,
+      24,
+      30,
+      36
+    ],
+    "trial_seed": "master + placement_id * 100000 + snr_index * 1000 + trial",
+    "trials_per_kind": 32
+  },
+  "injection": {
+    "epsilon": 0.05,
+    "mid_lattice": {
+      "gap_product": 714.0,
+      "knot_index": 10,
+      "phi_deviation": 0.0010136302977242773,
+      "sample": 55,
+      "tau": 55.0
+    },
+    "off_lattice": {
+      "sample": 72
+    },
+    "rule": "Eligible knots have phi_deviation <= FTCPDetector.epsilon and both neighbor knots inside the series. tight_lattice is the eligible knot with the smallest product of the adjacent knot gaps. mid_lattice is the eligible knot closest to N/3. off_lattice is the integer nearest the midpoint from mid_lattice toward the next knot that is not itself a knot time.",
+    "samples": 180,
+    "tight_lattice": {
+      "gap_product": 15.0,
+      "knot_index": 6,
+      "phi_deviation": 0.04863267791677184,
+      "sample": 8,
+      "tau": 8.0
+    }
+  },
+  "live_trading": false,
+  "orders_placed": false,
+  "schema": "aureon.evidence.qgita.v1",
+  "source": "aureon.wisdom.aureon_qgita_framework.QGITAMarketAnalyzer.analyze"
+}
