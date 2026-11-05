@@ -13,6 +13,7 @@
     "datetime_first": "2023-01-01 00:00:00",
     "datetime_last": "2024-12-31 00:00:00",
     "detection_rate": null,
+    "detection_rate_ci95": null,
     "detection_threshold": 0.2,
     "detector": {
       "adaptive_threshold": true,
@@ -21,6 +22,7 @@
       "theta": 0.1
     },
     "evidence_tag": "cited-unverified",
+    "false_alarm_ci95": null,
     "false_alarm_rate": null,
     "ftcp_count": 0,
     "lhe_count": 0,
@@ -30,7 +32,60 @@
     "max_g_eff": 0.0,
     "orders_placed": false,
     "provenance": "data/de440_timeseries.csv column Lambda is a precomputed derived series. This checkout has no generator for the column. It is not public market data. 2921 numeric rows, 2023-01-01 00:00:00 to 2024-12-31 00:00:00, committed in 6fd1d9d8.",
-    "rates_reason": "this series has no signal-in-noise labels in the repo, so the analyzer counts are not a detection rate or a false-alarm rate",
+    "rates_reason": "Measured HOLD. The missing ingredient is exogenous signal-present versus noise-only labels on held-out trials. This derived series has 2921 samples. A disjoint time split would put 1460 samples in calibration and 1461 in the held-out half. The split was not scored. Fields inspected: E, Gamma, H, L2_event, Lambda, O, Q, alpha, datetime, epsilon, is_conjunction, is_opposition. Signal-present fields found: none. Event columns on this file were counted and rejected as ground truth: L2_event (634 rows marked 1), is_conjunction (504 rows marked 1), is_opposition (160 rows marked 1). A marked row is not a noise-only twin trial, and this file has no generator, so those flags are not a measured signal-in-noise label. The calibration path fits upper_threshold at tail 0.05 on noise-only scores and scores the held-out half with Wilson intervals. Noise-only trials: 0. Signal-present trials: 0. The threshold was not fit. Wilson intervals were not computed. Seeded shuffles and planted impulses are tagged synthetic_planted and are not written here. No order was sent. The release boundary stays HOLD.",
+    "rates_receipt": {
+      "calibration_slots": 1460,
+      "calibration_tail": 0.05,
+      "detection_rate": null,
+      "detection_rate_ci95": null,
+      "evidence_tag": "measured",
+      "false_alarm_ci95": null,
+      "false_alarm_rate": null,
+      "field_names": [
+        "E",
+        "Gamma",
+        "H",
+        "L2_event",
+        "Lambda",
+        "O",
+        "Q",
+        "alpha",
+        "datetime",
+        "epsilon",
+        "is_conjunction",
+        "is_opposition"
+      ],
+      "held_out_slots": 1461,
+      "interval": "Wilson 95% was not computed because the binomial totals are 0",
+      "label_fields_found": [],
+      "label_fields_looked_for": [
+        "signal_present",
+        "noise_only",
+        "signal_in_noise"
+      ],
+      "live_trading": false,
+      "missing_ingredient": "exogenous signal-present versus noise-only labels on held-out trials",
+      "noise_only_trials": 0,
+      "orders_placed": false,
+      "planted_rates_copied": false,
+      "rates_count_as_market_rate": false,
+      "rates_count_as_telemetry": false,
+      "rates_verdict": "HOLD",
+      "reason": "Measured HOLD. The missing ingredient is exogenous signal-present versus noise-only labels on held-out trials. This derived series has 2921 samples. A disjoint time split would put 1460 samples in calibration and 1461 in the held-out half. The split was not scored. Fields inspected: E, Gamma, H, L2_event, Lambda, O, Q, alpha, datetime, epsilon, is_conjunction, is_opposition. Signal-present fields found: none. Event columns on this file were counted and rejected as ground truth: L2_event (634 rows marked 1), is_conjunction (504 rows marked 1), is_opposition (160 rows marked 1). A marked row is not a noise-only twin trial, and this file has no generator, so those flags are not a measured signal-in-noise label. The calibration path fits upper_threshold at tail 0.05 on noise-only scores and scores the held-out half with Wilson intervals. Noise-only trials: 0. Signal-present trials: 0. The threshold was not fit. Wilson intervals were not computed. Seeded shuffles and planted impulses are tagged synthetic_planted and are not written here. No order was sent. The release boundary stays HOLD.",
+      "rejected_event_columns": {
+        "L2_event": 634,
+        "is_conjunction": 504,
+        "is_opposition": 160
+      },
+      "release_boundary": "HOLD",
+      "samples": 2921,
+      "schema": "aureon.qgita.rates-hold.v1",
+      "signal_present_trials": 0,
+      "split": "first half by sample order would calibrate; the second half would be held out; the halves would be disjoint; the split was not scored",
+      "split_possible": true,
+      "threshold_fit": false,
+      "verdict": "measured_rates_hold"
+    },
     "rates_verdict": "HOLD",
     "regime": {
       "description": "Market in ordered, stable regime",
@@ -62,7 +117,7 @@
     "status": "complete",
     "timestamps": "sample index. analyze_price_stream uses range(len(prices)) when no timestamps are passed",
     "valid_ftcps": [],
-    "verdict": "measured_counts_rates_hold"
+    "verdict": "measured_rates_hold"
   },
   "on_hnc_series": {
     "buffer_note": "QGITAMarketAnalyzer keeps a 1000-sample buffer; analyze sees that tail",
@@ -74,6 +129,7 @@
       "q_anomaly": 0.5597341106865349
     },
     "detection_rate": null,
+    "detection_rate_ci95": null,
     "detection_threshold": 0.2,
     "detector": {
       "adaptive_threshold": true,
@@ -81,6 +137,7 @@
       "epsilon": 0.05,
       "theta": 0.1
     },
+    "false_alarm_ci95": null,
     "false_alarm_rate": null,
     "ftcp_count": 0,
     "lhe_count": 0,
@@ -89,7 +146,43 @@
     "lighthouse_threshold_sigma": 2.0,
     "max_g_eff": 0.0,
     "orders_placed": false,
-    "rates_reason": "this series has no signal-in-noise labels in the repo, so the analyzer counts are not a detection rate or a false-alarm rate",
+    "rates_reason": "Measured HOLD. The missing ingredient is exogenous signal-present versus noise-only labels on held-out trials. This formula series has 100 samples. A disjoint time split would put 50 samples in calibration and 50 in the held-out half. The split was not scored. Fields inspected: none. Signal-present fields found: none. The calibration path fits upper_threshold at tail 0.05 on noise-only scores and scores the held-out half with Wilson intervals. Noise-only trials: 0. Signal-present trials: 0. The threshold was not fit. Wilson intervals were not computed. Seeded shuffles and planted impulses are tagged synthetic_planted and are not written here. No order was sent. The release boundary stays HOLD.",
+    "rates_receipt": {
+      "calibration_slots": 50,
+      "calibration_tail": 0.05,
+      "detection_rate": null,
+      "detection_rate_ci95": null,
+      "evidence_tag": "measured",
+      "false_alarm_ci95": null,
+      "false_alarm_rate": null,
+      "field_names": [],
+      "held_out_slots": 50,
+      "interval": "Wilson 95% was not computed because the binomial totals are 0",
+      "label_fields_found": [],
+      "label_fields_looked_for": [
+        "signal_present",
+        "noise_only",
+        "signal_in_noise"
+      ],
+      "live_trading": false,
+      "missing_ingredient": "exogenous signal-present versus noise-only labels on held-out trials",
+      "noise_only_trials": 0,
+      "orders_placed": false,
+      "planted_rates_copied": false,
+      "rates_count_as_market_rate": false,
+      "rates_count_as_telemetry": false,
+      "rates_verdict": "HOLD",
+      "reason": "Measured HOLD. The missing ingredient is exogenous signal-present versus noise-only labels on held-out trials. This formula series has 100 samples. A disjoint time split would put 50 samples in calibration and 50 in the held-out half. The split was not scored. Fields inspected: none. Signal-present fields found: none. The calibration path fits upper_threshold at tail 0.05 on noise-only scores and scores the held-out half with Wilson intervals. Noise-only trials: 0. Signal-present trials: 0. The threshold was not fit. Wilson intervals were not computed. Seeded shuffles and planted impulses are tagged synthetic_planted and are not written here. No order was sent. The release boundary stays HOLD.",
+      "rejected_event_columns": {},
+      "release_boundary": "HOLD",
+      "samples": 100,
+      "schema": "aureon.qgita.rates-hold.v1",
+      "signal_present_trials": 0,
+      "split": "first half by sample order would calibrate; the second half would be held out; the halves would be disjoint; the split was not scored",
+      "split_possible": true,
+      "threshold_fit": false,
+      "verdict": "measured_rates_hold"
+    },
     "rates_verdict": "HOLD",
     "regime": {
       "description": "Market in ordered, stable regime",
@@ -120,7 +213,7 @@
     "status": "complete",
     "timestamps": "step index times HarmonicRealityField.dt",
     "valid_ftcps": [],
-    "verdict": "measured_counts_rates_hold"
+    "verdict": "measured_rates_hold"
   },
   "on_market_series": {
     "authenticated": false,
@@ -133,6 +226,7 @@
       "q_anomaly": 0.09844581291106369
     },
     "detection_rate": null,
+    "detection_rate_ci95": null,
     "detection_threshold": 0.2,
     "detector": {
       "adaptive_threshold": true,
@@ -141,6 +235,7 @@
       "theta": 0.1
     },
     "evidence_tag": "measured",
+    "false_alarm_ci95": null,
     "false_alarm_rate": null,
     "ftcp_count": 0,
     "key_group": "public:kraken",
@@ -151,7 +246,52 @@
     "max_g_eff": 0.0,
     "orders_placed": false,
     "provenance": "https://api.kraken.com/0/public/OHLC XBTUSD 1h key-group public:kraken. 2026-10-29T19:00:00Z to 2026-11-05T19:00:00Z. Prices are bar closes. Timestamps are venue bar open times. No order was sent.",
-    "rates_reason": "this series has no market signal-in-noise labels. Seeded shuffles and planted impulses are tagged synthetic_planted and are not written here. These analyzer counts are not a detection rate or a false-alarm rate.",
+    "rates_reason": "Measured HOLD. The missing ingredient is exogenous signal-present versus noise-only labels on held-out trials. This public-market series has 168 samples. A disjoint time split would put 84 samples in calibration and 84 in the held-out half. The split was not scored. Fields inspected: close, high, low, open, open_time, range_fraction, return, volume. Signal-present fields found: none. The paper next-bar close-to-close returns on this pack are trade-outcome labels. They do not say signal-present versus noise-only, and they were not scored as a detection rate. The calibration path fits upper_threshold at tail 0.05 on noise-only scores and scores the held-out half with Wilson intervals. Noise-only trials: 0. Signal-present trials: 0. The threshold was not fit. Wilson intervals were not computed. Seeded shuffles and planted impulses are tagged synthetic_planted and are not written here. No order was sent. The release boundary stays HOLD.",
+    "rates_receipt": {
+      "calibration_slots": 84,
+      "calibration_tail": 0.05,
+      "detection_rate": null,
+      "detection_rate_ci95": null,
+      "evidence_tag": "measured",
+      "false_alarm_ci95": null,
+      "false_alarm_rate": null,
+      "field_names": [
+        "close",
+        "high",
+        "low",
+        "open",
+        "open_time",
+        "range_fraction",
+        "return",
+        "volume"
+      ],
+      "held_out_slots": 84,
+      "interval": "Wilson 95% was not computed because the binomial totals are 0",
+      "label_fields_found": [],
+      "label_fields_looked_for": [
+        "signal_present",
+        "noise_only",
+        "signal_in_noise"
+      ],
+      "live_trading": false,
+      "missing_ingredient": "exogenous signal-present versus noise-only labels on held-out trials",
+      "noise_only_trials": 0,
+      "orders_placed": false,
+      "planted_rates_copied": false,
+      "rates_count_as_market_rate": false,
+      "rates_count_as_telemetry": false,
+      "rates_verdict": "HOLD",
+      "reason": "Measured HOLD. The missing ingredient is exogenous signal-present versus noise-only labels on held-out trials. This public-market series has 168 samples. A disjoint time split would put 84 samples in calibration and 84 in the held-out half. The split was not scored. Fields inspected: close, high, low, open, open_time, range_fraction, return, volume. Signal-present fields found: none. The paper next-bar close-to-close returns on this pack are trade-outcome labels. They do not say signal-present versus noise-only, and they were not scored as a detection rate. The calibration path fits upper_threshold at tail 0.05 on noise-only scores and scores the held-out half with Wilson intervals. Noise-only trials: 0. Signal-present trials: 0. The threshold was not fit. Wilson intervals were not computed. Seeded shuffles and planted impulses are tagged synthetic_planted and are not written here. No order was sent. The release boundary stays HOLD.",
+      "rejected_event_columns": {},
+      "release_boundary": "HOLD",
+      "samples": 168,
+      "schema": "aureon.qgita.rates-hold.v1",
+      "signal_present_trials": 0,
+      "split": "first half by sample order would calibrate; the second half would be held out; the halves would be disjoint; the split was not scored",
+      "split_possible": true,
+      "threshold_fit": false,
+      "verdict": "measured_rates_hold"
+    },
     "rates_verdict": "HOLD",
     "regime": {
       "description": "Market in ordered, stable regime",
@@ -190,6 +330,6 @@
     },
     "timestamps": "venue bar open time in unix seconds; price is the bar close",
     "valid_ftcps": [],
-    "verdict": "measured_counts_rates_hold"
+    "verdict": "measured_rates_hold"
   }
 }

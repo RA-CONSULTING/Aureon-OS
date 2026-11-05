@@ -83,22 +83,50 @@ def test_brain_proof_matches_the_committed_run_and_holds_without_labels():
     market_rates = fresh["qgita"]["on_market_series"]
     assert market_rates["evidence_tag"] == "measured"
     assert market_rates["rates_verdict"] == "HOLD"
-    assert market_rates["verdict"] == "measured_counts_rates_hold"
+    assert market_rates["verdict"] == "measured_rates_hold"
     assert market_rates["detection_rate"] is None
     assert market_rates["false_alarm_rate"] is None
+    assert market_rates["detection_rate_ci95"] is None
+    assert market_rates["false_alarm_ci95"] is None
     assert "signal_in_noise" not in market_rates
     assert "synthetic_planted" in market_rates["rates_reason"]
     assert market_rates.get("tag") != "synthetic_planted"
     assert market_rates["orders_placed"] is False
+    receipt = market_rates["rates_receipt"]
+    assert receipt["evidence_tag"] == "measured"
+    assert receipt["missing_ingredient"] == (
+        "exogenous signal-present versus noise-only labels on held-out trials"
+    )
+    assert receipt["planted_rates_copied"] is False
+    assert receipt["rates_count_as_market_rate"] is False
+    assert receipt["rates_count_as_telemetry"] is False
+    assert receipt["threshold_fit"] is False
+    assert receipt["signal_present_trials"] == 0
+    assert receipt["noise_only_trials"] == 0
+    assert receipt["calibration_tail"] == 0.05
+    assert receipt["release_boundary"] == "HOLD"
+    assert receipt["orders_placed"] is False
+    assert "paper" in receipt["reason"]
     assert index["qgita_on_market_detection_rate"] is None
     assert index["qgita_on_market_rates_verdict"] == "HOLD"
+    assert index["qgita_on_market_verdict"] == "measured_rates_hold"
+    assert index["qgita_rates_missing_ingredient"] == receipt["missing_ingredient"]
     assert "qgita_on_market_false_alarm_rate" not in index
     assert fresh["auris"]["hold_nodes"] == []
     assert "hit_rate" not in fresh["auris"]
     assert fresh["qgita"]["derived_series"]["detection_rate"] is None
     assert fresh["qgita"]["derived_series"]["false_alarm_rate"] is None
     assert fresh["qgita"]["derived_series"]["rates_verdict"] == "HOLD"
+    assert fresh["qgita"]["derived_series"]["verdict"] == "measured_rates_hold"
+    derived_receipt = fresh["qgita"]["derived_series"]["rates_receipt"]
+    assert derived_receipt["missing_ingredient"] == receipt["missing_ingredient"]
+    assert derived_receipt["rejected_event_columns"]["is_conjunction"] > 0
+    assert derived_receipt["planted_rates_copied"] is False
     assert fresh["qgita"]["on_hnc_series"]["detection_rate"] is None
+    assert fresh["qgita"]["on_hnc_series"]["false_alarm_rate"] is None
+    assert fresh["qgita"]["on_hnc_series"]["verdict"] == "measured_rates_hold"
+    assert fresh["qgita"]["on_hnc_series"]["rates_receipt"]["missing_ingredient"] == receipt["missing_ingredient"]
+    assert fresh["together"]["qgita_on_the_formula_series"] == "measured_rates_hold"
     joined = fresh["together"]["auris_joined_to_lambda"]
     assert joined["verdict"] == "HOLD"
     assert joined["go_live"] == "HOLD"
