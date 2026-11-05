@@ -14,8 +14,14 @@ bar's close. The next bar's close-to-close return is the outcome label.
 This checkout has no filled order for the series, so the label is paper.
 Trade readiness is then a measured pass or a measured fail. The release
 boundary stays HOLD. When the pack is absent or HOLD, the omitted call is
-no_data and trade readiness stays HOLD. A zero-input probe still names any
-node that stays without a value when the four market fields are present as 0.
+no_data and trade readiness stays HOLD. A measured fail records why the
+ready mark stayed off. The stored spread prints may all fall after the
+labelled decision closes, so Deer has no reading and the call returns
+no_data. A sweep of the existing node formulas may also never emit that
+mark. Those facts are not a reason to lower the mark, to copy a later
+spread print onto an earlier bar, or to clear the release boundary. A
+zero-input probe still names any node that stays without a value when the
+four market fields are present as 0.
 
 The same coherence method is then called with the formula-path Λ(t) series.
 The value is passed under the field names already used for that series:
@@ -301,10 +307,356 @@ def _paper_labels(queen: Any, pack: dict[str, Any]) -> list[dict[str, Any]]:
     return labels
 
 
+def _coherence_compare(test: ast.AST) -> tuple[str, float] | None:
+    if not isinstance(test, ast.Compare) or len(test.ops) != 1 or len(test.comparators) != 1:
+        return None
+    left = test.left
+    if not isinstance(left, ast.Name) or left.id != "coherence":
+        return None
+    op = test.ops[0]
+    if isinstance(op, ast.GtE):
+        symbol = ">="
+    elif isinstance(op, ast.Gt):
+        symbol = ">"
+    else:
+        return None
+    raw = test.comparators[0]
+    if not isinstance(raw, ast.Constant) or isinstance(raw.value, bool):
+        return None
+    try:
+        threshold = float(raw.value)
+    except (TypeError, ValueError):
+        return None
+    return symbol, threshold
+
+
+def _status_constant(body: list[ast.stmt]) -> str | None:
+    for stmt in body:
+        for node in ast.walk(stmt):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) and "COHERENCE" in node.value:
+                return node.value
+    return None
+
+
+def _status_ladder(method: Any) -> dict[str, Any]:
+    """Cited coherence compares in ``get_auris_coherence``, in source order."""
+
+    tree = _method_tree(method)
+    compares: list[dict[str, Any]] = []
+    else_status = None
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.If):
+            continue
+        parsed = _coherence_compare(node.test)
+        if parsed is None:
+            continue
+        symbol, threshold = parsed
+        text = _status_constant(node.body)
+        compares.append(
+            {
+                "op": symbol,
+                "ready_mark": bool(text and _READY in text),
+                "status": text,
+                "threshold": threshold,
+            }
+        )
+        orelse_is_if = len(node.orelse) == 1 and isinstance(node.orelse[0], ast.If)
+        if node.orelse and not orelse_is_if:
+            else_status = _status_constant(node.orelse)
+    ready = next((item for item in compares if item["ready_mark"]), None)
+    later_buried = False
+    for index, item in enumerate(compares):
+        if item["op"] != ">":
+            continue
+        for earlier in compares[:index]:
+            if earlier["op"] == ">=" and earlier["threshold"] <= item["threshold"]:
+                later_buried = True
+    return {
+        "compares": compares,
+        "else_status": else_status,
+        "evidence_tag": "cited",
+        "later_compare_buried_under_a_lower_band": later_buried,
+        "ready_mark": _READY,
+        "ready_threshold": None if ready is None else ready["threshold"],
+        "source": "aureon.utils.aureon_queen_hive_mind.QueenHiveMind.get_auris_coherence",
+    }
+
+
+def _window_matches_else(coherence: float | None, ladder: dict[str, Any]) -> bool | None:
+    if coherence is None:
+        return None
+    for item in ladder["compares"]:
+        threshold = float(item["threshold"])
+        if item["op"] == ">=" and coherence >= threshold:
+            return False
+        if item["op"] == ">" and coherence > threshold:
+            return False
+    return True
+
+
+def _label_spread_clock(pack: dict[str, Any], labels: list[dict[str, Any]]) -> dict[str, Any]:
+    """Where the stored bid/ask prints sit relative to the labelled decision closes."""
+
+    prints = pack.get("spread_prints") if isinstance(pack.get("spread_prints"), list) else []
+    times: list[int] = []
+    for item in prints:
+        if not isinstance(item, dict):
+            continue
+        stamp = _optional_count(item.get("time"))
+        if stamp is not None:
+            times.append(stamp)
+    closes = [int(row["decision_close_unix"]) for row in labels if _optional_count(row.get("decision_close_unix")) is not None]
+    last_close = max(closes) if closes else None
+    first_print = min(times) if times else None
+    gap = None if first_print is None or last_close is None else first_print - last_close
+    usable = 0 if last_close is None else sum(1 for stamp in times if stamp <= last_close)
+    known = sum(1 for row in labels if row.get("spread_known_at_decision") is True)
+    return {
+        "evidence_tag": "measured",
+        "first_print_minus_last_labelled_close_seconds": gap,
+        "first_print_unix": first_print,
+        "labels_with_spread_known": known,
+        "last_labelled_decision_close_unix": last_close,
+        "prints": len(times),
+        "prints_at_or_before_last_labelled_close": usable,
+    }
+
+
+def _call_coherence(queen: Any, texture: dict[str, float]) -> tuple[float | None, str]:
+    coherence, status = queen.get_auris_coherence(texture)
+    if coherence is None:
+        return None, str(status)
+    return float(coherence), str(status)
+
+
+def _consider(
+    best: dict[str, Any] | None,
+    coherence: float | None,
+    status: str,
+    texture: dict[str, float],
+) -> dict[str, Any] | None:
+    if coherence is None:
+        return best
+    if best is None or coherence > float(best["coherence"]):
+        return {"coherence": coherence, "inputs": dict(texture), "status": status}
+    return best
+
+
+def _formula_ceiling(queen: Any) -> dict[str, Any]:
+    """Highest coherence the existing formulas returned on a stated sweep.
+
+    The corner is volatility 0, volume 1, spread 1. In ``_auris_role_value``,
+    for volatility at or above 0, volume in [0, 1], and spread in [0, 1],
+    Tiger, Hummingbird, and Panda do not rise as volatility rises, Falcon and
+    CargoShip do not rise as volume falls, and Deer does not rise as spread
+    falls.     Momentum is swept from -2 to 4 so the positive side, where Owl adds
+    its bonus, covers a full repeat after Falcon has clamped. This is not
+    a new threshold and it is not a trade.
+    """
+
+    calls = 0
+    ready_marks = 0
+    best: dict[str, Any] | None = None
+    for step in range(-2000, 4001):
+        texture = {"momentum": step / 1000, "spread": 1.0, "volatility": 0.0, "volume": 1.0}
+        coherence, status = _call_coherence(queen, texture)
+        calls += 1
+        if _READY in status:
+            ready_marks += 1
+        best = _consider(best, coherence, status, texture)
+    sweep_highest = None if best is None else float(best["coherence"])
+    probes = 0
+    probe_highest = None
+    if best is not None:
+        momentum = float(best["inputs"]["momentum"])
+        for shift in (-4.0, -2.0, 2.0, 4.0):
+            texture = {"momentum": momentum + shift, "spread": 1.0, "volatility": 0.0, "volume": 1.0}
+            coherence, status = _call_coherence(queen, texture)
+            calls += 1
+            probes += 1
+            if _READY in status:
+                ready_marks += 1
+            if coherence is not None and (probe_highest is None or coherence > probe_highest):
+                probe_highest = coherence
+            best = _consider(best, coherence, status, texture)
+    corner_highest = sweep_highest
+    grid_best: dict[str, Any] | None = None
+    grid_calls = 0
+    for volatility in (0.0, 0.3, 1.0):
+        for volume in (0.0, 1.0):
+            for spread in (0.0, 1.0):
+                for step in range(-40, 41):
+                    texture = {
+                        "momentum": step / 20,
+                        "spread": spread,
+                        "volatility": volatility,
+                        "volume": volume,
+                    }
+                    coherence, status = _call_coherence(queen, texture)
+                    calls += 1
+                    grid_calls += 1
+                    if _READY in status:
+                        ready_marks += 1
+                    grid_best = _consider(grid_best, coherence, status, texture)
+                    best = _consider(best, coherence, status, texture)
+    highest = None if best is None else float(best["coherence"])
+    grid_highest = None if grid_best is None else float(grid_best["coherence"])
+    return {
+        "calls": calls,
+        "confirmation_grid_calls": grid_calls,
+        "confirmation_grid_exceeded_corner": bool(
+            grid_highest is not None and corner_highest is not None and grid_highest > corner_highest
+        ),
+        "confirmation_grid_highest_coherence": grid_highest,
+        "domain": (
+            "momentum from -2 to 4 by 0.001 at volatility 0, volume 1, spread 1; "
+            "plus that argmax shifted by -4, -2, 2, and 4; "
+            "plus a confirmation grid of volatility in {0, 0.3, 1}, volume in {0, 1}, "
+            "spread in {0, 1}, momentum from -2 to 2 by 0.05. "
+            "Negative volatility is not in this sweep. derive_fields does not emit it"
+        ),
+        "period_note": (
+            "cited from _auris_role_value: once abs(momentum) is at least 1, Falcon is clamped at 1, "
+            "and the sine and cosine terms repeat every 2. "
+            "The sweep covers a full repeat of that pair on the positive side, where Owl adds its bonus"
+        ),
+        "period_note_evidence_tag": "cited",
+        "momentum_sweep_highest_coherence": sweep_highest,
+        "evidence_tag": "measured",
+        "highest_coherence": highest,
+        "highest_inputs": None if best is None else best["inputs"],
+        "highest_status": None if best is None else best["status"],
+        "period_probes": probes,
+        "period_probe_highest_coherence": probe_highest,
+        "ready_mark": _READY,
+        "ready_marks": ready_marks,
+    }
+
+
+def _clock_sentence(clock: dict[str, Any]) -> str:
+    prints = int(clock["prints"])
+    usable = int(clock["prints_at_or_before_last_labelled_close"])
+    known = int(clock["labels_with_spread_known"])
+    gap = clock["first_print_minus_last_labelled_close_seconds"]
+    if prints == 0:
+        return "the pack has no spread prints, so Deer has no spread at any labelled decision close"
+    if usable == 0 and isinstance(gap, int) and gap > 0:
+        return (
+            "spread prints at or before a labelled decision close: 0; "
+            f"first spread print is {gap} seconds after the last labelled decision close"
+        )
+    return (
+        f"spread prints at or before the last labelled decision close: {usable}; "
+        f"labels with spread known at the decision: {known}"
+    )
+
+
+def _diagnosis(
+    labels: list[dict[str, Any]],
+    *,
+    window_coherence: float | None,
+    window_status: str,
+    clock: dict[str, Any],
+    ceiling: dict[str, Any],
+    ladder: dict[str, Any],
+) -> dict[str, Any]:
+    numeric = sum(1 for row in labels if row.get("coherence") is not None)
+    no_data = sum(1 for row in labels if row.get("coherence_status") == "no_data")
+    matched_else = _window_matches_else(window_coherence, ladder)
+    ready_threshold = ladder.get("ready_threshold")
+    below_ready = (
+        ceiling["ready_marks"] == 0
+        and ready_threshold is not None
+        and ceiling["highest_coherence"] is not None
+        and float(ceiling["highest_coherence"]) < float(ready_threshold)
+    )
+    if window_coherence is None:
+        window_sentence = f"window call status: {window_status}; the window call has no numeric coherence"
+    elif _READY in window_status:
+        window_sentence = (
+            f"window call status: {window_status}; "
+            f"window coherence {window_coherence} contains the ready mark"
+        )
+    else:
+        window_sentence = (
+            f"window call status: {window_status}; "
+            f"window coherence {window_coherence} does not contain the ready mark"
+        )
+    order_bits = [
+        f"coherence {item['op']} {item['threshold']}"
+        + (" (ready mark)" if item["ready_mark"] else "")
+        for item in ladder["compares"]
+    ]
+    if matched_else is True:
+        order_sentence = (
+            "cited status compares in order: "
+            + ", ".join(order_bits)
+            + "; the window coherence matches none of them, so the final else is the branch that ran"
+        )
+    elif matched_else is False:
+        order_sentence = (
+            "cited status compares in order: "
+            + ", ".join(order_bits)
+            + "; the window coherence matches an earlier branch"
+        )
+    else:
+        order_sentence = "cited status compares in order: " + ", ".join(order_bits)
+    if ladder.get("later_compare_buried_under_a_lower_band") and matched_else is True:
+        order_sentence += (
+            "; a later compare sits under a lower band and does not run, "
+            "and this window figure is below that lower band, so the order is not what keeps this window off the ready mark"
+        )
+    if int(clock["prints_at_or_before_last_labelled_close"]) == 0:
+        next_stage = (
+            "next stage needs a public bid/ask history whose print times are at or before the labelled decision closes, "
+            "so Deer can be scored on those bars without using a later print"
+        )
+    else:
+        next_stage = (
+            "spread prints already overlap at least one labelled decision close, "
+            "so the missing piece is not the spread clock"
+        )
+    if below_ready:
+        next_stage += (
+            "; the ready mark stays off on this sweep of the existing formulas, "
+            "including volatility 0, volume 1, and spread 1"
+        )
+    next_stage += (
+        "; this stage does not change the node formulas or the ready mark, "
+        "does not copy a later spread print onto an earlier bar, and does not invent outcome labels"
+    )
+    summary = (
+        f"{_clock_sentence(clock)}; "
+        f"labelled bars with a numeric coherence: {numeric}; "
+        f"labelled bars returned no_data: {no_data}; "
+        f"{window_sentence}; "
+        f"formula sweep highest coherence {ceiling['highest_coherence']}; "
+        f"ready marks {ceiling['ready_marks']} of {ceiling['calls']}; "
+        f"{order_sentence}; "
+        f"{next_stage}"
+    )
+    return {
+        "evidence_tag": "measured",
+        "formula_ceiling": ceiling,
+        "labelled_bars_no_data": no_data,
+        "labelled_bars_with_coherence": numeric,
+        "live_trading": False,
+        "next_stage": next_stage,
+        "orders_placed": False,
+        "ready_mark_below_sweep": below_ready,
+        "spread_clock": clock,
+        "status_ladder": ladder,
+        "summary": summary,
+        "window_matches_final_else": matched_else,
+    }
+
+
 def _trade_readiness(
     pack: dict[str, Any],
     labels: list[dict[str, Any]] | None,
     *,
+    queen: Any,
+    window_coherence: float | None,
     window_status: str,
 ) -> dict[str, Any]:
     """Score paper labels with the method's own ready-to-trade status."""
@@ -356,6 +708,14 @@ def _trade_readiness(
             "measured fail: a paper long the method marked ready to trade "
             "did not have a higher next close"
         )
+    diagnosis = _diagnosis(
+        labels,
+        window_coherence=window_coherence,
+        window_status=window_status,
+        clock=_label_spread_clock(pack, labels),
+        ceiling=_formula_ceiling(queen),
+        ladder=_status_ladder(type(queen).get_auris_coherence),
+    )
     reason = (
         f"paper trade-outcome labels: {len(labels)} next-bar close-to-close returns "
         f"from {pack.get('key_group')} {pack.get('symbol')}; "
@@ -368,12 +728,13 @@ def _trade_readiness(
         f"entries with a higher next close: {higher}; "
         f"entries without a higher next close: {not_higher}; "
         "a spread print is used only when its time is at or before the decision close; "
-        f"window call status: {window_status}; "
+        f"{diagnosis['summary']}; "
         f"{because}; "
         "release boundary stays HOLD"
     )
     return {
         "clownfish_readings": clownfish_reading,
+        "diagnosis": diagnosis,
         "entries": len(entries),
         "entries_not_higher": not_higher,
         "entries_with_higher_close": higher,
@@ -423,14 +784,26 @@ def _run_auris(pack: dict[str, Any]) -> dict[str, Any]:
             "Key material was not read. No order was sent."
         )
         market_data: dict[str, float] | None = texture
-        trade = _trade_readiness(pack, _paper_labels(queen, pack), window_status=str(status))
+        trade = _trade_readiness(
+            pack,
+            _paper_labels(queen, pack),
+            queen=queen,
+            window_coherence=None if coherence is None else float(coherence),
+            window_status=str(status),
+        )
     else:
         coherence, status = omitted_coherence, omitted_status
         nodes = None
         missing = None
         market_data = None
         market_note = "no market series was supplied, so the omitted call is no_data"
-        trade = _trade_readiness(pack, None, window_status=str(status))
+        trade = _trade_readiness(
+            pack,
+            None,
+            queen=queen,
+            window_coherence=None if coherence is None else float(coherence),
+            window_status=str(status),
+        )
     return {
         "source": "aureon.utils.aureon_queen_hive_mind.QueenHiveMind.get_auris_coherence",
         "market_data": market_data,
