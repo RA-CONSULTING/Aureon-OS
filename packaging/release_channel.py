@@ -6,9 +6,9 @@ builds a git archive, a zip, checksums, and a manifest. It does not create a
 tag, does not call GitHub, does not move PINNED_COMMIT, does not place an
 order, and does not report the system alive.
 
-`publish` exits non-zero while receipts 1-5 are unverified on HEAD. Even when
-they are verified, `publish` only prints that a person may publish. It still
-does not create the release.
+`publish` always exits non-zero. Go-live stays HOLD. Charlie, Buzz, and Spike
+PASS do not publish. The command waits for Gary's own yes and still does not
+create a release or a tag.
 """
 
 from __future__ import annotations
@@ -42,6 +42,7 @@ STATIC_REQUIRED_PHRASES = (
     "No order is placed.",
     "production go-live is not cleared",
     "Receipts 1-5 are not verified on this commit",
+    "Go-live stays HOLD",
 )
 
 FORBIDDEN_PHRASES = (
@@ -50,6 +51,10 @@ FORBIDDEN_PHRASES = (
     "release boundary-CLEAR",
     "badge stays green",
     "production go-live is cleared on this commit",
+    "production-ready",
+    "production ready",
+    "production_ready",
+    "validated",
 )
 
 RECEIPT_SPECS = (
@@ -204,7 +209,7 @@ def evaluate(root: Path | None = None) -> dict:
     notes = _notes_text(root)
     readme = (root / "README.md").read_text(encoding="utf-8")
     receipts = [_receipt_row(root, head, spec) for spec in RECEIPT_SPECS]
-    production_publish_allowed = all(row["verified_on_head"] for row in receipts)
+    receipts_verified_on_head = all(row["verified_on_head"] for row in receipts)
     problems: list[str] = []
     if pin != PUBLISHED_PIN:
         problems.append(
@@ -215,23 +220,17 @@ def evaluate(root: Path | None = None) -> dict:
         problems.append("README.md is missing the orange release-boundary HOLD badge.")
     if not notes:
         problems.append(f"{NOTES.as_posix()} is missing.")
+    if "Go-live stays HOLD" not in readme:
+        problems.append("README.md does not show go-live as HOLD.")
     required = (*STATIC_REQUIRED_PHRASES, pin, LINEAGE_TIP)
-    if production_publish_allowed:
-        required = tuple(
-            phrase
-            for phrase in required
-            if phrase
-            not in {
-                "production go-live is not cleared",
-                "Receipts 1-5 are not verified on this commit",
-            }
-        ) + ("production go-live is cleared on this commit",)
     for phrase in required:
         if phrase not in notes:
             problems.append(f"release notes are missing {phrase!r}")
-    for phrase in FORBIDDEN_PHRASES:
-        if phrase in notes:
-            problems.append(f"release notes contain forbidden phrase {phrase!r}")
+    for label, text in (("release notes", notes), ("README.md", readme)):
+        lowered = text.lower()
+        for phrase in FORBIDDEN_PHRASES:
+            if phrase.lower() in lowered:
+                problems.append(f"{label} contain forbidden phrase {phrase!r}")
     if not _ancestor(root, LINEAGE_TIP, head):
         problems.append(f"{LINEAGE_TIP} is not an ancestor of HEAD {head}")
     for row in receipts:
@@ -251,8 +250,12 @@ def evaluate(root: Path | None = None) -> dict:
         "pin_moved": False,
         "orange_badge": "HOLD" if ORANGE_BADGE in readme else "missing",
         "release_boundary": "HOLD",
-        "go_live_clear": production_publish_allowed,
-        "production_publish_allowed": production_publish_allowed,
+        "go_live": "HOLD",
+        "go_live_clear": False,
+        "receipts_verified_on_head": receipts_verified_on_head,
+        "production_publish_allowed": False,
+        "gary_yes_required": True,
+        "triple_pass_publishes": False,
         "system_alive": False,
         "live_trading": False,
         "orders_placed": False,
@@ -338,10 +341,13 @@ def archive(root: Path | None = None, dest: Path | None = None, tag: str | None 
         "tag": tag,
         "pin": report["pin"],
         "pin_moved": False,
-        "release_boundary": "HOLD" if not report["production_publish_allowed"] else "receipts-verified",
+        "release_boundary": "HOLD",
+        "go_live": "HOLD",
         "orange_badge": report["orange_badge"],
-        "go_live_clear": report["production_publish_allowed"],
-        "production_publish_allowed": report["production_publish_allowed"],
+        "go_live_clear": False,
+        "production_publish_allowed": False,
+        "gary_yes_required": True,
+        "triple_pass_publishes": False,
         "system_alive": False,
         "live_trading": False,
         "orders_placed": False,
@@ -354,8 +360,8 @@ def archive(root: Path | None = None, dest: Path | None = None, tag: str | None 
     }
     if manifest["system_alive"] is not False or manifest["orders_placed"] is not False:
         raise ValueError("refusing a manifest that claims alive or an order")
-    if not report["production_publish_allowed"] and manifest["go_live_clear"] is not False:
-        raise ValueError("refusing to mark go_live_clear while receipts 1-5 are unverified")
+    if manifest["go_live"] != "HOLD" or manifest["go_live_clear"] is not False:
+        raise ValueError("refusing a manifest that clears go-live")
     manifest_path = dest / "release-channel.json"
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     rows = list(archives)
@@ -387,7 +393,7 @@ def main(argv: list[str] | None = None) -> int:
     tag_parser.add_argument("tag")
     sub.add_parser(
         "publish",
-        help="Exit 0 only when receipts 1-5 are verified on HEAD. Never calls GitHub.",
+        help="Always refuse. Go-live stays HOLD until Gary's own yes. Never calls GitHub.",
     )
     args = parser.parse_args(argv)
     root = repo_root()
@@ -421,29 +427,25 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     report = evaluate(root)
     if report["problems"]:
-        _print({"problems": report["problems"], "published": False})
+        _print({"problems": report["problems"], "published": False, "go_live": "HOLD"})
         return 1
-    if not report["production_publish_allowed"]:
-        _print(
-            {
-                "published": False,
-                "production_publish_allowed": False,
-                "reason": "Receipts 1-5 are not verified on this commit. Refusing to publish.",
-                "receipts": [
-                    {"id": row["id"], "verified_on_head": row["verified_on_head"], "path": row["path"]}
-                    for row in report["receipts"]
-                ],
-            }
-        )
-        return 3
     _print(
         {
             "published": False,
-            "production_publish_allowed": True,
-            "reason": "Receipts 1-5 are verified on HEAD. This command does not create a tag or a GitHub Release.",
+            "go_live": "HOLD",
+            "go_live_clear": False,
+            "production_publish_allowed": False,
+            "gary_yes_required": True,
+            "triple_pass_publishes": False,
+            "receipts_verified_on_head": report["receipts_verified_on_head"],
+            "reason": (
+                "Go-live stays HOLD. Publish waits for Gary's own yes. "
+                "Charlie, Buzz, and Spike PASS do not publish. "
+                "This command does not create a release or a tag."
+            ),
         }
     )
-    return 0
+    return 3
 
 
 if __name__ == "__main__":

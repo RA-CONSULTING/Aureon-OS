@@ -60,7 +60,7 @@ project formally rebranded to **Aureon OS — Harmonic Nexus Core**.
 - Every tracked `.py` compiles on Python 3.11 (4 f-string modules fixed).
 - **114 real undefined-name bugs fixed** (silent failures across exchange clients, the
   Queen, and the Orca kill-cycle); 47 remain, all triaged dead/false-positive.
-- Configs validated (YAML/TOML/supervisord/nginx/SQL/JSON); the full report is at
+- Configs checked (YAML/TOML/supervisord/nginx/SQL/JSON); the full report is at
   [`docs/research/audits/SYSTEM_VERIFICATION_2026-07-13.md`](../research/audits/SYSTEM_VERIFICATION_2026-07-13.md).
 
 ## 💼 Investor-ready & rebrand

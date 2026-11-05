@@ -36,7 +36,10 @@ def test_tip_channel_refuses_production_publish() -> None:
     report = channel.evaluate(ROOT)
     assert report["problems"] == []
     assert report["production_publish_allowed"] is False
+    assert report["go_live"] == "HOLD"
     assert report["go_live_clear"] is False
+    assert report["gary_yes_required"] is True
+    assert report["triple_pass_publishes"] is False
     assert report["system_alive"] is False
     assert report["live_trading"] is False
     assert report["orders_placed"] is False
@@ -83,7 +86,11 @@ def test_publish_command_exits_without_calling_github() -> None:
     body = json.loads(result.stdout)
     assert body["published"] is False
     assert body["production_publish_allowed"] is False
-    assert "Receipts 1-5 are not verified" in body["reason"]
+    assert body["go_live"] == "HOLD"
+    assert body["go_live_clear"] is False
+    assert body["gary_yes_required"] is True
+    assert body["triple_pass_publishes"] is False
+    assert "Publish waits for Gary's own yes" in body["reason"]
 
 
 def test_tag_must_be_a_lowercase_prefix_of_head() -> None:
@@ -125,19 +132,14 @@ def test_tree_archive_checksums_match_bytes(tmp_path: Path) -> None:
         assert "Aureon-OS-tip-test/README" in archive.namelist()
 
 
-def test_workflow_opens_a_draft_and_does_not_publish() -> None:
+def test_workflow_waits_for_gary_and_does_not_publish() -> None:
     text = (ROOT / ".github" / "workflows" / "source-archive-release.yml").read_text(encoding="utf-8")
-    assert 'tags:\n      - "tip-*"' in text
-    assert "gh release create" in text
-    assert "--draft" in text
-    assert "--prerelease" in text
-    assert "--latest" not in text
-    assert "gh release edit" not in text
-    assert "--draft=false" not in text
-    assert "contents: write" in text
+    assert "workflow_dispatch:" in text
+    assert "tags:" not in text
+    assert "gh release" not in text
+    assert "contents: write" not in text
     assert "python packaging/release_channel.py publish" in text
     assert 'test "$status" -eq 3' in text
-    assert "The system is not claimed alive." in text or "not claimed alive" in text
-    create = text.split("gh release create", 1)[1]
-    assert "--draft" in create
-    assert "--prerelease" in create
+    assert "Go-live stays HOLD" in text or "go-live must stay HOLD" in text
+    assert "Gary's own yes" in text
+    assert "exit 3" in text
