@@ -1,9 +1,10 @@
 name: Windows contract
 
 # Voice runners, the release-update contract, the reviewed PowerShell
-# builder, and the sealed compiler contract are Windows entrypoints.
-# They run here instead of being dropped on Linux with no record.
-# Live trading stays off. This job does not deploy and does not place orders.
+# builder, the sealed compiler contract, and the guarded install script
+# are Windows entrypoints. They run here instead of being dropped on Linux
+# with no record. Live trading stays off. This job does not deploy, does not
+# boot the plug stack, and does not place orders.
 
 on:
   pull_request:
@@ -29,8 +30,25 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Parse guarded Windows install
+        shell: powershell
+        run: |
+          $tokens = $null
+          $errors = $null
+          $path = Join-Path (Get-Location) "install.ps1"
+          $null = [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors)
+          if ($errors -and $errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Output $_.ToString() }
+            exit 1
+          }
+          Write-Output "install.ps1 parsed"
       - name: Install pytest
         run: python -m pip install --upgrade pip pytest pytest-timeout
+      - name: Guarded Windows install contract
+        env:
+          PYTHONPATH: .
+          AUREON_LIVE_TRADING: "0"
+        run: python -m pytest tests/test_windows_guarded_install.py -q --tb=line --timeout=60
       - name: Voice runners and release update
         env:
           PYTHONPATH: .

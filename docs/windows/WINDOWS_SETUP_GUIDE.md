@@ -1,3 +1,5 @@
+> Current guarded smoke, with live trading off: [GUARDED_SMOKE.md](GUARDED_SMOKE.md). Supported go-live stays **HOLD**. The steps below are earlier notes.
+
 # 🪟 Windows Setup Guide for Aureon Trading
 
 It looks like you are setting up the system on a fresh Windows machine. Follow these steps exactly to get everything running.

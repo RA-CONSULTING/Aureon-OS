@@ -44,6 +44,16 @@ The smoke sets `AUREON_AUTONOMY_MODE=guarded`, `AUREON_LIVE_TRADING=0`, `AUREON_
 
 On Linux the guarded smoke is `./install.sh --smoke` from the checkout. The script is bash.
 
+### Windows guarded smoke
+
+On Windows, from the same clone, in Command Prompt or PowerShell:
+
+```bat
+install.cmd --smoke
+```
+
+`install.cmd` runs `install.ps1`. It creates `.venv`, installs the pinned `requirements-plug.lock`, installs the dashboard with `npm ci --ignore-scripts --prefix frontend` when `frontend\node_modules\vite\bin\vite.js` is absent, and starts the same supervisor. `.env` stays unread. Live trading stays off. `install.cmd --stop` stops the stack. `install.cmd` with no flags leaves the stack up. Python 3.11 or newer and Node.js 20 or newer must already be on `PATH`. Supported go-live stays **HOLD**. The procedure is [`docs/windows/GUARDED_SMOKE.md`](docs/windows/GUARDED_SMOKE.md) and [`PORTABILITY.md`](PORTABILITY.md). `production\Install-AUREON.ps1` is the organism installer, a separate command.
+
 `scripts/linux/install-linux.sh` execs `scripts/bootstrap/protected_bootstrap_v05.py --target-id linux-supervisor`. That entry is outside this smoke. Go-live stays **HOLD**. See [`docs/runbooks/GO_LIVE_HARDENING.md`](docs/runbooks/GO_LIVE_HARDENING.md).
 
 **Warning.** `scripts/linux/aureon-up.sh` can boot live trading when a full exchange key group is present in `.env`. When `.venv/bin/python` is missing, that script runs `production/install.sh`, which calls `scripts/launch/aureon-master.sh`. With autonomy left at the public default, that boot reports `trading_mode=live (exchange keys present)`. When `.venv/bin/python` is already present, `aureon-up.sh` runs `python -m aureon.autonomous.aureon_master_launcher --preflight` and sets `AUREON_LIVE_TRADING=0`. Go-live stays **HOLD**. The start-here command stays `./install.sh --smoke`.
@@ -128,6 +138,8 @@ set AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1
 pytest tests/test_operator_server.py tests/test_connectome.py tests/test_quickstart_brain_proof.py --timeout=60
 python -c "from aureon.evaluation.brain_proof import evaluate_brain, render_brain_markdown; print(render_brain_markdown(evaluate_brain()))"
 ```
+
+That Windows block is the offline pytest path. The guarded stack smoke is `install.cmd --smoke` in the quick start above. Supported go-live stays **HOLD**.
 
 The measurement below is from a run of that command with no keys. The HNC figures are the committed formula path (`reports/measured/brain.json`). Auris uses the public series in `reports/measured/market_series.json` when that pack is loaded. Trade readiness is a measured **fail** on 166 paper next-bar labels. Every stored public spread print is after the last labelled decision close, so Deer has no reading and those bars stay `no_data`. The window call that includes the later spread print is still coherence break at `0.5023340603593964`. A sweep of the existing formulas, 6977 calls, highest coherence `0.8851989477106523`, emitted the ready mark 0 times. Filled outcomes stay 0. The release boundary stays **HOLD**.
 
@@ -260,6 +272,10 @@ Go-live stays **HOLD**.
 
 The clone command is `./install.sh --smoke` in the quick start above. Go-live stays **HOLD**.
 
+The guarded clone path is `./install.sh --smoke` on Linux and macOS, and `install.cmd --smoke` on Windows. That smoke leaves `.env` unread and keeps live trading off. Supported go-live stays **HOLD**. The organism installer is separate. Linux and macOS:
+`bash production/install.sh`. Windows: `production\Install-AUREON.ps1` (or
+`production\install-windows.bat`). `bash scripts/linux/aureon-up.sh` calls that
+installer when the virtualenv is missing, then starts the same preflight.
 The shell is `http://127.0.0.1:5173/`. Dashboard and Command Center are tabs of
 the local console at `http://127.0.0.1:5173/console/local`. Every other
 dashboard and status page — the 8080 console, Orca on 8888, market status on

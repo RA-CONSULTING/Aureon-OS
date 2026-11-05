@@ -1,3 +1,5 @@
+> Current guarded smoke, with live trading off: [GUARDED_SMOKE.md](GUARDED_SMOKE.md). Supported go-live stays **HOLD**. The steps below are earlier notes.
+
 # 🚀 AUREON TRADING SYSTEM - WINDOWS LOCAL SETUP GUIDE
 
 **Quick Start for Windows 10/11 with Python 3.9+**
