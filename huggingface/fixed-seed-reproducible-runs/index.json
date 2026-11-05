@@ -1,9 +1,6 @@
 {
   "auris_coherence": null,
-  "auris_hold_nodes": [
-    "Clownfish",
-    "Owl"
-  ],
+  "auris_hold_nodes": [],
   "auris_trade_readiness": "HOLD",
   "dataset_solution_smoke": "measured",
   "files": [
@@ -13,10 +10,10 @@
     "qgita_snr.json",
     "self_coder.json"
   ],
-  "hnc_coherence": 0.9331334813083556,
-  "hnc_lambda_last": 1.409626852655939,
+  "hnc_coherence": 0.7739191103121901,
+  "hnc_lambda_last": 1.1030284973375342,
   "hnc_multiverse_extension": "measured",
-  "hnc_state": "unified",
+  "hnc_state": "coherent",
   "live_trading": false,
   "organism_connectivity_score": 1.0,
   "organism_connectivity_verdict": "pass",
@@ -24,9 +21,12 @@
   "organism_fault_baseline_false_alarm_rate": 0.0,
   "organism_fault_detection_rate": 1.0,
   "organism_fault_false_alarm_rate": 0.0,
+  "organism_fault_origin": "synthetic",
+  "organism_fault_rates_are": "synthetic harness injections, not a detection ability",
   "organism_isolated": [],
   "organism_self_prediction_accuracy": 1.0,
   "organism_self_prediction_baseline_accuracy": 0.4827586206896552,
+  "organism_synthetic_faults": true,
   "qgita_derived_detection_rate": null,
   "qgita_derived_evidence_tag": "cited-unverified",
   "qgita_derived_ftcp_count": 0,

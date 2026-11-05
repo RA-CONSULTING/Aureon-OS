@@ -44,8 +44,7 @@ def test_brain_proof_matches_the_committed_run_and_holds_without_labels():
     assert fresh["qgita"]["derived_series"]["evidence_tag"] == "cited-unverified"
     assert "public market data" in fresh["qgita"]["derived_series"]["provenance"]
     assert fresh["auris"]["trade_readiness"]["verdict"] == "HOLD"
-    assert "Owl" in fresh["auris"]["hold_nodes"]
-    assert "Clownfish" in fresh["auris"]["hold_nodes"]
+    assert fresh["auris"]["hold_nodes"] == []
     assert "hit_rate" not in fresh["auris"]
     assert fresh["qgita"]["derived_series"]["detection_rate"] is None
     assert fresh["qgita"]["derived_series"]["false_alarm_rate"] is None

@@ -132,12 +132,11 @@ def test_hive_mind_auris_gamma_reconciled():
     with patch(_FIELD, lambda *a, **k: _field(gamma=0.99)):
         untouched, high_status = hive.get_auris_coherence(market)
 
-    assert local is None
-    assert tightened is None
-    assert untouched is None
-    assert dark_status == "no_data"
-    assert low_status == "no_data"
-    assert high_status == "no_data"
+    assert local is not None
+    assert tightened == pytest.approx(local)
+    assert untouched == pytest.approx(local)
+    assert dark_status == low_status == high_status
+    assert dark_status != "no_data"
 
 
 def test_enigma_node_sweep_reconciled():

@@ -2271,8 +2271,23 @@ class QueenHiveMind:
             if volume is None:
                 return None
             value = volume
+        elif role == "memory":
+            # OwlNode.compute in aureon/trading/aureon_auris_trader.py.
+            # Momentum is that node's only market input. A missing momentum stays no_data.
+            momentum = self._auris_input(market_data, "momentum")
+            if momentum is None:
+                return None
+            value = (math.cos(momentum * math.pi) + 1.0) * 0.3
+            if momentum > 0.0:
+                value += 0.3
+        elif role == "symbiosis":
+            # ClownfishNode.compute in aureon/trading/aureon_auris_trader.py.
+            # Volatility is that node's only market input. A missing volatility stays no_data.
+            volatility = self._auris_input(market_data, "volatility")
+            if volatility is None:
+                return None
+            value = 0.8 if volatility < 0.3 else 0.2
         else:
-            # memory (Owl) and symbiosis (Clownfish) have no market input here.
             return None
         return max(0.0, min(1.0, value))
 

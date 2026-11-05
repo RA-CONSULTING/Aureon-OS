@@ -28,8 +28,9 @@ KEY_PERMUTATION = {
     "volume": "momentum",
     "spread": "volume",
 }
-# Transcribed from QueenHiveMind._auris_role_value. Empty means the role has
-# no market input in that method. This is the guard, not the numeric expression.
+# Transcribed from QueenHiveMind._auris_role_value. Memory uses momentum,
+# the input of OwlNode.compute. Symbiosis uses volatility, the input of
+# ClownfishNode.compute. This is the guard, not a second numeric formula.
 ROLE_REQUIRED_INPUTS = {
     "volatility": ("volatility",),
     "momentum": ("momentum", "volume"),
@@ -38,8 +39,8 @@ ROLE_REQUIRED_INPUTS = {
     "sensing": ("spread",),
     "love": ("volatility",),
     "infrastructure": ("volume",),
-    "memory": (),
-    "symbiosis": (),
+    "memory": ("momentum",),
+    "symbiosis": ("volatility",),
 }
 
 
@@ -284,7 +285,9 @@ def run_auris() -> dict[str, Any]:
         "ground_truth": (
             "Input guards transcribed from _auris_role_value and _auris_input. "
             "A role is expected to have a value only when every required field is present and finite. "
-            "Memory and symbiosis have no required field. Numeric formulas are not reimplemented."
+            "Memory requires momentum. Symbiosis requires volatility. "
+            "Those inputs are the ones OwlNode.compute and ClownfishNode.compute read. "
+            "Numeric formulas are not reimplemented."
         ),
         "distance_rule": (
             "Mean absolute difference over nodes. A node missing on one side and present on the other counts as 1. "

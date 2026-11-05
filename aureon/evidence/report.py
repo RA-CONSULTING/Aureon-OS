@@ -5,6 +5,12 @@ from __future__ import annotations
 from typing import Any
 
 
+def with_ci(point: Any, interval: Any) -> str:
+    if not isinstance(interval, list) or len(interval) != 2:
+        return fmt(point)
+    return f"{fmt(point)} [{fmt(interval[0])}, {fmt(interval[1])}]"
+
+
 def fmt(value: Any) -> str:
     if value is None:
         return "null"
@@ -26,10 +32,6 @@ def _claim(claim_id: str, tag: str, statement: str, *, asserted: bool = True) ->
     }
 
 
-def _rate(block: dict[str, Any], key: str) -> Any:
-    return block[key]
-
-
 def build_claims(hnc: dict[str, Any], auris: dict[str, Any], qgita: dict[str, Any]) -> list[dict[str, Any]]:
     formula = hnc["formula"]
     multiverse = hnc["multiverse"]
@@ -44,7 +46,8 @@ def build_claims(hnc: dict[str, Any], auris: dict[str, Any], qgita: dict[str, An
                 f"HarmonicRealityField.step with enable_multiverse false, {formula['steps']} steps, "
                 f"seed {formula['series_reference_seed']}: state {formula['state']}, "
                 f"coherence {fmt(formula['coherence'])}, boundedness {fmt(formula['boundedness'])}, "
-                f"echo_strength {fmt(formula['echo_strength'])}, "
+                f"echo magnitude ratio {fmt(formula['echo_magnitude_ratio'])}, "
+                f"sample rate {fmt(formula['sample_rate'])}, "
                 f"lambda min {fmt(formula['series_min'])}, max {fmt(formula['series_max'])}, "
                 f"finite {fmt(formula['finite'])}."
             ),
@@ -95,29 +98,31 @@ def build_claims(hnc: dict[str, Any], auris: dict[str, Any], qgita: dict[str, An
     )
     claims.append(
         _claim(
-            "hnc.formula.echo_strength",
-            "inferred",
+            "hnc.formula.echo_magnitude_ratio",
+            "measured",
             (
-                "CausalEcho.get_echo_strength returns min(1, abs(current*delayed) / "
-                "(abs(current)*abs(delayed) + 1e-10)). "
-                f"This run measured {format(formula['echo_strength'], '.12g')}. The expression is near 1 whenever both "
-                "samples are nonzero, so the figure is not a correlation."
+                "The published echo figure is CausalEcho.get_echo_magnitude_ratio, also stored as "
+                "get_echo_strength. It is min(1, abs(current*delayed) / (abs(current)*abs(delayed) + 1e-10)). "
+                f"This run measured {format(formula['echo_magnitude_ratio'], '.12g')}. "
+                "It is not a correlation."
             ),
         )
     )
     above = formula["modes_at_or_above_nyquist"]
-    claims.append(
-        _claim(
-            "hnc.formula.nyquist",
-            "inferred",
-            (
-                f"{len(above)} substrate modes are at or above the Nyquist rate "
-                f"{fmt(formula['nyquist_hz'])} Hz for sample_rate {fmt(formula['sample_rate'])}. "
-                "Those modes are not represented as distinct frequencies by this discrete step. "
-                f"The mode frequencies are {', '.join(fmt(freq) for freq in above) or 'none'}."
-            ),
+    if above:
+        nyquist_text = (
+            f"{len(above)} substrate modes are at or above the Nyquist rate "
+            f"{fmt(formula['nyquist_hz'])} Hz for sample rate {fmt(formula['sample_rate'])}: "
+            f"{', '.join(fmt(freq) for freq in above)}."
         )
-    )
+    else:
+        nyquist_text = (
+            f"Every substrate mode is strictly below the Nyquist rate {fmt(formula['nyquist_hz'])} Hz. "
+            f"The rate used is {fmt(formula['sample_rate'])} Hz"
+            f" (requested {fmt(formula['sample_rate_requested'])}). "
+            "That rate is floor(2 * highest mode) + 1 when the request would not already clear Nyquist."
+        )
+    claims.append(_claim("hnc.formula.nyquist", "measured", nyquist_text))
     multi_same = (
         multiverse["max_abs_diff_across_seeds"] == 0.0 and multiverse["repeat_max_abs_diff"] == 0.0
     )
@@ -183,11 +188,11 @@ def build_claims(hnc: dict[str, Any], auris: dict[str, Any], qgita: dict[str, An
     claims.append(
         _claim(
             "auris.nodes_without_readings",
-            "inferred",
+            "measured",
             (
                 f"Nodes with no numeric reading on any case: {missing}. "
-                "get_auris_coherence returns no_data when any node value is missing, so a node that never "
-                "reads is enough to withhold the coherence figure on these inputs."
+                f"Cases with a numeric coherence: {auris['numeric_coherence_cases']} of {auris['cases']}. "
+                "get_auris_coherence still returns no_data when any required input is missing."
             ),
         )
     )
@@ -221,9 +226,9 @@ def build_claims(hnc: dict[str, Any], auris: dict[str, Any], qgita: dict[str, An
     g_beats = [
         cell
         for cell in cells
-        if cell["auroc"]["max_g_eff"] is not None
-        and cell["auroc"]["energy"] is not None
-        and cell["auroc"]["max_g_eff"] > cell["auroc"]["energy"]
+        if cell["auroc"]["max_g_eff"]["auroc"] is not None
+        and cell["auroc"]["energy"]["auroc"] is not None
+        and cell["auroc"]["max_g_eff"]["auroc"] > cell["auroc"]["energy"]["auroc"]
     ]
     claims.append(
         _claim(
@@ -236,12 +241,9 @@ def build_claims(hnc: dict[str, Any], auris: dict[str, Any], qgita: dict[str, An
                 f"({_cell_names(ftcp_below) or 'none'}). "
                 f"LHE recall exceeded the LHE false-alarm rate in {len(lhe_sep)} of {len(cells)} cells "
                 f"({_cell_names(lhe_sep) or 'none'}). "
-                "A gate that ignores the injected impulse has recall near its false-alarm rate. "
-                "The inequality is the raw counts. It is not a significance test, so a one-trial gap is listed "
-                "and is not a detection result by itself. "
-                "FTCPDetector raises its curvature threshold as (1 + std) when adaptive_threshold is on, "
-                "and discrete curvature divides by the product of the adjacent knot gaps. Those are the "
-                "detector's existing definitions. This run did not retune them."
+                "FTCP and lighthouse calls use thresholds fit on a separate null calibration set at a 5 percent "
+                "tail of max_g_eff and lighthouse intensity. "
+                "A one-trial gap is not a significance test. Wilson 95 percent intervals are in the table."
             ),
         )
     )
@@ -262,7 +264,7 @@ def build_claims(hnc: dict[str, Any], auris: dict[str, Any], qgita: dict[str, An
 
     def _min_energy(placement: str) -> Any:
         group = [cell for cell in cells if cell["placement"] == placement]
-        return min(cell["auroc"]["energy"] for cell in group)
+        return min(cell["auroc"]["energy"]["auroc"] for cell in group)
 
     claims.append(
         _claim(
@@ -382,8 +384,9 @@ def render_results(
         "- Auris baselines are the null call, the all-zero input, and the same numbers moved onto different keys.",
         "- QGITA signal: one-sample impulse of amplitude A added to unit-variance Gaussian noise. "
         "`snr_db = 20 * log10(A)`.",
-        "- QGITA positive calls use the analyzer's own gates, `ftcp_count > 0` and `lhe_count > 0`. "
-        "Those thresholds were not tuned.",
+        "- QGITA calls compare `max_g_eff` and lighthouse intensity with thresholds fit on calibration "
+        "nulls at a 5% tail. The analyzer's constructor defaults are unchanged. "
+        "Rate intervals are Wilson 95%. AUROC intervals are Hanley-McNeil.",
         "- Energy baseline: maximum squared sample, location unknown. "
         "Oracle baseline: squared sample at the known injection index. "
         "Their call threshold is fit on separate null draws so about 5% of those draws lie strictly above it.",
@@ -397,7 +400,7 @@ def render_results(
                 "path",
                 "coherence",
                 "boundedness",
-                "echo_strength",
+                "echo magnitude ratio",
                 "state",
                 "min",
                 "max",
@@ -413,7 +416,7 @@ def render_results(
                     "formula",
                     formula["coherence"],
                     formula["boundedness"],
-                    formula["echo_strength"],
+                    formula["echo_magnitude_ratio"],
                     formula["state"],
                     formula["series_min"],
                     formula["series_max"],
@@ -428,7 +431,7 @@ def render_results(
                     "multiverse",
                     multiverse["coherence"],
                     multiverse["boundedness"],
-                    multiverse["echo_strength"],
+                    multiverse["echo_magnitude_ratio"],
                     multiverse["state"],
                     multiverse["series_min"],
                     multiverse["series_max"],
@@ -444,8 +447,9 @@ def render_results(
         "",
         f"Formula versus multiverse, maximum absolute difference: {fmt(formula['multiverse_max_abs_diff'])}.",
         (
-            "Six-digit formatting rounds the formula-path echo_strength to "
-            f"{fmt(formula['echo_strength'])}. The JSON value is {formula['echo_strength']!r}."
+            "The echo figure is the magnitude ratio from CausalEcho.get_echo_magnitude_ratio. "
+            f"JSON value {formula['echo_magnitude_ratio']!r}. It is not a correlation. "
+            f"Sample rate {fmt(formula['sample_rate'])} Hz, requested {fmt(formula['sample_rate_requested'])} Hz."
         ),
         "",
         "## Auris",
@@ -484,8 +488,9 @@ def render_results(
         "",
         "## QGITA",
         "",
-        "Precision is null when a detector made no positive calls. "
-        "Recall and false-alarm rate use the injected label.",
+        "Brackets are 95% intervals. Precision is null when a detector made no positive calls. "
+        f"Evaluation trials per class: {qgita['cells'][0]['signal_trials']}. "
+        f"Calibration nulls: {qgita['calibration']['trials']}.",
         "",
         _table(
             [
@@ -494,42 +499,42 @@ def render_results(
                 "amplitude",
                 "ftcp recall",
                 "ftcp FPR",
-                "ftcp precision",
                 "lhe recall",
                 "lhe FPR",
                 "g_eff AUROC",
                 "energy AUROC",
                 "oracle AUROC",
-                "shuffled FTCP rate",
             ],
             [
                 [
                     cell["placement"],
                     cell["snr_db"],
                     cell["amplitude"],
-                    _rate(cell["ftcp"], "recall"),
-                    _rate(cell["ftcp"], "false_alarm_rate"),
-                    _rate(cell["ftcp"], "precision"),
-                    _rate(cell["lhe"], "recall"),
-                    _rate(cell["lhe"], "false_alarm_rate"),
-                    cell["auroc"]["max_g_eff"],
-                    cell["auroc"]["energy"],
-                    cell["auroc"]["oracle"],
-                    cell["shuffled_signal_ftcp_rate"],
+                    with_ci(cell["ftcp"]["recall"], cell["ftcp"]["recall_ci95"]),
+                    with_ci(cell["ftcp"]["false_alarm_rate"], cell["ftcp"]["false_alarm_ci95"]),
+                    with_ci(cell["lhe"]["recall"], cell["lhe"]["recall_ci95"]),
+                    with_ci(cell["lhe"]["false_alarm_rate"], cell["lhe"]["false_alarm_ci95"]),
+                    with_ci(cell["auroc"]["max_g_eff"]["auroc"], cell["auroc"]["max_g_eff"]["ci95"]),
+                    with_ci(cell["auroc"]["energy"]["auroc"], cell["auroc"]["energy"]["ci95"]),
+                    with_ci(cell["auroc"]["oracle"]["auroc"], cell["auroc"]["oracle"]["ci95"]),
                 ]
                 for cell in qgita["cells"]
             ],
         ),
         "",
         (
+            "FTCP max_g_eff threshold "
+            f"{fmt(qgita['calibration']['ftcp_max_g_eff_threshold'])}, "
+            "calibration false-alarm rate "
+            f"{fmt(qgita['calibration']['ftcp_calibration_false_alarm_rate'])}. "
+            "Lighthouse intensity threshold "
+            f"{fmt(qgita['calibration']['lighthouse_intensity_threshold'])}, "
+            "calibration false-alarm rate "
+            f"{fmt(qgita['calibration']['lighthouse_calibration_false_alarm_rate'])}. "
             "Energy threshold "
-            f"{fmt(qgita['calibration']['energy_threshold'])}, "
-            "calibration false-alarm rate "
-            f"{fmt(qgita['calibration']['energy_calibration_false_alarm_rate'])}. "
+            f"{fmt(qgita['calibration']['energy_threshold'])}. "
             "Oracle threshold "
-            f"{fmt(qgita['calibration']['oracle_threshold'])}, "
-            "calibration false-alarm rate "
-            f"{fmt(qgita['calibration']['oracle_calibration_false_alarm_rate'])}."
+            f"{fmt(qgita['calibration']['oracle_threshold'])}."
         ),
         "",
         "## Claims",

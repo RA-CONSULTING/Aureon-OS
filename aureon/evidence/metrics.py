@@ -1,11 +1,15 @@
 """Scoring helpers for the evidence harness.
 
 These are comparison tools. They are not HNC, Auris, or QGITA formulas.
+Wilson intervals are for binomial rates. Hanley-McNeil intervals are the
+normal approximation for a Mann-Whitney AUROC. Neither is a detector.
 """
 
 from __future__ import annotations
 
 import math
+
+_Z95 = 1.959963984540054
 
 
 def auroc(positive: list[float], negative: list[float]) -> float | None:
@@ -21,6 +25,45 @@ def auroc(positive: list[float], negative: list[float]) -> float | None:
             elif left == right:
                 wins += 0.5
     return wins / (len(positive) * len(negative))
+
+
+def wilson_interval(successes: int, total: int, z: float = _Z95) -> list[float] | None:
+    """95% Wilson score interval for a binomial proportion."""
+
+    if total <= 0:
+        return None
+    phat = successes / total
+    z2 = z * z
+    denom = 1.0 + z2 / total
+    center = (phat + z2 / (2.0 * total)) / denom
+    margin = z * math.sqrt((phat * (1.0 - phat) / total) + z2 / (4.0 * total * total)) / denom
+    low = max(0.0, center - margin)
+    high = min(1.0, center + margin)
+    if low < 1e-12:
+        low = 0.0
+    if high > 1.0 - 1e-12:
+        high = 1.0
+    return [low, high]
+
+
+def auroc_interval(auc: float | None, n_positive: int, n_negative: int, z: float = _Z95) -> list[float] | None:
+    """Hanley-McNeil normal interval. It collapses when the AUROC is 0 or 1."""
+
+    if auc is None or n_positive < 2 or n_negative < 2:
+        return None
+    if auc <= 0.0 or auc >= 1.0:
+        return [auc, auc]
+    q1 = auc / (2.0 - auc)
+    q2 = 2.0 * auc * auc / (1.0 + auc)
+    variance = (
+        auc * (1.0 - auc)
+        + (n_positive - 1) * (q1 - auc * auc)
+        + (n_negative - 1) * (q2 - auc * auc)
+    ) / (n_positive * n_negative)
+    if variance < 0.0:
+        variance = 0.0
+    margin = z * math.sqrt(variance)
+    return [max(0.0, auc - margin), min(1.0, auc + margin)]
 
 
 def rates(labels: list[bool], predictions: list[bool]) -> dict[str, float | int | None]:
@@ -50,6 +93,9 @@ def rates(labels: list[bool], predictions: list[bool]) -> dict[str, float | int 
         "precision": divide(true_positive, true_positive + false_positive),
         "recall": divide(true_positive, true_positive + false_negative),
         "false_alarm_rate": divide(false_positive, false_positive + true_negative),
+        "precision_ci95": wilson_interval(true_positive, true_positive + false_positive),
+        "recall_ci95": wilson_interval(true_positive, true_positive + false_negative),
+        "false_alarm_ci95": wilson_interval(false_positive, false_positive + true_negative),
     }
 
 

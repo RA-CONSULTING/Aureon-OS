@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from aureon.evidence.metrics import auroc, fraction_above, rates, upper_threshold
+from aureon.evidence.metrics import auroc, fraction_above, rates, upper_threshold, wilson_interval
 from aureon.evidence.runner import main
 
 
@@ -11,6 +11,9 @@ def test_auroc_ties_and_order() -> None:
     assert auroc([1.0, 2.0], [0.0, 0.0]) == 1.0
     assert auroc([0.0], [1.0, 2.0]) == 0.0
     assert auroc([], [1.0]) is None
+    interval = wilson_interval(10, 200)
+    assert interval is not None
+    assert interval[0] < 0.05 < interval[1]
 
 
 def test_threshold_tail_and_rates() -> None:
