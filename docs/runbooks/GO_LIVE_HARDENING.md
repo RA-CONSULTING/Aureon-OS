@@ -163,3 +163,21 @@ badge stays HOLD. This slice does not publish a Space and does not repeat
 the protocol or call-sweep records. `OPEN_PLAN_THROUGH` stays 2.
 `ENABLED_THROUGH` stays 6. Exchanges reachable stays 0.
 Plan stages 3 and 4 stay closed.
+
+## Stage 11 — installer gate, badge still HOLD
+
+The release-boundary installer and the cloud master launcher ask
+`scripts/bootstrap/go_live_stage11_gate.py` before the isolated bootstrap.
+The gate is stdlib-only. `go_live_clear` is computed from receipts 1–5 on
+the current git HEAD. It is not a file and it is not an environment
+variable. On this tip the gate's decision is HOLD, so those routes still
+exec the isolated bootstrap and do not import a target. The supported
+command, used only when the gate is clear, is the contained cold boot
+`python -m aureon.containment.cold_boot`. That path does not place an
+order and does not claim the system is alive.
+
+The orange README badge stays HOLD. The checklist, the three wired
+entrypoints, and the reason each receipt fails on this tip are in
+`docs/runbooks/GO_LIVE_STAGE11_INSTALLER_GATE.md`. Receipt 5's artifact is
+absent. This stage does not create it and does not move the published
+require-pin.
