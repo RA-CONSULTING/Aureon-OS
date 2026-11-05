@@ -1,15 +1,81 @@
 {
   "aureon_delta_since_measured_pin": [
     {
+      "new_blob": "3adff4694efbcdf41e9a820d60aad71d06e75075",
+      "old_blob": "0000000000000000000000000000000000000000",
+      "path": "aureon/containment/__init__.py",
+      "status": "A"
+    },
+    {
+      "new_blob": "f8bc6e87a27e8d6025e48e6d17eb20adb6bcc099",
+      "old_blob": "0000000000000000000000000000000000000000",
+      "path": "aureon/containment/__main__.py",
+      "status": "A"
+    },
+    {
+      "new_blob": "b93bef4952580be65887326395280c7d9209b727",
+      "old_blob": "0000000000000000000000000000000000000000",
+      "path": "aureon/containment/_child_probe.py",
+      "status": "A"
+    },
+    {
+      "new_blob": "c8303bcd0c58969a3f126c2a3906f6e753842ff0",
+      "old_blob": "0000000000000000000000000000000000000000",
+      "path": "aureon/containment/_child_wrapper.py",
+      "status": "A"
+    },
+    {
+      "new_blob": "b553b3edf964ceb90488161ee5ca9203bfd2fa78",
+      "old_blob": "0000000000000000000000000000000000000000",
+      "path": "aureon/containment/cold_boot.py",
+      "status": "A"
+    },
+    {
+      "new_blob": "1e346f097c15809bf7d60671d02bf2a35e5388fa",
+      "old_blob": "0000000000000000000000000000000000000000",
+      "path": "aureon/containment/native.py",
+      "status": "A"
+    },
+    {
       "new_blob": "31d7242b78c4eacad2d41abafa9eae00d8984603",
       "old_blob": "86dcd25ae04251027cd7eb608ebed6efefade145",
       "path": "aureon/core/aureon_env.py",
       "status": "M"
     },
     {
-      "new_blob": "89d874ebfe2fc8b8e73113b86fe6524b3ee71322",
+      "new_blob": "11e491355199ab1942327dfc4f5f42d165723463",
+      "old_blob": "5cb0b7f6e4051a0c77b259394d2118f7aa9fd1f4",
+      "path": "aureon/evaluation/auris_node_eval.py",
+      "status": "M"
+    },
+    {
+      "new_blob": "b24087c3e395a8402fd9a92f03632316ff703525",
       "old_blob": "7c9d20e1e580130e363674894a9c77eef8776e44",
       "path": "aureon/evaluation/brain_proof.py",
+      "status": "M"
+    },
+    {
+      "new_blob": "bd7525b5f7be431db9c68960bc65a54774e425b4",
+      "old_blob": "0000000000000000000000000000000000000000",
+      "path": "aureon/evaluation/market_series.py",
+      "status": "A"
+    },
+    {
+      "new_blob": "421d0aac51678fb8e7d89fcd381d6f808974dd1d",
+      "old_blob": "c3cb05490f1ef40aaabb9600d6af9cf646591c60",
+      "path": "aureon/evaluation/measured_proof.py",
+      "status": "M"
+    },
+    {
+      "new_blob": "370fb3b3c04f2c8df469cfbf6573472dec87326f",
+      "old_blob": "0000000000000000000000000000000000000000",
+      "path": "aureon/evaluation/qgita_series_rates.py",
+      "status": "A"
+    },
+    {
+      "new_blob": "0793ff2c2ccfb9d9aadd9dcf19d03a3708e71036",
+      "old_blob": "7e940fdacf2f2afd8ca5fb1fa6da368fb86ed9d6",
+      "path": "aureon/evaluation/qgita_snr_benchmark.py",
       "status": "M"
     },
     {
@@ -37,6 +103,12 @@
       "status": "A"
     },
     {
+      "new_blob": "998f47e5d551051e675d02c57447a2efca5ede70",
+      "old_blob": "0000000000000000000000000000000000000000",
+      "path": "aureon/evidence/hnc_anchor.py",
+      "status": "A"
+    },
+    {
       "new_blob": "c8bcd674e9cc2a933c3de79ba79a47cde1786b93",
       "old_blob": "0000000000000000000000000000000000000000",
       "path": "aureon/evidence/metrics.py",
@@ -49,13 +121,13 @@
       "status": "A"
     },
     {
-      "new_blob": "0af18777d4fd8a60bd9cb1c766860dd734ecfd46",
+      "new_blob": "d5d5afb87b5d4357b895b37b2a907ad48cbcd798",
       "old_blob": "0000000000000000000000000000000000000000",
       "path": "aureon/evidence/report.py",
       "status": "A"
     },
     {
-      "new_blob": "1fc350bc0ffb554daef3c7e0cdeedf50dabb4384",
+      "new_blob": "ca9adbdfa7d73de06980f6051b33885f0095cc67",
       "old_blob": "0000000000000000000000000000000000000000",
       "path": "aureon/evidence/runner.py",
       "status": "A"
@@ -73,6 +145,12 @@
       "status": "M"
     },
     {
+      "new_blob": "4e00393d0e38a041b00e7ffa70059468d3c8e308",
+      "old_blob": "0e39ea5b8131fc78bed264481df06a62e08a9c02",
+      "path": "aureon/saas/domains.py",
+      "status": "M"
+    },
+    {
       "new_blob": "7c3ff0038be5df779a3dfc70fbc991e022fc56af",
       "old_blob": "828f463a65712afe083973445350cc2ce161e661",
       "path": "aureon/utils/aureon_queen_hive_mind.py",
@@ -81,10 +159,10 @@
   ],
   "aureon_trees_match": true,
   "decision": "HOLD",
-  "digest": "7e3eda4b28d3fbb00e03ea00ad863c625fc68c423a0a01f4218ca0a3179040d9",
+  "digest": "cea8089cd4be4c39f80123f5f0f9ee806fefb76e528194c42602bbca7ae20289",
   "go_live_clear": false,
   "inventory_blobs_match": true,
-  "lineage_note": "Tip c68a89d2 is the pin-move commit this stage started from. The commit that adds this digest is not the pin and is not that tip. The digest binds the pin and tip git objects, not the working tree.",
+  "lineage_note": "Pin bb04503119681adcf832f3c3e9b0cbf09fc7a938 is the prior main tip. Tip b2b0310362597dc520114de86d8700c0c50758d5 is the commit that retargets published require-pin strings onto that pin. The commit that adds this digest is not the pin and is not that tip. The digest binds the pin and tip git objects, not the working tree. The previous receipt named pin 34864ff0547d2cff03e707414743a3b0cc8770b5 and tip c68a89d2a184d99582bb24310b91e024323a212c.",
   "measured_call_sweep": {
     "aureon_tree": "2b89d73db122486e2537047baa9b342f3a0249be",
     "code_commit": "ac19a1abc1093145b6a42bfba83d610611edb38c",
@@ -93,202 +171,196 @@
     "pin_aureon_tree": "2b89d73db122486e2537047baa9b342f3a0249be",
     "repeated_at_pin": false
   },
-  "pin": "34864ff0547d2cff03e707414743a3b0cc8770b5",
-  "pin_aureon_tree": "3ba0cab4a5e193b01943e5e6e0be25077ff759f6",
-  "pin_commit_tree": "12aab120c812ca6b9591bada212953d8ba2ca63d",
-  "pin_inventory_git_blob": "581c7d802b635c09cc7bef70668e86e198297d1c",
-  "pin_inventory_sha256": "4bc19ea9b5444a7b8a9abbd3fabf635d083bd25bea6c1b2d6eab2605b4f5716b",
+  "pin": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
+  "pin_aureon_tree": "a5114a7e5ecb4e9a51df57d58355e72882cf0a3c",
+  "pin_commit_tree": "9ce6c0252d27617fb2a7775b7197537efa2388d7",
+  "pin_inventory_git_blob": "b7d320b4e51f9b99d6fb7ffa46679fd4d18a4766",
+  "pin_inventory_sha256": "be5e14d73ae1130a16d04d355478a1474bf1f1b2c405c9d2196444eca8a391dc",
   "pin_move_delta": [
     {
-      "new_blob": "089efaa01e8ff5f03c07c3cf5b1733a2a90ddb76",
-      "old_blob": "51782711d3fecf8d338bfce904e738505cb22fac",
+      "new_blob": "54a7edbf98ec30d3852842767a6fd542da0270c5",
+      "old_blob": "ba47e6871e07551ec64b700f949492829ccfe7a2",
       "path": "docs/mcp/FULL_BODY_PLAN.md",
       "status": "M"
     },
     {
-      "new_blob": "52f5f593f1de90031ba913f95e50062b97a20772",
-      "old_blob": "33bf8b261e38328687935a2047d78382f25b34f5",
+      "new_blob": "f342757b46df5dfa4bc5bd32e2cdbdbdce7acdcd",
+      "old_blob": "52f5f593f1de90031ba913f95e50062b97a20772",
       "path": "docs/mcp/REGISTRY.md",
       "status": "M"
     },
     {
-      "new_blob": "15ae4b2a14224d7031b01f17a5b66bde34629137",
-      "old_blob": "a9f4f01d37d6373a17193119e6f89047fdf2148d",
+      "new_blob": "a78b6aaaec575b38107214f6f6e3cee8c7f26a00",
+      "old_blob": "15ae4b2a14224d7031b01f17a5b66bde34629137",
       "path": "huggingface/PUBLISH.md",
       "status": "M"
     },
     {
-      "new_blob": "66f27d83a982757b5bdaa2ad2970fe498658ddb1",
-      "old_blob": "f4847dcc1c847b4be890e11af0fce62b326b5fd8",
+      "new_blob": "d246e2a0c07cffca68099b588be50db1f1d2c4f4",
+      "old_blob": "66f27d83a982757b5bdaa2ad2970fe498658ddb1",
       "path": "huggingface/README.md",
       "status": "M"
     },
     {
-      "new_blob": "bb89ccc6cb84be22ff7a3efe2ed8eb24a2b067c2",
-      "old_blob": "56e2598e948592be4dac1c629b5f714d2d13316c",
+      "new_blob": "ee5bcea1232c05e2d168a57037d0b1c1c007c417",
+      "old_blob": "bb89ccc6cb84be22ff7a3efe2ed8eb24a2b067c2",
       "path": "huggingface/auris-coherence/guard.py",
       "status": "M"
     },
     {
-      "new_blob": "e61d4aa1e3d0078cc6b213f88dca47572bfe7cdd",
-      "old_blob": "a3cd47d5f035fa2c5ea1821be5fe6bba7e3af5e4",
+      "new_blob": "b070b437302f3e875055c3e4760075921ed20750",
+      "old_blob": "e61d4aa1e3d0078cc6b213f88dca47572bfe7cdd",
       "path": "huggingface/auris-coherence/requirements.txt",
       "status": "M"
     },
     {
-      "new_blob": "cd1f3003005edfde18d286157f226dd19583d7b0",
-      "old_blob": "571e1ca2c55a06a8966a2bbd0621898c6f636a91",
+      "new_blob": "629c2d78f2114ba0225be3763b5a9f98d3280272",
+      "old_blob": "cd1f3003005edfde18d286157f226dd19583d7b0",
       "path": "huggingface/hnc-field/guard.py",
       "status": "M"
     },
     {
-      "new_blob": "e61d4aa1e3d0078cc6b213f88dca47572bfe7cdd",
-      "old_blob": "a3cd47d5f035fa2c5ea1821be5fe6bba7e3af5e4",
+      "new_blob": "b070b437302f3e875055c3e4760075921ed20750",
+      "old_blob": "e61d4aa1e3d0078cc6b213f88dca47572bfe7cdd",
       "path": "huggingface/hnc-field/requirements.txt",
       "status": "M"
     },
     {
-      "new_blob": "bb89ccc6cb84be22ff7a3efe2ed8eb24a2b067c2",
-      "old_blob": "56e2598e948592be4dac1c629b5f714d2d13316c",
+      "new_blob": "ee5bcea1232c05e2d168a57037d0b1c1c007c417",
+      "old_blob": "bb89ccc6cb84be22ff7a3efe2ed8eb24a2b067c2",
       "path": "huggingface/organism-replay/guard.py",
       "status": "M"
     },
     {
-      "new_blob": "e61d4aa1e3d0078cc6b213f88dca47572bfe7cdd",
-      "old_blob": "a3cd47d5f035fa2c5ea1821be5fe6bba7e3af5e4",
+      "new_blob": "b070b437302f3e875055c3e4760075921ed20750",
+      "old_blob": "e61d4aa1e3d0078cc6b213f88dca47572bfe7cdd",
       "path": "huggingface/organism-replay/requirements.txt",
       "status": "M"
     },
     {
-      "new_blob": "bb89ccc6cb84be22ff7a3efe2ed8eb24a2b067c2",
-      "old_blob": "56e2598e948592be4dac1c629b5f714d2d13316c",
+      "new_blob": "ee5bcea1232c05e2d168a57037d0b1c1c007c417",
+      "old_blob": "bb89ccc6cb84be22ff7a3efe2ed8eb24a2b067c2",
       "path": "huggingface/qgita-snr/guard.py",
       "status": "M"
     },
     {
-      "new_blob": "e61d4aa1e3d0078cc6b213f88dca47572bfe7cdd",
-      "old_blob": "a3cd47d5f035fa2c5ea1821be5fe6bba7e3af5e4",
+      "new_blob": "b070b437302f3e875055c3e4760075921ed20750",
+      "old_blob": "e61d4aa1e3d0078cc6b213f88dca47572bfe7cdd",
       "path": "huggingface/qgita-snr/requirements.txt",
       "status": "M"
     },
     {
-      "new_blob": "77b062bd2f114d691c1e2595fa6b639dcd4a08b6",
-      "old_blob": "998c3f317eda906ef32166fe90a6ab06d2d75530",
+      "new_blob": "f7cf1271bd0b15877f661462704f9fdd1efd0a1f",
+      "old_blob": "6f0e3053341f151eb7b6518c1ff6320f3e9fc0a3",
       "path": "mcp/aureon_public/COVERAGE_PLAN.md",
       "status": "M"
     },
     {
-      "new_blob": "dc6d086304ba1961afd03d53557c1f58ff763f00",
-      "old_blob": "94a2ba24724f4c8132754ab3ec3c4bdb7f62fce3",
+      "new_blob": "7d23d2c8eb9b446cfaeb16a65b5a6a8e027a06e9",
+      "old_blob": "3cf3395c0ee07ee4857df02879f6c549ae572832",
       "path": "mcp/aureon_public/README.md",
       "status": "M"
     },
     {
-      "new_blob": "298eea74b276f3651327ec9c596ac69c4899a7d0",
-      "old_blob": "c7afb8bbcc51e3eaf926bf4e8f396d4a129eb5b9",
+      "new_blob": "9db61124da8507ae9c9aea9e7eabd83f17a53359",
+      "old_blob": "2d78813b01874b71df3d7a7848c03069864b3673",
       "path": "mcp/aureon_public/body.py",
       "status": "M"
     },
     {
-      "new_blob": "44e22695f16e44c8ad4504055836ba707eec3cb8",
-      "old_blob": "3228e5bd089fcc36d7718c437f679250e698aea3",
+      "new_blob": "7fc17fdc4cf5d83e994a98d405726036d918c790",
+      "old_blob": "e08529f6e7125999d831f7387da961f3e23585ce",
       "path": "mcp/aureon_public/coverage_plan.py",
       "status": "M"
     },
     {
-      "new_blob": "9d6dbb167d1e26beda9f5c13a44044603defd2bb",
-      "old_blob": "20bdd328b483b01bb2c49643fd6d710d98d9a3a9",
+      "new_blob": "37b14d4f3a1437c3afc9564be2f8753c5b15bacf",
+      "old_blob": "9d6dbb167d1e26beda9f5c13a44044603defd2bb",
       "path": "mcp/aureon_public/guard_loader.py",
       "status": "M"
     },
     {
-      "new_blob": "f236bde040e5fc080f94367a8f1404e38cd9ffc7",
-      "old_blob": "29522c31901f6f1b1f3314e47b63f744a173c4d8",
+      "new_blob": "671d4e23d41b5a5cc1f111c7acfb0761a26a01b0",
+      "old_blob": "f236bde040e5fc080f94367a8f1404e38cd9ffc7",
       "path": "mcp/aureon_public/inventory_scan.py",
       "status": "M"
     },
     {
-      "new_blob": "1abb7a7910faf8581981c4435775f8c7747bf558",
-      "old_blob": "870de777fdcced27d105a621bebd5e3bc2df3c56",
+      "new_blob": "552354812b8a4b75116570f688b928247011e0b5",
+      "old_blob": "1abb7a7910faf8581981c4435775f8c7747bf558",
       "path": "mcp/aureon_public/layers.py",
       "status": "M"
     },
     {
-      "new_blob": "806f702acb561d672695a5d77f61e3c29db7744c",
-      "old_blob": "73a75446bf67abaf98a0ccb1369d447bceb72a1e",
+      "new_blob": "275f1945ba03645b9acec5ab9d0edafc9efa8edd",
+      "old_blob": "806f702acb561d672695a5d77f61e3c29db7744c",
       "path": "mcp/aureon_public/measurement_stamp.py",
       "status": "M"
     },
     {
-      "new_blob": "87c000859ce8441e2b5f43e561a304641627235d",
-      "old_blob": "0d4d5a6a819ca8deb26cb56795e510153fb9c91f",
+      "new_blob": "30612ead0f8283be58c654448f40df0f1ceb48f5",
+      "old_blob": "87c000859ce8441e2b5f43e561a304641627235d",
       "path": "mcp/aureon_public/pin_blob.py",
       "status": "M"
     },
     {
-      "new_blob": "eea9722a87d8e891cbfb233d7d183ae347b2c604",
-      "old_blob": "0ba4cb1bd393c5126f7a1612a06266c7deb7100f",
+      "new_blob": "3c223133f9866e5327c16dc1a9f11c75a4a3ebdc",
+      "old_blob": "eea9722a87d8e891cbfb233d7d183ae347b2c604",
       "path": "mcp/aureon_public/requirements.txt",
       "status": "M"
     },
     {
-      "new_blob": "6ecbc2997d6b20cae6cfa8ac5c381400d86b92ac",
-      "old_blob": "01274141bde3f21b90560e30c82b029d521cbf6c",
+      "new_blob": "2c1744cd5f40289502d4d94fc8ec40eb07630cfe",
+      "old_blob": "6ecbc2997d6b20cae6cfa8ac5c381400d86b92ac",
       "path": "mcp/aureon_public/sweep_guard.py",
       "status": "M"
     },
     {
-      "new_blob": "fd52aae7d5d2af55e2f9ba74cbafece4c7fa760d",
-      "old_blob": "0662d55398191e4f1995b2f4a2f3e63d9034898a",
+      "new_blob": "29a9e686a57f347328e4c14837e8c0354f6938f7",
+      "old_blob": "fd52aae7d5d2af55e2f9ba74cbafece4c7fa760d",
       "path": "mcp/pyproject.toml",
       "status": "M"
     },
     {
-      "new_blob": "e5da8420affaafd67a94e3c507a2190452399bbd",
-      "old_blob": "0000000000000000000000000000000000000000",
+      "new_blob": "87940cbf3168b04b0aa639394229972e406d4f41",
+      "old_blob": "e5da8420affaafd67a94e3c507a2190452399bbd",
       "path": "tests/support/recorded_mcp_pin.py",
-      "status": "A"
+      "status": "M"
     },
     {
-      "new_blob": "f837db6281dc208fc77e4ca17c61ac42e1b17d52",
-      "old_blob": "2d48a678214fd290839f47c5692b52e59e745c81",
+      "new_blob": "456edb8ab687e3bf30fdddbfd039d54e9ccaaa69",
+      "old_blob": "f837db6281dc208fc77e4ca17c61ac42e1b17d52",
       "path": "tests/test_aureon_body.py",
       "status": "M"
     },
     {
-      "new_blob": "077b1def0079441d3c6b358997e4cd19434b8afa",
-      "old_blob": "c6989ef6b06bd86b36e711c4dae4f4bc1440becd",
-      "path": "tests/test_aureon_public_alignment.py",
-      "status": "M"
-    },
-    {
-      "new_blob": "b525a40d853a9b532ae34dd62347d14b962ddadc",
-      "old_blob": "c0be208c1c199cfca9ea31ace27a7652982f2b42",
+      "new_blob": "6b3a41fbbfa3814e1e410c14611ba67efdef03b9",
+      "old_blob": "b525a40d853a9b532ae34dd62347d14b962ddadc",
       "path": "tests/test_aureon_public_mcp.py",
       "status": "M"
     },
     {
-      "new_blob": "fd0895e63cd650f3d5ffeb33f0bc9cdf201a0b9a",
-      "old_blob": "8c15e2c7bf67a9f12e3bf53cb607726b1e38f23e",
-      "path": "tests/test_aureon_public_protocol.py",
-      "status": "M"
-    },
-    {
-      "new_blob": "4a2a94a92a8dd0fc21f870966043706ee609e6ac",
-      "old_blob": "9762b1d5d765c79df28b958c79c5fd596201d8c5",
+      "new_blob": "6634665675b3461d6b71d5d4b9e31b8167e9bb1e",
+      "old_blob": "b0d6ef74433d8c06183d17d38559d4543fe11d6c",
       "path": "tests/test_aureon_public_space.py",
       "status": "M"
     },
     {
-      "new_blob": "c9017b764d60f705964e1cc8f9f7c58834a9dd1c",
-      "old_blob": "f245319268ece95410deaedcac1dfd43c4b5220e",
-      "path": "tests/test_aureon_public_stage1.py",
+      "new_blob": "26cbe265ea53c9ac3b11539df6b465b05131ebb5",
+      "old_blob": "f5a3c7023fa4902bfad3864b592f32982e74f673",
+      "path": "tests/test_hnc_head_anchor.py",
       "status": "M"
     },
     {
-      "new_blob": "2a460e9a3ff7d576fc1106a8ca17b16206aa47cb",
-      "old_blob": "ea606ef3839d86aaa26ef340841fff00338a30c9",
-      "path": "tests/test_aureon_public_stage2.py",
+      "new_blob": "4a4e7a5a333c1a4be16ee89d4b2618ba0f45ac5d",
+      "old_blob": "aac6db392dfc06a4316c018f9922856fb5109827",
+      "path": "tests/test_market_series.py",
+      "status": "M"
+    },
+    {
+      "new_blob": "1c5e28bfe6b5bec287874b6e857443826ec9b9df",
+      "old_blob": "ecd0606147226d3ae3d8d320aa93b3239fd4716d",
+      "path": "tests/test_native_process_containment.py",
       "status": "M"
     }
   ],
@@ -296,12 +368,15 @@
   "pin_move_touches_inventory": false,
   "pin_unified_margin_trader_tree": "bc764eed7f52ee8aafaa9f1d33015532cb79f628",
   "receipt": 2,
+  "receipt_1_measured": true,
+  "receipt_1_path": "reports/measured/native_process_containment.json",
+  "receipt_5_state": "absent",
   "receipts_not_in_this_stage": [
     1,
     3,
     5
   ],
-  "release_tree_file_count": 1433,
+  "release_tree_file_count": 1442,
   "release_tree_files": [
     {
       "git_blob": "5141a6ed0a0e1ee1cf8861b73071029481df07bd",
@@ -2662,6 +2737,42 @@
       "size": 7158
     },
     {
+      "git_blob": "3adff4694efbcdf41e9a820d60aad71d06e75075",
+      "path": "aureon/containment/__init__.py",
+      "sha256": "b331f1ac9a63b8f2ba65f9b60deee5ccaa920e501b8b62c3ed1082a76cb44e3f",
+      "size": 836
+    },
+    {
+      "git_blob": "f8bc6e87a27e8d6025e48e6d17eb20adb6bcc099",
+      "path": "aureon/containment/__main__.py",
+      "sha256": "54fa0ca5376b8c14f5f1daf8c7354fcae1936516661c7ac8daa8cd0e0fc57144",
+      "size": 150
+    },
+    {
+      "git_blob": "b93bef4952580be65887326395280c7d9209b727",
+      "path": "aureon/containment/_child_probe.py",
+      "sha256": "bd2e74ef3e5986b543ee4cb5a8541b75dd788e23e0a06e33682c41c7fd241255",
+      "size": 9080
+    },
+    {
+      "git_blob": "c8303bcd0c58969a3f126c2a3906f6e753842ff0",
+      "path": "aureon/containment/_child_wrapper.py",
+      "sha256": "5796b7f7b388e046667142d3c972d047911cb39a48972d55101999cf5a9a1d49",
+      "size": 6350
+    },
+    {
+      "git_blob": "b553b3edf964ceb90488161ee5ca9203bfd2fa78",
+      "path": "aureon/containment/cold_boot.py",
+      "sha256": "72effd4ec1f894ba976d49f4254556f6aafae5720ec6cad43a25e5c66e51b055",
+      "size": 29276
+    },
+    {
+      "git_blob": "1e346f097c15809bf7d60671d02bf2a35e5388fa",
+      "path": "aureon/containment/native.py",
+      "sha256": "440235d88b19e1bff74121d51b620c59aa027d2dccc599a691cfbd4267ce20b9",
+      "size": 6996
+    },
+    {
       "git_blob": "5ef7f9fc530e3233fb9aef37ef95bca1553dcf0f",
       "path": "aureon/conversion/__init__.py",
       "sha256": "85f709007acaaffad3dcf7f46fb304b2b1841c5679c36b6c0a6f9d95dea34285",
@@ -3448,22 +3559,28 @@
       "size": 78
     },
     {
-      "git_blob": "5cb0b7f6e4051a0c77b259394d2118f7aa9fd1f4",
+      "git_blob": "11e491355199ab1942327dfc4f5f42d165723463",
       "path": "aureon/evaluation/auris_node_eval.py",
-      "sha256": "cc400bbf4f6a52d54ead5f9ca2baf3b3b21c37f8b1d2169756a673cde891304b",
-      "size": 1132
+      "sha256": "f18d828e67b6b259b0505dfcfd540bfd7411f4f86b397cfd93c8161ddd958caf",
+      "size": 1894
     },
     {
-      "git_blob": "89d874ebfe2fc8b8e73113b86fe6524b3ee71322",
+      "git_blob": "b24087c3e395a8402fd9a92f03632316ff703525",
       "path": "aureon/evaluation/brain_proof.py",
-      "sha256": "40fecd35b3322c34d0ec2a9c36cb243f2a80ea2e131ef93b9f899ea0e7e3cba8",
-      "size": 18713
+      "sha256": "14a86d12453aef1599b31057e4bb904311cba6ef4a32b53d62480b414e381ae8",
+      "size": 41102
     },
     {
-      "git_blob": "c3cb05490f1ef40aaabb9600d6af9cf646591c60",
+      "git_blob": "bd7525b5f7be431db9c68960bc65a54774e425b4",
+      "path": "aureon/evaluation/market_series.py",
+      "sha256": "07fbfb6a25b1ebbc38fa157a7f1088ebccf77cdfc91508c3a9d78d35fedf6729",
+      "size": 33802
+    },
+    {
+      "git_blob": "421d0aac51678fb8e7d89fcd381d6f808974dd1d",
       "path": "aureon/evaluation/measured_proof.py",
-      "sha256": "5aace97d234a11bfdd72402e71c5cd04db4fb67126a888e01118bba7c1eb282b",
-      "size": 8418
+      "sha256": "5db5b232610c5daf1ebd3dec1e1e719d15f4d14f80b856796d28e203aa2b9b6c",
+      "size": 9970
     },
     {
       "git_blob": "00008213ca1c7e6cb5a48b597c20e7c37c08c32d",
@@ -3472,10 +3589,16 @@
       "size": 21229
     },
     {
-      "git_blob": "7e940fdacf2f2afd8ca5fb1fa6da368fb86ed9d6",
+      "git_blob": "370fb3b3c04f2c8df469cfbf6573472dec87326f",
+      "path": "aureon/evaluation/qgita_series_rates.py",
+      "sha256": "3ce5dcf0a4c995fce2028efd996b04061df6a89246c8e1cb5f4eb5a6b2dce9a3",
+      "size": 13947
+    },
+    {
+      "git_blob": "0793ff2c2ccfb9d9aadd9dcf19d03a3708e71036",
       "path": "aureon/evaluation/qgita_snr_benchmark.py",
-      "sha256": "2f1774ac6f1279dfff47319cbe580b196e23f2305dab8f94dd2af872b478b7ad",
-      "size": 1475
+      "sha256": "c1c633cbcbceddfc5c6074a50aa9155d3d6b51e4831530fb56460afc0782d094",
+      "size": 2060
     },
     {
       "git_blob": "2d3433546532c041bc6a10ceeb4b8d9a188a82f3",
@@ -3502,6 +3625,12 @@
       "size": 6642
     },
     {
+      "git_blob": "998f47e5d551051e675d02c57447a2efca5ede70",
+      "path": "aureon/evidence/hnc_anchor.py",
+      "sha256": "0fb6afb1006384c6febd41a924ad7706c9d84e80b511e484c76d58ffc9623b0d",
+      "size": 19186
+    },
+    {
       "git_blob": "c8bcd674e9cc2a933c3de79ba79a47cde1786b93",
       "path": "aureon/evidence/metrics.py",
       "sha256": "d127511469d62222c3063f6e7e853288bb068656a0578fc8dc443c0a2d2e1c7c",
@@ -3514,16 +3643,16 @@
       "size": 16677
     },
     {
-      "git_blob": "0af18777d4fd8a60bd9cb1c766860dd734ecfd46",
+      "git_blob": "d5d5afb87b5d4357b895b37b2a907ad48cbcd798",
       "path": "aureon/evidence/report.py",
-      "sha256": "1a828d4d768042168957bc905ee7d60752801da7f36e6ae75485650c3afad9bb",
-      "size": 23167
+      "sha256": "0a6c8d8f1749ae2d5e7929a725b0345b9b17061d33b602cb5dad0048f6f0a4d7",
+      "size": 26801
     },
     {
-      "git_blob": "1fc350bc0ffb554daef3c7e0cdeedf50dabb4384",
+      "git_blob": "ca9adbdfa7d73de06980f6051b33885f0095cc67",
       "path": "aureon/evidence/runner.py",
-      "sha256": "2d6033ac11688ad4f4bdb76dddc0c2a7ade319bdeec9fdbcc9e4c7435bcd2d0d",
-      "size": 8430
+      "sha256": "df84a316540adedd804dc85f241e46a10973d3888f3e3955aa1534031089684c",
+      "size": 10232
     },
     {
       "git_blob": "cf57b10f1e111a92824a61fac13fccd006fa0b5e",
@@ -6808,10 +6937,10 @@
       "size": 14283
     },
     {
-      "git_blob": "0e39ea5b8131fc78bed264481df06a62e08a9c02",
+      "git_blob": "4e00393d0e38a041b00e7ffa70059468d3c8e308",
       "path": "aureon/saas/domains.py",
-      "sha256": "041502a68d3d7a927b9a5232e6d7858d20042c04a3495515c82ef990316ae189",
-      "size": 11005
+      "sha256": "6a6d127587bbba1596254cfe396681bfff66df1bc41221903930184fcea925c6",
+      "size": 11120
     },
     {
       "git_blob": "c16bf4f93174803816ba3ed5834f24f21c60dbec",
@@ -8902,18 +9031,18 @@
       "size": 51495
     }
   ],
-  "release_tree_git_tree": "3ba0cab4a5e193b01943e5e6e0be25077ff759f6",
+  "release_tree_git_tree": "a5114a7e5ecb4e9a51df57d58355e72882cf0a3c",
   "release_tree_prefix": "aureon",
-  "release_tree_sha256": "333999abd82512a1265ab559fec8c05d073d2052a6e0830fcd7e015a603a0d9b",
-  "release_tree_total_bytes": 46021601,
+  "release_tree_sha256": "19bfb60dc368532b0b2178921a4247f55b2f1be9f8ee52dbcc66196bf6aff3ec",
+  "release_tree_total_bytes": 46172063,
   "schema": "aureon.go-live.release-provenance.v1",
-  "tip": "c68a89d2a184d99582bb24310b91e024323a212c",
-  "tip_aureon_file_count": 1433,
-  "tip_aureon_total_bytes": 46021601,
-  "tip_aureon_tree": "3ba0cab4a5e193b01943e5e6e0be25077ff759f6",
-  "tip_commit_tree": "5e3637100d03aabc6979f2479c1b40593907bb2c",
-  "tip_inventory_git_blob": "581c7d802b635c09cc7bef70668e86e198297d1c",
-  "tip_release_tree_sha256": "333999abd82512a1265ab559fec8c05d073d2052a6e0830fcd7e015a603a0d9b",
+  "tip": "b2b0310362597dc520114de86d8700c0c50758d5",
+  "tip_aureon_file_count": 1442,
+  "tip_aureon_total_bytes": 46172063,
+  "tip_aureon_tree": "a5114a7e5ecb4e9a51df57d58355e72882cf0a3c",
+  "tip_commit_tree": "514077fbb89ab87c29202c5673bb91e9b25b17ce",
+  "tip_inventory_git_blob": "b7d320b4e51f9b99d6fb7ffa46679fd4d18a4766",
+  "tip_release_tree_sha256": "19bfb60dc368532b0b2178921a4247f55b2f1be9f8ee52dbcc66196bf6aff3ec",
   "tip_unified_margin_trader_tree": "bc764eed7f52ee8aafaa9f1d33015532cb79f628",
   "unified_margin_trader_file_count": 103,
   "unified_margin_trader_files": [

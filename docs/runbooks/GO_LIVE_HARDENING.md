@@ -10,17 +10,24 @@ use direct module execution as a substitute for the missing release boundary.
 Historical listener and environment guidance is withdrawn.
 
 Go-live requires all of the following. Receipt 1 is measured (stage 7).
-Receipts 2–5 are not, and none of them is inferred from a local test pass:
+Receipt 3 is the DigiCert section below. Receipts 2 and 4 are remeasured
+below and do not clear go-live. Receipt 5 is absent. None of these is
+inferred into a clear:
 
 - native process containment with a zero-network default (receipt 1, measured;
   see below);
-- exact target-source measurement and immutable release provenance (HOLD);
-- durable HNC evidence with an external monotonic head anchor (HOLD);
-- complete source-boundary census closure (HOLD);
-- authenticated deployment receipt and provider-side read-back (HOLD).
+- exact target-source measurement and immutable release provenance (receipt 2,
+  remeasured, HOLD);
+- durable HNC evidence with an external monotonic head anchor (receipt 3,
+  measured, HOLD);
+- complete source-boundary census closure (receipt 4, remeasured, the pin
+  tree is not closed, HOLD);
+- authenticated deployment receipt and provider-side read-back (receipt 5,
+  absent, HOLD).
 
-Until receipts 2–5 exist, the correct outcome is `HOLD`, not a partially
+Until receipt 5 exists, the correct outcome is `HOLD`, not a partially
 configured listener. The orange release-boundary badge stays HOLD.
+`go_live_clear` stays false. This document does not say the system is alive.
 
 ## Receipt 3 — durable HNC evidence
 
@@ -28,9 +35,13 @@ Measured for this receipt only. Go-live is not clear.
 
 The fixed-seed formula path in `aureon.evidence.hnc` is unchanged. Its series
 sha256 matches the series recorded at public pin
-`34864ff0547d2cff03e707414743a3b0cc8770b5`. This receipt does not publish a new
-HNC identity and does not move `AUREON_PUBLIC_REQUIRE_PIN`. No market series
-is fetched.
+`34864ff0547d2cff03e707414743a3b0cc8770b5` in
+`evidence/output/hnc_head_anchor.json`. That record is receipt 3. This
+receipt does not publish a new HNC identity. No market series is fetched.
+The published require-pin is now
+`bb04503119681adcf832f3c3e9b0cbf09fc7a938`. Receipt 3's record still names
+`34864ff0547d2cff03e707414743a3b0cc8770b5`. This pin move does not append a
+later head.
 
 The measured commitment is covered by one RFC 3161 timestamp from
 `http://timestamp.digicert.com`. The token bytes are the git note
@@ -52,9 +63,9 @@ This receipt does not set `external_head_anchor_attested` on the local
 intrusion ledger. That flag stays false. The system is not reported alive.
 Live trading stays off. No order is placed.
 
-Still HOLD, with no receipt from this change:
+Still HOLD. Receipt 1 is measured separately. Receipts 2 and 4 are
+remeasured and do not clear. Receipt 5 is absent:
 
-- native process containment with a zero-network default
 - exact target-source measurement and immutable release provenance
 - complete source-boundary census closure
 - authenticated deployment receipt and provider-side read-back
@@ -64,14 +75,19 @@ Still HOLD, with no receipt from this change:
 Receipt 2 is `measured/go_live_stage6_provenance.json`. Receipt 4 is
 `measured/go_live_stage6_source_census.json` and
 `docs/runbooks/GO_LIVE_STAGE6_SOURCE_CENSUS.md`. They measure pin
-`34864ff0547d2cff03e707414743a3b0cc8770b5` and tip
-`c68a89d2a184d99582bb24310b91e024323a212c`. They do not clear go-live.
-Receipt 3 is the DigiCert section above and is not part of this stage.
-Receipts 1 and 5 are absent. The census closes the pin tree. This checkout
-also has `aureon/evidence/hnc_anchor.py` and
-`aureon/evaluation/market_series.py`. Those paths are named in the census
-and are not added to the inventory. Plan stages 3 and 4 stay closed.
-Decision remains `HOLD`.
+`bb04503119681adcf832f3c3e9b0cbf09fc7a938` and tip
+`b2b0310362597dc520114de86d8700c0c50758d5`. Pin `bb045031` is the prior main
+tip. Tip `b2b03103` retargets the published require-pin onto that commit and
+does not change the `aureon/` bytes the digest measures. They do not clear
+go-live. `go_live_clear` is false. Receipt 3 is the DigiCert section above
+and is not part of this stage. Receipt 1 is measured at
+`reports/measured/native_process_containment.json` and is not rewritten here.
+Receipt 5 is absent. The census does not close the pin tree: symbols in that
+tree are absent from `docs/mcp/inventory.json` and were not added. That
+includes `aureon/evidence/hnc_anchor.py` and
+`aureon/evaluation/market_series.py`. `http_get` stays unlisted so evaluation
+is not moved to plan stage 4. Plan stages 3 and 4 stay closed. Reachable
+stays the prior sweep's 69. Decision remains `HOLD`.
 
 Operator contract names are not injected by go-live: `AUREON_OPERATOR_ENV`,
 `AUREON_OPERATOR_API_KEY`, `AUREON_OPERATOR_RATE_RPS`,
@@ -102,10 +118,13 @@ allow-path probe does not connect; it only compares namespace ids.
 
 The public MCP sweep describes the same zero-network outcome inside one
 interpreter: `mcp/aureon_public/sweep_guard.py` replaces `socket.socket`
-in-process. That guard is cited, not this measurement, and this stage does
-not change it. The public pin stays
-`34864ff0547d2cff03e707414743a3b0cc8770b5`. `AUREON_PUBLIC_REQUIRE_PIN` is
-unchanged.
+in-process. That guard is cited, not this measurement. Stage 7 did not
+change the guard or the pin. The measured receipt still names
+`34864ff0547d2cff03e707414743a3b0cc8770b5` and `pin_changed: false`.
+The published require-pin is now
+`bb04503119681adcf832f3c3e9b0cbf09fc7a938`. This section does not re-run
+the cold boot and does not rewrite
+`reports/measured/native_process_containment.json`.
 
 What an installer can start, once the other receipts exist, is this contained
 process. Receipt 1 does not switch the official installers on. Docker,
@@ -113,9 +132,15 @@ Compose, Supervisor, systemd, shell, package, desktop, and cloud routes still
 stop at the isolated bootstrap before target import. `scripts/linux/install-linux.sh`
 still execs that bootstrap. No live instance is claimed.
 
-## Receipts 2–5 remain HOLD
+## Receipts 2, 3, 4, and 5 remain HOLD
 
-- exact target-source measurement and immutable release provenance
-- durable HNC evidence with an external monotonic head anchor
-- complete source-boundary census closure
-- authenticated deployment receipt and provider-side read-back
+Go-live stays HOLD until receipt 5 exists: an authenticated deployment
+receipt and provider-side read-back. Receipts 2 and 4 were remeasured and
+do not supply that receipt. Receipt 3 is the DigiCert section above and
+does not clear go-live. `go_live_clear` is false. The orange badge stays
+HOLD.
+
+- exact target-source measurement and immutable release provenance (HOLD)
+- durable HNC evidence with an external monotonic head anchor (HOLD)
+- complete source-boundary census closure (HOLD)
+- authenticated deployment receipt and provider-side read-back (absent)

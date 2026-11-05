@@ -12,12 +12,12 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-PIN = "34864ff0547d2cff03e707414743a3b0cc8770b5"
-TIP = "c68a89d2a184d99582bb24310b91e024323a212c"
-PIN_AUREON_TREE = "3ba0cab4a5e193b01943e5e6e0be25077ff759f6"
+PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
+TIP = "b2b0310362597dc520114de86d8700c0c50758d5"
+PIN_AUREON_TREE = "a5114a7e5ecb4e9a51df57d58355e72882cf0a3c"
 PRIOR_SWEEP_PIN = "ad9be6c3179bba140fb7e88d5733616046110da9"
 PRIOR_SWEEP_TREE = "2b89d73db122486e2537047baa9b342f3a0249be"
-PIN_INVENTORY_SHA256 = "4bc19ea9b5444a7b8a9abbd3fabf635d083bd25bea6c1b2d6eab2605b4f5716b"
+PIN_INVENTORY_SHA256 = "be5e14d73ae1130a16d04d355478a1474bf1f1b2c405c9d2196444eca8a391dc"
 
 pytestmark = pytest.mark.timeout(180)
 
@@ -45,7 +45,10 @@ def test_stage6_receipts_match_the_pin_and_leave_gaps_open() -> None:
     assert provenance["pin_move_touches_inventory"] is False
     assert provenance["inventory_blobs_match"] is True
     assert provenance["pin_inventory_sha256"] == PIN_INVENTORY_SHA256
-    assert len(provenance["pin_move_delta"]) == 32
+    assert provenance["receipt_1_measured"] is True
+    assert provenance["receipt_1_path"] == "reports/measured/native_process_containment.json"
+    assert provenance["receipt_5_state"] == "absent"
+    assert len(provenance["pin_move_delta"]) == 31
     assert len(provenance["release_tree_files"]) == provenance["release_tree_file_count"]
     sweep = provenance["measured_call_sweep"]
     assert sweep["pin"] == PRIOR_SWEEP_PIN
@@ -58,37 +61,37 @@ def test_stage6_receipts_match_the_pin_and_leave_gaps_open() -> None:
     assert census["decision"] == "HOLD"
     assert census["go_live_clear"] is False
     assert census["reachable_count"] is None
-    assert census["source_boundary_closed"] is True
+    assert census["source_boundary_closed"] is False
     assert census["coverage_plan_open_through"] == 2
     assert census["coverage_plan_stages_3_and_4_open"] is False
-    assert census["unlisted_in_inventory"] == []
+    assert len(census["unlisted_in_inventory"]) == 60
     assert census["missing_from_source"] == []
     assert census["field_drift"] == []
     assert census["removed_since_pin_inventory"] == []
     assert census["pin_inventory_sha256"] == PIN_INVENTORY_SHA256
-    assert census["inventory_sha256"] != PIN_INVENTORY_SHA256
+    assert census["inventory_sha256"] == PIN_INVENTORY_SHA256
     assert census["provenance_digest"] == provenance["digest"]
-    assert len(census["added_public_entry_points"]) == 17
-    assert all(item["refusal"] == "plan stage 4 is not open" for item in census["added_public_entry_points"])
-    assert all(item["plan_stage"] == 4 for item in census["added_public_entry_points"])
-    assert census["post_pin_checkout_paths"] == [
-        "aureon/evaluation/market_series.py",
-        "aureon/evidence/hnc_anchor.py",
-    ]
+    assert census["added_public_entry_points"] == []
+    assert census["added_since_pin_inventory"] == 0
+    assert census["post_pin_checkout_paths"] == []
     gaps = {item["id"]: item["text"] for item in census["open_gaps"]}
     assert set(gaps) == {
         "sweep_not_repeated",
         "brain_proof_blob",
         "plan_stages_3_and_4_closed",
         "changed_blobs_not_recalled",
-        "receipts_1_and_5_absent",
+        "receipt_5_absent",
         "pin_inventory_predates_closure",
-        "post_pin_checkout_not_in_closure",
+        "pin_tree_symbols_outside_inventory",
     }
-    assert "DigiCert" in gaps["receipts_1_and_5_absent"]
-    assert "does not report the system alive" in gaps["receipts_1_and_5_absent"]
-    assert "http_get" in gaps["post_pin_checkout_not_in_closure"]
-    assert "The pin is not moved." in gaps["post_pin_checkout_not_in_closure"]
+    assert "native_process_containment.json" in gaps["receipt_5_absent"]
+    assert "Receipt 5" in gaps["receipt_5_absent"]
+    assert "absent" in gaps["receipt_5_absent"]
+    assert "DigiCert" in gaps["receipt_5_absent"]
+    assert "does not report the system alive" in gaps["receipt_5_absent"]
+    assert "go_live_clear is false" in gaps["receipt_5_absent"]
+    assert "http_get" in gaps["pin_tree_symbols_outside_inventory"]
+    assert "Plan stages 3 and 4 stay closed." in gaps["pin_tree_symbols_outside_inventory"]
     assert "This is not a go-live clear." in markdown
     assert "Decision: `HOLD`." in markdown
 
