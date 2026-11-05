@@ -67,10 +67,19 @@ def test_brain_proof_matches_the_committed_run_and_holds_without_labels():
     assert str(fresh["market_series"]["key_group"]).startswith("public:")
     assert fresh["market_series"]["authenticated"] is False
     assert fresh["market_series"]["orders_placed"] is False
-    assert fresh["qgita"]["on_market_series"]["evidence_tag"] == "measured"
-    assert fresh["qgita"]["on_market_series"]["rates_verdict"] == "HOLD"
-    assert fresh["qgita"]["on_market_series"]["detection_rate"] is None
-    assert fresh["qgita"]["on_market_series"]["orders_placed"] is False
+    market_rates = fresh["qgita"]["on_market_series"]
+    assert market_rates["evidence_tag"] == "measured"
+    assert market_rates["rates_verdict"] == "HOLD"
+    assert market_rates["verdict"] == "measured_counts_rates_hold"
+    assert market_rates["detection_rate"] is None
+    assert market_rates["false_alarm_rate"] is None
+    assert "signal_in_noise" not in market_rates
+    assert "synthetic_planted" in market_rates["rates_reason"]
+    assert market_rates.get("tag") != "synthetic_planted"
+    assert market_rates["orders_placed"] is False
+    assert index["qgita_on_market_detection_rate"] is None
+    assert index["qgita_on_market_rates_verdict"] == "HOLD"
+    assert "qgita_on_market_false_alarm_rate" not in index
     assert fresh["auris"]["hold_nodes"] == []
     assert "hit_rate" not in fresh["auris"]
     assert fresh["qgita"]["derived_series"]["detection_rate"] is None

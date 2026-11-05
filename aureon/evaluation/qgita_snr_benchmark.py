@@ -1,7 +1,7 @@
 """QGITA analyzer output from the brain proof.
 
-Detection rate stays HOLD unless the series itself carries signal-in-noise
-labels. The planted-spike false-alarm target was not the detector's definition.
+Detection rate stays HOLD. The series has no market signal-in-noise labels.
+A planted-impulse harness is tagged synthetic_planted and is not a market rate.
 """
 
 from __future__ import annotations
