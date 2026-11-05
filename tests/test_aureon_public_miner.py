@@ -64,6 +64,13 @@ def test_miner_sweep_delta_matches_the_entries() -> None:
     assert record["orders"] == "refused"
     assert record["badge"] == "HOLD"
     assert record["go_live_clear"] is False
+    assert record["charlie_gate"] == {
+        "exchange_calls": "none",
+        "live_orders": "off",
+        "mining": "off",
+        "posture": "HOLD",
+        "read_gated": True,
+    }
     from aureon_public.guard_loader import PINNED_COMMIT
 
     assert record["pin_moved"] is False
@@ -88,18 +95,33 @@ def test_miner_sweep_delta_matches_the_entries() -> None:
     for row in record["entries"]:
         assert row["package"] == "miner"
         assert row["order_keys"] == []
+        assert row["socket"] == []
+        assert row["process"] == []
+        assert row["writes"] == []
+        for name in row["bad"]:
+            assert not str(name).startswith("aureon.exchanges")
+            assert not str(name).startswith("aureon.trading")
+            assert "exchange" not in str(name)
         if row["opened"]:
+            assert row["called"] is True
             assert row["refusal"] is None
             assert row["read_gate"] is None
             assert row["measured_refusal"] is None
         else:
+            assert row["called"] is False
+            assert row["bad"] == []
             assert row["refusal"]
+            assert row["refusal"] == row["read_gate"]
     insight = _entry(record, "MinerAIInsight.to_dict")
     assert insight["called"] is True
     assert "verdict" in insight["result_keys"]
     bridge = _entry(record, "get_miner_ai_bridge")
     assert bridge["opened"] is False
-    assert bridge["order_keys"] == []
+    assert bridge["called"] is False
+    assert bridge["refusal"] == "constructor loads the miner bridge"
+    start = _entry(record, "MinerAIBridge.start")
+    assert start["called"] is False
+    assert start["refusal"] == "name contains start"
 
 
 def test_body_call_runs_the_opened_read_and_refuses_the_bridge() -> None:
@@ -160,6 +182,44 @@ def test_public_depth_pin_and_badge_stay() -> None:
     assert "Reachable now: 69." in plan
     assert "## Miner surface" in plan
     assert "Opened delta 1." in plan
+
+
+def test_sweep_child_does_not_start_mining_or_call_an_exchange() -> None:
+    import os
+    import subprocess
+    import sys
+
+    mcp = str(ROOT / "mcp")
+    env = {
+        "PATH": os.environ.get("PATH", ""),
+        "PYTHONPATH": mcp,
+        "PYTHONDONTWRITEBYTECODE": "1",
+    }
+    for symbol in ("MinerAIBridge.start", "get_miner_ai_bridge"):
+        completed = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "aureon_public.miner_sweep",
+                "--module",
+                "miner/miner_inhouse_ai_bridge.py",
+                "--symbol",
+                symbol,
+            ],
+            cwd="/tmp",
+            env=env,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert completed.returncode == 0, completed.stderr
+        payload = json.loads(completed.stdout)
+        assert payload["called"] is False
+        assert payload["bad"] == []
+        assert payload["socket"] == []
+        assert payload["order_keys"] == []
+    assert "aureon.exchanges" not in sys.modules
+    assert "aureon.trading" not in sys.modules
 
 
 def test_queen_call_stays_on_plan_stage_4() -> None:

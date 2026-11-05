@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Rewrite measured/aureon_public_miner_sweep.json. Do not hand-edit that file.
 #
-# Calls each miner function and method with no arguments. Sockets, process
-# starts, and writes outside the temp parent are blocked and logged. Importing
-# aureon.miner is the target. Queen, swarm_motion, inhouse_ai, ollama_config,
-# an HTTP client, and the exchanges fence are refusals. No order is sent.
+# The Charlie trading gate is HOLD. Live orders stay off. Mining stays off.
+# The sweep calls a miner function or method only when the read gate allows it.
+# A refused entry point is not constructed. No exchange client is imported.
+# Sockets, process starts, and writes outside the temp parent are blocked.
 #
 # This script does not rewrite measured/aureon_public_call_sweep.json.
 # The checkout is copied under an ordinary temp parent. Fake NEXUS-LIVE-FEED-

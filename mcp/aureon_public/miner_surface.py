@@ -35,6 +35,23 @@ _FENCE_MODULES = (
 )
 
 
+def charlie_trading_gate() -> dict[str, str | bool]:
+    """HOLD is the only posture on this surface.
+
+    Live orders stay off. Mining stays off. An environment variable cannot
+    select EXECUTE. The public server and the miner tests do not call an
+    exchange.
+    """
+
+    return {
+        "exchange_calls": "none",
+        "live_orders": "off",
+        "mining": "off",
+        "posture": "HOLD",
+        "read_gated": True,
+    }
+
+
 def miner_constructor_allowed(module: str, class_name: str) -> bool:
     """True for the miner dataclass the read gate can construct.
 
@@ -294,13 +311,13 @@ def plan_lines() -> list[str]:
     delta = record.get("delta") if isinstance(record.get("delta"), dict) else {}
     table = record.get("public_table") if isinstance(record.get("public_table"), dict) else {}
     lines.append(
-        "The miner sweep calls each miner function and method with no arguments, sockets blocked, process starts blocked, and writes outside the sandbox blocked. "
+        "The Charlie trading gate is HOLD. Live orders stay off. Mining stays off. The sweep calls a miner function or method only when the read gate allows it, with no arguments, sockets blocked, process starts blocked, and writes outside the sandbox blocked. A refused entry point is not constructed and is not sent to an exchange. "
         f"Swept {delta.get('swept')}. Opened {delta.get('opened')}. Tested {delta.get('tested')}. Refused {delta.get('refused')}. "
         f"Opened delta {delta.get('opened_delta')}. Tested delta {delta.get('tested_delta')}. Refused delta {delta.get('refused_delta')}. "
         f"The public table at measurement time listed miner reachable {table.get('miner_reachable')} and all-package reachable {table.get('reachable_all_packages')}. Those table figures are not republished from this sweep."
     )
     lines.append(
-        "`body_call` runs an opened entry point. A measured hazard is the refusal sentence when the call loaded queen, swarm_motion, inhouse_ai, ollama_config, an HTTP client, the exchanges fence, or an order id, or when it opened a connection, started a process, or wrote outside the sandbox. The read gate supplies the sentence when the call had no such hazard and is still not a read. `MinerAIBridge` stays unconstructed on the public path. `MinerAIInsight` is the constructor this gate allows."
+        "`body_call` runs an opened read. `MinerAIInsight.to_dict` is that read. `MinerAIBridge` is not constructed. `get_miner_ai_bridge` and `MinerAIBridge.start` are not called. The posture stays HOLD."
     )
     lines.append("Opened:")
     opened = [row for row in record.get("entries") or [] if isinstance(row, dict) and row.get("opened") is True]

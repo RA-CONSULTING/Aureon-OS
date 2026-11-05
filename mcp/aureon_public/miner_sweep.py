@@ -1,8 +1,9 @@
-"""Call every miner function and method. Queen and exchanges are hazards.
+"""Call miner entry points that pass the read gate.
 
-Sockets, process starts, and writes outside the sandbox are blocked. Importing
-``aureon.miner`` is the target of this sweep. Importing queen, swarm_motion,
-inhouse_ai, ollama_config, an HTTP client, or the exchanges fence is a refusal.
+The Charlie trading gate is HOLD. Live orders stay off. Mining stays off.
+A function or method the read gate refuses is not called, so the bridge is
+not constructed and no exchange client is imported. The one opened read is
+called with sockets, process starts, and writes outside the sandbox blocked.
 The stages 1 and 2 file ``measured/aureon_public_call_sweep.json`` is not written.
 
     bash measured/aureon_public_miner_sweep.sh
@@ -21,6 +22,7 @@ from typing import Any
 from aureon_public.call_sweep import hazard_reason
 from aureon_public.miner_surface import (
     TESTED,
+    charlie_trading_gate,
     fence_modules,
     opened_entry,
     order_keys,
@@ -31,7 +33,32 @@ from aureon_public.miner_surface import (
 )
 
 
+def _not_called() -> dict[str, Any]:
+    return {
+        "bad": [],
+        "called": False,
+        "error": None,
+        "order_keys": [],
+        "process": [],
+        "result_keys": [],
+        "socket": [],
+        "status": "unavailable",
+        "writes": [],
+    }
+
+
 def child_main(module: str, symbol: str) -> None:
+    from aureon_public.miner_surface import charlie_trading_gate, entry_rows, read_gate_refusal
+
+    gate = charlie_trading_gate()
+    if gate["posture"] != "HOLD" or gate["mining"] != "off" or gate["live_orders"] != "off":
+        json.dump(_not_called(), sys.stdout)
+        return
+    rows = {(str(row["module"]), str(row["symbol"])): row for row in entry_rows()}
+    row = rows.get((module, symbol))
+    if row is None or read_gate_refusal(row) is not None:
+        json.dump(_not_called(), sys.stdout)
+        return
     os.environ["AUREON_PUBLIC_SWEEP"] = "1"
     os.environ["AUREON_PUBLIC_MINER_SURFACE"] = "1"
     os.environ["AUREON_AUDIT_MODE"] = "1"
@@ -199,8 +226,12 @@ def build_record(timeout: float) -> dict[str, Any]:
         symbol = str(row["symbol"])
         print(f"{module} {symbol}", file=sys.stderr)
         gate = read_gate_refusal(row)
-        payload = _one(module, symbol, timeout)
-        measured = _measured(payload)
+        if gate is not None:
+            payload = _not_called()
+            measured = None
+        else:
+            payload = _one(module, symbol, timeout)
+            measured = _measured(payload)
         called = payload.get("called") is True and measured is None
         refusal = runtime_refusal(gate, measured)
         opened = opened_entry(gate, measured, called)
@@ -229,6 +260,7 @@ def build_record(timeout: float) -> dict[str, Any]:
     return {
         "aureon_source": source,
         "badge": "HOLD",
+        "charlie_gate": charlie_trading_gate(),
         "delta": summarize(entries, table),
         "entries": entries,
         "global_call_sweep_rewritten": False,
