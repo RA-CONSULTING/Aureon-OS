@@ -1,0 +1,34 @@
+{
+  "schema": "aureon.offline-gallery.cold-boot-child.v1",
+  "evidence_tag": "fixture",
+  "measured_on_this_machine": false,
+  "note": "Shape accepted by judge_default. Not a stage-7 receipt and not a measurement of this machine.",
+  "parent_net_ns": "net:[1]",
+  "child": {
+    "started": true,
+    "probe": {
+      "socket_monkeypatch": false,
+      "socket_module": "socket",
+      "net_ns": "net:[2]",
+      "interfaces_proc_net_dev": ["lo"],
+      "default_route_ifaces": [],
+      "sysfs_net": ["lo"],
+      "lo_before": {"ok": true, "up": false, "flags": 8},
+      "caps": {"CapEff": "0000000000000000"},
+      "lo_up_attempt": {"ok": false, "errno_name": "EPERM", "error": "EPERM"},
+      "probes": {
+        "tcp_1.1.1.1_443": {"ok": false, "errno_name": "ENETUNREACH", "error": "ENETUNREACH"},
+        "tcp_127.0.0.1_9": {"ok": false, "errno_name": "ENETUNREACH", "error": "ENETUNREACH"},
+        "udp_8.8.8.8_53": {"ok": false, "errno_name": "ENETUNREACH", "error": "ENETUNREACH"},
+        "libc_connect_1.1.1.1_443": {"ok": false, "errno_name": "ENETUNREACH", "error": "ENETUNREACH"},
+        "tcp_1.1.1.1_443_after_socket_reload": {"ok": false, "errno_name": "ENETUNREACH", "error": "ENETUNREACH"},
+        "tcp6_2001:4860:4860::8888_53": {"ok": false, "errno_name": "ENETUNREACH", "error": "ENETUNREACH"},
+        "raw_icmp_create": {"ok": false, "errno_name": "EPERM", "error": "EPERM"}
+      }
+    },
+    "wrapper": {
+      "sysfs_remount": {"ok": true},
+      "sysfs_before": ["lo", "eth0"]
+    }
+  }
+}
