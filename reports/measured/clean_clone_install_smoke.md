@@ -102,8 +102,23 @@ After `SMOKE PASSED`, CPython printed `resource_tracker: There appear to be 1 le
 
 - `LocalDevelopmentReleaseBoundaryV02` still has four `"production_ready": False` literals. File sha256 `8691b938dc8df60e89c7360c90c24079eda259754a0ea36810cce925580e05f4`, unchanged by the smoke.
 - README badge remains release-boundary HOLD.
-- `go_live_clear` is false in `evidence/output/hnc_head_anchor.json` (top level and `measurement.go_live_clear`), `measured/go_live_stage6_provenance.json`, and `measured/go_live_stage6_source_census.json`. `aureon/evidence/hnc_anchor.py` still has two `"go_live_clear": False` literals. Those four file hashes were unchanged by the smoke.
+- `go_live_clear` is false in `evidence/output/hnc_head_anchor.json` (top level and `measurement.go_live_clear`), `measured/go_live_stage6_provenance.json`, and `measured/go_live_stage6_source_census.json`. `aureon/evidence/hnc_anchor.py` still has two `"go_live_clear": False` literals. Those four file hashes were unchanged by the smoke. The hashes in the JSON are the measured tree. See the rebase note for the two stage-6 files that `29fab7f2` replaced.
 - Trade readiness inside the cognition report is **fail** on 166 paper labels, and that report's release boundary is **HOLD**. QGITA rates are **HOLD**. Auris joined to Λ(t) is **HOLD**. The smoke gate accepts that report. The gate does not promote it.
 - Receipts 2, 3, 4, and 5 stay HOLD. This file is a local install smoke. The clock is this machine's UTC.
 
 Started from `bb04503119681adcf832f3c3e9b0cbf09fc7a938`. Git HEAD at the passing measurement: `7de64166bc532170a5a95a842e623a4b894cebd2`. The commit that adds this file is not a second measurement.
+
+## Rebase onto 29fab7f2
+
+This branch was rebased onto `29fab7f21fc93da40224566dd8f34faacb3d74d4`. The path fix replayed as `799f1a4d98699a5590140f69b4d6483f27b2b5fe`. The original receipt replayed as `3703529745775003969f1132dc1b7ff800e1053e`. `scripts/plug_and_play.py` is the same bytes as the measurement (`074958ec277ae9cbd88dc3a3f0faa635d71f41431d8d36f4208e71dce8667497`).
+
+No `./install.sh --smoke` was run on `29fab7f2` or on the replayed commits. `git_head_at_measurement` stays `7de64166bc532170a5a95a842e623a4b894cebd2`.
+
+`29fab7f2` sets `PINNED_COMMIT` to `bb04503119681adcf832f3c3e9b0cbf09fc7a938`. The smoke measured pin `34864ff0547d2cff03e707414743a3b0cc8770b5`. The depth-1 failure in this receipt is that earlier pin.
+
+`29fab7f2` replaces the two stage-6 files. On this worktree, read after the rebase and not by a new smoke:
+
+- `measured/go_live_stage6_provenance.json` sha256 `33adba393aec6047e2dcc8cf90e5ad3984aa158355b5205c65f2f1109c7b4d94`, `go_live_clear` false
+- `measured/go_live_stage6_source_census.json` sha256 `2bc09488106c4a6a4d1fd231dc27ff8baab12c597a1f17b1dacf249eea8cc4f4`, `go_live_clear` false
+
+`evidence/output/hnc_head_anchor.json`, `aureon/evidence/hnc_anchor.py`, and `aureon/plumber/release_boundary_v02.py` still match the measurement hashes. `production_ready` stays false. Release boundary stays **HOLD**. `go_live_clear` stays false.

@@ -264,6 +264,40 @@
     "The documented clone is a full git clone. A depth-1 clone omits pin 34864ff, and the public MCP child exits before the smoke checks.",
     "SMOKE PASSED means the guarded local stack answered. production_ready stays false. go_live_clear stays false.",
     "Exchange keys stayed unset. No .env was present. orders_placed stayed false.",
-    "This receipt was written after the measurement. git_head_at_measurement is 7de64166."
-  ]
+    "This receipt was written after the measurement. git_head_at_measurement is 7de64166.",
+    "The branch was later rebased onto 29fab7f2. That rebase did not re-run ./install.sh --smoke. The passing measurement stays 7de64166."
+  ],
+  "rebase": {
+    "onto": "29fab7f21fc93da40224566dd8f34faacb3d74d4",
+    "replayed_fix": "799f1a4d98699a5590140f69b4d6483f27b2b5fe",
+    "replayed_receipt": "3703529745775003969f1132dc1b7ff800e1053e",
+    "smoke_rerun": false,
+    "git_head_at_measurement": "7de64166bc532170a5a95a842e623a4b894cebd2",
+    "plug_and_play_sha256_same_as_measurement": true,
+    "pin_at_measurement": "34864ff0547d2cff03e707414743a3b0cc8770b5",
+    "pin_on_this_tree": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
+    "pin_source": "mcp/aureon_public/guard_loader.py as brought in by 29fab7f2",
+    "release_boundary": "HOLD",
+    "go_live_clear_on_this_tree": false,
+    "go_live_clear_read": "read of the rebased worktree, not a new smoke",
+    "stage6_files_replaced_by_29fab7f2": {
+      "measured/go_live_stage6_provenance.json": {
+        "sha256_at_measurement": "545df4b08151186424b3c93634c93a40f5009595ad257cf33723afd9e307ee2f",
+        "sha256_on_this_tree": "33adba393aec6047e2dcc8cf90e5ad3984aa158355b5205c65f2f1109c7b4d94",
+        "go_live_clear": false
+      },
+      "measured/go_live_stage6_source_census.json": {
+        "sha256_at_measurement": "9469ef5e8a7e953dda7d115992afe78322cf4574900a8a56b016f1be77c2cac1",
+        "sha256_on_this_tree": "2bc09488106c4a6a4d1fd231dc27ff8baab12c597a1f17b1dacf249eea8cc4f4",
+        "go_live_clear": false
+      }
+    },
+    "unchanged_from_measurement_tree": {
+      "evidence/output/hnc_head_anchor.json": "270e7d5b97331df9e772a902b984e42ebea24192edeb9b476c38d162b670bd16",
+      "aureon/evidence/hnc_anchor.py": "0fb6afb1006384c6febd41a924ad7706c9d84e80b511e484c76d58ffc9623b0d",
+      "aureon/plumber/release_boundary_v02.py": "8691b938dc8df60e89c7360c90c24079eda259754a0ea36810cce925580e05f4",
+      "scripts/plug_and_play.py": "074958ec277ae9cbd88dc3a3f0faa635d71f41431d8d36f4208e71dce8667497"
+    },
+    "evidence_tag": "read of this worktree after the rebase. No ./install.sh --smoke was run on 29fab7f2 or on the replayed commits."
+  }
 }
