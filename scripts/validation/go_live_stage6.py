@@ -489,15 +489,18 @@ def build_census(provenance: dict[str, object]) -> dict[str, object]:
         {
             "id": "plan_stages_3_and_4_closed",
             "text": (
-                f"Coverage-plan stages above {OPEN_PLAN_THROUGH} stay closed. "
+                f"OPEN_PLAN_THROUGH stays {OPEN_PLAN_THROUGH}. "
+                "The read gate opens three entry points: miner MinerAIInsight.to_dict, "
+                "queen compute_zpe_ground, and exchanges gbp_equity_from_balances. "
                 f"Full-body ENABLED_THROUGH is {ENABLED_THROUGH}. "
-                "That full-body number is not an opening of coverage-plan stages 3 and 4. "
+                "That full-body number is not the read gate. "
                 f"{len(added_public)} public entry points added since the pin inventory "
                 "are refused. evidence is plan stage "
                 f"{plan_stage.get('evidence')} because render_results matches the scanner "
                 "key pattern. Harmonic stays plan stage "
                 f"{plan_stage.get('harmonic')}. Exchanges stay plan stage "
-                f"{plan_stage.get('exchanges')}. The matched token in "
+                f"{plan_stage.get('exchanges')}. The sterling read is not one of those "
+                "added public entry points. The matched token in "
                 "`render_results` is `dotenv`, from the letters inside `python-dotenv`."
             ),
         },

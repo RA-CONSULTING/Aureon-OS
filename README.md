@@ -121,9 +121,9 @@ Auris joined to Λ(t): **HOLD**. HarmonicRealityField.step Λ(t) was passed into
 
 The longer operator preflight, containers, and the full offline suite are further down.
 
-## Public MCP (stages 1 and 2 of 4)
+## Public MCP
 
-[`mcp/aureon_public/README.md`](mcp/aureon_public/README.md) is the public MCP surface. It is read-only. Stages 1 and 2 of 4 are open. Stages 3 and 4 stay closed.
+[`mcp/aureon_public/README.md`](mcp/aureon_public/README.md) is the public MCP surface. It is read-only. Stages 1 and 2 are open. Stages 3 and 4 are open on a read gate for miner, queen, and one exchange amount. Orders and key values stay closed. Go-live stays HOLD.
 
 ---
 

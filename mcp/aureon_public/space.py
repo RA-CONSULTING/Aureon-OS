@@ -23,8 +23,8 @@ from aureon_public.server import (
 
 _QUEEN_MODULE = "queen/temporal_ground.py"
 _QUEEN_SYMBOL = "compute_zpe_ground"
-_QUEEN_REASON = "plan stage 4 is not open"
-_CLOSED_PACKAGES = ("miner", "accounting", "queen", "exchanges", "trading")
+_OPEN_PACKAGES = ("miner", "queen", "exchanges")
+_STILL_CLOSED = ("accounting", "trading")
 
 
 def prepare_space_environment() -> None:
@@ -42,23 +42,38 @@ def prepare_space_environment() -> None:
 
 
 def closed_stage_report() -> dict:
-    """Stage 3 and 4 stay closed inside this entry point."""
+    """Read gate for miner, queen, and the sterling amount. Trading stays closed.
+
+    The historical name is kept because `python -m aureon_public.space --check`
+    already prints this object. `ok` is true when the three read-gate packages
+    are reachable, accounting and trading are not, the queen call ran, and no
+    order field is set.
+    """
 
     from aureon_public.body import body_call, package_depth
 
     depth = package_depth()
-    queen_text = body_call(_QUEEN_MODULE, _QUEEN_SYMBOL)
+    queen_text = body_call(_QUEEN_MODULE, _QUEEN_SYMBOL, json.dumps({"lambda_t": 1.0}))
     queen = json.loads(queen_text)
-    packages = {name: depth[name] for name in _CLOSED_PACKAGES}
-    reachable = {name: packages[name]["reachable"] for name in _CLOSED_PACKAGES}
-    queen_refused = queen.get("called") is not True and queen.get("reason") == _QUEEN_REASON
-    closed = all(reachable[name] == 0 for name in _CLOSED_PACKAGES)
+    names = _OPEN_PACKAGES + _STILL_CLOSED
+    packages = {name: depth[name] for name in names}
+    reachable = {name: packages[name]["reachable"] for name in names}
+    opened = all(reachable[name] > 0 for name in _OPEN_PACKAGES)
+    closed = all(reachable[name] == 0 for name in _STILL_CLOSED)
+    queen_ran = queen.get("called") is True and queen.get("live_orders") != "placed"
     return {
         "closed_packages_reachable": reachable,
         "observer_mode": os.environ.get("AUREON_OBSERVER_MODE", ""),
-        "ok": bool(queen_refused and closed and os.environ.get("AUREON_OBSERVER_MODE") == "dry_run"),
+        "ok": bool(
+            opened
+            and closed
+            and queen_ran
+            and os.environ.get("AUREON_OBSERVER_MODE") == "dry_run"
+        ),
         "queen_call": queen,
+        "read_gate": list(_OPEN_PACKAGES),
         "require_pin": os.environ.get("AUREON_PUBLIC_REQUIRE_PIN", ""),
+        "still_closed": list(_STILL_CLOSED),
         "sweep_set": bool(os.environ.get("AUREON_PUBLIC_SWEEP")),
     }
 

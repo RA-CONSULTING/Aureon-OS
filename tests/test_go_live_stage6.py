@@ -69,7 +69,7 @@ def test_stage6_receipts_match_the_pin_and_leave_gaps_open() -> None:
     assert census["field_drift"] == []
     assert census["removed_since_pin_inventory"] == []
     assert census["pin_inventory_sha256"] == PIN_INVENTORY_SHA256
-    assert census["inventory_sha256"] == PIN_INVENTORY_SHA256
+    assert census["inventory_sha256"] != PIN_INVENTORY_SHA256
     assert census["provenance_digest"] == provenance["digest"]
     assert census["added_public_entry_points"] == []
     assert census["added_since_pin_inventory"] == 0

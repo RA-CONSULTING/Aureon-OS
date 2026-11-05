@@ -106,8 +106,8 @@
       "public_entry_points": 0
     },
     "exchanges": {
-      "reachable": 0,
-      "public_entry_points": 0
+      "reachable": 1,
+      "public_entry_points": 1
     },
     "portfolio": {
       "reachable": 0,

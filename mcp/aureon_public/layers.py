@@ -38,7 +38,7 @@ PACKAGES: tuple[dict[str, str], ...] = (
     {"package": "data_feeds", "kind": "catalog", "reason": "Feeds are key-adjacent. Not called."},
     {"package": "decoders", "kind": "catalog", "reason": "Not opened. No safe callable wrapped."},
     {"package": "evaluation", "kind": "evidence_predict_next", "reason": "predict_next and the committed-report formatters. evaluate_organism and the self-coder harness are not called."},
-    {"package": "exchanges", "kind": "operator", "reason": "Blocked by guard.py. Operator refusal only. No live orders."},
+    {"package": "exchanges", "kind": "stage34_exchange_read", "reason": "gbp_equity_from_balances on a supplied map. Clients stay blocked. No live orders. Key groups are labels only."},
     {"package": "gates", "kind": "catalog", "reason": "Signature pass was not done. Not called."},
     {"package": "generated", "kind": "catalog", "reason": "Generated trees are not exposed."},
     {"package": "governance", "kind": "catalog", "reason": "Seat resolvers were not started."},
@@ -49,7 +49,7 @@ PACKAGES: tuple[dict[str, str], ...] = (
     {"package": "integrations", "kind": "catalog", "reason": "External systems. Not called."},
     {"package": "intelligence", "kind": "catalog", "reason": "GlobalMarketOrganism is not a stateless API. Not called."},
     {"package": "launch", "kind": "operator", "reason": "Process start. Operator server only. This server does not launch it."},
-    {"package": "miner", "kind": "catalog", "reason": "Not opened. No safe callable wrapped."},
+    {"package": "miner", "kind": "stage34_miner_insight", "reason": "MinerAIInsight.to_dict on an empty insight. The bridge is not constructed."},
     {"package": "monitors", "kind": "catalog", "reason": "Not opened. No safe callable wrapped."},
     {"package": "observability", "kind": "catalog", "reason": "Not opened. No safe callable wrapped."},
     {"package": "observer", "kind": "catalog", "reason": "HarmonicObserver attaches to the live daemon. Not called."},
@@ -564,6 +564,7 @@ def public_layer_tools() -> list[Any]:
     from aureon_public.more_layers import TOOLS
     from aureon_public.stage1_rest import TOOLS as STAGE1_TOOLS
     from aureon_public.stage2_layer import TOOLS as STAGE2_TOOLS
+    from aureon_public.stage34_layer import TOOLS as STAGE34_TOOLS
 
     return [
         package_dispositions,
@@ -582,6 +583,7 @@ def public_layer_tools() -> list[Any]:
         *ALIGNMENT_TOOLS,
         *STAGE1_TOOLS,
         *STAGE2_TOOLS,
+        *STAGE34_TOOLS,
     ]
 
 
