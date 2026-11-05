@@ -160,8 +160,11 @@ def _clear_tree(tmp_path: Path, head: str) -> FakeGit:
 def test_this_tip_stays_hold_and_does_not_flip_the_badge(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("AUREON_GO_LIVE_CLEAR", "1")
     monkeypatch.setenv("GO_LIVE_CLEAR", "true")
+    head = subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
+    ).strip()
     result = gate.evaluate(ROOT)
-    assert result["head"] == "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
+    assert result["head"] == head
     assert result["go_live_clear"] is False
     assert result["decision"] == "HOLD"
     assert result["badge"] == "HOLD"
@@ -177,6 +180,8 @@ def test_this_tip_stays_hold_and_does_not_flip_the_badge(monkeypatch: pytest.Mon
     assert result["flag_file"]["honored"] is False
     by_id = {row["id"]: row for row in result["receipts"]}
     assert by_id[1]["verified_on_tip"] is False
+    assert by_id[1]["detail"]["recorded_head"] == "c68a89d2a184d99582bb24310b91e024323a212c"
+    assert by_id[1]["detail"]["recorded_head"] != head
     assert "tip_is_not_head" in by_id[1]["reasons"]
     assert "worktree_dirty_at_measurement" in by_id[1]["reasons"]
     assert by_id[2]["verified_on_tip"] is False

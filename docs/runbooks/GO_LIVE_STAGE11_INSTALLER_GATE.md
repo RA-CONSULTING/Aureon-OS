@@ -95,11 +95,15 @@ is true and a later change may update the badge. This checkout does not.
    The isolated bootstrap's local HOLD receipt is not this receipt. On this
    tip the artifact is absent. This stage does not create it.
 
-## This tip
+## This checkout
 
-HEAD `bb04503119681adcf832f3c3e9b0cbf09fc7a938` does not verify all five
-receipts. Receipt 1's measurement head is `c68a89d2` and the worktree was
-dirty at measurement. Receipts 2 and 4 record tip `c68a89d2`, and receipt 4
+The receipt artifacts are the ones from stage 7 tip
+`bb04503119681adcf832f3c3e9b0cbf09fc7a938`. This change does not replace
+them. The gate compares them with the checked-out HEAD, so they also fail
+on any descendant commit that leaves them in place. Receipt 1's measurement
+head is `c68a89d2a184d99582bb24310b91e024323a212c` and the worktree was dirty
+at measurement. Receipts 2 and 4 record that same older tip, and receipt 4
 still names `post_pin_checkout_not_in_closure`. Receipt 3's git note is not
-on this HEAD. Receipt 5's artifact is absent. `go_live_clear` is false. The
-badge stays HOLD. Pin re-publish is not this change.
+on `bb045031` (the published note is on `7d26871ff007ec6c84be657297827fc813fe7428`,
+which is not this history). Receipt 5's artifact is absent. `go_live_clear`
+is false. The badge stays HOLD. Pin re-publish is not this change.
