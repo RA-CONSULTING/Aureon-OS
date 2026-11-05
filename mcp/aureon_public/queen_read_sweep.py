@@ -41,6 +41,9 @@ _BANNED = (
     "aureon.scanners",
     "unified_margin_trader",
 )
+# aureon_source() asks git for HEAD. The sweep guard blocks that Popen.
+# The read still returns. This line is not an order process.
+_SOURCE_STAMP = "Popen ['git', 'rev-parse', 'HEAD']"
 _KEEP = (
     "coherence_gamma",
     "economic_mutation",
@@ -152,12 +155,16 @@ def _one(tool: str, arguments: dict[str, Any], timeout: float) -> dict[str, Any]
     return payload if isinstance(payload, dict) else {"error": "sweep result was not an object"}
 
 
+def _other_processes(payload: dict[str, Any]) -> list[str]:
+    return [str(item) for item in payload.get("processes") or [] if str(item) != _SOURCE_STAMP]
+
+
 def _refusal(payload: dict[str, Any], result: dict[str, Any]) -> str | None:
     if payload.get("error"):
         return "call did not finish"
     if payload.get("sockets") or payload.get("banned_modules"):
         return "call loads a banned package or opens a connection"
-    if payload.get("processes"):
+    if _other_processes(payload):
         return "call starts a process"
     if payload.get("writes"):
         return "call writes outside the sandbox"
@@ -189,6 +196,7 @@ def build_record(timeout: float) -> dict[str, Any]:
                 "label": attempt["label"],
                 "processes": [str(item) for item in payload.get("processes") or []],
                 "refusal": refusal,
+                "source_stamp_blocked": _SOURCE_STAMP in [str(item) for item in payload.get("processes") or []],
                 "refused": refusal is not None,
                 "result": result,
                 "sandbox_writes": [str(item) for item in payload.get("sandbox_writes") or []],
