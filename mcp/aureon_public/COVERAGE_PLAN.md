@@ -212,7 +212,7 @@ The pin is `bb04503119681adcf832f3c3e9b0cbf09fc7a938`. The alignment modules at 
 This section is the miner read gate. Queen and exchanges are outside it. The counts in the table above stay on the inventory server field. Miner there is operator, so that row stays at public entry points 0. `package_depth` keeps miner reachable at 0. `OPEN_PLAN_THROUGH` stays 2. The pin stays `bb04503119681adcf832f3c3e9b0cbf09fc7a938`. Go-live stays HOLD. The stages 1 and 2 call sweep file is not rewritten. No order is sent.
 
 The Charlie trading gate is HOLD. Live orders stay off. Mining stays off. The sweep calls a miner function or method only when the read gate allows it, with no arguments, sockets blocked, process starts blocked, and writes outside the sandbox blocked. A refused entry point is not constructed and is not sent to an exchange. Swept 11. Opened 1. Tested 1. Refused 10. Opened delta 1. Tested delta 1. Refused delta 10. The public table at measurement time listed miner reachable 0 and all-package reachable 69. Those table figures are not republished from this sweep.
-`body_call` runs an opened read. `MinerAIInsight.to_dict` is that read. `MinerAIBridge` is not constructed. `get_miner_ai_bridge` and `MinerAIBridge.start` are not called. The posture stays HOLD.
+`body_call` runs an opened read. `MinerAIInsight.to_dict` is that read. `public_action` is HOLD. `live_orders` is off. `MinerAIBridge` is not constructed. `get_miner_ai_bridge` and `MinerAIBridge.start` are not called.
 Opened:
 - `miner/miner_inhouse_ai_bridge.py` `MinerAIInsight.to_dict`
 Refused:

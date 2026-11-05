@@ -1,6 +1,6 @@
 {
   "aureon_source": {
-    "commit": "6e067209b526fb9544ae5c88a87814825e480288",
+    "commit": "4e3c6d1dd44f7fc1c4058f9ef98e13cbd95d0e27",
     "kind": "checkout"
   },
   "aureon_tree": "a5114a7e5ecb4e9a51df57d58355e72882cf0a3c",
@@ -10,9 +10,10 @@
     "live_orders": "off",
     "mining": "off",
     "posture": "HOLD",
+    "public_action": "HOLD",
     "read_gated": true
   },
-  "code_commit": "6e067209b526fb9544ae5c88a87814825e480288",
+  "code_commit": "4e3c6d1dd44f7fc1c4058f9ef98e13cbd95d0e27",
   "code_commit_note": "This is the parent of the commit that contains this record. The record cannot name the commit that adds the file.",
   "delta": {
     "baseline_public_entry_points": 0,
@@ -262,7 +263,7 @@
   "global_call_sweep_rewritten": false,
   "go_live_clear": false,
   "layout": {
-    "beside": "/tmp/aureon-miner-sweep-parent.YJBkxh",
+    "beside": "/tmp/aureon-miner-sweep-parent.cXU0uY",
     "created": [
       "NEXUS-LIVE-FEED-",
       "Aureon-Trading--Project-Sero"
