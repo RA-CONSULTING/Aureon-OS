@@ -1,0 +1,458 @@
+{
+  "child": {
+    "admin_pulse_secret": false,
+    "admin_pulse_status": 200,
+    "boot": "create_app",
+    "canary_sha256": {
+      "canary_control_sha256": "4abe3f9f4d4b294d0b867d56ea5e0e5fc8558b061288e1a055ccb1ab3a1d963b",
+      "canary_operator_sha256": "890dd957ff9a8808545c2afcaec9d38c7caec807e124eb2a4c73bd2f6c245d6d",
+      "canary_prompt_a_revoked_sha256": "a797563e42158207404a6f0e3b79c5a9b6df883f3f44ef6682c632bab4498d9a",
+      "canary_prompt_a_sha256": "b4181b4252afa28ac81a8ef56f82741f67d7c923c8e97f7c3bc0694c22055754",
+      "canary_prompt_b_absent_sha256": "f4d69d959be6e347873df7d2b3bded08ab06a43f3c03da78f71eb0cd7931c599",
+      "canary_prompt_b_sha256": "f5e8d68ad463423450d51edad26bf668aaba9d961f1e4cf9ae44596837a25fa4",
+      "canary_prompt_b_still_sha256": "ac3d001d28a952b2bc612d0ca205d1aafa20b9c65437d2bcb695e3f623ec178b",
+      "canary_signer_sha256": "7a097493ba763e7afac3eddf40a08e64553a8ff193191058faceafe322e84471",
+      "canary_tenant_a_sha256": "30a70f0caa218b59cb0ff9cd6ae475faa2772331ea3e5dc3564742af7a487085",
+      "canary_tenant_b_sha256": "189b88035cc553e7a440fbb85d455729dae6e1e1e445b3dac6d059aa5cc38b87"
+    },
+    "caps": {
+      "CapAmb": "0000000000000000",
+      "CapBnd": "0000000000000000",
+      "CapEff": "0000000000000000",
+      "CapInh": "0000000000000000",
+      "CapPrm": "0000000000000000"
+    },
+    "cross_tenant_key_visible": false,
+    "default_deny": [
+      {
+        "method": "GET",
+        "mounted": true,
+        "path": "/api/pulse",
+        "secret_in_body": false,
+        "status": 403
+      },
+      {
+        "method": "GET",
+        "mounted": true,
+        "path": "/api/switchboard",
+        "secret_in_body": false,
+        "status": 403
+      },
+      {
+        "method": "GET",
+        "mounted": true,
+        "path": "/api/terminal-state",
+        "secret_in_body": false,
+        "status": 403
+      },
+      {
+        "method": "GET",
+        "mounted": true,
+        "path": "/api/env-credentials",
+        "secret_in_body": false,
+        "status": 403
+      },
+      {
+        "method": "GET",
+        "mounted": true,
+        "path": "/api/trades",
+        "secret_in_body": false,
+        "status": 403
+      },
+      {
+        "method": "GET",
+        "mounted": true,
+        "path": "/api/action/status",
+        "secret_in_body": false,
+        "status": 403
+      },
+      {
+        "method": "POST",
+        "mounted": true,
+        "path": "/api/billing/charge-fee",
+        "secret_in_body": false,
+        "status": 403
+      }
+    ],
+    "environ_has_tenant_key": false,
+    "euid": 0,
+    "exchange_module_count": 0,
+    "exchange_modules_sample": [],
+    "go_live_clear": false,
+    "home_is_workdir": true,
+    "keystore_under_home": true,
+    "listener_bound": false,
+    "live_trading": false,
+    "magic_star_release": false,
+    "market_data_fetched": false,
+    "net_ns": "net:[4026532213]",
+    "ok": true,
+    "orders_placed": false,
+    "plaintext_key_in_store": false,
+    "production_ready": false,
+    "provider_delete_a": 200,
+    "provider_write_a": 200,
+    "provider_write_b": 200,
+    "reason_a": {
+      "blocked": true,
+      "conscience_verdict": "TEACHING_MOMENT",
+      "secret_in_body": true,
+      "status": 200,
+      "tenant_no_key": null,
+      "tool_names": []
+    },
+    "reason_a_revoked": {
+      "blocked": false,
+      "conscience_verdict": "APPROVED",
+      "secret_in_body": false,
+      "status": 200,
+      "tenant_no_key": true
+    },
+    "reason_b": {
+      "blocked": true,
+      "conscience_verdict": "TEACHING_MOMENT",
+      "secret_in_body": true,
+      "status": 200,
+      "tenant_no_key": null,
+      "tool_names": []
+    },
+    "reason_b_keyless": {
+      "blocked": false,
+      "conscience_verdict": "APPROVED",
+      "secret_in_body": false,
+      "status": 200,
+      "tenant_no_key": true
+    },
+    "reason_b_still": {
+      "blocked": true,
+      "conscience_verdict": "TEACHING_MOMENT",
+      "secret_in_body": true,
+      "status": 200,
+      "tenant_no_key": null,
+      "tool_names": []
+    },
+    "report_contained_secret": false,
+    "schema": "aureon.measured.multi-user-child.v1",
+    "serving_entrypoint": false,
+    "store_a_bytes": 100,
+    "store_b_bytes": 268,
+    "subscriber_count_after": 2,
+    "subscriber_count_before": 1,
+    "subscriptions_after": [
+      {
+        "count": 1,
+        "handlers": [
+          "Connectome.Connectome._on_baton"
+        ],
+        "topic": "baton.link"
+      },
+      {
+        "count": 1,
+        "handlers": [
+          "subscribe_membrane_topic.<locals>._on_membrane"
+        ],
+        "topic": "bio.mcp_membrane.run"
+      },
+      {
+        "count": 0,
+        "handlers": [],
+        "topic": "symbolic.life.pulse"
+      }
+    ],
+    "subscriptions_before": [
+      {
+        "count": 1,
+        "handlers": [
+          "subscribe_membrane_topic.<locals>._on_membrane"
+        ],
+        "topic": "bio.mcp_membrane.run"
+      }
+    ],
+    "surfaces": {
+      "dev_shm_new": {
+        "found": {
+          "canary_control": false,
+          "canary_operator": false,
+          "canary_prompt_a": false,
+          "canary_prompt_a_revoked": false,
+          "canary_prompt_b": false,
+          "canary_prompt_b_absent": false,
+          "canary_prompt_b_still": false,
+          "canary_signer": false,
+          "canary_tenant_a": false,
+          "canary_tenant_b": false
+        },
+        "new_bytes_scanned": 0,
+        "new_names": [],
+        "preexisting_count": 0,
+        "preexisting_read": false,
+        "read_errors": 0,
+        "readable": true
+      },
+      "home_files": {
+        "bytes": 1835,
+        "files": 6,
+        "paths": {
+          "canary_control": [
+            "thoughts.jsonl"
+          ],
+          "canary_operator": [],
+          "canary_prompt_a": [],
+          "canary_prompt_a_revoked": [],
+          "canary_prompt_b": [],
+          "canary_prompt_b_absent": [],
+          "canary_prompt_b_still": [],
+          "canary_signer": [],
+          "canary_tenant_a": [],
+          "canary_tenant_b": []
+        }
+      },
+      "os_environ_values": {
+        "found": {
+          "canary_control": false,
+          "canary_operator": true,
+          "canary_prompt_a": false,
+          "canary_prompt_a_revoked": false,
+          "canary_prompt_b": false,
+          "canary_prompt_b_absent": false,
+          "canary_prompt_b_still": false,
+          "canary_signer": true,
+          "canary_tenant_a": false,
+          "canary_tenant_b": false
+        },
+        "names_scanned": 17
+      },
+      "thought_bus_recent": {
+        "found": {
+          "canary_control": true,
+          "canary_operator": false,
+          "canary_prompt_a": false,
+          "canary_prompt_a_revoked": false,
+          "canary_prompt_b": false,
+          "canary_prompt_b_absent": false,
+          "canary_prompt_b_still": false,
+          "canary_signer": false,
+          "canary_tenant_a": false,
+          "canary_tenant_b": false
+        },
+        "scanned_items": 1
+      },
+      "thoughts_jsonl": {
+        "bytes": 343,
+        "found": {
+          "canary_control": true,
+          "canary_operator": false,
+          "canary_prompt_a": false,
+          "canary_prompt_a_revoked": false,
+          "canary_prompt_b": false,
+          "canary_prompt_b_absent": false,
+          "canary_prompt_b_still": false,
+          "canary_signer": false,
+          "canary_tenant_a": false,
+          "canary_tenant_b": false
+        },
+        "truncated": false
+      }
+    },
+    "tcp_1_1_1_1_443": {
+      "bytes_read": 0,
+      "errno": 101,
+      "error": "ENETUNREACH",
+      "ok": false
+    },
+    "tenant_me_status": 200,
+    "test_ingress_seam": true,
+    "view_a": {
+      "blocked": null,
+      "canary_mask_tail": "",
+      "conscience_verdict": null,
+      "has_key": false,
+      "secret_in_body": false,
+      "status": 200,
+      "tenant_no_key": null
+    },
+    "view_b": {
+      "blocked": null,
+      "canary_mask_tail": "BBBB",
+      "conscience_verdict": null,
+      "has_key": true,
+      "secret_in_body": false,
+      "status": 200,
+      "tenant_no_key": null
+    }
+  },
+  "child_env_names": [
+    "AUREON_DISABLE_LLM_HTTP",
+    "AUREON_IMMUNE_MEMORY",
+    "AUREON_LLM_OFFLINE",
+    "AUREON_OPERATOR_ENV",
+    "AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS",
+    "AUREON_THOUGHT_BUS_PATH",
+    "AUREON_TRACE_PUMP",
+    "HOME",
+    "LANG",
+    "LC_ALL",
+    "PATH",
+    "PYTHONDONTWRITEBYTECODE",
+    "PYTHONNOUSERSITE",
+    "PYTHONPATH",
+    "PYTHONUNBUFFERED"
+  ],
+  "child_net_ns": "net:[4026532213]",
+  "cold_boot_argv_has_net": true,
+  "cold_boot_command": "python -m aureon.containment.multi_user_smoke",
+  "containment_pin": "34864ff0547d2cff03e707414743a3b0cc8770b5",
+  "containment_pin_is_public_pin": false,
+  "failures": [],
+  "finished_at": "2026-11-05T20:58:15Z",
+  "gaps": [],
+  "git_head_at_measurement": "4836dfa483077e26be09b258d128517a5f820b26",
+  "go_live_clear": false,
+  "go_live_receipt": null,
+  "holds": [],
+  "holds_remaining": [
+    {
+      "id": 2,
+      "item": "exact target-source measurement and immutable release provenance",
+      "status": "HOLD"
+    },
+    {
+      "id": 3,
+      "item": "durable HNC evidence with an external monotonic head anchor",
+      "status": "HOLD"
+    },
+    {
+      "id": 4,
+      "item": "complete source-boundary census closure",
+      "status": "HOLD"
+    },
+    {
+      "id": 5,
+      "item": "authenticated deployment receipt and provider-side read-back",
+      "status": "HOLD"
+    }
+  ],
+  "kernel": "Linux cursor 6.12.94+ #1 SMP PREEMPT_DYNAMIC Mon Nov  2 21:34:19 UTC 2026 x86_64",
+  "listener_bound": false,
+  "live_trading": false,
+  "market_data_fetched": false,
+  "measurement_note": "The child boots create_app with the local test ingress seam. operator_server.main is not called and no listener is bound. source_sha256 binds this stage's sources. git_head_at_measurement is HEAD when the command ran. The UTC stamps are this machine's clock, not receipt 3. go_live_clear stays false. aureon/operator/keystore.py is not listed in unchanged_sha256. This stage does not modify that file.",
+  "orange_badge": "unchanged",
+  "orders_placed": false,
+  "parent_env_copied": false,
+  "parent_net_ns": "net:[4026531840]",
+  "pin": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
+  "pin_changed": false,
+  "python": "3.12.3",
+  "release_boundary": "HOLD",
+  "require_pin_changed": false,
+  "schema": "aureon.measured.multi-user-smoke.v1",
+  "shared_memory": {
+    "claim": "No universal shared-memory-leak claim. Each surface below was read or is named as unread. A canary is found or absent only on a surface whose found map is present.",
+    "dev_shm_preexisting_count": 0,
+    "dev_shm_preexisting_read": false,
+    "process_address_space": "Not scored. The child handled the prompts, so those bytes exist in that process. That is not the shared thought bus.",
+    "scanned_surfaces": [
+      "thought_bus_recent",
+      "thoughts_jsonl",
+      "os_environ_values",
+      "dev_shm_new"
+    ],
+    "subscriber_count_after": 2,
+    "subscriber_count_before": 1,
+    "subscriptions_after": [
+      {
+        "count": 1,
+        "handlers": [
+          "Connectome.Connectome._on_baton"
+        ],
+        "topic": "baton.link"
+      },
+      {
+        "count": 1,
+        "handlers": [
+          "subscribe_membrane_topic.<locals>._on_membrane"
+        ],
+        "topic": "bio.mcp_membrane.run"
+      },
+      {
+        "count": 0,
+        "handlers": [],
+        "topic": "symbolic.life.pulse"
+      }
+    ],
+    "subscriptions_before": [
+      {
+        "count": 1,
+        "handlers": [
+          "subscribe_membrane_topic.<locals>._on_membrane"
+        ],
+        "topic": "bio.mcp_membrane.run"
+      }
+    ]
+  },
+  "source_sha256": {
+    "aureon/containment/_multi_user_child.py": "33a12bc07b8ec8246b5d7403004c7f77add471d8b4b880f24af173d354c7ea59",
+    "aureon/containment/multi_user_smoke.py": "66b90e66b5ae05436de1298046beb619658da4092c7c08b452a1749ebd17fd98",
+    "tests/test_multi_user_smoke.py": "be5fc4837f67331b4ea8efd646cb1aa292667eb3b4733b42dda0fae017339c03"
+  },
+  "stage": 9,
+  "started_at": "2026-11-05T20:58:14Z",
+  "started_from": "c68a89d2a184d99582bb24310b91e024323a212c",
+  "title": "contained multi-user tenant boundary",
+  "unchanged_sha256": {
+    "README.md": "e6a03232177ff56dc719786cdd829edb96cd27e26f8ead00a93856710660b117",
+    "aureon/operator/identity.py": "2df2e31eb48825541a1471c0cdfe6a80c48b37935dd60644a887e9924298ce23",
+    "aureon/operator/operator_server.py": "759d713526ee728cecfc987e9133ddcfe83f2c76352f4dc39f909ec40d1bddc2",
+    "docs/runbooks/GO_LIVE_HARDENING.md": "aced3709215d078a3a63e8148c373c2a3f8de26b39a303be4fec2e19c562e9b7",
+    "mcp/aureon_public/guard_loader.py": "6e674ddca3ed4d7c254cb41069d33660728b91c3436a821beab6558734bc7293",
+    "mcp/aureon_public/pin_blob.py": "2501bc7fbd6dbeacd4caa3399647cb1972d672313caaffd06b2d13487db5365d",
+    "mcp/aureon_public/sweep_guard.py": "e77db22d4d646e89537173762d7bfbebe9b0f00097e8fe4969a11b3bdf6e888e",
+    "scripts/linux/install-linux.sh": "5242a98eb4fe88471a918eaa89725670aaf17de9100437a56f54410ae8f1167c"
+  },
+  "verdict": "pass",
+  "worktree_dirty_at_measurement": false,
+  "wrapper": {
+    "cap_drop": {
+      "dropped": 41,
+      "errno": null,
+      "error": null,
+      "invalid_cap_numbers": 23,
+      "no_new_privs": true,
+      "no_new_privs_errno": null,
+      "ok": true,
+      "rc": 0
+    },
+    "caps_after": {
+      "CapAmb": "0000000000000000",
+      "CapBnd": "0000000000000000",
+      "CapEff": "0000000000000000",
+      "CapInh": "0000000000000000",
+      "CapPrm": "0000000000000000"
+    },
+    "caps_before": {
+      "CapAmb": "0000000000000000",
+      "CapBnd": "000001ffffffffff",
+      "CapEff": "000001ffffffffff",
+      "CapInh": "0000000000000000",
+      "CapPrm": "000001ffffffffff"
+    },
+    "deny_network": true,
+    "exec": true,
+    "schema": "aureon.containment.wrapper-status.v1",
+    "sysfs_after": [
+      "lo"
+    ],
+    "sysfs_before": [
+      "docker0",
+      "enp0s3",
+      "lo"
+    ],
+    "sysfs_remount": {
+      "errno": null,
+      "error": null,
+      "ok": true,
+      "rc": 0
+    }
+  }
+}
