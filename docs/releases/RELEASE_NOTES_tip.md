@@ -1,8 +1,8 @@
 # Aureon OS tip prerelease
 
-Lineage tip: `29fab7f21fc93da40224566dd8f34faacb3d74d4`. That commit pins the public require-pin to `bb04503119681adcf832f3c3e9b0cbf09fc7a938` and remeasures go-live receipts 2 and 4. Go-live stays HOLD.
+Lineage tip: `08f04936088689e29b7995d89530b21b425c35f9`. That commit keeps the four safety lines and go-live HOLD. Its ancestor `29fab7f21fc93da40224566dd8f34faacb3d74d4` pins the public require-pin to `bb04503119681adcf832f3c3e9b0cbf09fc7a938` and remeasures go-live receipts 2 and 4. Go-live stays HOLD.
 
-These notes describe that tip. The source-archive manifest records the commit that was archived. After this pull request lands on main, that commit still has `29fab7f21fc93da40224566dd8f34faacb3d74d4` as an ancestor. License: MIT (`LICENSE`).
+These notes describe that tip. The source-archive manifest records the commit that was archived. After this pull request lands on main, that commit still has `08f04936088689e29b7995d89530b21b425c35f9` as an ancestor. License: MIT (`LICENSE`).
 
 The release boundary stays HOLD. The orange release-boundary badge stays HOLD. Go-live stays HOLD. production go-live is not cleared. Receipts 1-5 are not verified on this commit. The system is not claimed alive. No order is placed.
 
@@ -39,6 +39,8 @@ Supported deploy stays on HOLD. Official Docker, Compose, Supervisor, systemd, s
 | 5. Authenticated deployment receipt and provider-side read-back | No receipt file in this tree. | Absent. HOLD |
 
 Receipts 1-5 are not verified on this commit. production go-live is not cleared. The system is not claimed alive.
+
+Stage 8 is `measured/go_live_stage8_exchanges.json`. Decision HOLD. `go_live_clear` false. Pin unchanged. It reads the exchanges catalog and does not place an order. It does not clear go-live.
 
 ## Pin
 

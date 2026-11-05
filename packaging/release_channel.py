@@ -22,7 +22,7 @@ import sys
 from pathlib import Path
 
 PUBLISHED_PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
-LINEAGE_TIP = "29fab7f21fc93da40224566dd8f34faacb3d74d4"
+LINEAGE_TIP = "08f04936088689e29b7995d89530b21b425c35f9"
 SCHEMA = "aureon.public-release-channel.v1"
 NOTES = Path("docs/releases/RELEASE_NOTES_tip.md")
 ORANGE_BADGE = "release%20boundary-HOLD-orange"
