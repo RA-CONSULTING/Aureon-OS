@@ -626,7 +626,66 @@
   "schema": "aureon.brain-proof.v1",
   "together": {
     "auris_joined_to_lambda": {
-      "reason": "no function in the repo passes \u039b(t) into get_auris_coherence",
+      "cited": {
+        "auris_role_value_names_lambda": false,
+        "evidence_tag": "cited",
+        "get_auris_coherence_names_lambda": false,
+        "keys_read_by_auris_role_value": [
+          "momentum",
+          "spread",
+          "volatility",
+          "volume"
+        ],
+        "source": "aureon.utils.aureon_queen_hive_mind.QueenHiveMind._auris_role_value and QueenHiveMind.get_auris_coherence"
+      },
+      "evidence_tag": "inferred",
+      "go_live": "HOLD",
+      "measurement": {
+        "calls_compared_with_texture": 300,
+        "evidence_tag": "measured",
+        "keys_passed": [
+          "lambda",
+          "lambda_t",
+          "lambda_current"
+        ],
+        "lambda_last": 1.1030284973375342,
+        "lambda_max": 1.1030284973375342,
+        "lambda_min": 0.1992387112134208,
+        "lambda_source": "aureon.harmonic.aureon_harmonic_reality.HarmonicRealityField.step",
+        "live_trading": false,
+        "omitted_call": {
+          "coherence": null,
+          "evidence_tag": "measured",
+          "status": "no_data"
+        },
+        "only_lambda": {
+          "lambda": {
+            "coherence": null,
+            "evidence_tag": "measured",
+            "status": "no_data"
+          },
+          "lambda_current": {
+            "coherence": null,
+            "evidence_tag": "measured",
+            "status": "no_data"
+          },
+          "lambda_t": {
+            "coherence": null,
+            "evidence_tag": "measured",
+            "status": "no_data"
+          }
+        },
+        "only_lambda_matches_omitted_call": true,
+        "orders_placed": false,
+        "samples": 100,
+        "texture_call": {
+          "coherence": 0.5023340603593964,
+          "evidence_tag": "measured",
+          "status": "\u26d4 COHERENCE BREAK - Do not trade"
+        },
+        "texture_with_lambda_matches_texture": true
+      },
+      "reason": "HarmonicRealityField.step \u039b(t) was passed into get_auris_coherence under the keys lambda, lambda_t, lambda_current. Each only-lambda call returned coherence null and status 'no_data', the same as get_auris_coherence(None). Beside the loaded market texture, coherence stayed 0.5023340603593964 with status '\u26d4 COHERENCE BREAK - Do not trade' for all 100 formula-series samples under those keys (300 calls). Cited from _auris_role_value, the keys read are momentum, spread, volatility, volume. Neither _auris_role_value nor get_auris_coherence names lambda. On this formula series the coherence figure was unchanged by those keys. No formula was added. No order was placed. Go-live stays HOLD.",
       "verdict": "HOLD"
     },
     "qgita_on_the_formula_series": "measured_counts_rates_hold"

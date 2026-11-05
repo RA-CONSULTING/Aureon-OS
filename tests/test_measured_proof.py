@@ -60,7 +60,35 @@ def test_brain_proof_matches_the_committed_run_and_holds_without_labels():
     assert fresh["qgita"]["derived_series"]["false_alarm_rate"] is None
     assert fresh["qgita"]["derived_series"]["rates_verdict"] == "HOLD"
     assert fresh["qgita"]["on_hnc_series"]["detection_rate"] is None
-    assert fresh["together"]["auris_joined_to_lambda"]["verdict"] == "HOLD"
+    joined = fresh["together"]["auris_joined_to_lambda"]
+    assert joined["verdict"] == "HOLD"
+    assert joined["go_live"] == "HOLD"
+    assert joined["evidence_tag"] == "inferred"
+    assert "no function in the repo passes" not in joined["reason"]
+    assert "alive" not in joined["reason"].casefold()
+    measurement = joined["measurement"]
+    assert measurement["evidence_tag"] == "measured"
+    assert measurement["lambda_source"].endswith("HarmonicRealityField.step")
+    assert measurement["samples"] == fresh["hnc"]["steps"]
+    assert measurement["lambda_last"] == fresh["hnc"]["lambda_last"]
+    assert measurement["orders_placed"] is False
+    assert measurement["live_trading"] is False
+    assert measurement["only_lambda_matches_omitted_call"] is True
+    assert measurement["omitted_call"]["coherence"] is None
+    assert measurement["omitted_call"]["status"] == "no_data"
+    for key in ("lambda", "lambda_t", "lambda_current"):
+        assert measurement["only_lambda"][key]["coherence"] is None
+        assert measurement["only_lambda"][key]["status"] == "no_data"
+        assert measurement["only_lambda"][key]["evidence_tag"] == "measured"
+    assert measurement["texture_with_lambda_matches_texture"] is True
+    assert measurement["texture_call"]["coherence"] == fresh["auris"]["coherence"]
+    assert measurement["calls_compared_with_texture"] == measurement["samples"] * 3
+    cited = joined["cited"]
+    assert cited["evidence_tag"] == "cited"
+    assert cited["auris_role_value_names_lambda"] is False
+    assert cited["get_auris_coherence_names_lambda"] is False
+    assert cited["keys_read_by_auris_role_value"] == ["momentum", "spread", "volatility", "volume"]
+    assert "Lambda" not in measurement["keys_passed"]
     assert fresh["external_llm"] is False
     assert fresh["live_trading"] is False
     assert fresh["orders_placed"] is False

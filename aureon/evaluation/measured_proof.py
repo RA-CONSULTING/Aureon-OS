@@ -144,6 +144,7 @@ def write_bundle(root: Path, out: Path) -> dict[str, Any]:
             "self_coder.json",
         ],
         "auris_coherence": auris["coherence"],
+        "auris_joined_to_lambda": brain["together"]["auris_joined_to_lambda"]["verdict"],
         "auris_hold_nodes": auris["hold_nodes"],
         "auris_series_nodes_without_reading": auris.get("market_nodes_without_reading"),
         "auris_trade_readiness": auris["trade_readiness"]["verdict"],
