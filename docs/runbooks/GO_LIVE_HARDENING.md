@@ -10,17 +10,22 @@ use direct module execution as a substitute for the missing release boundary.
 Historical listener and environment guidance is withdrawn.
 
 Go-live requires all of the following. Receipt 1 is measured (stage 7).
-Receipts 2–5 are not, and none of them is inferred from a local test pass:
+Receipt 5 is a stage 10 skip: the measuring machine had no provider auth.
+None of these is inferred from a local test pass, and none of them clears
+go-live:
 
 - native process containment with a zero-network default (receipt 1, measured;
   see below);
 - exact target-source measurement and immutable release provenance (HOLD);
 - durable HNC evidence with an external monotonic head anchor (HOLD);
 - complete source-boundary census closure (HOLD);
-- authenticated deployment receipt and provider-side read-back (HOLD).
+- authenticated deployment receipt and provider-side read-back (HOLD; stage
+  10 skip, no provider auth on the measuring machine).
 
-Until receipts 2–5 exist, the correct outcome is `HOLD`, not a partially
-configured listener. The orange release-boundary badge stays HOLD.
+Receipt 5's stage 10 file is a skip, not a provider read-back. Until that
+read-back exists, the correct outcome is `HOLD`, not a partially configured
+listener. The orange release-boundary badge stays HOLD. A badge flip is
+stage 11 and a separate change.
 
 ## Receipt 3 — durable HNC evidence
 
@@ -67,7 +72,8 @@ Receipt 2 is `measured/go_live_stage6_provenance.json`. Receipt 4 is
 `34864ff0547d2cff03e707414743a3b0cc8770b5` and tip
 `c68a89d2a184d99582bb24310b91e024323a212c`. They do not clear go-live.
 Receipt 3 is the DigiCert section above and is not part of this stage.
-Receipts 1 and 5 are absent. The census closes the pin tree. This checkout
+Receipts 1 and 5 are not part of this stage. Receipt 1 is stage 7. Receipt 5
+is stage 10 and is a skip. The census closes the pin tree. This checkout
 also has `aureon/evidence/hnc_anchor.py` and
 `aureon/evaluation/market_series.py`. Those paths are named in the census
 and are not added to the inventory. Plan stages 3 and 4 stay closed.
@@ -113,9 +119,53 @@ Compose, Supervisor, systemd, shell, package, desktop, and cloud routes still
 stop at the isolated bootstrap before target import. `scripts/linux/install-linux.sh`
 still execs that bootstrap. No live instance is claimed.
 
-## Receipts 2–5 remain HOLD
+## Receipt 5 — authenticated deployment (stage 10)
+
+Receipt 5 is not complete. The measured file is a HOLD skip.
+
+The runner is:
+
+```bash
+python scripts/validation/go_live_receipt5.py
+python scripts/validation/go_live_receipt5.py --check
+```
+
+`--check` re-reads `reports/measured/go_live_receipt5_deployment.json` and
+`reports/measured/go_live_receipt5_deployment.md` and probes this machine for
+provider auth. It does not deploy. The JSON is the record. This paragraph is
+not the measurement.
+
+At tip `bb04503119681adcf832f3c3e9b0cbf09fc7a938` the probe found no Hugging
+Face token and no Google Cloud credential. No deploy was attempted. No
+provider API was called. The read-back digest is null. A localhost process
+was not substituted for a provider.
+
+The same runner writes a provider read-back when auth exists. The zero-cost
+path uploads the in-repo scaffold `huggingface/hnc-field` with Hugging Face
+hardware `cpu-basic` and reads the Space runtime from `https://huggingface.co/api`.
+The Space stays private unless `AUREON_RECEIPT5_HF_PUBLIC=1`. Cloud Run is
+not created unless `AUREON_RECEIPT5_ALLOW_CLOUD_RUN_DEPLOY=1` and a service,
+project, region, and image are already set. That guard is there so a
+credential does not invent spend. Live trading stays off. No order is placed.
+No tunnel is opened. MCP plan stages 3 and 4 stay closed.
+
+The public pin recorded here is
+`34864ff0547d2cff03e707414743a3b0cc8770b5`, the `public_require_pin` in
+`evidence/output/hnc_head_anchor.json` at this tip. This receipt does not
+move it. Another change may move the pin. This one does not.
+
+`go_live_clear` stays false. The orange release-boundary badge stays HOLD.
+A later badge flip is stage 11 and a separate PR. This file does not report
+the system alive. Official installers are unchanged. Receipts 1–4 were not
+re-run here, so this stage does not say the go-live spine is clear.
+
+## What remains HOLD
+
+Receipt 5 does not clear the release. These stay open, and this change does
+not re-judge them:
 
 - exact target-source measurement and immutable release provenance
 - durable HNC evidence with an external monotonic head anchor
 - complete source-boundary census closure
-- authenticated deployment receipt and provider-side read-back
+- authenticated deployment receipt and provider-side read-back (skip only;
+  see receipt 5)
