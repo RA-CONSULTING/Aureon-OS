@@ -6,13 +6,21 @@ are routed to the fixed isolated bootstrap or a non-mutating HOLD receipt.
 
 Do not install dependencies for production, copy credentials, start a listener,
 invoke a direct subsystem module, activate an exchange client, or run a provider
-deployment from this repository. Offline tests and benchmarks may validate
-source contracts, but they do not authorize operation.
+deployment from this repository. Offline tests and benchmarks may check
+source contracts, but they do not authorize operation and are not a validation
+of the release.
 
-The release stays on `HOLD` until the whole-source census has no protection
-blockers, a native outer process boundary is independently attested, the HNC
-ledger head is externally anchored, packages are reproducible and signed, and
-provider-side deployment and runtime read-backs are verified.
+The release stays on `HOLD`. Receipt 1, a measured native zero-network cold
+boot, does not clear it. Receipts 2–5 remain open: exact target-source
+provenance, an external monotonic HNC head anchor
+(`external_head_anchor_attested` stays false), source-boundary census closure,
+and an authenticated provider read-back. Signed packaging is not a clearance
+in this checkout. The orange release-boundary badge stays HOLD.
+
+The live routes are active, and they are not on hold. With exchange keys in
+`.env`, the launcher boots into live trading. There is no verified live track
+record. The public default is full mode (`AUREON_AUTONOMY_MODE` unset). That
+boot is not a go-live clearance and not production-ready.
 
 Canonical launcher paths, still unapproved and not a start command:
 `scripts/launchers/AUREON_PRODUCTION_LIVE.cmd`,

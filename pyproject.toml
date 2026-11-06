@@ -4,8 +4,14 @@
 # The repo still resolves bare imports (e.g. `from aureon_nexus import ...`) via
 # conftest.py / aureon/_path_setup.py sys.path walking. This file adds:
 #   • an installable `aureon` package (pip install -e .),
+#   • a wheel and sdist (`python packaging/build_wheel.py` — build only, no upload),
 #   • optional extras (operator, dev),
 #   • one home for ruff / mypy / pytest config.
+#
+# Public PyPI upload is refused. TestPyPI upload is the gated Actions job in
+# .github/workflows/python-wheel.yml and waits for Gary's yes plus a token.
+# Console scripts stay on the inert HOLD bootstrap. Go-live stays HOLD.
+# See packaging/PIP_INSTALL.md.
 #
 # Lint/type are two-tier: the whole tree is informational (a ratchet), while the
 # product surface `aureon.operator.*` is held strict (0 ruff errors, mypy clean)
@@ -13,17 +19,27 @@
 # ─────────────────────────────────────────────────────────────────────────────
 
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "aureon"
 version = "2.1.0"
-description = "Aureon OS — Harmonic Nexus Core: a grounded AI operating layer for evidence-heavy, high-control work (trading research, autonomous operator, HNC research, coding organism)."
-readme = "README.md"
+description = "Aureon OS — Harmonic Nexus Core: a grounded AI operating layer for evidence-heavy, high-control work (trading research, autonomous operator, HNC research, coding organism). The wheel packages source. Supported runtime launch stays on go-live HOLD."
+readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.11"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [{ name = "Gary Leckey, R&A Consulting" }]
+keywords = ["aureon", "harmonic-nexus-core"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Scientific/Engineering",
+]
 # Core runtime kept intentionally light; heavy/optional deps live in extras so a
 # minimal install (e.g. the operator service container) stays lean.
 dependencies = [
@@ -73,6 +89,13 @@ dev = [
   "imageio>=2.34",
 ]
 
+[project.urls]
+Homepage = "https://github.com/RA-CONSULTING/Aureon-OS"
+Repository = "https://github.com/RA-CONSULTING/Aureon-OS"
+Issues = "https://github.com/RA-CONSULTING/Aureon-OS/issues"
+Changelog = "https://github.com/RA-CONSULTING/Aureon-OS/blob/main/docs/CHANGELOG.md"
+Documentation = "https://github.com/RA-CONSULTING/Aureon-OS/blob/main/packaging/PIP_INSTALL.md"
+
 [project.scripts]
 aureon-operator = "protected_console_bootstrap_v05:operator_main"
 aureon-organism = "protected_console_bootstrap_v05:organism_main"
@@ -84,9 +107,11 @@ aureon-website = "protected_console_bootstrap_v05:website_main"
 py-modules = ["protected_console_bootstrap_v05"]
 
 # Discover the `aureon` package plus the explicitly listed inert console module.
+# `aureon*` would also sweep in `aureon_fusion`. Keep that tree out of the wheel.
 # Other top-level bare modules stay run-in-place via the existing sys.path shims.
 [tool.setuptools.packages.find]
-include = ["aureon*"]
+include = ["aureon", "aureon.*"]
+exclude = ["aureon_fusion*"]
 namespaces = false
 
 [tool.setuptools.package-data]
