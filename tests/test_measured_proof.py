@@ -102,7 +102,33 @@ def test_brain_proof_matches_the_committed_run_and_holds_without_labels():
     joined = fresh["together"]["auris_joined_to_lambda"]
     assert joined["verdict"] == "HOLD"
     assert joined["go_live"] == "HOLD"
+    assert joined["release_boundary"] == "HOLD"
+    assert joined["join_implemented"] is False
+    assert joined["formula_added"] is False
+    assert joined["formula_consumes_lambda"] is False
     assert joined["evidence_tag"] == "inferred"
+    assert "does not consume lambda" in joined["reason"]
+    assert "release boundary" in joined["reason"]
+    contract = joined["contract"]
+    assert contract["evidence_tag"] == "cited"
+    assert contract["join_contract"] is None
+    assert contract["join_implemented"] is False
+    assert contract["formula_added"] is False
+    assert contract["get_auris_coherence_names_lambda"] is False
+    assert contract["role_value_names_lambda"] is False
+    assert contract["keys_read_by_auris_role_value"] == ["momentum", "spread", "volatility", "volume"]
+    assert contract["reconcile_gamma"]["names_lambda"] is False
+    assert contract["reconcile_gamma"]["returns_caller_figure"] is True
+    assert contract["auris_engine"]["names_lambda"] is False
+    assert contract["auris_engine"]["present"] is True
+    assert contract["auris_engine"]["comment_claims_lambda_bias"] is True
+    assert contract["auris_engine"]["reads"] == ["momentum", "volume"]
+    assert contract["auris_engine"]["multiplier"] == 1.1
+    assert contract["auris_engine"]["momentum_gt"] == 0.0
+    assert contract["auris_engine"]["volume_gt"] == 0.5
+    assert "lambda" not in contract["market_snapshot_fields"]
+    assert contract["frontend_market_snapshot"]["has_lambda"] is False
+    assert "lambda" not in contract["frontend_market_snapshot"]["fields"]
     assert "no function in the repo passes" not in joined["reason"]
     assert "alive" not in joined["reason"].casefold()
     measurement = joined["measurement"]

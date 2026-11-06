@@ -20,6 +20,7 @@ We will acknowledge your report within 48 hours and provide an estimated timelin
 
 - **NEVER** commit API keys, secrets, or credentials to the repository.
 - Use `.env` files (which are git-ignored) for local development.
+- `.env.example` uses placeholder names only. A real key value never goes in that file. The copied disable and dry-run flags are not a lock: a full+keyed master boot overrides them. Exchange keys in `.env` make that boot live. A complete key group in the inherited shell or in `aureon_radar/.env` does the same when the root `.env` is blank. See [`PUBLIC_ENV.md`](PUBLIC_ENV.md).
 - If you accidentally commit a key, revoke it immediately.
 
 ## Model-written benchmark code

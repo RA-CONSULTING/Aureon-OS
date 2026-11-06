@@ -3721,8 +3721,67 @@
         ],
         "source": "aureon.utils.aureon_queen_hive_mind.QueenHiveMind._auris_role_value and QueenHiveMind.get_auris_coherence"
       },
+      "contract": {
+        "auris_engine": {
+          "comment_claims_lambda_bias": true,
+          "momentum_gt": 0.0,
+          "multiplier": 1.1,
+          "names_lambda": false,
+          "present": true,
+          "reads": [
+            "momentum",
+            "volume"
+          ],
+          "source": "aureon.trading.aureon_auris_trader.AurisEngine.calculate_coherence",
+          "volume_gt": 0.5
+        },
+        "evidence_tag": "cited",
+        "formula_added": false,
+        "frontend_market_snapshot": {
+          "evidence_tag": "cited",
+          "fields": [
+            "price",
+            "volume",
+            "volatility",
+            "momentum",
+            "spread",
+            "timestamp"
+          ],
+          "has_lambda": false,
+          "source": "frontend/src/core/aurisNodes.ts"
+        },
+        "get_auris_coherence_names_lambda": false,
+        "join_contract": null,
+        "join_implemented": false,
+        "keys_read_by_auris_role_value": [
+          "momentum",
+          "spread",
+          "volatility",
+          "volume"
+        ],
+        "market_snapshot_fields": [
+          "symbol",
+          "price",
+          "volume",
+          "volatility",
+          "momentum",
+          "spread",
+          "timestamp"
+        ],
+        "market_snapshot_source": "aureon.trading.aureon_auris_trader.MarketSnapshot",
+        "reconcile_gamma": {
+          "evidence_tag": "cited",
+          "names_lambda": false,
+          "returns_caller_figure": true,
+          "source": "aureon.core.hnc_field.reconcile_gamma"
+        },
+        "role_value_names_lambda": false
+      },
       "evidence_tag": "inferred",
+      "formula_added": false,
+      "formula_consumes_lambda": false,
       "go_live": "HOLD",
+      "join_implemented": false,
       "measurement": {
         "calls_compared_with_texture": 300,
         "evidence_tag": "measured",
@@ -3768,7 +3827,8 @@
         },
         "texture_with_lambda_matches_texture": true
       },
-      "reason": "HarmonicRealityField.step \u039b(t) was passed into get_auris_coherence under the keys lambda, lambda_t, lambda_current. Each only-lambda call returned coherence null and status 'no_data', the same as get_auris_coherence(None). Beside the loaded market texture, coherence stayed 0.5023340603593964 with status '\u26d4 COHERENCE BREAK - Do not trade' for all 100 formula-series samples under those keys (300 calls). Cited from _auris_role_value, the keys read are momentum, spread, volatility, volume. Neither _auris_role_value nor get_auris_coherence names lambda. On this formula series the coherence figure was unchanged by those keys. No formula was added. No order was placed. Go-live stays HOLD.",
+      "reason": "HarmonicRealityField.step \u039b(t) was passed into get_auris_coherence under the keys lambda, lambda_t, lambda_current. Each only-lambda call returned coherence null and status 'no_data', the same as get_auris_coherence(None). Beside the loaded market texture, coherence stayed 0.5023340603593964 with status '\u26d4 COHERENCE BREAK - Do not trade' for all 100 formula-series samples under those keys (300 calls). Cited from _auris_role_value, the keys read are momentum, spread, volatility, volume. Neither _auris_role_value nor get_auris_coherence names lambda. On this formula series the coherence figure was unchanged by those keys. No join contract was found. reconcile_gamma does not name lambda and its docstring returns the caller figure. AurisEngine.calculate_coherence does not name lambda. Its source comment claims a Master Equation \u039b(t) bias, and the executed branch multiplies coherence by 1.1 when snapshot.momentum > 0.0 and snapshot.volume > 0.5. MarketSnapshot fields are symbol, price, volume, volatility, momentum, spread, timestamp. That comment was not copied into get_auris_coherence. The TypeScript MarketSnapshot fields are price, volume, volatility, momentum, spread, timestamp. That snapshot does not name lambda. HOLD remains because the coherence formula does not consume lambda. This item does not clear the release boundary. No formula was added. No order was placed. Go-live stays HOLD.",
+      "release_boundary": "HOLD",
       "verdict": "HOLD"
     },
     "qgita_on_the_formula_series": "measured_counts_rates_hold"
