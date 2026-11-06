@@ -452,7 +452,8 @@ Open-source repository traffic to date (verifiable in the repo's GitHub **Insigh
 | **Running it for several users** | [`docs/architecture/MULTI_TENANT_AUTH.md`](docs/architecture/MULTI_TENANT_AUTH.md) — the account/instance boundary and how it is enforced |
 | **Checking what the numbers mean** | [`docs/architecture/DATA_PROVENANCE_AUDIT.md`](docs/architecture/DATA_PROVENANCE_AUDIT.md) — which readings are live, which are withheld as `no_data`, and which generated feeds are opt-in |
 | **Browsing the whole repo** | [`docs/REPO_SITEMAP.md`](docs/REPO_SITEMAP.md) · the console's `#repo-map` tab |
-| **Contributing** | [`CONTRIBUTING.md`](CONTRIBUTING.md) · [`SECURITY.md`](SECURITY.md) · [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) |
+| **Getting help** | [`SUPPORT.md`](SUPPORT.md) — Discussions and Issues. No support contract while the release boundary is HOLD. |
+| **Contributing** | [`CONTRIBUTING.md`](CONTRIBUTING.md) · [`SUPPORT.md`](SUPPORT.md) · [`SECURITY.md`](SECURITY.md) · [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) |
 | **Talking with the community** | [`docs/COMMUNITY.md`](docs/COMMUNITY.md) — Discussions welcome. Go-live stays **HOLD** |
 | **Citing the source** | [`CITATION.cff`](CITATION.cff) — Aureon OS / HNC / R&A Consulting, company no. NI696693 |
 
