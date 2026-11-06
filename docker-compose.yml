@@ -1,5 +1,10 @@
 # Aureon root container protection preflight.
-# This service is intentionally terminal: it returns HOLD and starts no Aureon runtime.
+# Public local build of the guarded non-live image. The service returns HOLD
+# and starts no Aureon runtime. No env block, no env file, no secret, no
+# published port, and no volume are set here. The service has no network and
+# opens no listener. Not a supported cloud go-live. Not production ready.
+# Release boundary stays HOLD. Registry publish is outside this file.
+# See docs/deployment/PUBLIC_CONTAINER.md.
 services:
   protection-preflight:
     build:
