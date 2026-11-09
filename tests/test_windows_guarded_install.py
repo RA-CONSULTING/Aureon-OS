@@ -76,6 +76,9 @@ def test_docs_send_a_windows_stranger_to_guarded_smoke() -> None:
     assert "requirements-plug.lock" in guide
     assert "production\\Install-AUREON.ps1" in guide
     portability = _text("PORTABILITY.md")
+    assert "is meant to boot" in portability
+    assert "can boot the same local stack" not in portability
+    assert "No Windows run of `install.cmd --smoke` has been measured yet." in _text("README.md")
     assert "did not execute `install.cmd --smoke`" in portability
     assert "windows-latest" in portability
     workflow = _text(".github/workflows/windows-contract.yml")
@@ -115,7 +118,7 @@ def test_windows_process_control_is_separate_from_posix() -> None:
     assert module._CREATE_NEW_PROCESS_GROUP == 0x00000200
     assert "start_new_session" not in windows_flags
     assert module._stop_command("posix") == "./install.sh --stop"
-    assert module._stop_command("nt") == r".\install.ps1 --stop"
+    assert module._stop_command("nt") == "install.cmd --stop"
     try:
         module._frontend_argv("nt")
     except SystemExit as exc:

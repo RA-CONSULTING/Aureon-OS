@@ -67,7 +67,7 @@ Hosted CI and GitHub Actions are not part of the organism-launcher path. A billi
 
 ## Windows guarded smoke
 
-A Windows machine that has never seen this tree can boot the same local stack as `./install.sh` without the organism launcher. From the checkout, in Command Prompt or PowerShell:
+A Windows machine that has never seen this tree is meant to boot the same local stack as `./install.sh` without the organism launcher. From the checkout, in Command Prompt or PowerShell:
 
 ```bat
 install.cmd --smoke

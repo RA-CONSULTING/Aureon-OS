@@ -357,7 +357,7 @@ def _popen_session_kwargs(platform: str | None = None) -> dict[str, Any]:
 
 def _stop_command(platform: str | None = None) -> str:
     if _platform(platform) == "nt":
-        return r".\install.ps1 --stop"
+        return "install.cmd --stop"
     return "./install.sh --stop"
 
 

@@ -54,6 +54,8 @@ install.cmd --smoke
 
 `install.cmd` runs `install.ps1`. It creates `.venv`, installs the pinned `requirements-plug.lock`, installs the dashboard with `npm ci --ignore-scripts --prefix frontend` when `frontend\node_modules\vite\bin\vite.js` is absent, and starts the same supervisor. `.env` stays unread. The guarded smoke keeps `AUREON_LIVE_TRADING=0`. `install.cmd --stop` stops the stack. `install.cmd` with no flags leaves the stack up. Python 3.11 or newer and Node.js 20 or newer must already be on `PATH`. Supported go-live stays **HOLD**. The procedure is [`docs/windows/GUARDED_SMOKE.md`](docs/windows/GUARDED_SMOKE.md) and [`PORTABILITY.md`](PORTABILITY.md). `production\Install-AUREON.ps1` is the organism installer, a separate command.
 
+No Windows run of `install.cmd --smoke` has been measured yet.
+
 `scripts/linux/install-linux.sh` execs `scripts/bootstrap/protected_bootstrap_v05.py --target-id linux-supervisor`. That entry is outside this smoke. Go-live stays **HOLD**. See [`docs/runbooks/GO_LIVE_HARDENING.md`](docs/runbooks/GO_LIVE_HARDENING.md).
 
 **Warning.** `scripts/linux/aureon-up.sh` can boot live trading when a full exchange key group is present in `.env`. When `.venv/bin/python` is missing, that script runs `production/install.sh`, which calls `scripts/launch/aureon-master.sh`. With autonomy left at the public default, that boot reports `trading_mode=live (exchange keys present)`. When `.venv/bin/python` is already present, `aureon-up.sh` runs `python -m aureon.autonomous.aureon_master_launcher --preflight` and sets `AUREON_LIVE_TRADING=0`. Go-live stays **HOLD**. The start-here command stays `./install.sh --smoke`.
