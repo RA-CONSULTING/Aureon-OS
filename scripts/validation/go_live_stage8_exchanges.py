@@ -14,6 +14,7 @@ import json
 import os
 import subprocess
 import sys
+from collections.abc import Callable
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -50,8 +51,7 @@ def run_child() -> dict:
     )
     if completed.returncode != 0:
         raise SystemExit(
-            "exchanges sweep child failed "
-            f"({completed.returncode}): {completed.stderr.strip()}"
+            "exchanges sweep child failed " f"({completed.returncode}): {completed.stderr.strip()}"
         )
     for secret in PLANTED_SECRETS.values():
         if secret in completed.stdout or secret in completed.stderr:
@@ -78,8 +78,7 @@ def render_markdown(record: dict) -> str:
             f"Writes: {len(guard['writes'])}.",
             f"Entries sha256: `{record['entries_sha256']}`.",
             "",
-            "`OPEN_PLAN_THROUGH` is 2. `ENABLED_THROUGH` is 6. "
-            "Plan stages 3 and 4 stay closed.",
+            "`OPEN_PLAN_THROUGH` is 2. `ENABLED_THROUGH` is 6. " "Plan stages 3 and 4 stay closed.",
             "The protocol session and the call sweep were not repeated.",
             "",
             "Reproduce:",
@@ -108,6 +107,24 @@ def _ancestor(commit: str) -> bool:
     return completed.returncode == 0 and commit != _git("rev-parse", "HEAD")
 
 
+def code_commit_is_accepted(recorded: dict, ancestor: Callable[[str], bool]) -> bool:
+    """Accept the measured commit, or the main commit the receipt says carries it.
+
+    A squash can leave ``code_commit`` off the history. The receipt then names
+    ``carried_on_main`` and says the sweep was not remeasured. The check reads
+    those fields. It does not special-case a commit hash.
+    """
+
+    code_commit = str(recorded.get("code_commit") or "")
+    if ancestor(code_commit):
+        return True
+    carried = str(recorded.get("carried_on_main") or "")
+    note = str(recorded.get("code_commit_note") or "")
+    if not carried or carried == code_commit or not ancestor(carried):
+        return False
+    return "does not remeasure" in note and code_commit in note and carried in note
+
+
 def check() -> None:
     from aureon_public.exchanges_surface import sweep_ok
 
@@ -128,21 +145,7 @@ def check() -> None:
 
     if recorded.get("pin") != PINNED_COMMIT:
         raise SystemExit("pin moved")
-    note = str(recorded.get("code_commit_note") or "")
-    measured_at = "55ab3579e4a1e59b442e46800c5486a270fc5b0c"
-    carried = "30d8101b486f6f48b9219a337e2b77808e5038e1"
-    pre_squash = (
-        recorded.get("code_commit") == measured_at
-        and recorded.get("carried_on_main") == carried
-        and "measured before the squash/rebase" in note
-        and measured_at in note
-        and carried in note
-        and "does not remeasure" in note
-    )
-    if pre_squash:
-        if not _ancestor(carried):
-            raise SystemExit("the main commit that carries this receipt is not in history")
-    elif not _ancestor(str(recorded.get("code_commit") or "")):
+    if not code_commit_is_accepted(recorded, _ancestor):
         raise SystemExit("code_commit is not a parent of HEAD")
     markdown = MARKDOWN.read_text(encoding="utf-8")
     if recorded["entries_sha256"] not in markdown:

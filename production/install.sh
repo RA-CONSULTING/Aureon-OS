@@ -149,5 +149,9 @@ ensure_frontend
 docker_note
 export SERO_WORKSPACE="$ROOT"
 export AUREON_UI_URL="$UI_URL"
+# shellcheck disable=SC1091
+source "$ROOT/scripts/launch/live-mode-guard.sh"
+# A refusal exports AUREON_LIVE_TRADING=0 and AUREON_AUTONOMY_MODE=guarded.
+live_mode_guard python3
 bash "$ROOT/scripts/launch/aureon-master.sh"
 wait_for_ui

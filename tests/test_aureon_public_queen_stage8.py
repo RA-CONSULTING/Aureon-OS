@@ -25,9 +25,9 @@ def _mcp_path() -> None:
 
 
 def _reading(**kwargs: object) -> dict:
-    from aureon_public.queen_read_gate import charlie_reading
+    from aureon_public.queen_read_gate import source_law_reading
 
-    return charlie_reading(**kwargs)
+    return source_law_reading(**kwargs)
 
 
 def _tool(**kwargs: object) -> dict:
@@ -123,7 +123,7 @@ def test_banned_package_holds_the_math_action(monkeypatch: pytest.MonkeyPatch) -
 
     monkeypatch.setattr(queen_read_gate, "_cited_floors", _plant)
     try:
-        body = queen_read_gate.charlie_reading(0.99)
+        body = queen_read_gate.source_law_reading(0.99)
     finally:
         sys.modules.pop(planted, None)
     assert body["status"] == "unavailable"
@@ -150,8 +150,8 @@ def test_fresh_process_does_not_import_an_exchange() -> None:
     code = (
         "import json, sys\n"
         f"sys.path.insert(0, {str(ROOT / 'mcp')!r})\n"
-        "from aureon_public.queen_read_gate import charlie_reading\n"
-        "body = charlie_reading(0.99)\n"
+        "from aureon_public.queen_read_gate import source_law_reading\n"
+        "body = source_law_reading(0.99)\n"
         "mods = [name for name in sys.modules if name == 'aureon.exchanges' "
         "or name.startswith('aureon.exchanges.') or name == 'aureon.miner' "
         "or name.startswith('aureon.miner.') or name == 'aureon.trading' "

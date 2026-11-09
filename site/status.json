@@ -18,7 +18,7 @@
   "guarded_smoke_live_trading": false,
   "live_routes_active": true,
   "live_route": true,
-  "env_keys_boot_live": true,
+  "env_keys_boot_live": false,
   "master_overrides_disable_and_dry_run_when_full_and_keyed": true,
   "verified_live_track_record": false,
   "track_record": false,

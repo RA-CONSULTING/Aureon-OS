@@ -60,9 +60,30 @@ FORBIDDEN_PHRASES = (
 )
 
 
+# Hyphen-like characters that must not slip past the ASCII substring ban.
+_HYPHEN_FOLDS = str.maketrans(
+    {
+        "\u2010": "-",
+        "\u2011": "-",
+        "\u2012": "-",
+        "\u2013": "-",
+        "\u2014": "-",
+        "\u2015": "-",
+        "\u2212": "-",
+    }
+)
+
+
+def _ban_text(text: str) -> str:
+    """Fold hyphen lookalikes and collapse whitespace. Do not drop a negation."""
+
+    folded = text.translate(_HYPHEN_FOLDS).lower()
+    return re.sub(r"\s+", " ", folded)
+
+
 def forbidden_phrase_hits(text: str) -> list[str]:
     """Return forbidden substrings present in text. No negation exception."""
-    lowered = text.lower()
+    lowered = _ban_text(text)
     return [phrase for phrase in FORBIDDEN_PHRASES if phrase.lower() in lowered]
 
 
@@ -393,7 +414,9 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Aureon public source-archive channel")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("check", help="Read receipts. Exit 0 when the notes match a refused production publish.")
-    archive_parser = sub.add_parser("archive", help="Write source archives, checksums, and the channel manifest.")
+    archive_parser = sub.add_parser(
+        "archive", help="Write source archives, checksums, and the channel manifest."
+    )
     archive_parser.add_argument("--dest", type=Path, required=True)
     archive_parser.add_argument("--tag", default=None)
     tag_parser = sub.add_parser("accept-tag", help="Exit 0 when the tag is tip- plus a prefix of HEAD.")

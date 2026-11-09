@@ -4,8 +4,8 @@ Reading copy for strangers. It is not the company homepage and it is not a live 
 
 - Applicant: R&A Consulting and Brokerage Services Ltd, NI696693, trading as Aureon Zorza Technologies
 - Company homepage: https://aureonzorzatechnologies.pl
-- The live routes are active. With exchange keys in `.env`, the launcher boots into live trading. There is no verified live track record.
-- There is a live route. An `.env` with exchange keys boots live. The master launcher overrides the disabled and dry-run lines when autonomy is full and a complete key group is present in `.env`, the inherited shell, or `aureon_radar/.env`. There is no track record. See `docs/PUBLIC_ENV.md`.
+- Live mode is locked by default. With exchange keys in `.env`, the launcher does not boot into live trading unless the stage 11 go-live gate reports clear and `AUREON_OPERATOR_ALLOW_LIVE` is set. There is no verified live track record.
+- There is a live route. An `.env` with exchange keys does not boot live unless that gate reports clear and `AUREON_OPERATOR_ALLOW_LIVE` is set. The master launcher overrides the disabled and dry-run lines when autonomy is full and a complete key group is present in `.env`, the inherited shell, or `aureon_radar/.env`. There is no track record. See `docs/PUBLIC_ENV.md`.
 - Guarded smoke: `./install.sh --smoke` (does not read `.env`; live trading off for that run)
 - License: MIT, file `LICENSE` at the repository root
 - Go-live: HOLD. This checkout is never production ready and never a validated deployment.

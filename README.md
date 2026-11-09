@@ -19,7 +19,7 @@ Trading research · autonomous operator · planetary/HNC research · a coding or
 
 ## Quick start in five minutes
 
-Start here. Clone `main`, leave exchange keys unset, and run the guarded smoke. That smoke keeps live trading off for that run. There is a live route: an `.env` with exchange keys boots live. The orange release-boundary badge above stays **HOLD**. Go-live stays **HOLD**.
+Start here. Clone `main`, leave exchange keys unset, and run the guarded smoke. That smoke keeps live trading off for that run. Live mode stays locked unless the stage 11 go-live gate reports clear and `AUREON_OPERATOR_ALLOW_LIVE` is set. The orange release-boundary badge above stays **HOLD**. Go-live stays **HOLD**.
 
 Python 3.11 or newer, and Node.js 20 or newer, with `python3`, `node`, and `npm` on `PATH`. On Debian or Ubuntu, install `python3-venv` first. `./install.sh` checks that Python is 3.11 or newer and that `node` and `npm` exist. The clean-checkout workflow uses Node 20. A `.env` file is not required. `./install.sh` does not read `.env`.
 
@@ -58,11 +58,13 @@ No Windows run of `install.cmd --smoke` has been measured yet.
 
 `scripts/linux/install-linux.sh` execs `scripts/bootstrap/protected_bootstrap_v05.py --target-id linux-supervisor`. That entry is outside this smoke. Go-live stays **HOLD**. See [`docs/runbooks/GO_LIVE_HARDENING.md`](docs/runbooks/GO_LIVE_HARDENING.md).
 
-**Warning.** `scripts/linux/aureon-up.sh` can boot live trading when a full exchange key group is present in `.env`. When `.venv/bin/python` is missing, that script runs `production/install.sh`, which calls `scripts/launch/aureon-master.sh`. With autonomy left at the public default, that boot reports `trading_mode=live (exchange keys present)`. When `.venv/bin/python` is already present, `aureon-up.sh` runs `python -m aureon.autonomous.aureon_master_launcher --preflight` and sets `AUREON_LIVE_TRADING=0`. Go-live stays **HOLD**. The start-here command stays `./install.sh --smoke`.
+> **Live mode is locked by default.** `aureon-up.sh` will not start live mode unless two things are both true: the stage 11 go-live gate reports clear, and the operator has set `AUREON_OPERATOR_ALLOW_LIVE` for that run. If either one is missing, it refuses, says why, and boots the guarded stack instead, with live trading off and no real orders. Go-live is currently on HOLD, so live mode won't start on this checkout.
+
+> **Live test sessions are separate from go-live.** Gary Leckey can approve a single live test session, and the operator enables it by setting `AUREON_OPERATOR_TEST_SESSION` alongside an unexpired session record that names his approval. The session runs through Aureon's own launcher and risk gates, and every order is logged under the session id. A test session doesn't clear the stage 11 gate, change the go-live badge or count as go-live evidence. Go-live stays on HOLD until that gate reports clear and Gary Leckey approves it.
 
 ### What the guarded smoke covers
 
-`./install.sh --smoke` is the start-here check. That smoke keeps live trading off for that run. Exchange keys stay unset. No order is placed. QGITA detection rate on that smoke stays **HOLD**. Go-live stays **HOLD**. The master launcher is a separate entry: it overrides the disabled and dry-run lines when autonomy is full and a complete key group is present. There is no track record.
+`./install.sh --smoke` is the start-here check. That smoke keeps live trading off for that run. Exchange keys stay unset. No order is placed. QGITA detection rate on that smoke stays **HOLD**. Go-live stays **HOLD**. The master launcher is a separate entry: it overrides the disabled and dry-run lines when autonomy is full and a complete key group is present. The organism launcher does not leave autonomy full unless the stage 11 go-live gate reports clear and `AUREON_OPERATOR_ALLOW_LIVE` is set. There is no track record.
 
 ### What stays HOLD
 
@@ -107,11 +109,11 @@ Go-live stays **HOLD**. The start-here command is `./install.sh --smoke`.
 
 Older notes in `docs/` (for example `docs/AUREON_MIND_STATUS.md`), `aureon-trading/docs/`, and `imports/` (including the `imports/Kimi_Agent_Aureon_20260408` snapshot) are earlier research writing and may repeat figures that have since been withdrawn. This README and `mcp/aureon_public` are the current, checked parts.
 
-> **Leave exchange keys unset.** `./install.sh --smoke` sets `AUREON_AUTONOMY_MODE=guarded` and skips `.env`. `scripts/linux/aureon-up.sh` can boot live trading when a full exchange key group is present in `.env`: with `.venv/bin/python` missing it runs `production/install.sh`, which calls `scripts/launch/aureon-master.sh`. Go-live stays **HOLD**.
+> **Leave exchange keys unset.** `./install.sh --smoke` sets `AUREON_AUTONOMY_MODE=guarded` and skips `.env`. `aureon-up.sh`, `production/Install-AUREON.ps1`, and the organism launcher boot the guarded stack unless the stage 11 go-live gate reports clear and `AUREON_OPERATOR_ALLOW_LIVE` is set. Go-live stays **HOLD**.
 
 ### Which settings
 
-[`.env.example`](.env.example) and [`docs/PUBLIC_ENV.md`](docs/PUBLIC_ENV.md) name three postures. Secret lines in the template are blank placeholder names. A real key never goes in that file. Exchange keys in `.env` make that boot live. A complete key group in the inherited shell, or in `aureon_radar/.env`, arms the same boot when the root `.env` is blank.
+[`.env.example`](.env.example) and [`docs/PUBLIC_ENV.md`](docs/PUBLIC_ENV.md) name three postures. Secret lines in the template are blank placeholder names. A real key never goes in that file. Exchange keys in `.env` make that boot live only when the stage 11 go-live gate reports clear and `AUREON_OPERATOR_ALLOW_LIVE` is set. A complete key group in the inherited shell, or in `aureon_radar/.env`, arms the same boot when the root `.env` is blank and those two conditions already hold. Without both, the launchers force guarded mode.
 
 | Posture | What it needs | What the flags do |
 |---|---|---|
@@ -295,9 +297,9 @@ system hub, bot hunter, the dashboard API, queen power, trader telemetry,
 Kraken telemetry, and the legacy command center) on that same tab row. Those
 tabs read the live buses through the gateway. A source that is down, or a
 page that draws invented readings, shows the reason and no invented number.
-`AUREON_SIMULATED_BOOT` stays unset, so those generators do not load. The launcher leaves port 8080 alone. Live mode turns on when a complete exchange key group is in
+`AUREON_SIMULATED_BOOT` stays unset, so those generators do not load. The launcher leaves port 8080 alone. Live mode turns on when the stage 11 go-live gate reports clear, `AUREON_OPERATOR_ALLOW_LIVE` is set, and a complete exchange key group is in
 `.env`. With no complete group the boot stays paper/public-data and the health
-report says `trading_mode=paper/public-data (no exchange keys)`. With keys it
+report says `trading_mode=paper/public-data (no exchange keys)`. When the gate, the flag, and the keys are all present it
 says `trading_mode=live (exchange keys present)`. The launcher does not place
 an order by itself. The thought bus health check is
 `http://127.0.0.1:8799/healthz`. The fusion seat keeps
@@ -306,15 +308,15 @@ A HOLD receipt records that the fail-closed preflight ran. Go-live stays **HOLD*
 
 ### Canonical organism launcher
 
-> **Stay on `./install.sh --smoke` in the quick start above. Leave exchange keys unset.** This launcher defaults to full autonomy. If exchange keys are in `.env`, the boot can go live and trade.
+> **Stay on `./install.sh --smoke` in the quick start above. Leave exchange keys unset.** This launcher will not start live mode unless the stage 11 go-live gate reports clear and `AUREON_OPERATOR_ALLOW_LIVE` is set. Otherwise it boots guarded, with live trading off and no real orders. Setting the flag does not override the gate.
 
-The terminal-HOLD bootstraps stay holds. The organism launcher is a separate entry. Its default is full autonomy, and it does not place an order by itself:
+The terminal-HOLD bootstraps stay holds. The organism launcher is a separate entry. Unless that gate and flag are both set, it forces guarded mode. It does not place an order by itself:
 
 ```bash
 scripts/launch/aureon-master.sh
 ```
 
-Windows uses `scripts/launch/aureon-master.ps1` and `scripts/launch/aureon-master.bat`. On a fresh clone it writes `.env` from `.env.example` when `.env` is absent, installs Python requirements into `.venv`, Node packages for `frontend/`, and the self-host Docker images, then starts the organism and prints a health table. Paths follow the checkout. Trading is live when the operator's own exchange keys are in `.env`. With no keys the report says `trading_mode=paper/public-data (no exchange keys)`. A missing binary, script, or daemon is a blocked row. The mode is in [`AUTONOMY.md`](AUTONOMY.md). The module name and the table are in [`LAUNCHER_INVENTORY.md`](LAUNCHER_INVENTORY.md). What still names a machine is in [`PORTABILITY.md`](PORTABILITY.md).
+Windows uses `scripts/launch/aureon-master.ps1` and `scripts/launch/aureon-master.bat`. On a fresh clone it writes `.env` from `.env.example` when `.env` is absent, installs Python requirements into `.venv`, Node packages for `frontend/`, and the self-host Docker images, then starts the organism and prints a health table. Paths follow the checkout. Trading is live only when the stage 11 go-live gate reports clear, `AUREON_OPERATOR_ALLOW_LIVE` is set, and the operator's own exchange keys are in `.env`. With no keys the report says `trading_mode=paper/public-data (no exchange keys)`. A missing binary, script, or daemon is a blocked row. The mode is in [`AUTONOMY.md`](AUTONOMY.md). The module name and the table are in [`LAUNCHER_INVENTORY.md`](LAUNCHER_INVENTORY.md). What still names a machine is in [`PORTABILITY.md`](PORTABILITY.md).
 
 ### How anyone can run it
 
@@ -334,9 +336,9 @@ scripts\launch\aureon-master.ps1
 
 `scripts\launch\aureon-master.bat` is the same entry. That one command writes `.env` from `.env.example` when `.env` is absent, installs Python requirements into `.venv`, Node packages for `frontend/`, and the self-host images when Docker answers, then starts the organism. An existing `.env` is left as it is. Paths follow the checkout.
 
-Leave exchange keys out of `.env`. A complete key group (Kraken, Binance, Alpaca, or Capital.com) makes the next boot live, and the health report says `trading_mode=live (exchange keys present)`. With no complete group the same boot stays in paper/public-data mode and the report says `trading_mode=paper/public-data (no exchange keys)`. Leave `.env` uncommitted. The launcher does not place an order by itself. New users stay on `./install.sh --smoke` in the quick start above.
+Leave exchange keys out of `.env`. A complete key group (Kraken, Binance, Alpaca, or Capital.com) makes the next boot live only when the stage 11 go-live gate reports clear and `AUREON_OPERATOR_ALLOW_LIVE` is set, and the health report then says `trading_mode=live (exchange keys present)`. With no complete group the same boot stays in paper/public-data mode and the report says `trading_mode=paper/public-data (no exchange keys)`. Leave `.env` uncommitted. The launcher does not place an order by itself. New users stay on `./install.sh --smoke` in the quick start above.
 
-The boot is unrestricted by default. `AUREON_AUTONOMY_MODE` unset is `full`. Self-coding may edit any path except credential material, approves its own edits, and commits a patch after that patch's tests pass. Nothing is pushed. There is no kill switch and no kill file: `AUREON_SELF_REPAIR_KILL` and `state/SELF_REPAIR_KILL` do not stop a write or an order. Changes and order attempts are appended to `state/autonomy_audit.jsonl`. The unity exchange brain, the unified market trader, the Capital.com CFD trader, and the micro-profit labyrinth each record an attempt. Secret values are redacted. The same records are published on the circulation thought bus. The metacognition and self-repair loops consume them. After repeated failed self-changes, metacognition raises a concern and lowers its confidence, and self-repair deprioritises a target that keeps failing. A self-patch whose tests fail stays applied. It is not reversed. Credentials are still never written into the repo or into a log.
+The organism launcher sets `AUREON_AUTONOMY_MODE=guarded` unless the stage 11 go-live gate reports clear and `AUREON_OPERATOR_ALLOW_LIVE` is set. Outside that launcher, `AUREON_AUTONOMY_MODE` unset is `full`. Self-coding may edit any path except credential material, approves its own edits, and commits a patch after that patch's tests pass. Nothing is pushed. There is no kill switch and no kill file: `AUREON_SELF_REPAIR_KILL` and `state/SELF_REPAIR_KILL` do not stop a write or an order. Changes and order attempts are appended to `state/autonomy_audit.jsonl`. The unity exchange brain, the unified market trader, the Capital.com CFD trader, and the micro-profit labyrinth each record an attempt. Secret values are redacted. The same records are published on the circulation thought bus. The metacognition and self-repair loops consume them. After repeated failed self-changes, metacognition raises a concern and lowers its confidence, and self-repair deprioritises a target that keeps failing. A self-patch whose tests fail stays applied. It is not reversed. Credentials are still never written into the repo or into a log.
 
 The health table is the last thing the launcher prints. Each row is `order`, `name`, `status`, `health`, and `reason`. A missing binary, script, or daemon is `blocked` with the reason. The totals are `started`, `blocked`, and `total`.
 
@@ -454,14 +456,14 @@ Open-source repository traffic to date (verifiable in the repo's GitHub **Insigh
 
 ## Public front door
 
-Strangers can open [`site/index.html`](site/index.html). That reading copy matches this file. There is a live route. An `.env` with exchange keys boots live. The master launcher overrides the disabled and dry-run lines when autonomy is full and a complete key group is present in `.env`, the inherited shell, or `aureon_radar/.env`, as [`docs/PUBLIC_ENV.md`](docs/PUBLIC_ENV.md) documents. There is no track record. The live routes are active. With exchange keys in `.env`, the launcher boots into live trading. There is no verified live track record. The start-here command on that page is `./install.sh --smoke`, which leaves keys unset and keeps live trading off for that run. Go-live stays HOLD. This checkout is research-stage software. It is not a release, and go-live is on HOLD. GitHub Pages is off. [`.github/workflows/pages-gated.yml`](.github/workflows/pages-gated.yml) is dispatch-gated behind `GARY-YES-DEPLOY-PAGES` and does not deploy. The applicant is R&A Consulting and Brokerage Services Ltd, company no. NI696693, trading as Aureon Zorza Technologies. The company homepage is [aureonzorzatechnologies.pl](https://aureonzorzatechnologies.pl).
+Strangers can open [`site/index.html`](site/index.html). That reading copy matches this file. There is a live route. An `.env` with exchange keys does not boot live unless the stage 11 go-live gate reports clear and `AUREON_OPERATOR_ALLOW_LIVE` is set. The master launcher overrides the disabled and dry-run lines when autonomy is full and a complete key group is present in `.env`, the inherited shell, or `aureon_radar/.env`, as [`docs/PUBLIC_ENV.md`](docs/PUBLIC_ENV.md) documents. There is no track record. Live mode is locked by default. With exchange keys in `.env`, the launcher does not boot into live trading unless that gate reports clear and the operator flag is set. There is no verified live track record. The start-here command on that page is `./install.sh --smoke`, which leaves keys unset and keeps live trading off for that run. Go-live stays HOLD. This checkout is research-stage software. It is not a release, and go-live is on HOLD. GitHub Pages is off. [`.github/workflows/pages-gated.yml`](.github/workflows/pages-gated.yml) is dispatch-gated behind `GARY-YES-DEPLOY-PAGES` and does not deploy. The applicant is R&A Consulting and Brokerage Services Ltd, company no. NI696693, trading as Aureon Zorza Technologies. The company homepage is [aureonzorzatechnologies.pl](https://aureonzorzatechnologies.pl).
 
 ## Where to go next
 
 | You are… | Start here |
 |---|---|
 | **Cloning the repo** | The quick start at the top of this file — `./install.sh --smoke` only, live trading off, go-live HOLD |
-| **Opening the public front door** | [`site/index.html`](site/index.html) — a live route, `.env` keys boot live, the master launcher overrides disable and dry-run lines on a full+keyed boot, no track record. Guarded smoke `./install.sh --smoke`. Go-live HOLD. GitHub Pages is off. |
+| **Opening the public front door** | [`site/index.html`](site/index.html) — a live route, live mode locked unless the stage 11 gate reports clear and `AUREON_OPERATOR_ALLOW_LIVE` is set, the master launcher overrides disable and dry-run lines on a full+keyed boot, no track record. Guarded smoke `./install.sh --smoke`. Go-live HOLD. GitHub Pages is off. |
 | **Working on Aureon OS** | [`docs/AUREON_RULES.md`](docs/AUREON_RULES.md) — the shared rulebook |
 | **An investor or funder** | [`docs/investor/README.md`](docs/investor/README.md) — diligence path, capability categories, and claim discipline |
 | **A developer** | [`docs/INDEX.md`](docs/INDEX.md) · [`docs/PUBLIC_ENV.md`](docs/PUBLIC_ENV.md) · [`CAPABILITIES.md`](CAPABILITIES.md) · [`docs/SAAS_PLATFORM.md`](docs/SAAS_PLATFORM.md) |

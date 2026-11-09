@@ -129,7 +129,7 @@ def _cited_floors() -> tuple[dict[str, float] | None, str | None]:
     return {"entry_floor": _raised_floor(entry), "node_floor": node, "pinned_entry_floor": entry}, None
 
 
-def charlie_reading(
+def source_law_reading(
     coherence_gamma: float | None = None,
     lowest_node_confidence: float | None = None,
 ) -> dict[str, Any]:

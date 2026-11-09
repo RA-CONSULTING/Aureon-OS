@@ -77,6 +77,9 @@ if (Get-Command docker -ErrorAction SilentlyContinue) {
 }
 
 $env:SERO_WORKSPACE = $Root
+# A refusal sets AUREON_LIVE_TRADING=0 and AUREON_AUTONOMY_MODE=guarded.
+. (Join-Path $Root "scripts\launch\live-mode-guard.ps1")
+Invoke-AureonLiveModeGuard
 & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Root "scripts\launch\aureon-master.ps1")
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 

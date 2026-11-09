@@ -8,7 +8,7 @@ This page names the variables for three public postures. The committable templat
 
 The root template keeps exchange, broker, model, and ingest secrets blank. The variable name is the placeholder. A real value belongs in the gitignored `.env` on the operator's machine, or in the operator's secret store.
 
-A non-blank Kraken, Binance, Alpaca, or Capital.com key group is what [`scripts/launch/aureon-master.sh`](../scripts/launch/aureon-master.sh) treats as live when autonomy is full. Exchange keys in `.env` make that boot live.
+A non-blank Kraken, Binance, Alpaca, or Capital.com key group is what [`scripts/launch/aureon-master.sh`](../scripts/launch/aureon-master.sh) treats as live when autonomy is full. Exchange keys in `.env` make that boot live. That launcher, `scripts/linux/aureon-up.sh`, and `production/Install-AUREON.ps1` set guarded mode unless the stage 11 go-live gate reports clear and `AUREON_OPERATOR_ALLOW_LIVE` is set for the run. Setting the flag does not override the gate. On this checkout `go_live_clear` is false, so those launchers do not start live mode.
 
 A blank root `.env` is not enough to stay on paper. The master launcher also reads a complete key group from the inherited shell and from `aureon_radar/.env`. Either source arms that same full-autonomy boot even when every secret line in the root `.env` is blank. `./install.sh` is a different entry: it skips `.env` and sets guarded autonomy in its own process.
 

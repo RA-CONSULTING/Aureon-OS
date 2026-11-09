@@ -193,7 +193,7 @@ def run_brain() -> int:
     print(
         "fixture note: kraken_ohlc.json and kraken_spread.json are synthetic public-shaped bodies. "
         "No venue was contacted. "
-        "The report tag measured means the pack verified, not that a venue was fetched."
+        "The report tag on this pack is fixture. That tag is not a live Kraken fetch."
     )
     print("reports/measured in the checkout was not written")
     return 0

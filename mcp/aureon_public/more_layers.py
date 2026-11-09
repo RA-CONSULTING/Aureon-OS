@@ -503,9 +503,9 @@ def queen_source_law_gate(
         lowest_node_confidence: Optional lowest nine-node confidence. Label: cited, _MIN_NODE_CONFIDENCE.
     """
 
-    from aureon_public.queen_read_gate import charlie_reading
+    from aureon_public.queen_read_gate import source_law_reading
 
-    return _dumps(charlie_reading(coherence_gamma, lowest_node_confidence))
+    return _dumps(source_law_reading(coherence_gamma, lowest_node_confidence))
 
 
 @quiet
