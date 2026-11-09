@@ -28,6 +28,18 @@ from typing import Dict, List, Any, Optional, Tuple
 from datetime import datetime
 from dataclasses import dataclass, asdict
 
+# Economic governance boundary: every money-moving request must carry a
+# boundary-issued permit. The kill chain never mints one itself; a refusal is
+# the gate's decision and is logged as a HOLD, never worked around.
+try:
+    from aureon.governance.economic_boundary import EconomicGovernanceBlocked
+except ImportError:  # pragma: no cover - boundary always ships with aureon
+    class EconomicGovernanceBlocked(RuntimeError):
+        pass
+
+# Seconds to wait before re-attempting a target the boundary refused.
+GOVERNANCE_HOLD_RETRY_S = float(os.environ.get("ORCA_GOVERNANCE_HOLD_RETRY_S", "300"))
+
 # Clients
 try:
     from aureon.exchanges.capital_client import CapitalClient
@@ -60,6 +72,17 @@ except ImportError:
 def log_queen(msg):
     print(f"👑 [QUEEN] {msg}")
     time.sleep(0.3)
+
+
+def queen_answer(question, queen_approves):
+    """Answer a y/N prompt. Interactive runs still ask the operator; headless
+    runs (no TTY, e.g. under the master launcher) take the Queen's verdict."""
+    import sys
+    if sys.stdin is not None and sys.stdin.isatty():
+        return input(question)
+    ans = 'y' if queen_approves else 'n'
+    log_queen(f"Headless decision: {question.strip()} -> {ans.upper()} (Queen verdict)")
+    return ans
 
 def log_auris(msg):
     print(f"⚕️ [DR. AURIS] {msg}")
@@ -496,6 +519,34 @@ class UnifiedKillChain:
         
         return opportunities
 
+    def _target_key(self, target) -> str:
+        return f"{target.get('exchange')}::{target.get('id') or target.get('symbol')}"
+
+    def _governance_hold(self, target, exc) -> None:
+        """Record a boundary refusal as a HOLD; the target is retried later."""
+        if not hasattr(self, 'governance_holds'):
+            self.governance_holds = {}
+        reason = str(exc) or type(exc).__name__
+        self.governance_holds[self._target_key(target)] = (time.time(), reason)
+        log_sniper(f"🛑 GOVERNANCE HOLD: {target.get('exchange', '?').upper()}::"
+                   f"{target.get('symbol')} refused by economic boundary: {reason}")
+
+    def execute_kill_chain_safe(self, target) -> None:
+        """Run one target; a failure is logged and never kills the process."""
+        holds = getattr(self, 'governance_holds', {})
+        held = holds.get(self._target_key(target))
+        if held and time.time() - held[0] < GOVERNANCE_HOLD_RETRY_S:
+            log_queen(f"Holding {target.get('symbol')}: boundary refused "
+                      f"({held[1]}); retry in {GOVERNANCE_HOLD_RETRY_S - (time.time() - held[0]):.0f}s")
+            return
+        try:
+            self.execute_kill_chain(target)
+        except EconomicGovernanceBlocked as e:
+            self._governance_hold(target, e)
+        except Exception as e:
+            log_system(f"⚠️ Kill chain error on {target.get('exchange')}::"
+                       f"{target.get('symbol')}: {type(e).__name__}: {e}")
+
     def execute_kill_chain(self, target):
         symbol = target['symbol']
         exchange = target['exchange']
@@ -529,18 +580,26 @@ class UnifiedKillChain:
         
         if exchange == 'capital':
             # Capital.com Kill
-            confirm = input(f"\n🔴 [CAPITAL] CLOSE {symbol} (Deal {target['id']})? [y/N]: ")
+            confirm = queen_answer(f"\n🔴 [CAPITAL] CLOSE {symbol} (Deal {target['id']})? [y/N]: ", target['pnl'] > 0)
             if confirm.lower() == 'y':
-                log_sniper("Firing...")
-                res = client._request('DELETE', f"/positions/{target['id']}")
-                if res.status_code == 200:
-                    log_sniper("💥 Target Eliminated.")
+                log_sniper("Firing via governed route (CapitalClient.close_position)...")
+                try:
+                    # close_position -> _request('DELETE', ...) claims the
+                    # boundary-issued transport context; without a permit the
+                    # boundary refuses before anything reaches Capital.
+                    res = client.close_position(target['id'])
+                except EconomicGovernanceBlocked as e:
+                    self._governance_hold(target, e)
+                    return
+                status = str((res or {}).get('status', '')).lower() if isinstance(res, dict) else ''
+                if status == 'submitted':
+                    log_sniper(f"💥 Close submitted: {res}")
                 else:
-                    log_sniper(f"❌ Missed: {res.text}")
+                    log_sniper(f"❌ Close not submitted: {res}")
         
         elif exchange in ['binance', 'kraken']:
             # Spot Kill (Sell)
-            confirm = input(f"\n🔴 [{exchange.upper()}] SELL {target['qty']} {symbol}? [y/N]: ")
+            confirm = queen_answer(f"\n🔴 [{exchange.upper()}] SELL {target['qty']} {symbol}? [y/N]: ", target['pnl'] > 0)
             if confirm.lower() == 'y':
                 log_sniper("Firing...")
                 # Assuming execute_trade signature: symbol, side, qty
@@ -551,6 +610,8 @@ class UnifiedKillChain:
                         log_sniper(f"💥 Sold. Cash secured. OrderID: {res.get('orderId')}")
                     else:
                         log_sniper(f"❌ Sell Failed: {res}")
+                except EconomicGovernanceBlocked as e:
+                    self._governance_hold(target, e)
                 except Exception as e:
                     log_sniper(f"❌ Execution Exception: {e}")
 
@@ -609,7 +670,7 @@ class UnifiedKillChain:
         else:
             # Manual confirmation
             if score >= 5.0:
-                confirm = input(f"\n💀 EXECUTE {op_type} on {symbol}? [y/N]: ")
+                confirm = queen_answer(f"\n💀 EXECUTE {op_type} on {symbol}? [y/N]: ", False)
                 if confirm.lower() == 'y':
                     return self._execute_trade(opportunity)
             
@@ -847,20 +908,27 @@ def main():
         log_system(f"{'='*70}\n")
 
         # Single source of truth snapshot
-        chain.refresh_truth()
+        try:
+            chain.refresh_truth()
+        except Exception as e:
+            log_system(f"⚠️ Truth refresh error: {type(e).__name__}: {e}")
         
         # ═══════════════════════════════════════════════════════════════════════
         # PHASE 1: Scan existing positions (unless hunt-only)
         # ═══════════════════════════════════════════════════════════════════════
         if not args.hunt_only:
-            targets = chain.scan_all()
+            try:
+                targets = chain.scan_all()
+            except Exception as e:
+                log_system(f"⚠️ Scan error: {type(e).__name__}: {e}")
+                targets = []
             
             if not targets:
                 log_queen("No existing positions to harvest.")
             else:
                 log_queen(f"Found {len(targets)} existing positions.")
                 for t in targets:
-                    chain.execute_kill_chain(t)
+                    chain.execute_kill_chain_safe(t)
         
         # ═══════════════════════════════════════════════════════════════════════
         # PHASE 2: WIN KILLER - Hunt for new opportunities
@@ -870,19 +938,27 @@ def main():
         log_killer("   PHASE 2: WIN KILLER HUNT")
         log_killer("=" * 50)
         
-        wins = chain.hunt_for_wins()
-        chain.display_win_opportunities(wins)
-        
-        # Execute top opportunity if score is high enough
-        if wins and wins[0].get('score', 0) >= 5.0:
-            log_killer(f"🔥 HOT OPPORTUNITY: {wins[0]['symbol']} (Score: {wins[0]['score']:.2f})")
-            result = chain.execute_win(wins[0])
-            log_killer(f"Result: {result}")
-        
+        try:
+            wins = chain.hunt_for_wins()
+            chain.display_win_opportunities(wins)
+
+            # Execute top opportunity if score is high enough
+            if wins and wins[0].get('score', 0) >= 5.0:
+                log_killer(f"🔥 HOT OPPORTUNITY: {wins[0]['symbol']} (Score: {wins[0]['score']:.2f})")
+                result = chain.execute_win(wins[0])
+                log_killer(f"Result: {result}")
+        except EconomicGovernanceBlocked as e:
+            log_killer(f"🛑 GOVERNANCE HOLD on win execution: {e}")
+        except Exception as e:
+            log_system(f"⚠️ Win hunt error: {type(e).__name__}: {e}")
+
         # ═══════════════════════════════════════════════════════════════════════
         # PHASE 3: Redeploy energy
         # ═══════════════════════════════════════════════════════════════════════
-        chain.redeploy_energy()
+        try:
+            chain.redeploy_energy()
+        except Exception as e:
+            log_system(f"⚠️ Redeploy error: {type(e).__name__}: {e}")
         
         # ═══════════════════════════════════════════════════════════════════════
         # Summary
