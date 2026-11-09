@@ -596,6 +596,11 @@ class UnifiedKillChain:
                     log_sniper(f"💥 Close submitted: {res}")
                 else:
                     log_sniper(f"❌ Close not submitted: {res}")
+                    # close_position swallows the boundary refusal into a
+                    # rejected receipt; hold the target instead of re-firing
+                    # every cycle.
+                    reason = res.get('reason') if isinstance(res, dict) else None
+                    self._governance_hold(target, reason or 'close_not_submitted')
         
         elif exchange in ['binance', 'kraken']:
             # Spot Kill (Sell)

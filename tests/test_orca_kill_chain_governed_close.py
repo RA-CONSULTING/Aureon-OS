@@ -68,3 +68,13 @@ def test_negative_pnl_queen_declines_headless():
     t = _target(c); t["pnl"] = -1.0
     _chain().execute_kill_chain_safe(t)
     c.close_position.assert_not_called()
+
+
+def test_rejected_close_receipt_is_held_not_refired():
+    c = _client()
+    c.close_position.return_value = {"status": "rejected", "reason": "submission_request_failed"}
+    chain = _chain()
+    chain.execute_kill_chain_safe(_target(c))
+    chain.execute_kill_chain_safe(_target(c))
+    assert c.close_position.call_count == 1
+    assert chain.governance_holds["capital::deal-1"][1] == "submission_request_failed"
