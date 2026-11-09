@@ -10,6 +10,7 @@ A key group in a result is a label, redacted:<venue> or absent:<venue>.
 
 from __future__ import annotations
 
+import base64
 import importlib.util
 import os
 import sys
@@ -115,11 +116,26 @@ def _group_present(venue: str, names: tuple[str, ...]) -> bool:
     return all(str(os.environ.get(name) or "").strip() for name in names)
 
 
+def _secret_forms(value: str) -> tuple[str, ...]:
+    """Plain value plus its base64 spellings. Padding-stripped forms count."""
+
+    raw = value.encode("utf-8")
+    forms: list[str] = [value]
+    for encoder in (base64.b64encode, base64.urlsafe_b64encode, base64.standard_b64encode):
+        token = encoder(raw).decode("ascii")
+        forms.append(token)
+        stripped = token.rstrip("=")
+        if stripped != token:
+            forms.append(stripped)
+    return tuple(dict.fromkeys(forms))
+
+
 def contains_env_secret(text: str) -> str | None:
     """Return the env name when its value appears in text. None when it does not.
 
     Short values are ignored so an empty string or a single letter cannot
-    match unrelated prose. The value itself is not returned.
+    match unrelated prose. The value itself is not returned. A base64
+    spelling of the value counts as the same secret.
     """
 
     for _venue, names in _KEY_GROUPS:
@@ -135,9 +151,14 @@ def contains_env_secret(text: str) -> str | None:
             value = str(os.environ.get(name) or "")
             if len(value) < 8:
                 continue
-            if value in text:
+            if any(form in text for form in _secret_forms(value)):
                 return name
     return None
+
+
+# Raw transports and the exchange client. is_http_client does not name these;
+# the read gate still has to refuse them.
+_BANNED_NETWORK_ROOTS = frozenset({"socket", "ssl", "smtplib", "ccxt"})
 
 
 def banned_import(name: str, module: str, symbol: str, *, http_client) -> bool:
@@ -153,6 +174,9 @@ def banned_import(name: str, module: str, symbol: str, *, http_client) -> bool:
     if name in {"aureon.queen", "aureon.miner", "aureon.swarm_motion"} or name.startswith(
         ("aureon.queen.", "aureon.miner.", "aureon.swarm_motion.")
     ):
+        return True
+    root = name.split(".", 1)[0]
+    if root in _BANNED_NETWORK_ROOTS:
         return True
     return bool(http_client(name))
 

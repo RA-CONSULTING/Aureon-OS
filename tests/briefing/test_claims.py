@@ -208,6 +208,12 @@ def test_counting_is_not_measuring():
 # ── absolutes: the empirical ones only ───────────────────────────────────────
 
 
+def test_alive_and_production_ready_is_flagged():
+    report = check_claims("The system is alive and production ready.")
+    assert not report.clean
+    assert report.findings
+
+
 def test_a_bare_correlation_that_proves_something_is_flagged():
     report = check_claims("Our coherence metric proves the market responds, r = 0.85.")
     absolute = report.findings_for(RULE_ABSOLUTE_LANGUAGE)[0]

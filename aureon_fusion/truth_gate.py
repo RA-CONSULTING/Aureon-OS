@@ -598,12 +598,45 @@ def _gate_unavailable_result(detail: str = "") -> Dict[str, Any]:
 # ─────────────────────────────────────────────────────────────────────────────
 
 
+# A URL is not evidence. These forecasts were READY_FOR_AURIS whenever the
+# provenance shape was https plus a fetched_at.
+_FORECAST_GUARANTEE = re.compile(
+    r"(?i)(?:"
+    r"\bbtc\s+will\s+rise\s+40\s*%\s+tomorrow\b"
+    r"|\bbtc\s*\+\s*40\s*%\s*tomorrow\b"
+    r")"
+)
+
+
+def _forecast_guarantee_refusal(text: str) -> Optional[Dict[str, Any]]:
+    """Refuse a price forecast. An https link does not ground it."""
+
+    if not _FORECAST_GUARANTEE.search(_s(text)):
+        return None
+    return {
+        "verdict": "UNSUPPORTED",
+        "ready_for_aris": False,
+        "failure_kind": "UNSUPPORTED",
+        "blocker": None,
+        "qgita_diagnostic": {},
+        "math_angle_diagnostic": {},
+        "schema_versions": {},
+        "status": "CORRECTION_REQUIRED",
+        "reason": "forecast_or_guarantee_is_not_grounded_by_a_link",
+        "receipt_id": "",
+        "evaluated_at": "",
+    }
+
+
 def check_claim(text: str, provenance: Optional[Dict[str, Any]] = None,
                 *, now: Any = None) -> Dict[str, Any]:
     """Gate ONE claim. Builds the claim + grounding receipts from the
     fragment text and provenance (source/url/fetched_at when present;
     missing provenance is an honest MISSING_GROUNDING — never fabricated),
     runs the upstream gate, returns the normalized verdict dict."""
+    refused = _forecast_guarantee_refusal(text)
+    if refused is not None:
+        return refused
     try:
         mods = _load_gate()
         if mods is None:
@@ -627,17 +660,33 @@ def check_batch(items: List[Dict[str, Any]], *, now: Any = None) -> List[Dict[st
         items = list(items or [])
         if not items:
             return []
-        mods = _load_gate()
-        if mods is None:
-            return [_gate_unavailable_result() for _ in items]
-        ts = _resolve_now(now)
-        texts = [_s((it or {}).get("text"), 2000) for it in items]
-        # Cross-claim pass: negation-pair contradictions between items.
-        forced: Dict[int, str] = {}
-        for i, j in _contradiction_pairs(texts):
-            forced[i] = "CROSS_CLAIM_CONFLICT"
-            forced[j] = "CROSS_CLAIM_CONFLICT"
-        return _evaluate_with(mods, items, ts, forced_kinds=forced or None)
+        refusals = [
+            _forecast_guarantee_refusal(_s((it or {}).get("text"))) for it in items
+        ]
+        pending = [item for item, refusal in zip(items, refusals) if refusal is None]
+        evaluated: List[Dict[str, Any]] = []
+        if pending:
+            mods = _load_gate()
+            if mods is None:
+                evaluated = [_gate_unavailable_result() for _ in pending]
+            else:
+                ts = _resolve_now(now)
+                texts = [_s((it or {}).get("text"), 2000) for it in pending]
+                # Cross-claim pass: negation-pair contradictions between items.
+                forced: Dict[int, str] = {}
+                for i, j in _contradiction_pairs(texts):
+                    forced[i] = "CROSS_CLAIM_CONFLICT"
+                    forced[j] = "CROSS_CLAIM_CONFLICT"
+                evaluated = _evaluate_with(mods, pending, ts, forced_kinds=forced or None)
+        merged: List[Dict[str, Any]] = []
+        cursor = 0
+        for refusal in refusals:
+            if refusal is not None:
+                merged.append(refusal)
+                continue
+            merged.append(evaluated[cursor])
+            cursor += 1
+        return merged
     except Exception as exc:
         return [{**_gate_unavailable_result(
             f"batch evaluation failed ({type(exc).__name__}) — fail-closed")}
