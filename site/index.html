@@ -44,6 +44,7 @@
     <h2>Live routes</h2>
     <div class="panel">
       <p>The live routes are active. With exchange keys in <code>.env</code>, the launcher boots into live trading. There is no verified live track record.</p>
+      <p>There is a live route. An <code>.env</code> with exchange keys boots live. The master launcher overrides the disabled and dry-run lines when autonomy is full and a complete key group is present in <code>.env</code>, the inherited shell, or <code>aureon_radar/.env</code>. There is no track record. That full+keyed boot is documented in <a href="../docs/PUBLIC_ENV.md"><code>docs/PUBLIC_ENV.md</code></a>. Go-live stays HOLD.</p>
       <p>The start-here command is the guarded smoke <code>./install.sh --smoke</code>. It does not read <code>.env</code>, leaves exchange keys unset, and keeps live trading off for that run. That smoke is not a statement that every launcher has trading off.</p>
       <p><code>scripts/linux/aureon-up.sh</code> can boot live trading when a full exchange key group is present in <code>.env</code>. When <code>.venv/bin/python</code> is missing, that script runs <code>production/install.sh</code>, which calls <code>scripts/launch/aureon-master.sh</code>. With autonomy left at the public default, that boot reports <code>trading_mode=live (exchange keys present)</code>. Go-live stays HOLD. That boot is not a deployment receipt.</p>
     </div>

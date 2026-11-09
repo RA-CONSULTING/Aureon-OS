@@ -17,8 +17,11 @@
   "guarded_install_reads_dotenv": false,
   "guarded_smoke_live_trading": false,
   "live_routes_active": true,
+  "live_route": true,
   "env_keys_boot_live": true,
+  "master_overrides_disable_and_dry_run_when_full_and_keyed": true,
   "verified_live_track_record": false,
+  "track_record": false,
   "go_live_runbook": "docs/runbooks/GO_LIVE_HARDENING.md",
   "pages_workflow": ".github/workflows/pages-gated.yml"
 }

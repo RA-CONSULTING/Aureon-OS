@@ -59,9 +59,21 @@ HONESTY = (
 )
 
 
+OVERRIDE = (
+    "The master launcher overrides the disabled and dry-run lines when autonomy is full "
+    "and a complete key group is present in <code>.env</code>, the inherited shell, or "
+    "<code>aureon_radar/.env</code>."
+)
+
+
 def test_front_page_matches_readme_honesty() -> None:
     text = (SITE / "index.html").read_text(encoding="utf-8")
     assert HONESTY in text
+    assert OVERRIDE in text
+    assert "There is a live route." in text
+    assert "An <code>.env</code> with exchange keys boots live." in text
+    assert "There is no track record." in text
+    assert "docs/PUBLIC_ENV.md" in text
     assert "./install.sh --smoke" in text
     assert "keeps live trading off for that run" in text
     assert "NI696693" in text
@@ -74,12 +86,17 @@ def test_front_page_matches_readme_honesty() -> None:
     section = door.split("## Public front door", 1)[1].split("## Where to go next", 1)[0]
     assert "The live routes are active." in section
     assert "There is no verified live track record." in section
+    assert "There is a live route." in section
+    assert "There is no track record." in section
+    assert "overrides the disabled and dry-run lines" in section
     assert "SRC Engineering" not in section
 
 
 def test_install_page_points_at_the_guarded_clone_path() -> None:
     text = (SITE / "install" / "index.html").read_text(encoding="utf-8")
     assert HONESTY in text
+    assert OVERRIDE in text
+    assert "There is no track record." in text
     assert "git clone https://github.com/RA-CONSULTING/Aureon-OS.git" in text
     assert "./install.sh --smoke" in text
     assert "AUREON_AUTONOMY_MODE=guarded" in text
@@ -108,8 +125,11 @@ def test_status_json_keeps_go_live_on_hold() -> None:
     assert payload["guarded_install_reads_dotenv"] is False
     assert payload["guarded_smoke_live_trading"] is False
     assert payload["live_routes_active"] is True
+    assert payload["live_route"] is True
     assert payload["env_keys_boot_live"] is True
+    assert payload["master_overrides_disable_and_dry_run_when_full_and_keyed"] is True
     assert payload["verified_live_track_record"] is False
+    assert payload["track_record"] is False
 
 
 def test_robots_and_license_pointer_stay_closed() -> None:

@@ -30,6 +30,7 @@
     <p class="lede">The start-here command is the guarded smoke. It is a local checkout check. It does not clear go-live.</p>
     <div class="panel">
       <p>The live routes are active. With exchange keys in <code>.env</code>, the launcher boots into live trading. There is no verified live track record.</p>
+      <p>There is a live route. An <code>.env</code> with exchange keys boots live. The master launcher overrides the disabled and dry-run lines when autonomy is full and a complete key group is present in <code>.env</code>, the inherited shell, or <code>aureon_radar/.env</code>. There is no track record. See <a href="../../docs/PUBLIC_ENV.md"><code>docs/PUBLIC_ENV.md</code></a>. Go-live stays HOLD.</p>
       <p>The smoke below does not read <code>.env</code>, leaves exchange keys unset, and keeps live trading off for that run. That is the smoke. It is not a statement that every launcher has trading off.</p>
     </div>
     <p>You need Python 3.11 or newer, Node.js 20 or newer, and npm. On Debian or Ubuntu, install <code>python3-venv</code> first. <code>install.sh</code> is a bash script. From Windows, run it with bash.</p>

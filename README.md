@@ -19,7 +19,7 @@ Trading research · autonomous operator · planetary/HNC research · a coding or
 
 ## Quick start in five minutes
 
-Start here. Clone `main`, leave exchange keys unset, and run the guarded smoke. Live trading stays off. The orange release-boundary badge above stays **HOLD**. Go-live stays **HOLD**.
+Start here. Clone `main`, leave exchange keys unset, and run the guarded smoke. That smoke keeps live trading off for that run. There is a live route: an `.env` with exchange keys boots live. The orange release-boundary badge above stays **HOLD**. Go-live stays **HOLD**.
 
 Python 3.11 or newer, and Node.js 20 or newer, with `python3`, `node`, and `npm` on `PATH`. On Debian or Ubuntu, install `python3-venv` first. `./install.sh` checks that Python is 3.11 or newer and that `node` and `npm` exist. The clean-checkout workflow uses Node 20. A `.env` file is not required. `./install.sh` does not read `.env`.
 
@@ -50,7 +50,7 @@ On Linux the guarded smoke is `./install.sh --smoke` from the checkout. The scri
 
 ### What the guarded smoke covers
 
-`./install.sh --smoke` is the start-here check. Live trading stays off. Exchange keys stay unset. No order is placed. QGITA detection rate on that smoke stays **HOLD**. Go-live stays **HOLD**.
+`./install.sh --smoke` is the start-here check. That smoke keeps live trading off for that run. Exchange keys stay unset. No order is placed. QGITA detection rate on that smoke stays **HOLD**. Go-live stays **HOLD**. The master launcher is a separate entry: it overrides the disabled and dry-run lines when autonomy is full and a complete key group is present. There is no track record.
 
 ### What stays HOLD
 
@@ -440,14 +440,14 @@ Open-source repository traffic to date (verifiable in the repo's GitHub **Insigh
 
 ## Public front door
 
-Strangers can open [`site/index.html`](site/index.html). That reading copy matches this file. The live routes are active. With exchange keys in `.env`, the launcher boots into live trading. There is no verified live track record. The start-here command on that page is `./install.sh --smoke`, which leaves keys unset and keeps live trading off for that run. Go-live stays HOLD. This checkout is never production ready and never a validated deployment. GitHub Pages is off. [`.github/workflows/pages-gated.yml`](.github/workflows/pages-gated.yml) is dispatch-gated behind `GARY-YES-DEPLOY-PAGES` and does not deploy. The applicant is R&A Consulting and Brokerage Services Ltd, company no. NI696693, trading as Aureon Zorza Technologies. The company homepage is [aureonzorzatechnologies.pl](https://aureonzorzatechnologies.pl).
+Strangers can open [`site/index.html`](site/index.html). That reading copy matches this file. There is a live route. An `.env` with exchange keys boots live. The master launcher overrides the disabled and dry-run lines when autonomy is full and a complete key group is present in `.env`, the inherited shell, or `aureon_radar/.env`, as [`docs/PUBLIC_ENV.md`](docs/PUBLIC_ENV.md) documents. There is no track record. The live routes are active. With exchange keys in `.env`, the launcher boots into live trading. There is no verified live track record. The start-here command on that page is `./install.sh --smoke`, which leaves keys unset and keeps live trading off for that run. Go-live stays HOLD. This checkout is never production ready and never a validated deployment. GitHub Pages is off. [`.github/workflows/pages-gated.yml`](.github/workflows/pages-gated.yml) is dispatch-gated behind `GARY-YES-DEPLOY-PAGES` and does not deploy. The applicant is R&A Consulting and Brokerage Services Ltd, company no. NI696693, trading as Aureon Zorza Technologies. The company homepage is [aureonzorzatechnologies.pl](https://aureonzorzatechnologies.pl).
 
 ## Where to go next
 
 | You are… | Start here |
 |---|---|
 | **Cloning the repo** | The quick start at the top of this file — `./install.sh --smoke` only, live trading off, go-live HOLD |
-| **Opening the public front door** | [`site/index.html`](site/index.html) — live routes active, `.env` keys boot live, no verified live track record. Guarded smoke `./install.sh --smoke`. Go-live HOLD. GitHub Pages is off. |
+| **Opening the public front door** | [`site/index.html`](site/index.html) — a live route, `.env` keys boot live, the master launcher overrides disable and dry-run lines on a full+keyed boot, no track record. Guarded smoke `./install.sh --smoke`. Go-live HOLD. GitHub Pages is off. |
 | **Working on Aureon OS** | [`docs/AUREON_RULES.md`](docs/AUREON_RULES.md) — the shared rulebook |
 | **An investor or funder** | [`docs/investor/README.md`](docs/investor/README.md) — diligence path, capability categories, and claim discipline |
 | **A developer** | [`docs/INDEX.md`](docs/INDEX.md) · [`docs/PUBLIC_ENV.md`](docs/PUBLIC_ENV.md) · [`CAPABILITIES.md`](CAPABILITIES.md) · [`docs/SAAS_PLATFORM.md`](docs/SAAS_PLATFORM.md) |
