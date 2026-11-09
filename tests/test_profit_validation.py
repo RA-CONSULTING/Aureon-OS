@@ -6,7 +6,6 @@ Test script to validate that profits are only counted from real executed trades
 from aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import sys
 import os
-sys.path.append('.')
 
 def test_profit_counting():
     print("🧪 TESTING PROFIT COUNTING VALIDATION")
@@ -78,4 +77,8 @@ def test_profit_counting():
     print("   ✅ No more fake/simulated profit inflation")
 
 if __name__ == "__main__":
+    # Script launch puts tests/ on sys.path, not the checkout. Pytest already
+    # has the checkout, and a module-level '.' entry survives collection.
+    if "." not in sys.path:
+        sys.path.append(".")
     test_profit_counting()

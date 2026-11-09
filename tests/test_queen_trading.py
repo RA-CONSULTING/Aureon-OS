@@ -9,7 +9,13 @@ Tests the Queen's ability to execute trades through the neural chain.
 from aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import sys
 import time
-sys.path.insert(0, '.')
+
+# Script launch puts tests/ on sys.path, not the checkout. Pytest already
+# has the checkout. Inserting '.' at import leaves the relative entry in
+# place for every later test, and the plug-and-play supervisor check then
+# still resolves aureon from the checkout cwd.
+if __name__ == "__main__" and "." not in sys.path:
+    sys.path.insert(0, ".")
 
 from aureon_queen_unified_neural_chain import (
     QueenUnifiedNeuralChain, 
