@@ -1771,7 +1771,8 @@ def status_rows(repo: Path, runner: Runner, components: list[Component]) -> list
             spec = organ_specs.get(organ) or {}
             reason = organ_block_reason(repo, organ, spec, runner)
             pid = existing_pid(state, component.name, runner)
-            if pid and not reason:
+            if pid:
+                # Our own live child holds its port; "port already bound" is not a block.
                 rows.append(Row(component.name, "started", "ok", f"pid {pid}"))
             elif reason:
                 rows.append(Row(component.name, "blocked", "down", reason))
