@@ -175,13 +175,15 @@ class Runner:
         base = self.compose_base()
         if not base:
             return False, "docker compose plugin not installed"
-        cmd = [*base, "-f", str(compose_file), "up", "-d", "--no-build", *services]
+        # Wait for health so the rows below read healthy containers, not "starting".
+        wait_s = seat_port("AUREON_COMPOSE_WAIT_S", 180)
+        cmd = [*base, "-f", str(compose_file), "up", "-d", "--no-build", "--wait", "--wait-timeout", str(wait_s), *services]
         try:
             proc = subprocess.run(
                 cmd,
                 capture_output=True,
                 text=True,
-                timeout=25,
+                timeout=wait_s + 30,
                 check=False,
             )
         except (OSError, subprocess.TimeoutExpired) as exc:
@@ -614,7 +616,13 @@ def _install_docker(runner: Runner) -> tuple[bool, str]:
     if not base:
         return False, "docker compose plugin not installed"
     compose = compose_file(runner.repo)
-    pull_ok, pull_detail = _run_install([*base, "-f", str(compose), "pull"], runner.repo)
+    stage = runner.repo / "scripts" / "stage_selfhost_image.py"
+    if stage.is_file():
+        # The compose build context deploy/selfhost/image is empty in git; fill it first.
+        staged, stage_detail = _run_install([project_python(runner.repo), str(stage)], runner.repo)
+        if not staged:
+            return False, f"stage_selfhost_image failed: {stage_detail}"
+    pull_ok, pull_detail = _run_install([*base, "-f", str(compose), "pull", "--ignore-buildable"], runner.repo)
     pull_note = "pull ok" if pull_ok else f"pull failed: {pull_detail}"
     build_ok, build_detail = _run_install([*base, "-f", str(compose), "build"], runner.repo)
     if not build_ok:
@@ -1797,7 +1805,7 @@ def start_rows(repo: Path, runner: Runner, components: list[Component]) -> list[
         for component in components
         if component.kind == "compose"
         and component.name.split("/", 1)[1] in compose
-        and component.name != "compose/nginx"
+        and (component.name != "compose/nginx" or not runner.port_busy(8080))
     ]
     docker_note = compose_error or "compose file missing"
     docker_up = False
