@@ -22,6 +22,15 @@
     "server": "29.1.3"
   },
   "git_head_at_measurement": "08f04936088689e29b7995d89530b21b425c35f9",
+  "later_checkout_note": {
+    "checked_on": "9333bfbbeb8de54a4b42be05f9263e536da643a7",
+    "go_live_clear": false,
+    "image_rebuilt": false,
+    "orange_badge": "HOLD",
+    "push_attempted": false,
+    "readme_sha256_is_measurement_time": true,
+    "text": "README.md changed on main after this local build. The image was not rebuilt and was not pushed. The orange badge stays HOLD."
+  },
   "go_live": "HOLD",
   "image": {
     "architecture": "amd64",

@@ -204,26 +204,38 @@ def test_measured_receipt_matches_the_hold_build() -> None:
     assert receipt["compose"]["ports_injected"] is False
     assert receipt["compose"]["secrets_injected"] is False
     assert judge_preflight(receipt["preflight"]) == []
+    # README.md moved on main after the local build. The image was not rebuilt
+    # and was not pushed. The receipt keeps the measurement-time digest.
+    drifted = {"README.md"}
     for name, digest in receipt["source_sha256"].items():
-        assert _sha256(ROOT / name) == digest
-    head = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout.strip()
-    parent = subprocess.run(
-        ["git", "rev-parse", "HEAD^"],
+        current = _sha256(ROOT / name)
+        if name in drifted:
+            assert current != digest
+            continue
+        assert current == digest, name
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "release%20boundary-HOLD-orange" in readme
+    lowered_readme = readme.lower()
+    assert "production-ready" not in lowered_readme
+    assert "production ready" not in lowered_readme
+    assert "validated" not in lowered_readme
+    note = receipt["later_checkout_note"]
+    assert note["image_rebuilt"] is False
+    assert note["push_attempted"] is False
+    assert note["orange_badge"] == "HOLD"
+    assert note["go_live_clear"] is False
+    assert note["readme_sha256_is_measurement_time"] is True
+    assert note["checked_on"] == "9333bfbbeb8de54a4b42be05f9263e536da643a7"
+    measured = receipt["git_head_at_measurement"]
+    assert measured == "08f04936088689e29b7995d89530b21b425c35f9"
+    ancestor = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", measured, "HEAD"],
         cwd=ROOT,
         capture_output=True,
         text=True,
         check=False,
     )
-    allowed = {head}
-    if parent.returncode == 0:
-        allowed.add(parent.stdout.strip())
-    assert receipt["git_head_at_measurement"] in allowed
+    assert ancestor.returncode == 0
     markdown = RECEIPT_MD.read_text(encoding="utf-8")
     assert "not a claim that the system is alive" in markdown
     assert "Receipt 5" in markdown

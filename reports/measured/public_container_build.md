@@ -42,3 +42,8 @@ Claims recorded here: cloud_go_live=False, listeners_opened=False, production_re
 
 Git HEAD at measurement: `08f04936088689e29b7995d89530b21b425c35f9`.
 The UTC stamp is this machine's clock. It is not receipt 3.
+
+This build was not repeated on `9333bfbbeb8de54a4b42be05f9263e536da643a7`.
+`README.md` changed after the measurement. Its digest in this file is the
+measurement-time digest. The orange release-boundary badge stays HOLD.
+No image was rebuilt and no image was pushed. Go-live stays HOLD.
