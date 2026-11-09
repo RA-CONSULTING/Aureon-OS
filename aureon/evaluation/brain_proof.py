@@ -12,7 +12,8 @@ receives the pack's volatility, momentum, volume, and spread. The same call
 is repeated at each closed bar on the bars and spread prints known at that
 bar's close. The next bar's close-to-close return is the outcome label.
 This checkout has no filled order for the series, so the label is paper.
-Trade readiness is then a measured pass or a measured fail. The release
+Trade readiness is then a measured pass or a measured fail. A fixture or
+synthetic pack is tagged ``fixture``, never ``measured``. The release
 boundary stays HOLD. When the pack is absent or HOLD, the omitted call is
 no_data and trade readiness stays HOLD. A measured fail records why the
 ready mark stayed off. The stored spread prints may all fall after the
@@ -55,6 +56,8 @@ from __future__ import annotations
 import ast
 import contextlib
 import csv
+import functools
+import hashlib
 import inspect
 import io
 import os
@@ -84,6 +87,77 @@ _ORDERS_OFF = "AUREON_DISABLE_REAL_ORDERS=1"
 # Names this repo already uses for HarmonicRealityField Λ(t). "Lambda" is the
 # derived-column name and is not this series.
 _LAMBDA_KEYS = ("lambda", "lambda_t", "lambda_current")
+_FIXTURE_TAGS = frozenset({"fixture", "synthetic", "synthetic_planted"})
+_FIXTURE_WORDS = ("fixture", "synthetic")
+_FIXTURE_BODIES = (
+    "examples/offline/fixtures/kraken_ohlc.json",
+    "examples/offline/fixtures/kraken_spread.json",
+    "tests/fixtures/market_series/kraken_ohlc.json",
+    "tests/fixtures/market_series/kraken_spread.json",
+    "tests/fixtures/market_series/binance_klines.json",
+    "tests/fixtures/market_series/binance_book.json",
+)
+
+
+def _checkout_root() -> Path:
+    return Path(__file__).resolve().parents[2]
+
+
+@functools.lru_cache(maxsize=1)
+def _fixture_body_digests() -> frozenset[str]:
+    """sha256 of the committed offline bodies. A live pack does not match these."""
+
+    found: set[str] = set()
+    root = _checkout_root()
+    for relative in _FIXTURE_BODIES:
+        path = root / relative
+        if path.is_file():
+            found.add(hashlib.sha256(path.read_bytes()).hexdigest())
+    return frozenset(found)
+
+
+def _is_fixture_or_synthetic(pack: dict[str, Any]) -> bool:
+    """True for a fixture or synthetic market pack, including the offline Kraken bodies."""
+
+    tag = str(pack.get("evidence_tag") or "").strip().lower()
+    if tag in _FIXTURE_TAGS:
+        return True
+    for key in ("origin", "pack_kind", "series_class", "source_kind"):
+        text = str(pack.get(key) or "").lower()
+        if any(word in text for word in _FIXTURE_WORDS):
+            return True
+    capture = pack.get("capture") if isinstance(pack.get("capture"), dict) else {}
+    digests = _fixture_body_digests()
+    for key in ("ohlc_sha256", "spread_sha256"):
+        digest = str(capture.get(key) or "")
+        if digest and digest in digests:
+            return True
+    chunks: list[str] = [str(pack.get("source") or ""), str(pack.get("parser") or "")]
+    provenance = pack.get("provenance")
+    if isinstance(provenance, dict):
+        chunks.extend(str(value) for value in provenance.values())
+    for attempt in pack.get("attempts") or []:
+        if isinstance(attempt, dict):
+            chunks.append(str(attempt.get("error") or ""))
+    blob = " ".join(chunks).lower()
+    return any(word in blob for word in _FIXTURE_WORDS)
+
+
+def _pack_evidence_tag(pack: dict[str, Any]) -> str:
+    """Label a loaded fixture or synthetic pack ``fixture``. A venue pack stays measured."""
+
+    if _is_fixture_or_synthetic(pack):
+        return "fixture"
+    return "measured"
+
+
+def _market_summary(pack: dict[str, Any]) -> dict[str, Any]:
+    """Brain-proof slice. A fixture pack is not reported as measured."""
+
+    summary = series_summary(pack)
+    if _is_fixture_or_synthetic(pack):
+        summary["evidence_tag"] = "fixture"
+    return summary
 
 
 def _optional_count(value: Any) -> int | None:
@@ -125,7 +199,9 @@ def _one_default_field() -> dict[str, Any]:
         "echo_strength": float(field.echo_strength),
         "noises_all_zero": bool(noises) and all(item == 0.0 for item in noises),
         "noise_samples": len(noises),
-        "noise_level_attribute": None if field.translation_map is None else float(field.translation_map.noise_level),
+        "noise_level_attribute": None
+        if field.translation_map is None
+        else float(field.translation_map.noise_level),
     }
 
 
@@ -314,7 +390,7 @@ def _paper_labels(queen: Any, pack: dict[str, Any]) -> list[dict[str, Any]]:
                 "outcome_kind": "paper",
                 "owl": str(owl.get("data_status") or "no_data"),
                 "paper_outcome": _paper_outcome(move),
-                "return_evidence": "measured",
+                "return_evidence": _pack_evidence_tag(pack),
                 "spread_known_at_decision": "spread" in texture,
             }
         )
@@ -419,7 +495,11 @@ def _label_spread_clock(pack: dict[str, Any], labels: list[dict[str, Any]]) -> d
         stamp = _optional_count(item.get("time"))
         if stamp is not None:
             times.append(stamp)
-    closes = [int(row["decision_close_unix"]) for row in labels if _optional_count(row.get("decision_close_unix")) is not None]
+    closes = [
+        int(row["decision_close_unix"])
+        for row in labels
+        if _optional_count(row.get("decision_close_unix")) is not None
+    ]
     last_close = max(closes) if closes else None
     first_print = min(times) if times else None
     gap = None if first_print is None or last_close is None else first_print - last_close
@@ -573,6 +653,7 @@ def _diagnosis(
     clock: dict[str, Any],
     ceiling: dict[str, Any],
     ladder: dict[str, Any],
+    evidence_tag: str = "measured",
 ) -> dict[str, Any]:
     numeric = sum(1 for row in labels if row.get("coherence") is not None)
     no_data = sum(1 for row in labels if row.get("coherence_status") == "no_data")
@@ -597,8 +678,7 @@ def _diagnosis(
             f"window coherence {window_coherence} does not contain the ready mark"
         )
     order_bits = [
-        f"coherence {item['op']} {item['threshold']}"
-        + (" (ready mark)" if item["ready_mark"] else "")
+        f"coherence {item['op']} {item['threshold']}" + (" (ready mark)" if item["ready_mark"] else "")
         for item in ladder["compares"]
     ]
     if matched_else is True:
@@ -650,7 +730,7 @@ def _diagnosis(
         f"{next_stage}"
     )
     return {
-        "evidence_tag": "measured",
+        "evidence_tag": evidence_tag,
         "formula_ceiling": ceiling,
         "labelled_bars_no_data": no_data,
         "labelled_bars_with_coherence": numeric,
@@ -710,17 +790,18 @@ def _trade_readiness(
     owl_reading = sum(1 for row in labels if row.get("owl") == "reading")
     held = sorted({name for row in labels for name in row.get("nodes_without_reading") or []})
     held_text = ", ".join(held) if held else "none"
+    tag = _pack_evidence_tag(pack)
+    price_word = "a fixture" if tag == "fixture" else "measured"
     if entries and higher == len(entries):
         verdict = "pass"
-        because = "measured pass: every paper long the method marked ready to trade had a higher next close"
+        because = f"{tag} pass: every paper long the method marked ready to trade had a higher next close"
     elif not entries:
         verdict = "fail"
-        because = "measured fail: get_auris_coherence did not mark any labelled bar ready to trade"
+        because = f"{tag} fail: get_auris_coherence did not mark any labelled bar ready to trade"
     else:
         verdict = "fail"
         because = (
-            "measured fail: a paper long the method marked ready to trade "
-            "did not have a higher next close"
+            f"{tag} fail: a paper long the method marked ready to trade " "did not have a higher next close"
         )
     diagnosis = _diagnosis(
         labels,
@@ -729,11 +810,12 @@ def _trade_readiness(
         clock=_label_spread_clock(pack, labels),
         ceiling=_formula_ceiling(queen),
         ladder=_status_ladder(type(queen).get_auris_coherence),
+        evidence_tag=tag,
     )
     reason = (
         f"paper trade-outcome labels: {len(labels)} next-bar close-to-close returns "
         f"from {pack.get('key_group')} {pack.get('symbol')}; "
-        "the prices are measured and the outcomes are paper; "
+        f"the prices are {price_word} and the outcomes are paper; "
         "filled outcomes: 0; "
         f"Clownfish readings {clownfish_reading} of {len(labels)}; "
         f"Owl readings {owl_reading} of {len(labels)}; "
@@ -752,7 +834,7 @@ def _trade_readiness(
         "entries": len(entries),
         "entries_not_higher": not_higher,
         "entries_with_higher_close": higher,
-        "evidence_tag": "measured",
+        "evidence_tag": tag,
         "filled_outcomes": 0,
         "filled_outcome_note": (
             "this checkout has no filled order outcome for this series; the labels are paper"
@@ -794,7 +876,9 @@ def _run_auris(pack: dict[str, Any]) -> dict[str, Any]:
             f"from {pack.get('key_group')} ({pack.get('source')}), "
             f"{window.get('start')} to {window.get('end')}. "
             f"Spread input clock: {_spread_clock(pack)}. "
-            "The four inputs are the measured window statistics in the pack. "
+            "The four inputs are the "
+            f"{'fixture' if _is_fixture_or_synthetic(pack) else 'measured'} "
+            "window statistics in the pack. "
             "Key material was not read. No order was sent."
         )
         market_data: dict[str, float] | None = texture
@@ -826,7 +910,7 @@ def _run_auris(pack: dict[str, Any]) -> dict[str, Any]:
         "nodes": nodes,
         "coherence": None if coherence is None else float(coherence),
         "coherence_status": status,
-        "coherence_evidence": "measured" if loaded and coherence is not None else "no_data",
+        "coherence_evidence": (_pack_evidence_tag(pack) if loaded and coherence is not None else "no_data"),
         "market_nodes_without_reading": missing,
         "omitted_call": {
             "coherence": None if omitted_coherence is None else float(omitted_coherence),
@@ -881,7 +965,7 @@ def _lhe_record(item: Any) -> dict[str, Any]:
 def _plain(value: Any) -> Any:
     if isinstance(value, dict):
         return {str(key): _plain(item) for key, item in value.items()}
-    if isinstance(value, (list, tuple)):
+    if isinstance(value, list | tuple):
         return [_plain(item) for item in value]
     if isinstance(value, bool) or value is None or isinstance(value, str):
         return value
@@ -970,7 +1054,8 @@ def _market_qgita(pack: dict[str, Any]) -> dict[str, Any]:
     window = pack.get("time_range") if isinstance(pack.get("time_range"), dict) else {}
     record = _run_qgita(values, times, str(pack.get("symbol") or "market_series"))
     record["series_class"] = "public-market"
-    record["evidence_tag"] = "measured"
+    tag = _pack_evidence_tag(pack)
+    record["evidence_tag"] = tag
     record["key_group"] = pack.get("key_group")
     record["authenticated"] = False
     record["time_range"] = window
@@ -994,6 +1079,9 @@ def _market_qgita(pack: dict[str, Any]) -> dict[str, Any]:
             paper_outcomes_are_not_signal_labels=True,
         ),
     )
+    if tag == "fixture":
+        record["evidence_tag"] = "fixture"
+        record["verdict"] = "fixture_rates_hold"
     return record
 
 
@@ -1128,7 +1216,11 @@ def _ann_assign_names(class_node: ast.ClassDef | None) -> list[str]:
 
 
 def _finite_constant(node: ast.AST) -> float | None:
-    if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and not isinstance(node.value, bool):
+    if (
+        isinstance(node, ast.Constant)
+        and isinstance(node.value, int | float)
+        and not isinstance(node.value, bool)
+    ):
         return float(node.value)
     return None
 
@@ -1213,7 +1305,12 @@ def _typescript_market_snapshot(text: str) -> dict[str, Any]:
     if start >= 0 and end > start:
         for line in text[start:end].splitlines():
             stripped = line.strip()
-            if not stripped or stripped.startswith("export") or stripped.startswith("//") or ":" not in stripped:
+            if (
+                not stripped
+                or stripped.startswith("export")
+                or stripped.startswith("//")
+                or ":" not in stripped
+            ):
                 continue
             name = stripped.split(":", 1)[0].strip()
             if name.isidentifier():
@@ -1263,9 +1360,8 @@ def _search_join_contract(
         "reconcile_gamma": {
             "evidence_tag": "cited",
             "names_lambda": False if reconcile is None else _tree_names_lambda(reconcile),
-            "returns_caller_figure": bool(docstring) and docstring.startswith(
-                "Return the caller's coherence figure."
-            ),
+            "returns_caller_figure": bool(docstring)
+            and docstring.startswith("Return the caller's coherence figure."),
             "source": "aureon.core.hnc_field.reconcile_gamma",
         },
         "role_value_names_lambda": role_names_lambda,
@@ -1299,8 +1395,7 @@ def _contract_sentence(contract: dict[str, Any]) -> str:
         bias = "AurisEngine.calculate_coherence was cited and does not supply a lambda join contract. "
     if typescript["has_lambda"] is False and ts_fields:
         front = (
-            f"The TypeScript MarketSnapshot fields are {ts_fields}. "
-            "That snapshot does not name lambda. "
+            f"The TypeScript MarketSnapshot fields are {ts_fields}. " "That snapshot does not name lambda. "
         )
     else:
         front = "The TypeScript MarketSnapshot was cited. "
@@ -1346,13 +1441,9 @@ def _join_auris_to_lambda(
     names_lambda = _tree_names_lambda(coherence_tree)
     values = [float(item) for item in series]
     lambda_last = values[-1]
-    only_lambda = {
-        key: _coherence_call(queen, {key: lambda_last})
-        for key in _LAMBDA_KEYS
-    }
+    only_lambda = {key: _coherence_call(queen, {key: lambda_last}) for key in _LAMBDA_KEYS}
     only_matches_omitted = all(
-        item["coherence"] is None and item["status"] == omitted["status"]
-        for item in only_lambda.values()
+        item["coherence"] is None and item["status"] == omitted["status"] for item in only_lambda.values()
     )
     supplied = dict(texture or {})
     texture_call = _coherence_call(queen, supplied) if supplied else None
@@ -1554,7 +1645,7 @@ def _evaluate_brain_body(root: Path) -> dict[str, Any]:
         "cognition": "internal",
         "note": _NOTE,
         "hnc": hnc,
-        "market_series": series_summary(pack),
+        "market_series": _market_summary(pack),
         "auris": auris,
         "qgita": {
             "derived_series": derived,

@@ -6,5 +6,11 @@ set "PYTHONIOENCODING=utf-8"
 set "PYTHONUNBUFFERED=1"
 set "ROOT=%~dp0.."
 cd /d "%ROOT%"
+python -m aureon.launch.live_gate
+if errorlevel 1 (
+  set "AUREON_LIVE_TRADING=0"
+  set "AUREON_AUTONOMY_MODE=guarded"
+  set "AUREON_DISABLE_REAL_ORDERS=1"
+)
 python -m aureon.launch.master %*
 exit /b %ERRORLEVEL%

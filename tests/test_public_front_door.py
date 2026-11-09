@@ -7,9 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / "site"
-HOLD_SENTENCE = (
-    "Go-live is HOLD. This checkout is never production ready and never a validated deployment."
-)
+HOLD_SENTENCE = "Go-live is HOLD. This checkout is never production ready and never a validated deployment."
 HOMEPAGE = "https://aureonzorzatechnologies.pl"
 
 
@@ -50,12 +48,14 @@ def test_front_door_pages_state_the_hold_and_the_homepage() -> None:
         assert "production-ready" not in lowered
         assert "validated" not in lowered
         assert "0.0.0.0" not in text
-        assert "href=\"cname\"" not in lowered
+        assert 'href="cname"' not in lowered
 
 
 HONESTY = (
-    "The live routes are active. With exchange keys in <code>.env</code>, "
-    "the launcher boots into live trading. There is no verified live track record."
+    "Live mode is locked by default. With exchange keys in <code>.env</code>, "
+    "the launcher does not boot into live trading unless the stage 11 go-live gate "
+    "reports clear and <code>AUREON_OPERATOR_ALLOW_LIVE</code> is set. "
+    "There is no verified live track record."
 )
 
 
@@ -71,7 +71,7 @@ def test_front_page_matches_readme_honesty() -> None:
     assert HONESTY in text
     assert OVERRIDE in text
     assert "There is a live route." in text
-    assert "An <code>.env</code> with exchange keys boots live." in text
+    assert "An <code>.env</code> with exchange keys does not boot live unless" in text
     assert "There is no track record." in text
     assert "docs/PUBLIC_ENV.md" in text
     assert "./install.sh --smoke" in text
@@ -84,7 +84,7 @@ def test_front_page_matches_readme_honesty() -> None:
         assert "SRC Engineering" not in path.read_text(encoding="utf-8")
     door = (ROOT / "README.md").read_text(encoding="utf-8")
     section = door.split("## Public front door", 1)[1].split("## Where to go next", 1)[0]
-    assert "The live routes are active." in section
+    assert "Live mode is locked by default." in section
     assert "There is no verified live track record." in section
     assert "There is a live route." in section
     assert "There is no track record." in section
@@ -126,7 +126,7 @@ def test_status_json_keeps_go_live_on_hold() -> None:
     assert payload["guarded_smoke_live_trading"] is False
     assert payload["live_routes_active"] is True
     assert payload["live_route"] is True
-    assert payload["env_keys_boot_live"] is True
+    assert payload["env_keys_boot_live"] is False
     assert payload["master_overrides_disable_and_dry_run_when_full_and_keyed"] is True
     assert payload["verified_live_track_record"] is False
     assert payload["track_record"] is False

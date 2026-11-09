@@ -78,11 +78,15 @@ def test_catalog_is_read_only_and_does_not_import_exchanges(monkeypatch: pytest.
 
     monkeypatch.setattr(socket, "socket", _Socket)
     monkeypatch.setattr(socket, "create_connection", _refuse_connection)
-    before = {name for name in sys.modules if name == "aureon.exchanges" or name.startswith("aureon.exchanges.")}
+    before = {
+        name for name in sys.modules if name == "aureon.exchanges" or name.startswith("aureon.exchanges.")
+    }
     catalog = _load(exchanges_surface())
     refused = _load(body_call("exchanges/kraken_client.py", "KrakenClient.get_order_status"))
     names = _load(source_names("exchanges"))
-    after = {name for name in sys.modules if name == "aureon.exchanges" or name.startswith("aureon.exchanges.")}
+    after = {
+        name for name in sys.modules if name == "aureon.exchanges" or name.startswith("aureon.exchanges.")
+    }
     assert catalog["status"] == "cited"
     assert catalog["called"] is False
     assert catalog["catalog"]["rows"] == 647
@@ -164,6 +168,40 @@ def _kept_env() -> dict[str, str]:
         for key in ("PATH", "HOME", "LANG", "LC_ALL", "SYSTEMROOT", "TMPDIR", "TMP", "TEMP")
         if key in os.environ
     }
+
+
+def test_stage8_check_accepts_a_carried_commit_without_a_hardcoded_sha() -> None:
+    import importlib.util
+
+    source = (ROOT / "scripts/validation/go_live_stage8_exchanges.py").read_text(encoding="utf-8")
+    assert "55ab3579e4a1e59b442e46800c5486a270fc5b0c" not in source
+    assert "30d8101b486f6f48b9219a337e2b77808e5038e1" not in source
+    path = ROOT / "scripts/validation/go_live_stage8_exchanges.py"
+    spec = importlib.util.spec_from_file_location("go_live_stage8_exchanges", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    measured = "a" * 40
+    carried = "b" * 40
+    note = (
+        f"This receipt was measured before the squash at {measured}. "
+        f"The same work is carried on main by {carried}. "
+        "This note does not remeasure the sweep."
+    )
+    recorded = {
+        "code_commit": measured,
+        "carried_on_main": carried,
+        "code_commit_note": note,
+    }
+    assert module.code_commit_is_accepted(recorded, lambda commit: commit == carried)
+    assert not module.code_commit_is_accepted(
+        {"code_commit": "c" * 40, "code_commit_note": ""},
+        lambda _commit: False,
+    )
+    assert module.code_commit_is_accepted(
+        {"code_commit": carried, "code_commit_note": ""},
+        lambda commit: commit == carried,
+    )
 
 
 def test_measured_sweep_matches_a_fresh_child() -> None:

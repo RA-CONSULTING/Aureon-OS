@@ -85,7 +85,9 @@ def test_binance_fixture_is_labeled_public_binance(monkeypatch: pytest.MonkeyPat
     assert pack["provenance"]["key_material"] == "none"
 
 
-def test_fetch_stays_on_public_urls_and_writes_no_secret(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_fetch_stays_on_public_urls_and_writes_no_secret(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     from aureon.evaluation.market_series import fetch_public_pack, write_pack
 
     seen: list[str] = []
@@ -170,7 +172,7 @@ def test_brain_proof_consumes_a_pack_and_names_deer_when_spread_is_absent(tmp_pa
     assert diagnosis["live_trading"] is False
     assert diagnosis["formula_ceiling"]["ready_marks"] == 0
     assert report["trade_readiness"]["verdict"] == "fail"
-    assert report["trade_readiness"]["evidence_tag"] == "measured"
+    assert report["trade_readiness"]["evidence_tag"] == "fixture"
     assert report["trade_readiness"]["outcome_labels"] == "paper"
     assert report["trade_readiness"]["filled_outcomes"] == 0
     assert report["trade_readiness"]["release_boundary"] == "HOLD"
@@ -180,7 +182,8 @@ def test_brain_proof_consumes_a_pack_and_names_deer_when_spread_is_absent(tmp_pa
     assert report["orders_placed"] is False
     assert report["omitted_call"]["status"] == "no_data"
     qgita = _market_qgita(loaded)
-    assert qgita["evidence_tag"] == "measured"
+    assert qgita["evidence_tag"] == "fixture"
+    assert qgita["verdict"] == "fixture_rates_hold"
     assert qgita["rates_verdict"] == "HOLD"
     assert qgita["detection_rate"] is None
     assert qgita["false_alarm_rate"] is None
@@ -216,7 +219,7 @@ def test_full_fixture_gives_clownfish_and_owl_a_reading() -> None:
     report = _run_auris(pack)
     assert report["market_nodes_without_reading"] == []
     assert isinstance(report["coherence"], float)
-    assert report["coherence_evidence"] == "measured"
+    assert report["coherence_evidence"] == "fixture"
     nodes = report["nodes"]
     assert nodes["Clownfish"]["data_status"] == "reading"
     assert nodes["Owl"]["data_status"] == "reading"
@@ -226,7 +229,7 @@ def test_full_fixture_gives_clownfish_and_owl_a_reading() -> None:
     assert "no market series" not in reason
     assert "no trade-outcome labels" not in reason
     assert trade["verdict"] in {"pass", "fail"}
-    assert trade["evidence_tag"] == "measured"
+    assert trade["evidence_tag"] == "fixture"
     assert trade["outcome_labels"] == "paper"
     assert trade["filled_outcomes"] == 0
     assert trade["release_boundary"] == "HOLD"
@@ -235,7 +238,7 @@ def test_full_fixture_gives_clownfish_and_owl_a_reading() -> None:
     assert trade["clownfish_readings"] == trade["paper_labels"]
     assert trade["owl_readings"] == trade["paper_labels"]
     assert all(row["filled"] is False and row["outcome_kind"] == "paper" for row in trade["labels"])
-    assert all(row["return_evidence"] == "measured" for row in trade["labels"])
+    assert all(row["return_evidence"] == "fixture" for row in trade["labels"])
 
 
 def test_committed_pack_is_public_and_the_pin_stays() -> None:
@@ -322,3 +325,51 @@ def test_check_command_does_not_fetch(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr(market_series, "http_get", boom)
     assert market_series.main(["--check", "--out", str(ROOT / "reports" / "measured")]) == 0
+
+
+def test_offline_kraken_fixture_is_labelled_fixture_not_measured() -> None:
+    """The #248 gallery bodies are a fixture. Brain proof must not call them measured."""
+
+    from aureon.evaluation.brain_proof import _market_qgita, _pack_evidence_tag, _run_auris
+    from aureon.evaluation.market_series import fetch_public_pack, load_market_series
+
+    gallery = ROOT / "examples" / "offline" / "fixtures"
+
+    def transport(url: str) -> tuple[int, bytes]:
+        if "binance.com" in url:
+            return 451, b"fixture refuses binance"
+        if "OHLC" in url:
+            return 200, (gallery / "kraken_ohlc.json").read_bytes()
+        if "Spread" in url:
+            return 200, (gallery / "kraken_spread.json").read_bytes()
+        raise AssertionError(url)
+
+    pack = fetch_public_pack(transport, fetched_at="2026-11-05T00:00:00Z")
+    assert pack["evidence_tag"] == "measured"
+    assert _pack_evidence_tag(pack) == "fixture"
+    auris = _run_auris(pack)
+    qgita = _market_qgita(pack)
+    labels = auris["trade_readiness"]["labels"]
+    reported = {
+        "coherence_evidence": auris["coherence_evidence"],
+        "diagnosis": auris["trade_readiness"]["diagnosis"]["evidence_tag"],
+        "qgita": qgita["evidence_tag"],
+        "returns": [row["return_evidence"] for row in labels],
+        "trade": auris["trade_readiness"]["evidence_tag"],
+        "verdict": qgita["verdict"],
+    }
+    assert reported["coherence_evidence"] == "fixture"
+    assert reported["trade"] == "fixture"
+    assert reported["diagnosis"] == "fixture"
+    assert reported["qgita"] == "fixture"
+    assert reported["verdict"] == "fixture_rates_hold"
+    assert reported["returns"]
+    assert set(reported["returns"]) == {"fixture"}
+    assert "measured" not in json.dumps(reported)
+    assert "the prices are a fixture" in auris["trade_readiness"]["reason"]
+    synthetic = {"verdict": "loaded", "evidence_tag": "synthetic", "capture": {}}
+    assert _pack_evidence_tag(synthetic) == "fixture"
+    named = {"verdict": "loaded", "evidence_tag": "measured", "origin": "fixture"}
+    assert _pack_evidence_tag(named) == "fixture"
+    committed = load_market_series(ROOT)
+    assert _pack_evidence_tag(committed) == "measured"
