@@ -310,12 +310,193 @@ def _git_bytes(root: Path, args: list[str]) -> bytes | None:
         return None
 
 
-def read_note(root: Path, note_name: str = NOTE_NAME) -> bytes | None:
-    return _git_bytes(root, ["git", "notes", "--ref", note_name, "show", "HEAD"])
+def _git_ok(root: Path, args: list[str]) -> bool:
+    try:
+        done = subprocess.run(args, cwd=root, capture_output=True)
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+    return done.returncode == 0
+
+
+def fetch_notes(root: Path) -> bool:
+    """Fetch ``refs/notes/*`` from origin. A failed fetch is not itself an error.
+
+    Notes that are already in the clone stay usable when origin cannot be
+    reached. ``--check`` still refuses to pass when the notes ref is absent.
+    """
+
+    import os
+
+    env = os.environ.copy()
+    env["GIT_TERMINAL_PROMPT"] = "0"
+    try:
+        done = subprocess.run(
+            ["git", "fetch", "origin", "refs/notes/*:refs/notes/*"],
+            cwd=root,
+            capture_output=True,
+            env=env,
+            timeout=120,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+    return done.returncode == 0
+
+
+def read_note(root: Path, note_name: str = NOTE_NAME, commit: str = "HEAD") -> bytes | None:
+    return _git_bytes(root, ["git", "notes", "--ref", note_name, "show", commit])
 
 
 def read_head_blob(root: Path, token_rel: str = TOKEN_REL) -> bytes | None:
     return _git_bytes(root, ["git", "show", f"HEAD:{token_rel}"])
+
+
+def _notes_ref_present(root: Path, note_ref: str) -> bool:
+    return _git_ok(root, ["git", "show-ref", "--verify", "--quiet", note_ref])
+
+
+def _list_note_attachments(root: Path, note_name: str) -> list[tuple[str, str]]:
+    """Return ``(note blob sha, commit sha)`` rows from ``git notes list``."""
+
+    raw = _git_bytes(root, ["git", "notes", "--ref", note_name, "list"])
+    if not raw:
+        return []
+    pairs: list[tuple[str, str]] = []
+    for line in raw.decode("utf-8", "replace").splitlines():
+        parts = line.split()
+        if len(parts) < 2:
+            continue
+        blob, commit = parts[0].lower(), parts[1].lower()
+        if re.fullmatch(r"[0-9a-f]{40}", blob) and re.fullmatch(r"[0-9a-f]{40}", commit):
+            pairs.append((blob, commit))
+    return pairs
+
+
+def _load_record(root: Path, record_rel: str) -> dict[str, Any] | None:
+    path = root / record_rel
+    if not path.is_file():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None
+    if not isinstance(payload, dict):
+        return None
+    return payload
+
+
+def _recorded_note_commit(root: Path, record_rel: str) -> str | None:
+    payload = _load_record(root, record_rel)
+    if payload is None:
+        return None
+    for key in ("note_commit", "note_commit_sha", "attached_commit"):
+        value = payload.get(key)
+        if isinstance(value, str) and re.fullmatch(r"[0-9a-fA-F]{40}", value):
+            return value.lower()
+    return None
+
+
+def _recorded_note_blob(root: Path, record_rel: str, token_rel: str) -> str | None:
+    payload = _load_record(root, record_rel)
+    if payload is not None:
+        blob = payload.get("note_git_blob")
+        if isinstance(blob, str) and re.fullmatch(r"[0-9a-fA-F]{40}", blob):
+            return blob.lower()
+    head = read_head_blob(root, token_rel)
+    if head is not None:
+        return git_blob_sha1(head)
+    return None
+
+
+def _object_exists(root: Path, sha: str) -> bool:
+    return _git_ok(root, ["git", "cat-file", "-e", f"{sha}^{{commit}}"])
+
+
+def _is_ancestor(root: Path, sha: str) -> bool:
+    return _git_ok(root, ["git", "merge-base", "--is-ancestor", sha, "HEAD"])
+
+
+def _recording_commit(root: Path, token_rel: str) -> str | None:
+    """Commit that added the committed token, when that commit is on this history."""
+
+    raw = _git_bytes(root, ["git", "log", "--diff-filter=A", "--format=%H", "--", token_rel])
+    if not raw:
+        return None
+    for line in raw.decode("utf-8", "replace").splitlines():
+        sha = line.strip().lower()
+        if re.fullmatch(r"[0-9a-f]{40}", sha) and _is_ancestor(root, sha):
+            return sha
+    return None
+
+
+def _newest_commit(root: Path, commits: list[str]) -> str:
+    wanted = set(commits)
+    raw = _git_bytes(root, ["git", "rev-list", "HEAD"])
+    if raw:
+        for line in raw.decode("utf-8", "replace").splitlines():
+            sha = line.strip().lower()
+            if sha in wanted:
+                return sha
+    return commits[0]
+
+
+def _not_fetched(note_ref: str) -> AnchorError:
+    return AnchorError(
+        f"{note_ref} was not fetched. "
+        "The check does not treat the committed token as the git note. "
+        "Fetch notes with: git fetch origin 'refs/notes/*:refs/notes/*'"
+    )
+
+
+def _resolve_note_commit(
+    root: Path,
+    note_name: str,
+    note_ref: str,
+    token_rel: str,
+    record_rel: str,
+) -> str:
+    """Commit whose note is the recorded token. HEAD is not assumed.
+
+    ``git notes list`` names every commit the note is attached to. A
+    ``note_commit`` field on the evidence record wins when it is one of
+    those commits. Otherwise the commit that added the token file is used
+    when the note is attached there, else the newest ancestor of HEAD whose
+    note blob matches the recorded content hash.
+    """
+
+    if not _notes_ref_present(root, note_ref):
+        raise _not_fetched(note_ref)
+    pairs = _list_note_attachments(root, note_name)
+    if not pairs:
+        raise AnchorError(
+            f"git note {note_ref} is missing. "
+            "`git notes list` has no commit for it."
+        )
+    expected = _recorded_note_blob(root, record_rel, token_rel)
+    if expected is None:
+        raise AnchorError(
+            f"git note {note_ref} cannot be checked. "
+            f"{record_rel} has no note_git_blob and {token_rel} is not committed."
+        )
+    matches = [commit for blob, commit in pairs if blob == expected]
+    if not matches:
+        detail = ", ".join(f"{commit[:12]}={blob}" for blob, commit in pairs)
+        raise AnchorError(
+            f"git note {note_ref} content hash does not match recorded note_git_blob {expected}. "
+            f"git notes list has {detail}"
+        )
+    recorded = _recorded_note_commit(root, record_rel)
+    if recorded is not None and recorded in matches:
+        return recorded
+    recording = _recording_commit(root, token_rel)
+    if recording is not None and recording in matches:
+        return recording
+    ancestors = [commit for commit in matches if _object_exists(root, commit) and _is_ancestor(root, commit)]
+    if ancestors:
+        return _newest_commit(root, ancestors)
+    existing = [commit for commit in matches if _object_exists(root, commit)]
+    if existing:
+        return _newest_commit(root, existing)
+    return matches[0]
 
 
 def load_token_text(
@@ -325,41 +506,75 @@ def load_token_text(
     note_name: str = NOTE_NAME,
     note_ref: str = NOTE_REF,
     token_rel: str = TOKEN_REL,
+    record_rel: str = RECORD_REL,
 ) -> str:
     """Return the canonical token text from the note or the committed blob.
 
-    The working tree is used only when neither git object exists, so a local
-    edit cannot replace a note that is already attached.
+    ``--check`` reads the note from the commit it is attached to. The working
+    tree is used only when neither git object exists and a note is not
+    required, so a local edit cannot replace a note that is already attached.
     """
 
-    note = read_note(root, note_name)
     head = read_head_blob(root, token_rel)
-    if note is not None and head is not None and note != head:
-        raise AnchorError("git note and committed HNC head token differ")
-    if require_note and note is None:
-        raise AnchorError(
-            f"missing {note_ref} on HEAD. "
-            f"Fetch it with: git fetch origin {note_ref}:{note_ref}"
-        )
-    if note is not None:
-        raw = note
-    elif head is not None:
-        raw = head
-    else:
-        path = root / token_rel
-        if not path.is_file():
+    if require_note:
+        commit = _resolve_note_commit(root, note_name, note_ref, token_rel, record_rel)
+        note = read_note(root, note_name, commit)
+        if note is None:
             raise AnchorError(
-                "HNC head token is not in git. "
-                "Stamp it, commit the bytes, and attach the git note. "
-                "make evidence does not request a new timestamp."
+                f"git note {note_ref} is missing on {commit}. "
+                "`git notes list` named that commit but the note could not be read."
             )
-        raw = path.read_bytes()
+        actual = git_blob_sha1(note)
+        expected = _recorded_note_blob(root, record_rel, token_rel)
+        if expected is not None and actual != expected:
+            raise AnchorError(
+                f"git note {note_ref} content hash {actual} does not match "
+                f"recorded note_git_blob {expected}"
+            )
+        if head is not None and note != head:
+            raise AnchorError(
+                f"git note {note_ref} content hash {actual} does not match "
+                f"recorded note_git_blob {git_blob_sha1(head)}"
+            )
+        raw = note
+    else:
+        note = read_note(root, note_name)
+        if note is not None and head is not None and note != head:
+            raise AnchorError("git note and committed HNC head token differ")
+        if note is not None:
+            raw = note
+        elif head is not None:
+            raw = head
+        else:
+            path = root / token_rel
+            if not path.is_file():
+                raise AnchorError(
+                    "HNC head token is not in git. "
+                    "Stamp it, commit the bytes, and attach the git note. "
+                    "make evidence does not request a new timestamp."
+                )
+            raw = path.read_bytes()
     try:
         text = raw.decode("ascii")
     except UnicodeError as exc:
         raise AnchorError("HNC head token text is not ASCII") from exc
     decode_token_text(text)
     return text
+
+
+def verify_required_notes(root: Path) -> None:
+    """Fetch notes, then read each HNC note from the commit it is attached to."""
+
+    fetch_notes(root)
+    load_token_text(root, require_note=True)
+    load_token_text(
+        root,
+        require_note=True,
+        note_name=NEXT_NOTE_NAME,
+        note_ref=NEXT_NOTE_REF,
+        token_rel=NEXT_TOKEN_REL,
+        record_rel=NEXT_RECORD_REL,
+    )
 
 
 def parse_gen_time(value: str) -> datetime:
@@ -673,6 +888,7 @@ def assemble_next(
         note_name=NEXT_NOTE_NAME,
         note_ref=NEXT_NOTE_REF,
         token_rel=NEXT_TOKEN_REL,
+        record_rel=NEXT_RECORD_REL,
     )
     token = decode_token_text(text)
     commitment = commitment_bytes(next_commitment(hnc_summary, previous))
