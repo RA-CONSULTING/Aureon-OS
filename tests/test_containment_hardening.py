@@ -9,6 +9,7 @@ from __future__ import annotations
 import ast
 import errno
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -25,6 +26,7 @@ from aureon.containment.hardening import (
     fs_handled_access,
     judge_hardening,
     measure,
+    opt_in_decision,
     prepare_hardened_launch,
     published_pin,
     repo_root,
@@ -34,7 +36,29 @@ from aureon.containment.native import prepare_launch
 
 ROOT = Path(__file__).resolve().parents[1]
 MEASURED = ROOT / "reports" / "measured" / "containment_hardening.json"
-BASE = "0726a325ac934ed2e8d2d18d5c69c31fbfafc666"
+BASE = "47e71d7988ad4cae91fb9b9e59491c406be55e45"
+_STAGE7 = (
+    "aureon/containment/__init__.py",
+    "aureon/containment/__main__.py",
+    "aureon/containment/_child_probe.py",
+    "aureon/containment/_child_wrapper.py",
+    "aureon/containment/cold_boot.py",
+    "aureon/containment/native.py",
+    "reports/measured/native_process_containment.json",
+    "reports/measured/native_process_containment.md",
+)
+_BAD_DEFAULT_CLAIMS = (
+    "default boot is seccomp-hardened",
+    "default boot is landlock-hardened",
+    "default cold boot is seccomp",
+    "default cold boot is landlock",
+    "stage-7 cold boot is seccomp",
+    "stage-7 cold boot is landlock",
+    "cold boot is seccomp-hardened",
+    "cold boot is landlock-hardened",
+    "seccomp-hardened by default",
+    "landlock-hardened by default",
+)
 SECRET = "super-secret-kraken"
 _UNTOUCHED = (
     "aureon/containment/__init__.py",
@@ -374,10 +398,23 @@ def test_live_report_matches_what_the_kernel_applied(monkeypatch: pytest.MonkeyP
         assert receipt["probes"]["read_proc"]["readable"] is False
         assert receipt["landlock"]["checkout_access"] == (1 | 4 | 8)
         assert receipt["landlock"]["temp_access"] & (1 << 1)
+    assert receipt["continued_without_layer"] is False
+    assert receipt["default_boot_hardened"] is False
+    assert receipt["closes_receipt_1"] is False
+    assert receipt["closes_source_boundary"] is False
+    assert receipt["kernel_release"] == os.uname().release
     if receipt["seccomp_applied"] and receipt["landlock_applied"]:
         assert receipt["verdict"] == "pass"
         assert receipt["fs_isolation"] is True
         assert receipt["failures"] == []
+        assert receipt["refused"] is False
+        assert receipt["missing_layers"] == []
+        assert receipt["child_returncode"] == 0
+        assert receipt["landlock_abi"] == receipt["landlock"]["abi"]
+    else:
+        assert receipt["refused"] is True
+        assert receipt["child_returncode"] not in {0, None}
+        assert receipt["verdict"] != "pass"
 
 
 def test_committed_hardening_report_is_honest() -> None:
@@ -396,6 +433,20 @@ def test_committed_hardening_report_is_honest() -> None:
     assert receipt["live_trading"] is False
     assert receipt["market_data_fetched"] is False
     assert receipt["rewrites_receipt_1"] is False
+    assert receipt["closes_receipt_1"] is False
+    assert receipt["closes_source_boundary"] is False
+    assert receipt["default_boot_hardened"] is False
+    assert receipt["opt_in"] is True
+    assert receipt["kernel_release"] == "6.12.113+"
+    assert "6.12.113+" in receipt["kernel"]
+    assert receipt["landlock_abi"] == 6
+    assert receipt["landlock"]["abi"] == 6
+    note = receipt["measurement_note"]
+    assert "opt-in" in note
+    assert "one VM kernel" in note
+    assert "does not install these layers" in note
+    assert "does not close receipt 1" in note
+    assert "does not close the source boundary" in note
     assert receipt["started_from"] == STARTED_FROM
     assert receipt["verdict"] in {"pass", "gap", "fail", "skip"}
     if not receipt["landlock_applied"]:
@@ -414,6 +465,134 @@ def test_committed_hardening_report_is_honest() -> None:
     assert "native_process_containment.json" in (ROOT / "docs" / "runbooks" / "GO_LIVE_HARDENING.md").read_text(
         encoding="utf-8"
     )
+
+
+def test_opted_in_run_refuses_when_the_kernel_lacks_a_layer(tmp_path: Path) -> None:
+    missing_seccomp = {"applied": False, "gap": True, "reason": "kernel does not implement seccomp"}
+    missing_landlock = {"applied": False, "gap": True, "reason": "kernel does not implement landlock"}
+    decision = opt_in_decision(missing_seccomp, missing_landlock)
+    assert decision["refused"] is True
+    assert decision["exit_code"] != 0
+    assert decision["continued_without_layer"] is False
+    assert decision["missing_layers"] == ["seccomp", "landlock"]
+    only_landlock = opt_in_decision({"applied": True}, missing_landlock)
+    assert only_landlock["refused"] is True
+    assert only_landlock["missing_layers"] == ["landlock"]
+    assert only_landlock["continued_without_layer"] is False
+    judged = judge_hardening(
+        {"seccomp": missing_seccomp, "landlock": missing_landlock, "probes": _holding_probes(), "refused": True}
+    )
+    assert judged["verdict"] == "gap"
+    assert judged["verdict"] != "pass"
+    assert judged["seccomp_applied"] is False
+    assert judged["landlock_applied"] is False
+
+    program = build_seccomp_program("x86_64", deny_raw_socket=True)
+    assert program is not None
+    spec = {
+        "temp": str(tmp_path),
+        "checkout": str(tmp_path),
+        "checkout_probe": str(tmp_path / "README.md"),
+        "outside_probe": str(tmp_path / "outside"),
+        "drop_caps": False,
+        "filter": {
+            "arch_name": program.arch_name,
+            "seccomp_nr": program.seccomp_nr,
+            "instructions": [list(item) for item in program.instructions],
+            "denied": list(program.denied),
+            "deny_raw_socket": True,
+        },
+        "landlock_syscalls": dict(program.landlock_syscalls),
+        "probe_syscalls": dict(program.probe_syscalls),
+    }
+    script = (
+        "import errno, json, sys\n"
+        "import aureon.containment.hardening as hardening\n"
+        "hardening._syscall = lambda *_args, **_kwargs: (-1, errno.ENOSYS)\n"
+        "report = hardening.execute(json.loads(sys.stdin.read()))\n"
+        "sys.stdout.write(json.dumps(report))\n"
+    )
+    done = subprocess.run(
+        [sys.executable, "-c", script],
+        input=json.dumps(spec),
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=20,
+        check=False,
+    )
+    assert done.returncode == 0, done.stderr
+    report = json.loads(done.stdout)
+    assert report["seccomp"]["applied"] is False
+    assert report["seccomp"]["gap"] is True
+    assert "does not implement seccomp" in str(report["seccomp"]["reason"])
+    assert report["landlock"]["applied"] is False
+    assert report["landlock"]["gap"] is True
+    assert "does not implement landlock" in str(report["landlock"]["reason"])
+    assert report["refused"] is True
+    assert report["continued_without_layer"] is False
+    assert report["exit_code"] != 0
+    assert report["missing_layers"] == ["seccomp", "landlock"]
+    assert judge_hardening(report)["verdict"] != "pass"
+
+
+def test_stage7_is_byte_identical_to_main_when_the_layer_is_off(tmp_path: Path) -> None:
+    for rel in _STAGE7:
+        recorded = subprocess.run(["git", "show", f"{BASE}:{rel}"], cwd=ROOT, capture_output=True, check=False)
+        assert recorded.returncode == 0, rel
+        assert (ROOT / rel).read_bytes() == recorded.stdout, rel
+    if shutil.which("unshare") is None:
+        return
+    prepared = prepare_launch(tmp_path, [sys.executable, "-I", "-c", "pass"])
+    joined = " ".join(prepared.argv)
+    assert "_harden_child.py" not in joined
+    assert "hardening.py" not in joined
+    assert "--net" in prepared.argv
+    sidecar = json.loads(prepared.sidecar.read_text(encoding="utf-8"))
+    assert sidecar["schema"] == "aureon.containment.launch.v1"
+    assert "filter" not in sidecar
+    assert "landlock" not in sidecar
+    assert "seccomp" not in sidecar
+
+
+def test_denied_syscall_returns_eperm_at_runtime(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The deny list is not the proof. The contained process must see EPERM."""
+
+    monkeypatch.setenv("KRAKEN_API_SECRET", SECRET)
+    if shutil.which("unshare") is None or sys.platform != "linux":
+        pytest.skip("unshare cold boot is not available")
+    receipt = measure(repo_root())
+    if receipt["verdict"] == "skip":
+        pytest.skip("; ".join(item["statement"] for item in receipt["gaps"]))
+    if not receipt["seccomp_applied"]:
+        pytest.skip("this kernel did not apply seccomp")
+    probe = receipt["probes"]["ptrace"]
+    assert "ptrace" in receipt["seccomp"]["denied"]
+    assert probe["request"] == "PTRACE_TRACEME"
+    assert probe["ok"] is False
+    assert probe["errno"] == errno.EPERM
+    assert probe["blocked_by_filter"] is True
+    assert receipt["probes"]["raw_socket"]["errno"] == errno.EPERM
+    assert receipt["probes"]["raw_socket"]["sent"] is False
+    assert receipt["probes"]["stream_socket"]["ok"] is True
+
+
+def test_default_boot_is_not_described_as_hardened() -> None:
+    paths = [ROOT / "README.md"]
+    paths.extend((ROOT / "docs" / "runbooks").rglob("*.md"))
+    paths.extend((ROOT / "reports" / "measured").glob("*.md"))
+    paths.extend((ROOT / "reports" / "measured").glob("*.json"))
+    for path in paths:
+        text = path.read_text(encoding="utf-8", errors="replace").lower()
+        for phrase in _BAD_DEFAULT_CLAIMS:
+            assert phrase not in text, f"{path} says the default boot is hardened"
+    receipt = json.loads(MEASURED.read_text(encoding="utf-8"))
+    note = receipt["measurement_note"]
+    assert receipt["opt_in"] is True
+    assert receipt["default_boot_hardened"] is False
+    assert "opt-in" in note
+    assert "one VM kernel" in note
+    assert "6.12.113+" in receipt["kernel_release"]
 
 
 def _sha256(path: Path) -> str:

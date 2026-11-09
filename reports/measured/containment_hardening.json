@@ -22,6 +22,8 @@
     "PYTHONUNBUFFERED"
   ],
   "child_returncode": 0,
+  "closes_receipt_1": false,
+  "closes_source_boundary": false,
   "cold_boot_argv": [
     "/usr/bin/unshare",
     "--user",
@@ -36,19 +38,22 @@
     "/usr/bin/python3",
     "-I",
     "/agent/repos/Aureon-OS/aureon/containment/_harden_child.py",
-    "/tmp/aureon-harden-m3bm_ud2/launch/sidecar.json"
+    "/tmp/aureon-harden-bz2z02hh/launch/sidecar.json"
   ],
   "cold_boot_argv_has_net": true,
+  "continued_without_layer": false,
+  "default_boot_hardened": false,
   "deny_network": true,
   "drop_caps": false,
   "failures": [],
-  "finished_at": "2026-11-09T17:57:43Z",
+  "finished_at": "2026-11-09T18:04:03Z",
   "fs_isolation": true,
   "gaps": [],
-  "git_head_at_measurement": "0726a325ac934ed2e8d2d18d5c69c31fbfafc666",
+  "git_head_at_measurement": "a5d7b7bb83fc00c8ff061f682a8692f9ddf7cc1c",
   "go_live_clear": false,
   "implementation": "ctypes",
   "kernel": "Linux cursor 6.12.113+ #1 SMP PREEMPT_DYNAMIC Thu Nov  5 16:04:51 UTC 2026 x86_64",
+  "kernel_release": "6.12.113+",
   "landlock": {
     "abi": 6,
     "applied": true,
@@ -75,13 +80,15 @@
       }
     ],
     "scoped": "not handled",
-    "temp": "/tmp/aureon-harden-m3bm_ud2/temp",
+    "temp": "/tmp/aureon-harden-bz2z02hh/temp",
     "temp_access": 65535
   },
+  "landlock_abi": 6,
   "landlock_applied": true,
   "live_trading": false,
   "market_data_fetched": false,
-  "measurement_note": "seccomp_applied and landlock_applied are what this child installed. fs_isolation is true only when landlock applied and the probes showed the checkout and temp dir usable and a path outside them denied. A kernel that does not support a layer is a gap, not a pass. This file does not rewrite receipt 1. go_live_clear stays false. The published pin is not moved. The UTC stamps are this machine's clock.",
+  "measurement_note": "This is opt-in and was measured on one VM kernel. The default stage-7 cold boot does not install these layers. seccomp_applied and landlock_applied are what this child installed. fs_isolation is true only when landlock applied and the probes showed the checkout and temp dir usable and a path outside them denied. A kernel that does not support a layer is reported missing and the opted-in run refuses. It is not a pass. This file does not rewrite receipt 1, does not close receipt 1, and does not close the source boundary. go_live_clear stays false. The published pin is not moved. The UTC stamps are this machine's clock.",
+  "missing_layers": [],
   "no_new_privs": {
     "errno": null,
     "error": null,
@@ -178,6 +185,7 @@
   },
   "published_pin_expected": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
   "python": "3.12.3",
+  "refused": false,
   "release_boundary": "HOLD",
   "residuals": [
     "Landlock scope controls are not installed. The ruleset is the filesystem restriction that was requested."
@@ -211,10 +219,10 @@
   "seccomp_applied": true,
   "source_sha256": {
     "aureon/containment/_harden_child.py": "956f0dae2b608d92a9277f5c5b8459d5d1773eb2fcf0b662f2d41efcace77424",
-    "aureon/containment/hardening.py": "aa13dea3313567551a5830f54d24b2f8b897eaed33c2c2ef2d13987afeb9ba13"
+    "aureon/containment/hardening.py": "ca6a3dc0f57c67ddf8c6d0db2507d4deb4a595dcf0385fa7c14ab0b797c02da0"
   },
-  "started_at": "2026-11-09T17:57:43Z",
-  "started_from": "0726a325ac934ed2e8d2d18d5c69c31fbfafc666",
+  "started_at": "2026-11-09T18:04:03Z",
+  "started_from": "47e71d7988ad4cae91fb9b9e59491c406be55e45",
   "stderr": "",
   "title": "opt-in seccomp and landlock on the contained cold boot",
   "verdict": "pass",

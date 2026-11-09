@@ -1,9 +1,12 @@
 """Opt-in seccomp and landlock for one contained cold boot.
 
-The stage-7 cold boot in ``native.py`` is unchanged. Receipt 1 is not
-rewritten here. This module is a separate launch: the same ``unshare``
-user, mount, pid, and (by default) network namespace, then two best-effort
+The default stage-7 cold boot does not install these layers. Receipt 1 is
+not rewritten here, and this measurement does not close receipt 1 or the
+source boundary. This module is a separate opt-in launch: the same
+``unshare`` user, mount, pid, and network namespace, then two best-effort
 layers installed in the child with ``ctypes`` and the kernel syscalls.
+An opted-in run that cannot apply a layer reports it missing and exits
+non-zero. It does not continue as a successful hardened boot.
 
 The seccomp layer is a default-allow classic BPF filter. It returns
 ``EPERM`` for ``ptrace``, ``mount`` and the sibling mount syscalls that
@@ -41,7 +44,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-STARTED_FROM = "0726a325ac934ed2e8d2d18d5c69c31fbfafc666"
+STARTED_FROM = "47e71d7988ad4cae91fb9b9e59491c406be55e45"
 PUBLISHED_PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
 
 _CHILD = Path(__file__).with_name("_harden_child.py")
@@ -465,6 +468,26 @@ def fs_handled_access(abi: int) -> int:
     if abi >= 5:
         mask |= _FS_IOCTL_DEV
     return mask
+
+
+def opt_in_decision(seccomp: object, landlock: object) -> dict[str, Any]:
+    """Refuse an opted-in run unless every requested layer actually applied.
+
+    A missing layer is named. ``continued_without_layer`` stays false: the
+    run does not proceed as a successful hardened boot without that layer.
+    """
+
+    missing: list[str] = []
+    if not isinstance(seccomp, Mapping) or seccomp.get("applied") is not True:
+        missing.append("seccomp")
+    if not isinstance(landlock, Mapping) or landlock.get("applied") is not True:
+        missing.append("landlock")
+    return {
+        "refused": bool(missing),
+        "missing_layers": missing,
+        "continued_without_layer": False,
+        "exit_code": 0 if not missing else 3,
+    }
 
 
 def judge_hardening(child: Mapping[str, Any]) -> dict[str, Any]:
@@ -1097,6 +1120,7 @@ def execute(spec: Mapping[str, Any]) -> dict[str, Any]:
         cap_drop["before_probes"] = False
     else:
         cap_drop = {"ok": False, "skipped": True, "before_probes": False}
+    decision = opt_in_decision(seccomp, landlock)
     return {
         "schema": "aureon.containment.hardening-probe.v1",
         "no_new_privs": no_new,
@@ -1106,6 +1130,10 @@ def execute(spec: Mapping[str, Any]) -> dict[str, Any]:
         "caps_before_landlock": {key: status.get(key) for key in ("CapEff", "CapPrm", "CapBnd", "NoNewPrivs")},
         "euid": os.geteuid(),
         "probes": probes,
+        "refused": decision["refused"],
+        "missing_layers": decision["missing_layers"],
+        "continued_without_layer": False,
+        "exit_code": decision["exit_code"],
     }
 
 
@@ -1139,6 +1167,10 @@ def child_main() -> int:
                 "reason": f"child failed before a report: {type(exc).__name__}",
             },
             "probes": {},
+            "refused": True,
+            "missing_layers": ["seccomp", "landlock"],
+            "continued_without_layer": False,
+            "exit_code": 1,
         }
     payload = json.dumps(report, sort_keys=True)
     sys.stdout.write(payload)
@@ -1148,7 +1180,7 @@ def child_main() -> int:
             Path(status_path).write_text(payload, encoding="utf-8")
         except OSError:
             pass
-    return 0
+    return int(report.get("exit_code") or 0)
 
 
 def _machine() -> str:
@@ -1293,7 +1325,11 @@ def _envelope(root: Path, started: str) -> dict[str, Any]:
         "schema": "aureon.measured.containment-hardening.v1",
         "title": "opt-in seccomp and landlock on the contained cold boot",
         "opt_in": True,
+        "default_boot_hardened": False,
+        "closes_receipt_1": False,
+        "closes_source_boundary": False,
         "rewrites_receipt_1": False,
+        "kernel_release": os.uname().release if hasattr(os, "uname") else None,
         "go_live_clear": False,
         "pin": pin,
         "pin_changed": pin != PUBLISHED_PIN,
@@ -1320,12 +1356,17 @@ def _envelope(root: Path, started: str) -> dict[str, Any]:
             "optional and, when requested, runs after the probes."
         ),
         "measurement_note": (
+            "This is opt-in and was measured on one VM kernel. "
+            "The default stage-7 cold boot does not install these layers. "
             "seccomp_applied and landlock_applied are what this child installed. "
             "fs_isolation is true only when landlock applied and the probes showed "
             "the checkout and temp dir usable and a path outside them denied. "
-            "A kernel that does not support a layer is a gap, not a pass. "
-            "This file does not rewrite receipt 1. go_live_clear stays false. "
-            "The published pin is not moved. The UTC stamps are this machine's clock."
+            "A kernel that does not support a layer is reported missing and the "
+            "opted-in run refuses. It is not a pass. "
+            "This file does not rewrite receipt 1, does not close receipt 1, "
+            "and does not close the source boundary. "
+            "go_live_clear stays false. The published pin is not moved. "
+            "The UTC stamps are this machine's clock."
         ),
     }
 
@@ -1334,7 +1375,11 @@ def _skip(env: dict[str, Any], reason: str, finished: str) -> dict[str, Any]:
     env["verdict"] = "skip"
     env["seccomp_applied"] = False
     env["landlock_applied"] = False
+    env["landlock_abi"] = None
     env["fs_isolation"] = False
+    env["refused"] = True
+    env["missing_layers"] = ["seccomp", "landlock"]
+    env["continued_without_layer"] = False
     env["failures"] = []
     env["residuals"] = []
     env["probes"] = {}
@@ -1395,7 +1440,15 @@ def _run(prepared: PreparedHardening, timeout: float) -> dict[str, Any]:
 
 def _missing_child(reason: str) -> dict[str, Any]:
     layer = {"applied": False, "gap": False, "reason": reason}
-    return {"seccomp": dict(layer), "landlock": dict(layer), "probes": {}}
+    return {
+        "seccomp": dict(layer),
+        "landlock": dict(layer),
+        "probes": {},
+        "refused": True,
+        "missing_layers": ["seccomp", "landlock"],
+        "continued_without_layer": False,
+        "exit_code": 3,
+    }
 
 
 def measure(root: Path | None = None, *, timeout: float = 20) -> dict[str, Any]:
@@ -1458,6 +1511,15 @@ def measure(root: Path | None = None, *, timeout: float = 20) -> dict[str, Any]:
     else:
         judged = judge_hardening(child)
     env.update(judged)
+    landlock = child.get("landlock") if isinstance(child.get("landlock"), Mapping) else {}
+    abi = landlock.get("abi")
+    env["landlock_abi"] = abi if isinstance(abi, int) else None
+    env["refused"] = child.get("refused")
+    env["missing_layers"] = child.get("missing_layers")
+    env["continued_without_layer"] = False
+    if env["verdict"] == "pass" and env["refused"] is True:
+        env["verdict"] = "fail"
+        env["failures"] = [*env["failures"], "opted-in run refused and was not a pass"]
     env["seccomp"] = child.get("seccomp")
     env["landlock"] = child.get("landlock")
     env["no_new_privs"] = child.get("no_new_privs")
