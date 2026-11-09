@@ -227,3 +227,16 @@ badge stays HOLD. This slice does not publish a Space and does not repeat
 the protocol or call-sweep records. `OPEN_PLAN_THROUGH` stays 2.
 `ENABLED_THROUGH` stays 6. Exchanges reachable stays 0.
 Plan stages 3 and 4 stay closed.
+
+## Public container build
+
+The root `Dockerfile` and `docker-compose.yml` can be built on a local Docker
+daemon and in CI. The image entrypoint is still the isolated bootstrap for
+`docker-runtime`. It returns HOLD before target import. The compose file
+injects no environment and publishes no port. CI builds that image and does
+not publish it. A public GHCR push is not authorized here: it needs Gary's
+own yes and a token, and this change has neither. The build is not production
+ready and is not a validation. It is not receipt 5. Receipt 5 stays absent.
+`go_live_clear` stays false. `scripts/linux/install-linux.sh` is unchanged.
+The orange release-boundary badge stays HOLD. See
+`docs/deployment/PUBLIC_CONTAINER.md`.

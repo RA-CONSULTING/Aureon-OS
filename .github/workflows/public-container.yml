@@ -1,0 +1,35 @@
+name: Public container
+
+# Builds the root guarded non-live preflight and runs it with no network.
+# Does not log in to a registry and does not publish an image.
+# A public registry publish needs Gary's own yes and a token. This file does neither.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aureon-public-container-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: local build of the guarded preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      AUREON_AUTONOMY_MODE: guarded
+      AUREON_LIVE_TRADING: "0"
+      AUREON_LLM_OFFLINE: "1"
+      AUREON_DISABLE_REAL_ORDERS: "1"
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - name: Build and run the preflight with no network
+        run: python3 scripts/validation/measure_public_container.py --check

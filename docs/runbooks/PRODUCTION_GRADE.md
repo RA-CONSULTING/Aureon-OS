@@ -8,6 +8,9 @@ The checked-in deployment images are minimal terminal preflights: they do not
 install application dependencies, copy target source, start Waitress/nginx,
 expose ports, or claim `/healthz`. Compose, Supervisor, systemd, package, and
 installer routes likewise have retries disabled and start no Aureon target.
+A local or CI build of the root image is documented in
+`docs/deployment/PUBLIC_CONTAINER.md`. That build does not publish a registry
+image, does not open a listener, and does not clear this HOLD.
 
 Useful implementation checks remain:
 
