@@ -622,6 +622,23 @@ def _install_docker(runner: Runner) -> tuple[bool, str]:
     return True, f"docker images ready; {pull_note}; build ok"
 
 
+def seat_port(var: str, default: int) -> int:
+    """Host seat port. The documented default unless the operator moved it."""
+
+    try:
+        return int(os.environ.get(var) or default)
+    except ValueError:
+        return default
+
+
+def v5b_port() -> int:
+    return seat_port("AUREON_SEAT_V5B_PORT", 8765)
+
+
+def api_b_port() -> int:
+    return seat_port("AUREON_SEAT_API_B_PORT", 8766)
+
+
 def state_dir(repo: Path) -> Path:
     override = os.environ.get("AUREON_LAUNCHER_STATE")
     path = Path(override) if override else repo / "state" / "launcher"
@@ -1340,13 +1357,13 @@ def launch_compose_service(
         )
         return Row(name, status, health, f"{docker_note}; host error_sink {reason}")
     if service == "api_b":
-        if runner.http_ok("http://127.0.0.1:8766/healthz"):
-            return Row(name, "started", "ok", "api_b already answering on 127.0.0.1:8766")
+        if runner.http_ok(f"http://127.0.0.1:{api_b_port()}/healthz"):
+            return Row(name, "started", "ok", f"api_b already answering on 127.0.0.1:{api_b_port()}")
         env = paper_env(None, repo)
         env.update(
             {
                 "AUREON_FUSION_BIND": "127.0.0.1",
-                "AUREON_FUSION_PORT": "8766",
+                "AUREON_FUSION_PORT": str(api_b_port()),
                 "AUREON_FUSION_API_TOKEN": LOCAL_FUSION_TOKEN,
                 "AUREON_REPLICA_ID": "api_b",
             }
@@ -1395,7 +1412,7 @@ def launch_compose_service(
             note += "; an existing listener was left in place and was not stopped"
         return Row(name, "skipped", "skipped", note)
     if service == "api_a":
-        return Row(name, "blocked", "down", f"{docker_note}; host seat is seat/trading_world_v5b on 127.0.0.1:8765")
+        return Row(name, "blocked", "down", f"{docker_note}; host seat is seat/trading_world_v5b on 127.0.0.1:{v5b_port()}")
     if service == "hnc_core":
         return Row(name, "blocked", "down", f"{docker_note}; local Master-Equation seat is organ/hnc_core")
     return Row(name, "blocked", "down", docker_note)
@@ -1438,16 +1455,16 @@ def _write_nginx_conf(repo: Path) -> Path:
 
 def launch_trading_world(repo: Path, state: dict, runner: Runner) -> Row:
     name = "seat/trading_world_v5b"
-    url = "http://127.0.0.1:8765/healthz"
+    url = f"http://127.0.0.1:{v5b_port()}/healthz"
     if runner.http_ok(url):
-        return Row(name, "started", "ok", "127.0.0.1:8765/healthz answered; no second listener was started")
+        return Row(name, "started", "ok", f"127.0.0.1:{v5b_port()}/healthz answered; no second listener was started")
     if not _module_path(repo, "aureon_fusion.http_service").is_file():
         return Row(name, "blocked", "down", "module not present: aureon_fusion.http_service")
     env = paper_env(None, repo)
     env.update(
         {
             "AUREON_FUSION_BIND": "127.0.0.1",
-            "AUREON_FUSION_PORT": "8765",
+            "AUREON_FUSION_PORT": str(v5b_port()),
             "AUREON_FUSION_API_TOKEN": LOCAL_FUSION_TOKEN,
             "AUREON_REPLICA_ID": "trading_world_v5b",
         }
@@ -1461,7 +1478,7 @@ def launch_trading_world(repo: Path, state: dict, runner: Runner) -> Row:
         repo,
         env,
     )
-    return Row(name, status, health, f"v5b seat is the fusion API on 127.0.0.1:8765; {reason}")
+    return Row(name, status, health, f"v5b seat is the fusion API on 127.0.0.1:{v5b_port()}; {reason}")
 
 
 def launch_organ(repo: Path, state: dict, runner: Runner, name: str, spec: dict) -> Row:
@@ -1605,13 +1622,13 @@ def launch_dashboards(rows: list[Row]) -> Row:
 def _refresh_http(repo: Path, runner: Runner, rows: list[Row]) -> list[Row]:
     urls = {
         "compose/error_sink": "http://127.0.0.1:8088/healthz",
-        "compose/api_b": "http://127.0.0.1:8766/healthz",
+        "compose/api_b": f"http://127.0.0.1:{api_b_port()}/healthz",
         "compose/frontend": "http://127.0.0.1:5173/",
-        "seat/trading_world_v5b": "http://127.0.0.1:8765/healthz",
+        "seat/trading_world_v5b": f"http://127.0.0.1:{v5b_port()}/healthz",
         "organ/frontend_vite": "http://127.0.0.1:5173/",
         "organ/organism_circulation": "http://127.0.0.1:8799/healthz",
-        "organ/operator_gateway": "http://127.0.0.1:8790/healthz",
-        "organ/unified_market_status": "http://127.0.0.1:8791/healthz",
+        "organ/operator_gateway": f"http://127.0.0.1:{seat_port('AUREON_SEAT_GATEWAY_PORT', 8790)}/healthz",
+        "organ/unified_market_status": f"http://127.0.0.1:{seat_port('AUREON_SEAT_MARKET_PORT', 8791)}/healthz",
         "organ/mind_thought_action_hub": "http://127.0.0.1:13002/",
         "organ/mind_neural_canvas": "http://127.0.0.1:13012/",
         "organ/orca_command_center": "http://127.0.0.1:8888/health",
@@ -1734,8 +1751,8 @@ def status_rows(repo: Path, runner: Runner, components: list[Component]) -> list
             rows.append(Row(component.name, "blocked", "down", "not running"))
             continue
         if component.kind == "seat":
-            if runner.http_ok("http://127.0.0.1:8765/healthz"):
-                rows.append(Row(component.name, "started", "ok", "127.0.0.1:8765/healthz answered"))
+            if runner.http_ok(f"http://127.0.0.1:{v5b_port()}/healthz"):
+                rows.append(Row(component.name, "started", "ok", f"127.0.0.1:{v5b_port()}/healthz answered"))
             else:
                 rows.append(Row(component.name, "blocked", "down", "not running"))
             continue

@@ -158,6 +158,11 @@ SUPPRESSION_ENV = {
 # Ollama probe for self_questioning_ai: the organ is meaningless without a
 # local model answering on this port.
 OLLAMA_PROBE_URL = "http://localhost:11434/api/tags"
+
+# Seat ports. Defaults are the documented ones; a host that already uses them
+# (for example a sandbox egress tunnel) can move the seats with these two vars.
+SEAT_GATEWAY_PORT = int(os.environ.get("AUREON_SEAT_GATEWAY_PORT") or 8790)
+SEAT_MARKET_PORT = int(os.environ.get("AUREON_SEAT_MARKET_PORT") or 8791)
 OLLAMA_PROBE_TIMEOUT_S = 5.0
 
 
@@ -311,13 +316,13 @@ ORGANS = {
         "module": "aureon.operator.operator_server",
         "match": "aureon.operator.operator_server",
         "args": [], "cwd": str(AUREON_UPSTREAM),
-        "port": 8790,
-        "mode": "continuous (local operator gateway on 127.0.0.1:8790)",
+        "port": SEAT_GATEWAY_PORT,
+        "mode": f"continuous (local operator gateway on 127.0.0.1:{SEAT_GATEWAY_PORT})",
         "log": str(LOGS / "organ_operator_gateway.log"),
         "env": _launch_env({
             "AUREON_ENV_FILE": str(AUREON_RADAR / ".env"),
             "AUREON_OPERATOR_HOST": "127.0.0.1",
-            "AUREON_OPERATOR_PORT": "8790",
+            "AUREON_OPERATOR_PORT": str(SEAT_GATEWAY_PORT),
             # Allow the operator's configured model to answer UI requests while
             # import audit guards and the four execution controls stay enabled.
             "AUREON_LLM_ALLOW_HTTP_IN_AUDIT": "1",
@@ -344,9 +349,9 @@ ORGANS = {
     "unified_market_status": {
         "module": "aureon.exchanges.unified_market_status_server",
         "match": "aureon.exchanges.unified_market_status_server",
-        "args": ["--port", "8791"], "cwd": str(AUREON_UPSTREAM),
-        "port": 8791,
-        "mode": "continuous (read-only terminal status on port 8791)",
+        "args": ["--port", str(SEAT_MARKET_PORT)], "cwd": str(AUREON_UPSTREAM),
+        "port": SEAT_MARKET_PORT,
+        "mode": f"continuous (read-only terminal status on port {SEAT_MARKET_PORT})",
         "log": str(LOGS / "organ_unified_market_status.log"),
         "env": _launch_env(),
     },
