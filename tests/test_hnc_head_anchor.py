@@ -14,11 +14,15 @@ from aureon.evidence.hnc_anchor import (
     EXPECTED_NEXT_ANCHOR_ID,
     GENESIS,
     NEXT_NOTE_NAME,
+    NEXT_NOTE_REF,
+    NEXT_RECORD_REL,
     NEXT_TOKEN_REL,
+    NOTE_NAME,
     NOTE_REF,
     PIN_FORMULA_SERIES_SHA256,
     PUBLIC_PIN,
     PUBLISHED_PIN,
+    RECORD_REL,
     TOKEN_REL,
     AnchorError,
     attach_note,
@@ -31,6 +35,7 @@ from aureon.evidence.hnc_anchor import (
     measurement_commitment,
     next_commitment,
     parse_timestamp_text,
+    recording_commit,
     stamp_next,
     validate_chain,
     verify_timestamp,
@@ -66,6 +71,31 @@ Extensions:
 
 def _git(root: Path, *args: str) -> None:
     subprocess.run(["git", *args], cwd=root, check=True, capture_output=True)
+
+
+def _rev(root: Path) -> str:
+    return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip()
+
+
+def _init_repo(root: Path) -> None:
+    _git(root, "init")
+    _git(root, "config", "user.email", "cursoragent@cursor.com")
+    _git(root, "config", "user.name", "Cursor Agent")
+
+
+def _write_evidence_record(root: Path, record_rel: str, note_ref: str) -> None:
+    path = root / record_rel
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {"note_ref": note_ref, "schema": "aureon.evidence.hnc-head-anchor.v1"}
+    path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+
+def _note_show(root: Path, note_name: str, commit: str) -> bytes:
+    return subprocess.check_output(
+        ["git", "notes", "--ref", note_name, "show", commit],
+        cwd=root,
+        stderr=subprocess.DEVNULL,
+    )
 
 
 def test_genesis_id_is_the_named_string() -> None:
@@ -150,10 +180,9 @@ def test_working_tree_edit_does_not_move_the_note(tmp_path: Path) -> None:
     target = tmp_path / TOKEN_REL
     target.parent.mkdir(parents=True)
     target.write_text(token_text, encoding="utf-8")
-    _git(tmp_path, "init")
-    _git(tmp_path, "config", "user.email", "cursoragent@cursor.com")
-    _git(tmp_path, "config", "user.name", "Cursor Agent")
-    _git(tmp_path, "add", TOKEN_REL)
+    _write_evidence_record(tmp_path, RECORD_REL, NOTE_REF)
+    _init_repo(tmp_path)
+    _git(tmp_path, "add", TOKEN_REL, RECORD_REL)
     _git(tmp_path, "commit", "-m", "anchor token")
     attach_note(tmp_path)
     target.write_text(canonical_token_text(b"\x30\x00"), encoding="utf-8")
@@ -242,10 +271,9 @@ def test_working_tree_edit_does_not_move_the_next_note(tmp_path: Path) -> None:
     target = tmp_path / NEXT_TOKEN_REL
     target.parent.mkdir(parents=True)
     target.write_text(token_text, encoding="utf-8")
-    _git(tmp_path, "init")
-    _git(tmp_path, "config", "user.email", "cursoragent@cursor.com")
-    _git(tmp_path, "config", "user.name", "Cursor Agent")
-    _git(tmp_path, "add", NEXT_TOKEN_REL)
+    _write_evidence_record(tmp_path, NEXT_RECORD_REL, NEXT_NOTE_REF)
+    _init_repo(tmp_path)
+    _git(tmp_path, "add", NEXT_TOKEN_REL, NEXT_RECORD_REL)
     _git(tmp_path, "commit", "-m", "next anchor token")
     attach_note(tmp_path, note_name=NEXT_NOTE_NAME, token_rel=NEXT_TOKEN_REL)
     target.write_text(canonical_token_text(b"\x30\x00"), encoding="utf-8")
@@ -253,7 +281,154 @@ def test_working_tree_edit_does_not_move_the_next_note(tmp_path: Path) -> None:
         tmp_path,
         require_note=True,
         note_name=NEXT_NOTE_NAME,
-        note_ref="refs/notes/aureon-hnc-head-next",
+        note_ref=NEXT_NOTE_REF,
         token_rel=NEXT_TOKEN_REL,
+        record_rel=NEXT_RECORD_REL,
     )
     assert loaded == token_text
+
+
+def _commit_recorded_token(
+    root: Path,
+    *,
+    token_rel: str,
+    record_rel: str,
+    note_ref: str,
+    token_text: str,
+    message: str,
+) -> str:
+    target = root / token_rel
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(token_text, encoding="utf-8")
+    _write_evidence_record(root, record_rel, note_ref)
+    _git(root, "add", token_rel, record_rel)
+    _git(root, "commit", "-m", message)
+    return _rev(root)
+
+
+def _later_commit(root: Path) -> str:
+    marker = root / "later.txt"
+    previous = marker.read_text(encoding="utf-8") if marker.is_file() else ""
+    marker.write_text(previous + "later\n", encoding="utf-8")
+    _git(root, "add", "later.txt")
+    _git(root, "commit", "-m", "later head")
+    return _rev(root)
+
+
+def test_check_reads_each_note_from_its_recording_commit_when_head_is_later(tmp_path: Path) -> None:
+    sequence_one = TOKEN.read_text(encoding="utf-8")
+    sequence_two = NEXT_TOKEN.read_text(encoding="utf-8")
+    _init_repo(tmp_path)
+    first = _commit_recorded_token(
+        tmp_path,
+        token_rel=TOKEN_REL,
+        record_rel=RECORD_REL,
+        note_ref=NOTE_REF,
+        token_text=sequence_one,
+        message="record sequence 1",
+    )
+    subprocess.check_call(
+        ["git", "notes", "--ref", NOTE_NAME, "add", "-F", str(tmp_path / TOKEN_REL), first],
+        cwd=tmp_path,
+    )
+    second = _commit_recorded_token(
+        tmp_path,
+        token_rel=NEXT_TOKEN_REL,
+        record_rel=NEXT_RECORD_REL,
+        note_ref=NEXT_NOTE_REF,
+        token_text=sequence_two,
+        message="record sequence 2",
+    )
+    subprocess.check_call(
+        ["git", "notes", "--ref", NEXT_NOTE_NAME, "add", "-F", str(tmp_path / NEXT_TOKEN_REL), second],
+        cwd=tmp_path,
+    )
+    head = _later_commit(tmp_path)
+    assert recording_commit(tmp_path, RECORD_REL) == first
+    assert recording_commit(tmp_path, NEXT_RECORD_REL) == second
+    assert first != second != head
+    with pytest.raises(subprocess.CalledProcessError):
+        _note_show(tmp_path, NOTE_NAME, "HEAD")
+    with pytest.raises(subprocess.CalledProcessError):
+        _note_show(tmp_path, NEXT_NOTE_NAME, "HEAD")
+    assert load_token_text(tmp_path, require_note=True) == sequence_one
+    assert (
+        load_token_text(
+            tmp_path,
+            require_note=True,
+            note_name=NEXT_NOTE_NAME,
+            note_ref=NEXT_NOTE_REF,
+            token_rel=NEXT_TOKEN_REL,
+            record_rel=NEXT_RECORD_REL,
+        )
+        == sequence_two
+    )
+
+
+def test_missing_note_on_the_recording_commit_does_not_fall_back_to_head(tmp_path: Path) -> None:
+    token_text = TOKEN.read_text(encoding="utf-8")
+    _init_repo(tmp_path)
+    recording = _commit_recorded_token(
+        tmp_path,
+        token_rel=TOKEN_REL,
+        record_rel=RECORD_REL,
+        note_ref=NOTE_REF,
+        token_text=token_text,
+        message="record sequence 1",
+    )
+    head = _later_commit(tmp_path)
+    subprocess.check_call(
+        ["git", "notes", "--ref", NOTE_NAME, "add", "-F", str(tmp_path / TOKEN_REL), "HEAD"],
+        cwd=tmp_path,
+    )
+    assert _note_show(tmp_path, NOTE_NAME, head) == token_text.encode("ascii")
+    with pytest.raises(subprocess.CalledProcessError):
+        _note_show(tmp_path, NOTE_NAME, recording)
+    with pytest.raises(AnchorError, match="does not read the note from HEAD"):
+        load_token_text(tmp_path, require_note=True)
+
+
+def test_different_note_bytes_on_the_recording_commit_do_not_fall_back_to_head(tmp_path: Path) -> None:
+    token_text = TOKEN.read_text(encoding="utf-8")
+    other = canonical_token_text(b"\x30\x03")
+    assert other != token_text
+    _init_repo(tmp_path)
+    recording = _commit_recorded_token(
+        tmp_path,
+        token_rel=TOKEN_REL,
+        record_rel=RECORD_REL,
+        note_ref=NOTE_REF,
+        token_text=token_text,
+        message="record sequence 1",
+    )
+    other_path = tmp_path / "other-note.txt"
+    other_path.write_text(other, encoding="utf-8")
+    subprocess.check_call(
+        ["git", "notes", "--ref", NOTE_NAME, "add", "-F", str(other_path), recording],
+        cwd=tmp_path,
+    )
+    _later_commit(tmp_path)
+    subprocess.check_call(
+        ["git", "notes", "--ref", NOTE_NAME, "add", "-F", str(tmp_path / TOKEN_REL), "HEAD"],
+        cwd=tmp_path,
+    )
+    assert _note_show(tmp_path, NOTE_NAME, "HEAD") == token_text.encode("ascii")
+    assert _note_show(tmp_path, NOTE_NAME, recording) == other.encode("ascii")
+    with pytest.raises(AnchorError, match="does not read the note from HEAD"):
+        load_token_text(tmp_path, require_note=True)
+
+
+def test_this_history_names_both_recording_commits() -> None:
+    head = _rev(ROOT)
+    sequence_one = recording_commit(ROOT, RECORD_REL)
+    sequence_two = recording_commit(ROOT, NEXT_RECORD_REL)
+    assert sequence_one == "9b666838f88f80a3eab5be11856d9b0a12c886e2"
+    assert sequence_two == "9b666838f88f80a3eab5be11856d9b0a12c886e2"
+    assert sequence_one != head
+    assert sequence_two != head
+    follow = (ROOT / "docs/runbooks/GO_LIVE_HNC_HEAD_NEXT.md").read_text(encoding="utf-8")
+    assert "does not read either note from HEAD" in follow
+    assert "9b666838" in follow
+    remeasure = (ROOT / "docs/runbooks/GO_LIVE_RECEIPTS_REMEASURE.md").read_text(encoding="utf-8")
+    assert "does not read the note from HEAD" in remeasure
+    assert "on HEAD" not in remeasure.split("## Receipt 3", 1)[0].split("What each receipt runs", 1)[1]

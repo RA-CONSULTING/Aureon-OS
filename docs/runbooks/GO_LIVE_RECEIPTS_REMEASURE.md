@@ -36,7 +36,7 @@ openssl versions. It then prints one row per receipt.
 | --- | --- | --- |
 | 1 containment | `python -m aureon.containment.cold_boot` | `reports/measured/native_process_containment.json` |
 | 2 release provenance | `scripts/validation/go_live_stage6.py` | `measured/go_live_stage6_provenance.json` |
-| 3 HNC head anchor | `refs/notes/aureon-hnc-head` on HEAD | committed `evidence/output/hnc_head_anchor.tsr.b64` |
+| 3 HNC head anchor | `refs/notes/aureon-hnc-head` and `refs/notes/aureon-hnc-head-next` on the recording commit named by the evidence records | committed `evidence/output/hnc_head_anchor.tsr.b64` and `evidence/output/hnc_head_next.tsr.b64` |
 | 4 census and call sweep | stage 6 census and `measured/aureon_public_call_sweep.sh` | `measured/go_live_stage6_source_census.json` and `measured/aureon_public_call_sweep.json` |
 
 Receipt 1's committed record was measured at `c68a89d2` with a dirty worktree
@@ -63,8 +63,17 @@ with the HNC anchor files. When that commit is an ancestor of HEAD and the
 notes `refs/notes/aureon-hnc-head` and `refs/notes/aureon-hnc-head-next` on
 that commit match the committed token files byte for byte, the verdict is
 `anchored` and the detail is `anchored on <short sha>`. Those notes are on
-`9b666838` in this history. A re-attach is offered only when no such commit
-exists.
+`9b666838` in this history. `python -m aureon.evidence --check` reads each
+note from the commit that recorded its own evidence record
+(`evidence/output/hnc_head_anchor.json` for sequence 1,
+`evidence/output/hnc_head_next.json` for sequence 2), using the `note_ref`
+named in that record. It does not read the note from HEAD and does not fall
+back to HEAD when the note is missing or the bytes differ. A re-attach is
+offered only when no such commit exists.
+
+A shallow clone fails closed, so CI needs the full history (`fetch-depth: 0`) and the notes fetch (`refs/notes/aureon-hnc-head` and `refs/notes/aureon-hnc-head-next`).
+
+Editing `hnc_head_anchor.json` or `hnc_head_next.json` moves the recording commit, so the check fails until the notes are re-attached at the new commit.
 
 The offered commands do not use `-f` and do not request a new timestamp:
 

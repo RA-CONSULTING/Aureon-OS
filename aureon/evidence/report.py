@@ -414,7 +414,7 @@ def _anchor_lines(anchor: dict[str, Any] | None) -> list[str]:
         ),
         "",
         "The anchor id is the SHA-256 of the RFC 3161 token. "
-        "The same token bytes are the git note on HEAD. "
+        "The same token bytes are the git note on the commit that recorded this evidence record. "
         "`make evidence` requires those bytes and does not contact the timestamp authority. "
         "A working-tree edit does not move the note.",
         "",
@@ -461,8 +461,10 @@ def _next_anchor_lines(anchor: dict[str, Any] | None) -> list[str]:
         ),
         "",
         "The next anchor id is the SHA-256 of a second RFC 3161 token. "
-        "That token is the git note refs/notes/aureon-hnc-head-next on HEAD. "
-        "Sequence 1 stays on refs/notes/aureon-hnc-head. "
+        "That token is the git note refs/notes/aureon-hnc-head-next on the commit that recorded "
+        "evidence/output/hnc_head_next.json. "
+        "Sequence 1 stays on refs/notes/aureon-hnc-head on the commit that recorded "
+        "evidence/output/hnc_head_anchor.json. "
         "`make evidence` verifies both locally and does not contact the timestamp authority. "
         "A working-tree edit does not move either note.",
         "",
@@ -507,8 +509,11 @@ def render_results(
         "`evidence/output/hnc_head_next.tsr.b64`. "
         "`evidence/environment.json` is included, except the field `commit_sha`, which is "
         "`git rev-parse HEAD` at run time and is allowed to differ. "
-        "Sequence 1 is read from the git note `refs/notes/aureon-hnc-head` on HEAD. "
-        "Sequence 2 is read from `refs/notes/aureon-hnc-head-next` on HEAD. "
+        "Sequence 1 is read from the git note `refs/notes/aureon-hnc-head` on the commit "
+        "that recorded `evidence/output/hnc_head_anchor.json`. "
+        "Sequence 2 is read from `refs/notes/aureon-hnc-head-next` on the commit "
+        "that recorded `evidence/output/hnc_head_next.json`. "
+        "The check does not read either note from HEAD. "
         "Fetch them with `git fetch origin refs/notes/aureon-hnc-head:refs/notes/aureon-hnc-head` "
         "and `git fetch origin refs/notes/aureon-hnc-head-next:refs/notes/aureon-hnc-head-next` "
         "when a clone does not have those refs. "

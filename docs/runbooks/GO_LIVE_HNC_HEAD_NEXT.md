@@ -24,7 +24,12 @@ new HNC identity. The timestamp records historical public pin
 No market series is fetched.
 
 `make evidence` reads sequence 2 from `refs/notes/aureon-hnc-head-next` on
-HEAD and requires these bytes:
+the commit that recorded `evidence/output/hnc_head_next.json`, and sequence
+1 from `refs/notes/aureon-hnc-head` on the commit that recorded
+`evidence/output/hnc_head_anchor.json`. Each evidence record names its own
+`note_ref`. The check does not read either note from HEAD. A missing note
+or different bytes on that recording commit fails the check. It requires
+these bytes:
 
 - `evidence/output/hnc_head_next.id` — SHA-256 of the sequence 2 token
 - `evidence/output/hnc_head_next.json` — the measured record
@@ -35,10 +40,16 @@ refs/notes/aureon-hnc-head-next:refs/notes/aureon-hnc-head-next`. The check
 does not contact the timestamp authority. A working-tree edit does not move
 the note. The notes are attached to the commit that records these files:
 `refs/notes/aureon-hnc-head` is the sequence 1 token, and
-`refs/notes/aureon-hnc-head-next` is the sequence 2 token. The sequence 1
+`refs/notes/aureon-hnc-head-next` is the sequence 2 token. In this history
+both records were last recorded on `9b666838`, and both notes are on that
+commit. A note that exists only on a later HEAD is not used. The sequence 1
 file in the tree is unchanged. A squash merge leaves both notes on the
 pre-squash commit. Re-attach the same token bytes to the squash commit. Do
 not request another timestamp to do that.
+
+A shallow clone fails closed, so CI needs the full history (`fetch-depth: 0`) and the notes fetch (`refs/notes/aureon-hnc-head` and `refs/notes/aureon-hnc-head-next`).
+
+Editing `hnc_head_anchor.json` or `hnc_head_next.json` moves the recording commit, so the check fails until the notes are re-attached at the new commit.
 
 `external_head_anchor_attested` stays false. The system is not reported
 alive. Live trading stays off. No order is placed. This follow-on is not
