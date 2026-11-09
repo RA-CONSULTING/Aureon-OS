@@ -1,7 +1,7 @@
 # One-command self-host. Live trading stays off.
 # `make up` does not use Docker. `make compose` does.
 
-.PHONY: up down compose smoke plug plug-smoke plug-compose evidence
+.PHONY: up down compose smoke plug plug-smoke plug-compose evidence remeasure-go-live-receipts
 
 up:
 	PYTHONPATH=. python3 scripts/selfhost_up.py
@@ -36,3 +36,9 @@ plug-compose:
 # request a new timestamp and does not enable trading.
 evidence:
 	PYTHONHASHSEED=0 PYTHONPATH=. python3 -m aureon.evidence --check
+
+# Remeasure go-live receipts 1–4 on a clean worktree. Refuses a dirty tree.
+# Does not clear go-live, move the published pin, request a new timestamp,
+# or push refs/notes/aureon-hnc-head. See docs/runbooks/GO_LIVE_RECEIPTS_REMEASURE.md.
+remeasure-go-live-receipts:
+	PYTHONPATH=. python3 scripts/validation/remeasure_go_live_receipts.py
