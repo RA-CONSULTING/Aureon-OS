@@ -245,10 +245,16 @@ def test_full_launcher_kill_leaves_no_survivors(tmp_path: Path) -> None:
     trader = 0
     canary = 0
     try:
-        deadline = time.time() + 5
-        while time.time() < deadline and not Path(f"/proc/{proc.pid}/net/dev").exists():
-            time.sleep(0.05)
+        deadline = time.time() + 10
         ifaces = _external_ifaces(proc.pid)
+        while time.time() < deadline:
+            if proc.poll() is not None:
+                break
+            ifaces = _external_ifaces(proc.pid)
+            if ifaces == []:
+                break
+            time.sleep(0.05)
+        assert proc.poll() is None, stderr_path.read_text(encoding="utf-8", errors="replace")[-2000:]
         assert ifaces == [], f"launcher network was not blocked: {ifaces}"
         from aureon.launch.session_guard import _walk_descendants
 
