@@ -11,16 +11,18 @@ Receipt 2 runs ``scripts/validation/go_live_stage6.py``, which writes
 ``measured/go_live_stage6_provenance.json`` when the write completes.
 Before that write, the tip must be an ancestor of the frozen head.
 A tip that is not on main is refused. This command does not edit a tip field.
-Receipt 3 checks ``refs/notes/aureon-hnc-head`` on HEAD. When the note is
-absent, the command prints the git line that re-attaches the committed
-sequence-1 DigiCert RFC 3161 token. That line runs only with
-``--attach-note``. No new timestamp is requested. The notes ref is not pushed.
+Receipt 3 reports ``anchored on <short sha>`` when the commit that recorded
+the HNC anchor files and ``hnc_head_next.*`` is an ancestor of HEAD and both
+notes match those committed token files. A re-attach is offered only when no
+such commit exists. ``--attach-note`` adds a note only where none exists.
 Receipt 4 uses the stage-6 census and ``measured/aureon_public_call_sweep.sh``.
+A refused receipt 4 discards the staged sweep and leaves the committed sweep
+file byte-identical.
 
 The call sweep copies the checkout and refuses a dirty copy. It runs while
-the worktree is still clean, with its file staged outside the checkout, so
-receipt 1 can still record a clean tree. The sweep file is copied into
-``measured/`` after that measurement.
+the worktree is still clean, with its file staged outside the checkout.
+Containment is written outside the committed paths and copied over
+``reports/measured/native_process_containment.*`` only on ``pass``.
 """
 
 from __future__ import annotations
@@ -40,38 +42,41 @@ _COMMIT_ID = set("0123456789abcdef")
 PUBLISHED_PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
 PRIOR_CONTAINMENT_HEAD = "c68a89d2a184d99582bb24310b91e024323a212c"
 PRIOR_CONTAINMENT_PIN = "34864ff0547d2cff03e707414743a3b0cc8770b5"
-STALE_PROVENANCE_TIP = "b2b0310362597dc520114de86d8700c0c50758d5"
 NOTE_NAME = "aureon-hnc-head"
 NOTE_REF = "refs/notes/aureon-hnc-head"
+NEXT_NOTE_NAME = "aureon-hnc-head-next"
+NEXT_NOTE_REF = "refs/notes/aureon-hnc-head-next"
 TOKEN_REL = "evidence/output/hnc_head_anchor.tsr.b64"
+NEXT_TOKEN_REL = "evidence/output/hnc_head_next.tsr.b64"
 RECORD_REL = "evidence/output/hnc_head_anchor.json"
+RECORDED_ANCHOR_PATHS = (
+    "evidence/output/hnc_head_anchor.tsr.b64",
+    "evidence/output/hnc_head_anchor.json",
+    "evidence/output/hnc_head_anchor.id",
+    "evidence/output/hnc_head_next.tsr.b64",
+    "evidence/output/hnc_head_next.json",
+    "evidence/output/hnc_head_next.id",
+)
+NOTE_PAIRS = (
+    (NOTE_NAME, TOKEN_REL),
+    (NEXT_NOTE_NAME, NEXT_TOKEN_REL),
+)
 PROVENANCE_REL = "measured/go_live_stage6_provenance.json"
 CENSUS_REL = "measured/go_live_stage6_source_census.json"
 CONTAINMENT_REL = "reports/measured/native_process_containment.json"
+CONTAINMENT_MD = "reports/measured/native_process_containment.md"
 SWEEP_REL = "measured/aureon_public_call_sweep.json"
 SWEEP_SCRIPT = "measured/aureon_public_call_sweep.sh"
 
 
-def reattach_argv() -> list[str]:
-    """Attach the committed token as a note. No push and no timestamp request."""
+def reattach_argv(note_name: str, token_rel: str) -> list[str]:
+    """Add a note only. No ``-f``, so an existing note is left alone."""
 
-    argv = [
-        "git",
-        "notes",
-        "--ref=aureon-hnc-head",
-        "add",
-        "-f",
-        "-F",
-        TOKEN_REL,
-        "HEAD",
-    ]
-    if "push" in argv or any("timestamp.digicert.com" in part for part in argv):
-        raise SystemExit(f"refusing to push {NOTE_REF}")
-    return argv
+    return ["git", "notes", f"--ref={note_name}", "add", "-F", token_rel, "HEAD"]
 
 
 def reattach_command_lines() -> list[str]:
-    return [" ".join(reattach_argv())]
+    return [" ".join(reattach_argv(name, rel)) for name, rel in NOTE_PAIRS]
 
 
 def repo_root_default() -> Path:
@@ -132,7 +137,26 @@ def tip_blocks_write(root: Path, tip: object) -> str | None:
     if commit_on_main(root, tip):
         return None
     shown = tip if isinstance(tip, str) else type(tip).__name__
-    return f"tip {shown} is not on main. The tip field was not rewritten."
+    return (
+        f"tip {shown} is not an ancestor of the frozen head (not on main). "
+        "The tip field was not rewritten."
+    )
+
+
+def tip_text(value: object) -> str:
+    """A tip string that was actually read, or ``none read``."""
+
+    if isinstance(value, str) and value.strip():
+        return value.strip()
+    return "none read"
+
+
+def describe_tip(disk_tip: object, script_tip: object) -> str:
+    """Prefer the tip read from a receipt file, then the script TIP."""
+
+    if isinstance(disk_tip, str) and disk_tip.strip():
+        return disk_tip.strip()
+    return tip_text(script_tip)
 
 
 def read_stage6_tip(root: Path) -> str | None:
@@ -168,7 +192,7 @@ def stage6_write_block(root: Path) -> str | None:
     for rel in (PROVENANCE_REL, CENSUS_REL):
         payload = _load_json(root / rel)
         if isinstance(payload, dict) and "tip" in payload:
-            cited.append(f"{rel} cites {payload.get('tip')}")
+            cited.append(f"{rel} cites {tip_text(payload.get('tip'))}")
     suffix = (" " + "; ".join(cited)) if cited else ""
     return f"refusing to write. scripts/validation/go_live_stage6.py {reason}{suffix}"
 
@@ -284,12 +308,7 @@ def measure_containment(root: Path) -> dict[str, object]:
         shutil.rmtree(tmp, ignore_errors=True)
         return _row(1, "containment", "refused", block + " The containment receipt was not written.")
     if receipt is not None:
-        dest_json = root / CONTAINMENT_REL
-        dest_md = root / "reports" / "measured" / "native_process_containment.md"
-        dest_json.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(json_path, dest_json)
-        if md_path.is_file():
-            shutil.copyfile(md_path, dest_md)
+        install_containment_receipt(root, receipt, json_path, md_path)
     shutil.rmtree(tmp, ignore_errors=True)
     if receipt is None:
         err = _one_line(done.stderr or done.stdout or "cold boot wrote no receipt")
@@ -315,6 +334,48 @@ def measure_containment(root: Path) -> dict[str, object]:
     return _row(1, "containment", verdict, detail)
 
 
+def install_containment_receipt(
+    root: Path,
+    receipt: dict,
+    json_path: Path,
+    md_path: Path,
+) -> bool:
+    """Copy a containment receipt onto the committed paths only on a clean pass."""
+
+    if str(receipt.get("verdict")) != "pass":
+        return False
+    if receipt.get("worktree_dirty_at_measurement") is True:
+        return False
+    dest_json = root / CONTAINMENT_REL
+    dest_md = root / CONTAINMENT_MD
+    dest_json.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(json_path, dest_json)
+    if md_path.is_file():
+        shutil.copyfile(md_path, dest_md)
+    return True
+
+
+def provenance_failure_detail(
+    root: Path,
+    head: str,
+    payload: dict | None,
+    returncode: int,
+    err: str,
+) -> str:
+    disk = payload.get("tip") if isinstance(payload, dict) else None
+    shown = describe_tip(disk, read_stage6_tip(root))
+    return (
+        f"scripts/validation/go_live_stage6.py exit {returncode}. "
+        f"tip {shown}. HEAD {head}. {err}"
+    )
+
+
+def provenance_stale_detail(root: Path, head: str, payload: dict | None) -> str:
+    disk = payload.get("tip") if isinstance(payload, dict) else None
+    shown = describe_tip(disk, read_stage6_tip(root))
+    return f"provenance tip {shown}. HEAD {head}. decision HOLD."
+
+
 def measure_provenance(
     root: Path,
     head: str,
@@ -326,17 +387,10 @@ def measure_provenance(
     clear = None if payload is None else payload.get("go_live_clear")
     err = _one_line(done.stderr or done.stdout or "")
     if done.returncode != 0:
-        shown_tip = tip if tip is not None else STALE_PROVENANCE_TIP
-        detail = (
-            f"scripts/validation/go_live_stage6.py exit {done.returncode}. "
-            f"on-disk tip {shown_tip}. HEAD {head}. {err}"
-        )
+        detail = provenance_failure_detail(root, head, payload, done.returncode, err)
         return _row(2, "release provenance", "fail", detail, clear), done
     if tip != head:
-        detail = (
-            f"provenance tip {tip}. HEAD {head}. "
-            f"The stage-6 script still binds tip {STALE_PROVENANCE_TIP}. decision HOLD."
-        )
+        detail = provenance_stale_detail(root, head, payload)
         return _row(2, "release provenance", "stale", detail, clear), done
     decision = None if payload is None else payload.get("decision")
     detail = f"wrote {PROVENANCE_REL}. tip {tip}. decision {decision}."
@@ -344,86 +398,118 @@ def measure_provenance(
     return _row(2, "release provenance", verdict, detail, clear), done
 
 
-def _committed_anchor(root: Path) -> dict | None:
-    raw = _git_text(root, "show", f"HEAD:{RECORD_REL}")
+def short_sha(sha: str) -> str:
+    return sha[:12]
+
+
+def _blob_exists(root: Path, spec: str) -> bool:
+    done = _run(["git", "-C", str(root), "cat-file", "-e", spec], root)
+    return done.returncode == 0
+
+
+def recording_commit(root: Path) -> str | None:
+    """Commit that added ``hnc_head_next`` while the anchor files are in that tree."""
+
+    raw = _git_text(
+        root,
+        "log",
+        "--diff-filter=A",
+        "--format=%H",
+        "--",
+        NEXT_TOKEN_REL,
+    )
     if raw is None:
         return None
-    try:
-        loaded = json.loads(raw)
-    except json.JSONDecodeError:
+    for sha in raw.splitlines():
+        sha = sha.strip()
+        if not commit_on_main(root, sha):
+            continue
+        if all(_blob_exists(root, f"{sha}:{path}") for path in RECORDED_ANCHOR_PATHS):
+            return sha
+    return None
+
+
+def _note_bytes(root: Path, note_name: str, commit: str) -> bytes | None:
+    return _git_bytes(root, "notes", "--ref", note_name, "show", commit)
+
+
+def anchored_recording(root: Path) -> str | None:
+    """Ancestor whose notes match the committed token files byte for byte."""
+
+    sha = recording_commit(root)
+    if sha is None:
         return None
-    if not isinstance(loaded, dict):
-        return None
-    return loaded
+    for name, rel in NOTE_PAIRS:
+        note = _note_bytes(root, name, sha)
+        committed = _git_bytes(root, "show", f"{sha}:{rel}")
+        head = _git_bytes(root, "show", f"HEAD:{rel}")
+        if note is None or committed is None or note != committed:
+            return None
+        if head is not None and note != head:
+            return None
+    return sha
 
 
-def note_on_head(root: Path) -> bytes | None:
-    return _git_bytes(root, "notes", "--ref", NOTE_NAME, "show", "HEAD")
+def _attach_missing_notes(root: Path) -> dict[str, object]:
+    """Add a note only where none exists. A different note stops the attach."""
 
-
-def _sequence_one_token(root: Path) -> tuple[bytes | None, str | None]:
-    record = _committed_anchor(root)
-    if record is None:
-        return None, f"{RECORD_REL} is not a committed object on HEAD"
-    if record.get("sequence") != 1:
-        return None, f"committed anchor sequence is {record.get('sequence')}, not 1"
-    external = record.get("external")
-    provider = external.get("provider") if isinstance(external, dict) else None
-    kind = external.get("kind") if isinstance(external, dict) else None
-    if kind != "rfc3161" or provider != "http://timestamp.digicert.com":
-        return None, "committed anchor is not the DigiCert RFC 3161 sequence-1 token"
-    blob = _git_bytes(root, "show", f"HEAD:{TOKEN_REL}")
-    if blob is None:
-        return None, f"{TOKEN_REL} is not committed on HEAD"
-    work = root / TOKEN_REL
-    if not work.is_file() or work.read_bytes() != blob:
-        return None, "working tree token differs from the committed sequence-1 bytes"
-    return blob, None
-
-
-def measure_anchor(root: Path, attach: bool) -> dict[str, object]:
-    token, problem = _sequence_one_token(root)
-    commands = reattach_command_lines()
-    shown = " ; ".join(commands)
-    if problem is not None:
-        return _row(
-            3,
-            "hnc head anchor",
-            "fail",
-            f"{problem}. No timestamp was requested. {NOTE_REF} was not pushed.",
-        )
-    assert token is not None
-    note = note_on_head(root)
-    if note == token:
-        return _row(
-            3,
-            "hnc head anchor",
-            "anchored",
-            f"{NOTE_REF} is on HEAD and matches the committed sequence-1 DigiCert token.",
-        )
-    state = "differs from" if note is not None else "is not on"
-    detail = (
-        f"{NOTE_REF} {state} HEAD. "
-        f"Re-attach the committed sequence-1 token without a new timestamp request: {shown}. "
-        "This command does not push the notes ref."
-    )
-    print(detail)
-    if not attach:
-        print("Not run. Pass --attach-note to run that command locally.")
-        return _row(3, "hnc head anchor", "absent", detail + " Not run.")
-    print("Running locally because --attach-note was passed.")
-    done = _run(reattach_argv(), root)
-    if done.returncode != 0:
-        err = _one_line(done.stderr or done.stdout or "git notes add failed")
-        return _row(3, "hnc head anchor", "fail", f"git notes add exit {done.returncode}. {err}")
-    if note_on_head(root) != token:
-        return _row(3, "hnc head anchor", "fail", "git note on HEAD does not match the committed token bytes.")
+    for name, rel in NOTE_PAIRS:
+        token = _git_bytes(root, "show", f"HEAD:{rel}")
+        if token is None:
+            return _row(
+                3,
+                "hnc head anchor",
+                "fail",
+                f"{rel} is not committed on HEAD. No note was added.",
+            )
+        existing = _note_bytes(root, name, "HEAD")
+        if existing is not None and existing != token:
+            return _row(
+                3,
+                "hnc head anchor",
+                "fail",
+                f"A different note already exists on refs/notes/{name}. It was left alone.",
+            )
+    for name, rel in NOTE_PAIRS:
+        token = _git_bytes(root, "show", f"HEAD:{rel}")
+        existing = _note_bytes(root, name, "HEAD")
+        if existing is not None:
+            continue
+        done = _run(reattach_argv(name, rel), root)
+        if done.returncode != 0:
+            err = _one_line(done.stderr or done.stdout or "git notes add failed")
+            return _row(3, "hnc head anchor", "fail", f"git notes add exit {done.returncode}. {err}")
+        if _note_bytes(root, name, "HEAD") != token:
+            return _row(
+                3,
+                "hnc head anchor",
+                "fail",
+                "git note does not match the committed token. The notes ref was not pushed.",
+            )
     return _row(
         3,
         "hnc head anchor",
         "attached",
-        f"{NOTE_REF} now points at HEAD with the sequence-1 token. The notes ref was not pushed.",
+        "Notes were added where none existed. The notes ref was not pushed.",
     )
+
+
+def measure_anchor(root: Path, attach: bool) -> dict[str, object]:
+    sha = anchored_recording(root)
+    if sha is not None:
+        return _row(3, "hnc head anchor", "anchored", f"anchored on {short_sha(sha)}")
+    shown = " ; ".join(reattach_command_lines())
+    if not attach:
+        detail = (
+            "No ancestor has notes that match the committed HNC token files. "
+            f"Re-attach without -f and without a new timestamp request: {shown}. "
+            "This command does not push the notes ref. Not run."
+        )
+        print(detail)
+        print("Not run. Pass --attach-note to run that command locally.")
+        return _row(3, "hnc head anchor", "absent", detail)
+    print("Running locally because --attach-note was passed.")
+    return _attach_missing_notes(root)
 
 
 def run_call_sweep(root: Path) -> subprocess.CompletedProcess[str]:
@@ -449,8 +535,16 @@ def run_call_sweep(root: Path) -> subprocess.CompletedProcess[str]:
     return done
 
 
-def _place_sweep(root: Path, done: subprocess.CompletedProcess[str]) -> tuple[bool, str]:
+def _place_sweep(
+    root: Path,
+    done: subprocess.CompletedProcess[str],
+    keep: bool = True,
+) -> tuple[bool, str]:
     out_path = getattr(done, "out_path", None)
+    if not keep:
+        if isinstance(out_path, Path):
+            out_path.unlink(missing_ok=True)
+        return False, f"staged call sweep discarded. {SWEEP_REL} was not written."
     if done.returncode != 0 or not isinstance(out_path, Path) or not out_path.is_file():
         err = _one_line(done.stderr or done.stdout or "call sweep wrote no file")
         if isinstance(out_path, Path):
@@ -516,7 +610,7 @@ def measure_census(
             decision = None if census is None else census.get("decision")
             census_detail = f"census wrote {CENSUS_REL}. source_boundary_closed {closed}. decision {decision}."
             census_ok = decision == "HOLD" and census_clear is False
-    sweep_ok, sweep_detail = _place_sweep(root, sweep)
+    sweep_ok, sweep_detail = _place_sweep(root, sweep, keep=not refused)
     if refused:
         verdict = "refused"
     elif census_ok and sweep_ok:
@@ -569,9 +663,16 @@ def _context(root: Path) -> dict[str, object]:
 
 
 def runner_exit(rows: list[dict[str, object]]) -> int:
-    if any(row["verdict"] in {"fail", "refused"} for row in rows):
+    """0 only when every row was measured. HOLD-type rows exit 3, like publish."""
+
+    verdicts = [str(row["verdict"]) for row in rows]
+    if any(verdict in {"fail", "refused"} for verdict in verdicts):
         return 1
-    return 0
+    if any(verdict in {"stale", "hold", "absent", "skip"} for verdict in verdicts):
+        return 3
+    if verdicts and all(verdict in {"pass", "anchored", "attached"} for verdict in verdicts):
+        return 0
+    return 1
 
 
 def _measure_clean(root: Path, attach_note: bool) -> tuple[dict[str, object], list[dict[str, object]]]:
