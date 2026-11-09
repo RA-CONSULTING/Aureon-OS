@@ -130,3 +130,5 @@ This branch was rebased again onto `08f04936088689e29b7995d89530b21b425c35f9`. O
 No `./install.sh --smoke` was run. `git_head_at_measurement` stays `7de64166bc532170a5a95a842e623a4b894cebd2`.
 
 Read after this rebase, the stage-6 files, the HNC anchor, the release-boundary module, `guard_loader.py`, and `scripts/plug_and_play.py` are the same bytes as the `29fab7f2` read above. `PINNED_COMMIT` stays `bb04503119681adcf832f3c3e9b0cbf09fc7a938`. `go_live_clear` stays false. Release boundary stays **HOLD**.
+
+PR 270 adds `tip_note` and `tip_note_added` to the two stage-6 JSON files and one sentence to `docs/runbooks/GO_LIVE_STAGE6_SOURCE_CENSUS.md`. That moves their whole-file sha256. The provenance digest stays `cea8089cd4be4c39f80123f5f0f9ee806fefb76e528194c42602bbca7ae20289`. The hashes above stay the smoke and rebase reads. They are not a live pin of HEAD. No test compares the current whole-file sha256 of those paths to them. The census runbook has no whole-file sha256 pin.

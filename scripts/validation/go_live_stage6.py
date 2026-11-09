@@ -30,6 +30,8 @@ TIP_NOTE = (
     "The recorded tip b2b03103 is a pre-squash commit from the #253 branch "
     "and is not on main; it can be checked by fetching that branch."
 )
+TIP_NOTE_ADDED = "2026-11-09, PR 270, not part of the measurement"
+DIGEST_OMITTED = ("tip_note", "tip_note_added")
 PROVENANCE_SCHEMA = "aureon.go-live.release-provenance.v1"
 CENSUS_SCHEMA = "aureon.go-live.source-boundary-census.v1"
 TREE_SCHEMA = "aureon.go-live.release-tree.v1"
@@ -332,6 +334,7 @@ def build_provenance() -> dict[str, object]:
     }
     payload["digest"] = _sha256(_canonical({key: value for key, value in payload.items() if key != "digest"}))
     payload["tip_note"] = TIP_NOTE
+    payload["tip_note_added"] = TIP_NOTE_ADDED
     return payload
 
 
@@ -604,6 +607,7 @@ def build_census(provenance: dict[str, object]) -> dict[str, object]:
         "tip": TIP,
         "tip_aureon_tree": provenance["tip_aureon_tree"],
         "tip_note": TIP_NOTE,
+        "tip_note_added": TIP_NOTE_ADDED,
         "unlisted_in_inventory": [list(key) for key in unlisted],
     }
     return payload
@@ -727,7 +731,8 @@ def check() -> None:
     if stored_markdown != markdown:
         raise SystemExit("census markdown does not match the census file")
     digest = provenance.pop("digest")
-    provenance.pop("tip_note", None)
+    for key in DIGEST_OMITTED:
+        provenance.pop(key, None)
     if _sha256(_canonical(provenance)) != digest:
         raise SystemExit("provenance digest does not match its payload")
 

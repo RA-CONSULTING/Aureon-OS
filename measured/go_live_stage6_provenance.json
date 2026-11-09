@@ -9043,6 +9043,7 @@
   "tip_commit_tree": "514077fbb89ab87c29202c5673bb91e9b25b17ce",
   "tip_inventory_git_blob": "b7d320b4e51f9b99d6fb7ffa46679fd4d18a4766",
   "tip_note": "The recorded tip b2b03103 is a pre-squash commit from the #253 branch and is not on main; it can be checked by fetching that branch.",
+  "tip_note_added": "2026-11-09, PR 270, not part of the measurement",
   "tip_release_tree_sha256": "19bfb60dc368532b0b2178921a4247f55b2f1be9f8ee52dbcc66196bf6aff3ec",
   "tip_unified_margin_trader_tree": "bc764eed7f52ee8aafaa9f1d33015532cb79f628",
   "unified_margin_trader_file_count": 103,
