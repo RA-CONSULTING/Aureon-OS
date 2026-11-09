@@ -204,15 +204,12 @@ def test_measured_receipt_matches_the_hold_build() -> None:
     assert receipt["compose"]["ports_injected"] is False
     assert receipt["compose"]["secrets_injected"] is False
     assert judge_preflight(receipt["preflight"]) == []
-    # README.md moved on main after the local build. The image was not rebuilt
-    # and was not pushed. The receipt keeps the measurement-time digest.
-    drifted = {"README.md"}
-    for name, digest in receipt["source_sha256"].items():
-        current = _sha256(ROOT / name)
-        if name in drifted:
-            assert current != digest
-            continue
-        assert current == digest, name
+    # README.md was already drift. The only file added here is the go-live
+    # runbook, a doc. The squash that carried #249 and #263 edited it. The
+    # image was not rebuilt and was not pushed. The receipt keeps the
+    # measurement-time digest f6fa0b82…. Code paths are not drift.
+    drifted = _drift_docs()
+    assert _source_hash_failures(receipt, drifted) == []
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     assert "release%20boundary-HOLD-orange" in readme
     lowered_readme = readme.lower()
@@ -225,6 +222,9 @@ def test_measured_receipt_matches_the_hold_build() -> None:
     assert note["orange_badge"] == "HOLD"
     assert note["go_live_clear"] is False
     assert note["readme_sha256_is_measurement_time"] is True
+    assert note["runbook_sha256_is_measurement_time"] is True
+    assert "GO_LIVE_HARDENING.md" in note["text"]
+    assert "not rebuilt" in note["text"]
     assert note["checked_on"] == "9333bfbbeb8de54a4b42be05f9263e536da643a7"
     measured = receipt["git_head_at_measurement"]
     assert measured == "08f04936088689e29b7995d89530b21b425c35f9"
@@ -246,6 +246,48 @@ def test_measured_receipt_matches_the_hold_build() -> None:
     assert "ghcr.io" not in text
     assert "BEGIN OPENSSH" not in text
     assert "BEGIN PRIVATE" not in text
+
+
+_RUNBOOK = "docs/runbooks/GO_LIVE_HARDENING.md"
+_RUNBOOK_DIGEST = "f6fa0b825584569523accdceff13be587a035bf77e8e945ec60094b4cb067114"
+
+
+def _drift_docs() -> set[str]:
+    """Docs whose measurement-time digest is kept. No code path is in this set."""
+
+    return {"README.md", _RUNBOOK}
+
+
+def _source_hash_failures(receipt: dict, drifted: set[str], overrides: dict[str, str] | None = None) -> list[str]:
+    """Names that break the receipt rule. A code-path override must show up here."""
+
+    overrides = overrides or {}
+    failures: list[str] = []
+    for name, digest in receipt["source_sha256"].items():
+        current = overrides[name] if name in overrides else _sha256(ROOT / name)
+        if name in drifted:
+            if current == digest:
+                failures.append(name)
+            continue
+        if current != digest:
+            failures.append(name)
+    return failures
+
+
+def test_code_path_hash_change_still_fails() -> None:
+    """A changed code path fails. The runbook digest stays the recorded f6fa0b82…."""
+
+    receipt = json.loads(RECEIPT.read_text(encoding="utf-8"))
+    assert receipt["source_sha256"][_RUNBOOK] == _RUNBOOK_DIGEST
+    assert receipt["later_checkout_note"]["go_live_clear"] is False
+    drifted = _drift_docs()
+    code_paths = [name for name in receipt["source_sha256"] if not name.endswith(".md")]
+    assert code_paths
+    for name in code_paths:
+        assert name not in drifted
+    failures = _source_hash_failures(receipt, drifted, {"Dockerfile": "0" * 64})
+    assert failures == ["Dockerfile"]
+    assert _source_hash_failures(receipt, drifted, {_RUNBOOK: _RUNBOOK_DIGEST}) == [_RUNBOOK]
 
 
 def _sha256(path: Path) -> str:

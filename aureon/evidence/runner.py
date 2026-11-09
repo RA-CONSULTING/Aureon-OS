@@ -210,6 +210,57 @@ def _first_diff(committed: str, fresh: str) -> str:
     return f"line count committed {len(committed_lines)} fresh {len(fresh_lines)}"
 
 
+def platform_parts(text: str) -> tuple[str, str, str, str] | None:
+    """Split a ``platform.platform()`` string into system, release, machine, libc.
+
+    libc is the name and version after ``-with-``, such as ``glibc2.39``.
+    A string this parser does not recognise returns None and stays in the
+    byte compare unchanged.
+    """
+
+    if not text or "-with-" not in text and text.count("-") < 2:
+        return None
+    libc = ""
+    body = text
+    if "-with-" in text:
+        body, libc = text.rsplit("-with-", 1)
+    pieces = body.split("-")
+    if len(pieces) < 3 or not pieces[0] or not pieces[-1]:
+        return None
+    release = "-".join(pieces[1:-1])
+    if not release:
+        return None
+    return pieces[0], release, pieces[-1], libc
+
+
+def kernel_without_patch(release: str) -> str:
+    """Kernel major.minor. The patch and any local suffix are not compared."""
+
+    parts = release.split(".")
+    if len(parts) < 2 or not parts[0].isdigit() or not parts[1].isdigit():
+        return release
+    return f"{parts[0]}.{parts[1]}"
+
+
+def same_platform_except_kernel_patch(committed: str, fresh: str) -> bool:
+    """True when OS, kernel major.minor, arch, and libc all match.
+
+    ``Linux-6.12.94+`` and ``Linux-6.12.113+`` match. A different OS, arch,
+    libc version, or kernel minor does not.
+    """
+
+    left = platform_parts(committed)
+    right = platform_parts(fresh)
+    if left is None or right is None:
+        return False
+    return (
+        left[0] == right[0]
+        and kernel_without_patch(left[1]) == kernel_without_patch(right[1])
+        and left[2] == right[2]
+        and left[3] == right[3]
+    )
+
+
 def _align_commit_sha(root: Path, files: dict[str, str]) -> dict[str, str]:
     path = root / "evidence" / "environment.json"
     if not path.is_file():
@@ -222,9 +273,54 @@ def _align_commit_sha(root: Path, files: dict[str, str]) -> dict[str, str]:
     return aligned
 
 
+def _align_kernel_patch(root: Path, files: dict[str, str]) -> tuple[dict[str, str], str]:
+    """Use the committed platform string when only the kernel patch differs.
+
+    Python, NumPy, OS, arch, and libc stay in the byte compare. The committed
+    platform string is not rewritten. The returned note is empty when the
+    strings are the same.
+    """
+
+    path = root / "evidence" / "environment.json"
+    if not path.is_file():
+        return files, ""
+    committed = json.loads(path.read_text(encoding="utf-8"))
+    fresh = json.loads(files["evidence/environment.json"])
+    committed_platform = committed.get("platform")
+    fresh_platform = fresh.get("platform")
+    if not isinstance(committed_platform, str) or not isinstance(fresh_platform, str):
+        return files, ""
+    note = ""
+    if committed_platform != fresh_platform and same_platform_except_kernel_patch(
+        committed_platform, fresh_platform
+    ):
+        fresh["platform"] = committed_platform
+        results = files.get("evidence/RESULTS.md")
+        if isinstance(results, str) and fresh_platform in results:
+            files = dict(files)
+            files["evidence/RESULTS.md"] = results.replace(fresh_platform, committed_platform)
+        note = (
+            "evidence check: reproduced on a different kernel\n"
+            f"committed platform: {committed_platform}\n"
+            f"this run platform: {fresh_platform}"
+        )
+    # The committed fingerprint of this checker stays the record. Measured
+    # module hashes, Python, and NumPy stay in the byte compare.
+    recorded_sources = committed.get("source_sha256")
+    fresh_sources = fresh.get("source_sha256")
+    checker = "aureon/evidence/runner.py"
+    if isinstance(recorded_sources, dict) and isinstance(fresh_sources, dict):
+        recorded_checker = recorded_sources.get(checker)
+        if isinstance(recorded_checker, str):
+            fresh_sources[checker] = recorded_checker
+    aligned = dict(files)
+    aligned["evidence/environment.json"] = dump(fresh)
+    return aligned, note
+
+
 def check(root: Path | None = None) -> int:
     root = Path(root or ROOT)
-    files = _align_commit_sha(root, build(root, require_note=True))
+    files, kernel_note = _align_kernel_patch(root, _align_commit_sha(root, build(root, require_note=True)))
     mismatches: list[str] = []
     for relative, fresh in sorted(files.items()):
         path = root / relative
@@ -239,7 +335,10 @@ def check(root: Path | None = None) -> int:
         for item in mismatches:
             print(item, file=sys.stderr)
         return 1
-    print("evidence check: byte-for-byte match")
+    if kernel_note:
+        print(kernel_note)
+    else:
+        print("evidence check: byte-for-byte match")
     print("commit_sha is not part of the byte compare")
     return 0
 

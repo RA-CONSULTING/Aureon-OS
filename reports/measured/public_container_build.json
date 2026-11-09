@@ -29,7 +29,8 @@
     "orange_badge": "HOLD",
     "push_attempted": false,
     "readme_sha256_is_measurement_time": true,
-    "text": "README.md changed on main after this local build. The image was not rebuilt and was not pushed. The orange badge stays HOLD."
+    "runbook_sha256_is_measurement_time": true,
+    "text": "README.md and docs/runbooks/GO_LIVE_HARDENING.md changed on main after this local build. The runbook edits arrived with the squash that carried #249 and #263. The image was not rebuilt and was not pushed. The orange badge stays HOLD. go_live_clear stays false."
   },
   "go_live": "HOLD",
   "image": {
