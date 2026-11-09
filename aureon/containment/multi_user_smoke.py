@@ -283,9 +283,22 @@ def _found_map(text: str, needles: Mapping[str, str]) -> dict[str, bool]:
     }
 
 
-def _scan_new_shm(before: set[str], needles: Mapping[str, str]) -> dict[str, Any]:
+_SHM_READ_CAP = 1_048_576
+_BUS_RECENT_CAP = 2000
+
+
+def _scan_new_shm(
+    before: set[str],
+    needles: Mapping[str, str],
+    *,
+    directory: Path | None = None,
+) -> dict[str, Any]:
+    """Scan new shared-memory names. A segment longer than 1 MiB is truncated."""
+
+    root = directory or Path("/dev/shm")
+    empty_found = {_receipt_label(label): False for label in needles}
     try:
-        names = sorted(os.listdir("/dev/shm"))
+        names = sorted(os.listdir(root))
     except OSError as exc:
         return {
             "readable": False,
@@ -295,19 +308,27 @@ def _scan_new_shm(before: set[str], needles: Mapping[str, str]) -> dict[str, Any
             "preexisting_read": False,
             "new_names": [],
             "new_bytes_scanned": 0,
-            "found": {_receipt_label(label): False for label in needles},
+            "read_errors": 0,
+            "truncated": False,
+            "truncated_segments": [],
+            "found": empty_found,
         }
     new = [name for name in names if name not in before]
-    found = {_receipt_label(label): False for label in needles}
+    found = dict(empty_found)
     scanned = 0
     errors = 0
+    truncated_segments: list[str] = []
     for name in new:
-        path = Path("/dev/shm") / name
+        path = root / name
         try:
-            data = path.read_bytes()[:1_048_576]
+            with path.open("rb") as handle:
+                data = handle.read(_SHM_READ_CAP + 1)
         except OSError:
             errors += 1
             continue
+        if len(data) > _SHM_READ_CAP:
+            truncated_segments.append(name)
+            data = data[:_SHM_READ_CAP]
         scanned += len(data)
         text = data.decode("utf-8", "replace")
         for label, needle in needles.items():
@@ -320,6 +341,8 @@ def _scan_new_shm(before: set[str], needles: Mapping[str, str]) -> dict[str, Any
         "new_names": new,
         "new_bytes_scanned": scanned,
         "read_errors": errors,
+        "truncated": bool(truncated_segments),
+        "truncated_segments": truncated_segments,
         "found": found,
     }
 
@@ -527,14 +550,24 @@ def _exercise(home: Path, needles: Mapping[str, str], shm_before: set[str]) -> d
     subscribers_after = int(bus.subscriber_count())
     subscriptions_after = _subscription_summary(bus)
     home_files = _scan_home_files(home, needles)
-    recent = bus.get_recent(limit=2000) or []
+    stored = getattr(bus, "_memory", None)
+    stored_count = len(stored) if stored is not None else None
+    recent = list(bus.get_recent(limit=_BUS_RECENT_CAP) or [])
     recent_text = json.dumps(recent, default=str)
+    bus_truncated = stored_count is None or stored_count > len(recent)
     jsonl_text = bus_path.read_text(encoding="utf-8", errors="replace") if bus_path.is_file() else ""
     jsonl_truncated = False
     if len(jsonl_text) > 8_000_000:
         jsonl_text = jsonl_text[-8_000_000:]
         jsonl_truncated = True
-    env_text = "\n".join(os.environ.values())
+    env_chunks: list[str] = []
+    env_read_errors = 0
+    for value in os.environ.values():
+        try:
+            env_chunks.append(value if isinstance(value, str) else str(value))
+        except Exception:
+            env_read_errors += 1
+    env_text = "\n".join(env_chunks)
     store_a = Path(keystore._store_path(tenant_a))
     store_b = Path(keystore._store_path(tenant_b))
     raw_a = store_a.read_bytes() if store_a.is_file() else b""
@@ -581,6 +614,7 @@ def _exercise(home: Path, needles: Mapping[str, str], shm_before: set[str]) -> d
         "surfaces": {
             "thought_bus_recent": {
                 "scanned_items": len(recent),
+                "truncated": bus_truncated,
                 "found": _found_map(recent_text, needles),
             },
             "thoughts_jsonl": {
@@ -590,6 +624,7 @@ def _exercise(home: Path, needles: Mapping[str, str], shm_before: set[str]) -> d
             },
             "os_environ_values": {
                 "names_scanned": len(os.environ),
+                "read_errors": env_read_errors,
                 "found": _found_map(env_text, needles),
             },
             "dev_shm_new": _scan_new_shm(shm_before, needles),
@@ -744,9 +779,18 @@ def judge(child: Mapping[str, Any] | None, *, started: bool, parent_net_ns: str,
     _complete_scan_map(surfaces, "os_environ_values", "found", holds)
     _complete_scan_map(surfaces, "dev_shm_new", "found", holds)
     home_paths = _complete_scan_map(surfaces, "home_files", "paths", holds)
+    _hold_if_incomplete(surfaces.get("thought_bus_recent"), "thought_bus_recent", holds, truncated=True)
     _hold_if_incomplete(surfaces.get("thoughts_jsonl"), "thoughts_jsonl", holds, truncated=True)
     _hold_if_incomplete(surfaces.get("home_files"), "home_files", holds, truncated=True, read_errors=True)
-    _hold_if_incomplete(surfaces.get("dev_shm_new"), "dev_shm_new", holds, read_errors=True, readable=True)
+    _hold_if_incomplete(surfaces.get("os_environ_values"), "os_environ_values", holds, read_errors=True)
+    _hold_if_incomplete(
+        surfaces.get("dev_shm_new"),
+        "dev_shm_new",
+        holds,
+        read_errors=True,
+        readable=True,
+        truncated=True,
+    )
     if isinstance(bus_found, dict) and "canary_control" in bus_found and bus_found.get("canary_control") is not True:
         failures.append("thought-bus scanner did not see the control canary")
     if isinstance(jsonl_found, dict) and "canary_control" in jsonl_found and jsonl_found.get("canary_control") is not True:

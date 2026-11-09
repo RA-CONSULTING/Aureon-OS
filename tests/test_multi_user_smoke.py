@@ -10,8 +10,11 @@ from pathlib import Path
 import pytest
 
 from aureon.containment.multi_user_smoke import (
+    _RECEIPT_LABEL,
+    _SHM_READ_CAP,
     PIN,
     STARTED_FROM,
+    _scan_new_shm,
     contained_child_env,
     judge,
     public_pin,
@@ -79,9 +82,9 @@ def _child(**overrides: object) -> dict:
             {"method": "GET", "path": "/api/terminal-state", "mounted": True, "status": 403, "secret_in_body": False},
         ],
         "surfaces": {
-            "thought_bus_recent": {"scanned_items": 1, "found": control_found},
+            "thought_bus_recent": {"scanned_items": 1, "truncated": False, "found": control_found},
             "thoughts_jsonl": {"bytes": 10, "truncated": False, "found": control_found},
-            "os_environ_values": {"names_scanned": 4, "found": env_found},
+            "os_environ_values": {"names_scanned": 4, "read_errors": 0, "found": env_found},
             "dev_shm_new": {
                 "readable": True,
                 "preexisting_count": 3,
@@ -89,6 +92,8 @@ def _child(**overrides: object) -> dict:
                 "new_names": [],
                 "new_bytes_scanned": 0,
                 "read_errors": 0,
+                "truncated": False,
+                "truncated_segments": [],
                 "found": found,
             },
             "home_files": {
@@ -214,6 +219,30 @@ def test_incomplete_or_missing_scans_cannot_pass() -> None:
         judged = judge(child, started=True, parent_net_ns="net:[1]", argv_has_net=True)
         assert judged["verdict"] in {"fail", "hold"}, judged
         assert judged["verdict"] != "pass"
+
+
+def test_shm_segment_over_one_mib_holds(tmp_path: Path) -> None:
+    marker = "past-the-shm-cap"
+    (tmp_path / "bigseg").write_bytes(b"\0" * _SHM_READ_CAP + marker.encode("ascii"))
+    needles = {label: f"not-present-{label}" for label in _RECEIPT_LABEL}
+    needles["control"] = marker
+    scanned = _scan_new_shm(set(), needles, directory=tmp_path)
+    assert scanned["truncated"] is True
+    assert scanned["truncated_segments"] == ["bigseg"]
+    assert scanned["found"]["canary_control"] is False
+    child = _child()
+    child["surfaces"]["dev_shm_new"] = scanned
+    judged = judge(child, started=True, parent_net_ns="net:[1]", argv_has_net=True)
+    assert judged["verdict"] == "hold", judged
+    assert any("dev_shm_new scan was truncated" in item for item in judged["holds"])
+
+
+def test_missing_shm_truncation_flag_holds() -> None:
+    child = _child()
+    del child["surfaces"]["dev_shm_new"]["truncated"]
+    judged = judge(child, started=True, parent_net_ns="net:[1]", argv_has_net=True)
+    assert judged["verdict"] == "hold", judged
+    assert any("dev_shm_new truncation was not reported" in item for item in judged["holds"])
 
 
 def test_truncation_does_not_hide_a_measured_leak() -> None:
