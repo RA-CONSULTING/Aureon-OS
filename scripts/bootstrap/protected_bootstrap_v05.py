@@ -1,16 +1,23 @@
-"""Minimal isolated HOLD boundary before any Aureon package or target import.
+"""Minimal isolated boundary before any Aureon package or target import.
 
 Run this file directly with ``python -I -S -B``.  It imports only the Python
 standard library, derives the repository root from its own fixed location, and
-never imports Aureon, invokes Git, starts a child, writes a file, or accepts an
-arbitrary entrypoint.  Until a production guard and durable HNC sink exist, its
-only valid decision is HOLD.
+never imports Aureon, starts a target, writes a file, or accepts an arbitrary
+entrypoint.
+
+``decision``, ``external_head_anchor_attested``, ``durable_hnc_evidence_attested``,
+and ``production_ready`` follow ``scripts/bootstrap/go_live_stage11_gate.py``.
+They are true only when that gate computes ``go_live_clear``.  While it does
+not, the decision stays HOLD and those three flags stay false.  A clear
+decision still does not import or start a target.  Installers leave this
+bootstrap only when the gate itself is clear.
 """
 
 from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import re
 import time
@@ -366,6 +373,36 @@ def _target_source_relative(runtime_kind: str, entrypoint: str, root: Path) -> s
     return present[0]
 
 
+def _stage11_release(root: Path) -> dict[str, object]:
+    """Read the stage 11 gate. A missing or broken gate is not clear.
+
+    The gate reads git when it runs. ``git_consulted`` records that read.
+    Callers still do not start a target from this result.
+    """
+
+    gate_path = root / "scripts" / "bootstrap" / "go_live_stage11_gate.py"
+    if not gate_path.is_file():
+        return {"go_live_clear": False, "git_consulted": False}
+    try:
+        spec = importlib.util.spec_from_file_location(
+            "_aureon_stage11_gate_for_bootstrap",
+            gate_path,
+        )
+        if spec is None or spec.loader is None:
+            return {"go_live_clear": False, "git_consulted": False}
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        evaluated = module.evaluate(root)
+    except Exception:  # noqa: BLE001 — a broken gate stays HOLD
+        return {"go_live_clear": False, "git_consulted": True}
+    if not isinstance(evaluated, dict):
+        return {"go_live_clear": False, "git_consulted": True}
+    return {
+        "go_live_clear": evaluated.get("go_live_clear") is True,
+        "git_consulted": True,
+    }
+
+
 def _receipt(
     *,
     target_id: str,
@@ -434,9 +471,13 @@ def _receipt(
     argument_policy_attested = len(arguments) == 0
     if not argument_policy_attested:
         failures.add("target_argument_policy")
+    release = _stage11_release(root)
+    gate_clear = release.get("go_live_clear") is True
+    if gate_clear:
+        failures.discard("durable_hnc_evidence")
     causal: dict[str, object] = {
         "schema": SCHEMA,
-        "decision": "HOLD",
+        "decision": "CLEAR" if gate_clear else "HOLD",
         "reason": "complete_isolated_protected_bootstrap_required",
         "failed_checks": sorted(failures),
         "target_id": target_id,
@@ -473,14 +514,14 @@ def _receipt(
         "runtime_guard_source_sha256": _runtime_guard_source_sha256(root),
         "runtime_guard_production_ready": False,
         "full_os_protection_evaluated": False,
-        "durable_hnc_evidence_attested": False,
+        "durable_hnc_evidence_attested": gate_clear,
         "magic_star_durable_custody_attested": False,
-        "external_head_anchor_attested": False,
+        "external_head_anchor_attested": gate_clear,
         "target_imported": False,
         "target_called": False,
         "child_process_started": False,
         "bootstrap_subprocess_started": False,
-        "git_invoked": False,
+        "git_invoked": release.get("git_consulted") is True,
         "network_accessed": False,
         "file_written": False,
         "hnc_denial_recorded": False,
@@ -489,7 +530,7 @@ def _receipt(
         "action_eligible": False,
         "economic_eligible": False,
         "operational_eligible": False,
-        "production_ready": False,
+        "production_ready": gate_clear,
         "checked_at": checked_at,
     }
     return {

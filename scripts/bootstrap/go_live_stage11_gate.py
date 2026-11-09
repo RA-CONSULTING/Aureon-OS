@@ -6,8 +6,14 @@ does not write a go-live flag, does not edit the README badge, does not move
 the public pin, and does not claim the system is alive.
 
 ``go_live_clear`` is computed. It is true only when receipts 1–5 all verify
-on the current git HEAD. A JSON flag, an environment variable, or a receipt
-that merely says ``go_live_clear: true`` does not clear the gate.
+against the current git HEAD. A receipt's recorded tip matches when it is
+HEAD, or when the only paths that differ between that tip and HEAD are the
+receipt and measured files in ``TIP_DELTA_ALLOWLIST``. Any other path fails
+that receipt. A JSON flag, an environment variable, or a receipt that merely
+says ``go_live_clear: true`` does not clear the gate.
+
+The public pin is ``PINNED_COMMIT`` in ``mcp/aureon_public/guard_loader.py``.
+This module does not hard-code a second pin and does not write that file.
 
 When the computed flag is true, ``--launch-contained`` replaces this process
 with ``python -m aureon.containment.cold_boot``. That is the contained
@@ -23,22 +29,41 @@ import base64
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Callable
 
-PUBLIC_PIN = "34864ff0547d2cff03e707414743a3b0cc8770b5"
 SCHEMA = "aureon.go-live.stage11-installer-gate.v1"
+PIN_SOURCE_REL = "mcp/aureon_public/guard_loader.py"
+_PIN_LINE = re.compile(r'^PINNED_COMMIT = "([0-9a-f]{40})"$', re.MULTILINE)
 NOTE_REF = "refs/notes/aureon-hnc-head"
 NOTE_NAME = "aureon-hnc-head"
 TOKEN_REL = "evidence/output/hnc_head_anchor.tsr.b64"
 FLAG_FILE = "measured/go_live_clear.json"
 SUPPORTED_MODULE = "aureon.containment.cold_boot"
 
-# Receipt 5 has no artifact on this tip. This is the path a later measurement
-# must use. This module does not create that file.
-RECEIPT5_REL = "measured/go_live_receipt5_authenticated_deployment.json"
+# The runner on main writes this path. This module reads it and does not create it.
+RECEIPT5_REL = "reports/measured/go_live_receipt5_deployment.json"
+RECEIPT5_SCHEMA = "aureon.go-live.deployment-receipt.v1"
+
+# A committed receipt names the tip it measured, which cannot be the commit
+# that adds the receipt. Those paths, and only those paths, may differ between
+# the recorded tip and HEAD. A code file, a runbook, or any other path fails.
+TIP_DELTA_ALLOWLIST = frozenset(
+    {
+        "reports/measured/native_process_containment.json",
+        "reports/measured/native_process_containment.md",
+        "measured/go_live_stage6_provenance.json",
+        "measured/go_live_stage6_source_census.json",
+        "evidence/output/hnc_head_anchor.json",
+        "evidence/output/hnc_head_anchor.id",
+        "evidence/output/hnc_head_anchor.tsr.b64",
+        "reports/measured/go_live_receipt5_deployment.json",
+        "reports/measured/go_live_receipt5_deployment.md",
+    }
+)
 
 RECEIPTS: tuple[dict[str, Any], ...] = (
     {
@@ -73,15 +98,26 @@ RECEIPTS: tuple[dict[str, Any], ...] = (
         "id": 5,
         "name": "authenticated deployment receipt and provider-side read-back",
         "path": RECEIPT5_REL,
-        "schema": "aureon.go-live.authenticated-deployment-receipt.v1",
-        "tip_field": "tip",
+        "schema": RECEIPT5_SCHEMA,
+        "tip_field": "git_head_at_measurement",
     },
 )
 
 _BLOCKING_CENSUS_GAPS = frozenset({"post_pin_checkout_not_in_closure"})
-_REJECTED_PROVIDERS = frozenset(
-    {"", "local", "localhost", "bootstrap", "isolated", "self", "unspecified"}
-)
+
+
+def published_require_pin(root: Path) -> str | None:
+    """Read the one published require-pin. A missing or unreadable source is None."""
+
+    path = root / PIN_SOURCE_REL
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError):
+        return None
+    match = _PIN_LINE.search(text)
+    if match is None:
+        return None
+    return match.group(1)
 
 
 def _repo_root() -> Path:
@@ -164,6 +200,23 @@ class RealGit:
     def head_blob(self, relative: str) -> bytes | None:
         return self._out(["show", f"HEAD:{relative}"])
 
+    def changed_paths(self, tip: str, head: str) -> list[str] | None:
+        """Paths that differ between two commits. None when either commit is missing."""
+
+        if not _git_id(tip) or not _git_id(head):
+            return None
+        raw = self._out(["diff", "--name-only", "--no-renames", "-z", tip, head])
+        if raw is None:
+            return None
+        paths: list[str] = []
+        for part in raw.split(b"\0"):
+            if not part:
+                continue
+            text = part.decode("utf-8", "replace")
+            if text not in paths:
+                paths.append(text)
+        return paths
+
 
 def _unique(reasons: list[str]) -> list[str]:
     seen: list[str] = []
@@ -195,14 +248,16 @@ def _row(
     }
 
 
-def _safety(body: dict[str, Any], reasons: list[str], *, pin_field: str) -> None:
+def _safety(
+    body: dict[str, Any], reasons: list[str], *, pin_field: str, pin: str | None
+) -> None:
     if body.get("system_alive") is True:
         reasons.append("system_alive_claimed")
     if body.get("live_trading") is True:
         reasons.append("live_trading_claimed")
     if body.get("orders_placed") is True:
         reasons.append("orders_placed_claimed")
-    if body.get(pin_field) != PUBLIC_PIN:
+    if not isinstance(pin, str) or body.get(pin_field) != pin:
         reasons.append("pin_mismatch")
 
 
@@ -215,25 +270,70 @@ def _require_identity(
         reasons.append("receipt_number_mismatch")
 
 
-def _tip_matches(body: dict[str, Any], field: str, head: str | None, reasons: list[str]) -> None:
+def _tip_matches(
+    body: dict[str, Any],
+    field: str,
+    head: str | None,
+    reasons: list[str],
+    git: Any,
+    detail: dict[str, Any] | None = None,
+) -> None:
+    """Pass when the recorded tip is HEAD, or the delta is only receipt files."""
+
+    recorded = body.get(field)
+    if detail is not None:
+        detail["recorded_tip"] = recorded
     if head is None:
         reasons.append("head_unresolved")
         return
-    if body.get(field) != head:
+    if recorded == head:
+        if detail is not None:
+            detail["tip_diff"] = "head"
+        return
+    changed = _changed_paths(git, recorded, head)
+    if changed is None:
+        if detail is not None:
+            detail["tip_diff"] = "unavailable"
         reasons.append("tip_is_not_head")
+        return
+    outside = [path for path in changed if path not in TIP_DELTA_ALLOWLIST]
+    if outside:
+        if detail is not None:
+            detail["tip_diff"] = "outside_allowlist"
+            detail["tip_outside_allowlist_count"] = len(outside)
+        reasons.append("tip_is_not_head")
+        return
+    if detail is not None:
+        detail["tip_diff"] = "allowlist"
+
+
+def _changed_paths(git: Any, tip: object, head: str) -> list[str] | None:
+    if not isinstance(tip, str):
+        return None
+    method = getattr(git, "changed_paths", None)
+    if not callable(method):
+        return None
+    try:
+        changed = method(tip, head)
+    except (OSError, ValueError, TypeError, subprocess.SubprocessError):
+        return None
+    if not isinstance(changed, list) or not all(isinstance(item, str) for item in changed):
+        return None
+    return changed
 
 
 def _check_receipt1(
-    root: Path, spec: dict[str, Any], head: str | None
+    root: Path, spec: dict[str, Any], head: str | None, git: Any, pin: str | None
 ) -> dict[str, Any]:
     path = root / spec["path"]
     body = _load_json(path)
     if body is None:
         return _row(spec, present=path.is_file(), verified=False, reasons=["artifact_absent"])
     reasons: list[str] = []
+    detail: dict[str, Any] = {}
     _require_identity(body, spec, reasons)
-    _safety(body, reasons, pin_field="pin")
-    _tip_matches(body, "git_head_at_measurement", head, reasons)
+    _safety(body, reasons, pin_field="pin", pin=pin)
+    _tip_matches(body, "git_head_at_measurement", head, reasons, git, detail)
     if body.get("worktree_dirty_at_measurement") is not False:
         reasons.append("worktree_dirty_at_measurement")
     if body.get("verdict") != "pass":
@@ -267,12 +367,13 @@ def _check_receipt1(
             if current != digest:
                 reasons.append("source_hash_mismatch")
                 break
+    detail["recorded_head"] = body.get("git_head_at_measurement")
     return _row(
         spec,
         present=True,
         verified=True,
         reasons=reasons,
-        detail={"recorded_head": body.get("git_head_at_measurement")},
+        detail=detail,
     )
 
 
@@ -285,16 +386,17 @@ def _digest_ok(body: dict[str, Any]) -> bool:
 
 
 def _check_receipt2(
-    root: Path, spec: dict[str, Any], head: str | None
+    root: Path, spec: dict[str, Any], head: str | None, git: Any, pin: str | None
 ) -> dict[str, Any]:
     path = root / spec["path"]
     body = _load_json(path)
     if body is None:
         return _row(spec, present=path.is_file(), verified=False, reasons=["artifact_absent"])
     reasons: list[str] = []
+    detail: dict[str, Any] = {}
     _require_identity(body, spec, reasons)
-    _safety(body, reasons, pin_field="pin")
-    _tip_matches(body, "tip", head, reasons)
+    _safety(body, reasons, pin_field="pin", pin=pin)
+    _tip_matches(body, "tip", head, reasons, git, detail)
     if body.get("aureon_trees_match") is not True:
         reasons.append("target_tree_not_measured")
     if body.get("inventory_blobs_match") is not True:
@@ -303,12 +405,13 @@ def _check_receipt2(
         reasons.append("release_tree_sha256_missing")
     if not _digest_ok(body):
         reasons.append("digest_mismatch")
+    detail["digest_ok"] = _digest_ok(body)
     return _row(
         spec,
         present=True,
         verified=True,
         reasons=reasons,
-        detail={"recorded_tip": body.get("tip"), "digest_ok": _digest_ok(body)},
+        detail=detail,
     )
 
 
@@ -318,6 +421,7 @@ def _check_receipt3(
     head: str | None,
     note: bytes | None,
     blob: bytes | None,
+    pin: str | None,
 ) -> dict[str, Any]:
     path = root / spec["path"]
     body = _load_json(path)
@@ -325,7 +429,7 @@ def _check_receipt3(
         return _row(spec, present=path.is_file(), verified=False, reasons=["artifact_absent"])
     reasons: list[str] = []
     _require_identity(body, spec, reasons)
-    _safety(body, reasons, pin_field="public_require_pin")
+    _safety(body, reasons, pin_field="public_require_pin", pin=pin)
     if head is None:
         reasons.append("head_unresolved")
     if body.get("tag") != "measured":
@@ -371,16 +475,22 @@ def _check_receipt3(
 
 
 def _check_receipt4(
-    root: Path, spec: dict[str, Any], head: str | None, provenance_digest: str | None
+    root: Path,
+    spec: dict[str, Any],
+    head: str | None,
+    provenance_digest: str | None,
+    git: Any,
+    pin: str | None,
 ) -> dict[str, Any]:
     path = root / spec["path"]
     body = _load_json(path)
     if body is None:
         return _row(spec, present=path.is_file(), verified=False, reasons=["artifact_absent"])
     reasons: list[str] = []
+    detail: dict[str, Any] = {}
     _require_identity(body, spec, reasons)
-    _safety(body, reasons, pin_field="pin")
-    _tip_matches(body, "tip", head, reasons)
+    _safety(body, reasons, pin_field="pin", pin=pin)
+    _tip_matches(body, "tip", head, reasons, git, detail)
     if body.get("source_boundary_closed") is not True:
         reasons.append("source_boundary_not_closed")
     if body.get("missing_from_source") != []:
@@ -398,17 +508,18 @@ def _check_receipt4(
         reasons.append("provenance_digest_missing")
     elif provenance_digest is not None and recorded != provenance_digest:
         reasons.append("provenance_digest_mismatch")
+    detail["open_gap_ids"] = gap_ids
     return _row(
         spec,
         present=True,
         verified=True,
         reasons=reasons,
-        detail={"recorded_tip": body.get("tip"), "open_gap_ids": gap_ids},
+        detail=detail,
     )
 
 
 def _check_receipt5(
-    root: Path, spec: dict[str, Any], head: str | None
+    root: Path, spec: dict[str, Any], head: str | None, git: Any, pin: str | None
 ) -> dict[str, Any]:
     path = root / spec["path"]
     body = _load_json(path)
@@ -421,31 +532,26 @@ def _check_receipt5(
             detail={"created_by_this_gate": False},
         )
     reasons: list[str] = []
+    detail: dict[str, Any] = {
+        "created_by_this_gate": False,
+        "receipt_5_complete": body.get("receipt_5_complete"),
+        "provider_readback_digest_present": _hex64(body.get("provider_readback_digest")),
+    }
     _require_identity(body, spec, reasons)
-    _safety(body, reasons, pin_field="pin")
-    _tip_matches(body, "tip", head, reasons)
-    if body.get("authenticated") is not True:
-        reasons.append("not_authenticated")
-    if body.get("provider_side_readback") is not True:
-        reasons.append("provider_readback_missing")
-    provider = body.get("provider")
-    if not isinstance(provider, str) or provider.strip().casefold() in _REJECTED_PROVIDERS:
-        reasons.append("provider_not_authenticated")
-    if not _hex64(body.get("readback_body_sha256")):
-        reasons.append("provider_readback_missing")
-    deployment_id = body.get("deployment_id")
-    if not isinstance(deployment_id, str) or not deployment_id.strip():
-        reasons.append("deployment_id_missing")
-    if body.get("isolated_bootstrap_receipt_is_not_this") is not True:
-        reasons.append("bootstrap_receipt_is_not_deployment_receipt")
-    if body.get("system_alive") is not False:
+    _safety(body, reasons, pin_field="pin", pin=pin)
+    if body.get("system_alive_claimed") is True:
         reasons.append("system_alive_claimed")
+    _tip_matches(body, "git_head_at_measurement", head, reasons, git, detail)
+    if body.get("receipt_5_complete") is not True:
+        reasons.append("receipt_5_incomplete")
+    if not _hex64(body.get("provider_readback_digest")):
+        reasons.append("provider_readback_digest_missing")
     return _row(
         spec,
         present=True,
         verified=True,
         reasons=reasons,
-        detail={"created_by_this_gate": False},
+        detail=detail,
     )
 
 
@@ -456,17 +562,18 @@ def evaluate(root: Path, git: Any | None = None) -> dict[str, Any]:
     head = client.head()
     note = client.note()
     blob = client.head_blob(TOKEN_REL)
+    pin = published_require_pin(root)
     specs = {item["id"]: item for item in RECEIPTS}
-    receipt1 = _check_receipt1(root, specs[1], head)
-    receipt2 = _check_receipt2(root, specs[2], head)
+    receipt1 = _check_receipt1(root, specs[1], head, client, pin)
+    receipt2 = _check_receipt2(root, specs[2], head, client, pin)
     provenance = _load_json(root / specs[2]["path"])
     provenance_digest = None
     if provenance is not None and _digest_ok(provenance):
         provenance_digest = provenance.get("digest")
-    receipt3 = _check_receipt3(root, specs[3], head, note, blob)
+    receipt3 = _check_receipt3(root, specs[3], head, note, blob, pin)
     digest = provenance_digest if isinstance(provenance_digest, str) else None
-    receipt4 = _check_receipt4(root, specs[4], head, digest)
-    receipt5 = _check_receipt5(root, specs[5], head)
+    receipt4 = _check_receipt4(root, specs[4], head, digest, client, pin)
+    receipt5 = _check_receipt5(root, specs[5], head, client, pin)
     rows = [receipt1, receipt2, receipt3, receipt4, receipt5]
     verified = [row["id"] for row in rows if row["verified_on_tip"] is True]
     go_live_clear = verified == [1, 2, 3, 4, 5]
@@ -482,7 +589,7 @@ def evaluate(root: Path, git: Any | None = None) -> dict[str, Any]:
     return {
         "schema": SCHEMA,
         "head": head,
-        "public_pin": PUBLIC_PIN,
+        "public_pin": pin,
         "pin_moved": False,
         "go_live_clear": go_live_clear,
         "decision": "CLEAR" if go_live_clear else "HOLD",
@@ -501,7 +608,7 @@ def evaluate(root: Path, git: Any | None = None) -> dict[str, Any]:
             "honored": False,
             "reason": (
                 "a boolean flag is not a receipt; go_live_clear is computed "
-                "only when receipts 1-5 verify on this HEAD"
+                "only when receipts 1-5 verify against this HEAD"
             ),
         },
         "verified_ids": verified,

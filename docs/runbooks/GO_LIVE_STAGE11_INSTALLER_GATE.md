@@ -39,10 +39,15 @@ switch them on or off and does not treat them as go-live.
 ## Exact checklist
 
 `verified_on_tip` requires the recorded tip to be the current `git rev-parse HEAD`
-(40 or 64 hex characters). A parent commit is not this tip. Every receipt must
-name public pin `34864ff0547d2cff03e707414743a3b0cc8770b5`. `system_alive: true`,
-`live_trading: true`, or `orders_placed: true` fails that receipt. The gate's
-own `system_alive`, `live_trading`, and `orders_placed` fields stay false.
+(40 or 64 hex characters), or the only paths that differ between that tip and
+HEAD to be the receipt and measured files in `TIP_DELTA_ALLOWLIST` inside
+`scripts/bootstrap/go_live_stage11_gate.py`. A code file, a runbook, or any
+other path fails the receipt. A diff that cannot be read fails closed. The
+public pin is read from `PINNED_COMMIT` in `mcp/aureon_public/guard_loader.py`.
+The gate does not hard-code a second pin and does not write that file.
+`system_alive: true`, `live_trading: true`, or `orders_placed: true` fails that
+receipt. The gate's own `system_alive`, `live_trading`, and `orders_placed`
+fields stay false.
 
 `go_live_clear` is true only when receipts 1, 2, 3, 4, and 5 are all
 `verified_on_tip`. The README badge is not edited by the gate. When the
@@ -52,7 +57,8 @@ is true and a later change may update the badge. This checkout does not.
 1. **native process containment with a zero-network default.** Path
    `reports/measured/native_process_containment.json`. Schema
    `aureon.measured.native-process-containment.v1`. Receipt number 1.
-   `git_head_at_measurement` equals HEAD. `worktree_dirty_at_measurement` is
+   `git_head_at_measurement` matches HEAD by the tip rule above.
+   `worktree_dirty_at_measurement` is
    false. `verdict` is `pass`. `allowed_at_default` is `none`.
    `cold_boot_argv` contains `--net` and `cold_boot_argv_has_net` is true.
    `market_data_fetched` and `pin_changed` are not true. `tags.system_alive`
@@ -60,8 +66,8 @@ is true and a later change may update the badge. This checkout does not.
 
 2. **exact target-source measurement and immutable release provenance.** Path
    `measured/go_live_stage6_provenance.json`. Schema
-   `aureon.go-live.release-provenance.v1`. Receipt number 2. `tip` equals
-   HEAD. `aureon_trees_match` and `inventory_blobs_match` are true.
+   `aureon.go-live.release-provenance.v1`. Receipt number 2. `tip` matches
+   HEAD by the tip rule above. `aureon_trees_match` and `inventory_blobs_match` are true.
    `release_tree_sha256` is 64 hex characters. `digest` is the SHA-256 of the
    canonical JSON object with the `digest` key removed, including the trailing
    newline used by `scripts/validation/go_live_stage6.py`.
@@ -79,36 +85,36 @@ is true and a later change may update the badge. This checkout does not.
 
 4. **complete source-boundary census closure.** Path
    `measured/go_live_stage6_source_census.json`. Schema
-   `aureon.go-live.source-boundary-census.v1`. Receipt number 4. `tip` equals
-   HEAD. `source_boundary_closed` is true. `missing_from_source` is an empty
+   `aureon.go-live.source-boundary-census.v1`. Receipt number 4. `tip` matches
+   HEAD by the tip rule above. `source_boundary_closed` is true. `missing_from_source` is an empty
    list. `open_gaps` does not include `post_pin_checkout_not_in_closure`.
    `provenance_digest` matches receipt 2 when receipt 2's digest verifies.
 
 5. **authenticated deployment receipt and provider-side read-back.** Path
-   `measured/go_live_receipt5_authenticated_deployment.json`. Schema
-   `aureon.go-live.authenticated-deployment-receipt.v1`. Receipt number 5.
-   `tip` equals HEAD. `authenticated` is true. `provider_side_readback` is
-   true. `provider` is a non-empty name other than local, localhost,
-   bootstrap, isolated, self, or unspecified. `readback_body_sha256` is 64
-   hex characters. `deployment_id` is a non-empty string.
-   `isolated_bootstrap_receipt_is_not_this` is true. `system_alive` is false.
-   The isolated bootstrap's local HOLD receipt is not this receipt. On this
-   tip the artifact is absent. This stage does not create it.
+   `reports/measured/go_live_receipt5_deployment.json`. Schema
+   `aureon.go-live.deployment-receipt.v1`. Receipt number 5. This is the file
+   `scripts/validation/go_live_receipt5.py` writes. `git_head_at_measurement`
+   matches HEAD by the tip rule above. `receipt_5_complete` is true.
+   `provider_readback_digest` is 64 hex characters and is not null.
+   `system_alive` is not true. The isolated bootstrap's local HOLD receipt is
+   not this receipt. This stage does not create or rewrite the file.
 
 ## This checkout
 
-Rebased onto main tip `08f04936088689e29b7995d89530b21b425c35f9`. Stage 8
-on that tip does not clear go-live. The published require-pin remains
-`bb04503119681adcf832f3c3e9b0cbf09fc7a938`. Receipts 2 and 4 still record
-tip `b2b0310362597dc520114de86d8700c0c50758d5`. This stage does not replace
-those artifacts and does not move the pin again.
-The gate compares them with the checked-out HEAD.
+Rebased onto main tip `0726a325ac934ed2e8d2d18d5c69c31fbfafc666`. The published
+require-pin remains `bb04503119681adcf832f3c3e9b0cbf09fc7a938`, read from
+`mcp/aureon_public/guard_loader.py`. This stage does not move it.
+`docs/runbooks/GO_LIVE_HARDENING.md` stays byte-identical to that main tip.
+Receipts 1 and 3 still name `34864ff0547d2cff03e707414743a3b0cc8770b5`, so
+they need remeasurement against the published pin. Receipts 2 and 4 name the
+published pin and tip `b2b0310362597dc520114de86d8700c0c50758d5`. That object
+is not in this checkout, so the gate cannot prove the delta is only receipt
+files and fails closed.
 
 Receipt 1's measurement head is `c68a89d2a184d99582bb24310b91e024323a212c`
-and the worktree was dirty at measurement. Receipts 2 and 4 name pin
-`bb045031` and tip `b2b03103`, so they are not this HEAD. The stage 11
-checklist still requires pin `34864ff0547d2cff03e707414743a3b0cc8770b5`,
-which those two receipts no longer name. Receipt 4 also has
+and the worktree was dirty at measurement. Receipt 4 has
 `source_boundary_closed` false. Receipt 3's git note is not on this history
 (the published note is on `7d26871ff007ec6c84be657297827fc813fe7428`).
-Receipt 5's artifact is absent. `go_live_clear` is false. The badge stays HOLD.
+Receipt 5 is present and is a stage 10 HOLD skip: `receipt_5_complete` is
+false and `provider_readback_digest` is null. `go_live_clear` is false. The
+badge stays HOLD.

@@ -27,10 +27,17 @@ _spec.loader.exec_module(gate)
 
 
 class FakeGit:
-    def __init__(self, head: str | None, note: bytes | None = None, blob: bytes | None = None) -> None:
+    def __init__(
+        self,
+        head: str | None,
+        note: bytes | None = None,
+        blob: bytes | None = None,
+        changes: dict[tuple[str, str], list[str] | None] | None = None,
+    ) -> None:
         self._head = head
         self._note = note
         self._blob = blob
+        self._changes = {} if changes is None else changes
 
     def head(self) -> str | None:
         return self._head
@@ -42,17 +49,30 @@ class FakeGit:
         assert relative == gate.TOKEN_REL
         return self._blob
 
+    def changed_paths(self, tip: str, head: str) -> list[str] | None:
+        return self._changes.get((tip, head))
+
+
+PUBLISHED_PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
+FIXTURE_PIN = "99" * 20
+
 
 def _write(path: Path, body: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(body, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def _provenance(head: str) -> dict:
+def _write_pin(tmp_path: Path, pin: str) -> None:
+    path = tmp_path / gate.PIN_SOURCE_REL
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(f'PINNED_COMMIT = "{pin}"\n', encoding="utf-8")
+
+
+def _provenance(head: str, pin: str = FIXTURE_PIN) -> dict:
     body = {
         "schema": "aureon.go-live.release-provenance.v1",
         "receipt": 2,
-        "pin": gate.PUBLIC_PIN,
+        "pin": pin,
         "tip": head,
         "aureon_trees_match": True,
         "inventory_blobs_match": True,
@@ -65,7 +85,14 @@ def _provenance(head: str) -> dict:
     return body
 
 
-def _clear_tree(tmp_path: Path, head: str) -> FakeGit:
+def _clear_tree(
+    tmp_path: Path,
+    head: str,
+    *,
+    pin: str = FIXTURE_PIN,
+    changes: dict[tuple[str, str], list[str] | None] | None = None,
+) -> FakeGit:
+    _write_pin(tmp_path, pin)
     source = tmp_path / "fixture" / "source.py"
     source.parent.mkdir(parents=True)
     source.write_bytes(b"contained\n")
@@ -76,13 +103,13 @@ def _clear_tree(tmp_path: Path, head: str) -> FakeGit:
     token_path.write_text(token_text, encoding="ascii")
     anchor = gate._sha256(token)
     (tmp_path / "evidence" / "output" / "hnc_head_anchor.id").write_text(anchor + "\n", encoding="ascii")
-    provenance = _provenance(head)
+    provenance = _provenance(head, pin)
     _write(
         tmp_path / "reports" / "measured" / "native_process_containment.json",
         {
             "schema": "aureon.measured.native-process-containment.v1",
             "receipt": 1,
-            "pin": gate.PUBLIC_PIN,
+            "pin": pin,
             "git_head_at_measurement": head,
             "worktree_dirty_at_measurement": False,
             "verdict": "pass",
@@ -105,7 +132,7 @@ def _clear_tree(tmp_path: Path, head: str) -> FakeGit:
             "schema": "aureon.evidence.hnc-head-anchor.v1",
             "receipt": 3,
             "tag": "measured",
-            "public_require_pin": gate.PUBLIC_PIN,
+            "public_require_pin": pin,
             "hnc_identity_changed": False,
             "anchor_id": anchor,
             "system_alive": False,
@@ -119,7 +146,7 @@ def _clear_tree(tmp_path: Path, head: str) -> FakeGit:
         {
             "schema": "aureon.go-live.source-boundary-census.v1",
             "receipt": 4,
-            "pin": gate.PUBLIC_PIN,
+            "pin": pin,
             "tip": head,
             "source_boundary_closed": True,
             "missing_from_source": [],
@@ -133,17 +160,14 @@ def _clear_tree(tmp_path: Path, head: str) -> FakeGit:
     _write(
         tmp_path / gate.RECEIPT5_REL,
         {
-            "schema": "aureon.go-live.authenticated-deployment-receipt.v1",
+            "schema": gate.RECEIPT5_SCHEMA,
             "receipt": 5,
-            "pin": gate.PUBLIC_PIN,
-            "tip": head,
-            "authenticated": True,
-            "provider_side_readback": True,
-            "provider": "example-deployment-provider",
-            "readback_body_sha256": "cd" * 32,
-            "deployment_id": "dep-fixture",
-            "isolated_bootstrap_receipt_is_not_this": True,
+            "pin": pin,
+            "git_head_at_measurement": head,
+            "receipt_5_complete": True,
+            "provider_readback_digest": "cd" * 32,
             "system_alive": False,
+            "system_alive_claimed": False,
             "live_trading": False,
             "orders_placed": False,
             "go_live_clear": False,
@@ -154,7 +178,7 @@ def _clear_tree(tmp_path: Path, head: str) -> FakeGit:
         encoding="utf-8",
     )
     note = token_text.encode("ascii")
-    return FakeGit(head, note=note, blob=note)
+    return FakeGit(head, note=note, blob=note, changes=changes)
 
 
 def test_this_tip_stays_hold_and_does_not_flip_the_badge(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -175,28 +199,41 @@ def test_this_tip_stays_hold_and_does_not_flip_the_badge(monkeypatch: pytest.Mon
     assert result["live_trading"] is False
     assert result["orders_placed"] is False
     assert result["pin_moved"] is False
-    assert result["public_pin"] == gate.PUBLIC_PIN
+    assert result["public_pin"] == gate.published_require_pin(ROOT)
+    assert result["public_pin"] == PUBLISHED_PIN
+    assert "34864ff0547d2cff03e707414743a3b0cc8770b5" not in GATE_PATH.read_text(encoding="utf-8")
+    assert PUBLISHED_PIN not in GATE_PATH.read_text(encoding="utf-8")
     assert result["supported_path_taken"] is False
     assert result["flag_file"]["honored"] is False
     by_id = {row["id"]: row for row in result["receipts"]}
     assert by_id[1]["verified_on_tip"] is False
     assert by_id[1]["detail"]["recorded_head"] == "c68a89d2a184d99582bb24310b91e024323a212c"
     assert by_id[1]["detail"]["recorded_head"] != head
+    assert by_id[1]["detail"]["tip_diff"] == "outside_allowlist"
+    assert "pin_mismatch" in by_id[1]["reasons"]
     assert "tip_is_not_head" in by_id[1]["reasons"]
     assert "worktree_dirty_at_measurement" in by_id[1]["reasons"]
     assert by_id[2]["verified_on_tip"] is False
     assert by_id[2]["detail"]["digest_ok"] is True
+    assert "pin_mismatch" not in by_id[2]["reasons"]
     assert "tip_is_not_head" in by_id[2]["reasons"]
     assert by_id[3]["verified_on_tip"] is False
+    assert "pin_mismatch" in by_id[3]["reasons"]
     assert "note_missing_on_head" in by_id[3]["reasons"]
     assert by_id[4]["verified_on_tip"] is False
+    assert "pin_mismatch" not in by_id[4]["reasons"]
     assert "tip_is_not_head" in by_id[4]["reasons"]
     assert "source_boundary_not_closed" in by_id[4]["reasons"]
-    assert by_id[5]["present"] is False
+    assert by_id[5]["present"] is True
+    assert by_id[5]["path"] == "reports/measured/go_live_receipt5_deployment.json"
+    assert by_id[5]["schema"] == "aureon.go-live.deployment-receipt.v1"
     assert by_id[5]["verified_on_tip"] is False
-    assert by_id[5]["reasons"] == ["artifact_absent"]
+    assert "receipt_5_incomplete" in by_id[5]["reasons"]
+    assert "provider_readback_digest_missing" in by_id[5]["reasons"]
+    assert "tip_is_not_head" in by_id[5]["reasons"]
     assert by_id[5]["detail"]["created_by_this_gate"] is False
-    assert not (ROOT / gate.RECEIPT5_REL).exists()
+    assert by_id[5]["detail"]["receipt_5_complete"] is False
+    assert (ROOT / gate.RECEIPT5_REL).is_file()
     assert "release%20boundary-HOLD-orange" in README.read_text(encoding="utf-8")
 
 
@@ -255,8 +292,132 @@ def test_parent_measurement_is_not_this_tip(tmp_path: Path) -> None:
     result = gate.evaluate(tmp_path, client)
     row = next(item for item in result["receipts"] if item["id"] == 1)
     assert row["verified_on_tip"] is False
+    assert row["detail"]["tip_diff"] == "unavailable"
     assert "tip_is_not_head" in row["reasons"]
     assert result["go_live_clear"] is False
+
+
+def _retip_provenance(tmp_path: Path, head: str, recorded: str) -> None:
+    path = tmp_path / "measured" / "go_live_stage6_provenance.json"
+    body = json.loads(path.read_text(encoding="utf-8"))
+    body["tip"] = recorded
+    body["digest"] = gate._sha256(gate._canonical({key: value for key, value in body.items() if key != "digest"}))
+    path.write_text(json.dumps(body) + "\n", encoding="utf-8")
+    census = tmp_path / "measured" / "go_live_stage6_source_census.json"
+    census_body = json.loads(census.read_text(encoding="utf-8"))
+    census_body["provenance_digest"] = body["digest"]
+    census.write_text(json.dumps(census_body) + "\n", encoding="utf-8")
+
+
+def test_tip_passes_when_it_is_head(tmp_path: Path) -> None:
+    head = "ab" * 20
+    client = _clear_tree(tmp_path, head)
+    reasons: list[str] = []
+    gate._tip_matches({"tip": head}, "tip", head, reasons, client)
+    assert reasons == []
+    result = gate.evaluate(tmp_path, client)
+    assert result["go_live_clear"] is True
+    assert all(row["detail"].get("tip_diff") == "head" for row in result["receipts"] if row["id"] != 3)
+
+
+def test_tip_passes_when_only_receipt_files_differ(tmp_path: Path) -> None:
+    head = "cd" * 20
+    recorded = "12" * 20
+    changed = [
+        "reports/measured/native_process_containment.json",
+        "reports/measured/native_process_containment.md",
+        "measured/go_live_stage6_provenance.json",
+        "reports/measured/go_live_receipt5_deployment.json",
+        "reports/measured/go_live_receipt5_deployment.md",
+    ]
+    assert set(changed) <= gate.TIP_DELTA_ALLOWLIST
+    client = _clear_tree(tmp_path, head, changes={(recorded, head): changed})
+    _retip_provenance(tmp_path, head, recorded)
+    result = gate.evaluate(tmp_path, client)
+    row = next(item for item in result["receipts"] if item["id"] == 2)
+    assert row["detail"]["tip_diff"] == "allowlist"
+    assert row["verified_on_tip"] is True
+    assert result["go_live_clear"] is True
+
+
+def test_tip_fails_when_a_non_receipt_path_differs(tmp_path: Path) -> None:
+    head = "ef" * 20
+    recorded = "34" * 20
+    client = _clear_tree(
+        tmp_path,
+        head,
+        changes={(recorded, head): ["docs/runbooks/GO_LIVE_HARDENING.md"]},
+    )
+    _retip_provenance(tmp_path, head, recorded)
+    result = gate.evaluate(tmp_path, client)
+    row = next(item for item in result["receipts"] if item["id"] == 2)
+    assert row["verified_on_tip"] is False
+    assert row["detail"]["tip_diff"] == "outside_allowlist"
+    assert "tip_is_not_head" in row["reasons"]
+    assert result["go_live_clear"] is False
+
+
+def test_tip_fails_when_a_code_file_changed_after_the_tip(tmp_path: Path) -> None:
+    head = "11" * 20
+    recorded = "22" * 20
+    changed = [
+        "measured/go_live_stage6_provenance.json",
+        "aureon/containment/cold_boot.py",
+    ]
+    assert "aureon/containment/cold_boot.py" not in gate.TIP_DELTA_ALLOWLIST
+    client = _clear_tree(tmp_path, head, changes={(recorded, head): changed})
+    _retip_provenance(tmp_path, head, recorded)
+    result = gate.evaluate(tmp_path, client)
+    row = next(item for item in result["receipts"] if item["id"] == 2)
+    assert row["verified_on_tip"] is False
+    assert row["detail"]["tip_outside_allowlist_count"] == 1
+    assert "tip_is_not_head" in row["reasons"]
+    assert result["go_live_clear"] is False
+
+
+def test_receipt5_fixture_in_a_temp_dir_requires_digest_complete_and_tip(tmp_path: Path) -> None:
+    head = "56" * 20
+    client = _clear_tree(tmp_path, head)
+    result = gate.evaluate(tmp_path, client)
+    row = next(item for item in result["receipts"] if item["id"] == 5)
+    assert row["path"] == gate.RECEIPT5_REL
+    assert row["schema"] == gate.RECEIPT5_SCHEMA
+    assert row["verified_on_tip"] is True
+    assert row["detail"]["provider_readback_digest_present"] is True
+
+    path = tmp_path / gate.RECEIPT5_REL
+    body = json.loads(path.read_text(encoding="utf-8"))
+    body["provider_readback_digest"] = None
+    path.write_text(json.dumps(body) + "\n", encoding="utf-8")
+    null_digest = gate.evaluate(tmp_path, client)
+    null_row = next(item for item in null_digest["receipts"] if item["id"] == 5)
+    assert null_row["verified_on_tip"] is False
+    assert "provider_readback_digest_missing" in null_row["reasons"]
+    assert null_digest["go_live_clear"] is False
+
+    body["provider_readback_digest"] = "cd" * 32
+    body["receipt_5_complete"] = False
+    path.write_text(json.dumps(body) + "\n", encoding="utf-8")
+    incomplete = gate.evaluate(tmp_path, client)
+    incomplete_row = next(item for item in incomplete["receipts"] if item["id"] == 5)
+    assert incomplete_row["verified_on_tip"] is False
+    assert "receipt_5_incomplete" in incomplete_row["reasons"]
+
+    body["receipt_5_complete"] = True
+    body["git_head_at_measurement"] = "78" * 20
+    path.write_text(json.dumps(body) + "\n", encoding="utf-8")
+    moved = gate.evaluate(tmp_path, client)
+    moved_row = next(item for item in moved["receipts"] if item["id"] == 5)
+    assert moved_row["verified_on_tip"] is False
+    assert "tip_is_not_head" in moved_row["reasons"]
+
+
+def test_receipt_paths_are_on_the_tip_allowlist() -> None:
+    for spec in gate.RECEIPTS:
+        assert spec["path"] in gate.TIP_DELTA_ALLOWLIST
+    assert "aureon/containment/cold_boot.py" not in gate.TIP_DELTA_ALLOWLIST
+    assert "docs/runbooks/GO_LIVE_HARDENING.md" not in gate.TIP_DELTA_ALLOWLIST
+    assert "scripts/bootstrap/go_live_stage11_gate.py" not in gate.TIP_DELTA_ALLOWLIST
 
 
 def test_pin_mismatch_fails_closed(tmp_path: Path) -> None:
@@ -374,4 +535,8 @@ def test_runbook_lists_the_same_receipt_paths() -> None:
         assert spec["name"] in text
         assert spec["schema"] in text
     assert gate.RECEIPT5_REL in text
-    assert "artifact is absent" in text
+    assert "provider_readback_digest" in text
+    assert "receipt_5_complete" in text
+    assert "TIP_DELTA_ALLOWLIST" in text or "allowlist" in text
+    assert "guard_loader.py" in text
+    assert "artifact is absent" not in text

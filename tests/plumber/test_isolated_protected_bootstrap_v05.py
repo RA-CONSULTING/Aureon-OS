@@ -83,7 +83,7 @@ def test_isolated_bootstrap_ignores_sitecustomize_and_holds_without_side_effects
     assert receipt["target_called"] is False
     assert receipt["child_process_started"] is False
     assert receipt["bootstrap_subprocess_started"] is False
-    assert receipt["git_invoked"] is False
+    assert receipt["git_invoked"] is True
     assert receipt["network_accessed"] is False
     assert receipt["file_written"] is False
     assert receipt["process_start_authorized"] is False
@@ -178,6 +178,62 @@ def test_isolated_bootstrap_measures_every_registered_perimeter_source() -> None
         "python",
         "aureon.autonomous.aureon_master_launcher",
     )
+
+
+def test_stage11_flags_follow_the_gate_and_stay_hold_while_it_is_not_clear() -> None:
+    namespace = __import__("runpy").run_path(str(SCRIPT))
+    root = namespace["_repo_root"]()
+    live = namespace["_stage11_release"](root)
+    assert live["go_live_clear"] is False
+    assert live["git_consulted"] is True
+
+    result = _run("--target-id", "linux-supervisor")
+    assert result.returncode == 1, result.stderr
+    receipt = json.loads(result.stdout)
+    assert receipt["decision"] == "HOLD"
+    assert receipt["external_head_anchor_attested"] is False
+    assert receipt["durable_hnc_evidence_attested"] is False
+    assert receipt["production_ready"] is False
+    assert "durable_hnc_evidence" in receipt["failed_checks"]
+    assert receipt["target_imported"] is False
+    assert receipt["process_start_authorized"] is False
+
+    def _release(go_live_clear: bool) -> dict[str, object]:
+        return {"go_live_clear": go_live_clear, "git_consulted": False}
+
+    # run_path returns a copy of the module globals. Bind the substitute on
+    # the function that _receipt actually calls.
+    receipt_globals = namespace["_receipt"].__globals__
+    receipt_globals["_stage11_release"] = lambda _root: _release(True)
+    cleared = namespace["_receipt"](
+        target_id="linux-supervisor",
+        arguments=(),
+        checked_at=1.0,
+    )
+    assert cleared["decision"] == "CLEAR"
+    assert cleared["external_head_anchor_attested"] is True
+    assert cleared["durable_hnc_evidence_attested"] is True
+    assert cleared["production_ready"] is True
+    assert "durable_hnc_evidence" not in cleared["failed_checks"]
+    assert cleared["target_imported"] is False
+    assert cleared["child_process_started"] is False
+    assert cleared["process_start_authorized"] is False
+
+    receipt_globals["_stage11_release"] = lambda _root: {
+        "go_live_clear": False,
+        "decision": "CLEAR",
+        "production_ready": True,
+        "git_consulted": False,
+    }
+    held = namespace["_receipt"](
+        target_id="linux-supervisor",
+        arguments=(),
+        checked_at=1.0,
+    )
+    assert held["decision"] == "HOLD"
+    assert held["external_head_anchor_attested"] is False
+    assert held["durable_hnc_evidence_attested"] is False
+    assert held["production_ready"] is False
 
 
 def test_nonempty_arguments_remain_unattested_and_cannot_start_target() -> None:

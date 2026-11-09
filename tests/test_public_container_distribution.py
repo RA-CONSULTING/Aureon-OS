@@ -204,9 +204,18 @@ def test_measured_receipt_matches_the_hold_build() -> None:
     assert receipt["compose"]["ports_injected"] is False
     assert receipt["compose"]["secrets_injected"] is False
     assert judge_preflight(receipt["preflight"]) == []
-    # README.md moved on main after the local build. The image was not rebuilt
-    # and was not pushed. The receipt keeps the measurement-time digest.
-    drifted = {"README.md"}
+    # These paths differ from the measurement-time digests. The image was not
+    # rebuilt and was not pushed. The receipt keeps those digests.
+    # README.md moved on main after the build.
+    # GO_LIVE_HARDENING.md in this checkout is main's file, sha256
+    # 30f2cc49442a334e848d183e5dd86eb53b302b0e274625d17b2b872d338a2b10, not the
+    # measured digest. scripts/linux/install-linux.sh asks the stage 11 gate
+    # before the isolated bootstrap, so it is no longer the measured bytes.
+    drifted = {
+        "README.md",
+        "docs/runbooks/GO_LIVE_HARDENING.md",
+        "scripts/linux/install-linux.sh",
+    }
     for name, digest in receipt["source_sha256"].items():
         current = _sha256(ROOT / name)
         if name in drifted:
@@ -216,9 +225,12 @@ def test_measured_receipt_matches_the_hold_build() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     assert "release%20boundary-HOLD-orange" in readme
     lowered_readme = readme.lower()
-    assert "production-ready" not in lowered_readme
-    assert "production ready" not in lowered_readme
-    assert "validated" not in lowered_readme
+    denial = "this checkout is never production ready and never a validated deployment"
+    assert denial in lowered_readme
+    without_denial = lowered_readme.replace(denial, "")
+    assert "production-ready" not in without_denial
+    assert "production ready" not in without_denial
+    assert "validated" not in without_denial
     note = receipt["later_checkout_note"]
     assert note["image_rebuilt"] is False
     assert note["push_attempted"] is False
