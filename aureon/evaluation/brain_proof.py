@@ -56,7 +56,6 @@ from __future__ import annotations
 import ast
 import contextlib
 import csv
-import functools
 import hashlib
 import inspect
 import io
@@ -103,9 +102,12 @@ def _checkout_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
-@functools.lru_cache(maxsize=1)
 def _fixture_body_digests() -> frozenset[str]:
-    """sha256 of the committed offline bodies. A live pack does not match these."""
+    """sha256 of the committed offline bodies. A live pack does not match these.
+
+    Read on each call. A module-level cache would keep a digest set from an
+    earlier test's files.
+    """
 
     found: set[str] = set()
     root = _checkout_root()

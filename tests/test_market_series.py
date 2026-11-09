@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -327,10 +328,22 @@ def test_check_command_does_not_fetch(monkeypatch: pytest.MonkeyPatch) -> None:
     assert market_series.main(["--check", "--out", str(ROOT / "reports" / "measured")]) == 0
 
 
-def test_offline_kraken_fixture_is_labelled_fixture_not_measured() -> None:
+def test_offline_kraken_fixture_is_labelled_fixture_not_measured(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """The #248 gallery bodies are a fixture. Brain proof must not call them measured."""
 
-    from aureon.evaluation.brain_proof import _market_qgita, _pack_evidence_tag, _run_auris
+    import importlib
+
+    for name in list(os.environ):
+        if name.startswith("AUREON_"):
+            monkeypatch.delenv(name, raising=False)
+    import aureon.evaluation.brain_proof as brain_proof
+
+    brain_proof = importlib.reload(brain_proof)
+    _market_qgita = brain_proof._market_qgita
+    _pack_evidence_tag = brain_proof._pack_evidence_tag
+    _run_auris = brain_proof._run_auris
     from aureon.evaluation.market_series import fetch_public_pack, load_market_series
 
     gallery = ROOT / "examples" / "offline" / "fixtures"

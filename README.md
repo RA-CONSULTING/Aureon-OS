@@ -58,7 +58,9 @@ No Windows run of `install.cmd --smoke` has been measured yet.
 
 `scripts/linux/install-linux.sh` execs `scripts/bootstrap/protected_bootstrap_v05.py --target-id linux-supervisor`. That entry is outside this smoke. Go-live stays **HOLD**. See [`docs/runbooks/GO_LIVE_HARDENING.md`](docs/runbooks/GO_LIVE_HARDENING.md).
 
-> **Live mode is locked by default.** `aureon-up.sh` will not start live mode unless two things are both true: the stage 11 go-live gate reports clear, and the operator has set `AUREON_OPERATOR_ALLOW_LIVE` for that run. If either one is missing, it refuses, says why, and boots the guarded stack instead, with live trading off and no real orders. Setting the flag doesn't override the gate. Go-live is currently on HOLD, so live mode won't start on this checkout.
+> **Live mode is locked by default.** `aureon-up.sh` will not start live mode unless two things are both true: the stage 11 go-live gate reports clear, and the operator has set `AUREON_OPERATOR_ALLOW_LIVE` for that run. If either one is missing, it refuses, says why, and boots the guarded stack instead, with live trading off and no real orders. Go-live is currently on HOLD, so live mode won't start on this checkout.
+
+> **Live test sessions are separate from go-live.** Gary Leckey can approve a single live test session, and the operator enables it by setting `AUREON_OPERATOR_TEST_SESSION` alongside an unexpired session record that names his approval. The session runs through Aureon's own launcher and risk gates, and every order is logged under the session id. A test session doesn't clear the stage 11 gate, change the go-live badge or count as go-live evidence. Go-live stays on HOLD until that gate reports clear and Gary Leckey approves it.
 
 ### What the guarded smoke covers
 
