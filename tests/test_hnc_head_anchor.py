@@ -220,8 +220,14 @@ def test_next_head_is_sequence_two_with_a_later_verified_clock() -> None:
     assert "go_live_clear" in runbook
     assert PUBLIC_PIN in runbook
     assert PUBLISHED_PIN in runbook
-    assert "historical" in runbook
     assert "receipt 5" in runbook
+    follow = (ROOT / "docs/runbooks/GO_LIVE_HNC_HEAD_NEXT.md").read_text(encoding="utf-8")
+    assert "historical" in follow
+    assert "Sequence 2" in follow
+    assert PUBLIC_PIN in follow
+    assert PUBLISHED_PIN in follow
+    assert "go_live_clear" in follow
+    assert "not rewritten" in follow
     guard = (ROOT / "mcp/aureon_public/guard_loader.py").read_text(encoding="utf-8")
     assert f'PINNED_COMMIT = "{PUBLISHED_PIN}"' in guard
 

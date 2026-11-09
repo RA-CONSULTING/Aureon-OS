@@ -1,7 +1,5 @@
 # Off-HOLD stage 0 baseline
 
-Historical measurement at checkout `c68a89d2a184d99582bb24310b91e024323a212c`. The published require-pin recorded here is `34864ff0547d2cff03e707414743a3b0cc8770b5`. The published require-pin is now `bb04503119681adcf832f3c3e9b0cbf09fc7a938`. This pack is not a current pin claim.
-
 This pack freezes the starting line. It records the HOLDs that are true at checkout `c68a89d2a184d99582bb24310b91e024323a212c`. It lifts none of them.
 
 Do not edit this directory. A later stage adds a new directory under `reports/measured/` and cites these hashes. `reports/measured/index.json` and the other measured proof files are unchanged. SHA-256 hashes of the files in this pack, excluding the manifest itself, are in `MANIFEST.sha256`.
@@ -218,7 +216,7 @@ Hashes below are the files at checkout `c68a89d2` before this pack was added. A 
 
 This pack is the baseline only. It lifts nothing.
 
-- Historical for this checkout: the published pin was `34864ff0547d2cff03e707414743a3b0cc8770b5` in `PINNED_COMMIT`, every guard `COMMIT`, and the public MCP requirements. The published require-pin is now `bb04503119681adcf832f3c3e9b0cbf09fc7a938`.
+- The published pin remains `34864ff0547d2cff03e707414743a3b0cc8770b5` in `PINNED_COMMIT`, every guard `COMMIT`, and the public MCP requirements.
 - Every HOLD listed above remains HOLD, including the badges in code, docs, and `reports/measured/index.json`.
 - The `GO_LIVE_HARDENING.md` outcome remains `HOLD`.
 - MCP plan stages 3 and 4 remain closed. `OPEN_PLAN_THROUGH` remains 2.
