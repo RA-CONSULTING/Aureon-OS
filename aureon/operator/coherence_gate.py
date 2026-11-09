@@ -40,7 +40,10 @@ Gary Leckey · Aureon Institute
 
 from __future__ import annotations
 
+import math
 from typing import Any, Dict, Set
+
+from aureon.core.hnc_field import assess_coherence
 
 __all__ = [
     "APERTURES",
@@ -96,7 +99,16 @@ def compute_aperture(gamma: Any, advisory_open: Any,
                             "on a LIVE signal (tighten-only doctrine); the "
                             "hard boundary still stands"]}
 
-    g = float(gamma)
+    reading = assess_coherence(gamma)
+    if not reading.accepted or reading.value is None:
+        return {"aperture": "refuse", "field_status": "no_reading",
+                "gamma": None,
+                "advisory_open": advisory_open,
+                "lighthouse": lighthouse_severity,
+                "reasons": [reading.reason or
+                            "coherence is not a finite reading in [0, 1] — no reach"]}
+
+    g = reading.value
     reasons = []
     aperture = "full"
     if g < GAMMA_FULL:
@@ -147,12 +159,20 @@ def compute_evolution_flow(
 
     def number(value: Any) -> float | None:
         try:
-            return None if value is None else float(value)
-        except (TypeError, ValueError):
+            if value is None or isinstance(value, bool):
+                return None
+            parsed = float(value)
+        except (TypeError, ValueError, OverflowError):
             return None
+        if not math.isfinite(parsed):
+            # Outside every stability band. Callers treat this as not in range.
+            return float("inf")
+        return parsed
 
-    g = number(gamma)
-    auris = number(auris_confidence)
+    gamma_reading = assess_coherence(gamma)
+    g = gamma_reading.value if gamma_reading.accepted else None
+    auris_reading = assess_coherence(auris_confidence) if auris_confidence is not None else None
+    auris = auris_reading.value if auris_reading is not None and auris_reading.accepted else None
     beta_value = number(beta)
     severe = _severe_lighthouse(lighthouse_severity)
     closed_advisory = advisory_open is False or severe
@@ -160,11 +180,18 @@ def compute_evolution_flow(
 
     if g is None:
         flow = "observe"
-        field_status = "canonical_dark"
-        reasons.append(
-            "the canonical field is dark; keep introspection and repair alive "
-            "while gathering a fresh HNC/Auris reading"
-        )
+        if gamma is None:
+            field_status = "canonical_dark"
+            reasons.append(
+                "the canonical field is dark; keep introspection and repair alive "
+                "while gathering a fresh HNC/Auris reading"
+            )
+        else:
+            field_status = "no_reading"
+            reasons.append(
+                gamma_reading.reason
+                or "coherence is not a finite reading in [0, 1]"
+            )
     else:
         g = max(0.0, min(1.0, g))
         field_status = "live"

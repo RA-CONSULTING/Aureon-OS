@@ -3,12 +3,15 @@
 Loads sero_autonomous_state/capability_matrix.json (read-only) and answers
 check("domain:action") with ALLOW / HOLD verdicts.
 
-``trading_execution:execute_live_trades`` follows the matrix when autonomy is
-full, the kill switch is off, and an exchange key group is present. With no
-keys the verdict is paper/public-data. Explicit guarded mode keeps the
-owner-decree pin until ``aureon_fusion/state/capital_release.flag`` contains
-the exact line ``RELEASE_AUTHORIZED_BY_GARY``. This module never writes that
-file. ``AUREON_DEPLOYMENT_HOLD=1`` still holds the consequential domains.
+``trading_execution:execute_live_trades`` stays HOLD until an explicit lift
+is present, in every autonomy mode. Exchange keys do not lift it. The lifts
+are the owner-decree line ``RELEASE_AUTHORIZED_BY_GARY`` in
+``aureon_fusion/state/capital_release.flag``, or the operator test-session
+record from the live-session gate: ``AUREON_OPERATOR_ALLOW_LIVE`` set for
+this run. The verdict names only a lift that is actually set. With no keys
+and no lift the verdict is paper/public-data. This module never writes the
+release file. ``AUREON_DEPLOYMENT_HOLD=1`` still holds the consequential
+domains.
 
 Import-safe; the matrix file is never written here.
 
@@ -30,6 +33,10 @@ from . import events
 MATRIX_FILE = SERO_AUTONOMOUS / "capability_matrix.json"
 FLAG_FILE = FUSION_STATE / "capital_release.flag"
 RELEASE_LINE = "RELEASE_AUTHORIZED_BY_GARY"
+# Operator test-session record. Same flag the live-session gate reads.
+# Keys and full mode do not set it.
+OPERATOR_TEST_SESSION_ENV = "AUREON_OPERATOR_ALLOW_LIVE"
+_OPERATOR_TEST_SESSION_TRUE = frozenset({"1", "true", "yes", "on"})
 PINNED_GATE = "trading_execution:execute_live_trades"
 
 ALLOWED_STATUSES = ("active", "approved")
@@ -97,31 +104,45 @@ def release_authorized() -> bool:
     return False
 
 
-def _capital_follows_keys() -> bool:
-    """True when full autonomy and exchange keys should follow the matrix."""
+def operator_test_session_record() -> bool:
+    """True only when this run set the operator test-session record.
+
+    The record is ``AUREON_OPERATOR_ALLOW_LIVE`` with an explicit true value.
+    A deployment hold closes it. Exchange keys and autonomy mode do not.
+    """
 
     if os.environ.get("AUREON_DEPLOYMENT_HOLD") == "1":
         return False
-    try:
-        from aureon.autonomous.autonomy_mode import exchange_keys_present, guardrails_open
+    raw = os.environ.get(OPERATOR_TEST_SESSION_ENV, "")
+    return str(raw).strip().lower() in _OPERATOR_TEST_SESSION_TRUE
 
-        return guardrails_open() and exchange_keys_present()
-    except Exception:
-        return False
+
+def _capital_lifts() -> tuple[str, ...]:
+    """Names of the lifts that are actually set. Keys are not a lift."""
+
+    lifts: list[str] = []
+    if release_authorized():
+        lifts.append("owner decree flag")
+    if operator_test_session_record():
+        lifts.append(
+            f"operator test-session record ({OPERATOR_TEST_SESSION_ENV})"
+        )
+    return tuple(lifts)
 
 
 def _capital_hold_reason(status: str) -> str:
     try:
-        from aureon.autonomous.autonomy_mode import guardrails_open
+        from aureon.autonomous.autonomy_mode import exchange_keys_present, guardrails_open
 
-        if guardrails_open():
+        if guardrails_open() and not exchange_keys_present():
             return "paper/public-data (no exchange keys)"
     except Exception:
         pass
     return (
         "HARD PIN: live capital trading stays HOLD regardless of matrix "
-        f"status ({status}). Owner decree required: write the exact line "
-        f"'{RELEASE_LINE}' to {FLAG_FILE} to lift the pin."
+        f"status ({status}) and regardless of exchange keys or autonomy mode. "
+        "A live order needs the owner decree flag or the operator test-session "
+        f"record {OPERATOR_TEST_SESSION_ENV}. Keys alone do not lift the pin."
     )
 
 
@@ -204,9 +225,10 @@ def _check_verdict(domain_action: str) -> dict:
     status = gate.get("status", "unknown")
     level = gate.get("level", "?")
 
-    # Explicit guarded mode keeps the owner-decree pin. Full mode with keys
-    # follows the matrix. Full mode without keys is paper/public-data.
-    if domain_action == PINNED_GATE and not release_authorized() and not _capital_follows_keys():
+    # Keys and full mode do not lift the capital pin. Only an explicit
+    # owner-decree flag or the operator test-session record does.
+    lifts = _capital_lifts() if domain_action == PINNED_GATE else ()
+    if domain_action == PINNED_GATE and not lifts:
         return {
             **base,
             "verdict": "HOLD",
@@ -219,10 +241,10 @@ def _check_verdict(domain_action: str) -> dict:
 
     allowed = status in ALLOWED_STATUSES
     if allowed and domain_action.startswith(RUNTIME_SAFETY_DOMAINS):
-        # Owner attestation (release flag) only supersedes the upstream
-        # terminal HOLD for the pinned capital gate itself; it never
-        # authorizes any other trading_execution action.
-        attested = domain_action == PINNED_GATE and release_authorized()
+        # An explicit capital lift supersedes the upstream terminal HOLD
+        # for the pinned capital gate only. It never authorizes any other
+        # trading_execution action.
+        attested = domain_action == PINNED_GATE and bool(lifts)
         hold = _runtime_safety_hold(f"capability_gate:{domain_action}",
                                     attested=attested)
         if hold:
@@ -235,15 +257,17 @@ def _check_verdict(domain_action: str) -> dict:
                 "level": level,
                 "reason": f"runtime safety HOLD ({hold})",
             }
+    lift_note = ""
+    if domain_action == PINNED_GATE and allowed and lifts:
+        lift_note = " (pin lifted by " + " and ".join(lifts) + ")"
     return {
         **base,
         "verdict": "ALLOW" if allowed else "HOLD",
         "allowed": allowed,
-        "pinned": domain_action == PINNED_GATE and not release_authorized(),
+        "pinned": domain_action == PINNED_GATE and not bool(lifts),
         "status": status,
         "level": level,
-        "reason": f"matrix status '{status}'" +
-                  (" (pin lifted by owner decree flag)" if domain_action == PINNED_GATE else ""),
+        "reason": f"matrix status '{status}'" + lift_note,
     }
 
 

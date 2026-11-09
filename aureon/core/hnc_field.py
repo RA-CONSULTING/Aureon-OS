@@ -30,6 +30,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import numbers
 import os
 import re
 import time
@@ -76,6 +77,144 @@ def _finite_number(value: Any) -> float | None:
     except (TypeError, ValueError, OverflowError):
         return None
     return number if math.isfinite(number) else None
+
+
+@dataclass(frozen=True)
+class CoherenceDecision:
+    """One shared coherence reading.
+
+    ``accepted`` is true only for a finite real number in ``[0, 1]``.
+    Every other input is ``HOLD`` with no order intent. The queen is not
+    given the raw value.
+    """
+
+    accepted: bool
+    value: float | None
+    verdict: str
+    order_intent: None = None
+    reason: str = ""
+
+
+class NoCoherenceReading:
+    """Comparison stand-in for a rejected reading.
+
+    Threshold checks fail closed and nothing here raises. This is not a
+    measured zero and it carries no order intent.
+    """
+
+    accepted = False
+    verdict = "HOLD"
+    order_intent = None
+    value = None
+    reason = "coherence is not a finite reading in [0, 1]"
+
+    def __bool__(self) -> bool:
+        return False
+
+    def __eq__(self, other: object) -> bool:
+        return False
+
+    def __ne__(self, other: object) -> bool:
+        return True
+
+    def __lt__(self, other: object) -> bool:
+        return True
+
+    def __le__(self, other: object) -> bool:
+        return True
+
+    def __gt__(self, other: object) -> bool:
+        return False
+
+    def __ge__(self, other: object) -> bool:
+        return False
+
+    def __format__(self, spec: str) -> str:
+        del spec
+        return "no-reading"
+
+    def __add__(self, other: object) -> NoCoherenceReading:
+        return self
+
+    def __radd__(self, other: object) -> NoCoherenceReading:
+        return self
+
+    def __sub__(self, other: object) -> NoCoherenceReading:
+        return self
+
+    def __rsub__(self, other: object) -> NoCoherenceReading:
+        return self
+
+    def __mul__(self, other: object) -> NoCoherenceReading:
+        return self
+
+    def __rmul__(self, other: object) -> NoCoherenceReading:
+        return self
+
+    def __truediv__(self, other: object) -> NoCoherenceReading:
+        return self
+
+    def __rtruediv__(self, other: object) -> NoCoherenceReading:
+        return self
+
+    def __repr__(self) -> str:
+        return "NoCoherenceReading(HOLD)"
+
+    def __str__(self) -> str:
+        return "no-reading"
+
+
+def _numpy_bool(value: Any) -> bool:
+    """True for ``numpy.bool_`` without importing NumPy on the success path."""
+
+    kind = type(value)
+    if kind.__name__ != "bool_":
+        return False
+    return kind.__module__.split(".", 1)[0] == "numpy"
+
+
+def _hold_coherence(reason: str) -> CoherenceDecision:
+    return CoherenceDecision(False, None, "HOLD", None, reason)
+
+
+def _assess_coherence(value: Any) -> CoherenceDecision:
+    """Exact order: bool, numpy.bool_, numbers.Real, then finite and in range."""
+
+    if isinstance(value, bool):
+        return _hold_coherence("bool is not a coherence reading")
+    if _numpy_bool(value):
+        return _hold_coherence("numpy.bool_ is not a coherence reading")
+    if isinstance(value, numbers.Real):
+        number = float(value)
+        if math.isfinite(number) and 0.0 <= number <= 1.0:
+            return CoherenceDecision(
+                True,
+                number,
+                "ACCEPTED",
+                None,
+                "finite coherence in [0, 1]",
+            )
+        return _hold_coherence("coherence is not a finite number in [0, 1]")
+    return _hold_coherence("coherence is not a numeric reading")
+
+
+def assess_coherence(value: Any) -> CoherenceDecision:
+    """The single coherence check the brain and the plumber both call.
+
+    A reading is accepted only when it is a finite ``numbers.Real`` in
+    ``[0, 1]``, after bool and ``numpy.bool_`` have already been refused.
+    NumPy floating and integer values are accepted on that same test.
+    NaN, infinities, None, strings, dicts, lists, and anything else are
+    no reading: HOLD, no order intent, and no exception leaves this function.
+    """
+
+    try:
+        decision = _assess_coherence(value)
+    except Exception:
+        return _hold_coherence("coherence check failed closed")
+    if not isinstance(decision, CoherenceDecision):
+        return _hold_coherence("coherence check failed closed")
+    return decision
 
 
 def _identifier(value: Any) -> str | None:
@@ -722,23 +861,25 @@ def blend_field(bus: Any = None) -> BlendedField:
     )
 
 
-def reconcile_gamma(local_coherence: float, bus: Any = None) -> float:
+def reconcile_gamma(local_coherence: float, bus: Any = None) -> float | NoCoherenceReading:
     """Return the caller's coherence figure.
 
-    A lower canonical gamma is not substituted in, so this seam does not
-    tighten a live order path. ``bus`` stays in the signature for existing
-    call sites. A value that is not a finite number is returned unchanged.
+    A lower canonical gamma is not substituted in. ``bus`` stays in the
+    signature for existing call sites. A value that is not a finite number
+    in ``[0, 1]`` is not returned unchanged: it becomes a HOLD with no
+    order intent, and comparisons against it fail closed.
     """
 
     del bus
-    try:
-        return float(local_coherence)
-    except (TypeError, ValueError):
-        return local_coherence
+    decision = assess_coherence(local_coherence)
+    if decision.accepted and decision.value is not None:
+        return decision.value
+    return NoCoherenceReading()
 
 
 __all__ = [
     "CanonicalField", "read_canonical_field", "publish_subfield",
     "read_subfields", "BlendedField", "blend_field", "reconcile_gamma",
+    "assess_coherence", "CoherenceDecision", "NoCoherenceReading",
     "validate_canonical_field_snapshot", "build_hnc_live_field_receipt_id",
 ]
