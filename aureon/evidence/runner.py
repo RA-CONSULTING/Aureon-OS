@@ -129,8 +129,11 @@ def _environment(root: Path) -> dict[str, Any]:
             "HNC head anchor JSON, id, and timestamp token. "
             "evidence/environment.json matches after commit_sha is set to the committed value. "
             "commit_sha is git rev-parse HEAD at generation and is the one allowed difference. "
-            "Sequence 1 is read from refs/notes/aureon-hnc-head. "
-            "Sequence 2 is read from refs/notes/aureon-hnc-head-next. "
+            "Sequence 1 is read from refs/notes/aureon-hnc-head on the commit that recorded "
+            "evidence/output/hnc_head_anchor.json. "
+            "Sequence 2 is read from refs/notes/aureon-hnc-head-next on the commit that recorded "
+            "evidence/output/hnc_head_next.json. "
+            "Neither note is read from HEAD. "
             "Neither token is requested again. "
             "No numeric tolerance. The contract is this Python, NumPy, and platform."
         ),

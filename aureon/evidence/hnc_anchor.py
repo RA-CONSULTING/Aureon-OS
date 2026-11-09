@@ -6,7 +6,10 @@ not place an order.
 
 The head is an RFC 3161 timestamp over that measured commitment. ``make
 evidence`` reads sequence 1 from the git note ``refs/notes/aureon-hnc-head``
-and a later head from ``refs/notes/aureon-hnc-head-next``. It requires the
+on the commit that recorded ``evidence/output/hnc_head_anchor.json``, and
+sequence 2 from ``refs/notes/aureon-hnc-head-next`` on the commit that
+recorded ``evidence/output/hnc_head_next.json``. Each record names its own
+``note_ref``. The check does not read either note from HEAD. It requires the
 committed bytes to match. A working-tree edit does not move either note or
 either committed blob. The timestamp records historical pin
 ``34864ff0547d2cff03e707414743a3b0cc8770b5``. The published require-pin is
@@ -310,12 +313,74 @@ def _git_bytes(root: Path, args: list[str]) -> bytes | None:
         return None
 
 
-def read_note(root: Path, note_name: str = NOTE_NAME) -> bytes | None:
-    return _git_bytes(root, ["git", "notes", "--ref", note_name, "show", "HEAD"])
+def read_note(root: Path, note_name: str = NOTE_NAME, commit: str = "HEAD") -> bytes | None:
+    return _git_bytes(root, ["git", "notes", "--ref", note_name, "show", commit])
 
 
 def read_head_blob(root: Path, token_rel: str = TOKEN_REL) -> bytes | None:
     return _git_bytes(root, ["git", "show", f"HEAD:{token_rel}"])
+
+
+def recording_commit(root: Path, record_rel: str) -> str:
+    """Commit that recorded ``record_rel``. This is not HEAD unless that commit is HEAD."""
+
+    raw = _git_bytes(root, ["git", "log", "-1", "--format=%H", "--", record_rel])
+    sha = "" if raw is None else raw.decode("ascii", "replace").strip()
+    if len(sha) != 40 or any(char not in "0123456789abcdef" for char in sha):
+        raise AnchorError(
+            f"no recording commit for {record_rel}. The check does not read the note from HEAD."
+        )
+    return sha
+
+
+def _evidence_record(root: Path, record_rel: str, commit: str) -> dict[str, Any]:
+    raw = _git_bytes(root, ["git", "show", f"{commit}:{record_rel}"])
+    if raw is None:
+        raise AnchorError(f"{record_rel} is not in recording commit {commit}")
+    try:
+        record = json.loads(raw.decode("utf-8"))
+    except (UnicodeError, json.JSONDecodeError) as exc:
+        raise AnchorError(f"{record_rel} at {commit} is not a JSON evidence record") from exc
+    if not isinstance(record, dict) or not isinstance(record.get("note_ref"), str):
+        raise AnchorError(f"{record_rel} at {commit} does not name note_ref")
+    return record
+
+
+def _token_from_recording_commit(
+    root: Path,
+    *,
+    note_name: str,
+    note_ref: str,
+    token_rel: str,
+    record_rel: str,
+) -> bytes:
+    """Read one note from the commit that recorded its evidence record.
+
+    HEAD is not a source. A missing note or different bytes fail here.
+    """
+
+    commit = recording_commit(root, record_rel)
+    record = _evidence_record(root, record_rel, commit)
+    named = str(record["note_ref"])
+    if named != note_ref:
+        raise AnchorError(f"{record_rel} at {commit} names {named}, not {note_ref}")
+    note = read_note(root, note_name, commit)
+    committed = _git_bytes(root, ["git", "show", f"{commit}:{token_rel}"])
+    if note is None:
+        raise AnchorError(
+            f"missing {note_ref} on recording commit {commit}. "
+            f"Fetch it with: git fetch origin {note_ref}:{note_ref}. "
+            "The check does not read the note from HEAD."
+        )
+    if committed is None or note != committed:
+        raise AnchorError(
+            f"git note {note_ref} on recording commit {commit} does not match {token_rel}. "
+            "The check does not read the note from HEAD."
+        )
+    head = read_head_blob(root, token_rel)
+    if head is not None and note != head:
+        raise AnchorError("git note and committed HNC head token differ")
+    return note
 
 
 def load_token_text(
@@ -325,35 +390,43 @@ def load_token_text(
     note_name: str = NOTE_NAME,
     note_ref: str = NOTE_REF,
     token_rel: str = TOKEN_REL,
+    record_rel: str = RECORD_REL,
 ) -> str:
     """Return the canonical token text from the note or the committed blob.
 
-    The working tree is used only when neither git object exists, so a local
-    edit cannot replace a note that is already attached.
+    ``require_note`` reads the note named by the evidence record at
+    ``record_rel``, from the commit that recorded that file. It does not read
+    a note attached only to HEAD. The working tree is used only when the check
+    is not requiring the note and neither git object exists, so a local edit
+    cannot replace a note that is already attached.
     """
 
-    note = read_note(root, note_name)
-    head = read_head_blob(root, token_rel)
-    if note is not None and head is not None and note != head:
-        raise AnchorError("git note and committed HNC head token differ")
-    if require_note and note is None:
-        raise AnchorError(
-            f"missing {note_ref} on HEAD. "
-            f"Fetch it with: git fetch origin {note_ref}:{note_ref}"
+    if require_note:
+        raw = _token_from_recording_commit(
+            root,
+            note_name=note_name,
+            note_ref=note_ref,
+            token_rel=token_rel,
+            record_rel=record_rel,
         )
-    if note is not None:
-        raw = note
-    elif head is not None:
-        raw = head
     else:
-        path = root / token_rel
-        if not path.is_file():
-            raise AnchorError(
-                "HNC head token is not in git. "
-                "Stamp it, commit the bytes, and attach the git note. "
-                "make evidence does not request a new timestamp."
-            )
-        raw = path.read_bytes()
+        note = read_note(root, note_name)
+        head = read_head_blob(root, token_rel)
+        if note is not None and head is not None and note != head:
+            raise AnchorError("git note and committed HNC head token differ")
+        if note is not None:
+            raw = note
+        elif head is not None:
+            raw = head
+        else:
+            path = root / token_rel
+            if not path.is_file():
+                raise AnchorError(
+                    "HNC head token is not in git. "
+                    "Stamp it, commit the bytes, and attach the git note. "
+                    "make evidence does not request a new timestamp."
+                )
+            raw = path.read_bytes()
     try:
         text = raw.decode("ascii")
     except UnicodeError as exc:
@@ -673,6 +746,7 @@ def assemble_next(
         note_name=NEXT_NOTE_NAME,
         note_ref=NEXT_NOTE_REF,
         token_rel=NEXT_TOKEN_REL,
+        record_rel=NEXT_RECORD_REL,
     )
     token = decode_token_text(text)
     commitment = commitment_bytes(next_commitment(hnc_summary, previous))

@@ -10,7 +10,7 @@ The run calls `HarmonicRealityField.step`, `QueenHiveMind.get_auris_coherence`, 
 make evidence
 ```
 
-That target runs `PYTHONHASHSEED=0 PYTHONPATH=. python3 -m aureon.evidence --check`. The check rebuilds every committed output and requires the bytes to match, including `evidence/output/hnc_head_anchor.json`, `evidence/output/hnc_head_anchor.id`, and `evidence/output/hnc_head_anchor.tsr.b64`, and the sequence 2 files `evidence/output/hnc_head_next.json`, `evidence/output/hnc_head_next.id`, and `evidence/output/hnc_head_next.tsr.b64`. `evidence/environment.json` is included, except the field `commit_sha`, which is `git rev-parse HEAD` at run time and is allowed to differ. Sequence 1 is read from the git note `refs/notes/aureon-hnc-head` on HEAD. Sequence 2 is read from `refs/notes/aureon-hnc-head-next` on HEAD. Fetch them with `git fetch origin refs/notes/aureon-hnc-head:refs/notes/aureon-hnc-head` and `git fetch origin refs/notes/aureon-hnc-head-next:refs/notes/aureon-hnc-head-next` when a clone does not have those refs. There is no numeric tolerance. The match is for the Python, NumPy, and platform recorded below.
+That target runs `PYTHONHASHSEED=0 PYTHONPATH=. python3 -m aureon.evidence --check`. The check rebuilds every committed output and requires the bytes to match, including `evidence/output/hnc_head_anchor.json`, `evidence/output/hnc_head_anchor.id`, and `evidence/output/hnc_head_anchor.tsr.b64`, and the sequence 2 files `evidence/output/hnc_head_next.json`, `evidence/output/hnc_head_next.id`, and `evidence/output/hnc_head_next.tsr.b64`. `evidence/environment.json` is included, except the field `commit_sha`, which is `git rev-parse HEAD` at run time and is allowed to differ. Sequence 1 is read from the git note `refs/notes/aureon-hnc-head` on the commit that recorded `evidence/output/hnc_head_anchor.json`. Sequence 2 is read from `refs/notes/aureon-hnc-head-next` on the commit that recorded `evidence/output/hnc_head_next.json`. The check does not read either note from HEAD. Fetch them with `git fetch origin refs/notes/aureon-hnc-head:refs/notes/aureon-hnc-head` and `git fetch origin refs/notes/aureon-hnc-head-next:refs/notes/aureon-hnc-head-next` when a clone does not have those refs. There is no numeric tolerance. The match is for the Python, NumPy, and platform recorded below.
 
 Dependencies used by the imported implementations: NumPy, and `python-dotenv` because `QueenHiveMind` imports it. This command does not install packages and does not call a network API. Each HNC head token was requested once and is checked locally.
 
@@ -76,7 +76,7 @@ Receipt 3 only. This is a measured binding of the fixed-seed formula series. It 
 | system alive | false |
 | orders placed | false |
 
-The anchor id is the SHA-256 of the RFC 3161 token. The same token bytes are the git note on HEAD. `make evidence` requires those bytes and does not contact the timestamp authority. A working-tree edit does not move the note.
+The anchor id is the SHA-256 of the RFC 3161 token. The same token bytes are the git note on the commit that recorded this evidence record. `make evidence` requires those bytes and does not contact the timestamp authority. A working-tree edit does not move the note.
 
 ## HNC next head
 
@@ -106,7 +106,7 @@ Receipt 3 follow-on. Sequence 2 of the same fixed-seed formula series. It is not
 | system alive | false |
 | orders placed | false |
 
-The next anchor id is the SHA-256 of a second RFC 3161 token. That token is the git note refs/notes/aureon-hnc-head-next on HEAD. Sequence 1 stays on refs/notes/aureon-hnc-head. `make evidence` verifies both locally and does not contact the timestamp authority. A working-tree edit does not move either note.
+The next anchor id is the SHA-256 of a second RFC 3161 token. That token is the git note refs/notes/aureon-hnc-head-next on the commit that recorded evidence/output/hnc_head_next.json. Sequence 1 stays on refs/notes/aureon-hnc-head on the commit that recorded evidence/output/hnc_head_anchor.json. `make evidence` verifies both locally and does not contact the timestamp authority. A working-tree edit does not move either note.
 
 ## Auris
 
