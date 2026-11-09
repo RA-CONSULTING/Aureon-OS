@@ -4,16 +4,16 @@
     "admin_pulse_status": 200,
     "boot": "create_app",
     "canary_sha256": {
-      "canary_control_sha256": "4abe3f9f4d4b294d0b867d56ea5e0e5fc8558b061288e1a055ccb1ab3a1d963b",
-      "canary_operator_sha256": "890dd957ff9a8808545c2afcaec9d38c7caec807e124eb2a4c73bd2f6c245d6d",
-      "canary_prompt_a_revoked_sha256": "a797563e42158207404a6f0e3b79c5a9b6df883f3f44ef6682c632bab4498d9a",
-      "canary_prompt_a_sha256": "b4181b4252afa28ac81a8ef56f82741f67d7c923c8e97f7c3bc0694c22055754",
-      "canary_prompt_b_absent_sha256": "f4d69d959be6e347873df7d2b3bded08ab06a43f3c03da78f71eb0cd7931c599",
-      "canary_prompt_b_sha256": "f5e8d68ad463423450d51edad26bf668aaba9d961f1e4cf9ae44596837a25fa4",
-      "canary_prompt_b_still_sha256": "ac3d001d28a952b2bc612d0ca205d1aafa20b9c65437d2bcb695e3f623ec178b",
-      "canary_signer_sha256": "7a097493ba763e7afac3eddf40a08e64553a8ff193191058faceafe322e84471",
-      "canary_tenant_a_sha256": "30a70f0caa218b59cb0ff9cd6ae475faa2772331ea3e5dc3564742af7a487085",
-      "canary_tenant_b_sha256": "189b88035cc553e7a440fbb85d455729dae6e1e1e445b3dac6d059aa5cc38b87"
+      "canary_control_sha256": "141d92c7450c11fa4c036f61e9eae0fd0af995075d5ad8213d77d910ca8557e1",
+      "canary_operator_sha256": "43bec44d6ff0797af3feac0ca2bd1b0a415404cfb87492e5ac89e2ccafd0264a",
+      "canary_prompt_a_revoked_sha256": "b7ddb0ca5805754377f708b6e36cfce72ad218735735cfa09f8da93016f7604d",
+      "canary_prompt_a_sha256": "e9d3e008a0251d56c888e8a54f58dbcda61bba76d5882d8838f60a8130455356",
+      "canary_prompt_b_absent_sha256": "f1063ea3c4430bef53f3ed58f5d88ce8fe31853a1ca316aeebc21fe4a4548955",
+      "canary_prompt_b_sha256": "b9e652c7668d2615ba3788ddcea5defb6c263d3f14fdf6cfc478682d1cdeb4f2",
+      "canary_prompt_b_still_sha256": "96cf1641c6a394e51bca860d599456452b656cc94481ee3792b6d620e333f04e",
+      "canary_signer_sha256": "185dd5a3f6085484e72a5684ca8dbc3f4a922283381a74b655e16aa5dc8d9264",
+      "canary_tenant_a_sha256": "3a7e0933427f078aaadbda76be6fca1972889cc70d76d90cf89411a116483054",
+      "canary_tenant_b_sha256": "807f83cbec6078818a042ee01fb51ec23cbd46e7f6f54783d386f88b0cd096cc"
     },
     "caps": {
       "CapAmb": "0000000000000000",
@@ -190,7 +190,7 @@
         "readable": true
       },
       "home_files": {
-        "bytes": 1835,
+        "bytes": 1834,
         "files": 6,
         "paths": {
           "canary_control": [
@@ -205,7 +205,9 @@
           "canary_signer": [],
           "canary_tenant_a": [],
           "canary_tenant_b": []
-        }
+        },
+        "read_errors": 0,
+        "truncated": false
       },
       "os_environ_values": {
         "found": {
@@ -238,7 +240,7 @@
         "scanned_items": 1
       },
       "thoughts_jsonl": {
-        "bytes": 343,
+        "bytes": 342,
         "found": {
           "canary_control": true,
           "canary_operator": false,
@@ -304,9 +306,9 @@
   "containment_pin": "34864ff0547d2cff03e707414743a3b0cc8770b5",
   "containment_pin_is_public_pin": false,
   "failures": [],
-  "finished_at": "2026-11-05T20:58:15Z",
+  "finished_at": "2026-11-09T17:07:20Z",
   "gaps": [],
-  "git_head_at_measurement": "4836dfa483077e26be09b258d128517a5f820b26",
+  "git_head_at_measurement": "79502834bf9a50ac352a2626a89043aff39c0f48",
   "go_live_clear": false,
   "go_live_receipt": null,
   "holds": [],
@@ -332,7 +334,7 @@
       "status": "HOLD"
     }
   ],
-  "kernel": "Linux cursor 6.12.94+ #1 SMP PREEMPT_DYNAMIC Mon Nov  2 21:34:19 UTC 2026 x86_64",
+  "kernel": "Linux cursor 6.12.113+ #1 SMP PREEMPT_DYNAMIC Thu Nov  5 16:04:51 UTC 2026 x86_64",
   "listener_bound": false,
   "live_trading": false,
   "market_data_fetched": false,
@@ -393,25 +395,25 @@
   },
   "source_sha256": {
     "aureon/containment/_multi_user_child.py": "33a12bc07b8ec8246b5d7403004c7f77add471d8b4b880f24af173d354c7ea59",
-    "aureon/containment/multi_user_smoke.py": "66b90e66b5ae05436de1298046beb619658da4092c7c08b452a1749ebd17fd98",
-    "tests/test_multi_user_smoke.py": "be5fc4837f67331b4ea8efd646cb1aa292667eb3b4733b42dda0fae017339c03"
+    "aureon/containment/multi_user_smoke.py": "ad1f11ec6552ce3b831f00628a9e3b43f459f1a2acf36a264c7bf8401c1ba0cb",
+    "tests/test_multi_user_smoke.py": "24ce25afb17fbd850c0fdae3644577733688b336b1b04e76da298dc72e60ce7c"
   },
   "stage": 9,
-  "started_at": "2026-11-05T20:58:14Z",
+  "started_at": "2026-11-09T17:07:19Z",
   "started_from": "c68a89d2a184d99582bb24310b91e024323a212c",
   "title": "contained multi-user tenant boundary",
   "unchanged_sha256": {
-    "README.md": "e6a03232177ff56dc719786cdd829edb96cd27e26f8ead00a93856710660b117",
+    "README.md": "0d414e0ac77ebe93289a1457beeeeed107b2d7f8789d9e1f76eeeece87f7dca5",
     "aureon/operator/identity.py": "2df2e31eb48825541a1471c0cdfe6a80c48b37935dd60644a887e9924298ce23",
     "aureon/operator/operator_server.py": "759d713526ee728cecfc987e9133ddcfe83f2c76352f4dc39f909ec40d1bddc2",
-    "docs/runbooks/GO_LIVE_HARDENING.md": "aced3709215d078a3a63e8148c373c2a3f8de26b39a303be4fec2e19c562e9b7",
+    "docs/runbooks/GO_LIVE_HARDENING.md": "5b4a7b455df0e2eb7ced8628c0ff1c6d31967cec5350ff708da1be337fc95766",
     "mcp/aureon_public/guard_loader.py": "6e674ddca3ed4d7c254cb41069d33660728b91c3436a821beab6558734bc7293",
     "mcp/aureon_public/pin_blob.py": "2501bc7fbd6dbeacd4caa3399647cb1972d672313caaffd06b2d13487db5365d",
     "mcp/aureon_public/sweep_guard.py": "e77db22d4d646e89537173762d7bfbebe9b0f00097e8fe4969a11b3bdf6e888e",
     "scripts/linux/install-linux.sh": "5242a98eb4fe88471a918eaa89725670aaf17de9100437a56f54410ae8f1167c"
   },
   "verdict": "pass",
-  "worktree_dirty_at_measurement": false,
+  "worktree_dirty_at_measurement": true,
   "wrapper": {
     "cap_drop": {
       "dropped": 41,

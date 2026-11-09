@@ -242,6 +242,8 @@ def _scan_home_files(home: Path, needles: Mapping[str, str]) -> dict[str, Any]:
         paths[_receipt_label(label)] = []
     scanned = 0
     files = 0
+    read_errors = 0
+    truncated = False
     for path in home.rglob("*"):
         if not path.is_file():
             continue
@@ -249,12 +251,15 @@ def _scan_home_files(home: Path, needles: Mapping[str, str]) -> dict[str, Any]:
         try:
             size = path.stat().st_size
         except OSError:
+            read_errors += 1
             continue
         if size > 8_000_000:
+            truncated = True
             continue
         try:
             data = path.read_bytes()
         except OSError:
+            read_errors += 1
             continue
         scanned += len(data)
         text = data.decode("utf-8", "replace")
@@ -262,7 +267,13 @@ def _scan_home_files(home: Path, needles: Mapping[str, str]) -> dict[str, Any]:
         for label, needle in needles.items():
             if needle and (needle in text or needle.encode("utf-8") in data):
                 paths[_receipt_label(label)].append(relative)
-    return {"files": files, "bytes": scanned, "paths": paths}
+    return {
+        "files": files,
+        "bytes": scanned,
+        "read_errors": read_errors,
+        "truncated": truncated,
+        "paths": paths,
+    }
 
 
 def _found_map(text: str, needles: Mapping[str, str]) -> dict[str, bool]:
@@ -436,6 +447,8 @@ def _exercise(home: Path, needles: Mapping[str, str], shm_before: set[str]) -> d
     seam = server.TestOnlyOperatorIngressRelease(
         master_key=b"stage9-contained-multi-user-smoke-seam",
     )
+    if seam.production_ready is not False or seam.magic_star_release is not False:
+        raise RuntimeError("ingress seam claimed a production release")
     app = server.create_app(test_ingress_release=seam)
     client = app.test_client()
     bus = get_thought_bus()
@@ -537,8 +550,8 @@ def _exercise(home: Path, needles: Mapping[str, str], shm_before: set[str]) -> d
     exchange_modules = sorted(name for name in sys.modules if name.startswith("aureon.exchanges"))
     return {
         "test_ingress_seam": True,
-        "production_ready": bool(seam.production_ready),
-        "magic_star_release": bool(seam.magic_star_release),
+        "production_ready": False,
+        "magic_star_release": False,
         "keystore_under_home": True,
         "store_a_bytes": len(raw_a),
         "store_b_bytes": len(raw_b),
@@ -629,6 +642,54 @@ def _headers(sub: str, secret: str) -> dict[str, str]:
     return {"Authorization": f"Bearer {header}.{body}.{sig}"}
 
 
+def _complete_scan_map(
+    surfaces: Mapping[str, Any],
+    name: str,
+    field: str,
+    holds: list[str],
+) -> dict[str, Any] | None:
+    """Return a canary map. A missing or partial map is a HOLD, not a pass."""
+
+    surface = surfaces.get(name)
+    if not isinstance(surface, dict):
+        holds.append(f"{name} scan is missing")
+        return None
+    found = surface.get(field)
+    if not isinstance(found, dict):
+        holds.append(f"{name} {field} map is missing")
+        return None
+    missing = [label for label in _CANARY_LABELS if label not in found]
+    if missing:
+        holds.append(f"{name} {field} map does not score {', '.join(missing)}")
+    return found
+
+
+def _hold_if_incomplete(
+    surface: Any,
+    name: str,
+    holds: list[str],
+    *,
+    truncated: bool = False,
+    read_errors: bool = False,
+    readable: bool = False,
+) -> None:
+    if not isinstance(surface, dict):
+        return
+    if truncated:
+        if "truncated" not in surface:
+            holds.append(f"{name} truncation was not reported")
+        elif surface.get("truncated") is True:
+            holds.append(f"{name} scan was truncated")
+    if read_errors:
+        errors = surface.get("read_errors")
+        if not isinstance(errors, int):
+            holds.append(f"{name} read_errors was not reported")
+        elif errors > 0:
+            holds.append(f"{name} had {errors} read errors")
+    if readable and surface.get("readable") is not True:
+        holds.append(f"{name} was not readable; segments were not scanned")
+
+
 def _surface_found(child: Mapping[str, Any], label: str) -> list[str]:
     hits: list[str] = []
     surfaces = child.get("surfaces") if isinstance(child.get("surfaces"), dict) else {}
@@ -676,12 +737,19 @@ def judge(child: Mapping[str, Any] | None, *, started: bool, parent_net_ns: str,
     if child.get("report_contained_secret") is True:
         failures.append("child report contained a canary before redaction")
     surfaces = child.get("surfaces") if isinstance(child.get("surfaces"), dict) else {}
-    control_hits = _surface_found(child, "canary_control")
-    bus_found = (surfaces.get("thought_bus_recent") or {}).get("found") if isinstance(surfaces.get("thought_bus_recent"), dict) else {}
-    jsonl_found = (surfaces.get("thoughts_jsonl") or {}).get("found") if isinstance(surfaces.get("thoughts_jsonl"), dict) else {}
-    if not isinstance(bus_found, dict) or bus_found.get("canary_control") is not True:
+    if not isinstance(child.get("surfaces"), dict):
+        holds.append("shared-memory scan maps are missing")
+    bus_found = _complete_scan_map(surfaces, "thought_bus_recent", "found", holds)
+    jsonl_found = _complete_scan_map(surfaces, "thoughts_jsonl", "found", holds)
+    _complete_scan_map(surfaces, "os_environ_values", "found", holds)
+    _complete_scan_map(surfaces, "dev_shm_new", "found", holds)
+    home_paths = _complete_scan_map(surfaces, "home_files", "paths", holds)
+    _hold_if_incomplete(surfaces.get("thoughts_jsonl"), "thoughts_jsonl", holds, truncated=True)
+    _hold_if_incomplete(surfaces.get("home_files"), "home_files", holds, truncated=True, read_errors=True)
+    _hold_if_incomplete(surfaces.get("dev_shm_new"), "dev_shm_new", holds, read_errors=True, readable=True)
+    if isinstance(bus_found, dict) and "canary_control" in bus_found and bus_found.get("canary_control") is not True:
         failures.append("thought-bus scanner did not see the control canary")
-    if not isinstance(jsonl_found, dict) or jsonl_found.get("canary_control") is not True:
+    if isinstance(jsonl_found, dict) and "canary_control" in jsonl_found and jsonl_found.get("canary_control") is not True:
         failures.append("thoughts.jsonl scanner did not see the control canary")
     for label in _LEAK_LABELS:
         hits = _surface_found(child, label)
@@ -745,23 +813,27 @@ def judge(child: Mapping[str, Any] | None, *, started: bool, parent_net_ns: str,
             gaps.append(f"{row.get('method')} {row.get('path')} was not mounted")
         elif row.get("status") != 403:
             failures.append(f"tenant {row.get('method')} {row.get('path')} returned {row.get('status')}")
-    home_paths = {}
-    home_files = surfaces.get("home_files") if isinstance(surfaces.get("home_files"), dict) else {}
-    if isinstance(home_files.get("paths"), dict):
-        home_paths = home_files["paths"]
-    else:
-        holds.append("contained HOME files were not scanned")
-    for label in _LEAK_LABELS:
-        found_paths = home_paths.get(label) if isinstance(home_paths, dict) else None
-        if found_paths:
-            failures.append(f"{label} found in contained files {found_paths}")
-    control_paths = home_paths.get("canary_control") if isinstance(home_paths, dict) else None
-    if isinstance(control_paths, list) and not any(str(path).endswith("thoughts.jsonl") for path in control_paths):
-        failures.append("control canary was not in the contained thoughts.jsonl file")
-    shm = surfaces.get("dev_shm_new") if isinstance(surfaces.get("dev_shm_new"), dict) else {}
-    if shm.get("readable") is False:
-        holds.append("/dev/shm was not readable; new segments were not scanned")
-    if not control_hits:
+    if isinstance(home_paths, dict):
+        for label in _LEAK_LABELS:
+            if label not in home_paths:
+                continue
+            found_paths = home_paths.get(label)
+            if isinstance(found_paths, list) and found_paths:
+                failures.append(f"{label} found in contained files {found_paths}")
+            elif not isinstance(found_paths, list):
+                holds.append(f"home_files paths map does not score {label}")
+        if "canary_control" in home_paths:
+            control_paths = home_paths.get("canary_control")
+            if isinstance(control_paths, list) and not any(
+                str(path).endswith("thoughts.jsonl") for path in control_paths
+            ):
+                failures.append("control canary was not in the contained thoughts.jsonl file")
+    if (
+        bus_found is not None
+        and jsonl_found is not None
+        and home_paths is not None
+        and not _surface_found(child, "canary_control")
+    ):
         failures.append("control canary was not observed on any shared surface")
     if failures:
         verdict = "fail"

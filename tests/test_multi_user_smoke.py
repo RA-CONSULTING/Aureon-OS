@@ -88,9 +88,19 @@ def _child(**overrides: object) -> dict:
                 "preexisting_read": False,
                 "new_names": [],
                 "new_bytes_scanned": 0,
+                "read_errors": 0,
                 "found": found,
             },
-            "home_files": {"files": 2, "bytes": 10, "paths": {"canary_control": ["thoughts.jsonl"]}},
+            "home_files": {
+                "files": 2,
+                "bytes": 10,
+                "read_errors": 0,
+                "truncated": False,
+                "paths": {
+                    label: (["thoughts.jsonl"] if label == "canary_control" else [])
+                    for label in found
+                },
+            },
         },
     }
     base.update(overrides)
@@ -146,6 +156,72 @@ def test_judge_holds_when_the_required_route_is_unmounted() -> None:
     judged = judge(child, started=True, parent_net_ns="net:[1]", argv_has_net=True)
     assert judged["verdict"] == "hold"
     assert any("/api/pulse" in item for item in judged["holds"])
+
+
+def test_incomplete_or_missing_scans_cannot_pass() -> None:
+    """A missing map, a partial map, a read error, or truncation is not a pass."""
+
+    missing_env = _child()
+    del missing_env["surfaces"]["os_environ_values"]
+
+    missing_shm = _child()
+    del missing_shm["surfaces"]["dev_shm_new"]
+
+    missing_bus = _child()
+    del missing_bus["surfaces"]["thought_bus_recent"]
+
+    missing_found = _child()
+    del missing_found["surfaces"]["thought_bus_recent"]["found"]
+
+    missing_surfaces = _child()
+    del missing_surfaces["surfaces"]
+
+    partial = _child()
+    del partial["surfaces"]["os_environ_values"]["found"]["canary_tenant_a"]
+
+    read_error = _child()
+    read_error["surfaces"]["dev_shm_new"]["read_errors"] = 1
+
+    home_read_error = _child()
+    home_read_error["surfaces"]["home_files"]["read_errors"] = 2
+
+    truncated = _child()
+    truncated["surfaces"]["thoughts_jsonl"]["truncated"] = True
+
+    home_truncated = _child()
+    home_truncated["surfaces"]["home_files"]["truncated"] = True
+
+    unreported = _child()
+    del unreported["surfaces"]["thoughts_jsonl"]["truncated"]
+
+    unreadable = _child()
+    unreadable["surfaces"]["dev_shm_new"]["readable"] = False
+
+    for child in (
+        missing_env,
+        missing_shm,
+        missing_bus,
+        missing_found,
+        missing_surfaces,
+        partial,
+        read_error,
+        home_read_error,
+        truncated,
+        home_truncated,
+        unreported,
+        unreadable,
+    ):
+        judged = judge(child, started=True, parent_net_ns="net:[1]", argv_has_net=True)
+        assert judged["verdict"] in {"fail", "hold"}, judged
+        assert judged["verdict"] != "pass"
+
+
+def test_truncation_does_not_hide_a_measured_leak() -> None:
+    child = _child()
+    child["surfaces"]["thoughts_jsonl"]["truncated"] = True
+    child["surfaces"]["thought_bus_recent"]["found"]["canary_prompt_a"] = True
+    judged = judge(child, started=True, parent_net_ns="net:[1]", argv_has_net=True)
+    assert judged["verdict"] == "fail", judged
 
 
 def test_judge_does_not_treat_an_unmounted_optional_route_as_a_pass_blocker() -> None:
