@@ -584,6 +584,7 @@ def test_public_opt_in_does_not_upload_to_an_existing_space(tmp_path: Path) -> N
             "HF_TOKEN": TOKEN,
             "AUREON_RECEIPT5_ALLOW_HF_UPLOAD": "1", "AUREON_HF_GARY_YES": "1",
             "AUREON_RECEIPT5_HF_PUBLIC": "1",
+            "AUREON_HF_GARY_YES_PUBLIC": "1",
         },
         hf_client=Client(),
     )
@@ -591,6 +592,25 @@ def test_public_opt_in_does_not_upload_to_an_existing_space(tmp_path: Path) -> N
     assert receipt["deploy_performed"] is False
     assert receipt["provider_api_called"] is True
     assert "does not apply to an existing Space" in receipt["blocker"]
+    assert receipt5.validate_receipt(receipt) == []
+
+
+def test_public_flag_without_public_gary_yes_stays_private(tmp_path: Path) -> None:
+    client = _NewSpace()
+    receipt = _produce(
+        tmp_path,
+        environ={
+            "HF_TOKEN": TOKEN,
+            "AUREON_RECEIPT5_ALLOW_HF_UPLOAD": "1",
+            "AUREON_HF_GARY_YES": "1",
+            "AUREON_RECEIPT5_HF_PUBLIC": "1",
+        },
+        hf_client=client,
+    )
+    assert receipt["outcome"] == "measured"
+    assert receipt["go_live_clear"] is False
+    assert receipt["provider_readback"]["private"] is True
+    assert "create" in client.calls
     assert receipt5.validate_receipt(receipt) == []
 
 
@@ -647,6 +667,7 @@ def test_cloud_run_describe_is_the_readback_and_ids_are_redacted(tmp_path: Path)
         tmp_path,
         environ={
             "AUREON_RECEIPT5_ALLOW_CLOUD_RUN_DEPLOY": "1",
+            "AUREON_RECEIPT5_GARY_YES_CLOUD_RUN": "1",
             "AUREON_RECEIPT5_CLOUD_RUN_SERVICE": "receipt5",
             "AUREON_RECEIPT5_GCP_PROJECT": PROJECT,
             "AUREON_RECEIPT5_CLOUD_RUN_REGION": "us-central1",
@@ -673,10 +694,39 @@ def test_cloud_run_describe_is_the_readback_and_ids_are_redacted(tmp_path: Path)
     assert "secret-uid-value" not in text
     assert TOKEN not in text
     assert "--no-allow-unauthenticated" in argv_log[0]
+    assert "--max-instances=1" in argv_log[0]
     assert "--set-env-vars" not in " ".join(argv_log[0])
     assert argv_log[1][1:4] == ["run", "services", "describe"]
     assert receipt5.validate_receipt(receipt) == []
     _schema_ok(receipt)
+
+
+def test_cloud_run_without_gary_yes_does_not_call_gcloud(tmp_path: Path) -> None:
+    def runner(*_args, **_kwargs):
+        raise AssertionError("gcloud")
+
+    receipt = _produce(
+        tmp_path,
+        environ={
+            "AUREON_RECEIPT5_ALLOW_CLOUD_RUN_DEPLOY": "1",
+            "AUREON_RECEIPT5_CLOUD_RUN_SERVICE": "receipt5",
+            "AUREON_RECEIPT5_GCP_PROJECT": PROJECT,
+            "AUREON_RECEIPT5_CLOUD_RUN_REGION": "us-central1",
+            "AUREON_RECEIPT5_CLOUD_RUN_IMAGE": IMAGE,
+        },
+        which=lambda name: "/usr/bin/gcloud" if name == "gcloud" else None,
+        gcloud_lister=lambda: True,
+        gcloud_runner=runner,
+    )
+    assert receipt["outcome"] == "fail"
+    assert receipt["provider_api_called"] is False
+    assert receipt["deploy_attempted"] is False
+    assert receipt["deploy_performed"] is False
+    assert receipt["provider_readback"] is None
+    assert receipt["go_live_clear"] is False
+    assert "AUREON_RECEIPT5_GARY_YES_CLOUD_RUN" in receipt["blocker"]
+    assert "No gcloud command was run." in receipt["blocker"]
+    assert receipt5.validate_receipt(receipt) == []
 
 
 def test_cloud_run_failure_keeps_the_digest_null(tmp_path: Path) -> None:
@@ -687,6 +737,7 @@ def test_cloud_run_failure_keeps_the_digest_null(tmp_path: Path) -> None:
         tmp_path,
         environ={
             "AUREON_RECEIPT5_ALLOW_CLOUD_RUN_DEPLOY": "1",
+            "AUREON_RECEIPT5_GARY_YES_CLOUD_RUN": "1",
             "AUREON_RECEIPT5_CLOUD_RUN_SERVICE": "receipt5",
             "AUREON_RECEIPT5_GCP_PROJECT": PROJECT,
             "AUREON_RECEIPT5_CLOUD_RUN_REGION": "us-central1",
@@ -717,6 +768,7 @@ def test_cloud_run_describe_failure_after_deploy_keeps_the_flags(tmp_path: Path)
         tmp_path,
         environ={
             "AUREON_RECEIPT5_ALLOW_CLOUD_RUN_DEPLOY": "1",
+            "AUREON_RECEIPT5_GARY_YES_CLOUD_RUN": "1",
             "AUREON_RECEIPT5_CLOUD_RUN_SERVICE": "receipt5",
             "AUREON_RECEIPT5_GCP_PROJECT": PROJECT,
             "AUREON_RECEIPT5_CLOUD_RUN_REGION": "us-central1",
@@ -856,6 +908,9 @@ def test_runbook_cites_the_skip_and_leaves_the_badge() -> None:
     assert "Receipt 5 is not complete" in text
     assert "AUREON_RECEIPT5_ALLOW_HF_UPLOAD" in text
     assert "AUREON_HF_GARY_YES" in text
+    assert "AUREON_HF_GARY_YES_PUBLIC" in text
+    assert "AUREON_RECEIPT5_GARY_YES_CLOUD_RUN" in text
+    assert "--max-instances=1" in text
     assert "bb04503119681adcf832f3c3e9b0cbf09fc7a938" in text
     assert "go_live_clear: true" not in text
     assert "Receipt 5 is absent" not in text

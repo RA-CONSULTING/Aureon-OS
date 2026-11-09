@@ -166,11 +166,16 @@ upload it reads the Space and refuses the upload when the Space is not
 private, the hardware is not free `cpu-basic`, or the SDK is not `gradio`.
 `create_repo(..., exist_ok=True)` does not change privacy, hardware, or SDK,
 so it is not that check, and the runner does not send `space_hardware`.
-A new Space stays private unless `AUREON_RECEIPT5_HF_PUBLIC=1`, and that
-public opt-in does not relax the check on a Space that already exists.
+A new Space stays private unless both `AUREON_RECEIPT5_HF_PUBLIC=1` and
+`AUREON_HF_GARY_YES_PUBLIC=1` are set. Without the public Gary yes, the
+Space stays private. That pair does not relax the check on a Space that
+already exists.
 Cloud Run upload and read-back stay off unless
-`AUREON_RECEIPT5_ALLOW_CLOUD_RUN_DEPLOY=1` and a service, project, region,
-and image are already set.
+`AUREON_RECEIPT5_ALLOW_CLOUD_RUN_DEPLOY=1`,
+`AUREON_RECEIPT5_GARY_YES_CLOUD_RUN=1`, and a service, project, region, and
+image are already set. The Cloud Run Gary yes is separate from
+`AUREON_HF_GARY_YES`, so an HF yes does not unlock Cloud Run. The deploy
+command sets `--max-instances=1`.
 
 If an opted-in upload finishes and a later read fails, the receipt stays
 incomplete and keeps a null digest. It records that the provider was called

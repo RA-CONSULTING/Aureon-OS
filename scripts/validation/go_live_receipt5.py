@@ -13,11 +13,12 @@ does not send hardware identifiers or personal data. It reads an existing
 Space before any upload and refuses the upload when that Space is not
 private, the hardware is not free cpu-basic, or the SDK is not gradio.
 create_repo(exist_ok=True) does not change those settings and is not the
-check. A new Space stays private unless AUREON_RECEIPT5_HF_PUBLIC=1, and
-that public opt-in does not apply to a Space that already exists. Cloud Run
-upload and read-back stay off unless
-AUREON_RECEIPT5_ALLOW_CLOUD_RUN_DEPLOY=1 and a service, project, region, and
-image are set. This script does not place an order, open a tunnel, publish
+check. A new Space stays private unless AUREON_RECEIPT5_HF_PUBLIC=1 and
+AUREON_HF_GARY_YES_PUBLIC=1. That pair does not apply to an existing Space.
+Cloud Run upload and read-back stay off unless
+AUREON_RECEIPT5_ALLOW_CLOUD_RUN_DEPLOY=1 and
+AUREON_RECEIPT5_GARY_YES_CLOUD_RUN=1, plus a service, project, region, and
+image. This script does not place an order, open a tunnel, publish
 a Space, or move the public pin.
 
 go_live_clear stays false. The orange badge is not this stage.
@@ -61,10 +62,12 @@ SPEND_GUARD = (
     "Hardware identifiers and personal data are not sent. "
     "The free tier read from the Space must be cpu-basic, and the Space must be private gradio, "
     "before any upload. create_repo exist_ok is not that check. "
-    "A new Space stays private unless AUREON_RECEIPT5_HF_PUBLIC=1. "
-    "Cloud Run upload and read-back stay off unless AUREON_RECEIPT5_ALLOW_CLOUD_RUN_DEPLOY=1 "
-    "and AUREON_RECEIPT5_CLOUD_RUN_SERVICE, AUREON_RECEIPT5_GCP_PROJECT, "
-    "AUREON_RECEIPT5_CLOUD_RUN_REGION, and AUREON_RECEIPT5_CLOUD_RUN_IMAGE are set."
+    "A new Space stays private unless AUREON_RECEIPT5_HF_PUBLIC=1 and "
+    "AUREON_HF_GARY_YES_PUBLIC=1. "
+    "Cloud Run upload and read-back stay off unless AUREON_RECEIPT5_ALLOW_CLOUD_RUN_DEPLOY=1, "
+    "AUREON_RECEIPT5_GARY_YES_CLOUD_RUN=1, and AUREON_RECEIPT5_CLOUD_RUN_SERVICE, "
+    "AUREON_RECEIPT5_GCP_PROJECT, AUREON_RECEIPT5_CLOUD_RUN_REGION, "
+    "and AUREON_RECEIPT5_CLOUD_RUN_IMAGE are set."
 )
 MEASUREMENT_NOTE = (
     "git_head_at_measurement is HEAD when this command ran. "
@@ -81,6 +84,8 @@ BADGE_FLIP = "stage 11 / separate PR"
 HF_TOKEN_ENV = ("HF_TOKEN", "HUGGING_FACE_HUB_TOKEN")
 HF_UPLOAD_FLAG = "AUREON_RECEIPT5_ALLOW_HF_UPLOAD"
 GARY_YES = "AUREON_HF_GARY_YES"
+GARY_YES_PUBLIC = "AUREON_HF_GARY_YES_PUBLIC"
+CLOUD_RUN_GARY_YES = "AUREON_RECEIPT5_GARY_YES_CLOUD_RUN"
 HF_TOKEN_FILES = (
     ".cache/huggingface/token",
     ".huggingface/token",
@@ -711,7 +716,10 @@ def deploy_huggingface(
     if not provider_host_ok(HF_API):
         raise DeployError("Hugging Face API host failed the provider-host check")
     hardware = _hf_hardware(env)
-    private = env.get("AUREON_RECEIPT5_HF_PUBLIC", "") != "1"
+    # Public needs its own Gary yes. HF_PUBLIC alone stays private.
+    private = not (
+        env.get("AUREON_RECEIPT5_HF_PUBLIC", "") == "1" and env.get(GARY_YES_PUBLIC, "") == "1"
+    )
     folder = root / SCAFFOLD
     if client is None:
         try:
@@ -852,7 +860,15 @@ def deploy_huggingface(
 
 def _gcloud_argv(binary: str, action: str, spec: dict[str, str]) -> list[str]:
     if action == "deploy":
-        argv = [binary, "run", "deploy", spec["service"], f"--image={spec['image']}", "--no-allow-unauthenticated"]
+        argv = [
+            binary,
+            "run",
+            "deploy",
+            spec["service"],
+            f"--image={spec['image']}",
+            "--no-allow-unauthenticated",
+            "--max-instances=1",
+        ]
     elif action == "describe":
         argv = [binary, "run", "services", "describe", spec["service"]]
     else:
@@ -1111,6 +1127,22 @@ def produce(
             return _finish_measured(receipt, deployed, (token,))
         except DeployError as exc:
             return _apply_failure(receipt, exc, "huggingface")
+
+    if probe["cloud_run_flag"] and env.get(CLOUD_RUN_GARY_YES, "") != "1":
+        receipt = _base(
+            meta=meta,
+            probe=probe,
+            scaffold=scaffold,
+            outcome="fail",
+            blocker=(
+                "AUREON_RECEIPT5_ALLOW_CLOUD_RUN_DEPLOY=1 and "
+                f"{CLOUD_RUN_GARY_YES} is not 1. "
+                "Cloud Run uses its own Gary yes, not AUREON_HF_GARY_YES. "
+                "No gcloud command was run. No provider API was called."
+            ),
+            auth_method="gcloud:active-account" if probe["gcloud_active_account"] else None,
+        )
+        return receipt
 
     if probe["cloud_run_flag"]:
         receipt = _base(
