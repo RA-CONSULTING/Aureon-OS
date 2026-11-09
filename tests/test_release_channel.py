@@ -132,17 +132,20 @@ def test_tree_archive_checksums_match_bytes(tmp_path: Path) -> None:
         assert "Aureon-OS-tip-test/README" in archive.namelist()
 
 
-def test_honest_denial_passes_and_positive_claim_fails() -> None:
+def test_gate_rejects_readiness_phrases_in_any_context() -> None:
     channel = _channel()
-    denial = "This checkout is never production ready and never a validated deployment."
-    assert channel.positive_readiness_claims(denial) == []
-    assert channel.positive_readiness_claims("Aureon is production ready") == ["production ready"]
-    assert channel.positive_readiness_claims("is production ready") == ["production ready"]
-    assert channel.positive_readiness_claims("a validated deployment") == ["validated deployment"]
-    assert channel.positive_readiness_claims("never a validated deployment") == []
-    assert channel.positive_readiness_claims("not a validated deployment") == []
-    assert channel.positive_readiness_claims("this is production-ready") == ["production-ready"]
-    assert channel.positive_readiness_claims("never production-ready") == []
+    sentences = (
+        "not only production ready but validated",
+        "Aureon is not just a demo, it's production ready",
+        "Not a toy: this is production ready",
+        "Don't wait, it's production ready",
+        "No longer a prototype; never doubt it, Aureon is validated",
+        "This isn't a demo, it's production ready.",
+        "Not only is Aureon production ready, it's fast.",
+        "Don't wait: the stack is a validated deployment.",
+    )
+    for sentence in sentences:
+        assert channel.forbidden_phrase_hits(sentence), sentence
 
 
 def test_workflow_waits_for_gary_and_does_not_publish() -> None:
