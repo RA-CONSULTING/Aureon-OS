@@ -729,6 +729,48 @@ def test_cloud_run_without_gary_yes_does_not_call_gcloud(tmp_path: Path) -> None
     assert receipt5.validate_receipt(receipt) == []
 
 
+def test_direct_cloud_run_without_gary_yes_does_not_call_gcloud(monkeypatch) -> None:
+    calls: list[str] = []
+
+    def blocked(*_args, **_kwargs):
+        calls.append("subprocess")
+        raise AssertionError("subprocess")
+
+    monkeypatch.setattr(receipt5.subprocess, "run", blocked)
+
+    def which(name: str) -> str:
+        calls.append(name)
+        return "/usr/bin/gcloud"
+
+    def runner(*_args, **_kwargs):
+        calls.append("gcloud")
+        raise AssertionError("gcloud")
+
+    try:
+        receipt5.deploy_cloud_run(
+            spec={
+                "service": "receipt5",
+                "project": PROJECT,
+                "region": "us-central1",
+                "image": IMAGE,
+            },
+            which=which,
+            runner=runner,
+            env={"AUREON_RECEIPT5_ALLOW_CLOUD_RUN_DEPLOY": "1"},
+        )
+    except receipt5.DeployError as exc:
+        assert calls == []
+        assert exc.api_called is False
+        assert exc.attempted is False
+        assert exc.performed is False
+        assert "AUREON_RECEIPT5_GARY_YES_CLOUD_RUN" in exc.blocker
+        assert "AUREON_RECEIPT5_ALLOW_CLOUD_RUN_DEPLOY=1" in exc.blocker
+        assert "No gcloud command was run." in exc.blocker
+        assert "No provider API was called." in exc.blocker
+    else:
+        raise AssertionError("gcloud ran")
+
+
 def test_cloud_run_failure_keeps_the_digest_null(tmp_path: Path) -> None:
     def runner(argv, **_kwargs):
         return subprocess.CompletedProcess(argv, 1, stdout="", stderr="denied")
