@@ -45,14 +45,24 @@ def _clean_env() -> dict[str, str]:
     }
 
 
+def _reload_checkout(module_name: str):
+    """Reload a checkout module even if a leaked pin finder is on ``sys.meta_path``."""
+
+    saved = sys.meta_path[:]
+    sys.meta_path = [finder for finder in saved if type(finder).__name__ != "PinnedAureonFinder"]
+    try:
+        module = importlib.import_module(module_name)
+        return importlib.reload(module)
+    finally:
+        sys.meta_path[:] = saved
+
+
 @pytest.fixture(autouse=True)
 def _isolate_live_gate(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.delenv(FLAG, raising=False)
     monkeypatch.delenv(SESSION_ENV, raising=False)
     monkeypatch.delenv("AUREON_OPERATOR_TEST_SESSION_STAMP", raising=False)
-    import aureon.launch.live_gate as live_gate
-
-    importlib.reload(live_gate)
+    _reload_checkout("aureon.launch.live_gate")
 
 
 def _session_record(**overrides: object) -> dict[str, object]:

@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import csv
+import importlib
 import json
 import os
+import sys
 from pathlib import Path
 
 import pytest
@@ -20,6 +22,18 @@ _PUBLIC_PREFIXES = (
 
 def _read(name: str) -> bytes:
     return (FIXTURES / name).read_bytes()
+
+
+def _reload_brain_proof():
+    """Reload checkout brain proof. A leaked pin finder must not serve the pin blob."""
+
+    saved = sys.meta_path[:]
+    sys.meta_path = [finder for finder in saved if type(finder).__name__ != "PinnedAureonFinder"]
+    try:
+        module = importlib.import_module("aureon.evaluation.brain_proof")
+        return importlib.reload(module)
+    finally:
+        sys.meta_path[:] = saved
 
 
 def _kraken_transport(url: str) -> tuple[int, bytes]:
@@ -137,7 +151,9 @@ def test_both_venues_down_writes_a_hold_receipt_without_prices(tmp_path: Path) -
 
 
 def test_brain_proof_consumes_a_pack_and_names_deer_when_spread_is_absent(tmp_path: Path) -> None:
-    from aureon.evaluation.brain_proof import _market_qgita, _run_auris
+    brain_proof = _reload_brain_proof()
+    _market_qgita = brain_proof._market_qgita
+    _run_auris = brain_proof._run_auris
     from aureon.evaluation.market_series import (
         fetch_public_pack,
         load_market_series,
@@ -196,7 +212,9 @@ def test_brain_proof_consumes_a_pack_and_names_deer_when_spread_is_absent(tmp_pa
 
 
 def test_missing_pack_still_says_there_is_no_market_series(tmp_path: Path) -> None:
-    from aureon.evaluation.brain_proof import _market_qgita, _run_auris
+    brain_proof = _reload_brain_proof()
+    _market_qgita = brain_proof._market_qgita
+    _run_auris = brain_proof._run_auris
     from aureon.evaluation.market_series import load_market_series
 
     pack = load_market_series(tmp_path)
@@ -213,7 +231,8 @@ def test_missing_pack_still_says_there_is_no_market_series(tmp_path: Path) -> No
 
 
 def test_full_fixture_gives_clownfish_and_owl_a_reading() -> None:
-    from aureon.evaluation.brain_proof import _run_auris
+    brain_proof = _reload_brain_proof()
+    _run_auris = brain_proof._run_auris
     from aureon.evaluation.market_series import fetch_public_pack
 
     pack = fetch_public_pack(_kraken_transport, fetched_at="2026-11-05T00:00:00Z")
@@ -243,7 +262,8 @@ def test_full_fixture_gives_clownfish_and_owl_a_reading() -> None:
 
 
 def test_committed_pack_is_public_and_the_pin_stays() -> None:
-    from aureon.evaluation.brain_proof import _run_auris
+    brain_proof = _reload_brain_proof()
+    _run_auris = brain_proof._run_auris
     from aureon.evaluation.market_series import load_market_series, verify_pack
 
     pack = load_market_series(ROOT)
@@ -333,14 +353,10 @@ def test_offline_kraken_fixture_is_labelled_fixture_not_measured(
 ) -> None:
     """The #248 gallery bodies are a fixture. Brain proof must not call them measured."""
 
-    import importlib
-
     for name in list(os.environ):
         if name.startswith("AUREON_"):
             monkeypatch.delenv(name, raising=False)
-    import aureon.evaluation.brain_proof as brain_proof
-
-    brain_proof = importlib.reload(brain_proof)
+    brain_proof = _reload_brain_proof()
     _market_qgita = brain_proof._market_qgita
     _pack_evidence_tag = brain_proof._pack_evidence_tag
     _run_auris = brain_proof._run_auris
