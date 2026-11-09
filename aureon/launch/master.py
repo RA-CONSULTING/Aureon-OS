@@ -659,6 +659,10 @@ def redact(text: str) -> str:
 
 def dotenv_values(path: Path) -> dict[str, str]:
     found: dict[str, str] = {}
+    from aureon.launch.session_scope import dotenv_disabled
+
+    if dotenv_disabled():
+        return found
     if not path.is_file():
         return found
     try:
@@ -731,6 +735,10 @@ def _apply_safe_overlay(text: str) -> str:
 def _ensure_local_env(repo: Path) -> tuple[bool, str]:
     """Create ``.env`` from the example once. Never clobber a file the operator wrote."""
 
+    from aureon.launch.session_scope import dotenv_disabled
+
+    if dotenv_disabled():
+        return True, "PYTHON_DOTENV_DISABLED; launcher did not read or write .env"
     target = repo / ".env"
     if target.is_file():
         return True, ".env already present; launcher left it unchanged"
@@ -1832,7 +1840,11 @@ def start_rows(repo: Path, runner: Runner, components: list[Component]) -> list[
 
 
 def stop_rows(repo: Path, runner: Runner) -> list[Row]:
+    from aureon.launch.session_scope import kill_session
+
     state = load_state(repo)
+    # Scope first. killpg on the recorded groups misses setsid/setpgid children.
+    kill_session(state)
     rows: list[Row] = []
     if state.get("compose_started"):
         services = list(state.get("compose_services") or [])
@@ -1899,8 +1911,14 @@ def execute(args: argparse.Namespace, repo: Path, runner: Runner) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
+    from aureon.launch.session_scope import enter_session, publish_session
+
     args = parse_args(argv)
     root = Path(args.root).resolve() if args.root else repo_root()
+    if not args.status and not args.stop:
+        forwarded = list(sys.argv[1:] if argv is None else argv)
+        enter_session(forwarded)
+        publish_session(root)
     return execute(args, root, Runner(root))
 
 
