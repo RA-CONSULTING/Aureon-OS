@@ -13,8 +13,10 @@ exchange keys are in ``.env``. With no keys the children stay in
 paper/public-data mode and the health report says so. This process does not
 create ``capital_release.flag`` and does not place an order by itself.
 
-``--status`` only checks. ``--stop`` stops processes this launcher started.
-``--only`` selects components and the dependencies they name.
+``--status`` only checks. ``--stop`` stops the containment unit this launcher
+opened (a systemd scope, a cgroup v2, or the recorded descendant tree) and
+checks that none of those pids are still alive. ``--only`` selects components
+and the dependencies they name.
 """
 
 from __future__ import annotations
@@ -251,12 +253,22 @@ class Runner:
                 flags = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
                 proc = subprocess.Popen(creationflags=flags, **kwargs)
             else:
-                proc = subprocess.Popen(start_new_session=True, **kwargs)
+                # Stay in this session. A new session would survive a kill of
+                # the launcher process group. setsid children are collected
+                # by the containment unit instead.
+                proc = subprocess.Popen(**kwargs)
         finally:
             handle.close()
-        record = Spawn(name, list(cmd), str(cwd), dict(env), str(log_path), proc.pid, proc.pid)
+        try:
+            pgid = os.getpgid(proc.pid) if os.name != "nt" else proc.pid
+        except OSError:
+            pgid = proc.pid
+        from aureon.launch.session_guard import note_pid
+
+        note_pid(proc.pid)
+        record = Spawn(name, list(cmd), str(cwd), dict(env), str(log_path), proc.pid, pgid)
         self.spawned.append(record)
-        return proc.pid, proc.pid
+        return proc.pid, pgid
 
     def alive(self, pid: int) -> bool:
         if pid <= 0:
@@ -286,18 +298,10 @@ class Runner:
             except (OSError, subprocess.TimeoutExpired):
                 return
             return
-        group = pgid or pid
-        for sig in (signal.SIGTERM, signal.SIGKILL):
-            try:
-                os.killpg(group, sig)
-            except (ProcessLookupError, PermissionError):
-                return
-            except OSError:
-                try:
-                    os.kill(pid, sig)
-                except OSError:
-                    return
-            time.sleep(0.2)
+        del pgid
+        from aureon.launch.session_guard import kill_pid_tree
+
+        kill_pid_tree(pid)
 
     def http_ok(self, url: str, timeout: float = 1.5) -> bool:
         try:
@@ -1763,6 +1767,8 @@ def status_rows(repo: Path, runner: Runner, components: list[Component]) -> list
 def start_rows(repo: Path, runner: Runner, components: list[Component]) -> list[Row]:
     parent_before = os.environ.get("AUREON_LIVE_TRADING")
     state = load_state(repo)
+    if os.environ.get("AUREON_LAUNCH_SETSID_CANARY") == "1" and type(runner) is Runner:
+        _spawn_setsid_canary(repo, state, runner)
     _organs, organ_specs, _error = _organ_table()
     faculties, _faculty_error = _faculties()
     faculty_by_name = {str(item.get("name")): item for item in faculties}
@@ -1831,6 +1837,28 @@ def start_rows(repo: Path, runner: Runner, components: list[Component]) -> list[
     return final
 
 
+_SETSID_CANARY = (
+    "import os, time\n"
+    "os.setsid()\n"
+    "# aureon-containment-canary\n"
+    "time.sleep(3600)\n"
+)
+
+
+def _spawn_setsid_canary(repo: Path, state: dict, runner: Runner) -> None:
+    """One child that leaves the launcher session, for the containment self-test."""
+
+    spawn_owned(
+        repo,
+        state,
+        runner,
+        "canary/setsid",
+        [project_python(repo), "-c", _SETSID_CANARY],
+        repo,
+        paper_env(None, repo),
+    )
+
+
 def stop_rows(repo: Path, runner: Runner) -> list[Row]:
     state = load_state(repo)
     rows: list[Row] = []
@@ -1883,23 +1911,46 @@ def execute(args: argparse.Namespace, repo: Path, runner: Runner) -> int:
             "ignored: --live does not place an order; trading follows exchange keys in .env",
             file=sys.stderr,
         )
+    survivors: list[dict[str, str]] = []
     if args.stop:
         rows = stop_rows(repo, runner)
+        if type(runner) is Runner:
+            from aureon.launch.session_guard import stop_session
+
+            survivors = stop_session(state_dir(repo))
     else:
         chosen_components = ordered_components(components, selected)
         if args.status:
             rows = status_rows(repo, runner, chosen_components)
         else:
+            if type(runner) is Runner:
+                from aureon.launch.session_guard import open_session
+
+                open_session(state_dir(repo))
             rows = start_rows(repo, runner, chosen_components)
+            if type(runner) is Runner:
+                from aureon.launch.session_guard import mark_clean_release
+
+                mark_clean_release(state_dir(repo))
     if note and not any(row.reason.startswith(note) for row in rows):
         rows = [Row("inventory", "blocked", "down", note), *rows]
     label, armed = boot_decision(repo, dict(os.environ))
     sys.stdout.write(format_report(rows, autonomy_label(), trading_mode=label, armed=armed))
-    return 0
+    if args.stop and type(runner) is Runner:
+        from aureon.launch.session_guard import _read, format_survivor_report
+
+        mode = str(_read(state_dir(repo)).get("mode") or "")
+        sys.stdout.write(format_survivor_report(survivors, mode=mode))
+    return 1 if survivors else 0
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = parse_args(argv)
+    raw = list(sys.argv[1:] if argv is None else argv)
+    args = parse_args(raw)
+    if not args.status and not args.stop:
+        from aureon.launch.session_guard import maybe_reexec
+
+        maybe_reexec(raw)
     root = Path(args.root).resolve() if args.root else repo_root()
     return execute(args, root, Runner(root))
 
