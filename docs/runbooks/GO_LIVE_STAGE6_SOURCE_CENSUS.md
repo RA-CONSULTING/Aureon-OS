@@ -10,6 +10,7 @@ Path: `measured/go_live_stage6_provenance.json`
 Pin `bb04503119681adcf832f3c3e9b0cbf09fc7a938` aureon tree `a5114a7e5ecb4e9a51df57d58355e72882cf0a3c`.
 Tip `b2b0310362597dc520114de86d8700c0c50758d5` aureon tree `a5114a7e5ecb4e9a51df57d58355e72882cf0a3c`.
 Those aureon trees match: `true`.
+The recorded tip b2b03103 is a pre-squash commit from the #253 branch and is not on main; it can be checked by fetching that branch.
 Release-tree content sha256: `19bfb60dc368532b0b2178921a4247f55b2f1be9f8ee52dbcc66196bf6aff3ec`.
 Files: 1442. Bytes: 46172063.
 Pin-move paths: 31.

@@ -25,6 +25,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
 TIP = "b2b0310362597dc520114de86d8700c0c50758d5"
+# Not part of the provenance digest. The tip value and the measured fields stay.
+TIP_NOTE = (
+    "The recorded tip b2b03103 is a pre-squash commit from the #253 branch "
+    "and is not on main; it can be checked by fetching that branch."
+)
 PROVENANCE_SCHEMA = "aureon.go-live.release-provenance.v1"
 CENSUS_SCHEMA = "aureon.go-live.source-boundary-census.v1"
 TREE_SCHEMA = "aureon.go-live.release-tree.v1"
@@ -326,6 +331,7 @@ def build_provenance() -> dict[str, object]:
         "unified_margin_trader_total_bytes": umt_bytes,
     }
     payload["digest"] = _sha256(_canonical({key: value for key, value in payload.items() if key != "digest"}))
+    payload["tip_note"] = TIP_NOTE
     return payload
 
 
@@ -597,6 +603,7 @@ def build_census(provenance: dict[str, object]) -> dict[str, object]:
         "source_boundary_closed": not unlisted and not missing and not drift,
         "tip": TIP,
         "tip_aureon_tree": provenance["tip_aureon_tree"],
+        "tip_note": TIP_NOTE,
         "unlisted_in_inventory": [list(key) for key in unlisted],
     }
     return payload
@@ -622,6 +629,7 @@ def render_markdown(census: dict[str, object], provenance: dict[str, object]) ->
         f"Pin `{PIN}` aureon tree `{provenance['pin_aureon_tree']}`.",
         f"Tip `{TIP}` aureon tree `{provenance['tip_aureon_tree']}`.",
         f"Those aureon trees match: `{str(provenance['aureon_trees_match']).lower()}`.",
+        str(census["tip_note"]),
         f"Release-tree content sha256: `{provenance['release_tree_sha256']}`.",
         f"Files: {provenance['release_tree_file_count']}. Bytes: {provenance['release_tree_total_bytes']}.",
         f"Pin-move paths: {len(provenance['pin_move_delta'])}.",
@@ -719,6 +727,7 @@ def check() -> None:
     if stored_markdown != markdown:
         raise SystemExit("census markdown does not match the census file")
     digest = provenance.pop("digest")
+    provenance.pop("tip_note", None)
     if _sha256(_canonical(provenance)) != digest:
         raise SystemExit("provenance digest does not match its payload")
 
