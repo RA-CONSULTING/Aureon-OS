@@ -202,18 +202,18 @@ def test_committed_receipt_matches_this_tree() -> None:
         if name == "aureon/containment/native.py":
             continue
         assert _sha256(ROOT / name) == digest
-    # Measurement-time hashes stay in the receipt. Later commits, including the
-    # published-pin retarget, are not written back into this record.
+    # Measurement-time hashes stay in the receipt. The published-pin retarget
+    # and the stage 11 installer edit are not written back into this record.
     historical = {
         "README.md": "8fb3bac853ba36d9d702a85bfff663d6e537e2744628dd60a52035a746264462",
         "mcp/aureon_public/guard_loader.py": "63ab1288084187039019b17dfc47165dd4bfa16f9769f79d41281667e0dff7f0",
         "mcp/aureon_public/pin_blob.py": "6b95802ae631a41c1b3b3489937dc3d38b8e8f89c1dd782fd6648c699a1ee812",
         "mcp/aureon_public/sweep_guard.py": "b320268ba4b4138c2452869b732c519d220820339c15d19160c8e5322a7201b2",
+        "scripts/linux/install-linux.sh": "5242a98eb4fe88471a918eaa89725670aaf17de9100437a56f54410ae8f1167c",
     }
     for name, digest in historical.items():
         assert receipt["unchanged_sha256"][name] == digest
         assert _sha256(ROOT / name) != digest
-    assert _sha256(ROOT / "scripts/linux/install-linux.sh") == receipt["unchanged_sha256"]["scripts/linux/install-linux.sh"]
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     assert "release%20boundary-HOLD-orange" in readme
     assert "Go-live stays HOLD" in readme

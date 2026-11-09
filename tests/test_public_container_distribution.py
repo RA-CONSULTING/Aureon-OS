@@ -206,7 +206,13 @@ def test_measured_receipt_matches_the_hold_build() -> None:
     assert judge_preflight(receipt["preflight"]) == []
     # README.md moved on main after the local build. The image was not rebuilt
     # and was not pushed. The receipt keeps the measurement-time digest.
-    drifted = {"README.md"}
+    # scripts/linux/install-linux.sh asks the stage 11 gate before the isolated
+    # bootstrap, so it is no longer the measured bytes. The hardening runbook
+    # stays out of this set; another change owns that digest.
+    drifted = {
+        "README.md",
+        "scripts/linux/install-linux.sh",
+    }
     for name, digest in receipt["source_sha256"].items():
         current = _sha256(ROOT / name)
         if name in drifted:
@@ -216,6 +222,7 @@ def test_measured_receipt_matches_the_hold_build() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     assert "release%20boundary-HOLD-orange" in readme
     lowered_readme = readme.lower()
+    assert "this checkout is research-stage software" in lowered_readme
     assert "production-ready" not in lowered_readme
     assert "production ready" not in lowered_readme
     assert "validated" not in lowered_readme
