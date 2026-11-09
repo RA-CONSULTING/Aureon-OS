@@ -1,10 +1,10 @@
 {
   "aureon_source": {
-    "commit": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
+    "commit": "99b8ace3178973e60094ac620662e5848496a549",
     "kind": "checkout"
   },
-  "aureon_tree": "a5114a7e5ecb4e9a51df57d58355e72882cf0a3c",
-  "code_commit": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
+  "aureon_tree": "ef7e1a985200788558b636f267659e7577a71331",
+  "code_commit": "99b8ace3178973e60094ac620662e5848496a549",
   "code_commit_note": "This is the parent of the commit that contains this record. The record cannot name the commit that adds the file.",
   "entries": [
     {
@@ -141,7 +141,7 @@
   },
   "live_orders": "refused",
   "pin": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
-  "pin_aureon_tree": "3ba0cab4a5e193b01943e5e6e0be25077ff759f6",
+  "pin_aureon_tree": "a5114a7e5ecb4e9a51df57d58355e72882cf0a3c",
   "processes": "blocked",
   "schema": "aureon.public.stage34-call-sweep.v1",
   "sockets": "blocked",
