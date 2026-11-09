@@ -93,6 +93,24 @@ def process_env(extra: dict[str, str] | None = None) -> dict[str, str]:
     return env
 
 
+def ensure_checkout_importable() -> None:
+    """Put this checkout on sys.path for the in-process cognition import.
+
+    ``./install.sh`` executes ``python scripts/plug_and_play.py``. That sets
+    ``sys.path[0]`` to ``scripts/`` and does not add the checkout. Child
+    processes receive the checkout through ``PYTHONPATH``. Writing
+    ``os.environ["PYTHONPATH"]`` does not rebuild this process's ``sys.path``,
+    so ``/api/cognition`` would raise ``ModuleNotFoundError`` for ``aureon``.
+    """
+
+    entries = (str(ROOT / "mcp"), str(ROOT))
+    for entry in entries:
+        while entry in sys.path:
+            sys.path.remove(entry)
+    for entry in entries:
+        sys.path.insert(0, entry)
+
+
 def arm_this_process() -> None:
     """Drop secrets in this process and keep PATH so Node can start."""
 
@@ -101,6 +119,7 @@ def arm_this_process() -> None:
         if name not in env:
             os.environ.pop(name, None)
     os.environ.update(env)
+    ensure_checkout_importable()
 
 
 def _http_get(url: str, timeout: float = 3.0) -> tuple[int, bytes]:
@@ -270,6 +289,7 @@ def cognition_view(report: dict[str, Any]) -> dict[str, Any]:
 
 
 def run_cognition() -> dict[str, Any]:
+    ensure_checkout_importable()
     from aureon.evaluation.brain_proof import evaluate_brain
 
     report = evaluate_brain()

@@ -68,6 +68,46 @@ def test_trade_view_keeps_orders_placed_for_the_smoke_gate() -> None:
     assert module._cognition_trade_failure(module._trade_view(placed)) == "cognition auris trade_readiness"
 
 
+def test_supervisor_imports_the_checkout_when_started_as_a_script() -> None:
+    import importlib.util
+    import sys
+
+    path = ROOT / "scripts" / "plug_and_play.py"
+    spec = importlib.util.spec_from_file_location("plug_and_play_path_under_test", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    saved_path = list(sys.path)
+    saved_modules = {
+        name: sys.modules.pop(name)
+        for name in list(sys.modules)
+        if name == "aureon" or name.startswith("aureon.")
+    }
+    checkout = {str(module.ROOT), str(module.ROOT / "mcp"), ""}
+    try:
+        sys.path[:] = [str(module.ROOT / "scripts")] + [
+            entry for entry in saved_path if entry not in checkout
+        ]
+        try:
+            import aureon  # noqa: F401
+        except ModuleNotFoundError:
+            pass
+        else:
+            raise AssertionError("script-directory sys.path should not already import aureon")
+        module.ensure_checkout_importable()
+        assert sys.path[0] == str(module.ROOT)
+        assert sys.path[1] == str(module.ROOT / "mcp")
+        import aureon
+
+        assert Path(aureon.__file__).resolve().parent == module.ROOT / "aureon"
+    finally:
+        sys.path[:] = saved_path
+        for name in list(sys.modules):
+            if name == "aureon" or name.startswith("aureon."):
+                sys.modules.pop(name, None)
+        sys.modules.update(saved_modules)
+
+
 def test_supervisor_keeps_trading_and_external_models_off() -> None:
     source = _text("scripts/plug_and_play.py")
     assert 'AUREON_LIVE_TRADING": "0"' in source
