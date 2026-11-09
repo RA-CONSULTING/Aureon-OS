@@ -47,6 +47,55 @@ def _alive(pid: int) -> bool:
     return not rest or rest[0] != "Z"
 
 
+def _descendants(root: int) -> set[int]:
+    """ppid walk. Kept here so a pin finder left on the test process cannot block it."""
+
+    children: dict[int, list[int]] = {}
+    proc = Path("/proc")
+    for entry in proc.iterdir():
+        if not entry.name.isdigit():
+            continue
+        try:
+            rest = (entry / "stat").read_text(encoding="utf-8").rsplit(")", 1)[-1].split()
+            parent = int(rest[1])
+        except (OSError, IndexError, ValueError):
+            continue
+        children.setdefault(parent, []).append(int(entry.name))
+    found = {root}
+    stack = [root]
+    while stack:
+        pid = stack.pop()
+        for child in children.get(pid, []):
+            if child not in found:
+                found.add(child)
+                stack.append(child)
+    return found
+
+
+def _stop_recorded(state: Path) -> str:
+    """Fresh interpreter. The test process may be pinning aureon imports."""
+
+    code = (
+        "import sys\n"
+        "from pathlib import Path\n"
+        "from aureon.launch.session_guard import stop_session\n"
+        "stop_session(Path(sys.argv[1]))\n"
+    )
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(ROOT)
+    subprocess.run(
+        [sys.executable, "-c", code, str(state)],
+        cwd=str(ROOT),
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+    report = state / "survivors.txt"
+    return report.read_text(encoding="utf-8") if report.is_file() else ""
+
+
 def _external_ifaces(pid: int) -> list[str]:
     try:
         lines = Path(f"/proc/{pid}/net/dev").read_text(encoding="utf-8").splitlines()
@@ -137,14 +186,9 @@ def test_group_kill_reaps_a_setsid_child(tmp_path: Path) -> None:
         deadline = time.time() + 10
         while time.time() < deadline and _alive(canary):
             time.sleep(0.1)
-        from aureon.launch.session_guard import format_survivor_report, stop_session
-
-        survivors = stop_session(state)
-        report = (state / "survivors.txt").read_text(encoding="utf-8")
-        print(format_survivor_report(survivors))
+        report = _stop_recorded(state)
         print(report)
         assert not _alive(canary), f"setsid canary {canary} survived\n{report}"
-        assert survivors == []
         assert "containment_survivors=0" in report
         assert "(none)" in report
     finally:
@@ -158,9 +202,7 @@ def test_group_kill_reaps_a_setsid_child(tmp_path: Path) -> None:
                 os.kill(canary, signal.SIGKILL)
             except OSError:
                 pass
-        from aureon.launch.session_guard import stop_session
-
-        stop_session(state)
+        _stop_recorded(state)
 
 
 def _external_group(leader: int, child: int) -> bool:
@@ -256,11 +298,9 @@ def test_full_launcher_kill_leaves_no_survivors(tmp_path: Path) -> None:
             time.sleep(0.05)
         assert proc.poll() is None, stderr_path.read_text(encoding="utf-8", errors="replace")[-2000:]
         assert ifaces == [], f"launcher network was not blocked: {ifaces}"
-        from aureon.launch.session_guard import _walk_descendants
-
         deadline = time.time() + 180
         while time.time() < deadline:
-            descendants = _walk_descendants({proc.pid})
+            descendants = _descendants(proc.pid)
             for pid in descendants:
                 command = _cmdline(pid)
                 if "aureon.exchanges.unified_market_trader" in command and _alive(pid):
