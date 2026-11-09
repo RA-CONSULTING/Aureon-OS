@@ -1,0 +1,149 @@
+{
+  "aureon_source": {
+    "commit": "99b8ace3178973e60094ac620662e5848496a549",
+    "kind": "checkout"
+  },
+  "aureon_tree": "ef7e1a985200788558b636f267659e7577a71331",
+  "code_commit": "99b8ace3178973e60094ac620662e5848496a549",
+  "code_commit_note": "This is the parent of the commit that contains this record. The record cannot name the commit that adds the file.",
+  "entries": [
+    {
+      "attempts": [
+        {
+          "arguments": {},
+          "bad": [],
+          "called": true,
+          "error": null,
+          "label": "no_arguments",
+          "note": "No arguments.",
+          "process": [],
+          "reason": null,
+          "refusal": null,
+          "sandbox_writes": [],
+          "socket": [],
+          "status": "cited",
+          "writes": []
+        },
+        {
+          "arguments": {},
+          "bad": [],
+          "called": true,
+          "error": null,
+          "label": "read_gate",
+          "note": "The read-gate arguments. No order and no key value.",
+          "process": [],
+          "reason": null,
+          "refusal": null,
+          "sandbox_writes": [],
+          "socket": [],
+          "status": "cited",
+          "writes": []
+        }
+      ],
+      "bad": [],
+      "called": true,
+      "error": null,
+      "module": "miner/miner_inhouse_ai_bridge.py",
+      "plan_stage": 3,
+      "process": [],
+      "reason": null,
+      "refusal": null,
+      "refused": false,
+      "sandbox_writes": [],
+      "socket": [],
+      "status": "cited",
+      "symbol": "MinerAIInsight.to_dict",
+      "writes": []
+    },
+    {
+      "attempts": [
+        {
+          "arguments": {},
+          "bad": [],
+          "called": false,
+          "error": null,
+          "label": "no_arguments",
+          "note": "No arguments.",
+          "process": [],
+          "reason": "TypeError: compute_zpe_ground() missing 1 required positional argument: 'lambda_t'",
+          "refusal": null,
+          "sandbox_writes": [],
+          "socket": [],
+          "status": "unavailable",
+          "writes": []
+        },
+        {
+          "arguments": {
+            "lambda_t": 1.0
+          },
+          "bad": [],
+          "called": true,
+          "error": null,
+          "label": "read_gate",
+          "note": "The read-gate arguments. No order and no key value.",
+          "process": [],
+          "reason": null,
+          "refusal": null,
+          "sandbox_writes": [],
+          "socket": [],
+          "status": "cited",
+          "writes": []
+        }
+      ],
+      "bad": [],
+      "called": true,
+      "error": null,
+      "module": "queen/temporal_ground.py",
+      "plan_stage": 4,
+      "process": [],
+      "reason": null,
+      "refusal": null,
+      "refused": false,
+      "sandbox_writes": [],
+      "socket": [],
+      "status": "cited",
+      "symbol": "compute_zpe_ground",
+      "writes": []
+    }
+  ],
+  "key_groups": [
+    {
+      "key_group": "absent:kraken",
+      "present": false
+    },
+    {
+      "key_group": "absent:capital",
+      "present": false
+    },
+    {
+      "key_group": "absent:alpaca",
+      "present": false
+    },
+    {
+      "key_group": "absent:binance",
+      "present": false
+    }
+  ],
+  "key_material": "not read",
+  "layout": {
+    "beside": "/agent/repos",
+    "created": [],
+    "siblings": [
+      {
+        "name": "NEXUS-LIVE-FEED-",
+        "present": false
+      },
+      {
+        "name": "Aureon-Trading--Project-Sero",
+        "present": false
+      }
+    ]
+  },
+  "live_orders": "refused",
+  "pin": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
+  "pin_aureon_tree": "a5114a7e5ecb4e9a51df57d58355e72882cf0a3c",
+  "processes": "blocked",
+  "schema": "aureon.public.stage34-call-sweep.v1",
+  "sockets": "blocked",
+  "writes": "outside sandbox blocked"
+}

@@ -190,9 +190,12 @@ def test_space_check_refuses_stage_three_and_four() -> None:
     assert report["observer_mode"] == "dry_run"
     assert report["require_pin"] == "1"
     assert report["sweep_set"] is False
-    assert report["queen_call"]["reason"] == "plan stage 4 is not open"
-    assert report["queen_call"].get("called") is not True
-    for name in ("miner", "accounting", "queen", "exchanges", "trading"):
+    assert report["queen_call"].get("called") is True
+    assert report["queen_call"]["status"] == "cited"
+    assert report["read_gate"] == ["miner", "queen"]
+    for name in ("miner", "queen"):
+        assert report["closed_packages_reachable"][name] > 0
+    for name in ("accounting", "trading", "exchanges"):
         assert report["closed_packages_reachable"][name] == 0
 
 

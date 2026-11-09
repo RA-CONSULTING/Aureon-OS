@@ -169,9 +169,9 @@ python -m pip install 'aureon[operator] @ git+https://github.com/RA-CONSULTING/A
 
 That command does not upload anything. Public PyPI is refused. The console scripts from the wheel return a HOLD receipt and do not start a listener or place an order. Go-live stays HOLD.
 
-## Public MCP (stages 1 and 2 of 4)
+## Public MCP
 
-[`mcp/aureon_public/README.md`](mcp/aureon_public/README.md) is the public MCP surface. It is read-only. Stages 1 and 2 of 4 are open. `OPEN_PLAN_THROUGH` is 2. Stages 3 and 4 stay closed until the pull requests that open them land.
+[`mcp/aureon_public/README.md`](mcp/aureon_public/README.md) is the public MCP surface. It is read-only. Stages 1 and 2 are open. `OPEN_PLAN_THROUGH` is 2. Miner and queen are open only on a read gate. Exchange `body_call` stays refused. Orders and key values stay closed. Go-live stays HOLD.
 
 ---
 

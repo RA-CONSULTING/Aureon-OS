@@ -40,7 +40,7 @@ UPDATES: tuple[tuple[str, str, str], ...] = (
     ("inhouse_ai", "excluded", "The tool registry can dispatch. Not re-exported."),
     ("integrations", "integrations_phi_plan", "build_phi_swarm_plan. No model is called."),
     ("intelligence", "intelligence_resonance", "calculate_harmonic_resonance. Trading permission is not called."),
-    ("miner", "excluded", "The only public function constructs a bridge. Not called."),
+    ("miner", "stage34_miner_insight", "MinerAIInsight.to_dict on an empty insight. The bridge is not constructed."),
     ("monitors", "excluded", "aureon_live_monitor exits on import without aiohttp, and the wave monitor sets LIVE=1. Not called."),
     ("observability", "observability_redact", "redact_observability_value. Events are not emitted."),
     ("observer", "observer_kp_sample", "parse_kp_file of the committed Kp file, one sample. Stage-2 tools read mode flags, the DE440 prefix, and the source registry. No download."),

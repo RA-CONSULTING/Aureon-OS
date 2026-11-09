@@ -49,7 +49,7 @@ PACKAGES: tuple[dict[str, str], ...] = (
     {"package": "integrations", "kind": "catalog", "reason": "External systems. Not called."},
     {"package": "intelligence", "kind": "catalog", "reason": "GlobalMarketOrganism is not a stateless API. Not called."},
     {"package": "launch", "kind": "operator", "reason": "Process start. Operator server only. This server does not launch it."},
-    {"package": "miner", "kind": "catalog", "reason": "Not opened. No safe callable wrapped."},
+    {"package": "miner", "kind": "stage34_miner_insight", "reason": "MinerAIInsight.to_dict on an empty insight. The bridge is not constructed."},
     {"package": "monitors", "kind": "catalog", "reason": "Not opened. No safe callable wrapped."},
     {"package": "observability", "kind": "catalog", "reason": "Not opened. No safe callable wrapped."},
     {"package": "observer", "kind": "catalog", "reason": "HarmonicObserver attaches to the live daemon. Not called."},
@@ -564,6 +564,7 @@ def public_layer_tools() -> list[Any]:
     from aureon_public.more_layers import TOOLS
     from aureon_public.stage1_rest import TOOLS as STAGE1_TOOLS
     from aureon_public.stage2_layer import TOOLS as STAGE2_TOOLS
+    from aureon_public.stage34_layer import TOOLS as STAGE34_TOOLS
 
     return [
         package_dispositions,
@@ -582,6 +583,7 @@ def public_layer_tools() -> list[Any]:
         *ALIGNMENT_TOOLS,
         *STAGE1_TOOLS,
         *STAGE2_TOOLS,
+        *STAGE34_TOOLS,
     ]
 
 

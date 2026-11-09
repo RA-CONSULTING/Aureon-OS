@@ -86,8 +86,15 @@ def test_protocol_record_has_both_transports_and_the_pin() -> None:
     expected_prompts = sorted(item.name for item in asyncio.run(server.list_prompts()))
 
     # The protocol session was not re-recorded. Pin and Space publish stay
-    # where they were. The live server adds only the stage-8 exchanges read tools.
-    stage8_tools = {"exchanges_gate", "exchanges_surface"}
+    # where they were. The live server adds the stage-8 exchanges read tools
+    # and the stage 3 and 4 read-gate tools.
+    stage8_tools = {
+        "exchanges_gate",
+        "exchanges_surface",
+        "stage34_key_groups",
+        "stage34_miner_insight",
+        "stage34_queen_ground",
+    }
     stage8_resources = {"aureon://exchanges/surface"}
     for transport in (record["stdio"], http):
         assert transport["initialize"]["serverInfo"]["name"] == "aureon-public"

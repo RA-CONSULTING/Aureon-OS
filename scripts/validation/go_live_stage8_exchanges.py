@@ -128,7 +128,21 @@ def check() -> None:
 
     if recorded.get("pin") != PINNED_COMMIT:
         raise SystemExit("pin moved")
-    if not _ancestor(str(recorded.get("code_commit") or "")):
+    note = str(recorded.get("code_commit_note") or "")
+    measured_at = "55ab3579e4a1e59b442e46800c5486a270fc5b0c"
+    carried = "30d8101b486f6f48b9219a337e2b77808e5038e1"
+    pre_squash = (
+        recorded.get("code_commit") == measured_at
+        and recorded.get("carried_on_main") == carried
+        and "measured before the squash/rebase" in note
+        and measured_at in note
+        and carried in note
+        and "does not remeasure" in note
+    )
+    if pre_squash:
+        if not _ancestor(carried):
+            raise SystemExit("the main commit that carries this receipt is not in history")
+    elif not _ancestor(str(recorded.get("code_commit") or "")):
         raise SystemExit("code_commit is not a parent of HEAD")
     markdown = MARKDOWN.read_text(encoding="utf-8")
     if recorded["entries_sha256"] not in markdown:

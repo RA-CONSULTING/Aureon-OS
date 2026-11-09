@@ -117,6 +117,10 @@
       "reachable": 0,
       "public_entry_points": 365
     },
+    "evidence": {
+      "reachable": 0,
+      "public_entry_points": 15
+    },
     "generated": {
       "reachable": 4,
       "public_entry_points": 4
@@ -142,8 +146,8 @@
       "public_entry_points": 0
     },
     "miner": {
-      "reachable": 0,
-      "public_entry_points": 0
+      "reachable": 1,
+      "public_entry_points": 1
     },
     "observability": {
       "reachable": 0,

@@ -140,10 +140,13 @@ def _load(dotted: str, module_rel: str) -> Any:
         install_pinned_aureon_finder,
         refuse_preseeded_aureon,
     )
+    from aureon_public.stage34_gate import is_read_dotted, load_read_gated
 
     install_pinned_aureon_finder()
     apply_space_guard()
     _drop_checkout_root()
+    if is_read_dotted(dotted):
+        return load_read_gated(dotted)
     refuse_preseeded_aureon()
     return import_through_finder(dotted)
 
@@ -183,21 +186,12 @@ def _install_sweep_guard() -> None:
     install_sweep_guard()
 
 
-def _sweep_modules() -> list[str]:
+def _sweep_modules(module: str = "", symbol: str = "") -> list[str]:
     from aureon_public.stage2_import_sweep import is_http_client
+    from aureon_public.stage34_gate import banned_import
 
-    banned = []
-    for name in sys.modules:
-        if any(marker in name for marker in ("inhouse_ai", "ollama_config")):
-            banned.append(name)
-            continue
-        if name in {"aureon.queen", "aureon.miner", "aureon.swarm_motion"} or name.startswith(
-            ("aureon.queen.", "aureon.miner.", "aureon.swarm_motion.")
-        ):
-            banned.append(name)
-            continue
-        if is_http_client(name):
-            banned.append(name)
+    names = list(sys.modules)
+    banned = [name for name in names if banned_import(name, module, symbol, http_client=is_http_client)]
     return sorted(banned)
 
 
@@ -205,6 +199,7 @@ def main() -> None:
     _install_sweep_guard()
     real_stdout = sys.stdout
     sys.stdout = sys.stderr
+    job: dict[str, Any] = {}
     try:
         job = json.loads(sys.stdin.read() or "{}")
         result = _call(
@@ -222,14 +217,14 @@ def main() -> None:
         payload["modules"] = sorted(
             name
             for name in sys.modules
-            if "inhouse_ai" in name or "ollama_config" in name
+            if name == "aureon.inhouse_ai" or name.startswith("aureon.inhouse_ai.") or "ollama_config" in name
         )
     if os.environ.get("AUREON_PUBLIC_SWEEP") == "1":
         from aureon_public.sweep_guard import snapshot
 
         snap = snapshot()
         payload["sweep"] = {
-            "modules": _sweep_modules(),
+            "modules": _sweep_modules(str(job.get("module") or ""), str(job.get("symbol") or "")),
             "processes": snap["processes"],
             "sandbox_writes": snap["sandbox_writes"],
             "sockets": snap["sockets"],

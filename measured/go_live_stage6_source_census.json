@@ -8,7 +8,7 @@
   "field_drift": [],
   "full_body_enabled_through": 6,
   "go_live_clear": false,
-  "inventory_sha256": "be5e14d73ae1130a16d04d355478a1474bf1f1b2c405c9d2196444eca8a391dc",
+  "inventory_sha256": "66e9e1ba8da5e11b032c0c27656b7847e88734cf3b030f838af2fd7aa1867bfd",
   "inventory_symbol_count": 20121,
   "missing_from_source": [],
   "open_gaps": [
@@ -22,7 +22,7 @@
     },
     {
       "id": "plan_stages_3_and_4_closed",
-      "text": "Coverage-plan stages above 2 stay closed. Full-body ENABLED_THROUGH is 6. That full-body number is not an opening of coverage-plan stages 3 and 4. 0 public entry points added since the pin inventory are refused. evidence is plan stage 4 because render_results matches the scanner key pattern. Harmonic stays plan stage 4. Exchanges stay plan stage 4. The matched token in `render_results` is `dotenv`, from the letters inside `python-dotenv`."
+      "text": "OPEN_PLAN_THROUGH stays 2. The read gate opens two entry points: miner MinerAIInsight.to_dict and queen compute_zpe_ground. Exchange body_call stays refused. Full-body ENABLED_THROUGH is 6. That full-body number is not the read gate. 0 public entry points added since the pin inventory are refused. evidence is plan stage 4 because render_results matches the scanner key pattern. Harmonic stays plan stage 4. Exchanges stay plan stage 4. Exchange rows stay operator. The matched token in `render_results` is `dotenv`, from the letters inside `python-dotenv`."
     },
     {
       "id": "changed_blobs_not_recalled",
@@ -34,7 +34,7 @@
     },
     {
       "id": "pin_inventory_predates_closure",
-      "text": "Inventory sha256 at pin bb04503119681adcf832f3c3e9b0cbf09fc7a938 is be5e14d73ae1130a16d04d355478a1474bf1f1b2c405c9d2196444eca8a391dc. The closure inventory sha256 is be5e14d73ae1130a16d04d355478a1474bf1f1b2c405c9d2196444eca8a391dc. Tip b2b0310362597dc520114de86d8700c0c50758d5 did not change the inventory blob. No inventory rows were added since the pin inventory. The pin aureon tree matches the tip aureon tree."
+      "text": "Inventory sha256 at pin bb04503119681adcf832f3c3e9b0cbf09fc7a938 is be5e14d73ae1130a16d04d355478a1474bf1f1b2c405c9d2196444eca8a391dc. The closure inventory sha256 is 66e9e1ba8da5e11b032c0c27656b7847e88734cf3b030f838af2fd7aa1867bfd. Tip b2b0310362597dc520114de86d8700c0c50758d5 did not change the inventory blob. No inventory rows were added since the pin inventory. The pin aureon tree matches the tip aureon tree."
     },
     {
       "id": "pin_tree_symbols_outside_inventory",
