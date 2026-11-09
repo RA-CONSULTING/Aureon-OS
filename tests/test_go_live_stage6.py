@@ -64,7 +64,10 @@ def test_stage6_receipts_match_the_pin_and_leave_gaps_open() -> None:
     assert census["source_boundary_closed"] is False
     assert census["coverage_plan_open_through"] == 2
     assert census["coverage_plan_stages_3_and_4_open"] is False
-    assert len(census["unlisted_in_inventory"]) == 60
+    assert len(census["unlisted_in_inventory"]) == 64
+    unlisted = {tuple(row) for row in census["unlisted_in_inventory"]}
+    for symbol in ("assemble_next", "next_anchor_record", "next_commitment", "stamp_next"):
+        assert ("evidence/hnc_anchor.py", symbol, "function") in unlisted
     assert census["missing_from_source"] == []
     assert census["field_drift"] == []
     assert census["removed_since_pin_inventory"] == []
@@ -73,7 +76,11 @@ def test_stage6_receipts_match_the_pin_and_leave_gaps_open() -> None:
     assert census["provenance_digest"] == provenance["digest"]
     assert census["added_public_entry_points"] == []
     assert census["added_since_pin_inventory"] == 0
-    assert census["post_pin_checkout_paths"] == []
+    assert census["post_pin_checkout_paths"] == [
+        "aureon/containment/_multi_user_child.py",
+        "aureon/containment/multi_user_smoke.py",
+    ]
+    assert census["tip"] == TIP
     gaps = {item["id"]: item["text"] for item in census["open_gaps"]}
     assert set(gaps) == {
         "sweep_not_repeated",
@@ -91,7 +98,9 @@ def test_stage6_receipts_match_the_pin_and_leave_gaps_open() -> None:
     assert "does not report the system alive" in gaps["receipt_5_absent"]
     assert "go_live_clear is false" in gaps["receipt_5_absent"]
     assert "http_get" in gaps["pin_tree_symbols_outside_inventory"]
+    assert "later than tip b2b0310362597dc520114de86d8700c0c50758d5" in gaps["pin_tree_symbols_outside_inventory"]
     assert "Plan stages 3 and 4 stay closed." in gaps["pin_tree_symbols_outside_inventory"]
+    assert "MinerAIInsight.to_dict" in gaps["plan_stages_3_and_4_closed"]
     assert "This is not a go-live clear." in markdown
     assert "Decision: `HOLD`." in markdown
 

@@ -38,19 +38,22 @@
     },
     {
       "id": "pin_tree_symbols_outside_inventory",
-      "text": "60 symbols are in the pin aureon tree and are not in docs/mcp/inventory.json. They were not added. `evaluation/market_series.py` `http_get` is a live public fetch. Listing that row would move the evaluation package from plan stage 2 to plan stage 4 and would change the reachable count. Reachable stays the prior sweep's 69. Plan stages 3 and 4 stay closed. The unlisted paths are `aureon/containment/__init__.py`, `aureon/containment/__main__.py`, `aureon/containment/_child_probe.py`, `aureon/containment/_child_wrapper.py`, `aureon/containment/cold_boot.py`, `aureon/containment/native.py`, `aureon/evaluation/market_series.py`, `aureon/evaluation/qgita_series_rates.py`, `aureon/evidence/hnc_anchor.py`."
+      "text": "64 symbols are in the pin aureon tree and are not in docs/mcp/inventory.json. They were not added. The symbol count is a scan of this checkout, which is later than tip b2b0310362597dc520114de86d8700c0c50758d5. The tip field stays that commit and is not a claim that these counts were measured there. `evaluation/market_series.py` `http_get` is a live public fetch. Listing that row would move the evaluation package from plan stage 2 to plan stage 4 and would change the reachable count. Reachable stays the prior sweep's 69. Plan stages 3 and 4 stay closed. The unlisted paths are `aureon/containment/__init__.py`, `aureon/containment/__main__.py`, `aureon/containment/_child_probe.py`, `aureon/containment/_child_wrapper.py`, `aureon/containment/cold_boot.py`, `aureon/containment/native.py`, `aureon/evaluation/market_series.py`, `aureon/evaluation/qgita_series_rates.py`, `aureon/evidence/hnc_anchor.py`."
     }
   ],
   "pin": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
   "pin_aureon_tree": "a5114a7e5ecb4e9a51df57d58355e72882cf0a3c",
   "pin_inventory_sha256": "be5e14d73ae1130a16d04d355478a1474bf1f1b2c405c9d2196444eca8a391dc",
-  "post_pin_checkout_paths": [],
+  "post_pin_checkout_paths": [
+    "aureon/containment/_multi_user_child.py",
+    "aureon/containment/multi_user_smoke.py"
+  ],
   "provenance_digest": "cea8089cd4be4c39f80123f5f0f9ee806fefb76e528194c42602bbca7ae20289",
   "provenance_path": "measured/go_live_stage6_provenance.json",
   "reachable_count": null,
   "receipt": 4,
   "removed_since_pin_inventory": [],
-  "scan_symbol_count": 20181,
+  "scan_symbol_count": 20185,
   "schema": "aureon.go-live.source-boundary-census.v1",
   "source_boundary_closed": false,
   "tip": "b2b0310362597dc520114de86d8700c0c50758d5",
@@ -268,6 +271,11 @@
     ],
     [
       "evidence/hnc_anchor.py",
+      "assemble_next",
+      "function"
+    ],
+    [
+      "evidence/hnc_anchor.py",
       "attach_note",
       "function"
     ],
@@ -318,6 +326,16 @@
     ],
     [
       "evidence/hnc_anchor.py",
+      "next_anchor_record",
+      "function"
+    ],
+    [
+      "evidence/hnc_anchor.py",
+      "next_commitment",
+      "function"
+    ],
+    [
+      "evidence/hnc_anchor.py",
       "parse_gen_time",
       "function"
     ],
@@ -344,6 +362,11 @@
     [
       "evidence/hnc_anchor.py",
       "stamp_files",
+      "function"
+    ],
+    [
+      "evidence/hnc_anchor.py",
+      "stamp_next",
       "function"
     ],
     [

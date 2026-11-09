@@ -20,8 +20,8 @@ The pin-move commit updates published pin strings and the tests that name them. 
 
 ## Closure
 
-Scan symbols: 20181. Inventory symbols: 20121.
-Unlisted in the inventory: 60.
+Scan symbols: 20185. Inventory symbols: 20121.
+Unlisted in the inventory: 64.
 Inventory rows missing from source: 0.
 Field drift on shared keys: 0.
 Source boundary closed: `false`.
@@ -48,7 +48,7 @@ A public entry point is a public function or method. A module or class is listed
 - `changed_blobs_not_recalled`. These existing files differ in git blob between the measured aureon tree and the pin. The census compares symbol names and scanner fields. It does not re-call them: `aureon/core/aureon_env.py`, `aureon/evaluation/auris_node_eval.py`, `aureon/evaluation/brain_proof.py`, `aureon/evaluation/measured_proof.py`, `aureon/evaluation/qgita_snr_benchmark.py`, `aureon/harmonic/aureon_harmonic_reality.py`, `aureon/saas/domains.py`, `aureon/utils/aureon_queen_hive_mind.py`.
 - `receipt_5_absent`. Receipt 1 is measured at reports/measured/native_process_containment.json. This stage does not rewrite that record. Receipts 2 and 4 are this remeasurement. Receipt 3 is the DigiCert head anchor in docs/runbooks/GO_LIVE_HARDENING.md. This stage does not append a later head, does not set external_head_anchor_attested, and does not report the system alive. Receipt 5, an authenticated deployment receipt and provider-side read-back, is absent. Decision remains HOLD. go_live_clear is false.
 - `pin_inventory_predates_closure`. Inventory sha256 at pin bb04503119681adcf832f3c3e9b0cbf09fc7a938 is be5e14d73ae1130a16d04d355478a1474bf1f1b2c405c9d2196444eca8a391dc. The closure inventory sha256 is 66e9e1ba8da5e11b032c0c27656b7847e88734cf3b030f838af2fd7aa1867bfd. Tip b2b0310362597dc520114de86d8700c0c50758d5 did not change the inventory blob. No inventory rows were added since the pin inventory. The pin aureon tree matches the tip aureon tree.
-- `pin_tree_symbols_outside_inventory`. 60 symbols are in the pin aureon tree and are not in docs/mcp/inventory.json. They were not added. `evaluation/market_series.py` `http_get` is a live public fetch. Listing that row would move the evaluation package from plan stage 2 to plan stage 4 and would change the reachable count. Reachable stays the prior sweep's 69. Plan stages 3 and 4 stay closed. The unlisted paths are `aureon/containment/__init__.py`, `aureon/containment/__main__.py`, `aureon/containment/_child_probe.py`, `aureon/containment/_child_wrapper.py`, `aureon/containment/cold_boot.py`, `aureon/containment/native.py`, `aureon/evaluation/market_series.py`, `aureon/evaluation/qgita_series_rates.py`, `aureon/evidence/hnc_anchor.py`.
+- `pin_tree_symbols_outside_inventory`. 64 symbols are in the pin aureon tree and are not in docs/mcp/inventory.json. They were not added. The symbol count is a scan of this checkout, which is later than tip b2b0310362597dc520114de86d8700c0c50758d5. The tip field stays that commit and is not a claim that these counts were measured there. `evaluation/market_series.py` `http_get` is a live public fetch. Listing that row would move the evaluation package from plan stage 2 to plan stage 4 and would change the reachable count. Reachable stays the prior sweep's 69. Plan stages 3 and 4 stay closed. The unlisted paths are `aureon/containment/__init__.py`, `aureon/containment/__main__.py`, `aureon/containment/_child_probe.py`, `aureon/containment/_child_wrapper.py`, `aureon/containment/cold_boot.py`, `aureon/containment/native.py`, `aureon/evaluation/market_series.py`, `aureon/evaluation/qgita_series_rates.py`, `aureon/evidence/hnc_anchor.py`.
 
 ## Reproduce
 
