@@ -411,6 +411,63 @@ def test_exchange_keys_arm_the_child_without_placing_an_order(
     assert "local-test-key" not in text
 
 
+def test_radar_env_keys_override_disable_flags_when_root_env_is_blank(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _clear_trading_env(monkeypatch)
+    (tmp_path / ".env").write_text(
+        "KRAKEN_API_KEY=\nKRAKEN_API_SECRET=\n"
+        "AUREON_DISABLE_REAL_ORDERS=1\nAUREON_DRY_RUN=1\nDRY_RUN=1\n",
+        encoding="utf-8",
+    )
+    radar = tmp_path / "aureon_radar"
+    radar.mkdir()
+    (radar / ".env").write_text(
+        "KRAKEN_API_KEY=local-test-key\nKRAKEN_API_SECRET=local-test-secret\n",
+        encoding="utf-8",
+    )
+    env = paper_env(
+        {
+            "PYTHONPATH": "",
+            "AUREON_DISABLE_REAL_ORDERS": "1",
+            "AUREON_DRY_RUN": "1",
+            "DRY_RUN": "1",
+        },
+        tmp_path,
+    )
+    assert env["AUREON_LIVE_TRADING"] == "1"
+    assert env["AUREON_DISABLE_REAL_ORDERS"] == "0"
+    assert env["AUREON_DRY_RUN"] == "0"
+    assert env["DRY_RUN"] == "0"
+    assert "local-test-secret" not in (tmp_path / ".env").read_text(encoding="utf-8")
+
+
+def test_inherited_shell_keys_override_disable_flags_when_root_env_is_blank(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _clear_trading_env(monkeypatch)
+    (tmp_path / ".env").write_text(
+        "KRAKEN_API_KEY=\nKRAKEN_API_SECRET=\n"
+        "AUREON_DISABLE_REAL_ORDERS=1\nAUREON_DRY_RUN=1\nDRY_RUN=1\n",
+        encoding="utf-8",
+    )
+    env = paper_env(
+        {
+            "PYTHONPATH": "",
+            "KRAKEN_API_KEY": "local-test-key",
+            "KRAKEN_API_SECRET": "local-test-secret",
+            "AUREON_DISABLE_REAL_ORDERS": "1",
+            "AUREON_DRY_RUN": "1",
+            "DRY_RUN": "1",
+        },
+        tmp_path,
+    )
+    assert env["AUREON_LIVE_TRADING"] == "1"
+    assert env["AUREON_DISABLE_REAL_ORDERS"] == "0"
+    assert env["AUREON_DRY_RUN"] == "0"
+    assert env["DRY_RUN"] == "0"
+
+
 def test_kill_file_does_not_force_a_keyed_child_onto_paper(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     _clear_trading_env(monkeypatch)
     monkeypatch.setenv("AUREON_SELF_REPAIR_KILL", "1")

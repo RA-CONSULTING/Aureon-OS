@@ -44,7 +44,7 @@ def test_brain_proof_matches_the_committed_run_and_holds_without_labels():
     assert fresh["qgita"]["derived_series"]["evidence_tag"] == "cited-unverified"
     assert "public market data" in fresh["qgita"]["derived_series"]["provenance"]
     trade = fresh["auris"]["trade_readiness"]
-    assert trade["verdict"] in {"pass", "fail"}
+    assert trade["verdict"] == "fail"
     assert trade["evidence_tag"] == "measured"
     assert trade["outcome_labels"] == "paper"
     assert trade["filled_outcomes"] == 0
@@ -55,6 +55,19 @@ def test_brain_proof_matches_the_committed_run_and_holds_without_labels():
     assert "no trade-outcome labels" not in trade["reason"].casefold()
     assert trade["clownfish_readings"] == trade["paper_labels"]
     assert trade["owl_readings"] == trade["paper_labels"]
+    diagnosis = trade["diagnosis"]
+    assert diagnosis["evidence_tag"] == "measured"
+    assert diagnosis["orders_placed"] is False
+    assert diagnosis["live_trading"] is False
+    assert diagnosis["labelled_bars_with_coherence"] == 0
+    assert diagnosis["spread_clock"]["prints_at_or_before_last_labelled_close"] == 0
+    assert diagnosis["spread_clock"]["first_print_minus_last_labelled_close_seconds"] > 0
+    assert diagnosis["formula_ceiling"]["ready_marks"] == 0
+    assert diagnosis["formula_ceiling"]["highest_coherence"] < diagnosis["status_ladder"]["ready_threshold"]
+    assert diagnosis["ready_mark_below_sweep"] is True
+    assert diagnosis["window_matches_final_else"] is True
+    assert "Deer" in trade["nodes_without_reading_on_a_label"]
+    assert "does not invent outcome labels" in diagnosis["next_stage"]
     assert fresh["auris"]["nodes"]["Clownfish"]["data_status"] == "reading"
     assert fresh["auris"]["nodes"]["Owl"]["data_status"] == "reading"
     assert fresh["auris"]["market_data"] is not None
@@ -89,7 +102,33 @@ def test_brain_proof_matches_the_committed_run_and_holds_without_labels():
     joined = fresh["together"]["auris_joined_to_lambda"]
     assert joined["verdict"] == "HOLD"
     assert joined["go_live"] == "HOLD"
+    assert joined["release_boundary"] == "HOLD"
+    assert joined["join_implemented"] is False
+    assert joined["formula_added"] is False
+    assert joined["formula_consumes_lambda"] is False
     assert joined["evidence_tag"] == "inferred"
+    assert "does not consume lambda" in joined["reason"]
+    assert "release boundary" in joined["reason"]
+    contract = joined["contract"]
+    assert contract["evidence_tag"] == "cited"
+    assert contract["join_contract"] is None
+    assert contract["join_implemented"] is False
+    assert contract["formula_added"] is False
+    assert contract["get_auris_coherence_names_lambda"] is False
+    assert contract["role_value_names_lambda"] is False
+    assert contract["keys_read_by_auris_role_value"] == ["momentum", "spread", "volatility", "volume"]
+    assert contract["reconcile_gamma"]["names_lambda"] is False
+    assert contract["reconcile_gamma"]["returns_caller_figure"] is True
+    assert contract["auris_engine"]["names_lambda"] is False
+    assert contract["auris_engine"]["present"] is True
+    assert contract["auris_engine"]["comment_claims_lambda_bias"] is True
+    assert contract["auris_engine"]["reads"] == ["momentum", "volume"]
+    assert contract["auris_engine"]["multiplier"] == 1.1
+    assert contract["auris_engine"]["momentum_gt"] == 0.0
+    assert contract["auris_engine"]["volume_gt"] == 0.5
+    assert "lambda" not in contract["market_snapshot_fields"]
+    assert contract["frontend_market_snapshot"]["has_lambda"] is False
+    assert "lambda" not in contract["frontend_market_snapshot"]["fields"]
     assert "no function in the repo passes" not in joined["reason"]
     assert "alive" not in joined["reason"].casefold()
     measurement = joined["measurement"]

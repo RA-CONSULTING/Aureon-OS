@@ -108,6 +108,83 @@
     "status": "\u26d4 COHERENCE BREAK - Do not trade",
     "trade_readiness": {
       "clownfish_readings": 166,
+      "diagnosis": {
+        "evidence_tag": "measured",
+        "formula_ceiling": {
+          "calls": 6977,
+          "confirmation_grid_calls": 972,
+          "confirmation_grid_exceeded_corner": false,
+          "confirmation_grid_highest_coherence": 0.8503233429531922,
+          "domain": "momentum from -2 to 4 by 0.001 at volatility 0, volume 1, spread 1; plus that argmax shifted by -4, -2, 2, and 4; plus a confirmation grid of volatility in {0, 0.3, 1}, volume in {0, 1}, spread in {0, 1}, momentum from -2 to 2 by 0.05. Negative volatility is not in this sweep. derive_fields does not emit it",
+          "evidence_tag": "measured",
+          "highest_coherence": 0.8851989477106523,
+          "highest_inputs": {
+            "momentum": 2.368,
+            "spread": 1.0,
+            "volatility": 0.0,
+            "volume": 1.0
+          },
+          "highest_status": "\ud83d\udc9b HIGH COHERENCE - Good alignment",
+          "momentum_sweep_highest_coherence": 0.8851989477106523,
+          "period_note": "cited from _auris_role_value: once abs(momentum) is at least 1, Falcon is clamped at 1, and the sine and cosine terms repeat every 2. The sweep covers a full repeat of that pair on the positive side, where Owl adds its bonus",
+          "period_note_evidence_tag": "cited",
+          "period_probe_highest_coherence": 0.8851989477106523,
+          "period_probes": 4,
+          "ready_mark": "Ready to trade",
+          "ready_marks": 0
+        },
+        "labelled_bars_no_data": 166,
+        "labelled_bars_with_coherence": 0,
+        "live_trading": false,
+        "next_stage": "next stage needs a public bid/ask history whose print times are at or before the labelled decision closes, so Deer can be scored on those bars without using a later print; the ready mark stays off on this sweep of the existing formulas, including volatility 0, volume 1, and spread 1; this stage does not change the node formulas or the ready mark, does not copy a later spread print onto an earlier bar, and does not invent outcome labels",
+        "orders_placed": false,
+        "ready_mark_below_sweep": true,
+        "spread_clock": {
+          "evidence_tag": "measured",
+          "first_print_minus_last_labelled_close_seconds": 6084,
+          "first_print_unix": 1793907684,
+          "labels_with_spread_known": 0,
+          "last_labelled_decision_close_unix": 1793901600,
+          "prints": 250,
+          "prints_at_or_before_last_labelled_close": 0
+        },
+        "status_ladder": {
+          "compares": [
+            {
+              "op": ">=",
+              "ready_mark": true,
+              "status": "\ud83d\udc9a HEART COHERENCE - Ready to trade!",
+              "threshold": 0.938
+            },
+            {
+              "op": ">=",
+              "ready_mark": false,
+              "status": "\ud83d\udc9b HIGH COHERENCE - Good alignment",
+              "threshold": 0.8
+            },
+            {
+              "op": ">=",
+              "ready_mark": false,
+              "status": "\ud83d\udfe0 MODERATE COHERENCE - Proceed with caution",
+              "threshold": 0.6
+            },
+            {
+              "op": ">",
+              "ready_mark": false,
+              "status": "\ud83d\udd34 LOW COHERENCE - Consider waiting",
+              "threshold": 0.934
+            }
+          ],
+          "else_status": "\u26d4 COHERENCE BREAK - Do not trade",
+          "evidence_tag": "cited",
+          "later_compare_buried_under_a_lower_band": true,
+          "ready_mark": "Ready to trade",
+          "ready_threshold": 0.938,
+          "source": "aureon.utils.aureon_queen_hive_mind.QueenHiveMind.get_auris_coherence"
+        },
+        "summary": "spread prints at or before a labelled decision close: 0; first spread print is 6084 seconds after the last labelled decision close; labelled bars with a numeric coherence: 0; labelled bars returned no_data: 166; window call status: \u26d4 COHERENCE BREAK - Do not trade; window coherence 0.5023340603593964 does not contain the ready mark; formula sweep highest coherence 0.8851989477106523; ready marks 0 of 6977; cited status compares in order: coherence >= 0.938 (ready mark), coherence >= 0.8, coherence >= 0.6, coherence > 0.934; the window coherence matches none of them, so the final else is the branch that ran; a later compare sits under a lower band and does not run, and this window figure is below that lower band, so the order is not what keeps this window off the ready mark; next stage needs a public bid/ask history whose print times are at or before the labelled decision closes, so Deer can be scored on those bars without using a later print; the ready mark stays off on this sweep of the existing formulas, including volatility 0, volume 1, and spread 1; this stage does not change the node formulas or the ready mark, does not copy a later spread print onto an earlier bar, and does not invent outcome labels",
+        "window_matches_final_else": true
+      },
       "entries": 0,
       "entries_not_higher": 0,
       "entries_with_higher_close": 0,
@@ -3114,7 +3191,7 @@
       "owl_readings": 166,
       "paper_labels": 166,
       "real_orders": "AUREON_DISABLE_REAL_ORDERS=1",
-      "reason": "paper trade-outcome labels: 166 next-bar close-to-close returns from public:kraken XBTUSD; the prices are measured and the outcomes are paper; filled outcomes: 0; Clownfish readings 166 of 166; Owl readings 166 of 166; nodes without a reading on a labelled bar: Deer; ready-to-trade paper entries: 0; entries with a higher next close: 0; entries without a higher next close: 0; a spread print is used only when its time is at or before the decision close; window call status: \u26d4 COHERENCE BREAK - Do not trade; measured fail: get_auris_coherence did not mark any labelled bar ready to trade; release boundary stays HOLD",
+      "reason": "paper trade-outcome labels: 166 next-bar close-to-close returns from public:kraken XBTUSD; the prices are measured and the outcomes are paper; filled outcomes: 0; Clownfish readings 166 of 166; Owl readings 166 of 166; nodes without a reading on a labelled bar: Deer; ready-to-trade paper entries: 0; entries with a higher next close: 0; entries without a higher next close: 0; a spread print is used only when its time is at or before the decision close; spread prints at or before a labelled decision close: 0; first spread print is 6084 seconds after the last labelled decision close; labelled bars with a numeric coherence: 0; labelled bars returned no_data: 166; window call status: \u26d4 COHERENCE BREAK - Do not trade; window coherence 0.5023340603593964 does not contain the ready mark; formula sweep highest coherence 0.8851989477106523; ready marks 0 of 6977; cited status compares in order: coherence >= 0.938 (ready mark), coherence >= 0.8, coherence >= 0.6, coherence > 0.934; the window coherence matches none of them, so the final else is the branch that ran; a later compare sits under a lower band and does not run, and this window figure is below that lower band, so the order is not what keeps this window off the ready mark; next stage needs a public bid/ask history whose print times are at or before the labelled decision closes, so Deer can be scored on those bars without using a later print; the ready mark stays off on this sweep of the existing formulas, including volatility 0, volume 1, and spread 1; this stage does not change the node formulas or the ready mark, does not copy a later spread print onto an earlier bar, and does not invent outcome labels; measured fail: get_auris_coherence did not mark any labelled bar ready to trade; release boundary stays HOLD",
       "release_boundary": "HOLD",
       "verdict": "fail"
     },
@@ -3644,8 +3721,67 @@
         ],
         "source": "aureon.utils.aureon_queen_hive_mind.QueenHiveMind._auris_role_value and QueenHiveMind.get_auris_coherence"
       },
+      "contract": {
+        "auris_engine": {
+          "comment_claims_lambda_bias": true,
+          "momentum_gt": 0.0,
+          "multiplier": 1.1,
+          "names_lambda": false,
+          "present": true,
+          "reads": [
+            "momentum",
+            "volume"
+          ],
+          "source": "aureon.trading.aureon_auris_trader.AurisEngine.calculate_coherence",
+          "volume_gt": 0.5
+        },
+        "evidence_tag": "cited",
+        "formula_added": false,
+        "frontend_market_snapshot": {
+          "evidence_tag": "cited",
+          "fields": [
+            "price",
+            "volume",
+            "volatility",
+            "momentum",
+            "spread",
+            "timestamp"
+          ],
+          "has_lambda": false,
+          "source": "frontend/src/core/aurisNodes.ts"
+        },
+        "get_auris_coherence_names_lambda": false,
+        "join_contract": null,
+        "join_implemented": false,
+        "keys_read_by_auris_role_value": [
+          "momentum",
+          "spread",
+          "volatility",
+          "volume"
+        ],
+        "market_snapshot_fields": [
+          "symbol",
+          "price",
+          "volume",
+          "volatility",
+          "momentum",
+          "spread",
+          "timestamp"
+        ],
+        "market_snapshot_source": "aureon.trading.aureon_auris_trader.MarketSnapshot",
+        "reconcile_gamma": {
+          "evidence_tag": "cited",
+          "names_lambda": false,
+          "returns_caller_figure": true,
+          "source": "aureon.core.hnc_field.reconcile_gamma"
+        },
+        "role_value_names_lambda": false
+      },
       "evidence_tag": "inferred",
+      "formula_added": false,
+      "formula_consumes_lambda": false,
       "go_live": "HOLD",
+      "join_implemented": false,
       "measurement": {
         "calls_compared_with_texture": 300,
         "evidence_tag": "measured",
@@ -3691,7 +3827,8 @@
         },
         "texture_with_lambda_matches_texture": true
       },
-      "reason": "HarmonicRealityField.step \u039b(t) was passed into get_auris_coherence under the keys lambda, lambda_t, lambda_current. Each only-lambda call returned coherence null and status 'no_data', the same as get_auris_coherence(None). Beside the loaded market texture, coherence stayed 0.5023340603593964 with status '\u26d4 COHERENCE BREAK - Do not trade' for all 100 formula-series samples under those keys (300 calls). Cited from _auris_role_value, the keys read are momentum, spread, volatility, volume. Neither _auris_role_value nor get_auris_coherence names lambda. On this formula series the coherence figure was unchanged by those keys. No formula was added. No order was placed. Go-live stays HOLD.",
+      "reason": "HarmonicRealityField.step \u039b(t) was passed into get_auris_coherence under the keys lambda, lambda_t, lambda_current. Each only-lambda call returned coherence null and status 'no_data', the same as get_auris_coherence(None). Beside the loaded market texture, coherence stayed 0.5023340603593964 with status '\u26d4 COHERENCE BREAK - Do not trade' for all 100 formula-series samples under those keys (300 calls). Cited from _auris_role_value, the keys read are momentum, spread, volatility, volume. Neither _auris_role_value nor get_auris_coherence names lambda. On this formula series the coherence figure was unchanged by those keys. No join contract was found. reconcile_gamma does not name lambda and its docstring returns the caller figure. AurisEngine.calculate_coherence does not name lambda. Its source comment claims a Master Equation \u039b(t) bias, and the executed branch multiplies coherence by 1.1 when snapshot.momentum > 0.0 and snapshot.volume > 0.5. MarketSnapshot fields are symbol, price, volume, volatility, momentum, spread, timestamp. That comment was not copied into get_auris_coherence. The TypeScript MarketSnapshot fields are price, volume, volatility, momentum, spread, timestamp. That snapshot does not name lambda. HOLD remains because the coherence formula does not consume lambda. This item does not clear the release boundary. No formula was added. No order was placed. Go-live stays HOLD.",
+      "release_boundary": "HOLD",
       "verdict": "HOLD"
     },
     "qgita_on_the_formula_series": "measured_counts_rates_hold"
