@@ -1645,6 +1645,8 @@ def _refresh_http(repo: Path, runner: Runner, rows: list[Row]) -> list[Row]:
         row.name: urls[row.name]
         for row in rows
         if row.name in urls and row.status == "started" and urls[row.name] not in row.reason
+        # A compose container publishes no host port; its own healthcheck already passed.
+        and not (row.name.startswith("compose/") and row.reason.startswith("container running"))
     }
     # The operator gateway imports the whole seat before it binds 8790.
     extra_wait = 20.0 if "organ/operator_gateway" in pending else 0.0
