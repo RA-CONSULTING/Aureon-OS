@@ -25,7 +25,7 @@ from typing import Any, Callable, Optional, Sequence
 
 from aureon.autonomous.aureon_saas_system_inventory import repo_root_from
 from aureon.autonomous.aureon_unified_ui_builder import self_review_and_repair_operational_ui
-from aureon.autonomous.self_repair_guard import block_reason_for_write
+from aureon.autonomous.self_repair_guard import SelfRepairBlocked, block_reason_for_write, inspect_write
 
 try:
     from aureon.queen.queen_code_architect import QueenCodeArchitect
@@ -296,6 +296,29 @@ def _markdown(report: RepoSelfRepairReport) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _write_guarded(root: Path, rel: str, content: str) -> None:
+    """Write only when the self-repair denylist allows the bytes.
+
+    The Queen writer already calls inspect_write. This is the direct fallback,
+    so a missing Queen cannot bypass go_live_clear, paper/testnet/dry_run, or
+    a live env name built by joining strings.
+    """
+
+    previous = None
+    existing = root / rel
+    if existing.is_file():
+        try:
+            previous = existing.read_text(encoding="utf-8")
+        except OSError:
+            previous = None
+    try:
+        resolved = inspect_write(root, rel, content, previous)
+    except SelfRepairBlocked as blocked:
+        raise RuntimeError(f"self-repair refused to write {rel}: {blocked.reason}") from blocked
+    resolved.parent.mkdir(parents=True, exist_ok=True)
+    resolved.write_text(content, encoding="utf-8")
+
+
 def write_report(report: RepoSelfRepairReport, root: Path) -> dict[str, Any]:
     payload = json.dumps(report.to_dict(), indent=2, sort_keys=True, default=str)
     markdown = _markdown(report)
@@ -313,9 +336,7 @@ def write_report(report: RepoSelfRepairReport, root: Path) -> dict[str, Any]:
         return {"writer": "QueenCodeArchitect", "created_files": list(getattr(queen, "created_files", []))}
 
     for rel, content in files.items():
-        path = root / rel
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(content, encoding="utf-8")
+        _write_guarded(root, rel, content)
     return {"writer": "direct_python_fallback", "created_files": list(files)}
 
 
@@ -444,9 +465,7 @@ def run_repo_self_repair(
         if not ok:
             raise RuntimeError(f"QueenCodeArchitect refused to write {DEFAULT_STATE_PATH.as_posix()}")
     else:
-        state_path = repo_root / DEFAULT_STATE_PATH
-        state_path.parent.mkdir(parents=True, exist_ok=True)
-        state_path.write_text(state_payload, encoding="utf-8")
+        _write_guarded(repo_root, DEFAULT_STATE_PATH.as_posix(), state_payload)
     return result
 
 
