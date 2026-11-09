@@ -120,6 +120,9 @@ def _dotenv_values(path: Path) -> dict[str, str]:
     """Non-empty assignments. The caller must not log the values."""
 
     found: dict[str, str] = {}
+    flag = os.environ.get("PYTHON_DOTENV_DISABLED", "").strip().lower()
+    if flag in {"1", "true", "yes", "on"}:
+        return found
     try:
         lines = path.read_text(encoding="utf-8").splitlines()
     except OSError:
