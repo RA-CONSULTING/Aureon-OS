@@ -12,6 +12,8 @@ license: mit
 
 # HNC field
 
+Status: local scaffold, not a live Space. Go-live: **HOLD**. The process binds to `127.0.0.1` unless Gary's own yes and `AUREON_HF_LISTENER=1` are both set. Live trading is off.
+
 Licence: **MIT**, the same licence as the Aureon OS [`LICENSE`](https://github.com/RA-CONSULTING/Aureon-OS/blob/a00f744d2e686e916e45b81dd4222408c368e305/LICENSE).
 
 This Space runs `HarmonicRealityField.step`, `read_canonical_field`, and `blend_field` from the Aureon OS repo. It does not reimplement those formulas.

@@ -163,6 +163,12 @@ def test_brain_proof_consumes_a_pack_and_names_deer_when_spread_is_absent(tmp_pa
     assert "no market series" not in reason
     assert "no trade-outcome labels" not in reason
     assert "deer" in reason
+    assert "no spread prints" in reason
+    diagnosis = report["trade_readiness"]["diagnosis"]
+    assert diagnosis["spread_clock"]["prints"] == 0
+    assert diagnosis["orders_placed"] is False
+    assert diagnosis["live_trading"] is False
+    assert diagnosis["formula_ceiling"]["ready_marks"] == 0
     assert report["trade_readiness"]["verdict"] == "fail"
     assert report["trade_readiness"]["evidence_tag"] == "measured"
     assert report["trade_readiness"]["outcome_labels"] == "paper"
@@ -277,6 +283,33 @@ def test_committed_pack_is_public_and_the_pin_stays() -> None:
         assert "Owl" not in report["market_nodes_without_reading"]
     if "spread" not in report["market_data"]:
         assert "Deer" in report["market_nodes_without_reading"]
+    diagnosis = trade["diagnosis"]
+    clock = diagnosis["spread_clock"]
+    ceiling = diagnosis["formula_ceiling"]
+    ladder = diagnosis["status_ladder"]
+    assert trade["verdict"] == "fail"
+    assert "Deer" in trade["nodes_without_reading_on_a_label"]
+    assert clock["prints"] > 0
+    assert clock["prints_at_or_before_last_labelled_close"] == 0
+    assert clock["labels_with_spread_known"] == 0
+    assert clock["first_print_minus_last_labelled_close_seconds"] > 0
+    assert diagnosis["labelled_bars_with_coherence"] == 0
+    assert diagnosis["labelled_bars_no_data"] == trade["paper_labels"]
+    assert diagnosis["window_matches_final_else"] is True
+    assert diagnosis["ready_mark_below_sweep"] is True
+    assert diagnosis["orders_placed"] is False
+    assert diagnosis["live_trading"] is False
+    assert ceiling["ready_marks"] == 0
+    assert ceiling["highest_coherence"] < ladder["ready_threshold"]
+    assert ceiling["confirmation_grid_exceeded_corner"] is False
+    assert "Ready to trade" not in ceiling["highest_status"]
+    assert "does not change the node formulas" in diagnosis["next_stage"]
+    assert "does not invent outcome labels" in diagnosis["next_stage"]
+    assert "later spread print" in diagnosis["next_stage"]
+    ready = next(item for item in ladder["compares"] if item["ready_mark"])
+    buried = next(item for item in ladder["compares"] if item["op"] == ">" and item["threshold"] > 0.9)
+    assert ready["threshold"] > buried["threshold"]
+    assert ladder["compares"].index(ready) < ladder["compares"].index(buried)
     assert PIN in (ROOT / "mcp" / "pyproject.toml").read_text(encoding="utf-8")
     assert PIN in (ROOT / "mcp" / "aureon_public" / "guard_loader.py").read_text(encoding="utf-8")
 

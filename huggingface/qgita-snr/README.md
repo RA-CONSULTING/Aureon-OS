@@ -12,6 +12,8 @@ license: mit
 
 # QGITA adapter
 
+Status: local scaffold, not a live Space. Go-live: **HOLD**. The process binds to `127.0.0.1` unless Gary's own yes and `AUREON_HF_LISTENER=1` are both set. Live trading is off.
+
 Licence: **MIT**, the same licence as the Aureon OS [`LICENSE`](https://github.com/RA-CONSULTING/Aureon-OS/blob/a00f744d2e686e916e45b81dd4222408c368e305/LICENSE).
 
 Events come from the QGITA adapter `QGITAMarketAnalyzer.analyze`. The Space does not reimplement the detector and does not show the adapter's signals object.

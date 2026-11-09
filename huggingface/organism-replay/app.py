@@ -162,6 +162,9 @@ if __name__ == "__main__":
     import sys
     from pathlib import Path
 
+    import space_bind
+
+    space_bind.install()
     for parent in Path(__file__).resolve().parents:
         mcp_root = parent / "mcp"
         if (mcp_root / "aureon_public" / "server.py").is_file():
@@ -170,8 +173,4 @@ if __name__ == "__main__":
     from aureon_public.server import enforce_public_pin
 
     enforce_public_pin()
-    demo.launch(
-        server_name="127.0.0.1",
-        server_port=int(os.environ.get("PORT", "7860")),
-        share=False,
-    )
+    space_bind.launch(demo)

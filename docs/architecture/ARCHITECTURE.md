@@ -37,7 +37,7 @@ This document describes the practical architecture of the unified trading engine
   - Simulation: [aureon_51_sim.py](../aureon_51_sim.py)
 
 ## Configuration & Safety
-- Environment file: [.env.example](../.env.example)
+- Environment file: [.env.example](../../.env.example). Public postures (guarded offline, read-only market fetch, and the template's disable and dry-run flags) are in [`../PUBLIC_ENV.md`](../PUBLIC_ENV.md). Secret lines in the template are blank placeholder names. A fresh blank-key copy ships `AUREON_DISABLE_REAL_ORDERS=1`, `AUREON_DRY_RUN=1`, `ALPACA_PAPER=true`, and `CAPITAL_DEMO=1`. Those disable and dry-run flags are not a lock: a full+keyed master boot overrides them. Exchange keys in `.env` make that boot live. A complete key group in the inherited shell or in `aureon_radar/.env` does the same when the root `.env` is blank.
   - `BINANCE_USE_TESTNET=true` to target testnet where supported.
   - `BINANCE_DRY_RUN=true` to disable live order placement.
   - `BINANCE_RISK_MAX_ORDER_USDT=25` to cap individual order size.
