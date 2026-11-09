@@ -38,20 +38,57 @@ from typing import Any, Dict, List, Optional, Tuple
 # Put the upstream package on PYTHONPATH if it isn't already.
 WORKSPACE = Path(__file__).resolve().parents[1]
 UPSTREAM = WORKSPACE / "aureon-os-upstream"
+if not (UPSTREAM / "aureon").is_dir() and (WORKSPACE / "aureon").is_dir():
+    UPSTREAM = WORKSPACE  # monorepo: no separate aureon-os-upstream checkout
 if str(UPSTREAM) not in sys.path:
     sys.path.insert(0, str(UPSTREAM))
 
 # Aureon config for Ollama (secret-safe: we never print the key).
 from aureon.ollama_config import (  # noqa: E402
     OLLAMA_CLOUD_NATIVE_BASE_URL,
-    OllamaDailyBudgetExceeded,
-    check_ollama_daily_budget,
-    ensure_ollama_shared_budget,
     is_ollama_cloud_url,
     ollama_authorization_headers,
     resolve_ollama_api_key,
     resolve_ollama_native_base_url,
 )
+
+try:  # the shared budget lives in the upstream ollama_config; the monorepo copy lacks it
+    from aureon.ollama_config import (  # noqa: E402
+        OllamaDailyBudgetExceeded,
+        check_ollama_daily_budget,
+        ensure_ollama_shared_budget,
+    )
+except ImportError:  # local fail-closed budget: one file, one UTC day, cap from env
+    from datetime import datetime as _dt, timezone as _tz
+
+    class OllamaDailyBudgetExceeded(RuntimeError):
+        """The shared daily Ollama call cap is used up."""
+
+    _BUDGET_PATH = Path(
+        os.environ.get("AUREON_OLLAMA_BUDGET_PATH")
+        or Path(__file__).resolve().parent / "state" / "ollama_shared_budget.json"
+    )
+
+    def ensure_ollama_shared_budget() -> Dict[str, Any]:
+        day = _dt.now(_tz.utc).strftime("%Y-%m-%d")
+        cap = int(os.environ.get("AUREON_OLLAMA_DAILY_CAP", "20") or 20)
+        try:
+            rec = json.loads(_BUDGET_PATH.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            rec = {}
+        if not isinstance(rec, dict) or rec.get("day") != day:
+            rec = {"day": day, "cap": cap, "remaining_calls": cap}
+            _BUDGET_PATH.parent.mkdir(parents=True, exist_ok=True)
+            _BUDGET_PATH.write_text(json.dumps(rec), encoding="utf-8")
+        return rec
+
+    def check_ollama_daily_budget(*_args: Any, **_kwargs: Any) -> Dict[str, Any]:
+        rec = ensure_ollama_shared_budget()
+        if int(rec.get("remaining_calls", 0)) <= 0:
+            raise OllamaDailyBudgetExceeded("shared Ollama daily budget exhausted")
+        rec["remaining_calls"] = int(rec["remaining_calls"]) - 1
+        _BUDGET_PATH.write_text(json.dumps(rec), encoding="utf-8")
+        return rec
 from aureon.queen.queen_open_source_data_engine import (  # noqa: E402
     AIOHTTP_AVAILABLE,
     OpenSourceDataEngine,
