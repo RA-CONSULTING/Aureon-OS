@@ -486,6 +486,29 @@ def queen_zpe_ground(lambda_t: float = 1.0) -> str:
 
 
 @quiet
+def queen_source_law_gate(
+    coherence_gamma: float | None = None,
+    lowest_node_confidence: float | None = None,
+) -> str:
+    """Read the source-law HOLD/EXECUTE gate. Provenance: cited.
+
+    Live orders are off. This does not call an exchange, the miner, or an
+    order API. ``math_action`` is the comparison with the pinned entry floor.
+    ``public_action`` stays HOLD. This is not a second gate on the two
+    read-only ``body_call`` entries, ``compute_zpe_ground`` and
+    ``MinerAIInsight.to_dict``.
+
+    Args:
+        coherence_gamma: Optional coherence reading. Label: cited, queen_source_law _ENTRY_FLOOR.
+        lowest_node_confidence: Optional lowest nine-node confidence. Label: cited, _MIN_NODE_CONFIDENCE.
+    """
+
+    from aureon_public.queen_read_gate import charlie_reading
+
+    return _dumps(charlie_reading(coherence_gamma, lowest_node_confidence))
+
+
+@quiet
 def s51_summarize_receipts() -> str:
     """s51.aureon_51_compound.summarize_compounding with no receipts. Provenance: cited.
 
@@ -623,6 +646,7 @@ TOOLS: list[Any] = [
     observer_kp_sample,
     plumber_sha256,
     portals_html_to_text,
+    queen_source_law_gate,
     queen_zpe_ground,
     s51_summarize_receipts,
     search_summarize_text,

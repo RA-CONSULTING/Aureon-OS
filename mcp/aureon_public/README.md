@@ -99,6 +99,8 @@ Each figure is reachable public functions and methods out of the public function
 
 The extra package tools are helpers. A helper call is not that layer's cognition.
 
+`queen_source_law_gate` is a stage-8 read of the source-law HOLD/EXECUTE comparison in `aureon/queen/queen_source_law.py`. The file is used only when its git blob matches the public pin. `math_action` is that comparison. `public_action` is HOLD. Live orders are off. The tool does not import an exchange, the miner, or a trading client, and it does not place an order. It is not a second gate on the two read-only `body_call` entries already open through `READ_KEYS` in `stage34_gate`: queen `compute_zpe_ground` and miner `MinerAIInsight.to_dict`. The queen and miner rows in the table above stay at reachable 1 for those entries only. Every other queen and miner entry stays refused. Exchange `body_call` stays refused. The measurement is `measured/aureon_public_queen_stage8.json`.
+
 The order for opening the rest of the inventory is `COVERAGE_PLAN.md`. Alignment is the first package in that order.
 
 `body_call` runs one inventoried function or method. `body_surface` reads a module or class and does not construct it. `body_depth` reports the same ratio as this table. `body_registry` names the servers. The operator tool is `body_call_operator`. Live orders stay refused. A checkout file is imported only when its git blob matches pin `bb045031`. The plan and the call rules are in `docs/mcp/REGISTRY.md`.
