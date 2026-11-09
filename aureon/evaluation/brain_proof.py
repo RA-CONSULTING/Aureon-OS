@@ -1082,6 +1082,10 @@ def _market_qgita(pack: dict[str, Any]) -> dict[str, Any]:
     if tag == "fixture":
         record["evidence_tag"] = "fixture"
         record["verdict"] = "fixture_rates_hold"
+        receipt = record.get("rates_receipt")
+        if isinstance(receipt, dict):
+            receipt["evidence_tag"] = "fixture"
+            receipt["verdict"] = "fixture_rates_hold"
     return record
 
 
@@ -1107,9 +1111,7 @@ def _load_lambda(root: Path) -> dict[str, Any]:
                 "reason": f"column {DERIVED_COLUMN} is missing",
                 "values": [],
             }
-        event_positive_counts = {
-            name: 0 for name in DERIVED_EVENT_COLUMNS if name in fieldnames
-        }
+        event_positive_counts = {name: 0 for name in DERIVED_EVENT_COLUMNS if name in fieldnames}
         for row in reader:
             stamp = str(row.get("datetime") or "")
             try:

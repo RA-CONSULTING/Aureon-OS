@@ -132,6 +132,26 @@ def test_tree_archive_checksums_match_bytes(tmp_path: Path) -> None:
         assert "Aureon-OS-tip-test/README" in archive.namelist()
 
 
+def test_gate_folds_hyphens_and_whitespace_before_the_ban() -> None:
+    channel = _channel()
+    samples = (
+        "production\u2010ready",
+        "production\u2011ready",
+        "production\u2012ready",
+        "production\u2013ready",
+        "production\u2014ready",
+        "production\u2015ready",
+        "production\u2212ready",
+        "production  ready",
+        "production\tready",
+        "PRODUCTION   READY",
+    )
+    for sample in samples:
+        hits = channel.forbidden_phrase_hits(sample)
+        assert hits, sample
+        assert any(phrase in {"production-ready", "production ready"} for phrase in hits), hits
+
+
 def test_gate_rejects_readiness_phrases_in_any_context() -> None:
     channel = _channel()
     sentences = (

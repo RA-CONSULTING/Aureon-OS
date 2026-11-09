@@ -63,7 +63,7 @@ project formally rebranded to **Aureon OS — Harmonic Nexus Core**.
 - Configs checked (YAML/TOML/supervisord/nginx/SQL/JSON); the full report is at
   [`docs/research/audits/SYSTEM_VERIFICATION_2026-07-13.md`](../research/audits/SYSTEM_VERIFICATION_2026-07-13.md).
 
-## 💼 Investor-ready & rebrand
+## 💼 For investors and partners
 
 - New README (branded hero, honest badges, an architecture diagram, quickstart) and
   [`COMPANY.md`](../../COMPANY.md) with verifiable credentials: Companies House **NI696693**,
