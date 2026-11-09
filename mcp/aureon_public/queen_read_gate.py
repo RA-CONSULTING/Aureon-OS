@@ -138,7 +138,7 @@ def charlie_reading(
     before = set(sys.modules)
     body = _order_fields()
     body["label"] = (
-        "cited. Charlie HOLD/EXECUTE gate. Live orders are off. No exchange was called."
+        "cited. queen_source_law_gate. Live orders are off. No exchange was called."
     )
     body["provenance"] = "cited"
     body["source"] = _LAW.as_posix()
@@ -147,6 +147,7 @@ def charlie_reading(
         body["status"] = "unavailable"
         body["reason"] = "read loaded a banned package"
         body["banned_modules"] = banned
+        body["math_action"] = "HOLD"
         return body
 
     gamma, gamma_error = _optional_finite(coherence_gamma, "coherence_gamma")
@@ -163,6 +164,7 @@ def charlie_reading(
         body["status"] = "unavailable"
         body["reason"] = "read loaded a banned package"
         body["banned_modules"] = banned
+        body["math_action"] = "HOLD"
         return body
     if floors is None:
         body["status"] = "unavailable"

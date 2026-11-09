@@ -1,9 +1,9 @@
 """Measure the public Queen read gate. Sockets, processes, and outside writes are blocked.
 
 Each attempt runs in its own process. The child does not place an order and
-does not import an exchange package. ``queen_charlie_gate`` is the stage-8
+does not import an exchange package. ``queen_source_law_gate`` is the stage-8
 read. ``queen_zpe_ground`` is the existing Queen helper, measured again here.
-``body_call`` for the queen package stays closed. This sweep does not open it.
+This sweep opens no queen `body_call` entry beyond the `compute_zpe_ground` read already open in `stage34_gate`.
 
     env -u PYTHONPATH PYTHONPATH=mcp python3.12 -m aureon_public.queen_read_sweep --out measured/aureon_public_queen_stage8.json
 """
@@ -19,14 +19,14 @@ from pathlib import Path
 from typing import Any
 
 ATTEMPTS: tuple[dict[str, Any], ...] = (
-    {"arguments": {}, "label": "default", "tool": "queen_charlie_gate"},
-    {"arguments": {"coherence_gamma": 0.99}, "label": "above_floor", "tool": "queen_charlie_gate"},
-    {"arguments": {"coherence_gamma": 0.938}, "label": "at_floor", "tool": "queen_charlie_gate"},
-    {"arguments": {"coherence_gamma": 0.9379}, "label": "below_floor", "tool": "queen_charlie_gate"},
+    {"arguments": {}, "label": "default", "tool": "queen_source_law_gate"},
+    {"arguments": {"coherence_gamma": 0.99}, "label": "above_floor", "tool": "queen_source_law_gate"},
+    {"arguments": {"coherence_gamma": 0.938}, "label": "at_floor", "tool": "queen_source_law_gate"},
+    {"arguments": {"coherence_gamma": 0.9379}, "label": "below_floor", "tool": "queen_source_law_gate"},
     {
         "arguments": {"coherence_gamma": 0.99, "lowest_node_confidence": 0.2},
         "label": "node_floor",
-        "tool": "queen_charlie_gate",
+        "tool": "queen_source_law_gate",
     },
     {"arguments": {"lambda_t": 0.0}, "label": "zpe_read", "tool": "queen_zpe_ground"},
 )

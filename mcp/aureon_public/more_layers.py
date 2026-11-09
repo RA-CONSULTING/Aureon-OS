@@ -486,7 +486,7 @@ def queen_zpe_ground(lambda_t: float = 1.0) -> str:
 
 
 @quiet
-def queen_charlie_gate(
+def queen_source_law_gate(
     coherence_gamma: float | None = None,
     lowest_node_confidence: float | None = None,
 ) -> str:
@@ -646,8 +646,8 @@ TOOLS: list[Any] = [
     observer_kp_sample,
     plumber_sha256,
     portals_html_to_text,
+    queen_source_law_gate,
     queen_zpe_ground,
-    queen_charlie_gate,
     s51_summarize_receipts,
     search_summarize_text,
     simulation_hz_to_rgb,

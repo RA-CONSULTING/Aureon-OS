@@ -3,7 +3,7 @@
 #
 # Each Queen read runs in its own process. Sockets, process starts, and writes
 # outside the sweep sandbox are blocked. The record is the measurement.
-# Queen body_call stays closed. Miner and exchanges are not called.
+# This sweep opens no queen `body_call` entry beyond the `compute_zpe_ground` read already open in `stage34_gate`. Miner and exchanges are not called.
 set -eu
 ROOT="$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)"
 OUT="${OUT:-$ROOT/measured/aureon_public_queen_stage8.json}"

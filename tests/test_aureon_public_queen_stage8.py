@@ -31,17 +31,17 @@ def _reading(**kwargs: object) -> dict:
 
 
 def _tool(**kwargs: object) -> dict:
-    from aureon_public.more_layers import queen_charlie_gate
+    from aureon_public.more_layers import queen_source_law_gate
 
-    return json.loads(queen_charlie_gate(**kwargs))
+    return json.loads(queen_source_law_gate(**kwargs))
 
 
 def test_signature_has_no_order_switch() -> None:
-    from aureon_public.more_layers import queen_charlie_gate
+    from aureon_public.more_layers import queen_source_law_gate
 
-    names = set(inspect.signature(queen_charlie_gate).parameters)
+    names = set(inspect.signature(queen_source_law_gate).parameters)
     assert names == {"coherence_gamma", "lowest_node_confidence"}
-    source = inspect.getsource(queen_charlie_gate)
+    source = inspect.getsource(queen_source_law_gate)
     gate = (ROOT / "mcp" / "aureon_public" / "queen_read_gate.py").read_text(encoding="utf-8")
     for text in (source, gate):
         assert "place_order" not in text
@@ -110,9 +110,36 @@ def test_non_finite_reading_places_no_order() -> None:
         assert body["orders_placed"] is False
 
 
+def test_banned_package_holds_the_math_action(monkeypatch: pytest.MonkeyPatch) -> None:
+    import types
+
+    from aureon_public import queen_read_gate
+
+    planted = "aureon.trading.banned_probe"
+
+    def _plant() -> tuple[None, None]:
+        sys.modules[planted] = types.ModuleType(planted)
+        return None, None
+
+    monkeypatch.setattr(queen_read_gate, "_cited_floors", _plant)
+    try:
+        body = queen_read_gate.charlie_reading(0.99)
+    finally:
+        sys.modules.pop(planted, None)
+    assert body["status"] == "unavailable"
+    assert body["reason"] == "read loaded a banned package"
+    assert body["banned_modules"] == [planted]
+    assert body["math_action"] == "HOLD"
+    assert body["public_action"] == "HOLD"
+    assert body["live_orders"] == "off"
+    assert body["orders_placed"] is False
+    assert body["exchange_calls"] == "not_performed"
+
+
 def test_tool_label_and_no_consciousness_keys() -> None:
     body = _tool(coherence_gamma=0.99)
-    assert body["label"].startswith("helper. cited. Charlie HOLD/EXECUTE gate")
+    assert body["label"].startswith("helper. cited. queen_source_law_gate")
+    assert "Charlie" not in body["label"]
     assert body["math_action"] == "EXECUTE"
     assert body["public_action"] == "HOLD"
     assert body["live_orders"] == "off"
@@ -214,15 +241,15 @@ def test_sweep_record_matches_the_read_gate() -> None:
     assert record["processes"] == "blocked"
     assert record["writes"] == "outside sandbox blocked"
     assert "miner and exchanges are not opened" in record["scope"]
-    charlie = [row for row in record["attempts"] if row["tool"] == "queen_charlie_gate"]
-    assert [row["label"] for row in charlie] == [
+    gate = [row for row in record["attempts"] if row["tool"] == "queen_source_law_gate"]
+    assert [row["label"] for row in gate] == [
         "default",
         "above_floor",
         "at_floor",
         "below_floor",
         "node_floor",
     ]
-    for row in charlie:
+    for row in gate:
         assert row["refused"] is False, row
         assert row["sockets"] == []
         assert row["processes"] == ["Popen ['git', 'rev-parse', 'HEAD']"]
@@ -238,7 +265,7 @@ def test_sweep_record_matches_the_read_gate() -> None:
         assert fresh["math_action"] == result["math_action"]
         assert fresh["public_action"] == "HOLD"
         assert fresh["orders_placed"] is False
-    by_label = {row["label"]: row["result"]["math_action"] for row in charlie}
+    by_label = {row["label"]: row["result"]["math_action"] for row in gate}
     assert by_label["default"] == "HOLD"
     assert by_label["above_floor"] == "EXECUTE"
     assert by_label["at_floor"] == "EXECUTE"
