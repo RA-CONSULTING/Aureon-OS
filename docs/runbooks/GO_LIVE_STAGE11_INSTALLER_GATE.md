@@ -79,9 +79,15 @@ is true and a later change may update the badge. This checkout does not.
    and `external.provider_contacted_by_check` is false. The gate does not
    contact the timestamp authority. `anchor_id` equals the SHA-256 of the
    decoded token in `evidence/output/hnc_head_anchor.tsr.b64` and
-   `evidence/output/hnc_head_anchor.id`. `refs/notes/aureon-hnc-head` on HEAD
-   exists and equals `HEAD:evidence/output/hnc_head_anchor.tsr.b64`. The gate
-   does not fetch that note.
+   `evidence/output/hnc_head_anchor.id`. The notes are accepted on the commit
+   that recorded `hnc_head_next.*` and the HNC anchor files, when that commit
+   is an ancestor of HEAD and each note's bytes equal the token file committed
+   there. `refs/notes/aureon-hnc-head` matches
+   `evidence/output/hnc_head_anchor.tsr.b64`. `refs/notes/aureon-hnc-head-next`
+   matches `evidence/output/hnc_head_next.tsr.b64`. The gate does not fetch
+   notes and does not request a new timestamp. If no such commit carries the
+   notes, the receipt fails with: the same token bytes must be re-attached on
+   the frozen release head, with no new timestamp request.
 
 4. **complete source-boundary census closure.** Path
    `measured/go_live_stage6_source_census.json`. Schema
@@ -101,15 +107,15 @@ is true and a later change may update the badge. This checkout does not.
 
 ## This checkout
 
-Rebased onto main tip `0726a325ac934ed2e8d2d18d5c69c31fbfafc666`. The published
+Rebased onto main tip `47e71d7988ad4cae91fb9b9e59491c406be55e45`. The published
 require-pin remains `bb04503119681adcf832f3c3e9b0cbf09fc7a938`, read from
 `mcp/aureon_public/guard_loader.py`. This stage does not move it.
 `docs/runbooks/GO_LIVE_HARDENING.md` stays byte-identical to that main tip.
 Receipts 1 and 3 still name `34864ff0547d2cff03e707414743a3b0cc8770b5`, so
-they need remeasurement against the published pin. Receipts 2 and 4 name the
-published pin and tip `b2b0310362597dc520114de86d8700c0c50758d5`. That object
-is not in this checkout, so the gate cannot prove the delta is only receipt
-files and fails closed.
+they need remeasurement against the published pin. Receipts 2 and 4 keep tip
+`b2b0310362597dc520114de86d8700c0c50758d5`. That tip is a pre-squash commit
+from the #253 branch, not on main. A clone of main fails closed on it. Those
+tip fields are not rewritten. The fix is a remeasure at a real commit.
 
 Receipt 1's measurement head is `c68a89d2a184d99582bb24310b91e024323a212c`
 and the worktree was dirty at measurement. Receipt 4 has

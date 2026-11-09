@@ -40,7 +40,31 @@ PIN_SOURCE_REL = "mcp/aureon_public/guard_loader.py"
 _PIN_LINE = re.compile(r'^PINNED_COMMIT = "([0-9a-f]{40})"$', re.MULTILINE)
 NOTE_REF = "refs/notes/aureon-hnc-head"
 NOTE_NAME = "aureon-hnc-head"
+NEXT_NOTE_NAME = "aureon-hnc-head-next"
 TOKEN_REL = "evidence/output/hnc_head_anchor.tsr.b64"
+NEXT_TOKEN_REL = "evidence/output/hnc_head_next.tsr.b64"
+# The commit that recorded these files is where the notes may live. HEAD is
+# not required to carry them. A squash leaves the notes on that commit.
+RECORDED_HNC_PATHS = (
+    "evidence/output/hnc_head_anchor.json",
+    "evidence/output/hnc_head_anchor.id",
+    "evidence/output/hnc_head_anchor.tsr.b64",
+    "evidence/output/hnc_head_next.json",
+    "evidence/output/hnc_head_next.id",
+    "evidence/output/hnc_head_next.tsr.b64",
+)
+NOTE_PAIRS = (
+    (NOTE_NAME, TOKEN_REL),
+    (NEXT_NOTE_NAME, NEXT_TOKEN_REL),
+)
+NOTE_REATTACH = (
+    "the same token bytes must be re-attached on the frozen release head, "
+    "with no new timestamp request"
+)
+# Receipts 2 and 4 name this tip. It is a pre-squash commit from the #253
+# branch and is not on main. A clone of main fails closed. Do not rewrite it.
+PRE_SQUASH_TIP = "b2b0310362597dc520114de86d8700c0c50758d5"
+PRE_SQUASH_NOTE = "pre-squash commit from the #253 branch, not on main"
 FLAG_FILE = "measured/go_live_clear.json"
 SUPPORTED_MODULE = "aureon.containment.cold_boot"
 
@@ -60,6 +84,9 @@ TIP_DELTA_ALLOWLIST = frozenset(
         "evidence/output/hnc_head_anchor.json",
         "evidence/output/hnc_head_anchor.id",
         "evidence/output/hnc_head_anchor.tsr.b64",
+        "evidence/output/hnc_head_next.json",
+        "evidence/output/hnc_head_next.id",
+        "evidence/output/hnc_head_next.tsr.b64",
         "reports/measured/go_live_receipt5_deployment.json",
         "reports/measured/go_live_receipt5_deployment.md",
     }
@@ -85,7 +112,7 @@ RECEIPTS: tuple[dict[str, Any], ...] = (
         "name": "durable HNC evidence with an external monotonic head anchor",
         "path": "evidence/output/hnc_head_anchor.json",
         "schema": "aureon.evidence.hnc-head-anchor.v1",
-        "tip_field": "refs/notes/aureon-hnc-head on HEAD",
+        "tip_field": "notes on the commit that recorded the HNC anchor files",
     },
     {
         "id": 4,
@@ -217,6 +244,44 @@ class RealGit:
                 paths.append(text)
         return paths
 
+    def recorded_hnc_commit(self) -> str | None:
+        """Latest HEAD commit that recorded the anchor files and hnc_head_next.*."""
+
+        raw = self._out(["log", "-1", "--format=%H", "HEAD", "--", *RECORDED_HNC_PATHS])
+        if raw is None:
+            return None
+        text = raw.decode("ascii", "replace").strip()
+        if not _git_id(text):
+            return None
+        return text
+
+    def is_ancestor(self, commit: str, head: str) -> bool | None:
+        if not _git_id(commit) or not _git_id(head):
+            return None
+        try:
+            subprocess.check_call(
+                ["git", "-C", str(self.root), "merge-base", "--is-ancestor", commit, head],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        except subprocess.CalledProcessError as exc:
+            if exc.returncode == 1:
+                return False
+            return None
+        except OSError:
+            return None
+        return True
+
+    def note_at(self, commit: str, name: str) -> bytes | None:
+        if not _git_id(commit):
+            return None
+        return self._out(["notes", "--ref", name, "show", commit])
+
+    def blob_at(self, commit: str, relative: str) -> bytes | None:
+        if not _git_id(commit):
+            return None
+        return self._out(["show", f"{commit}:{relative}"])
+
 
 def _unique(reasons: list[str]) -> list[str]:
     seen: list[str] = []
@@ -283,6 +348,8 @@ def _tip_matches(
     recorded = body.get(field)
     if detail is not None:
         detail["recorded_tip"] = recorded
+        if recorded == PRE_SQUASH_TIP and recorded != head:
+            detail["tip_note"] = PRE_SQUASH_NOTE
     if head is None:
         reasons.append("head_unresolved")
         return
@@ -415,12 +482,48 @@ def _check_receipt2(
     )
 
 
+def _recorded_notes(git: Any, head: str | None, reasons: list[str], detail: dict[str, Any]) -> None:
+    """Accept notes on the recording commit when it is an ancestor and bytes match."""
+
+    method = getattr(git, "recorded_hnc_commit", None)
+    recorded = method() if callable(method) else None
+    detail["note_commit"] = recorded if isinstance(recorded, str) else None
+    if head is None:
+        reasons.append("head_unresolved")
+        return
+    if not isinstance(recorded, str) or not _git_id(recorded):
+        reasons.append(NOTE_REATTACH)
+        return
+    ancestor_fn = getattr(git, "is_ancestor", None)
+    ancestor = ancestor_fn(recorded, head) if callable(ancestor_fn) else None
+    detail["note_commit_is_ancestor"] = ancestor is True
+    if ancestor is not True:
+        reasons.append("note_commit_not_ancestor")
+        return
+    saw_note = False
+    mismatch = False
+    for name, path in NOTE_PAIRS:
+        note_fn = getattr(git, "note_at", None)
+        blob_fn = getattr(git, "blob_at", None)
+        note = note_fn(recorded, name) if callable(note_fn) else None
+        blob = blob_fn(recorded, path) if callable(blob_fn) else None
+        if isinstance(note, (bytes, bytearray)) and len(note) > 0:
+            saw_note = True
+        if not isinstance(note, (bytes, bytearray)) or not isinstance(blob, (bytes, bytearray)) or bytes(note) != bytes(blob):
+            mismatch = True
+    detail["notes_match"] = saw_note and not mismatch
+    if not saw_note:
+        reasons.append(NOTE_REATTACH)
+        return
+    if mismatch:
+        reasons.append("note_bytes_mismatch")
+
+
 def _check_receipt3(
     root: Path,
     spec: dict[str, Any],
     head: str | None,
-    note: bytes | None,
-    blob: bytes | None,
+    git: Any,
     pin: str | None,
 ) -> dict[str, Any]:
     path = root / spec["path"]
@@ -458,19 +561,14 @@ def _check_receipt3(
         recorded_id = ""
     if recorded_id != anchor_id:
         reasons.append("anchor_id_file_mismatch")
-    if note is None or blob is None:
-        reasons.append("note_missing_on_head")
-    elif note != blob:
-        reasons.append("note_differs_from_blob")
+    detail: dict[str, Any] = {"note_ref": NOTE_REF, "next_note_ref": f"refs/notes/{NEXT_NOTE_NAME}"}
+    _recorded_notes(git, head, reasons, detail)
     return _row(
         spec,
         present=True,
         verified=True,
         reasons=reasons,
-        detail={
-            "note_ref": NOTE_REF,
-            "note_on_head": note is not None and blob is not None and note == blob,
-        },
+        detail=detail,
     )
 
 
@@ -560,8 +658,6 @@ def evaluate(root: Path, git: Any | None = None) -> dict[str, Any]:
 
     client = git if git is not None else RealGit(root)
     head = client.head()
-    note = client.note()
-    blob = client.head_blob(TOKEN_REL)
     pin = published_require_pin(root)
     specs = {item["id"]: item for item in RECEIPTS}
     receipt1 = _check_receipt1(root, specs[1], head, client, pin)
@@ -570,7 +666,7 @@ def evaluate(root: Path, git: Any | None = None) -> dict[str, Any]:
     provenance_digest = None
     if provenance is not None and _digest_ok(provenance):
         provenance_digest = provenance.get("digest")
-    receipt3 = _check_receipt3(root, specs[3], head, note, blob, pin)
+    receipt3 = _check_receipt3(root, specs[3], head, client, pin)
     digest = provenance_digest if isinstance(provenance_digest, str) else None
     receipt4 = _check_receipt4(root, specs[4], head, digest, client, pin)
     receipt5 = _check_receipt5(root, specs[5], head, client, pin)

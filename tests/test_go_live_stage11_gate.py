@@ -33,11 +33,39 @@ class FakeGit:
         note: bytes | None = None,
         blob: bytes | None = None,
         changes: dict[tuple[str, str], list[str] | None] | None = None,
+        hnc: dict | None = None,
     ) -> None:
         self._head = head
         self._note = note
         self._blob = blob
         self._changes = {} if changes is None else changes
+        self._hnc = hnc
+
+    def recorded_hnc_commit(self) -> str | None:
+        if not self._hnc:
+            return None
+        commit = self._hnc.get("commit")
+        return commit if isinstance(commit, str) else None
+
+    def is_ancestor(self, commit: str, head: str) -> bool | None:
+        del head
+        if not self._hnc or commit != self._hnc.get("commit"):
+            return False
+        return self._hnc.get("ancestor") is True
+
+    def note_at(self, commit: str, name: str) -> bytes | None:
+        if not self._hnc or commit != self._hnc.get("commit"):
+            return None
+        notes = self._hnc.get("notes") or {}
+        value = notes.get(name)
+        return value if isinstance(value, bytes) else None
+
+    def blob_at(self, commit: str, path: str) -> bytes | None:
+        if not self._hnc or commit != self._hnc.get("commit"):
+            return None
+        blobs = self._hnc.get("blobs") or {}
+        value = blobs.get(path)
+        return value if isinstance(value, bytes) else None
 
     def head(self) -> str | None:
         return self._head
@@ -91,6 +119,7 @@ def _clear_tree(
     *,
     pin: str = FIXTURE_PIN,
     changes: dict[tuple[str, str], list[str] | None] | None = None,
+    hnc: dict | None = None,
 ) -> FakeGit:
     _write_pin(tmp_path, pin)
     source = tmp_path / "fixture" / "source.py"
@@ -178,7 +207,15 @@ def _clear_tree(
         encoding="utf-8",
     )
     note = token_text.encode("ascii")
-    return FakeGit(head, note=note, blob=note, changes=changes)
+    if hnc is None:
+        nxt = b"next-token\n"
+        hnc = {
+            "commit": "44" * 20,
+            "ancestor": True,
+            "notes": {gate.NOTE_NAME: note, gate.NEXT_NOTE_NAME: nxt},
+            "blobs": {gate.TOKEN_REL: note, gate.NEXT_TOKEN_REL: nxt},
+        }
+    return FakeGit(head, note=note, blob=note, changes=changes, hnc=hnc)
 
 
 def test_this_tip_stays_hold_and_does_not_flip_the_badge(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -219,7 +256,10 @@ def test_this_tip_stays_hold_and_does_not_flip_the_badge(monkeypatch: pytest.Mon
     assert "tip_is_not_head" in by_id[2]["reasons"]
     assert by_id[3]["verified_on_tip"] is False
     assert "pin_mismatch" in by_id[3]["reasons"]
-    assert "note_missing_on_head" in by_id[3]["reasons"]
+    assert gate.NOTE_REATTACH in by_id[3]["reasons"]
+    assert by_id[3]["detail"]["note_commit_is_ancestor"] is True
+    assert by_id[2]["detail"]["tip_note"] == gate.PRE_SQUASH_NOTE
+    assert by_id[4]["detail"]["tip_note"] == gate.PRE_SQUASH_NOTE
     assert by_id[4]["verified_on_tip"] is False
     assert "pin_mismatch" not in by_id[4]["reasons"]
     assert "tip_is_not_head" in by_id[4]["reasons"]
@@ -357,6 +397,42 @@ def test_tip_fails_when_a_non_receipt_path_differs(tmp_path: Path) -> None:
     assert result["go_live_clear"] is False
 
 
+@pytest.mark.parametrize(
+    "outside",
+    [
+        "aureon/containment/cold_boot.py",
+        "docs/runbooks/GO_LIVE_HNC_HEAD_NEXT.md",
+        "reports/measured/baseline/INDEX.md",
+    ],
+)
+def test_tip_fails_for_code_runbook_or_baseline(tmp_path: Path, outside: str) -> None:
+    head = "ab" * 20
+    recorded = "cd" * 20
+    assert outside not in gate.TIP_DELTA_ALLOWLIST
+    assert "*" not in outside
+    client = _clear_tree(tmp_path, head, changes={(recorded, head): [outside]})
+    _retip_provenance(tmp_path, head, recorded)
+    result = gate.evaluate(tmp_path, client)
+    row = next(item for item in result["receipts"] if item["id"] == 2)
+    assert row["verified_on_tip"] is False
+    assert row["detail"]["tip_diff"] == "outside_allowlist"
+    assert "tip_is_not_head" in row["reasons"]
+    assert result["go_live_clear"] is False
+
+
+def test_tip_allowlist_lists_exact_files_only() -> None:
+    assert gate.TIP_DELTA_ALLOWLIST
+    for path in gate.TIP_DELTA_ALLOWLIST:
+        assert "*" not in path
+        assert "?" not in path
+        assert not path.endswith("/")
+        assert not path.endswith("/.")
+    assert "docs/runbooks" not in gate.TIP_DELTA_ALLOWLIST
+    assert "reports/measured/baseline" not in gate.TIP_DELTA_ALLOWLIST
+    assert "docs/runbooks/GO_LIVE_HARDENING.md" not in gate.TIP_DELTA_ALLOWLIST
+    assert "reports/measured/baseline/INDEX.md" not in gate.TIP_DELTA_ALLOWLIST
+
+
 def test_tip_fails_when_a_code_file_changed_after_the_tip(tmp_path: Path) -> None:
     head = "11" * 20
     recorded = "22" * 20
@@ -410,6 +486,59 @@ def test_receipt5_fixture_in_a_temp_dir_requires_digest_complete_and_tip(tmp_pat
     moved_row = next(item for item in moved["receipts"] if item["id"] == 5)
     assert moved_row["verified_on_tip"] is False
     assert "tip_is_not_head" in moved_row["reasons"]
+
+
+def _hnc(token_text: str, *, ancestor: bool = True, notes: dict | None = None, blobs: dict | None = None) -> dict:
+    anchor = token_text.encode("ascii")
+    nxt = b"next-token\n"
+    return {
+        "commit": "55" * 20,
+        "ancestor": ancestor,
+        "notes": {gate.NOTE_NAME: anchor, gate.NEXT_NOTE_NAME: nxt} if notes is None else notes,
+        "blobs": {gate.TOKEN_REL: anchor, gate.NEXT_TOKEN_REL: nxt} if blobs is None else blobs,
+    }
+
+
+def test_receipt3_notes_on_an_ancestor_with_matching_bytes_pass(tmp_path: Path) -> None:
+    head = "66" * 20
+    client = _clear_tree(tmp_path, head)
+    row = next(item for item in gate.evaluate(tmp_path, client)["receipts"] if item["id"] == 3)
+    assert row["verified_on_tip"] is True
+    assert row["detail"]["notes_match"] is True
+    assert row["detail"]["note_commit_is_ancestor"] is True
+
+
+def test_receipt3_mismatched_note_bytes_fail(tmp_path: Path) -> None:
+    head = "77" * 20
+    token_text = base64.b64encode(b"\x30\x00").decode("ascii") + "\n"
+    notes = {
+        gate.NOTE_NAME: b"different-token\n",
+        gate.NEXT_NOTE_NAME: b"next-token\n",
+    }
+    client = _clear_tree(tmp_path, head, hnc=_hnc(token_text, notes=notes))
+    row = next(item for item in gate.evaluate(tmp_path, client)["receipts"] if item["id"] == 3)
+    assert row["verified_on_tip"] is False
+    assert "note_bytes_mismatch" in row["reasons"]
+    assert gate.NOTE_REATTACH not in row["reasons"]
+
+
+def test_receipt3_notes_on_a_non_ancestor_fail(tmp_path: Path) -> None:
+    head = "88" * 20
+    token_text = base64.b64encode(b"\x30\x00").decode("ascii") + "\n"
+    client = _clear_tree(tmp_path, head, hnc=_hnc(token_text, ancestor=False))
+    row = next(item for item in gate.evaluate(tmp_path, client)["receipts"] if item["id"] == 3)
+    assert row["verified_on_tip"] is False
+    assert "note_commit_not_ancestor" in row["reasons"]
+
+
+def test_receipt3_with_no_notes_asks_for_reattach_without_a_new_timestamp(tmp_path: Path) -> None:
+    head = "99" * 20
+    token_text = base64.b64encode(b"\x30\x00").decode("ascii") + "\n"
+    client = _clear_tree(tmp_path, head, hnc=_hnc(token_text, notes={}))
+    row = next(item for item in gate.evaluate(tmp_path, client)["receipts"] if item["id"] == 3)
+    assert row["verified_on_tip"] is False
+    assert row["reasons"].count(gate.NOTE_REATTACH) == 1
+    assert "no new timestamp request" in gate.NOTE_REATTACH
 
 
 def test_receipt_paths_are_on_the_tip_allowlist() -> None:
