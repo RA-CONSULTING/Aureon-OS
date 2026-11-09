@@ -9,7 +9,11 @@ evidence`` reads sequence 1 from the git note ``refs/notes/aureon-hnc-head``
 on the commit that recorded ``evidence/output/hnc_head_anchor.json``, and
 sequence 2 from ``refs/notes/aureon-hnc-head-next`` on the commit that
 recorded ``evidence/output/hnc_head_next.json``. Each record names its own
-``note_ref``. The check does not read either note from HEAD. It requires the
+``note_ref``. An explicit ``note_commit`` or ``recording_commit`` in that
+record wins over the walked commit. Every resolved commit must be an
+ancestor of HEAD. A matching note on any other commit is ignored. The check
+does not read either note from HEAD and fails closed when the notes ref was
+not fetched. It requires the
 committed bytes to match. A working-tree edit does not move either note or
 either committed blob. The timestamp records historical pin
 ``34864ff0547d2cff03e707414743a3b0cc8770b5``. The published require-pin is
@@ -321,16 +325,105 @@ def read_head_blob(root: Path, token_rel: str = TOKEN_REL) -> bytes | None:
     return _git_bytes(root, ["git", "show", f"HEAD:{token_rel}"])
 
 
+def _git_ok(root: Path, args: list[str]) -> bool:
+    try:
+        done = subprocess.run(args, cwd=root, capture_output=True)
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+    return done.returncode == 0
+
+
 def recording_commit(root: Path, record_rel: str) -> str:
     """Commit that recorded ``record_rel``. This is not HEAD unless that commit is HEAD."""
 
     raw = _git_bytes(root, ["git", "log", "-1", "--format=%H", "--", record_rel])
-    sha = "" if raw is None else raw.decode("ascii", "replace").strip()
+    sha = "" if raw is None else raw.decode("ascii", "replace").strip().lower()
     if len(sha) != 40 or any(char not in "0123456789abcdef" for char in sha):
         raise AnchorError(
             f"no recording commit for {record_rel}. The check does not read the note from HEAD."
         )
     return sha
+
+
+def _is_ancestor(root: Path, sha: str) -> bool:
+    if not _git_ok(root, ["git", "cat-file", "-e", f"{sha}^{{commit}}"]):
+        return False
+    return _git_ok(root, ["git", "merge-base", "--is-ancestor", sha, "HEAD"])
+
+
+def _require_ancestor(root: Path, sha: str, record_rel: str) -> None:
+    if _is_ancestor(root, sha):
+        return
+    raise AnchorError(
+        f"recording commit {sha} for {record_rel} is not an ancestor of HEAD. "
+        "The check ignores it."
+    )
+
+
+def _explicit_commit(record: dict[str, Any]) -> str | None:
+    """``note_commit`` or ``recording_commit`` named by the evidence record."""
+
+    for key in ("note_commit", "recording_commit"):
+        value = record.get(key)
+        if isinstance(value, str) and re.fullmatch(r"[0-9a-fA-F]{40}", value.strip()):
+            return value.strip().lower()
+    return None
+
+
+def resolved_recording_commit(root: Path, record_rel: str, note_ref: str) -> str:
+    """Walk back to the record, then let an explicit commit win.
+
+    The walked commit and the explicit commit each have to be an ancestor of
+    HEAD. A commit that fails that check is ignored.
+    """
+
+    walked = recording_commit(root, record_rel)
+    _require_ancestor(root, walked, record_rel)
+    record = _evidence_record(root, record_rel, walked)
+    named = str(record["note_ref"])
+    if named != note_ref:
+        raise AnchorError(f"{record_rel} at {walked} names {named}, not {note_ref}")
+    explicit = _explicit_commit(record)
+    chosen = walked if explicit is None else explicit
+    if chosen != walked:
+        _require_ancestor(root, chosen, record_rel)
+    return chosen
+
+
+def _notes_ref_present(root: Path, note_ref: str) -> bool:
+    return _git_ok(root, ["git", "show-ref", "--verify", "--quiet", note_ref])
+
+
+def _not_fetched(note_ref: str) -> AnchorError:
+    return AnchorError(
+        f"{note_ref} was not fetched. "
+        "The check does not treat the committed token as the git note. "
+        "Fetch notes with: git fetch origin 'refs/notes/*:refs/notes/*'"
+    )
+
+
+def _list_note_attachments(root: Path, note_name: str) -> list[tuple[str, str]]:
+    raw = _git_bytes(root, ["git", "notes", "--ref", note_name, "list"])
+    if not raw:
+        return []
+    pairs: list[tuple[str, str]] = []
+    for line in raw.decode("utf-8", "replace").splitlines():
+        parts = line.split()
+        if len(parts) < 2:
+            continue
+        blob, commit = parts[0].lower(), parts[1].lower()
+        if re.fullmatch(r"[0-9a-f]{40}", blob) and re.fullmatch(r"[0-9a-f]{40}", commit):
+            pairs.append((blob, commit))
+    return pairs
+
+
+def _ignored_non_ancestor_notes(root: Path, note_name: str, token: bytes) -> list[str]:
+    expected = git_blob_sha1(token)
+    ignored: list[str] = []
+    for blob, commit in _list_note_attachments(root, note_name):
+        if blob == expected and not _is_ancestor(root, commit):
+            ignored.append(commit)
+    return ignored
 
 
 def _evidence_record(root: Path, record_rel: str, commit: str) -> dict[str, Any]:
@@ -356,25 +449,35 @@ def _token_from_recording_commit(
 ) -> bytes:
     """Read one note from the commit that recorded its evidence record.
 
-    HEAD is not a source. A missing note or different bytes fail here.
+    HEAD is not a source. A missing notes ref, a missing note, different
+    bytes, or a commit that is not an ancestor of HEAD fails here.
     """
 
-    commit = recording_commit(root, record_rel)
-    record = _evidence_record(root, record_rel, commit)
-    named = str(record["note_ref"])
-    if named != note_ref:
-        raise AnchorError(f"{record_rel} at {commit} names {named}, not {note_ref}")
+    if not _notes_ref_present(root, note_ref):
+        raise _not_fetched(note_ref)
+    commit = resolved_recording_commit(root, record_rel, note_ref)
     note = read_note(root, note_name, commit)
     committed = _git_bytes(root, ["git", "show", f"{commit}:{token_rel}"])
     if note is None:
+        if committed is not None:
+            ignored = _ignored_non_ancestor_notes(root, note_name, committed)
+            if ignored:
+                named = ", ".join(ignored)
+                raise AnchorError(
+                    f"git note {note_ref} on {named} is not an ancestor of HEAD. "
+                    "The check ignores it."
+                )
         raise AnchorError(
             f"missing {note_ref} on recording commit {commit}. "
             f"Fetch it with: git fetch origin {note_ref}:{note_ref}. "
             "The check does not read the note from HEAD."
         )
     if committed is None or note != committed:
+        actual = git_blob_sha1(note)
+        expected = git_blob_sha1(committed) if committed is not None else ""
         raise AnchorError(
-            f"git note {note_ref} on recording commit {commit} does not match {token_rel}. "
+            f"git note {note_ref} on recording commit {commit} content hash {actual} "
+            f"does not match {token_rel} content hash {expected}. "
             "The check does not read the note from HEAD."
         )
     head = read_head_blob(root, token_rel)
@@ -433,6 +536,23 @@ def load_token_text(
         raise AnchorError("HNC head token text is not ASCII") from exc
     decode_token_text(text)
     return text
+
+
+def verify_required_notes(root: Path) -> list[str]:
+    """Read both HNC notes from their recording commits. Return those commits."""
+
+    load_token_text(root, require_note=True)
+    first = resolved_recording_commit(root, RECORD_REL, NOTE_REF)
+    load_token_text(
+        root,
+        require_note=True,
+        note_name=NEXT_NOTE_NAME,
+        note_ref=NEXT_NOTE_REF,
+        token_rel=NEXT_TOKEN_REL,
+        record_rel=NEXT_RECORD_REL,
+    )
+    second = resolved_recording_commit(root, NEXT_RECORD_REL, NEXT_NOTE_REF)
+    return [first, second]
 
 
 def parse_gen_time(value: str) -> datetime:

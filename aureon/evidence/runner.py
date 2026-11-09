@@ -25,6 +25,7 @@ from aureon.evidence.hnc_anchor import (
     attach_note,
     stamp_files,
     stamp_next,
+    verify_required_notes,
 )
 from aureon.evidence.qgita import CALIBRATION_SEED_START, MASTER_SEED
 from aureon.evidence.report import build_claims, render_results
@@ -227,7 +228,21 @@ def _align_commit_sha(root: Path, files: dict[str, str]) -> dict[str, str]:
 
 def check(root: Path | None = None) -> int:
     root = Path(root or ROOT)
-    files = _align_commit_sha(root, build(root, require_note=True))
+    try:
+        anchored = verify_required_notes(root)
+    except AnchorError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    try:
+        built = build(root, require_note=True)
+    except SystemExit as exc:
+        text = exc.code if isinstance(exc.code, str) else ""
+        if text:
+            print(text, file=sys.stderr)
+        if isinstance(exc.code, int) and exc.code != 0:
+            return exc.code
+        return 1
+    files = _align_commit_sha(root, built)
     mismatches: list[str] = []
     for relative, fresh in sorted(files.items()):
         path = root / relative
@@ -244,6 +259,8 @@ def check(root: Path | None = None) -> int:
         return 1
     print("evidence check: byte-for-byte match")
     print("commit_sha is not part of the byte compare")
+    for sha in anchored:
+        print(f"anchored on {sha}")
     return 0
 
 
