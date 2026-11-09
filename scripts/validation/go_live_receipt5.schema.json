@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "aureon.go-live.deployment-receipt.v1",
+  "title": "Go-live receipt 5",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "stage",
+    "receipt",
+    "title",
+    "decision",
+    "outcome",
+    "receipt_5_complete",
+    "go_live_clear",
+    "system_alive_claimed",
+    "release_boundary",
+    "orange_badge",
+    "badge_flip",
+    "pin",
+    "pin_changed",
+    "pin_measured_at",
+    "pin_source",
+    "started_from",
+    "git_head_at_measurement",
+    "worktree_dirty_at_measurement",
+    "provider",
+    "auth_method",
+    "missing_provider_auth",
+    "unused_provider_auth",
+    "blocker",
+    "deploy_attempted",
+    "deploy_performed",
+    "deploy_timestamp",
+    "deploy_timestamp_source",
+    "resource_id",
+    "provider_api",
+    "provider_api_called",
+    "provider_status",
+    "provider_readback_digest",
+    "provider_readback",
+    "healthy",
+    "localhost_substituted_for_provider",
+    "live_trading",
+    "orders_placed",
+    "market_data_fetched",
+    "tunnels_opened",
+    "secrets_recorded",
+    "mcp_stages_3_and_4_opened",
+    "installers_switched_on",
+    "receipts_1_to_4_reverified",
+    "scaffold",
+    "spend_guard",
+    "auth_probe",
+    "runner",
+    "measured_at",
+    "measurement_note"
+  ],
+  "properties": {
+    "schema": {"const": "aureon.go-live.deployment-receipt.v1"},
+    "stage": {"const": 10},
+    "receipt": {"const": 5},
+    "title": {"const": "authenticated deployment receipt and provider-side read-back"},
+    "decision": {"const": "HOLD"},
+    "outcome": {"enum": ["skip", "measured", "fail"]},
+    "receipt_5_complete": {"type": "boolean"},
+    "go_live_clear": {"const": false},
+    "system_alive_claimed": {"const": false},
+    "release_boundary": {"const": "HOLD"},
+    "orange_badge": {"const": "unchanged"},
+    "badge_flip": {"const": "stage 11 / separate PR"},
+    "pin": {"type": "string", "minLength": 40, "maxLength": 40},
+    "pin_changed": {"const": false},
+    "pin_measured_at": {"type": "string", "minLength": 40, "maxLength": 40},
+    "pin_source": {"type": "string"},
+    "started_from": {"const": "9333bfbbeb8de54a4b42be05f9263e536da643a7"},
+    "git_head_at_measurement": {"type": "string", "minLength": 40, "maxLength": 40},
+    "worktree_dirty_at_measurement": {"type": "boolean"},
+    "provider": {"type": ["string", "null"], "enum": ["huggingface", "google-cloud-run", null]},
+    "auth_method": {"type": ["string", "null"]},
+    "missing_provider_auth": {"type": "array", "items": {"type": "string"}},
+    "unused_provider_auth": {"type": "array", "items": {"type": "string"}},
+    "blocker": {"type": ["string", "null"]},
+    "deploy_attempted": {"type": "boolean"},
+    "deploy_performed": {"type": "boolean"},
+    "deploy_timestamp": {"type": ["string", "null"]},
+    "deploy_timestamp_source": {"type": ["string", "null"]},
+    "resource_id": {"type": ["string", "null"]},
+    "provider_api": {"type": ["string", "null"]},
+    "provider_api_called": {"type": "boolean"},
+    "provider_status": {"type": ["object", "null"]},
+    "provider_readback_digest": {"type": ["string", "null"]},
+    "provider_readback": {"type": ["object", "null"]},
+    "healthy": {"type": "boolean"},
+    "localhost_substituted_for_provider": {"const": false},
+    "live_trading": {"const": false},
+    "orders_placed": {"const": false},
+    "market_data_fetched": {"const": false},
+    "tunnels_opened": {"const": false},
+    "secrets_recorded": {"const": false},
+    "mcp_stages_3_and_4_opened": {"const": false},
+    "installers_switched_on": {"const": false},
+    "receipts_1_to_4_reverified": {"const": false},
+    "scaffold": {"type": ["object", "null"]},
+    "spend_guard": {"type": "string"},
+    "auth_probe": {"type": "object"},
+    "runner": {"const": "scripts/validation/go_live_receipt5.py"},
+    "measured_at": {"type": "string"},
+    "measurement_note": {"type": "string"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"outcome": {"const": "skip"}}, "required": ["outcome"]},
+      "then": {
+        "properties": {
+          "receipt_5_complete": {"const": false},
+          "provider": {"const": null},
+          "deploy_attempted": {"const": false},
+          "deploy_performed": {"const": false},
+          "deploy_timestamp": {"const": null},
+          "provider_api_called": {"const": false},
+          "provider_readback": {"const": null},
+          "provider_readback_digest": {"const": null},
+          "provider_status": {"const": null},
+          "healthy": {"const": false}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"outcome": {"const": "measured"}}, "required": ["outcome"]},
+      "then": {
+        "properties": {
+          "receipt_5_complete": {"const": true},
+          "deploy_attempted": {"const": true},
+          "deploy_performed": {"const": true},
+          "provider_api_called": {"const": true},
+          "healthy": {"type": "boolean"}
+        },
+        "required": ["provider", "auth_method", "deploy_timestamp", "provider_readback", "provider_readback_digest", "provider_status", "provider_api", "resource_id"]
+      }
+    },
+    {
+      "if": {"properties": {"outcome": {"const": "fail"}}, "required": ["outcome"]},
+      "then": {
+        "properties": {
+          "receipt_5_complete": {"const": false},
+          "healthy": {"const": false},
+          "provider_readback": {"const": null},
+          "provider_readback_digest": {"const": null}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"outcome": {"const": "fail"}, "deploy_performed": {"const": true}},
+        "required": ["outcome", "deploy_performed"]
+      },
+      "then": {
+        "properties": {
+          "deploy_attempted": {"const": true},
+          "provider_api_called": {"const": true},
+          "receipt_5_complete": {"const": false},
+          "provider_readback": {"const": null},
+          "provider_readback_digest": {"const": null}
+        }
+      }
+    }
+  ]
+}
