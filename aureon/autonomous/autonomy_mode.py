@@ -95,7 +95,8 @@ def autonomy_mode(repo_root: Path | None = None) -> str:
     An explicit environment value wins. ``full`` is full. Any other non-empty
     value, including ``guarded``, is guarded. With the variable unset, only
     ``state/autonomy_mode.json`` saying ``{"mode": "guarded"}`` closes the
-    denylist. A missing, unreadable, or other file is full.
+    denylist. A missing file stays the public default, full. A file that is
+    empty, truncated, or unparseable is an error and fails closed to guarded.
     """
 
     raw = os.environ.get(MODE_ENV, "").strip().lower()
@@ -108,10 +109,18 @@ def autonomy_mode(repo_root: Path | None = None) -> str:
         if not path.is_file():
             continue
         try:
-            payload = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError, UnicodeError):
-            return "full"
-        mode = str(payload.get("mode", "")).strip().lower() if isinstance(payload, dict) else ""
+            text = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeError):
+            return "guarded"
+        if not text.strip():
+            return "guarded"
+        try:
+            payload = json.loads(text)
+        except (json.JSONDecodeError, ValueError):
+            return "guarded"
+        if not isinstance(payload, dict):
+            return "guarded"
+        mode = str(payload.get("mode", "")).strip().lower()
         return "guarded" if mode == "guarded" else "full"
     return "full"
 

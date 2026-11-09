@@ -39,16 +39,28 @@ class MinerModule:
 
     def compute_signal(self, symbol: str, market: Json) -> Optional[Json]:
         momentum = float(market.get("momentum", 0.0))
-        # The snapshot's own coherence gates the signal. reconcile_gamma
-        # returns that figure and does not substitute a canonical gamma.
-        coherence_gamma = float(market.get("coherence_gamma", market.get("gamma", 0.0)))
+        # The brain path asks the shared coherence check before any queen
+        # read and before a candidate can carry an order side.
+        raw_coherence = market.get("coherence_gamma", market.get("gamma"))
         try:
-            from aureon.core.hnc_field import reconcile_gamma
-            coherence_gamma = reconcile_gamma(coherence_gamma)
-        except Exception:
-            pass
+            from aureon.core.hnc_field import assess_coherence
+            from aureon.autonomous.metacognitive_coherence import brain_llm_coherence
 
-        if coherence_gamma < 0.20:
+            # assess_coherence is the shared check. The brain path calls it
+            # again before the queen sees the value.
+            if not assess_coherence(raw_coherence).accepted:
+                return None
+            judged = brain_llm_coherence(raw_coherence)
+        except Exception:
+            return None
+        if judged.get("verdict") != "ACCEPTED" or judged.get("order_intent") is not None:
+            return None
+        coherence_gamma = judged.get("coherence")
+        try:
+            if coherence_gamma is None or float(coherence_gamma) < 0.20:
+                return None
+            coherence_gamma = float(coherence_gamma)
+        except (TypeError, ValueError):
             return None
 
         casc = momentum * 10.0
