@@ -37,6 +37,14 @@ from pathlib import Path
 RADAR = Path(__file__).resolve().parent
 WORKSPACE = RADAR.parent
 UPSTREAM = WORKSPACE / "aureon-os-upstream"
+# The monorepo carries the upstream producer at WORKSPACE/aureon/... and has no
+# separate aureon-os-upstream checkout. Use the workspace root when that is so.
+if not (UPSTREAM / "aureon" / "harmonic" / "aureon_harmonic_seed.py").exists() and (
+    WORKSPACE / "aureon" / "harmonic" / "aureon_harmonic_seed.py"
+).exists():
+    UPSTREAM = WORKSPACE
+if str(UPSTREAM) not in sys.path:
+    sys.path.insert(0, str(UPSTREAM))
 CACHE_DIR = RADAR / "harmonic_cache"
 META_PATH = CACHE_DIR / "harmonic_seed_meta.json"
 SEED_TTL_S = 6 * 3600.0  # matches HarmonicSeedLoader.load_seed validity
