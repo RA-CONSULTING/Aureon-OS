@@ -40,9 +40,10 @@ openssl versions. It then prints one row per receipt.
 | 4 census and call sweep | stage 6 census and `measured/aureon_public_call_sweep.sh` | `measured/go_live_stage6_source_census.json` and `measured/aureon_public_call_sweep.json` |
 
 Receipt 1's committed record was measured at `c68a89d2` with a dirty worktree
-and pin `34864ff0`. Receipt 2's committed provenance still names tip
-`b2b03103`. The stage-6 script binds that tip. A run on a later HEAD reports
-that fact in the table.
+and pin `34864ff0`. Receipts 2 and 4 still cite tip `b2b03103`. That commit
+is on the old #253 branch. It is not an ancestor of main. Before writing,
+the runner checks that the tip is an ancestor of the frozen head. The
+refusal says the tip is not on main. The tip field is not rewritten.
 
 The call sweep copies the checkout and its own stamp refuses a dirty copy.
 The runner starts that script while the worktree is still clean and points

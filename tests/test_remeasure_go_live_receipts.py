@@ -102,6 +102,76 @@ def test_note_command_reattaches_sequence_one_bytes_without_push_or_timestamp() 
     assert "stamp" not in command
 
 
+def _rev(repo: Path) -> str:
+    return subprocess.check_output(["git", "-C", str(repo), "rev-parse", "HEAD"], text=True).strip()
+
+
+def test_tip_not_on_main_is_refused_before_write(tmp_path: Path) -> None:
+    module = _load()
+    repo = _repo(tmp_path)
+    frozen = _rev(repo)
+    missing = "b2b0310362597dc520114de86d8700c0c50758d5"
+    missing_reason = module.tip_blocks_write(repo, missing)
+    assert missing_reason is not None
+    assert "not on main" in missing_reason
+    assert "does not exist" not in missing_reason
+
+    (repo / "side.txt").write_text("pre-squash\n", encoding="utf-8")
+    _git(repo, "add", "side.txt")
+    _git(repo, "commit", "-m", "old branch")
+    side = _rev(repo)
+    _git(repo, "reset", "--hard", "HEAD~1")
+    assert _rev(repo) == frozen
+    kind = subprocess.check_output(["git", "-C", str(repo), "cat-file", "-t", side], text=True).strip()
+    assert kind == "commit"
+    side_reason = module.tip_blocks_write(repo, side)
+    assert side_reason is not None
+    assert "not on main" in side_reason
+    assert "does not exist" not in side_reason
+    assert module.commit_on_main(repo, frozen) is True
+    assert module.tip_blocks_write(repo, frozen) is None
+
+    script = repo / "scripts" / "validation" / "go_live_stage6.py"
+    script.parent.mkdir(parents=True)
+    script.write_text(f'TIP = "{side}"\n', encoding="utf-8")
+    original = f'{{"go_live_clear": false, "tip": "{side}"}}\n'
+    paths = (
+        repo / "measured" / "go_live_stage6_provenance.json",
+        repo / "measured" / "go_live_stage6_source_census.json",
+    )
+    for path in paths:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(original, encoding="utf-8")
+    before = [path.read_bytes() for path in paths]
+    block = module.stage6_write_block(repo)
+    assert block is not None
+    assert "not on main" in block
+    assert "does not exist" not in block
+    assert side in block
+    assert [path.read_bytes() for path in paths] == before
+
+    script.write_text(f'TIP = "{frozen}"\n', encoding="utf-8")
+    assert module.stage6_write_block(repo) is None
+    assert [path.read_bytes() for path in paths] == before
+
+
+def test_recorded_stage6_tip_is_not_on_main() -> None:
+    module = _load()
+    old_tip = "b2b0310362597dc520114de86d8700c0c50758d5"
+    paths = (
+        ROOT / "measured" / "go_live_stage6_provenance.json",
+        ROOT / "measured" / "go_live_stage6_source_census.json",
+    )
+    before = [path.read_bytes() for path in paths]
+    assert module.read_stage6_tip(ROOT) == old_tip
+    block = module.stage6_write_block(ROOT)
+    assert block is not None
+    assert "not on main" in block
+    assert "does not exist" not in block
+    assert old_tip in block
+    assert [path.read_bytes() for path in paths] == before
+
+
 def test_child_go_live_clear_true_is_refused() -> None:
     module = _load()
     row = module._row(2, "release provenance", "hold", "wrote the file", go_live_clear=True)

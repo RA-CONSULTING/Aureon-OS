@@ -9,6 +9,8 @@ Receipt 1 runs ``python -m aureon.containment.cold_boot`` and writes
 ``reports/measured/native_process_containment.json``.
 Receipt 2 runs ``scripts/validation/go_live_stage6.py``, which writes
 ``measured/go_live_stage6_provenance.json`` when the write completes.
+Before that write, the tip must be an ancestor of the frozen head.
+A tip that is not on main is refused. This command does not edit a tip field.
 Receipt 3 checks ``refs/notes/aureon-hnc-head`` on HEAD. When the note is
 absent, the command prints the git line that re-attaches the committed
 sequence-1 DigiCert RFC 3161 token. That line runs only with
@@ -32,6 +34,8 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+
+_COMMIT_ID = set("0123456789abcdef")
 
 PUBLISHED_PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
 PRIOR_CONTAINMENT_HEAD = "c68a89d2a184d99582bb24310b91e024323a212c"
@@ -113,6 +117,70 @@ def _git_bytes(root: Path, *args: str) -> bytes | None:
     return done.stdout
 
 
+def commit_on_main(root: Path, tip: object) -> bool:
+    """True when ``tip`` is an ancestor of the frozen head, including the head itself."""
+
+    if not isinstance(tip, str) or len(tip) != 40 or any(ch not in _COMMIT_ID for ch in tip):
+        return False
+    done = _run(["git", "-C", str(root), "merge-base", "--is-ancestor", tip, "HEAD"], root)
+    return done.returncode == 0
+
+
+def tip_blocks_write(root: Path, tip: object) -> str | None:
+    """Return a refusal when ``tip`` is not on main. Does not edit a file."""
+
+    if commit_on_main(root, tip):
+        return None
+    shown = tip if isinstance(tip, str) else type(tip).__name__
+    return f"tip {shown} is not on main. The tip field was not rewritten."
+
+
+def read_stage6_tip(root: Path) -> str | None:
+    """Read the TIP constant the stage-6 writer would record. Does not change it."""
+
+    path = root / "scripts" / "validation" / "go_live_stage6.py"
+    if not path.is_file():
+        return None
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if line.startswith('TIP = "') and line.endswith('"') and len(line) == len('TIP = "') + 40 + 1:
+            value = line[len('TIP = "') : -1]
+            if len(value) == 40 and all(ch in _COMMIT_ID for ch in value):
+                return value
+    return None
+
+
+def stage6_write_block(root: Path) -> str | None:
+    """Refuse the stage-6 provenance and census write before it starts.
+
+    The check reads the script's TIP constant and does not rewrite a tip field.
+    """
+
+    declared = read_stage6_tip(root)
+    if declared is None:
+        return (
+            "refusing to write. scripts/validation/go_live_stage6.py has no TIP assignment. "
+            "The tip field was not rewritten."
+        )
+    reason = tip_blocks_write(root, declared)
+    if reason is None:
+        return None
+    cited: list[str] = []
+    for rel in (PROVENANCE_REL, CENSUS_REL):
+        payload = _load_json(root / rel)
+        if isinstance(payload, dict) and "tip" in payload:
+            cited.append(f"{rel} cites {payload.get('tip')}")
+    suffix = (" " + "; ".join(cited)) if cited else ""
+    return f"refusing to write. scripts/validation/go_live_stage6.py {reason}{suffix}"
+
+
+def payload_tip_block(root: Path, payload: dict | None) -> str | None:
+    """Refuse a receipt object that carries an unreachable tip. Does not edit it."""
+
+    if not isinstance(payload, dict) or "tip" not in payload:
+        return None
+    return tip_blocks_write(root, payload.get("tip"))
+
+
 def read_published_pin(root: Path) -> str:
     path = root / "mcp" / "aureon_public" / "guard_loader.py"
     marker = 'PINNED_COMMIT = "'
@@ -144,7 +212,7 @@ def tool_versions() -> dict[str, str]:
     }
 
 
-def _one_line(text: str, limit: int = 360) -> str:
+def _one_line(text: str, limit: int = 900) -> str:
     flat = " ".join(text.split())
     if len(flat) <= limit:
         return flat
@@ -194,12 +262,35 @@ def _row(
 
 
 def measure_containment(root: Path) -> dict[str, object]:
+    tmp = Path(tempfile.mkdtemp(prefix="aureon-containment-"))
+    json_path = tmp / "native_process_containment.json"
+    md_path = tmp / "native_process_containment.md"
     done = _run(
-        [sys.executable, "-m", "aureon.containment.cold_boot"],
+        [
+            sys.executable,
+            "-m",
+            "aureon.containment.cold_boot",
+            "--receipt-json",
+            str(json_path),
+            "--receipt-md",
+            str(md_path),
+        ],
         root,
         _child_env(root, str(root)),
     )
-    receipt = _load_json(root / CONTAINMENT_REL)
+    receipt = _load_json(json_path)
+    block = payload_tip_block(root, receipt)
+    if block is not None:
+        shutil.rmtree(tmp, ignore_errors=True)
+        return _row(1, "containment", "refused", block + " The containment receipt was not written.")
+    if receipt is not None:
+        dest_json = root / CONTAINMENT_REL
+        dest_md = root / "reports" / "measured" / "native_process_containment.md"
+        dest_json.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(json_path, dest_json)
+        if md_path.is_file():
+            shutil.copyfile(md_path, dest_md)
+    shutil.rmtree(tmp, ignore_errors=True)
     if receipt is None:
         err = _one_line(done.stderr or done.stdout or "cold boot wrote no receipt")
         return _row(
@@ -365,6 +456,10 @@ def _place_sweep(root: Path, done: subprocess.CompletedProcess[str]) -> tuple[bo
         if isinstance(out_path, Path):
             out_path.unlink(missing_ok=True)
         return False, f"call sweep exit {done.returncode}. {err}"
+    block = payload_tip_block(root, _load_json(out_path))
+    if block is not None:
+        out_path.unlink(missing_ok=True)
+        return False, block + " The call-sweep receipt was not written."
     target = root / SWEEP_REL
     target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(out_path, target)
@@ -372,20 +467,62 @@ def _place_sweep(root: Path, done: subprocess.CompletedProcess[str]) -> tuple[bo
     return True, f"call sweep exit 0. wrote {SWEEP_REL}."
 
 
-def measure_census(root: Path, stage6: subprocess.CompletedProcess[str], sweep: subprocess.CompletedProcess[str]) -> dict[str, object]:
-    census = _load_json(root / CENSUS_REL)
-    census_clear = None if census is None else census.get("go_live_clear")
-    err = _one_line(stage6.stderr or stage6.stdout or "")
-    if stage6.returncode != 0:
-        census_detail = f"census via scripts/validation/go_live_stage6.py exit {stage6.returncode}. {err}"
+def _restore_stage6_outputs(root: Path) -> None:
+    """Put the stage-6 files back. This does not edit a tip field."""
+
+    _run(
+        [
+            "git",
+            "-C",
+            str(root),
+            "checkout",
+            "--",
+            PROVENANCE_REL,
+            CENSUS_REL,
+            "docs/runbooks/GO_LIVE_STAGE6_SOURCE_CENSUS.md",
+        ],
+        root,
+    )
+
+
+def measure_census(
+    root: Path,
+    stage6: subprocess.CompletedProcess[str] | None,
+    sweep: subprocess.CompletedProcess[str],
+    write_block: str | None = None,
+) -> dict[str, object]:
+    refused = write_block is not None
+    if write_block is not None:
+        census_detail = write_block
+        census_clear: object = False
         census_ok = False
     else:
-        closed = None if census is None else census.get("source_boundary_closed")
-        decision = None if census is None else census.get("decision")
-        census_detail = f"census wrote {CENSUS_REL}. source_boundary_closed {closed}. decision {decision}."
-        census_ok = decision == "HOLD" and census_clear is False
+        assert stage6 is not None
+        census = _load_json(root / CENSUS_REL)
+        census_clear = None if census is None else census.get("go_live_clear")
+        err = _one_line(stage6.stderr or stage6.stdout or "")
+        block = payload_tip_block(root, census)
+        if block is not None:
+            _restore_stage6_outputs(root)
+            census_detail = block
+            census_ok = False
+            refused = True
+            census_clear = False
+        elif stage6.returncode != 0:
+            census_detail = f"census via scripts/validation/go_live_stage6.py exit {stage6.returncode}. {err}"
+            census_ok = False
+        else:
+            closed = None if census is None else census.get("source_boundary_closed")
+            decision = None if census is None else census.get("decision")
+            census_detail = f"census wrote {CENSUS_REL}. source_boundary_closed {closed}. decision {decision}."
+            census_ok = decision == "HOLD" and census_clear is False
     sweep_ok, sweep_detail = _place_sweep(root, sweep)
-    verdict = "hold" if census_ok and sweep_ok else "fail"
+    if refused:
+        verdict = "refused"
+    elif census_ok and sweep_ok:
+        verdict = "hold"
+    else:
+        verdict = "fail"
     return _row(4, "census and call sweep", verdict, census_detail + " " + sweep_detail, census_clear)
 
 
@@ -456,12 +593,24 @@ def _measure_clean(root: Path, attach_note: bool) -> tuple[dict[str, object], li
         raise SystemExit("call sweep dirtied the worktree before receipt 1. Receipt 1 was not measured.")
     print("receipt 1: python -m aureon.containment.cold_boot")
     containment = measure_containment(root)
-    print("receipt 2: python3 scripts/validation/go_live_stage6.py")
-    provenance, stage6 = measure_provenance(root, head)
+    write_block = stage6_write_block(root)
+    if write_block is not None:
+        print(write_block)
+        provenance = _row(2, "release provenance", "refused", write_block)
+        stage6 = None
+    else:
+        print("receipt 2: python3 scripts/validation/go_live_stage6.py")
+        provenance, stage6 = measure_provenance(root, head)
+        written = payload_tip_block(root, _load_json(root / PROVENANCE_REL))
+        if written is not None:
+            _restore_stage6_outputs(root)
+            provenance = _row(2, "release provenance", "refused", written)
+            stage6 = None
+            write_block = written
     print("receipt 3: refs/notes/aureon-hnc-head")
     anchor = measure_anchor(root, attach_note)
     print("receipt 4: census from stage 6 and the call-sweep script")
-    census = measure_census(root, stage6, sweep)
+    census = measure_census(root, stage6, sweep, write_block)
     return context, [containment, provenance, anchor, census]
 
 
