@@ -278,16 +278,35 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument("--repo-root", default="", help="Repo root; defaults to current Aureon repo.")
     parser.add_argument("--json", default=str(DEFAULT_OUTPUT_JSON), help="Audit JSON path.")
     parser.add_argument("--public-json", default=str(DEFAULT_PUBLIC_JSON), help="Frontend public JSON path.")
+    parser.add_argument("--daemon", action="store_true", help="Rebuild the manifest every --interval seconds.")
+    parser.add_argument("--interval", type=float, default=60.0, help="Daemon cadence in seconds (minimum 5).")
+    parser.add_argument("--quiet", action="store_true", help="Do not print the summary on each pass.")
     return parser.parse_args(argv)
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     args = parse_args(argv)
     root = Path(args.repo_root).resolve() if args.repo_root else REPO_ROOT
-    state = build_harmonic_affect_state(root)
-    output, public = write_harmonic_affect_state(state, Path(args.json), Path(args.public_json))
-    print(json.dumps({"json": str(output), "public_json": str(public), "summary": state["summary"]}, indent=2, sort_keys=True))
-    return 0
+
+    def one_pass() -> None:
+        state = build_harmonic_affect_state(root)
+        output, public = write_harmonic_affect_state(state, Path(args.json), Path(args.public_json))
+        if not args.quiet:
+            print(json.dumps({"json": str(output), "public_json": str(public), "summary": state["summary"]}, indent=2, sort_keys=True), flush=True)
+
+    if not args.daemon:
+        one_pass()
+        return 0
+    import time
+
+    interval = max(5.0, float(args.interval))
+    while True:
+        started = time.time()
+        try:
+            one_pass()
+        except Exception as exc:  # a failed pass is reported; the daemon keeps its cadence
+            print(f"harmonic affect pass failed: {exc.__class__.__name__}: {exc}", flush=True)
+        time.sleep(max(1.0, interval - (time.time() - started)))
 
 
 if __name__ == "__main__":
