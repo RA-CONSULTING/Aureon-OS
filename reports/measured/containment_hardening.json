@@ -1,0 +1,230 @@
+{
+  "cap_drop": {
+    "before_probes": false,
+    "ok": false,
+    "skipped": true
+  },
+  "capability_drop_before_probes": false,
+  "capability_drop_note": "This measurement leaves capabilities in place so EPERM from ptrace, mount, kexec_load, bpf, or a raw socket is the seccomp filter. Receipt 1 already measured the capability drop. drop_caps is optional and, when requested, runs after the probes.",
+  "caps_before_landlock": {
+    "CapBnd": "000001ffffffffff",
+    "CapEff": "000001ffffffffff",
+    "CapPrm": "000001ffffffffff",
+    "NoNewPrivs": "1"
+  },
+  "child_env_names": [
+    "HOME",
+    "LANG",
+    "LC_ALL",
+    "PATH",
+    "PYTHONDONTWRITEBYTECODE",
+    "PYTHONNOUSERSITE",
+    "PYTHONUNBUFFERED"
+  ],
+  "child_returncode": 0,
+  "closes_receipt_1": false,
+  "closes_source_boundary": false,
+  "cold_boot_argv": [
+    "/usr/bin/unshare",
+    "--user",
+    "--map-root-user",
+    "--mount",
+    "--propagation",
+    "private",
+    "--pid",
+    "--fork",
+    "--mount-proc",
+    "--net",
+    "/usr/bin/python3",
+    "-I",
+    "/agent/repos/Aureon-OS/aureon/containment/_harden_child.py",
+    "/tmp/aureon-harden-fd4h146d/launch/sidecar.json"
+  ],
+  "cold_boot_argv_has_net": true,
+  "continued_without_layer": false,
+  "default_boot_hardened": false,
+  "deny_network": true,
+  "drop_caps": false,
+  "failures": [],
+  "finished_at": "2026-11-09T18:28:38Z",
+  "fs_isolation": true,
+  "gaps": [],
+  "git_head_at_measurement": "a0de465e1069a3914496063da0ae3dc9caef4886",
+  "go_live_clear": false,
+  "implementation": "ctypes",
+  "kernel": "Linux cursor 6.12.113+ #1 SMP PREEMPT_DYNAMIC Thu Nov  5 16:04:51 UTC 2026 x86_64",
+  "kernel_release": "6.12.113+",
+  "landlock": {
+    "abi": 6,
+    "applied": true,
+    "checkout": "/agent/repos/Aureon-OS",
+    "checkout_access": 13,
+    "errno": null,
+    "error": null,
+    "gap": false,
+    "handled_access_fs": 65535,
+    "implementation": "ctypes-landlock-syscall",
+    "reason": null,
+    "rules": [
+      {
+        "access": 13,
+        "errno": null,
+        "rc": 0,
+        "role": "checkout"
+      },
+      {
+        "access": 65535,
+        "errno": null,
+        "rc": 0,
+        "role": "temp"
+      }
+    ],
+    "scoped": "not handled",
+    "temp": "/tmp/aureon-harden-fd4h146d/temp",
+    "temp_access": 65535
+  },
+  "landlock_abi": 6,
+  "landlock_applied": true,
+  "live_trading": false,
+  "market_data_fetched": false,
+  "measurement_note": "This is opt-in and was measured on one VM kernel. The default stage-7 cold boot does not install these layers. seccomp_applied and landlock_applied are what this child installed. fs_isolation is true only when landlock applied and the probes showed the checkout and temp dir usable and a path outside them denied. A kernel that does not support a layer is reported missing and the opted-in run refuses. It is not a pass. This file does not rewrite receipt 1, does not close receipt 1, and does not close the source boundary. go_live_clear stays false. The published pin is not moved. The UTC stamps are this machine's clock.",
+  "missing_layers": [],
+  "no_new_privs": {
+    "errno": null,
+    "error": null,
+    "ok": true
+  },
+  "opt_in": true,
+  "optional_dependency": null,
+  "orange_badge": "unchanged",
+  "orders_placed": false,
+  "pin": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
+  "pin_changed": false,
+  "probes": {
+    "bpf": {
+      "blocked_by_filter": true,
+      "cmd": "BPF_PROG_LOAD",
+      "errno": 1,
+      "error": "EPERM",
+      "loaded": false,
+      "ok": false
+    },
+    "kexec_load": {
+      "blocked_by_filter": true,
+      "errno": 1,
+      "error": "EPERM",
+      "ok": false,
+      "segments": 0
+    },
+    "mount": {
+      "blocked_by_filter": true,
+      "errno": 1,
+      "error": "EPERM",
+      "fstype": "tmpfs",
+      "ok": false
+    },
+    "ptrace": {
+      "blocked_by_filter": true,
+      "errno": 1,
+      "error": "EPERM",
+      "ok": false,
+      "request": "PTRACE_TRACEME"
+    },
+    "raw_socket": {
+      "blocked_by_filter": true,
+      "errno": 1,
+      "error": "EPERM",
+      "ok": false,
+      "sent": false
+    },
+    "read_checkout": {
+      "blocked_by_filter": false,
+      "contents_recorded": false,
+      "errno": null,
+      "error": null,
+      "ok": true,
+      "readable": true
+    },
+    "read_etc_passwd": {
+      "blocked_by_filter": true,
+      "contents_recorded": false,
+      "errno": 13,
+      "error": "EACCES",
+      "ok": false,
+      "readable": false
+    },
+    "read_outside": {
+      "blocked_by_filter": true,
+      "contents_recorded": false,
+      "errno": 13,
+      "error": "EACCES",
+      "ok": false,
+      "readable": false
+    },
+    "read_proc": {
+      "blocked_by_filter": true,
+      "contents_recorded": false,
+      "errno": 13,
+      "error": "EACCES",
+      "ok": false,
+      "readable": false
+    },
+    "stream_socket": {
+      "blocked_by_filter": false,
+      "errno": null,
+      "error": null,
+      "ok": true,
+      "sent": false
+    },
+    "write_temp": {
+      "blocked_by_filter": false,
+      "errno": null,
+      "error": null,
+      "ok": true
+    }
+  },
+  "published_pin_expected": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
+  "python": "3.12.3",
+  "refused": false,
+  "release_boundary": "HOLD",
+  "residuals": [
+    "Landlock scope controls are not installed. The ruleset is the filesystem restriction that was requested."
+  ],
+  "rewrites_receipt_1": false,
+  "schema": "aureon.measured.containment-hardening.v1",
+  "seccomp": {
+    "action": "SECCOMP_RET_ERRNO|EPERM",
+    "applied": true,
+    "arch": "AUDIT_ARCH_X86_64",
+    "denied": [
+      "ptrace",
+      "mount",
+      "umount2",
+      "pivot_root",
+      "mount_setattr",
+      "kexec_load",
+      "kexec_file_load",
+      "bpf"
+    ],
+    "deny_raw_socket": true,
+    "errno": null,
+    "error": null,
+    "gap": false,
+    "implementation": "ctypes-seccomp-syscall",
+    "installed": true,
+    "instruction_count": 19,
+    "proc_seccomp": "2",
+    "reason": null
+  },
+  "seccomp_applied": true,
+  "source_sha256": {
+    "aureon/containment/_harden_child.py": "956f0dae2b608d92a9277f5c5b8459d5d1773eb2fcf0b662f2d41efcace77424",
+    "aureon/containment/hardening.py": "084416f1704f309937945cf1b685c9361d9d3b2e9d80c5e6e6e26d5076ea2bf9"
+  },
+  "started_at": "2026-11-09T18:28:38Z",
+  "started_from": "821c8f83123d25ab5b0fbb395d4c76c6a5000e54",
+  "stderr": "",
+  "title": "opt-in seccomp and landlock on the contained cold boot",
+  "verdict": "pass",
+  "worktree_dirty_at_measurement": true
+}
