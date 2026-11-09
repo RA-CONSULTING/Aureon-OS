@@ -22,6 +22,7 @@ _ALLOWLIST = {
     ("swarm/druidic_council.py", "CouncilReceipt"),
     ("swarm/druidic_council.py", "SeatReceipt"),
     ("swarm/memory_bus.py", "CausalEchoBus"),
+    ("miner/miner_inhouse_ai_bridge.py", "MinerAIInsight"),
     ("swarm/queen_gate.py", "Actualization"),
     ("swarm/steering.py", "SteeringField"),
 }
