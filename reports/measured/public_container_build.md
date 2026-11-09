@@ -44,6 +44,8 @@ Git HEAD at measurement: `08f04936088689e29b7995d89530b21b425c35f9`.
 The UTC stamp is this machine's clock. It is not receipt 3.
 
 This build was not repeated on `9333bfbbeb8de54a4b42be05f9263e536da643a7`.
-`README.md` changed after the measurement. Its digest in this file is the
-measurement-time digest. The orange release-boundary badge stays HOLD.
-No image was rebuilt and no image was pushed. Go-live stays HOLD.
+`README.md` and `docs/runbooks/GO_LIVE_HARDENING.md` changed after the
+measurement. The runbook edits arrived with the squash that carried #249 and
+#263. Their digests in this file are the measurement-time digests. The orange
+release-boundary badge stays HOLD. No image was rebuilt and no image was
+pushed. Go-live stays HOLD. `go_live_clear` stays false.
