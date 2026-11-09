@@ -44,7 +44,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-STARTED_FROM = "47e71d7988ad4cae91fb9b9e59491c406be55e45"
+STARTED_FROM = "821c8f83123d25ab5b0fbb395d4c76c6a5000e54"
 PUBLISHED_PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
 
 _CHILD = Path(__file__).with_name("_harden_child.py")
@@ -664,7 +664,25 @@ def _layer_error(rc: int, err: int) -> dict[str, Any]:
     }
 
 
+class ContainmentInProcessRefused(RuntimeError):
+    """Seccomp and landlock cannot be cleared. They are not installed in pytest."""
+
+
+def _require_hardened_child() -> None:
+    """Refuse to install an irreversible layer in the pytest process.
+
+    A worker that installs seccomp or landlock keeps it for every later
+    test. The contained child is a separate process and does not import pytest.
+    """
+
+    if "pytest" in sys.modules:
+        raise ContainmentInProcessRefused(
+            "seccomp and landlock must be applied in a child process, not the pytest process"
+        )
+
+
 def apply_no_new_privs() -> dict[str, Any]:
+    _require_hardened_child()
     libc = _libc()
     libc.prctl.argtypes = [ctypes.c_int, ctypes.c_ulong, ctypes.c_ulong, ctypes.c_ulong, ctypes.c_ulong]
     libc.prctl.restype = ctypes.c_int
@@ -694,6 +712,7 @@ def _proc_status() -> dict[str, str]:
 def apply_seccomp(spec: object) -> dict[str, Any]:
     """Install the sidecar filter in this process. Does not install a guess."""
 
+    _require_hardened_child()
     if not isinstance(spec, Mapping):
         return {
             "applied": False,
@@ -777,6 +796,7 @@ def _confirm_seccomp(layer: dict[str, Any], status: Mapping[str, str]) -> dict[s
 def apply_landlock(spec: Mapping[str, Any]) -> dict[str, Any]:
     """Restrict this process to the checkout and the temp dir, when the ABI exists."""
 
+    _require_hardened_child()
     numbers = spec.get("landlock_syscalls")
     checkout = str(spec.get("checkout") or "")
     temp = str(spec.get("temp") or "")
@@ -1101,9 +1121,11 @@ def execute(spec: Mapping[str, Any]) -> dict[str, Any]:
     """Install the sidecar policy in this process, then probe it.
 
     Call this only in the contained child. The filters stay installed
-    for the rest of the process.
+    for the rest of the process. A pytest process is refused before any
+    irreversible call.
     """
 
+    _require_hardened_child()
     temp = str(spec.get("temp") or "")
     mount_point = str(Path(temp) / "mount-probe") if temp else ""
     if mount_point:

@@ -38,7 +38,7 @@
     "/usr/bin/python3",
     "-I",
     "/agent/repos/Aureon-OS/aureon/containment/_harden_child.py",
-    "/tmp/aureon-harden-bz2z02hh/launch/sidecar.json"
+    "/tmp/aureon-harden-fd4h146d/launch/sidecar.json"
   ],
   "cold_boot_argv_has_net": true,
   "continued_without_layer": false,
@@ -46,10 +46,10 @@
   "deny_network": true,
   "drop_caps": false,
   "failures": [],
-  "finished_at": "2026-11-09T18:04:03Z",
+  "finished_at": "2026-11-09T18:28:38Z",
   "fs_isolation": true,
   "gaps": [],
-  "git_head_at_measurement": "a5d7b7bb83fc00c8ff061f682a8692f9ddf7cc1c",
+  "git_head_at_measurement": "a0de465e1069a3914496063da0ae3dc9caef4886",
   "go_live_clear": false,
   "implementation": "ctypes",
   "kernel": "Linux cursor 6.12.113+ #1 SMP PREEMPT_DYNAMIC Thu Nov  5 16:04:51 UTC 2026 x86_64",
@@ -80,7 +80,7 @@
       }
     ],
     "scoped": "not handled",
-    "temp": "/tmp/aureon-harden-bz2z02hh/temp",
+    "temp": "/tmp/aureon-harden-fd4h146d/temp",
     "temp_access": 65535
   },
   "landlock_abi": 6,
@@ -219,10 +219,10 @@
   "seccomp_applied": true,
   "source_sha256": {
     "aureon/containment/_harden_child.py": "956f0dae2b608d92a9277f5c5b8459d5d1773eb2fcf0b662f2d41efcace77424",
-    "aureon/containment/hardening.py": "ca6a3dc0f57c67ddf8c6d0db2507d4deb4a595dcf0385fa7c14ab0b797c02da0"
+    "aureon/containment/hardening.py": "084416f1704f309937945cf1b685c9361d9d3b2e9d80c5e6e6e26d5076ea2bf9"
   },
-  "started_at": "2026-11-09T18:04:03Z",
-  "started_from": "47e71d7988ad4cae91fb9b9e59491c406be55e45",
+  "started_at": "2026-11-09T18:28:38Z",
+  "started_from": "821c8f83123d25ab5b0fbb395d4c76c6a5000e54",
   "stderr": "",
   "title": "opt-in seccomp and landlock on the contained cold boot",
   "verdict": "pass",

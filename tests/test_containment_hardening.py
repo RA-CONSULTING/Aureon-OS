@@ -22,7 +22,12 @@ from aureon.containment.hardening import (
     PUBLISHED_PIN,
     SECCOMP_RET_ALLOW,
     STARTED_FROM,
+    ContainmentInProcessRefused,
+    apply_landlock,
+    apply_no_new_privs,
+    apply_seccomp,
     build_seccomp_program,
+    execute,
     fs_handled_access,
     judge_hardening,
     measure,
@@ -36,7 +41,7 @@ from aureon.containment.native import prepare_launch
 
 ROOT = Path(__file__).resolve().parents[1]
 MEASURED = ROOT / "reports" / "measured" / "containment_hardening.json"
-BASE = "47e71d7988ad4cae91fb9b9e59491c406be55e45"
+BASE = "821c8f83123d25ab5b0fbb395d4c76c6a5000e54"
 _STAGE7 = (
     "aureon/containment/__init__.py",
     "aureon/containment/__main__.py",
@@ -593,6 +598,52 @@ def test_default_boot_is_not_described_as_hardened() -> None:
     assert "opt-in" in note
     assert "one VM kernel" in note
     assert "6.12.113+" in receipt["kernel_release"]
+
+
+def test_pytest_process_cannot_install_the_layer() -> None:
+    """Installing the layer here would sandbox every later test on this worker."""
+
+    with pytest.raises(ContainmentInProcessRefused):
+        apply_no_new_privs()
+    with pytest.raises(ContainmentInProcessRefused):
+        apply_seccomp({"seccomp_nr": 317, "instructions": [[6, 0, 0, 0x7FFF0000]], "denied": [], "deny_raw_socket": False})
+    with pytest.raises(ContainmentInProcessRefused):
+        apply_landlock(
+            {
+                "checkout": "/tmp",
+                "temp": "/tmp",
+                "landlock_syscalls": {"create": 444, "add": 445, "restrict": 446},
+            }
+        )
+    with pytest.raises(ContainmentInProcessRefused):
+        execute({})
+    assert "Seccomp:\t0" in Path("/proc/self/status").read_text(encoding="ascii")
+
+
+def test_pytest_process_is_unrestricted_after_the_layer_tests() -> None:
+    """This test stays last in the module so it runs after the layer tests.
+
+    Seccomp and landlock cannot be cleared. The pytest process must still
+    be unrestricted: Seccomp 0, no new privs, and a path outside the
+    checkout readable and writable.
+    """
+
+    fields: dict[str, str] = {}
+    for line in Path("/proc/self/status").read_text(encoding="ascii").splitlines():
+        if line.startswith(("Seccomp", "NoNewPrivs")):
+            key, value = line.split(":", 1)
+            fields[key] = value.strip()
+    assert fields.get("Seccomp") == "0"
+    assert fields.get("Seccomp_filters", "0") == "0"
+    assert fields.get("NoNewPrivs") == "0"
+    with open("/etc/passwd", "rb") as handle:
+        assert handle.read(1)
+    probe = Path("/tmp") / f"aureon-unrestricted-{os.getpid()}"
+    probe.write_bytes(b"x")
+    try:
+        assert probe.read_bytes() == b"x"
+    finally:
+        probe.unlink()
 
 
 def _sha256(path: Path) -> str:
