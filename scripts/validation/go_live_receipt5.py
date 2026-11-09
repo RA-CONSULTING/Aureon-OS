@@ -7,7 +7,7 @@ resource and reads that resource back from the provider API. A machine with
 no Hugging Face token and no usable Google Cloud credential gets a HOLD skip.
 The skip names the missing auth. It does not invent a provider payload.
 
-Upload and provider read-back are off unless
+Upload and provider read-back are off unless AUREON_HF_GARY_YES=1 and
 AUREON_RECEIPT5_ALLOW_HF_UPLOAD=1. A token is not that opt-in. The runner
 does not send hardware identifiers or personal data. It reads an existing
 Space before any upload and refuses the upload when that Space is not
@@ -57,7 +57,7 @@ GCP_API = "https://run.googleapis.com"
 RUNNER = "scripts/validation/go_live_receipt5.py"
 SPEND_GUARD = (
     "Upload and provider read-back are off by default. A token is not an opt-in. "
-    "Both stay off unless AUREON_RECEIPT5_ALLOW_HF_UPLOAD=1. "
+    "Both stay off unless AUREON_HF_GARY_YES=1 and AUREON_RECEIPT5_ALLOW_HF_UPLOAD=1. "
     "Hardware identifiers and personal data are not sent. "
     "The free tier read from the Space must be cpu-basic, and the Space must be private gradio, "
     "before any upload. create_repo exist_ok is not that check. "
@@ -80,6 +80,7 @@ BADGE_FLIP = "stage 11 / separate PR"
 
 HF_TOKEN_ENV = ("HF_TOKEN", "HUGGING_FACE_HUB_TOKEN")
 HF_UPLOAD_FLAG = "AUREON_RECEIPT5_ALLOW_HF_UPLOAD"
+GARY_YES = "AUREON_HF_GARY_YES"
 HF_TOKEN_FILES = (
     ".cache/huggingface/token",
     ".huggingface/token",
@@ -304,13 +305,16 @@ def probe_auth(
         except DeployError:
             opt_in = False
     hf_upload_flag = env.get(HF_UPLOAD_FLAG, "") == "1"
-    if hf_method is not None and not hf_upload_flag:
+    gary_yes = env.get(GARY_YES, "") == "1"
+    hf_opted_in = hf_upload_flag and gary_yes
+    if hf_method is not None and not hf_opted_in:
         unused.insert(0, hf_method)
     return {
         "hf_auth_method": hf_method,
         "hf_token_present": hf_method is not None,
         "hf_upload_flag": hf_upload_flag,
-        "hf_upload_opt_in": bool(hf_upload_flag and hf_method),
+        "gary_yes": gary_yes,
+        "hf_upload_opt_in": bool(hf_opted_in and hf_method),
         "gcloud_on_path": bool(gcloud_bin),
         "gcloud_active_account": active is True,
         "gcp_credential_present": any(
@@ -472,6 +476,7 @@ def _base(
             "hf_token_present": probe["hf_token_present"],
             "hf_auth_method": probe["hf_auth_method"],
             "hf_upload_opt_in": probe["hf_upload_opt_in"],
+            "gary_yes": probe["gary_yes"],
             "gcloud_on_path": probe["gcloud_on_path"],
             "gcloud_active_account": probe["gcloud_active_account"],
             "gcp_credential_present": probe["gcp_credential_present"],
@@ -493,11 +498,11 @@ def skip_blocker(probe: dict[str, Any]) -> str:
         f"Present and unused: {unused}.",
         "No provider API was called. No provider read-back was fabricated.",
     ]
-    if probe["hf_token_present"] and not probe["hf_upload_flag"]:
+    if probe["hf_token_present"] and not (probe["hf_upload_flag"] and probe["gary_yes"]):
         parts.insert(
             3,
-            "A Hugging Face token is present. Upload stays off without "
-            f"{HF_UPLOAD_FLAG}=1. Token presence is not an upload.",
+            "A Hugging Face token is present. Upload and read-back stay off without "
+            f"{GARY_YES}=1 and {HF_UPLOAD_FLAG}=1. Token presence is not an upload.",
         )
     elif probe["cloud_run_flag"] is False and probe["gcp_credential_present"]:
         parts.insert(
@@ -697,10 +702,11 @@ def deploy_huggingface(
 ) -> dict[str, Any]:
     """Upload the in-repo Space scaffold and read the runtime from the Hub API."""
 
-    if env.get(HF_UPLOAD_FLAG, "") != "1":
+    if env.get(GARY_YES, "") != "1" or env.get(HF_UPLOAD_FLAG, "") != "1":
         raise DeployError(
-            f"Hugging Face upload and read-back are off. {HF_UPLOAD_FLAG}=1 is required. "
-            "A token is not an opt-in. No provider API was called."
+            "Hugging Face upload and read-back are off. "
+            f"{GARY_YES}=1 and {HF_UPLOAD_FLAG}=1 are both required. "
+            "A token is not Gary's opt-in. No provider API was called."
         )
     if not provider_host_ok(HF_API):
         raise DeployError("Hugging Face API host failed the provider-host check")
@@ -734,6 +740,7 @@ def deploy_huggingface(
             fail("Hugging Face whoami returned no usable account id. Personal data was not sent. No upload was started.")
         repo_id = _hf_repo(env, username.strip())
         existed = _space_exists(client, repo_id)
+        confirmed = False
         if existed:
             mismatch = _confirm_space(client, repo_id, private=private, hardware=hardware, existed=True)
             if mismatch:
@@ -742,6 +749,7 @@ def deploy_huggingface(
                     f"({mismatch}). create_repo exist_ok does not update privacy, hardware, or SDK. "
                     "No upload was started."
                 )
+            confirmed = True
         else:
             progress["attempted"] = True
             create_kwargs = {
@@ -758,6 +766,12 @@ def deploy_huggingface(
                     "refusing upload: Space settings after create_repo do not match the request "
                     f"({mismatch}). No upload was started."
                 )
+            confirmed = True
+        if not confirmed:
+            fail(
+                "privacy and free cpu-basic hardware were not confirmed before upload. "
+                "No upload was started."
+            )
         progress["attempted"] = True
         upload_kwargs = {
             "repo_id": repo_id,
@@ -1053,6 +1067,21 @@ def produce(
         )
         return receipt
 
+    if probe["hf_upload_flag"] and not probe["gary_yes"]:
+        receipt = _base(
+            meta=meta,
+            probe=probe,
+            scaffold=scaffold,
+            outcome="fail",
+            blocker=(
+                f"{HF_UPLOAD_FLAG}=1 and {GARY_YES} is not 1. "
+                "Gary's opt-in is required before upload or read-back. "
+                "No provider API was called. No provider read-back was fabricated."
+            ),
+            auth_method=str(probe["hf_auth_method"]) if probe["hf_token_present"] else None,
+        )
+        return receipt
+
     if probe["hf_upload_flag"]:
         method = probe["hf_auth_method"] if probe["hf_token_present"] else None
         receipt = _base(
@@ -1243,6 +1272,7 @@ def render_markdown(receipt: dict[str, Any]) -> str:
             "Probe flags: "
             f"hf_token_present={probe.get('hf_token_present')} "
             f"hf_upload_opt_in={probe.get('hf_upload_opt_in')} "
+            f"gary_yes={probe.get('gary_yes')} "
             f"gcloud_on_path={probe.get('gcloud_on_path')} "
             f"gcloud_active_account={probe.get('gcloud_active_account')} "
             f"gcp_credential_present={probe.get('gcp_credential_present')} "

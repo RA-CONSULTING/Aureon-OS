@@ -218,7 +218,7 @@ def test_huggingface_readback_is_redacted_and_not_a_go_live(tmp_path: Path) -> N
     client = _NewSpace()
     receipt = _produce(
         tmp_path,
-        environ={"HF_TOKEN": TOKEN, "AUREON_RECEIPT5_ALLOW_HF_UPLOAD": "1"},
+        environ={"HF_TOKEN": TOKEN, "AUREON_RECEIPT5_ALLOW_HF_UPLOAD": "1", "AUREON_HF_GARY_YES": "1"},
         hf_client=client,
     )
     text = json.dumps(receipt)
@@ -347,6 +347,78 @@ def test_token_without_upload_opt_in_does_not_call_the_provider(tmp_path: Path) 
     assert receipt5.validate_receipt(receipt) == []
 
 
+def test_upload_flag_without_gary_yes_does_not_leave_the_machine(tmp_path: Path, monkeypatch) -> None:
+    calls: list[str] = []
+
+    def blocked(*_args, **_kwargs):
+        calls.append("socket")
+        raise AssertionError("socket")
+
+    monkeypatch.setattr(socket, "socket", blocked)
+
+    class Client:
+        def __getattr__(self, name):
+            calls.append(name)
+            raise AssertionError(name)
+
+    receipt = _produce(
+        tmp_path,
+        environ={"HF_TOKEN": TOKEN, "AUREON_RECEIPT5_ALLOW_HF_UPLOAD": "1"},
+        hf_client=Client(),
+        gcloud_runner=blocked,
+    )
+    assert calls == []
+    assert receipt["outcome"] == "fail"
+    assert receipt["provider_api_called"] is False
+    assert receipt["deploy_attempted"] is False
+    assert receipt["deploy_performed"] is False
+    assert receipt["provider_readback"] is None
+    assert receipt["go_live_clear"] is False
+    assert "AUREON_HF_GARY_YES" in receipt["blocker"]
+    assert "No provider API was called." in receipt["blocker"]
+    assert TOKEN not in json.dumps(receipt)
+    assert receipt5.validate_receipt(receipt) == []
+
+
+def test_gary_yes_alone_does_not_upload(tmp_path: Path) -> None:
+    class Client:
+        def __getattr__(self, name):
+            raise AssertionError(name)
+
+    receipt = _produce(
+        tmp_path,
+        environ={"HF_TOKEN": TOKEN, "AUREON_HF_GARY_YES": "1"},
+        hf_client=Client(),
+    )
+    assert receipt["outcome"] == "skip"
+    assert receipt["provider_api_called"] is False
+    assert receipt["deploy_attempted"] is False
+    assert "AUREON_HF_GARY_YES=1" in receipt["blocker"]
+    assert receipt["auth_probe"]["gary_yes"] is True
+    assert receipt["auth_probe"]["hf_upload_opt_in"] is False
+    assert receipt5.validate_receipt(receipt) == []
+
+
+def test_upload_happens_only_after_privacy_and_cpu_basic_check(tmp_path: Path) -> None:
+    client = _NewSpace()
+    receipt = _produce(
+        tmp_path,
+        environ={
+            "HF_TOKEN": TOKEN,
+            "AUREON_RECEIPT5_ALLOW_HF_UPLOAD": "1",
+            "AUREON_HF_GARY_YES": "1",
+        },
+        hf_client=client,
+    )
+    upload_at = client.calls.index("upload")
+    assert client.calls.index("info") < upload_at
+    assert client.calls.index("runtime") < upload_at
+    assert "space_hardware" not in " ".join(client.calls)
+    assert receipt["outcome"] == "measured"
+    assert receipt["go_live_clear"] is False
+    assert receipt5.validate_receipt(receipt) == []
+
+
 def test_upload_opt_in_without_a_token_does_not_call_the_provider(tmp_path: Path) -> None:
     class Client:
         def whoami(self):
@@ -354,7 +426,7 @@ def test_upload_opt_in_without_a_token_does_not_call_the_provider(tmp_path: Path
 
     receipt = _produce(
         tmp_path,
-        environ={"AUREON_RECEIPT5_ALLOW_HF_UPLOAD": "1"},
+        environ={"AUREON_RECEIPT5_ALLOW_HF_UPLOAD": "1", "AUREON_HF_GARY_YES": "1"},
         hf_client=Client(),
     )
     assert receipt["outcome"] == "fail"
@@ -405,7 +477,7 @@ def test_existing_space_with_wrong_privacy_hardware_or_sdk_is_not_uploaded(tmp_p
         client = _ExistingSpace(private=case["private"], hardware=case["hardware"], sdk=case["sdk"])
         receipt = _produce(
             tmp_path,
-            environ={"HF_TOKEN": TOKEN, "AUREON_RECEIPT5_ALLOW_HF_UPLOAD": "1"},
+            environ={"HF_TOKEN": TOKEN, "AUREON_RECEIPT5_ALLOW_HF_UPLOAD": "1", "AUREON_HF_GARY_YES": "1"},
             hf_client=client,
         )
         assert client.calls == ["whoami", "exists", "info", "runtime"]
@@ -452,7 +524,7 @@ def test_matching_existing_private_space_uploads_without_create_repo(tmp_path: P
 
     receipt = _produce(
         tmp_path,
-        environ={"HF_TOKEN": TOKEN, "AUREON_RECEIPT5_ALLOW_HF_UPLOAD": "1"},
+        environ={"HF_TOKEN": TOKEN, "AUREON_RECEIPT5_ALLOW_HF_UPLOAD": "1", "AUREON_HF_GARY_YES": "1"},
         hf_client=Client(),
     )
     assert calls == ["whoami", "exists", "info", "runtime", "upload", "runtime", "info"]
@@ -467,7 +539,7 @@ def test_exception_after_upload_keeps_side_effect_flags(tmp_path: Path) -> None:
         client = _NewSpace(after_upload=mode)
         receipt = _produce(
             tmp_path,
-            environ={"HF_TOKEN": TOKEN, "AUREON_RECEIPT5_ALLOW_HF_UPLOAD": "1"},
+            environ={"HF_TOKEN": TOKEN, "AUREON_RECEIPT5_ALLOW_HF_UPLOAD": "1", "AUREON_HF_GARY_YES": "1"},
             hf_client=client,
         )
         assert "upload" in client.calls
@@ -510,7 +582,7 @@ def test_public_opt_in_does_not_upload_to_an_existing_space(tmp_path: Path) -> N
         tmp_path,
         environ={
             "HF_TOKEN": TOKEN,
-            "AUREON_RECEIPT5_ALLOW_HF_UPLOAD": "1",
+            "AUREON_RECEIPT5_ALLOW_HF_UPLOAD": "1", "AUREON_HF_GARY_YES": "1",
             "AUREON_RECEIPT5_HF_PUBLIC": "1",
         },
         hf_client=Client(),
@@ -531,7 +603,7 @@ def test_non_cpu_hardware_does_not_call_the_provider(tmp_path: Path) -> None:
         tmp_path,
         environ={
             "HF_TOKEN": TOKEN,
-            "AUREON_RECEIPT5_ALLOW_HF_UPLOAD": "1",
+            "AUREON_RECEIPT5_ALLOW_HF_UPLOAD": "1", "AUREON_HF_GARY_YES": "1",
             "AUREON_RECEIPT5_HF_HARDWARE": "t4-small",
         },
         hf_client=Client(),
@@ -770,7 +842,7 @@ def test_check_does_not_treat_a_token_alone_as_a_deploy_opt_in(tmp_path: Path) -
     assert any("unused_provider_auth" in error for error in errors)
     opted = receipt5.check(
         ROOT,
-        environ={"HF_TOKEN": TOKEN, "AUREON_RECEIPT5_ALLOW_HF_UPLOAD": "1"},
+        environ={"HF_TOKEN": TOKEN, "AUREON_RECEIPT5_ALLOW_HF_UPLOAD": "1", "AUREON_HF_GARY_YES": "1"},
         home=tmp_path,
         which=lambda _name: None,
     )
@@ -783,6 +855,7 @@ def test_runbook_cites_the_skip_and_leaves_the_badge() -> None:
     assert "stage 11" in text
     assert "Receipt 5 is not complete" in text
     assert "AUREON_RECEIPT5_ALLOW_HF_UPLOAD" in text
+    assert "AUREON_HF_GARY_YES" in text
     assert "bb04503119681adcf832f3c3e9b0cbf09fc7a938" in text
     assert "go_live_clear: true" not in text
     assert "Receipt 5 is absent" not in text

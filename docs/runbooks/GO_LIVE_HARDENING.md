@@ -158,7 +158,9 @@ provider API was called. The read-back digest is null. A localhost process
 was not substituted for a provider.
 
 Upload and provider read-back are off by default. A Hugging Face token does
-not turn them on. Both stay off unless `AUREON_RECEIPT5_ALLOW_HF_UPLOAD=1`.
+not turn them on. Both stay off unless Gary's opt-in `AUREON_HF_GARY_YES=1`
+and `AUREON_RECEIPT5_ALLOW_HF_UPLOAD=1` are set. Privacy and free
+`cpu-basic` hardware are read before any upload.
 The runner does not send hardware identifiers or personal data. Before any
 upload it reads the Space and refuses the upload when the Space is not
 private, the hardware is not free `cpu-basic`, or the SDK is not `gradio`.
