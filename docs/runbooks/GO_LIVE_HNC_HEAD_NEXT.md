@@ -47,9 +47,9 @@ file in the tree is unchanged. A squash merge leaves both notes on the
 pre-squash commit. Re-attach the same token bytes to the squash commit. Do
 not request another timestamp to do that.
 
-A shallow clone makes the recording commit HEAD, so the check fails closed. CI therefore needs the full history (`fetch-depth: 0`) and an explicit fetch of `refs/notes/aureon-hnc-head`.
+A shallow clone fails closed, so CI needs the full history (`fetch-depth: 0`) and the notes fetch (`refs/notes/aureon-hnc-head` and `refs/notes/aureon-hnc-head-next`).
 
-Any later commit that edits `hnc_head_anchor.json` or `hnc_head_next.json` moves the recording commit, so the check fails closed until the notes are re-attached at that new commit.
+Editing `hnc_head_anchor.json` or `hnc_head_next.json` moves the recording commit, so the check fails until the notes are re-attached at the new commit.
 
 `external_head_anchor_attested` stays false. The system is not reported
 alive. Live trading stays off. No order is placed. This follow-on is not

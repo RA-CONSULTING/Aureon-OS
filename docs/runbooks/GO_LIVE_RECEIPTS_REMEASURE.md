@@ -71,6 +71,10 @@ named in that record. It does not read the note from HEAD and does not fall
 back to HEAD when the note is missing or the bytes differ. A re-attach is
 offered only when no such commit exists.
 
+A shallow clone fails closed, so CI needs the full history (`fetch-depth: 0`) and the notes fetch (`refs/notes/aureon-hnc-head` and `refs/notes/aureon-hnc-head-next`).
+
+Editing `hnc_head_anchor.json` or `hnc_head_next.json` moves the recording commit, so the check fails until the notes are re-attached at the new commit.
+
 The offered commands do not use `-f` and do not request a new timestamp:
 
 ```bash
