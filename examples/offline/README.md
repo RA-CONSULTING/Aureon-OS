@@ -17,7 +17,7 @@ PYTHONPATH=. python3 examples/offline/cold_boot.py
 | Command | What it calls | Fixture |
 | --- | --- | --- |
 | `load_market_series.py` | `fetch_public_pack` with a fixture transport, then `load_market_series`, then `python -m aureon.evaluation.market_series --check` on that sandbox | `fixtures/kraken_ohlc.json`, `fixtures/kraken_spread.json` |
-| `run_brain_proof.py` | `evaluate_brain` on the same sandbox, then `render_brain_markdown` | the pack above. `data/de440_timeseries.csv` is not copied in, so the derived column stays HOLD |
+| `run_brain_proof.py` | `evaluate_brain` on the same sandbox, then `render_brain_markdown` | the pack above, plus cited copies of `aureon/trading/aureon_auris_trader.py`, `aureon/core/hnc_field.py`, and `frontend/src/core/aurisNodes.ts`. Those copies are read as source text and are not executed. `data/de440_timeseries.csv` is not copied in, so the derived column stays HOLD |
 | `cold_boot.py` | `judge_default` on `fixtures/cold_boot_child.json` | child probe labelled `evidence_tag: fixture` |
 
 The Kraken bodies are synthetic public-shaped responses (closes 100 through 112, plus one open bar the loader drops). Brain proof may tag that pack `measured` because the bars verified. That tag is not a live Kraken fetch. A pass or fail on paper next-bar labels is a brain-proof figure. It does not clear the release boundary.

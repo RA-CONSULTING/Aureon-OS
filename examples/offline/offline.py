@@ -15,6 +15,14 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+# Source files the join citation reads. They are copied into the sandbox and
+# are not imported as a trader and are not executed.
+_CITED_SOURCES = (
+    "aureon/trading/aureon_auris_trader.py",
+    "aureon/core/hnc_field.py",
+    "frontend/src/core/aurisNodes.ts",
+)
+
 os.environ["AUREON_LLM_OFFLINE"] = "1"
 os.environ["AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS"] = "1"
 os.environ["AUREON_DISABLE_REAL_ORDERS"] = "1"
@@ -144,6 +152,16 @@ def run_market() -> int:
     return 0 if code == 0 else int(code)
 
 
+def _stage_cited_sources(root: Path) -> None:
+    """Copy the files the join citation reads. The copies are not executed."""
+
+    for relative in _CITED_SOURCES:
+        source = ROOT / relative
+        target = root / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(source.read_bytes())
+
+
 def run_brain() -> int:
     """Run ``evaluate_brain`` on the fixture sandbox. The derived column stays absent."""
 
@@ -154,6 +172,7 @@ def run_brain() -> int:
     with tempfile.TemporaryDirectory(prefix="aureon-offline-brain-") as directory:
         root = Path(directory)
         load_fixture_pack(root)
+        _stage_cited_sources(root)
         report = evaluate_brain(root)
         print(render_brain_markdown(report))
     pin_and_badge_still_hold()
