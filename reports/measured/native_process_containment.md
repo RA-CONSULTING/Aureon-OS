@@ -5,6 +5,7 @@ Stage 7 only. This is a measured cold boot. It is not a claim that a live Aureon
 Verdict: **pass**. Allowed at default: **none**.
 Release boundary: **HOLD**. Orange badge: unchanged.
 Public pin: `34864ff0547d2cff03e707414743a3b0cc8770b5` (changed: False).
+That value is the stage-7 measurement. It is historical. The published require-pin is `bb04503119681adcf832f3c3e9b0cbf09fc7a938`. This file is not rewritten to that pin.
 Live trading: false. Orders placed: false. Market data fetched: false.
 
 ## Cold boot

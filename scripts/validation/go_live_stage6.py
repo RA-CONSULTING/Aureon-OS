@@ -39,7 +39,11 @@ COMPARE_FIELDS = ("package", "server", "form", "safety", "stage", "required", "a
 # market_series.http_get would mark evaluation as a live public fetch and move
 # that package from plan stage 2 to plan stage 4, which changes the reachable
 # count. This stage does not do that.
-POST_PIN_CHECKOUT_PATHS = ()
+# Files added after pin bb045031. They stay out of the inventory.
+POST_PIN_CHECKOUT_PATHS = (
+    "aureon/containment/_multi_user_child.py",
+    "aureon/containment/multi_user_smoke.py",
+)
 
 
 def _git(*args: str) -> str:
@@ -554,6 +558,8 @@ def build_census(provenance: dict[str, object]) -> dict[str, object]:
             "text": (
                 f"{len(unlisted)} symbols are in the pin aureon tree and are not in "
                 "docs/mcp/inventory.json. They were not added. "
+                f"The symbol count is a scan of this checkout, which is later than tip {TIP}. "
+                "The tip field stays that commit and is not a claim that these counts were measured there. "
                 "`evaluation/market_series.py` `http_get` is a live public fetch. "
                 "Listing that row would move the evaluation package from plan stage 2 "
                 "to plan stage 4 and would change the reachable count. Reachable stays "

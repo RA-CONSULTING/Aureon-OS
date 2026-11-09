@@ -33,7 +33,7 @@ def test_public_pin_and_orange_badge_stay() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     installer = (ROOT / "scripts" / "linux" / "install-linux.sh").read_text(encoding="utf-8")
     published = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
-    assert PIN == "34864ff0547d2cff03e707414743a3b0cc8770b5"
+    assert published == PIN
     assert f'PINNED_COMMIT = "{published}"' in guard
     assert "release%20boundary-HOLD-orange" in readme
     assert "protected_bootstrap_v05.py" in installer
@@ -187,13 +187,20 @@ def test_committed_receipt_matches_this_tree() -> None:
     assert receipt["stage"] == 7
     assert receipt["receipt"] == 1
     assert receipt["verdict"] in {"pass", "skip", "fail"}
-    assert receipt["pin"] == PIN
+    historical_pin = "34864ff0547d2cff03e707414743a3b0cc8770b5"
+    assert receipt["pin"] == historical_pin
+    assert receipt["pin"] != PIN
     assert receipt["pin_changed"] is False
     assert receipt["orders_placed"] is False
     assert receipt["live_trading"] is False
     assert receipt["started_from"] == STARTED_FROM
     assert receipt["cold_boot_command"] == "python -m aureon.containment.cold_boot"
+    historical_native = "440235d88b19e1bff74121d51b620c59aa027d2dccc599a691cfbd4267ce20b9"
+    assert receipt["source_sha256"]["aureon/containment/native.py"] == historical_native
+    assert _sha256(ROOT / "aureon/containment/native.py") != historical_native
     for name, digest in receipt["source_sha256"].items():
+        if name == "aureon/containment/native.py":
+            continue
         assert _sha256(ROOT / name) == digest
     # Measurement-time hashes stay in the receipt. Later commits, including the
     # published-pin retarget, are not written back into this record.

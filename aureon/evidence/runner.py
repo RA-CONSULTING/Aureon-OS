@@ -15,7 +15,17 @@ from typing import Any
 
 from aureon.evidence.auris import RANDOM_SEED as AURIS_RANDOM_SEED
 from aureon.evidence.hnc import GAUSSIAN_SEED, SEEDS, SHUFFLE_SEED
-from aureon.evidence.hnc_anchor import AnchorError, assemble, attach_note, stamp_files
+from aureon.evidence.hnc_anchor import (
+    NEXT_NOTE_NAME,
+    NEXT_NOTE_REF,
+    NEXT_TOKEN_REL,
+    AnchorError,
+    assemble,
+    assemble_next,
+    attach_note,
+    stamp_files,
+    stamp_next,
+)
 from aureon.evidence.qgita import CALIBRATION_SEED_START, MASTER_SEED
 from aureon.evidence.report import build_claims, render_results
 from aureon.evidence.serialize import dump
@@ -119,7 +129,9 @@ def _environment(root: Path) -> dict[str, Any]:
             "HNC head anchor JSON, id, and timestamp token. "
             "evidence/environment.json matches after commit_sha is set to the committed value. "
             "commit_sha is git rev-parse HEAD at generation and is the one allowed difference. "
-            "The timestamp token is read from refs/notes/aureon-hnc-head and is not requested again. "
+            "Sequence 1 is read from refs/notes/aureon-hnc-head. "
+            "Sequence 2 is read from refs/notes/aureon-hnc-head-next. "
+            "Neither token is requested again. "
             "No numeric tolerance. The contract is this Python, NumPy, and platform."
         ),
         "process_env": PROCESS_ENV,
@@ -142,10 +154,21 @@ def build(root: Path | None = None, *, require_note: bool = True) -> dict[str, s
     except AnchorError as exc:
         raise SystemExit(str(exc)) from exc
     anchor = json.loads(anchor_files["evidence/output/hnc_head_anchor.json"])
+    try:
+        next_files = assemble_next(root, hnc["summary"], anchor, require_note=require_note)
+    except AnchorError as exc:
+        raise SystemExit(str(exc)) from exc
+    next_anchor = json.loads(next_files["evidence/output/hnc_head_next.json"])
     auris = run_auris()
     qgita = run_qgita()
     environment = _environment(root)
-    claims = build_claims(hnc["summary"], auris["summary"], qgita["summary"], anchor)
+    claims = build_claims(
+        hnc["summary"],
+        auris["summary"],
+        qgita["summary"],
+        anchor,
+        next_anchor,
+    )
     results = render_results(
         hnc["summary"],
         auris["summary"],
@@ -153,6 +176,7 @@ def build(root: Path | None = None, *, require_note: bool = True) -> dict[str, s
         claims,
         environment,
         anchor,
+        next_anchor,
     )
     files = {
         "evidence/environment.json": dump(environment),
@@ -168,6 +192,7 @@ def build(root: Path | None = None, *, require_note: bool = True) -> dict[str, s
         "evidence/output/qgita_calibration.csv": qgita["calibration_csv"],
     }
     files.update(anchor_files)
+    files.update(next_files)
     return files
 
 
@@ -244,12 +269,30 @@ def _stamp(root: Path) -> int:
     return 0
 
 
+def _stamp_next(root: Path) -> int:
+    _prepare()
+    from aureon.evidence.hnc import run_hnc
+
+    try:
+        files = stamp_next(root, run_hnc()["summary"])
+    except AnchorError as exc:
+        raise SystemExit(str(exc)) from exc
+    for relative in sorted(files):
+        print(relative)
+    print("sequence 2 timestamp requested once; make evidence does not request another")
+    print("external_head_anchor_attested stays false")
+    print("go-live stays HOLD")
+    return 0
+
+
 def _attach(root: Path) -> int:
     try:
         attach_note(root)
+        attach_note(root, note_name=NEXT_NOTE_NAME, token_rel=NEXT_TOKEN_REL)
     except AnchorError as exc:
         raise SystemExit(str(exc)) from exc
     print("refs/notes/aureon-hnc-head")
+    print(NEXT_NOTE_REF)
     return 0
 
 
@@ -267,15 +310,25 @@ def main(argv: list[str] | None = None) -> int:
         help="request one RFC 3161 timestamp for the measured HNC commitment and write the anchor files",
     )
     parser.add_argument(
+        "--stamp-hnc-next-head",
+        action="store_true",
+        help="request one RFC 3161 timestamp for sequence 2 and write the next-head files",
+    )
+    parser.add_argument(
         "--attach-hnc-note",
         action="store_true",
-        help="attach the committed HNC head token as refs/notes/aureon-hnc-head on HEAD",
+        help=(
+            "attach the committed sequence 1 and sequence 2 tokens as "
+            "refs/notes/aureon-hnc-head and refs/notes/aureon-hnc-head-next on HEAD"
+        ),
     )
     parser.add_argument("--root", type=Path, default=ROOT)
     args = parser.parse_args(argv)
     root = args.root.resolve()
     if args.stamp_hnc_head:
         return _stamp(root)
+    if args.stamp_hnc_next_head:
+        return _stamp_next(root)
     if args.attach_hnc_note:
         return _attach(root)
     if args.write:
