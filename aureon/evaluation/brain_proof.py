@@ -26,8 +26,13 @@ four market fields are present as 0.
 The same coherence method is then called with the formula-path Λ(t) series.
 The value is passed under the field names already used for that series:
 ``lambda``, ``lambda_t``, and ``lambda_current``. No conversion into
-volatility, momentum, volume, or spread is added. If the returned coherence
-does not change, the join stays HOLD.
+volatility, momentum, volume, or spread is added. The node formulas,
+``reconcile_gamma``, ``AurisEngine.calculate_coherence``, and the TypeScript
+``MarketSnapshot`` are cited beside that call. None of them consumes Λ(t).
+The trader comment that says "Λ(t) bias" multiplies by momentum and volume.
+That comment is not a join contract and is not copied into
+``get_auris_coherence``. If the returned coherence does not change, the join
+stays HOLD. Go-live stays HOLD. This item does not clear the release boundary.
 
 QGITA is ``QGITAMarketAnalyzer`` constructed with its own defaults, then
 ``analyze``. The public pack is fed beside the derived column and the formula
@@ -1061,6 +1066,232 @@ def _cited_auris_input_keys(tree: ast.AST) -> list[str]:
     return sorted(set(keys))
 
 
+def _module_tree(root: Path, relative: str) -> ast.AST:
+    return ast.parse((root / relative).read_text(encoding="utf-8"))
+
+
+def _class_def(tree: ast.AST, class_name: str) -> ast.ClassDef | None:
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ClassDef) and node.name == class_name:
+            return node
+    return None
+
+
+def _function_def(tree: ast.AST, name: str) -> ast.FunctionDef | None:
+    if not isinstance(tree, ast.Module):
+        return None
+    for node in tree.body:
+        if isinstance(node, ast.FunctionDef) and node.name == name:
+            return node
+    return None
+
+
+def _method_def(class_node: ast.ClassDef | None, name: str) -> ast.FunctionDef | None:
+    if class_node is None:
+        return None
+    for node in class_node.body:
+        if isinstance(node, ast.FunctionDef) and node.name == name:
+            return node
+    return None
+
+
+def _ann_assign_names(class_node: ast.ClassDef | None) -> list[str]:
+    if class_node is None:
+        return []
+    names: list[str] = []
+    for node in class_node.body:
+        if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+            names.append(node.target.id)
+    return names
+
+
+def _finite_constant(node: ast.AST) -> float | None:
+    if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and not isinstance(node.value, bool):
+        return float(node.value)
+    return None
+
+
+def _snapshot_threshold(compare: ast.AST) -> tuple[str, float] | None:
+    if not (
+        isinstance(compare, ast.Compare)
+        and len(compare.ops) == 1
+        and isinstance(compare.ops[0], ast.Gt)
+        and len(compare.comparators) == 1
+        and isinstance(compare.left, ast.Attribute)
+        and isinstance(compare.left.value, ast.Name)
+        and compare.left.value.id == "snapshot"
+    ):
+        return None
+    threshold = _finite_constant(compare.comparators[0])
+    if threshold is None:
+        return None
+    return compare.left.attr, threshold
+
+
+def _bias_branch(method: ast.FunctionDef | None) -> dict[str, Any]:
+    """Cite ``coherence *= constant`` under ``snapshot.momentum`` and ``snapshot.volume``.
+
+    A different shape is recorded as absent. This does not treat that branch as Λ(t).
+    """
+
+    absent: dict[str, Any] = {
+        "momentum_gt": None,
+        "multiplier": None,
+        "present": False,
+        "reads": [],
+        "volume_gt": None,
+    }
+    if method is None:
+        return absent
+    for node in ast.walk(method):
+        if not isinstance(node, ast.If) or not isinstance(node.test, ast.BoolOp):
+            continue
+        if not isinstance(node.test.op, ast.And) or len(node.test.values) != 2 or len(node.body) != 1:
+            continue
+        parsed = [_snapshot_threshold(item) for item in node.test.values]
+        if any(item is None for item in parsed):
+            continue
+        reads = [item[0] for item in parsed if item is not None]
+        thresholds = {item[0]: item[1] for item in parsed if item is not None}
+        statement = node.body[0]
+        multiplier = statement.value if isinstance(statement, ast.AugAssign) else None
+        if not (
+            isinstance(statement, ast.AugAssign)
+            and isinstance(statement.op, ast.Mult)
+            and isinstance(statement.target, ast.Name)
+            and statement.target.id == "coherence"
+            and multiplier is not None
+        ):
+            continue
+        factor = _finite_constant(multiplier)
+        if factor is None or "momentum" not in thresholds or "volume" not in thresholds:
+            continue
+        return {
+            "momentum_gt": thresholds["momentum"],
+            "multiplier": factor,
+            "present": True,
+            "reads": reads,
+            "volume_gt": thresholds["volume"],
+        }
+    return absent
+
+
+def _method_claims_lambda_bias(text: str, method: ast.FunctionDef | None) -> bool:
+    if method is None or method.end_lineno is None:
+        return False
+    chunk = "\n".join(text.splitlines()[method.lineno - 1 : method.end_lineno])
+    return "Λ(t) bias" in chunk
+
+
+def _typescript_market_snapshot(text: str) -> dict[str, Any]:
+    marker = "export type MarketSnapshot = DataProvenance & {"
+    start = text.find(marker)
+    end = text.find("};", start) if start >= 0 else -1
+    fields: list[str] = []
+    if start >= 0 and end > start:
+        for line in text[start:end].splitlines():
+            stripped = line.strip()
+            if not stripped or stripped.startswith("export") or stripped.startswith("//") or ":" not in stripped:
+                continue
+            name = stripped.split(":", 1)[0].strip()
+            if name.isidentifier():
+                fields.append(name)
+    return {
+        "evidence_tag": "cited",
+        "fields": fields,
+        "has_lambda": any(name in _LAMBDA_KEYS or name == "Lambda" for name in fields),
+        "source": "frontend/src/core/aurisNodes.ts",
+    }
+
+
+def _search_join_contract(
+    root: Path,
+    *,
+    role_names_lambda: bool,
+    coherence_names_lambda: bool,
+    keys_read: list[str],
+) -> dict[str, Any]:
+    """Cite the coherence formulas that already exist. This adds none."""
+
+    trader_path = root / "aureon/trading/aureon_auris_trader.py"
+    trader_text = trader_path.read_text(encoding="utf-8")
+    trader_tree = ast.parse(trader_text)
+    engine = _method_def(_class_def(trader_tree, "AurisEngine"), "calculate_coherence")
+    bias = _bias_branch(engine)
+    bias["comment_claims_lambda_bias"] = _method_claims_lambda_bias(trader_text, engine)
+    bias["names_lambda"] = False if engine is None else _tree_names_lambda(engine)
+    bias["source"] = "aureon.trading.aureon_auris_trader.AurisEngine.calculate_coherence"
+    field_tree = _module_tree(root, "aureon/core/hnc_field.py")
+    reconcile = _function_def(field_tree, "reconcile_gamma")
+    docstring = ast.get_docstring(reconcile) if reconcile is not None else ""
+    typescript = _typescript_market_snapshot(
+        (root / "frontend/src/core/aurisNodes.ts").read_text(encoding="utf-8")
+    )
+    return {
+        "auris_engine": bias,
+        "evidence_tag": "cited",
+        "formula_added": False,
+        "frontend_market_snapshot": typescript,
+        "get_auris_coherence_names_lambda": coherence_names_lambda,
+        "join_contract": None,
+        "join_implemented": False,
+        "keys_read_by_auris_role_value": list(keys_read),
+        "market_snapshot_fields": _ann_assign_names(_class_def(trader_tree, "MarketSnapshot")),
+        "market_snapshot_source": "aureon.trading.aureon_auris_trader.MarketSnapshot",
+        "reconcile_gamma": {
+            "evidence_tag": "cited",
+            "names_lambda": False if reconcile is None else _tree_names_lambda(reconcile),
+            "returns_caller_figure": bool(docstring) and docstring.startswith(
+                "Return the caller's coherence figure."
+            ),
+            "source": "aureon.core.hnc_field.reconcile_gamma",
+        },
+        "role_value_names_lambda": role_names_lambda,
+    }
+
+
+def _contract_sentence(contract: dict[str, Any]) -> str:
+    engine = contract["auris_engine"]
+    gamma = contract["reconcile_gamma"]
+    fields = ", ".join(contract["market_snapshot_fields"])
+    typescript = contract["frontend_market_snapshot"]
+    ts_fields = ", ".join(typescript["fields"])
+    if gamma["names_lambda"] is False and gamma["returns_caller_figure"] is True:
+        gamma_text = "reconcile_gamma does not name lambda and its docstring returns the caller figure. "
+    else:
+        gamma_text = "reconcile_gamma was cited. "
+    if (
+        engine["present"] is True
+        and engine["names_lambda"] is False
+        and engine["comment_claims_lambda_bias"] is True
+    ):
+        bias = (
+            "AurisEngine.calculate_coherence does not name lambda. "
+            "Its source comment claims a Master Equation Λ(t) bias, "
+            f"and the executed branch multiplies coherence by {engine['multiplier']} "
+            f"when snapshot.momentum > {engine['momentum_gt']} and snapshot.volume > {engine['volume_gt']}. "
+            f"MarketSnapshot fields are {fields}. "
+            "That comment was not copied into get_auris_coherence. "
+        )
+    else:
+        bias = "AurisEngine.calculate_coherence was cited and does not supply a lambda join contract. "
+    if typescript["has_lambda"] is False and ts_fields:
+        front = (
+            f"The TypeScript MarketSnapshot fields are {ts_fields}. "
+            "That snapshot does not name lambda. "
+        )
+    else:
+        front = "The TypeScript MarketSnapshot was cited. "
+    return (
+        "No join contract was found. "
+        + gamma_text
+        + bias
+        + front
+        + "HOLD remains because the coherence formula does not consume lambda. "
+        + "This item does not clear the release boundary."
+    )
+
+
 def _coherence_call(queen: Any, market: dict[str, float] | None) -> dict[str, Any]:
     coherence, status = queen.get_auris_coherence(market)
     return {
@@ -1070,11 +1301,16 @@ def _coherence_call(queen: Any, market: dict[str, float] | None) -> dict[str, An
     }
 
 
-def _join_auris_to_lambda(series: list[float], texture: dict[str, float] | None) -> dict[str, Any]:
+def _join_auris_to_lambda(
+    series: list[float],
+    texture: dict[str, float] | None,
+    root: Path,
+) -> dict[str, Any]:
     """Pass formula-path Λ(t) into ``get_auris_coherence`` and record what that call returns.
 
     The market-texture formulas already in ``_auris_role_value`` are not changed.
     A lambda key the method does not read leaves the coherence figure where it was.
+    A comment that names Λ(t) without reading it is not a join contract.
     """
 
     from aureon.utils.aureon_queen_hive_mind import QueenHiveMind
@@ -1120,6 +1356,13 @@ def _join_auris_to_lambda(series: list[float], texture: dict[str, float] | None)
         or not only_matches_omitted
         or not matches_texture
     )
+    contract = _search_join_contract(
+        root,
+        role_names_lambda=role_names_lambda,
+        coherence_names_lambda=names_lambda,
+        keys_read=keys_read,
+    )
+    contract_text = _contract_sentence(contract)
     measurement = {
         "calls_compared_with_texture": compared,
         "evidence_tag": "measured",
@@ -1153,6 +1396,7 @@ def _join_auris_to_lambda(series: list[float], texture: dict[str, float] | None)
             "HarmonicRealityField.step Λ(t) was passed into get_auris_coherence "
             "and the reading changed, or the method names that field. "
             "This path does not add a formula, so that change is not claimed as a join. "
+            f"{contract_text} "
             "No order was placed. Go-live stays HOLD."
         )
         evidence_tag = "measured"
@@ -1174,15 +1418,21 @@ def _join_auris_to_lambda(series: list[float], texture: dict[str, float] | None)
             f"Cited from _auris_role_value, the keys read are {', '.join(keys_read)}. "
             "Neither _auris_role_value nor get_auris_coherence names lambda. "
             "On this formula series the coherence figure was unchanged by those keys. "
+            f"{contract_text} "
             "No formula was added. No order was placed. Go-live stays HOLD."
         )
         evidence_tag = "inferred"
     return {
         "cited": cited,
+        "contract": contract,
         "evidence_tag": evidence_tag,
+        "formula_added": False,
+        "formula_consumes_lambda": consumed,
         "go_live": "HOLD",
+        "join_implemented": False,
         "measurement": measurement,
         "reason": reason,
+        "release_boundary": "HOLD",
         "verdict": verdict,
     }
 
@@ -1279,6 +1529,7 @@ def _evaluate_brain_body(root: Path) -> dict[str, Any]:
             "auris_joined_to_lambda": _join_auris_to_lambda(
                 hnc_values,
                 auris.get("market_data") if isinstance(auris.get("market_data"), dict) else None,
+                root,
             ),
         },
     }

@@ -97,6 +97,16 @@ Older notes in `docs/` (for example `docs/AUREON_MIND_STATUS.md`), `aureon-tradi
 
 > **Leave exchange keys unset.** `./install.sh --smoke` sets `AUREON_AUTONOMY_MODE=guarded` and skips `.env`. `scripts/linux/aureon-up.sh` can boot live trading when a full exchange key group is present in `.env`: with `.venv/bin/python` missing it runs `production/install.sh`, which calls `scripts/launch/aureon-master.sh`. Go-live stays **HOLD**.
 
+### Which settings
+
+[`.env.example`](.env.example) and [`docs/PUBLIC_ENV.md`](docs/PUBLIC_ENV.md) name three postures. Secret lines in the template are blank placeholder names. A real key never goes in that file. Exchange keys in `.env` make that boot live. A complete key group in the inherited shell, or in `aureon_radar/.env`, arms the same boot when the root `.env` is blank.
+
+| Posture | What it needs | What the flags do |
+|---|---|---|
+| **Guarded offline** | No `.env`. `./install.sh` sets guarded autonomy, `AUREON_LLM_OFFLINE=1`, and real orders disabled in that process. `./install.sh` skips `.env`. | Off for that process. |
+| **Read-only market fetch** | No exchange key. `AUREON_DISABLE_REAL_ORDERS=1 PYTHONPATH=. python3 -m aureon.evaluation.market_series --out reports/measured` | That command sends no order. |
+| **Template copy** | The copied file ships `AUREON_DISABLE_REAL_ORDERS` and `AUREON_DRY_RUN`, paper and demo venue URLs, blank exchange key names, and no live-trading assignment. | Those lines are the file. They are not a lock. A full+keyed master boot overrides the disable and dry-run flags. |
+
 ---
 
 ## Five-minute quickstart
@@ -144,7 +154,7 @@ Trade readiness: **fail**. paper trade-outcome labels: 166 next-bar close-to-clo
 QGITA on the derived series `data/de440_timeseries.csv` (cited-unverified): status `complete`, FTCP count `0`, lighthouse events `0`. Detection rate **HOLD**. Clock: sample index. analyze_price_stream uses range(len(prices)) when no timestamps are passed
 QGITA on the formula series: FTCP count `0`, lighthouse events `0`. Detection rate **HOLD**. Clock: step index times HarmonicRealityField.dt
 QGITA on the public series `XBTUSD` (measured, key group `public:kraken`): status `complete`, FTCP count `0`, lighthouse events `0`. Detection rate **HOLD**. Clock: venue bar open time in unix seconds; price is the bar close
-Auris joined to Λ(t): **HOLD**. HarmonicRealityField.step Λ(t) was passed into get_auris_coherence under the keys lambda, lambda_t, lambda_current. Each only-lambda call returned coherence null and status 'no_data', the same as get_auris_coherence(None). Beside the loaded market texture, coherence stayed 0.5023340603593964 with status '⛔ COHERENCE BREAK - Do not trade' for all 100 formula-series samples under those keys (300 calls). Cited from _auris_role_value, the keys read are momentum, spread, volatility, volume. Neither _auris_role_value nor get_auris_coherence names lambda. On this formula series the coherence figure was unchanged by those keys. No formula was added. No order was placed. Go-live stays HOLD.
+Auris joined to Λ(t): **HOLD**. HarmonicRealityField.step Λ(t) was passed into get_auris_coherence under the keys lambda, lambda_t, lambda_current. Each only-lambda call returned coherence null and status 'no_data', the same as get_auris_coherence(None). Beside the loaded market texture, coherence stayed 0.5023340603593964 with status '⛔ COHERENCE BREAK - Do not trade' for all 100 formula-series samples under those keys (300 calls). Cited from _auris_role_value, the keys read are momentum, spread, volatility, volume. Neither _auris_role_value nor get_auris_coherence names lambda. On this formula series the coherence figure was unchanged by those keys. No join contract was found. reconcile_gamma does not name lambda and its docstring returns the caller figure. AurisEngine.calculate_coherence does not name lambda. Its source comment claims a Master Equation Λ(t) bias, and the executed branch multiplies coherence by 1.1 when snapshot.momentum > 0.0 and snapshot.volume > 0.5. MarketSnapshot fields are symbol, price, volume, volatility, momentum, spread, timestamp. That comment was not copied into get_auris_coherence. The TypeScript MarketSnapshot fields are price, volume, volatility, momentum, spread, timestamp. That snapshot does not name lambda. HOLD remains because the coherence formula does not consume lambda. This item does not clear the release boundary. No formula was added. No order was placed. Go-live stays HOLD.
 ```
 
 The longer operator preflight, containers, and the full offline suite are further down.
@@ -440,14 +450,15 @@ Strangers can open [`site/index.html`](site/index.html). That reading copy match
 | **Opening the public front door** | [`site/index.html`](site/index.html) — live routes active, `.env` keys boot live, no verified live track record. Guarded smoke `./install.sh --smoke`. Go-live HOLD. GitHub Pages is off. |
 | **Working on Aureon OS** | [`docs/AUREON_RULES.md`](docs/AUREON_RULES.md) — the shared rulebook |
 | **An investor or funder** | [`docs/investor/README.md`](docs/investor/README.md) — diligence path, capability categories, and claim discipline |
-| **A developer** | [`docs/INDEX.md`](docs/INDEX.md) · [`CAPABILITIES.md`](CAPABILITIES.md) · [`docs/SAAS_PLATFORM.md`](docs/SAAS_PLATFORM.md) |
+| **A developer** | [`docs/INDEX.md`](docs/INDEX.md) · [`docs/PUBLIC_ENV.md`](docs/PUBLIC_ENV.md) · [`CAPABILITIES.md`](CAPABILITIES.md) · [`docs/SAAS_PLATFORM.md`](docs/SAAS_PLATFORM.md) |
 | **A researcher** | [`docs/THE_SYNTHESIS.md`](docs/THE_SYNTHESIS.md) · [`docs/CLAIMS_AND_EVIDENCE.md`](docs/CLAIMS_AND_EVIDENCE.md) · [`docs/research/READING_PATHS.md`](docs/research/READING_PATHS.md) |
 | **Deployment status** | [`docs/runbooks/GO_LIVE_HARDENING.md`](docs/runbooks/GO_LIVE_HARDENING.md) · [`docs/deployment/`](docs/deployment/) — terminal HOLD; no supported listener or deploy route |
 | **Installing with pip** | [`packaging/PIP_INSTALL.md`](packaging/PIP_INSTALL.md) — git URL or a gated TestPyPI wheel. Go-live stays HOLD. |
 | **Running it for several users** | [`docs/architecture/MULTI_TENANT_AUTH.md`](docs/architecture/MULTI_TENANT_AUTH.md) — the account/instance boundary and how it is enforced |
 | **Checking what the numbers mean** | [`docs/architecture/DATA_PROVENANCE_AUDIT.md`](docs/architecture/DATA_PROVENANCE_AUDIT.md) — which readings are live, which are withheld as `no_data`, and which generated feeds are opt-in |
 | **Browsing the whole repo** | [`docs/REPO_SITEMAP.md`](docs/REPO_SITEMAP.md) · the console's `#repo-map` tab |
-| **Contributing** | [`CONTRIBUTING.md`](CONTRIBUTING.md) · [`SECURITY.md`](SECURITY.md) · [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) |
+| **Getting help** | [`SUPPORT.md`](SUPPORT.md) — Discussions and Issues. No support contract while the release boundary is HOLD. |
+| **Contributing** | [`CONTRIBUTING.md`](CONTRIBUTING.md) · [`SUPPORT.md`](SUPPORT.md) · [`SECURITY.md`](SECURITY.md) · [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) |
 | **Talking with the community** | [`docs/COMMUNITY.md`](docs/COMMUNITY.md) — Discussions welcome. Go-live stays **HOLD** |
 | **Citing the source** | [`CITATION.cff`](CITATION.cff) — Aureon OS / HNC / R&A Consulting, company no. NI696693 |
 

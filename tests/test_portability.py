@@ -57,8 +57,11 @@ def test_generated_env_uses_safe_defaults_and_is_not_overwritten(tmp_path: Path)
     assert ok, detail
     written = (tmp_path / ".env").read_text(encoding="utf-8")
     assert "\nAUREON_LIVE_TRADING=" not in f"\n{written}"
-    assert "ALPACA_PAPER=false" in written
-    assert "CAPITAL_DEMO_MODE=false" in written
+    assert "ALPACA_PAPER=true" in written
+    assert "CAPITAL_DEMO=1" in written
+    assert "CAPITAL_DEMO_MODE=true" in written
+    assert "AUREON_DISABLE_REAL_ORDERS=1" in written
+    assert "AUREON_LLM_OFFLINE=1" in written
     assert "QUICKBOOKS_ALLOW_MUTATION=false" in written
     assert "QUICKBOOKS_ENVIRONMENT=sandbox" in written
     assert "BINANCE_API_KEY=" in written
