@@ -49,10 +49,19 @@ _TRUE_VALUES = {"1", "true", "yes", "on"}
 
 
 def _operational_io_suppressed() -> bool:
-    """Audit/import probes may inspect this module but must not touch providers or state."""
+    """Audit/import probes may inspect this module but must not touch providers or state.
+
+    ``AUREON_OFFLINE`` is the flag the order-audit test sets before importing
+    a module that constructs the Queen. That construction used to price
+    holdings at api.binance.com. Offline means no provider call.
+    """
     return any(
         os.getenv(name, "").strip().lower() in _TRUE_VALUES
-        for name in ("AUREON_AUDIT_MODE", "AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS")
+        for name in (
+            "AUREON_AUDIT_MODE",
+            "AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS",
+            "AUREON_OFFLINE",
+        )
     )
 
 

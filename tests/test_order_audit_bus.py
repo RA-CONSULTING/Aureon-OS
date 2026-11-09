@@ -163,8 +163,20 @@ def test_capital_cfd_trader_order_reaches_the_bus(audit_bus, tmp_path: Path) -> 
     _assert_published(tmp_path, "place_working_order", "capital")
 
 
-def test_micro_profit_labyrinth_order_reaches_the_bus(audit_bus, tmp_path: Path) -> None:
+def test_micro_profit_labyrinth_order_reaches_the_bus(audit_bus, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import socket
+
+    looked: list[object] = []
+    real_getaddrinfo = socket.getaddrinfo
+
+    def _record(host, *args, **kwargs):
+        looked.append(host)
+        return real_getaddrinfo(host, *args, **kwargs)
+
+    monkeypatch.setattr(socket, "getaddrinfo", _record)
     from aureon.trading.micro_profit_labyrinth import MicroProfitLabyrinth
+
+    assert not any("binance.com" in str(host) for host in looked)
 
     assert _functions_missing_audit("aureon/trading/micro_profit_labyrinth.py") == []
 

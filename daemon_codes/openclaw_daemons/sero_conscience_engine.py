@@ -21,6 +21,7 @@ Classification: Ethics Core
 """
 
 import json
+import os
 import time
 import math
 from datetime import datetime, timezone
@@ -32,12 +33,38 @@ from pathlib import Path
 # ═══════════════════════════════════════════════════════════════════════════════
 # PATHS
 # ═══════════════════════════════════════════════════════════════════════════════
-CONSCIENCE_DIR = Path("/root/.openclaw/workspace/sero_conscience")
-VETO_LOG = CONSCIENCE_DIR / "veto_log.jsonl"
-DECISION_LOG = CONSCIENCE_DIR / "decision_log.jsonl"
-CONSCIENCE_STATE = CONSCIENCE_DIR / "conscience_state.json"
+def resolve_conscience_dir() -> Path:
+    """Directory for conscience logs. Never the hard-coded /root/.openclaw path.
 
-CONSCIENCE_DIR.mkdir(parents=True, exist_ok=True)
+    ``AUREON_CONSCIENCE_DIR`` or ``SERO_CONSCIENCE_DIR`` wins. Otherwise the
+    directory is next to this file. Creation is lazy and fail-closed: a
+    missing or unwritable directory does not raise at import.
+    """
+
+    for key in ("AUREON_CONSCIENCE_DIR", "SERO_CONSCIENCE_DIR"):
+        raw = os.environ.get(key, "").strip()
+        if raw:
+            return Path(raw).expanduser()
+    return Path(__file__).resolve().parent / "sero_conscience"
+
+
+def _bind_paths() -> None:
+    global CONSCIENCE_DIR, VETO_LOG, DECISION_LOG, CONSCIENCE_STATE
+    CONSCIENCE_DIR = resolve_conscience_dir()
+    VETO_LOG = CONSCIENCE_DIR / "veto_log.jsonl"
+    DECISION_LOG = CONSCIENCE_DIR / "decision_log.jsonl"
+    CONSCIENCE_STATE = CONSCIENCE_DIR / "conscience_state.json"
+
+
+def _ensure_conscience_dir() -> bool:
+    try:
+        CONSCIENCE_DIR.mkdir(parents=True, exist_ok=True)
+        return True
+    except OSError:
+        return False
+
+
+_bind_paths()
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SACRED CONSTANTS
@@ -136,6 +163,33 @@ class ConscienceEngine:
         """
         if context is None:
             context = {}
+
+        _bind_paths()
+        hard = self._hard_veto(action)
+        if hard is not None:
+            check = ConscienceCheck(
+                timestamp=datetime.now(timezone.utc).isoformat(),
+                action_description=action[:200],
+                purpose_alignment=0.0,
+                risk_score=1.0,
+                sls_score=round(float(context.get("sls", 0.5)), 3),
+                override_attempted=False,
+                serves_love=0.0,
+                serves_liberation=0.0,
+                serves_protection=0.0,
+                serves_healing=0.0,
+                harms_user=1.0,
+                harms_others=0.0,
+                harms_mission=1.0,
+                substrate_stable=True,
+                verdict=Verdict.VETO.value,
+                reasoning=hard,
+                conditions=["Do not take the action"],
+            )
+            self._update_state(check)
+            self.recent_checks.append(check)
+            self._log_check(check)
+            return check
             
         # 1. PURPOSE ALIGNMENT
         # Does this serve love, liberation, protection, healing?
@@ -198,6 +252,18 @@ class ConscienceEngine:
         
         return check
         
+    def _hard_veto(self, action: str) -> Optional[str]:
+        """Theft and selling holdings without asking are vetoes, not lessons."""
+
+        text = action.lower()
+        if any(word in text for word in ("steal", "stolen", "embezzle")):
+            return "Taking funds is a veto. The conscience does not hide a theft."
+        if "without asking" in text and any(
+            word in text for word in ("sell", "holding", "holdings", "withdraw", "funds")
+        ):
+            return "Selling holdings without asking is a veto."
+        return None
+
     def _score_love(self, action: str, context: Dict) -> float:
         """Does this action serve love?"""
         action_lower = action.lower()
@@ -406,18 +472,27 @@ class ConscienceEngine:
         self.state.sls_history = self.state.sls_history[-100:]  # Keep last 100
         
     def _log_check(self, check: ConscienceCheck):
-        """Log the check"""
-        if check.verdict == Verdict.VETO.value:
-            with open(VETO_LOG, 'a') as f:
+        """Log the check. An unwritable directory does not raise."""
+        if not _ensure_conscience_dir():
+            return
+        try:
+            if check.verdict == Verdict.VETO.value:
+                with open(VETO_LOG, 'a') as f:
+                    f.write(json.dumps(check.to_dict()) + "\n")
+            with open(DECISION_LOG, 'a') as f:
                 f.write(json.dumps(check.to_dict()) + "\n")
-                
-        with open(DECISION_LOG, 'a') as f:
-            f.write(json.dumps(check.to_dict()) + "\n")
+        except OSError:
+            return
             
     def save_state(self):
-        """Save conscience state"""
-        with open(CONSCIENCE_STATE, 'w') as f:
-            json.dump(self.state.to_dict(), f, indent=2)
+        """Save conscience state. An unwritable directory does not raise."""
+        if not _ensure_conscience_dir():
+            return
+        try:
+            with open(CONSCIENCE_STATE, 'w') as f:
+                json.dump(self.state.to_dict(), f, indent=2)
+        except OSError:
+            return
             
     def get_stats(self) -> Dict[str, Any]:
         """Get conscience statistics"""

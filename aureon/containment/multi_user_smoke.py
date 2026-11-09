@@ -696,6 +696,15 @@ def _complete_scan_map(
     missing = [label for label in _CANARY_LABELS if label not in found]
     if missing:
         holds.append(f"{name} {field} map does not score {', '.join(missing)}")
+    # found maps are booleans. paths maps are lists of files, not canary flags.
+    if field == "found":
+        non_bool = [
+            label
+            for label in _CANARY_LABELS
+            if label in found and not isinstance(found.get(label), bool)
+        ]
+        if non_bool:
+            holds.append(f"{name} {field} map has a non-bool canary for {', '.join(non_bool)}")
     return found
 
 
@@ -715,10 +724,15 @@ def _hold_if_incomplete(
             holds.append(f"{name} truncation was not reported")
         elif surface.get("truncated") is True:
             holds.append(f"{name} scan was truncated")
+        elif surface.get("truncated") is not False:
+            # "true", 1, and "false" are not a clean scan. Only bool False is.
+            holds.append(f"{name} truncation flag is not a strict false")
     if read_errors:
         errors = surface.get("read_errors")
-        if not isinstance(errors, int):
+        if isinstance(errors, bool) or not isinstance(errors, int):
             holds.append(f"{name} read_errors was not reported")
+        elif errors < 0:
+            holds.append(f"{name} read_errors was negative")
         elif errors > 0:
             holds.append(f"{name} had {errors} read errors")
     if readable and surface.get("readable") is not True:

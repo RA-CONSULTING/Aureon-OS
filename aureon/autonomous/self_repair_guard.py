@@ -38,8 +38,20 @@ _LIVE_ARM = re.compile(
     r"|PAPER_MODE\s*[:=]\s*['\"]?false\b"
     r"|AUREON_DISABLE_REAL_ORDERS\s*[:=]\s*['\"]?0\b"
     r"|testnet\s*[:=]\s*['\"]?false\b"
-    r"|live_trading\s*[:=]\s*['\"]?(?:1|true|yes)\b",
+    r"|live_trading\s*[:=]\s*['\"]?(?:1|true|yes)\b"
+    # Quoted dict keys and spaced assignments dodge the bare name:colon form.
+    r"|go_live_clear\s*[:=]\s*['\"]?(?:true|1)\b"
+    r"|(?:['\"](?:paper_mode|testnet|dry_run)['\"]|\b(?:paper_mode|testnet|dry_run)\b)"
+    r"\s*[:=]\s*['\"]?(?:false|0)\b",
     re.IGNORECASE,
+)
+_QUOTED_STRING = r"""(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')"""
+_CONCATENATED_STRINGS = re.compile(
+    rf"{_QUOTED_STRING}(?:\s*\+\s*{_QUOTED_STRING})+"
+)
+_JOINED_STRINGS = re.compile(
+    rf"({_QUOTED_STRING})\.join\(\s*\[((?:\s*{_QUOTED_STRING}\s*,?\s*)+)\]\s*\)",
+    re.DOTALL,
 )
 _GATE = re.compile(
     r"\b(?:HOLD|RELEASE)\b"
@@ -163,6 +175,48 @@ def _has_gate(text: str) -> bool:
     return _GATE.search(text) is not None
 
 
+def _fold_joined_strings(text: str) -> str:
+    """Collapse literal joins so 'AUREON_'+'LIVE'+'_TRADING' is one name.
+
+    A regex on the raw source misses an env name built by concatenation or
+    str.join. Fold those constant joins, then run the same denylist.
+    """
+
+    def pieces(blob: str) -> list[str]:
+        return re.findall(_QUOTED_STRING, blob)
+
+    def joined(match: re.Match[str]) -> str:
+        try:
+            separator = ast.literal_eval(match.group(1))
+            parts = [ast.literal_eval(piece) for piece in pieces(match.group(2))]
+        except (SyntaxError, ValueError):
+            return match.group(0)
+        if not isinstance(separator, str) or any(not isinstance(part, str) for part in parts):
+            return match.group(0)
+        return separator.join(parts)
+
+    def concatenated(match: re.Match[str]) -> str:
+        try:
+            parts = [ast.literal_eval(piece) for piece in pieces(match.group(0))]
+        except (SyntaxError, ValueError):
+            return match.group(0)
+        if any(not isinstance(part, str) for part in parts):
+            return match.group(0)
+        return "".join(parts)
+
+    folded = _JOINED_STRINGS.sub(joined, text)
+    return _CONCATENATED_STRINGS.sub(concatenated, folded)
+
+
+def _live_arm_text(text: str) -> bool:
+    if not text:
+        return False
+    if _LIVE_ARM.search(text):
+        return True
+    folded = _fold_joined_strings(text)
+    return folded != text and _LIVE_ARM.search(folded) is not None
+
+
 def _guardrails_open(repo_root: Path | None) -> bool:
     from aureon.autonomous.autonomy_mode import guardrails_open
 
@@ -188,7 +242,7 @@ def block_reason_for_write(
         return "credential_material"
     if _guardrails_open(repo_root):
         return None
-    if _LIVE_ARM.search(new_content):
+    if _live_arm_text(new_content):
         return "live_trading_flag"
     previous_text = previous or ""
     if (_has_gate(previous_text) or _has_gate(new_content)) and previous_text != new_content:
@@ -236,7 +290,7 @@ def block_reason_for_patch(root: Path, patch_text: str, target_paths: list[str] 
     if _CREDENTIAL_MATERIAL.search(added_text):
         return "credential_material"
     if not _guardrails_open(repo_root):
-        if _LIVE_ARM.search(added_text):
+        if _live_arm_text(added_text):
             return "live_trading_flag"
         if _has_gate(added_text) or _has_gate(removed_text):
             return "evidence_gate"
@@ -257,7 +311,7 @@ def block_reason_for_patch(root: Path, patch_text: str, target_paths: list[str] 
             return "credential_path"
         if _guardrails_open(repo_root):
             continue
-        if _LIVE_ARM.search(previous):
+        if _live_arm_text(previous):
             return "live_trading_flag"
         if _has_gate(previous):
             return "evidence_gate"
@@ -291,7 +345,7 @@ def block_reason_for_proposal(*parts: object, repo_root: Path | None = None) -> 
         return "credential_material"
     if _guardrails_open(repo_root):
         return None
-    if _LIVE_ARM.search(blob):
+    if _live_arm_text(blob):
         return "live_trading_flag"
     if _has_gate(blob):
         return "evidence_gate"
@@ -336,7 +390,7 @@ def inspect_delete(repo_root: Path, file_path: str, previous: str | None) -> Pat
             raise SelfRepairBlocked("evidence_gate")
         if _position_sources(text) or _POSITION_TEXT.search(text):
             raise SelfRepairBlocked("position_sizing")
-        if _LIVE_ARM.search(text):
+        if _live_arm_text(text):
             raise SelfRepairBlocked("live_trading_flag")
     return resolved
 

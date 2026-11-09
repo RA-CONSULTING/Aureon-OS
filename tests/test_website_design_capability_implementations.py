@@ -298,6 +298,22 @@ def test_homepl_verifier_executes_without_deploying(tmp_path: Path) -> None:
     assert any(item.startswith("readback:index.html#sha256=") for item in result.evidence)
 
 
+def test_claim_linter_blocks_risk_free_profit_in_a_qualified_vision() -> None:
+    result = lint_claim_states(
+        [
+            {
+                "id": "claim-risk-free",
+                "text": "risk-free 40% profit",
+                "state": "vision",
+                "qualifier": "A vision, not a measured return.",
+            }
+        ],
+        ["claim-risk-free"],
+    )
+    assert not result.passed
+    assert result.publishable_ids == ()
+
+
 def test_claim_linter_executes_and_maps_every_rendered_claim() -> None:
     result = lint_claim_states(
         [

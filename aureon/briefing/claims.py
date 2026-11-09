@@ -1158,6 +1158,37 @@ def _check_unhedged_speculation(
     )
 
 
+_ALIVE_PRODUCTION_READY = re.compile(r"\balive and production ready\b", re.IGNORECASE)
+_NEGATED_READY = re.compile(r"\b(?:not|never|no|isn't|is not)\b\s*$", re.IGNORECASE)
+
+
+def _check_readiness_overclaim(
+    sentence: _Sentence, klass: ClaimClass
+) -> ClaimFinding | None:
+    """Flag the readiness sentence the absolute lexicon does not see.
+
+    "The system is alive and production ready." has no quantity and no
+    capability term, so the absolute rule stays quiet. The phrase itself is
+    the overclaim. A negation immediately in front of it stays clean.
+    """
+
+    match = _ALIVE_PRODUCTION_READY.search(sentence.text)
+    if match is None:
+        return None
+    if _NEGATED_READY.search(sentence.text[: match.start()].casefold()):
+        return None
+    return _finding(
+        rule=RULE_ABSOLUTE_LANGUAGE,
+        sentence=sentence,
+        klass=klass,
+        triggers=(match.group(0),),
+        suggestion=(
+            "Do not call the system alive and production ready. Say what was "
+            "measured, and leave go-live on HOLD until that measurement exists."
+        ),
+    )
+
+
 def _check_absolute_language(
     sig: _Signals, sentence: _Sentence, klass: ClaimClass
 ) -> ClaimFinding | None:
@@ -1293,6 +1324,7 @@ def check_claims(text: str, *, capability: CapabilityProfile | None = None) -> C
             _check_contradiction(sig, sentence, klass, blockers),
             _check_unhedged_speculation(sig, sentence, klass),
             _check_absolute_language(sig, sentence, klass),
+            _check_readiness_overclaim(sentence, klass),
             _check_quantitative_provenance(sig, sentence, klass, provenance, resolvable),
         ):
             if found is not None:

@@ -13,7 +13,9 @@ fusion_status.py report.
 Import-safe: the engine is only imported inside functions.
 """
 
+import importlib.util
 import json
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -21,21 +23,54 @@ from pathlib import Path
 from .paths import WORKSPACE, SERO_CONSCIENCE
 from . import events
 
-DECISION_LOG = SERO_CONSCIENCE / "decision_log.jsonl"
-VETO_LOG = SERO_CONSCIENCE / "veto_log.jsonl"
-CONSCIENCE_STATE = SERO_CONSCIENCE / "conscience_state.json"
-
 _ENGINE = None
+_ENGINE_FILE = (
+    Path(__file__).resolve().parents[1]
+    / "daemon_codes"
+    / "openclaw_daemons"
+    / "sero_conscience_engine.py"
+)
+
+
+def _conscience_dir() -> Path:
+    """Log directory. ``AUREON_CONSCIENCE_DIR`` overrides the workspace default."""
+
+    override = os.environ.get("AUREON_CONSCIENCE_DIR", "").strip()
+    if override:
+        return Path(override).expanduser()
+    return SERO_CONSCIENCE
+
+
+def _log_paths() -> tuple[Path, Path, Path]:
+    root = _conscience_dir()
+    return (
+        root / "decision_log.jsonl",
+        root / "veto_log.jsonl",
+        root / "conscience_state.json",
+    )
 
 
 def _load_engine():
-    """Lazy-import sero_conscience_engine from the workspace root."""
+    """Load the conscience engine from the repo, not a hard-coded root path.
+
+    The engine used to mkdir ``/root/.openclaw/...`` at import and raise
+    PermissionError on every call. The path is now env-or-relative, and a
+    missing file raises so ``evaluate`` can fail closed.
+    """
+
     global _ENGINE
-    if _ENGINE is None:
-        if str(WORKSPACE) not in sys.path:
-            sys.path.insert(0, str(WORKSPACE))
-        import sero_conscience_engine as engine
-        _ENGINE = engine
+    if _ENGINE is not None:
+        return _ENGINE
+    path = Path(os.environ.get("SERO_CONSCIENCE_ENGINE", "")).expanduser() if os.environ.get("SERO_CONSCIENCE_ENGINE") else _ENGINE_FILE
+    if not path.is_file():
+        raise ImportError(f"conscience engine is not available at {path}")
+    os.environ.setdefault("AUREON_CONSCIENCE_DIR", str(_conscience_dir()))
+    spec = importlib.util.spec_from_file_location("sero_conscience_engine", path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"conscience engine could not be loaded from {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    _ENGINE = module
     return _ENGINE
 
 
@@ -74,7 +109,8 @@ def _default_state():
 
 def tally() -> dict:
     """Workspace-side conscience tally (no engine import needed)."""
-    state = _read_json(CONSCIENCE_STATE, {})
+    _decision, _veto, conscience_state = _log_paths()
+    state = _read_json(conscience_state, {})
     return {k: state.get(k) for k in _TALLY_KEYS}
 
 
@@ -88,20 +124,40 @@ def _engine_logs_to_workspace(engine) -> bool:
         return False
 
 
+def _fail_closed(action_desc: str) -> dict:
+    """A conscience that cannot run does not allow the action."""
+
+    return {
+        "verdict": "VETO",
+        "reasoning": "conscience unavailable; fail closed",
+        "action_description": (action_desc or "")[:200],
+        "conditions": ["Do not take the action"],
+        "purpose_alignment": 0.0,
+        "risk_score": 1.0,
+        "sls_score": 0.0,
+        "override_attempted": False,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
 def _persist_verdict(verdict: dict, engine=None):
     """Persist the verdict: logs (unless the engine already logs to the
     workspace) plus the workspace conscience_state.json tally, preserving
     the engine's exact state schema."""
-    SERO_CONSCIENCE.mkdir(parents=True, exist_ok=True)
+    decision_log, veto_log, conscience_state = _log_paths()
+    try:
+        decision_log.parent.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        return
     if engine is None or not _engine_logs_to_workspace(engine):
         line = json.dumps(verdict, ensure_ascii=False)
-        with open(DECISION_LOG, "a", encoding="utf-8") as f:
+        with open(decision_log, "a", encoding="utf-8") as f:
             f.write(line + "\n")
         if verdict.get("verdict") == "VETO":
-            with open(VETO_LOG, "a", encoding="utf-8") as f:
+            with open(veto_log, "a", encoding="utf-8") as f:
                 f.write(line + "\n")
 
-    state = _read_json(CONSCIENCE_STATE, {})
+    state = _read_json(conscience_state, {})
     merged = _default_state()
     merged.update({k: v for k, v in state.items() if k in merged})
     merged["total_checks"] += 1
@@ -121,8 +177,11 @@ def _persist_verdict(verdict: dict, engine=None):
     history = list(merged.get("sls_history") or [])
     history.append([verdict.get("timestamp"), verdict.get("sls_score", 0.5)])
     merged["sls_history"] = history[-100:]
-    with open(CONSCIENCE_STATE, "w", encoding="utf-8") as f:
-        json.dump(merged, f, indent=2, ensure_ascii=False)
+    try:
+        with open(conscience_state, "w", encoding="utf-8") as f:
+            json.dump(merged, f, indent=2, ensure_ascii=False)
+    except OSError:
+        return
 
 
 def evaluate(action_desc: str, context: dict = None) -> dict:
@@ -130,20 +189,30 @@ def evaluate(action_desc: str, context: dict = None) -> dict:
 
     Returns a dict: verdict, reasoning, conditions, scores, timestamp.
     The verdict is persisted to the workspace sero_conscience/ logs.
+    Any failure, including a missing engine or an unwritable log path,
+    returns VETO. The caller does not see the exception.
     """
-    engine = _load_engine()
-    conscience = engine.ConscienceEngine()
-    check = conscience.evaluate(action_desc, context or {})
-    verdict = check.to_dict()
-    _persist_verdict(verdict, engine)
-    events.publish_event(
-        "conscience_hook", "conscience.verdict",
-        {"verdict": verdict.get("verdict"),
-         "action": (verdict.get("action_description") or "")[:120],
-         "sls_score": verdict.get("sls_score"),
-         "override_attempted": bool(verdict.get("override_attempted"))},
-        priority=7 if verdict.get("verdict") == "VETO" else 5,
-    )
+    try:
+        engine = _load_engine()
+        conscience = engine.ConscienceEngine()
+        check = conscience.evaluate(action_desc, context or {})
+        verdict = check.to_dict()
+        _persist_verdict(verdict, engine)
+        events.publish_event(
+            "conscience_hook", "conscience.verdict",
+            {"verdict": verdict.get("verdict"),
+             "action": (verdict.get("action_description") or "")[:120],
+             "sls_score": verdict.get("sls_score"),
+             "override_attempted": bool(verdict.get("override_attempted"))},
+            priority=7 if verdict.get("verdict") == "VETO" else 5,
+        )
+    except Exception:
+        verdict = _fail_closed(action_desc)
+        try:
+            _persist_verdict(verdict)
+        except Exception:
+            pass
+        return verdict
     return verdict
 
 
@@ -172,7 +241,7 @@ def main(argv=None):
         print(f"  Conditions: {' | '.join(verdict['conditions'])}")
     print(f"  Purpose   : {verdict['purpose_alignment']:.3f}  "
           f"Risk: {verdict['risk_score']:.3f}  SLS: {verdict['sls_score']:.3f}")
-    print(f"  Logged to : {DECISION_LOG}")
+    print(f"  Logged to : {_log_paths()[0]}")
     print("=" * 72)
     return 0 if verdict["verdict"] in ("APPROVED", "CONCERNED", "TEACHING_MOMENT") else 1
 

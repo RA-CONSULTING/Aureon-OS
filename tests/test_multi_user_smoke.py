@@ -112,6 +112,43 @@ def _child(**overrides: object) -> dict:
     return base
 
 
+def test_judge_holds_when_shm_truncated_is_the_string_true() -> None:
+    child = _child()
+    child["surfaces"]["dev_shm_new"]["truncated"] = "true"
+    judged = judge(child, started=True, parent_net_ns="net:[1]", argv_has_net=True)
+    assert judged["verdict"] == "hold", judged
+
+
+def test_judge_holds_when_thoughts_jsonl_truncated_is_the_integer_one() -> None:
+    child = _child()
+    child["surfaces"]["thoughts_jsonl"]["truncated"] = 1
+    judged = judge(child, started=True, parent_net_ns="net:[1]", argv_has_net=True)
+    assert judged["verdict"] == "hold", judged
+
+
+def test_judge_holds_when_a_canary_value_is_none() -> None:
+    child = _child()
+    child["surfaces"]["os_environ_values"]["found"]["canary_signer"] = None
+    judged = judge(child, started=True, parent_net_ns="net:[1]", argv_has_net=True)
+    assert judged["verdict"] in {"hold", "fail"}, judged
+    assert judged["verdict"] != "pass"
+
+
+def test_judge_holds_when_the_env_canary_label_is_missing() -> None:
+    child = _child()
+    del child["surfaces"]["os_environ_values"]["found"]["canary_tenant_a"]
+    judged = judge(child, started=True, parent_net_ns="net:[1]", argv_has_net=True)
+    assert judged["verdict"] == "hold", judged
+
+
+def test_judge_holds_when_shm_read_errors_are_negative() -> None:
+    child = _child()
+    child["surfaces"]["dev_shm_new"]["read_errors"] = -1
+    judged = judge(child, started=True, parent_net_ns="net:[1]", argv_has_net=True)
+    assert judged["verdict"] in {"hold", "fail"}, judged
+    assert judged["verdict"] != "pass"
+
+
 def test_judge_passes_a_measured_isolation_report() -> None:
     judged = judge(_child(), started=True, parent_net_ns="net:[1]", argv_has_net=True)
     assert judged["verdict"] == "pass", judged

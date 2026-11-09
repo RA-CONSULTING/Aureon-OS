@@ -242,8 +242,23 @@ def _isolate_leaked_credentials() -> None:
     os.environ["AUREON_AUTONOMY_MODE"] = "guarded"
 
 
+def _cloud_hold_env_overlay(path: str) -> dict[str, str]:
+    """Hold env the cloud-hold module sets at import and this fixture used to wipe.
+
+    The snapshot is taken before collection. ``test_deployment_hold`` then sets
+    ``AUREON_DEPLOYMENT_HOLD=1``. Restoring the snapshot cleared it, so the
+    tests checked a process that was not on hold. The overlay is only for that
+    module. Every other test still loses parent ``AUREON_*`` flags.
+    """
+
+    normalized = str(path).replace("\\", "/")
+    if normalized.endswith("deployment/google-cloud/test_deployment_hold.py"):
+        return {"AUREON_DEPLOYMENT_HOLD": "1"}
+    return {}
+
+
 @pytest.fixture(autouse=True)
-def _restore_os_environ(tmp_path_factory):
+def _restore_os_environ(tmp_path_factory, request):
     """Put os.environ back to the pre-collection process environment.
 
     monkeypatch only undoes keys it changed. Direct writes such as
@@ -259,6 +274,7 @@ def _restore_os_environ(tmp_path_factory):
     any bus still aimed at the checkout.
     """
     _apply_environ_snapshot()
+    os.environ.update(_cloud_hold_env_overlay(str(getattr(request.node, "path", ""))))
     slot = tmp_path_factory.mktemp("aureon-journal")
     journal = slot / "thoughts.jsonl"
     os.environ["AUREON_THOUGHT_BUS_PATH"] = str(journal)

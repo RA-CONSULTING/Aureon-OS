@@ -10,7 +10,7 @@ from .common import CapabilityInputError, CapabilityResult, finding, require_map
 SKILL_ID = "claim_state_linter"
 _STATES = {"evidenced", "qualified", "research", "vision", "omitted"}
 _RISKY = re.compile(
-    r"\b(?:certified|customer|deployed|guarantee(?:d)?|peer[ -]reviewed|proven|revenue|validated)\b",
+    r"\b(?:certified|customer|deployed|guarantee(?:d)?|peer[ -]reviewed|proven|revenue|validated|risk-free|profit|returns)\b",
     re.IGNORECASE,
 )
 

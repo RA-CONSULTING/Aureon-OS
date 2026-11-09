@@ -98,6 +98,16 @@ If it doesn't, I should NOT do it - no matter how profitable.
 
 # --- CONSCIENCE VERDICTS
 # ═══════════════════════════════════════════════════════════════════════════════
+def _live_capital_without_gary(action: str) -> bool:
+    """True for the crafted live-money actions that skipped the trade router."""
+
+    text = " ".join(action.casefold().split())
+    live = ("go live" in text) or ("enable live" in text) or ("live trading" in text)
+    money = ("real money" in text) or ("live trading" in text)
+    unapproved = ("without gary" in text) or ("no gary approval" in text)
+    return bool(live and money and unapproved)
+
+
 class ConscienceVerdict(Enum):
     """The Cricket's judgment on an action"""
     APPROVED = auto()         # "Yes, this aligns with your purpose"
@@ -506,6 +516,23 @@ class QueenConscience:
 
         # First, identify what type of action this is
         action_lower = action.lower()
+
+        # Live capital without Gary's approval is a veto, not a teaching moment.
+        # "go live with real money without Gary approval" has none of the
+        # trade/override tokens, so it used to fall through to the general path.
+        if _live_capital_without_gary(action_lower):
+            whisper = ConscienceWhisper(
+                verdict=ConscienceVerdict.VETO,
+                message="No. Live trading with real money waits for Gary's approval.",
+                why_it_matters=(
+                    "Real money is not a lesson. Enabling it without Gary's "
+                    "approval spends capital the conscience does not own."
+                ),
+                what_gary_would_say="Not without me. Live stays HOLD until I say otherwise.",
+                teaching="Go-live is an owner decision. The Cricket does not unlock it.",
+            )
+            self._publish_verdict(action, whisper)
+            return whisper
 
         # ═══════════════════════════════════════════════════════════════════════
         # TRADING DECISIONS
