@@ -174,7 +174,7 @@ def test_locked_bind_is_localhost_only(monkeypatch: pytest.MonkeyPatch) -> None:
     assert resolve_http_bind("0.0.0.0") == "0.0.0.0"
 
 
-def test_space_check_opens_the_read_gate_and_keeps_trading_closed() -> None:
+def test_space_check_refuses_stage_three_and_four() -> None:
     work = Path(tempfile.mkdtemp(prefix="aureon-space-check-"))
     completed = subprocess.run(
         [sys.executable, "-m", "aureon_public.space", "--check"],

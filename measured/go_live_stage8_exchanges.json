@@ -19,8 +19,9 @@
     "rows": 647
   },
   "catalog_status": "cited",
+  "carried_on_main": "30d8101b486f6f48b9219a337e2b77808e5038e1",
   "code_commit": "55ab3579e4a1e59b442e46800c5486a270fc5b0c",
-  "code_commit_note": "This is the parent of the commit that contains this record. The record cannot name the commit that adds the file.",
+  "code_commit_note": "This receipt was measured before the squash/rebase at 55ab3579e4a1e59b442e46800c5486a270fc5b0c. That commit is not an ancestor of main. The same work is carried on main by 30d8101b486f6f48b9219a337e2b77808e5038e1 (Stage 8: read-gated exchanges surface, #263). This note does not remeasure the sweep.",
   "decision": "HOLD",
   "enabled_through": 6,
   "entries": [
