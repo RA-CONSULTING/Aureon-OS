@@ -148,18 +148,58 @@ def test_fresh_process_does_not_import_an_exchange() -> None:
     assert body["math_action"] == "EXECUTE"
 
 
-def test_body_call_still_refuses_queen_miner_and_exchanges() -> None:
+def test_body_call_opens_only_the_two_stage34_read_entries() -> None:
+    """Stage 34 already opened two read-only rows. This slice does not add a gate."""
+
     from aureon_public.body import body_call, package_depth
     from aureon_public.guard_loader import PINNED_COMMIT
+    from aureon_public.stage34_gate import READ_KEYS
 
-    queen = json.loads(body_call("queen/temporal_ground.py", "compute_zpe_ground"))
-    assert queen.get("called") is not True
-    assert queen["reason"] == "plan stage 4 is not open"
-    depth = package_depth()
-    assert depth["queen"]["reachable"] == 0
-    assert depth["miner"]["reachable"] == 0
-    assert depth["exchanges"]["reachable"] == 0
     assert PINNED_COMMIT == "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
+    assert {
+        ("miner/miner_inhouse_ai_bridge.py", "MinerAIInsight.to_dict"),
+        ("queen/temporal_ground.py", "compute_zpe_ground"),
+    } == READ_KEYS
+    depth = package_depth()
+    assert depth["queen"]["reachable"] == 1
+    assert depth["miner"]["reachable"] == 1
+    assert depth["exchanges"]["reachable"] == 0
+
+    queen = json.loads(
+        body_call(
+            "queen/temporal_ground.py",
+            "compute_zpe_ground",
+            json.dumps({"lambda_t": 1.0}),
+        )
+    )
+    assert queen["status"] == "cited"
+    assert queen.get("called") is True
+    assert "plan stage 4 is not open" not in json.dumps(queen)
+    assert queen["result"]["lambda_t"] == 1.0
+    assert queen["result"]["grounded"] is True
+
+    miner = json.loads(body_call("miner/miner_inhouse_ai_bridge.py", "MinerAIInsight.to_dict"))
+    assert miner["status"] == "cited"
+    assert miner.get("called") is True
+    assert miner["result"]["verdict"] == "NEUTRAL"
+    assert miner["result"]["category"] == ""
+
+    other_queen = json.loads(body_call("queen/queen_quantum_frog.py", "update_health_status"))
+    assert other_queen.get("called") is not True
+    assert other_queen["reason"] == "plan stage 4 is not open"
+
+    other_miner = json.loads(body_call("miner/miner_inhouse_ai_bridge.py", "get_miner_ai_bridge"))
+    assert other_miner.get("called") is not True
+    assert other_miner["status"] == "unavailable"
+
+    equity = json.loads(body_call("exchanges/single_currency_equity.py", "gbp_equity_from_balances"))
+    assert equity.get("called") is not True
+    assert equity["reason"] == "operator entry point is not on aureon-public"
+    assert equity.get("live_orders") == "refused"
+
+    order = json.loads(body_call("trading/__init__.py", "__init__"))
+    assert order.get("called") is not True
+    assert order.get("live_orders") == "refused"
 
 
 def test_sweep_record_matches_the_read_gate() -> None:

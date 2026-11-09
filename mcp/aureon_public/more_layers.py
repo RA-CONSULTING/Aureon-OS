@@ -494,7 +494,9 @@ def queen_charlie_gate(
 
     Live orders are off. This does not call an exchange, the miner, or an
     order API. ``math_action`` is the comparison with the pinned entry floor.
-    ``public_action`` stays HOLD. Queen ``body_call`` stays closed.
+    ``public_action`` stays HOLD. This is not a second gate on the two
+    read-only ``body_call`` entries, ``compute_zpe_ground`` and
+    ``MinerAIInsight.to_dict``.
 
     Args:
         coherence_gamma: Optional coherence reading. Label: cited, queen_source_law _ENTRY_FLOOR.
