@@ -132,6 +132,19 @@ def test_tree_archive_checksums_match_bytes(tmp_path: Path) -> None:
         assert "Aureon-OS-tip-test/README" in archive.namelist()
 
 
+def test_honest_denial_passes_and_positive_claim_fails() -> None:
+    channel = _channel()
+    denial = "This checkout is never production ready and never a validated deployment."
+    assert channel.positive_readiness_claims(denial) == []
+    assert channel.positive_readiness_claims("Aureon is production ready") == ["production ready"]
+    assert channel.positive_readiness_claims("is production ready") == ["production ready"]
+    assert channel.positive_readiness_claims("a validated deployment") == ["validated deployment"]
+    assert channel.positive_readiness_claims("never a validated deployment") == []
+    assert channel.positive_readiness_claims("not a validated deployment") == []
+    assert channel.positive_readiness_claims("this is production-ready") == ["production-ready"]
+    assert channel.positive_readiness_claims("never production-ready") == []
+
+
 def test_workflow_waits_for_gary_and_does_not_publish() -> None:
     text = (ROOT / ".github" / "workflows" / "source-archive-release.yml").read_text(encoding="utf-8")
     assert "workflow_dispatch:" in text

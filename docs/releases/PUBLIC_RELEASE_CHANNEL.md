@@ -2,7 +2,7 @@
 
 This channel keeps draft release notes and a draft workflow. It publishes nothing.
 
-Current lineage tip these notes were written against: `08f04936088689e29b7995d89530b21b425c35f9`.
+Historical lineage tip these notes were written against: `08f04936088689e29b7995d89530b21b425c35f9`. This pull request is based on `0726a325ac934ed2e8d2d18d5c69c31fbfafc666`.
 
 | Fact | Value |
 | --- | --- |
@@ -29,7 +29,7 @@ The publish job then runs `python packaging/release_channel.py publish`. That co
 
 ## What Gary still has to do
 
-1. Read this pull request. The notes and the README show go-live as HOLD. Merge is his decision. This pull request is not merged here.
+1. Read this pull request. The notes and the README show go-live as HOLD. Merging this pull request does not publish anything. A tag, a GitHub Release or any package upload still needs Gary's own yes. Go-live stays on HOLD.
 2. Leave `PINNED_COMMIT` at `bb04503119681adcf832f3c3e9b0cbf09fc7a938`. This pull request does not move the pin.
 3. Do not create a production tag (`V2.2`, `v2.2.0`, or any tag whose name says production or go-live). This workflow will not create one.
 4. Optional: Actions → **Source archive draft** → **Run workflow**. Download `aureon-os-tip-channel` if he wants the checksummed archives. That run's publish job is red on purpose. The red job means publish is still waiting.

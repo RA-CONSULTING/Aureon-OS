@@ -45,17 +45,42 @@ STATIC_REQUIRED_PHRASES = (
     "Go-live stays HOLD",
 )
 
+# Exact claims. Readiness words are checked separately so an honest denial
+# ("never production ready", "never a validated deployment") is not a claim.
 FORBIDDEN_PHRASES = (
     "The system is alive.",
     "go_live_clear: true",
     "release boundary-CLEAR",
     "badge stays green",
     "production go-live is cleared on this commit",
-    "production-ready",
-    "production ready",
-    "production_ready",
-    "validated",
 )
+
+_READINESS_CLAIM = re.compile(
+    r"\b(?:production[-_ ]ready|validated(?:\s+deployment)?)\b",
+    re.IGNORECASE,
+)
+_CLAIM_NEGATION = re.compile(r"\b(?:never|not)\b|n't\b", re.IGNORECASE)
+_CLAIM_WINDOW = 64
+
+
+def positive_readiness_claims(text: str) -> list[str]:
+    """Return readiness phrases that are positive claims.
+
+    A ``never`` or ``not`` in the same sentence, inside the preceding window,
+    is a denial. ``This checkout is never production ready and never a
+    validated deployment.`` is empty. ``Aureon is production ready`` is not.
+    """
+    claims: list[str] = []
+    for match in _READINESS_CLAIM.finditer(text):
+        window = text[max(0, match.start() - _CLAIM_WINDOW): match.start()]
+        cut = max(window.rfind(mark) for mark in (".", "!", "?", "\n"))
+        if cut != -1:
+            window = window[cut + 1:]
+        if _CLAIM_NEGATION.search(window):
+            continue
+        claims.append(match.group(0).lower())
+    return claims
+
 
 RECEIPT_SPECS = (
     {
@@ -231,6 +256,8 @@ def evaluate(root: Path | None = None) -> dict:
         for phrase in FORBIDDEN_PHRASES:
             if phrase.lower() in lowered:
                 problems.append(f"{label} contain forbidden phrase {phrase!r}")
+        for claim in positive_readiness_claims(text):
+            problems.append(f"{label} contain readiness claim {claim!r}")
     if not _ancestor(root, LINEAGE_TIP, head):
         problems.append(f"{LINEAGE_TIP} is not an ancestor of HEAD {head}")
     for row in receipts:

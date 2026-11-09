@@ -217,10 +217,10 @@ def test_committed_receipt_matches_this_tree() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     assert "release%20boundary-HOLD-orange" in readme
     assert "Go-live stays HOLD" in readme
-    lowered = readme.lower()
-    assert "production-ready" not in lowered
-    assert "production ready" not in lowered
-    assert "validated" not in lowered
+    claims = _positive_readiness_claims(readme)
+    assert "production-ready" not in claims
+    assert "production ready" not in claims
+    assert not any("validated" in claim for claim in claims)
     assert receipt["git_head_at_measurement"] == "c68a89d2a184d99582bb24310b91e024323a212c"
     ancestor = subprocess.run(
         ["git", "merge-base", "--is-ancestor", receipt["git_head_at_measurement"], "HEAD"],
@@ -274,6 +274,17 @@ def _passing_probe() -> dict[str, object]:
             "raw_icmp_create": {"ok": False, "errno": errno.EPERM, "error": "EPERM"},
         },
     }
+
+
+def _positive_readiness_claims(text: str) -> list[str]:
+    import importlib.util
+
+    path = ROOT / "packaging" / "release_channel.py"
+    spec = importlib.util.spec_from_file_location("aureon_release_channel_claims", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.positive_readiness_claims(text)
 
 
 def _wrapper() -> dict[str, object]:
