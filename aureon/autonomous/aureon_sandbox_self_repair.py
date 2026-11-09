@@ -40,6 +40,7 @@ from typing import Any, Callable
 from aureon.autonomous.self_repair_guard import (
     SelfRepairBlocked,
     append_review,
+    block_reason_for_repair_diff,
     block_reason_for_write,
     require_self_repair_enabled,
 )
@@ -406,6 +407,39 @@ def _refuse_edit(root: Path, relative: str, old: str, new: str) -> str | None:
     return block_reason_for_write(relative, updated, previous, root)
 
 
+def _replacement(root: Path, relative: str, old: str, new: str) -> str | None:
+    path = root / relative
+    try:
+        previous = path.read_text(encoding="utf-8") if path.is_file() else ""
+    except OSError:
+        return None
+    if old not in previous:
+        return None
+    return previous.replace(old, new, 1)
+
+
+def _failed_reintroduction(root: Path, relative: str, old: str, new: str, kind: str) -> dict[str, Any] | None:
+    """A diff that puts a removed line or a hard-coded address back is not applied."""
+
+    updated = _replacement(root, relative, old, new)
+    if updated is None:
+        return None
+    path = root / relative
+    previous = path.read_text(encoding="utf-8")
+    reason = block_reason_for_repair_diff(root, relative, previous, updated)
+    if not reason:
+        return None
+    return {
+        "path": relative,
+        "kind": kind,
+        "change": f"{old} -> {new}",
+        "refused": reason,
+        "failed_repair": True,
+        "human_review": False,
+        "applied": False,
+    }
+
+
 def _attempt(root: Path, output: str, architect: Any) -> dict[str, Any] | None:
     name_edit = _name_error_edit(root, output)
     if name_edit:
@@ -419,6 +453,9 @@ def _attempt(root: Path, output: str, architect: Any) -> dict[str, Any] | None:
                 "refused": refused,
                 "human_review": True,
             }
+        blocked = _failed_reintroduction(root, relative, missing, replacement, "name_error")
+        if blocked:
+            return blocked
         applied = architect.apply_edit(relative, missing, replacement, backup=True)
         if applied:
             return {"path": relative, "kind": "name_error", "change": f"{missing} -> {replacement}"}
@@ -458,6 +495,9 @@ def _attempt(root: Path, output: str, architect: Any) -> dict[str, Any] | None:
                 "refused": refused,
                 "human_review": True,
             }
+        blocked = _failed_reintroduction(root, relative, old, new, "implementation")
+        if blocked:
+            return blocked
         applied = architect.apply_edit(relative, old, new, backup=True)
         if not applied:
             continue
@@ -505,6 +545,21 @@ def repair_sandbox(root: Path) -> dict[str, Any]:
         if not attempt:
             report["reason"] = "no_proven_repair"
             append_review(root, "repair_held", reason=report["reason"], branch=branch)
+            return report
+        if attempt.get("failed_repair"):
+            report["status"] = "failed"
+            report["applied"] = False
+            report["human_review"] = False
+            report["reason"] = attempt["refused"]
+            report["path"] = attempt.get("path", "")
+            append_review(
+                root,
+                "repair_failed",
+                reason=report["reason"],
+                branch=branch,
+                path=attempt.get("path", ""),
+                applied=False,
+            )
             return report
         if attempt.get("refused"):
             report["status"] = "human_review"

@@ -6,9 +6,11 @@ not place an order.
 
 The head is an RFC 3161 timestamp over that measured commitment. ``make
 evidence`` reads sequence 1 from the git note ``refs/notes/aureon-hnc-head``
-and a later head from ``refs/notes/aureon-hnc-head-next``. It requires the
-committed bytes to match. A working-tree edit does not move either note or
-either committed blob. The timestamp records historical pin
+and a later head from ``refs/notes/aureon-hnc-head-next`` on the commit that
+recorded them. That commit may be an ancestor of HEAD. The check walks
+ancestors with git notes, or the recorded sha, instead of reading the note
+from HEAD. It requires the committed bytes to match. A working-tree edit
+does not move either note or either committed blob. The timestamp records historical pin
 ``34864ff0547d2cff03e707414743a3b0cc8770b5``. The published require-pin is
 ``bb04503119681adcf832f3c3e9b0cbf09fc7a938``. This module does not move it.
 A series-hash change is refused rather than recorded as a new HNC identity.
@@ -61,6 +63,8 @@ EXPECTED_ANCHOR_ID = "548596463d7b4dddeeba274562b212960f879baf475ee135c7d2fd3468
 
 NOTE_NAME = "aureon-hnc-head"
 NOTE_REF = "refs/notes/aureon-hnc-head"
+# Commit that recorded the HNC head notes in this history. Not HEAD.
+RECORDED_NOTE_COMMIT = "9b666838"
 TSA_URL = "http://timestamp.digicert.com"
 TOKEN_REL = "evidence/output/hnc_head_anchor.tsr.b64"
 RECORD_REL = "evidence/output/hnc_head_anchor.json"
@@ -70,6 +74,14 @@ NEXT_NOTE_REF = "refs/notes/aureon-hnc-head-next"
 NEXT_TOKEN_REL = "evidence/output/hnc_head_next.tsr.b64"
 NEXT_RECORD_REL = "evidence/output/hnc_head_next.json"
 NEXT_ID_REL = "evidence/output/hnc_head_next.id"
+RECORDED_ANCHOR_PATHS = (
+    TOKEN_REL,
+    RECORD_REL,
+    ID_REL,
+    NEXT_TOKEN_REL,
+    NEXT_RECORD_REL,
+    NEXT_ID_REL,
+)
 # SHA-256 of the sequence-2 RFC 3161 token recorded for this head.
 EXPECTED_NEXT_ANCHOR_ID = "e02c59279b46e912a08b1add73f44b82970f535676d0011a3bcb769dfba68784"
 GENESIS = "aureon.evidence.hnc-head-anchor.genesis.v1"
@@ -310,8 +322,119 @@ def _git_bytes(root: Path, args: list[str]) -> bytes | None:
         return None
 
 
+def _is_ancestor(root: Path, sha: str) -> bool:
+    """True when ``sha`` is HEAD or an ancestor of HEAD."""
+
+    try:
+        done = subprocess.run(
+            ["git", "merge-base", "--is-ancestor", sha, "HEAD"],
+            cwd=root,
+            capture_output=True,
+            check=False,
+        )
+    except FileNotFoundError:
+        return False
+    return done.returncode == 0
+
+
+def _resolve_commit(root: Path, rev: str) -> str | None:
+    raw = _git_bytes(root, ["git", "rev-parse", "--verify", f"{rev}^{{commit}}"])
+    if raw is None:
+        return None
+    sha = raw.decode("ascii", "replace").strip()
+    if len(sha) != 40:
+        return None
+    return sha
+
+
+def _blob_exists(root: Path, spec: str) -> bool:
+    try:
+        done = subprocess.run(
+            ["git", "cat-file", "-e", spec],
+            cwd=root,
+            capture_output=True,
+            check=False,
+        )
+    except FileNotFoundError:
+        return False
+    return done.returncode == 0
+
+
+def recording_commit(root: Path) -> str | None:
+    """Ancestor that added the sequence-2 token while the anchor files are present.
+
+    This is the same lookup receipt 3 uses. The note is attached to that
+    commit, which is not necessarily HEAD.
+    """
+
+    raw = _git_bytes(root, ["git", "log", "--diff-filter=A", "--format=%H", "--", NEXT_TOKEN_REL])
+    if raw is None:
+        return None
+    for sha in raw.decode("ascii", "replace").splitlines():
+        sha = sha.strip()
+        if len(sha) != 40 or not _is_ancestor(root, sha):
+            continue
+        if all(_blob_exists(root, f"{sha}:{path}") for path in RECORDED_ANCHOR_PATHS):
+            return sha
+    return None
+
+
+def _noted_commits(root: Path, note_name: str) -> list[str]:
+    raw = _git_bytes(root, ["git", "notes", "--ref", note_name, "list"])
+    if not raw:
+        return []
+    found: list[str] = []
+    for line in raw.decode("ascii", "replace").splitlines():
+        parts = line.split()
+        if len(parts) >= 2 and len(parts[1]) == 40:
+            found.append(parts[1])
+    return found
+
+
+def _closest_noted_ancestor(root: Path, note_name: str) -> str | None:
+    """Walk HEAD then its ancestors and return the first commit git notes annotates."""
+
+    noted = set(_noted_commits(root, note_name))
+    if not noted:
+        return None
+    rev = _git_bytes(root, ["git", "rev-list", "HEAD"])
+    if rev is None:
+        return None
+    for sha in rev.decode("ascii", "replace").splitlines():
+        sha = sha.strip()
+        if sha in noted:
+            return sha
+    return None
+
+
+def resolve_note_commit(root: Path, note_name: str = NOTE_NAME) -> str | None:
+    """Commit whose note the evidence check reads.
+
+    Prefer the commit that recorded the anchor files when that commit carries
+    the note. Otherwise the recorded sha, when it is an ancestor and carries
+    the note. Otherwise walk ancestors, including HEAD, via git notes. A note
+    that exists only on HEAD is still found. A note that exists only on an
+    ancestor is found without reading HEAD.
+    """
+
+    candidates: list[str] = []
+    recorded_tree = recording_commit(root)
+    if recorded_tree:
+        candidates.append(recorded_tree)
+    recorded_sha = _resolve_commit(root, RECORDED_NOTE_COMMIT)
+    if recorded_sha and recorded_sha not in candidates and _is_ancestor(root, recorded_sha):
+        candidates.append(recorded_sha)
+    for sha in candidates:
+        if _git_bytes(root, ["git", "notes", "--ref", note_name, "show", sha]) is not None:
+            return sha
+    return _closest_noted_ancestor(root, note_name)
+
+
 def read_note(root: Path, note_name: str = NOTE_NAME) -> bytes | None:
-    return _git_bytes(root, ["git", "notes", "--ref", note_name, "show", "HEAD"])
+    commit = resolve_note_commit(root, note_name)
+    if commit is None:
+        return None
+    return _git_bytes(root, ["git", "notes", "--ref", note_name, "show", commit])
 
 
 def read_head_blob(root: Path, token_rel: str = TOKEN_REL) -> bytes | None:
@@ -338,7 +461,7 @@ def load_token_text(
         raise AnchorError("git note and committed HNC head token differ")
     if require_note and note is None:
         raise AnchorError(
-            f"missing {note_ref} on HEAD. "
+            f"missing {note_ref} on the commit that recorded it. "
             f"Fetch it with: git fetch origin {note_ref}:{note_ref}"
         )
     if note is not None:

@@ -16,9 +16,11 @@ A missing or unreadable config still does.
 from __future__ import annotations
 
 import ast
+import difflib
 import json
 import os
 import re
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -58,6 +60,9 @@ _EXAMPLE_ENV = ("example", "template", "sample")
 _CREDENTIAL_MATERIAL = re.compile(
     r"(?i)\b(?:api[_-]?secret|api[_-]?key|aws_secret_access_key|private_key|access_token|refresh_token)\b"
     r"\s*[:=]\s*['\"]?[A-Za-z0-9_\-+/=]{6,}"
+)
+_HARDCODED_HOST = re.compile(
+    r"(?i)(?:\b(?:\d{1,3}\.){3}\d{1,3}\b|\blocalhost\b|https?://\S+)"
 )
 
 
@@ -345,3 +350,121 @@ def inspect_execution(code: str, repo_root: Path | None = None) -> None:
     reason = block_reason_for_write("snippet.py", code, "", repo_root)
     if reason:
         raise SelfRepairBlocked(reason)
+
+
+def _git_text(root: Path, args: list[str]) -> str | None:
+    try:
+        done = subprocess.run(args, cwd=root, capture_output=True, text=True, check=False)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if done.returncode != 0:
+        return None
+    return done.stdout
+
+
+def added_diff_lines(before: str, after: str) -> list[str]:
+    """Lines a repair diff would add. The file itself is not changed."""
+
+    diff = difflib.unified_diff(
+        before.splitlines(),
+        after.splitlines(),
+        lineterm="",
+    )
+    return [line[1:] for line in diff if line.startswith("+") and not line.startswith("+++")]
+
+
+def repair_diff_text(path: str, before: str, after: str) -> str:
+    diff = difflib.unified_diff(
+        before.splitlines(),
+        after.splitlines(),
+        fromfile=f"a/{path}",
+        tofile=f"b/{path}",
+        lineterm="",
+    )
+    lines = list(diff)
+    if not lines:
+        return ""
+    return "\n".join(lines) + "\n"
+
+
+def lines_removed_by_later_commit(root: Path, relative: str) -> set[str]:
+    """Lines present in an older blob of ``relative`` and absent from HEAD.
+
+    A later commit removed them. Blank lines are ignored.
+    """
+
+    head = _git_text(root, ["git", "show", f"HEAD:{relative}"])
+    head_lines = set(head.splitlines()) if head is not None else set()
+    log = _git_text(root, ["git", "log", "--format=%H", "--", relative])
+    if not log:
+        return set()
+    historical: set[str] = set()
+    for sha in log.splitlines():
+        sha = sha.strip()
+        if not sha:
+            continue
+        blob = _git_text(root, ["git", "show", f"{sha}:{relative}"])
+        if blob is None:
+            continue
+        historical.update(blob.splitlines())
+    return {line for line in historical - head_lines if line.strip()}
+
+
+def block_reason_for_repair_diff(root: Path, relative: str, before: str, after: str) -> str | None:
+    """Refuse a repair diff that puts history or a hard-coded address back.
+
+    ``reintroduced_removed_line`` means an added line was deleted by a later
+    commit and is not on HEAD. ``hardcoded_host`` means an added line carries
+    a literal host or IP. Neither check writes the tree.
+    """
+
+    added = added_diff_lines(before, after)
+    if not added:
+        return None
+    removed = lines_removed_by_later_commit(root, relative)
+    if any(line in removed for line in added):
+        return "reintroduced_removed_line"
+    if any(_HARDCODED_HOST.search(line) for line in added):
+        return "hardcoded_host"
+    return None
+
+
+def propose_repair_diff(root: Path, relative: str, after: str) -> dict[str, object]:
+    """Propose a unified diff. Never writes ``relative`` or any other source file.
+
+    A refused diff is logged as a failed repair. The working tree is left as it was.
+    """
+
+    repo = Path(root)
+    rel = str(relative or "").replace("\\", "/").lstrip("/")
+    proposal: dict[str, object] = {
+        "path": rel,
+        "applied": False,
+        "wrote_tree": False,
+        "diff": "",
+        "status": "repair_failed",
+        "reason": "",
+    }
+    try:
+        contained(repo, rel)
+    except SelfRepairBlocked as exc:
+        proposal["reason"] = exc.reason
+        append_review(repo, "repair_failed", reason=exc.reason, path=rel, applied=False)
+        return proposal
+    target = repo / rel
+    try:
+        before = target.read_text(encoding="utf-8") if target.is_file() else ""
+    except OSError:
+        proposal["reason"] = "credential_path"
+        append_review(repo, "repair_failed", reason="credential_path", path=rel, applied=False)
+        return proposal
+    reason = block_reason_for_repair_diff(repo, rel, before, after)
+    proposal["diff"] = repair_diff_text(rel, before, after)
+    if reason:
+        proposal["reason"] = reason
+        proposal["status"] = "repair_failed"
+        append_review(repo, "repair_failed", reason=reason, path=rel, applied=False)
+        return proposal
+    proposal["status"] = "repair_proposed"
+    proposal["reason"] = "proposed_only"
+    return proposal

@@ -143,7 +143,17 @@ def test_self_author_operational_ui_uses_queen_code_writer(tmp_path: Path):
     assert evidence["authoring_goal"] == "Aureon design your own live UI"
 
 
-def test_self_review_and_repair_operational_ui_repairs_bad_component(tmp_path: Path):
+def test_operational_console_template_matches_the_current_file() -> None:
+    from aureon.autonomous.aureon_unified_ui_builder import render_react_component
+
+    current = (
+        Path(__file__).resolve().parents[1]
+        / "frontend/src/components/generated/AureonGeneratedOperationalConsole.tsx"
+    ).read_text(encoding="utf-8")
+    assert render_react_component() == current
+
+
+def test_self_review_proposes_a_diff_and_does_not_rewrite_the_console(tmp_path: Path):
     _fake_repo(tmp_path)
     target = tmp_path / "frontend" / "src" / "components" / "generated" / "AureonGeneratedOperationalConsole.tsx"
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -155,14 +165,23 @@ def test_self_review_and_repair_operational_ui_repairs_bad_component(tmp_path: P
         root=tmp_path,
         run_build=False,
     )
-    final_review = result["final_review"]
+    repair = result["repair_actions"][0]["repair"]
 
     assert initial["success"] is False
-    assert result["success"] is True
-    assert final_review["success"] is True
-    assert result["repair_actions"]
-    assert "QueenCodeArchitect.write_file" in result["authoring_path"]
-    assert "AureonGeneratedOperationalConsole" in target.read_text(encoding="utf-8")
+    assert result["success"] is False
+    assert result["status"] == "self_repair_failed"
+    assert result["applied"] is False
+    assert result["wrote_tree"] is False
+    assert repair["status"] == "repair_failed"
+    assert repair["reason"] == "hardcoded_host"
+    assert repair["applied"] is False
+    assert repair["wrote_tree"] is False
+    assert "propose_repair_diff" in result["authoring_path"]
+    assert target.read_text(encoding="utf-8") == "placeholder"
+    assert not (tmp_path / "frontend" / "public" / "aureon_operational_ui_spec.json").exists()
+    log = (tmp_path / "state" / "self_repair_review_log.jsonl").read_text(encoding="utf-8")
+    assert "repair_failed" in log
+    assert "hardcoded_host" in log
 
 
 def test_self_review_catches_path_specific_export_mismatch(tmp_path: Path):

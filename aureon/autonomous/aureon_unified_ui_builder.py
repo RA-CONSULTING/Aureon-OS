@@ -257,6 +257,7 @@ def render_react_component() -> str:
  */
 
 import { useEffect, useMemo, useState } from "react";
+import { terminalStateUrls } from "@/config/serviceEndpoints";
 import {
   Activity,
   AlertTriangle,
@@ -300,10 +301,7 @@ const PUBLIC_ENDPOINTS: Record<string, string> = {
   hncProof: "/aureon_hnc_cognitive_proof.json",
 };
 
-const RUNTIME_FALLBACKS = [
-  "http://127.0.0.1:8791/api/terminal-state",
-  "http://127.0.0.1:8790/api/terminal-state",
-];
+const RUNTIME_FALLBACKS = terminalStateUrls;
 
 const EXCHANGES = ["kraken", "binance", "alpaca", "capital"];
 
@@ -338,11 +336,16 @@ function asNumber(value: unknown, fallback = 0): number {
 }
 
 function compact(value: unknown): string {
-  return asNumber(value).toLocaleString();
+  if (value === null || value === undefined || value === "") return "unavailable";
+  const numeric = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(numeric)) return "unavailable";
+  return numeric.toLocaleString();
 }
 
 function percent(value: unknown): string {
-  const numeric = asNumber(value);
+  if (typeof value === "boolean" || value === null || value === undefined || value === "") return "unavailable";
+  const numeric = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(numeric)) return "unavailable";
   if (numeric <= 1) return `${Math.round(numeric * 100)}%`;
   return `${Math.round(numeric)}%`;
 }
@@ -524,7 +527,7 @@ export function AureonGeneratedOperationalConsole() {
     ready: exchangeReady(runtime, name),
     error: exchangeError(runtime, name),
     governor: runtime?.api_governor?.exchanges?.[name] || {},
-    equity: runtime?.[name]?.equity || runtime?.combined?.[`${name}_equity`] || runtime?.combined?.[`${name}_equity_gbp`] || runtime?.exchanges?.[name]?.equity,
+    equity: runtime?.[name]?.equity ?? runtime?.combined?.[`${name}_equity`] ?? runtime?.combined?.[`${name}_equity_gbp`] ?? runtime?.exchanges?.[name]?.equity ?? null,
   })), [runtime]);
 
   return (
@@ -603,7 +606,7 @@ export function AureonGeneratedOperationalConsole() {
                     <Datum label="data ready" value={String(Boolean(runtime?.data_ready))} />
                     <Datum label="stale" value={String(Boolean(runtime?.stale || runtime?.runtime_watchdog?.tick_stale))} />
                     <Datum label="tick age" value={runtime?.runtime_watchdog?.last_tick_age_sec !== undefined ? `${compact(runtime.runtime_watchdog.last_tick_age_sec)}s` : "unknown"} />
-                    <Datum label="positions" value={compact(runtime?.combined?.open_positions || runtime?.open_positions || 0)} />
+                    <Datum label="positions" value={compact(runtime?.combined?.open_positions ?? runtime?.open_positions ?? null)} />
                     <Datum label="runtime minutes" value={compact(runtime?.runtime_minutes)} />
                   </div>
                   <LineList items={[
@@ -638,7 +641,7 @@ export function AureonGeneratedOperationalConsole() {
                           <Pill label={row.ready ? "ready" : "attention"} kind={row.ready ? "good" : "warn"} />
                         </div>
                         <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                          <Datum label="equity" value={row.equity !== undefined ? compact(row.equity) : "unknown"} />
+                          <Datum label="equity" value={row.equity == null || row.equity === '' ? 'unavailable' : compact(row.equity)} />
                           <Datum label="api use" value={row.governor?.utilization !== undefined ? percent(row.governor.utilization) : "unknown"} />
                         </div>
                         {row.error ? <div className="mt-2 text-xs text-destructive">{row.error}</div> : null}
@@ -648,10 +651,10 @@ export function AureonGeneratedOperationalConsole() {
                 </Panel>
                 <Panel title="Signal And Intent Path" icon={Zap}>
                   <div className="grid gap-2 sm:grid-cols-2">
-                    <Datum label="order intents" value={compact(runtime?.exchange_action_plan?.order_intents_published || runtime?.exchange_action_plan?.latest_published?.intent_count || 0)} />
-                    <Datum label="executor sent" value={compact(runtime?.exchange_action_plan?.latest_execution?.submitted_count || 0)} />
-                    <Datum label="executor held" value={compact(runtime?.exchange_action_plan?.latest_execution?.held_count ?? runtime?.exchange_action_plan?.latest_execution?.blocked_count ?? 0)} />
-                    <Datum label="shadow active" value={compact(runtime?.shadow_trading?.active_shadow_count || runtime?.exchange_action_plan?.shadow_trading?.active_shadow_count || 0)} />
+                    <Datum label="order intents" value={compact(runtime?.exchange_action_plan?.order_intents_published ?? runtime?.exchange_action_plan?.latest_published?.intent_count ?? null)} />
+                    <Datum label="executor sent" value={compact(runtime?.exchange_action_plan?.latest_execution?.submitted_count ?? null)} />
+                    <Datum label="executor held" value={compact(runtime?.exchange_action_plan?.latest_execution?.held_count ?? runtime?.exchange_action_plan?.latest_execution?.blocked_count ?? null)} />
+                    <Datum label="shadow active" value={compact(runtime?.shadow_trading?.active_shadow_count ?? runtime?.exchange_action_plan?.shadow_trading?.active_shadow_count ?? null)} />
                   </div>
                   <LineList items={[
                     `trade path: ${shortText(runtime?.exchange_action_plan?.trade_path_state, "unknown")}`,
@@ -1153,6 +1156,14 @@ def review_operational_ui(
     }
 
 
+def _component_relative(repo_root: Path, component_path: Path) -> str:
+    candidate = component_path if component_path.is_absolute() else repo_root / component_path
+    try:
+        return candidate.relative_to(repo_root).as_posix()
+    except ValueError:
+        return component_path.as_posix()
+
+
 def self_review_and_repair_operational_ui(
     goal: str,
     *,
@@ -1161,43 +1172,57 @@ def self_review_and_repair_operational_ui(
     run_build: bool = True,
     max_cycles: int = 2,
 ) -> dict[str, Any]:
-    """Aureon diagnoses its generated UI, repairs it, and retests through its own code path."""
+    """Diagnose the generated UI and propose a repair diff.
+
+    The diff is not applied. This does not write the component or any other
+    source file. A diff that puts back a line removed by a later commit, or
+    that puts back a hard-coded host or IP, is logged as a failed repair.
+    ``max_cycles`` is retained so callers can ask for one proposal.
+    """
+
+    from aureon.autonomous.self_repair_guard import propose_repair_diff
 
     repo_root = repo_root_from(root)
     cycles: list[dict[str, Any]] = []
     repair_actions: list[dict[str, Any]] = []
     current_review = review_operational_ui(root=repo_root, component_path=component_path, run_build=False)
     cycles.append({"phase": "initial_review", "review": current_review})
+    relative = _component_relative(repo_root, component_path)
 
     for cycle_index in range(max(1, max_cycles)):
         if current_review.get("success"):
             break
-        repair = self_author_operational_ui(
-            f"{goal}\n\nAureon self-detected UI issues to repair: {json.dumps(current_review.get('issues', []), sort_keys=True)}",
-            root=repo_root,
-            component_path=component_path,
-        )
-        repair_actions.append({"cycle": cycle_index + 1, "repair": repair})
-        current_review = review_operational_ui(root=repo_root, component_path=component_path, run_build=False)
-        cycles.append({"phase": f"post_repair_review_{cycle_index + 1}", "review": current_review})
-        if current_review.get("success"):
-            break
+        proposal = propose_repair_diff(repo_root, relative, render_react_component())
+        repair_actions.append({"cycle": cycle_index + 1, "repair": proposal})
+        # The tree is unchanged, so another cycle would propose the same diff.
+        break
 
     final_review = review_operational_ui(root=repo_root, component_path=component_path, run_build=run_build)
     cycles.append({"phase": "final_review", "review": final_review})
+    refused = any(
+        isinstance(item.get("repair"), dict) and item["repair"].get("status") == "repair_failed"
+        for item in repair_actions
+    )
+    if final_review.get("success"):
+        status = "self_repair_passed"
+    elif refused:
+        status = "self_repair_failed"
+    else:
+        status = "self_repair_needs_attention"
     result = {
         "schema_version": "aureon-self-ui-review-repair-v1",
         "generated_at": utc_now(),
         "goal": goal,
-        "status": "self_repair_passed" if final_review.get("success") else "self_repair_needs_attention",
+        "status": status,
         "success": bool(final_review.get("success")),
+        "applied": False,
+        "wrote_tree": False,
         "authoring_path": [
             "GoalExecutionEngine.submit_goal",
             "GoalExecutionEngine._execute_self_repair_operational_ui",
             "aureon.autonomous.aureon_unified_ui_builder.self_review_and_repair_operational_ui",
             "review_operational_ui",
-            "self_author_operational_ui",
-            "QueenCodeArchitect.write_file",
+            "propose_repair_diff",
             "npm run build" if run_build else "build_skipped",
         ],
         "cycles": cycles,
