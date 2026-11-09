@@ -114,3 +114,74 @@ def test_stage6_receipts_match_the_pin_and_leave_gaps_open() -> None:
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     module.check()
+
+
+def test_provenance_digest_omits_only_the_tip_annotation() -> None:
+    """The measurement digest covers every field except the PR 270 annotation."""
+
+    import importlib.util
+
+    provenance = _load("measured/go_live_stage6_provenance.json")
+    digest = "cea8089cd4be4c39f80123f5f0f9ee806fefb76e528194c42602bbca7ae20289"
+    omitted = ("tip_note", "tip_note_added")
+    spec = importlib.util.spec_from_file_location(
+        "go_live_stage6_digest",
+        ROOT / "scripts" / "validation" / "go_live_stage6.py",
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert module.DIGEST_OMITTED == omitted
+    assert provenance["digest"] == digest
+    assert provenance["tip"] == TIP
+    assert provenance["go_live_clear"] is False
+    assert provenance["tip_note_added"] == "2026-11-09, PR 270, not part of the measurement"
+    measured = {key: value for key, value in provenance.items() if key not in {"digest", *omitted}}
+    assert _canonical_sha256(measured) == digest
+    assert _canonical_sha256(measured).startswith("cea8089c")
+
+    for key in omitted:
+        annotated = dict(measured)
+        annotated[key] = provenance[key]
+        assert _canonical_sha256(annotated) != digest
+        changed = dict(provenance)
+        changed[key] = str(provenance[key]) + " "
+        assert _canonical_sha256({item: changed[item] for item in measured}) == digest
+
+    tipped = dict(measured)
+    tipped["tip"] = "0" * 40
+    assert _canonical_sha256(tipped) != digest
+
+    for key in measured:
+        mutated = dict(measured)
+        mutated[key] = _other_value(measured[key])
+        assert _canonical_sha256(mutated) != digest
+
+
+def _canonical_bytes(payload: dict) -> bytes:
+    return (
+        json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+        + b"\n"
+    )
+
+
+def _canonical_sha256(payload: dict) -> str:
+    import hashlib
+
+    return hashlib.sha256(_canonical_bytes(payload)).hexdigest()
+
+
+def _other_value(value: object) -> object:
+    if isinstance(value, bool):
+        return not value
+    if isinstance(value, int) and not isinstance(value, bool):
+        return value + 1
+    if isinstance(value, str):
+        return value + " "
+    if isinstance(value, list):
+        return [*value, None]
+    if isinstance(value, dict):
+        return {**value, "tip": "changed"}
+    if value is None:
+        return 0
+    return None

@@ -321,5 +321,22 @@
       "scripts/plug_and_play.py": "074958ec277ae9cbd88dc3a3f0faa635d71f41431d8d36f4208e71dce8667497"
     },
     "evidence_tag": "read of this worktree after the rebase onto 08f04936. No ./install.sh --smoke was run."
+  },
+  "pr_270_stage6_file_note": {
+    "date": "2026-11-09",
+    "pull_request": 270,
+    "not_a_live_pin": true,
+    "provenance_digest_unchanged": "cea8089cd4be4c39f80123f5f0f9ee806fefb76e528194c42602bbca7ae20289",
+    "whole_file_sha256_moved_by_annotation": [
+      "measured/go_live_stage6_provenance.json",
+      "measured/go_live_stage6_source_census.json",
+      "docs/runbooks/GO_LIVE_STAGE6_SOURCE_CENSUS.md"
+    ],
+    "historical_hashes_left_in_place": [
+      "hold_unchanged.go_live_file_sha256",
+      "rebase.stage6_files_replaced_by_29fab7f2",
+      "rebase_onto_08f04936.same_bytes_as_the_29fab7f2_read"
+    ],
+    "reason": "tip_note and tip_note_added are not part of the measurement. No test compares the current whole-file sha256 of these paths to the hashes above. Those hashes stay the smoke and rebase reads. docs/runbooks/GO_LIVE_STAGE6_SOURCE_CENSUS.md has no whole-file sha256 pin."
   }
 }

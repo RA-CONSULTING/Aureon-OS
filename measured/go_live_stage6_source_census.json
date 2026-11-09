@@ -58,6 +58,8 @@
   "source_boundary_closed": false,
   "tip": "b2b0310362597dc520114de86d8700c0c50758d5",
   "tip_aureon_tree": "a5114a7e5ecb4e9a51df57d58355e72882cf0a3c",
+  "tip_note": "The recorded tip b2b03103 is a pre-squash commit from the #253 branch and is not on main; it can be checked by fetching that branch.",
+  "tip_note_added": "2026-11-09, PR 270, not part of the measurement",
   "unlisted_in_inventory": [
     [
       "containment/__init__.py",
