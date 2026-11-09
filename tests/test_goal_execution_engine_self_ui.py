@@ -111,12 +111,16 @@ def test_goal_engine_routes_ui_problem_goal_to_self_repair(tmp_path: Path, monke
         f"{target} with no cheating."
     )
 
-    assert plan.status == "completed"
     assert plan.steps[0].intent == "self_repair_operational_ui"
-    assert plan.steps[0].validation_result["valid"] is True
+    assert plan.status == "failed"
+    assert plan.steps[0].validation_result["valid"] is False
+    assert target_path.read_text(encoding="utf-8") == "broken"
     evidence = json.loads((tmp_path / "state" / "aureon_self_ui_repair_last_run.json").read_text(encoding="utf-8"))
-    assert evidence["status"] == "self_repair_passed"
-    assert "QueenCodeArchitect.write_file" in evidence["authoring_path"]
+    assert evidence["status"] == "self_repair_failed"
+    assert evidence["wrote_tree"] is False
+    assert evidence["repair_actions"][0]["repair"]["reason"] == "hardcoded_host"
+    log = (tmp_path / "state" / "self_repair_review_log.jsonl").read_text(encoding="utf-8")
+    assert "repair_failed" in log
 
 
 def test_goal_engine_routes_repo_problem_goal_to_repo_self_repair(tmp_path: Path, monkeypatch) -> None:

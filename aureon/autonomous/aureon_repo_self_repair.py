@@ -380,8 +380,14 @@ def run_repo_self_repair(
     repair_actions = [
         RepairAction(
             id="operational_ui_self_review",
-            status="passed" if ui_repair.get("success") else "needs_attention",
-            summary="Aureon reviewed and repaired its operational UI through the Queen writer.",
+            status=(
+                "passed"
+                if ui_repair.get("success")
+                else "failed"
+                if ui_repair.get("status") == "self_repair_failed"
+                else "needs_attention"
+            ),
+            summary="Aureon reviewed its operational UI and proposed a diff. The source tree was not written.",
             files=["frontend/src/components/generated/AureonGeneratedOperationalConsole.tsx", "state/aureon_self_ui_repair_last_run.json"],
             evidence={
                 "status": ui_repair.get("status"),
