@@ -18,8 +18,9 @@ AUREON_HF_GARY_YES_PUBLIC=1. That pair does not apply to an existing Space.
 Cloud Run upload and read-back stay off unless
 AUREON_RECEIPT5_ALLOW_CLOUD_RUN_DEPLOY=1 and
 AUREON_RECEIPT5_GARY_YES_CLOUD_RUN=1, plus a service, project, region, and
-image. This script does not place an order, open a tunnel, publish
-a Space, or move the public pin.
+image. deploy_cloud_run checks both flags itself and refuses before any
+gcloud or subprocess call when either one is missing. This script does not
+place an order, open a tunnel, publish a Space, or move the public pin.
 
 go_live_clear stays false. The orange badge is not this stage.
 """
@@ -921,9 +922,19 @@ def deploy_cloud_run(
     *,
     spec: dict[str, str],
     which: Which,
+    env: Mapping[str, str],
     runner: Runner | None = None,
     now: Callable[[], str] | None = None,
 ) -> dict[str, Any]:
+    """Deploy only when both Cloud Run flags are set. Refuse before gcloud."""
+
+    if env.get("AUREON_RECEIPT5_ALLOW_CLOUD_RUN_DEPLOY", "") != "1" or env.get(CLOUD_RUN_GARY_YES, "") != "1":
+        raise DeployError(
+            "Cloud Run upload and read-back are off. "
+            "AUREON_RECEIPT5_ALLOW_CLOUD_RUN_DEPLOY=1 and "
+            f"{CLOUD_RUN_GARY_YES}=1 are both required. "
+            "No gcloud command was run. No provider API was called."
+        )
     if not provider_host_ok(GCP_API):
         raise DeployError("Cloud Run API host failed the provider-host check")
     binary = which("gcloud")
@@ -1160,7 +1171,7 @@ def produce(
                     "Cloud Run deploy was requested and no ACTIVE gcloud account or credential file "
                     "was available. No provider API was called."
                 )
-            deployed = deploy_cloud_run(spec=spec, which=find, runner=gcloud_runner, now=now)
+            deployed = deploy_cloud_run(spec=spec, which=find, env=env, runner=gcloud_runner, now=now)
             return _finish_measured(receipt, deployed, (spec["project"], spec["image"]))
         except DeployError as exc:
             return _apply_failure(receipt, exc, "google-cloud-run")
