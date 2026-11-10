@@ -14,7 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = ROOT / "scripts/validation/go_live_receipt5.py"
-PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
+PIN = "0646146c53e59dbcab41363a613d5651c9c9d50f"
 STARTED_FROM = "9333bfbbeb8de54a4b42be05f9263e536da643a7"
 RECEIPT3_PIN = "34864ff0547d2cff03e707414743a3b0cc8770b5"
 TOKEN = "hf_testtokenvalue123456"

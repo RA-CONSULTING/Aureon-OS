@@ -137,7 +137,7 @@ def test_stage7_registry_names_servers_spaces_and_the_pin() -> None:
     assert body.get("called") is not True
     assert body["live_orders"] == "refused"
     assert body["enabled_through"] == enabled_stage()
-    assert body["pin"].startswith("bb045031")
+    assert body["pin"].startswith("0646146c")
     assert "huggingface/hnc-field/app.py" in body["spaces"]
     assert "trading" in body["blocked_imports"]
     registry = (ROOT / "docs" / "mcp" / "REGISTRY.md").read_text(encoding="utf-8")
