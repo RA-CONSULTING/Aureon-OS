@@ -175,6 +175,7 @@ def link_system(module_name: str) -> None:
     try:
         activate_autonomous_control()
         relay_state(module_name, "building", {"autonomous_control": "activated"})
+        _start_queen_repair_loop(module_name)
     except Exception as exc:
         relay_state(module_name, "not_doing", {"autonomous_control": f"{type(exc).__name__}: {exc}"[:300]})
     return
@@ -255,6 +256,52 @@ def relay_state(module_name: str, kind: str, payload: Optional[dict] = None) -> 
         ))
     except Exception:
         return
+
+
+def _start_queen_repair_loop(module_name: str) -> None:
+    """Let the Queen run Aureon's own self-repair on a separate checkout.
+
+    Needs AUREON_QUEEN_REPAIR_ROOT (a git worktree that is not the running
+    repo). One loop per host via a lock file. Repairs commit to local
+    aureon-self-repair/<ts> branches there; nothing is pushed.
+    """
+    root = os.getenv("AUREON_QUEEN_REPAIR_ROOT", "").strip()
+    if not root or not Path(root).is_dir():
+        relay_state(module_name, "not_doing", {"self_repair": "AUREON_QUEEN_REPAIR_ROOT unset"})
+        return
+    if Path(root).resolve() == Path.cwd().resolve():
+        relay_state(module_name, "not_doing", {"self_repair": "repair root is the running repo"})
+        return
+    try:
+        import fcntl
+        import subprocess
+        import threading
+        lock = open(Path(root) / ".queen_repair.lock", "w")
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except Exception:
+        return  # another process already runs the loop
+    interval = float(os.getenv("AUREON_QUEEN_REPAIR_INTERVAL_S", "1800") or 1800)
+
+    def _loop() -> None:
+        while True:
+            relay_state("queen.self_repair", "trying", {"root": root})
+            try:
+                done = subprocess.run([sys.executable, "-m", "aureon_fusion.repair", "--root", root],
+                                      cwd=root, capture_output=True, text=True, timeout=3600)
+                try:
+                    report = json.loads(done.stdout[done.stdout.index("{"):])
+                except Exception:
+                    report = {"status": "unparsed", "returncode": done.returncode}
+                relay_state("queen.self_repair", "building", {
+                    "status": report.get("status"), "branch": report.get("branch"),
+                    "reason": str(report.get("reason", ""))[:300],
+                    "repairs": len(report.get("repairs") or [])})
+            except Exception as exc:
+                relay_state("queen.self_repair", "not_doing", {"error": f"{type(exc).__name__}: {exc}"[:300]})
+            time.sleep(interval)
+
+    threading.Thread(target=_loop, name="QueenSelfRepair", daemon=True).start()
+    _start_queen_repair_loop.lock = lock  # keep the lock alive
 
 
 def activate_autonomous_control() -> None:
