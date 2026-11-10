@@ -258,6 +258,61 @@ def relay_state(module_name: str, kind: str, payload: Optional[dict] = None) -> 
         return
 
 
+def _push_proven_repair(commit, gate):
+    """Stage 5: replay a gate-verified repair onto origin/main, re-prove it there, and push.
+
+    Opt-in with AUREON_QUEEN_AUTO_PUSH=1. Only a fast-forward of main; a conflict or a failing
+    re-proof is relayed as not_doing and nothing is pushed.
+    """
+    import shutil
+    import subprocess
+    import tempfile
+
+    def git(*args, cwd=None, timeout=300):
+        return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, timeout=timeout)
+
+    tmp = tempfile.mkdtemp(prefix="queen_push_")
+    tree = os.path.join(tmp, "main")
+    try:
+        fetch = git("fetch", "origin", "main")
+        if fetch.returncode != 0:
+            relay_state("queen.self_repair", "not_doing", {"push": "held_fetch_failed", "commit": commit,
+                                                           "detail": fetch.stderr[-200:]})
+            return
+        git("worktree", "add", "--detach", tree, "origin/main")
+        pick = git("cherry-pick", commit, cwd=tree)
+        if pick.returncode != 0:
+            git("cherry-pick", "--abort", cwd=tree)
+            relay_state("queen.self_repair", "not_doing", {"push": "held_conflict_on_main", "commit": commit})
+            return
+        tests = [t for t in [gate.get("authored_test")] if t and os.path.exists(os.path.join(tree, t))]
+        bench = os.path.join("tests", "queen_benchmarks")
+        if os.path.isdir(os.path.join(tree, bench)):
+            tests.append(bench)
+        if not tests:
+            relay_state("queen.self_repair", "not_doing", {"push": "held_no_proof_on_main", "commit": commit})
+            return
+        proof = subprocess.run([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", *tests],
+                               cwd=tree, capture_output=True, text=True,
+                               env=dict(os.environ, AUREON_LLM_OFFLINE="1", AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS="1"))
+        if proof.returncode != 0:
+            relay_state("queen.self_repair", "not_doing", {"push": "held_proof_failed_on_main", "commit": commit,
+                                                           "detail": proof.stdout[-300:]})
+            return
+        push = git("push", "origin", "HEAD:refs/heads/main", cwd=tree, timeout=120)
+        head = (git("rev-parse", "HEAD", cwd=tree).stdout or "").strip()
+        if push.returncode == 0:
+            relay_state("queen.self_repair", "building", {"push": "pushed_to_main", "commit": commit, "main": head})
+        else:
+            relay_state("queen.self_repair", "not_doing", {"push": "held_push_rejected", "commit": commit,
+                                                           "detail": push.stderr[-300:]})
+    except Exception as exc:
+        relay_state("queen.self_repair", "not_doing", {"push": "error", "error": f"{type(exc).__name__}: {exc}"[:300]})
+    finally:
+        git("worktree", "remove", "--force", tree)
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def _adopt_repair_and_reboot(report):
     """Stage 4: bring a proven, gate-verified repair into this running checkout and restart this process on it.
 
@@ -276,6 +331,8 @@ def _adopt_repair_and_reboot(report):
     with open(queue, "a", encoding="utf-8") as fh:
         fh.write(json.dumps({"ts": time.time(), "commit": commit, "branch": report.get("branch"),
                              "path": report.get("path"), "push": "awaiting_owner_yes"}) + "\n")
+    if os.environ.get("AUREON_QUEEN_AUTO_PUSH") == "1" and gate.get("verified") is True:
+        _push_proven_repair(commit, gate)
     if os.environ.get("AUREON_QUEEN_SELF_REBOOT") != "1":
         relay_state("queen.self_repair", "not_doing", {"reboot": "off", "commit": commit})
         return
