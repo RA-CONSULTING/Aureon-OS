@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 def test_live_sandbox_workflow_never_arms_mainnet():
-    text = Path(".github/workflows/live-sandbox.yml").read_text(encoding="utf-8")
+    text = (Path(__file__).resolve().parents[1] / ".github/workflows/live-sandbox.yml").read_text(encoding="utf-8")
     configured = text.split("steps:", 1)[0]
     assert 'AUREON_LIVE_TRADING: "0"' in configured
     assert 'AUREON_DISABLE_REAL_ORDERS: "1"' in configured

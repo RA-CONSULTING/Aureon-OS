@@ -343,9 +343,9 @@ def test_start_and_stop_release_wildcard_bus_subscription(tmp_path: Path) -> Non
 
 def test_legacy_queen_action_paths_are_proposal_only() -> None:
     targets = {
-        Path("aureon/queen/queen_sentient_loop.py"): "_act",
-        Path("aureon/queen/queen_quantum_cognition.py"): "autonomous_decision_cycle",
-        Path("aureon/queen/queen_cognitive_action_planner.py"): "_synthesise_and_submit",
+        (Path(__file__).resolve().parents[1] / "aureon/queen/queen_sentient_loop.py"): "_act",
+        (Path(__file__).resolve().parents[1] / "aureon/queen/queen_quantum_cognition.py"): "autonomous_decision_cycle",
+        (Path(__file__).resolve().parents[1] / "aureon/queen/queen_cognitive_action_planner.py"): "_synthesise_and_submit",
     }
     forbidden = {"autonomous_execute", "execute", "submit_goal"}
     found: list[tuple[str, str]] = []

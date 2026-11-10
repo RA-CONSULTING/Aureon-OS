@@ -105,9 +105,7 @@ def test_multiverse_signal_uses_fresh_world_votes_not_random() -> None:
     assert result.confidence == pytest.approx(1.0)
     assert result.provenance == "internal_multiverse:fresh_world_votes"
 
-    source = Path(
-        "aureon/conversion/mycelium_conversion_hub.py"
-    ).read_text(encoding="utf-8")
+    source = (Path(__file__).resolve().parents[1] / "aureon/conversion/mycelium_conversion_hub.py").read_text(encoding="utf-8")
     assert "random.choice" not in source
 
 

@@ -135,9 +135,7 @@ class _ReceiptAdapter:
 
 
 def test_gaia_requires_same_venue_receipts_and_only_terminal_fill_mutates(tmp_path: Path) -> None:
-    source = Path(
-        "aureon/bots/gaia_aggressive_reclaimer.py"
-    ).read_text(encoding="utf-8")
+    source = (Path(__file__).resolve().parents[1] / "aureon/bots/gaia_aggressive_reclaimer.py").read_text(encoding="utf-8")
     for forbidden in (
         "_baton_link",
         "PYTHONUNBUFFERED",
