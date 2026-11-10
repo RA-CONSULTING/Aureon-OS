@@ -51,11 +51,18 @@ def web_enabled() -> bool:
 
 # ---------------------------------------------------------------- diagnosis
 def _sections(output: str) -> dict[str, list[str]]:
+    """Split pytest's FAILURES/ERRORS body into per-test sections.
+
+    pytest pads a failure header with a variable number of underscores
+    (``____ name ____`` and, when the name is long or the terminal narrow,
+    ``_ name _``). Match one or more underscores on each side so a
+    parametrised or long test id is captured, not dropped.
+    """
     sections: dict[str, list[str]] = {}
     current: list[str] | None = None
     for line in output.splitlines():
-        head = re.match(r"^_{3,} (.+?) _{3,}$", line)
-        if head:
+        head = re.match(r"^_+ (.+?) _+$", line.rstrip())
+        if head and set(line.strip()) - set("_ "):  # a real header, not a rule of underscores
             current = sections.setdefault(head.group(1).strip(), [])
             continue
         if re.match(r"^={5,}", line):
@@ -98,7 +105,14 @@ def diagnose(root: Path, output: str) -> list[dict[str, Any]]:
                 lines = body
                 break
         errors = [ln[1:].strip() for ln in lines if ln.startswith("E ")]
-        error = (message or "").strip() or (errors[-1] if errors else "")
+        exc_lines = [e for e in errors if re.match(r"^[A-Za-z_][\w.]*(?:Error|Exception|Exit)\b", e)]
+        nonblank = [ln.strip() for ln in lines if ln.strip()]
+        error = (
+            (message or "").strip()
+            or (exc_lines[-1] if exc_lines else "")
+            or (errors[-1] if errors else "")
+            or (nonblank[-1] if nonblank else "")
+        )
         exc = re.match(r"^([A-Za-z_][\w.]*(?:Error|Exception|Exit|Warning|Interrupt))\b", error)
         records.append({
             "test_id": nodeid,

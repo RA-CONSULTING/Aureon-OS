@@ -333,9 +333,12 @@ def test_fix_commits_despite_unrelated_pre_existing_failure(
     assert report["after_returncode"] != 0
 
 
-def test_fix_that_turns_a_passing_test_red_is_held_as_regression(
+def test_fix_that_turns_a_passing_test_red_is_reverted_not_committed(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    # The no-regression rule (owner, 10:43) still holds: an edit that turns a previously-green
+    # test red is reverted and never committed. Owner's 11:54 change only alters what happens
+    # next -- she records the dead end and keeps trying rather than stopping on "regression".
     root = tmp_path / "sandbox"
     root.mkdir()
     (root / "arith.py").write_text("def add(a, b):\n    return a - b\n", encoding="utf-8")
@@ -347,10 +350,175 @@ def test_fix_that_turns_a_passing_test_red_is_held_as_regression(
     )
     _enable(root, monkeypatch)
     report = repair_sandbox(root)
-    assert report["status"] == "held"
-    assert report["reason"] == "regression"
-    assert any("test_keep_green" in nodeid for nodeid in report["regressions"]), report
-    # The edit was reverted, so the previously-green test stays green.
+    # Nothing was committed (the only edit would have regressed the green test).
+    assert report["status"] != "repaired"
+    assert report.get("commit") in (None, ""), report
+    # The edit was reverted, so the previously-green test's source stays as it was.
     assert "return a - b" in (root / "arith.py").read_text(encoding="utf-8")
+    # The regression is recorded in the review log...
     log = review_log_path(root).read_text(encoding="utf-8")
-    assert "\"regression\"" in log or "'regression'" in log
+    assert "regression" in log
+    # ...and in the progress ledger, so a later cycle will not retry the same patch.
+    ledger = (root / "state" / "queen_repair_progress.jsonl").read_text(encoding="utf-8")
+    assert "reverted_regression" in ledger
+
+
+# ── owner 11:53 / 11:54: new deterministic shapes, partial progress, progress ledger ──
+
+
+def test_missing_import_shape_adds_the_one_import(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # A name used here but defined, uniquely, in one other repo module -> add that import.
+    root = tmp_path / "sandbox"
+    root.mkdir()
+    (root / "calc.py").write_text("def total():\n    return helper() + 1\n", encoding="utf-8")
+    (root / "helpers.py").write_text("def helper():\n    return 4\n", encoding="utf-8")
+    (root / "test_calc.py").write_text(
+        "from calc import total\n\ndef test_total():\n    assert total() == 5\n", encoding="utf-8"
+    )
+    _enable(root, monkeypatch)
+    report = repair_sandbox(root)
+    assert report["status"] == "repaired", report
+    assert "from helpers import helper" in (root / "calc.py").read_text(encoding="utf-8")
+    assert any(r.get("kind") == "missing_import" for r in report["repairs"]), report
+
+
+def test_missing_import_shape_declines_when_name_defined_twice(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Ambiguous: the name is defined in two modules, so there is no single safe import.
+    root = tmp_path / "sandbox"
+    root.mkdir()
+    (root / "calc.py").write_text("def total():\n    return helper() + 1\n", encoding="utf-8")
+    (root / "a.py").write_text("def helper():\n    return 4\n", encoding="utf-8")
+    (root / "b.py").write_text("def helper():\n    return 9\n", encoding="utf-8")
+    (root / "test_calc.py").write_text(
+        "from calc import total\n\ndef test_total():\n    assert total() == 5\n", encoding="utf-8"
+    )
+    _enable(root, monkeypatch)
+    report = repair_sandbox(root)
+    assert report["status"] != "repaired", report
+    assert "import helper" not in (root / "calc.py").read_text(encoding="utf-8")
+
+
+def test_attribute_rename_shape_fixes_unique_close_match(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # module 'lib' has no attribute 'compute'; its only close symbol is 'computed'.
+    root = tmp_path / "sandbox"
+    root.mkdir()
+    (root / "lib.py").write_text("def computed():\n    return 3\n", encoding="utf-8")
+    (root / "use.py").write_text("import lib\n\n\ndef run():\n    return lib.compute()\n", encoding="utf-8")
+    (root / "test_use.py").write_text(
+        "from use import run\n\ndef test_run():\n    assert run() == 3\n", encoding="utf-8"
+    )
+    _enable(root, monkeypatch)
+    report = repair_sandbox(root)
+    assert report["status"] == "repaired", report
+    assert "lib.computed()" in (root / "use.py").read_text(encoding="utf-8")
+    assert any(r.get("kind") == "attribute_rename" for r in report["repairs"]), report
+
+
+def test_partial_progress_commits_when_error_only_narrows(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The import fix clears a NameError but the test then fails a later assertion: the test is
+    # still red, yet the error narrowed (NameError -> AssertionError) with no regression, so the
+    # progress lands as a partial commit (owner's call, 11:54).
+    root = tmp_path / "sandbox"
+    root.mkdir()
+    (root / "calc.py").write_text("def total():\n    return helper()\n", encoding="utf-8")
+    (root / "helpers.py").write_text("def helper():\n    return 4\n", encoding="utf-8")
+    (root / "test_calc.py").write_text(
+        "from calc import total\n\ndef test_total():\n    assert total() == 999\n", encoding="utf-8"
+    )
+    _enable(root, monkeypatch)
+    report = repair_sandbox(root)
+    assert report["status"] == "repaired_partial", report
+    assert "from helpers import helper" in (root / "calc.py").read_text(encoding="utf-8")
+    assert report["narrowed"], report
+    ledger = (root / "state" / "queen_repair_progress.jsonl").read_text(encoding="utf-8")
+    assert "narrowed" in ledger
+
+
+def test_ledger_blocks_retry_of_a_reverted_patch(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # First cycle reverts a regressing operator edit and records it. A second cycle reads the
+    # ledger and does not retry that same patch (owner's call, 11:54: build on wins, skip dead ends).
+    root = tmp_path / "sandbox"
+    root.mkdir()
+    (root / "arith.py").write_text("def add(a, b):\n    return a - b\n", encoding="utf-8")
+    (root / "test_arith.py").write_text(
+        "from arith import add\n\n"
+        "def test_add_sum():\n    assert add(2, 3) == 5\n\n"
+        "def test_keep_green():\n    assert add(5, 1) == 4\n",
+        encoding="utf-8",
+    )
+    _enable(root, monkeypatch)
+    first = repair_sandbox(root)
+    assert first["status"] != "repaired", first
+    ledger_path = root / "state" / "queen_repair_progress.jsonl"
+    assert "reverted_regression" in ledger_path.read_text(encoding="utf-8")
+    second = repair_sandbox(root)
+    assert second["status"] != "repaired", second
+    assert "return a - b" in (root / "arith.py").read_text(encoding="utf-8")
+    # The second cycle attempted nothing: the one candidate was a known-reverted patch.
+    last_line = [ln for ln in ledger_path.read_text(encoding="utf-8").splitlines() if ln.strip()][-1]
+    assert json.loads(last_line)["attempts"] == []
+
+
+# ── owner 12:20: fast inner loop (targeted re-tests), one full suite + bisect at the end ──
+
+
+def test_many_small_fixes_land_in_one_cycle(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = tmp_path / "sandbox"
+    root.mkdir()
+    for name in ("one", "two", "three"):
+        (root / f"{name}.py").write_text(f"def {name}_val():\n    return 1\n", encoding="utf-8")
+        (root / f"test_{name}.py").write_text(
+            f"from {name} import {name}_val\n\ndef test_{name}():\n    assert {name}_val() == 2\n",
+            encoding="utf-8",
+        )
+    _enable(root, monkeypatch)
+    report = repair_sandbox(root)
+    assert report["status"] == "repaired", report
+    assert report["after_returncode"] == 0, report
+    for name in ("one", "two", "three"):
+        assert "return 2" in (root / f"{name}.py").read_text(encoding="utf-8")
+    assert len(report["repairs"]) == 3, report
+
+
+def test_full_suite_bisect_keeps_the_innocent_patch(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Two banked fixes pass their own targeted/module tests, but one (core.py) breaks a test in
+    # another file that its fast scope never ran. The end-of-cycle full suite catches it; bisect
+    # reverts only the culprit and keeps the innocent fix (owner 12:20).
+    root = tmp_path / "sandbox"
+    root.mkdir()
+    (root / "indep.py").write_text("def ind():\n    return 1\n", encoding="utf-8")
+    (root / "test_indep.py").write_text(
+        "from indep import ind\n\ndef test_indep():\n    assert ind() == 2\n", encoding="utf-8"
+    )
+    (root / "core.py").write_text("def core_val():\n    return 1\n", encoding="utf-8")
+    (root / "test_core.py").write_text(
+        "from core import core_val\n\ndef test_core():\n    assert core_val() == 2\n", encoding="utf-8"
+    )
+    # Passes now (core_val is 1); regresses if core.py is "fixed" to return 2. Not in core's scope.
+    (root / "test_sibling.py").write_text(
+        "from core import core_val\n\ndef test_sibling():\n    assert core_val() == 1\n", encoding="utf-8"
+    )
+    _enable(root, monkeypatch)
+    report = repair_sandbox(root)
+    assert report["status"] == "repaired", report
+    # The innocent fix is kept...
+    assert "return 2" in (root / "indep.py").read_text(encoding="utf-8")
+    # ...and the culprit is reverted, so the sibling test stays green.
+    assert "return 1" in (root / "core.py").read_text(encoding="utf-8")
+    assert "return 2" not in (root / "core.py").read_text(encoding="utf-8")
+    assert [item["path"] for item in report["repairs"]] == ["indep.py"], report
+    assert report["after_returncode"] != 0  # test_core is red again, but that was red before too

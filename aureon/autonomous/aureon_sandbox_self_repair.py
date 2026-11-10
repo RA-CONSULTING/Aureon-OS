@@ -33,6 +33,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
@@ -46,6 +47,28 @@ from aureon.autonomous.self_repair_guard import (
 
 SCHEMA = "aureon.sandbox-self-repair.v2"
 MAX_REPAIRS = 8
+# Owner's call (12:20 GMT): small fixes, often and fast. Try many candidates per cycle, each
+# checked against only its targeted/module tests (seconds), then ONE full suite confirms no
+# regressions across the banked fixes. These bound the fast inner loop; env can override.
+MAX_CANDIDATES = 24
+
+
+def _inner_budget_s() -> float:
+    try:
+        return float(os.environ.get("AUREON_QUEEN_REPAIR_INNER_BUDGET_S", "180") or 180)
+    except ValueError:
+        return 180.0
+
+
+def _fast_timeout_s() -> float | None:
+    try:
+        value = float(os.environ.get("AUREON_QUEEN_REPAIR_FAST_TIMEOUT_S", "120") or 120)
+    except ValueError:
+        value = 120.0
+    return value if value > 0 else None
+
+
+BISECT_MAX = 6
 
 
 def load_architect():
@@ -421,6 +444,178 @@ def _name_error_edit(root: Path, output: str, hints: list[str] | None = None) ->
     return None
 
 
+def _failing_py_files(root: Path, output: str) -> list[Path]:
+    """Non-test .py files named in the traceback frames, nearest-frame first."""
+
+    root_resolved = root.resolve()
+    seen: list[Path] = []
+    for raw in re.findall(r"(?m)^(?:E\s+)?(.+?\.py):\d+:", output):
+        candidate = Path(raw.strip())
+        if not candidate.is_absolute():
+            candidate = root / candidate
+        try:
+            resolved = candidate.resolve()
+        except OSError:
+            continue
+        if resolved == root_resolved or root_resolved not in resolved.parents:
+            continue
+        if resolved.name.startswith("test_") or resolved in seen:
+            continue
+        seen.append(resolved)
+    return seen
+
+
+def _dotted_module(root: Path, path: Path) -> str:
+    relative = path.resolve().relative_to(root.resolve()).as_posix()
+    if relative.endswith("/__init__.py"):
+        relative = relative[: -len("/__init__.py")]
+    elif relative.endswith(".py"):
+        relative = relative[: -len(".py")]
+    return relative.replace("/", ".")
+
+
+def _repo_definitions(root: Path, name: str, exclude: set[Path]) -> list[str]:
+    """Dotted modules that define a top-level `def`/`class` called `name`.
+
+    Only importable callables and types count, and the pinned public mirror,
+    tests and vendored snapshots are skipped so an edit never cites them.
+    """
+
+    root_resolved = root.resolve()
+    skip_parts = {".git", "__pycache__", "state", "queen_backups", ".venv",
+                  "node_modules", "imports", "mcp"}
+    found: list[str] = []
+    for path in sorted(root_resolved.rglob("*.py")):
+        if any(part in skip_parts for part in path.parts):
+            continue
+        if path.name.startswith("test_") or path.resolve() in exclude:
+            continue
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+        except (OSError, SyntaxError, UnicodeDecodeError):
+            continue
+        for node in tree.body:
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and node.name == name:
+                found.append(_dotted_module(root_resolved, path))
+                break
+    return sorted(set(found))
+
+
+def _already_imports(tree: ast.AST, name: str) -> bool:
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom):
+            for alias in node.names:
+                if (alias.asname or alias.name) == name:
+                    return True
+        elif isinstance(node, ast.Import):
+            for alias in node.names:
+                if (alias.asname or alias.name.split(".")[0]) == name:
+                    return True
+    return False
+
+
+def _missing_import_edit(root: Path, output: str, blocked: set[str] | None = None):
+    """A `NameError` for a name defined, uniquely, in one other repo module.
+
+    When the name has no close spelling match in the failing file (so a rename
+    is wrong) but exactly one non-test module defines a top-level `def`/`class`
+    of that exact name, the fix is a missing import: add `from <module> import
+    <name>`. Returns (relative, old_anchor, new_anchor). Deterministic: a single
+    defining module and a single, unambiguous insertion point, or nothing.
+    """
+
+    match = re.search(r"NameError: name '([A-Za-z_][A-Za-z0-9_]*)' is not defined", output)
+    if not match:
+        return None
+    missing = match.group(1)
+    blocked = blocked or set()
+    for path in _failing_py_files(root, output):
+        try:
+            source = path.read_text(encoding="utf-8")
+            tree = ast.parse(source)
+        except (OSError, SyntaxError):
+            continue
+        if not re.search(rf"\b{re.escape(missing)}\b", source):
+            continue
+        if _already_imports(tree, missing):
+            continue
+        # A close spelling match in-file is a rename job, not a missing import.
+        if any(_distance_one(missing, name) for name in _names_in_file(tree)):
+            continue
+        modules = _repo_definitions(root, missing, exclude={path.resolve()})
+        if len(modules) != 1:
+            continue
+        import_stmt = f"from {modules[0]} import {missing}"
+        lines = source.splitlines()
+        import_rows = [i for i, ln in enumerate(lines)
+                       if re.match(r"^(import |from )\S", ln)]
+        anchor = lines[import_rows[-1]] if import_rows else (lines[0] if lines else "")
+        if not anchor or source.count(anchor + "\n") + source.count(anchor) < 1:
+            continue
+        if lines.count(anchor) != 1:  # the insertion point must be unambiguous
+            continue
+        if import_rows:
+            new_anchor = anchor + "\n" + import_stmt
+        else:
+            new_anchor = import_stmt + "\n" + anchor
+        relative = path.resolve().relative_to(root.resolve()).as_posix()
+        change = f"+{import_stmt}"
+        if f"{relative}::{change}" in blocked:
+            continue
+        return relative, anchor, new_anchor, change
+    return None
+
+
+def _attribute_close_match_edit(root: Path, output: str, blocked: set[str] | None = None):
+    """An `AttributeError: module 'm' has no attribute 'X'` with one close match.
+
+    When module `m` has exactly one top-level name a single edit-distance from
+    `X`, and the access `.X` appears exactly once in the nearest non-test frame,
+    the fix is a renamed attribute: rewrite that one `.X` to `.Y`. Deterministic:
+    a single close match and a single occurrence, or nothing.
+    """
+
+    match = re.search(r"AttributeError: module '([\w.]+)' has no attribute '([A-Za-z_][A-Za-z0-9_]*)'", output)
+    if not match:
+        return None
+    module_name, bad = match.group(1), match.group(2)
+    blocked = blocked or set()
+    module_path = root / (module_name.replace(".", "/") + ".py")
+    if not module_path.is_file():
+        module_path = root / module_name.replace(".", "/") / "__init__.py"
+    if not module_path.is_file():
+        return None
+    try:
+        tree = ast.parse(module_path.read_text(encoding="utf-8"))
+    except (OSError, SyntaxError):
+        return None
+    top: set[str] = set()
+    for node in tree.body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            top.add(node.name)
+        elif isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    top.add(target.id)
+    candidates = [name for name in top if _distance_one(bad, name)]
+    if len(candidates) != 1:
+        return None
+    good = candidates[0]
+    for path in _failing_py_files(root, output):
+        try:
+            source = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        if len(re.findall(rf"\.{re.escape(bad)}\b", source)) != 1:
+            continue
+        relative = path.resolve().relative_to(root.resolve()).as_posix()
+        change = f".{bad} -> .{good}"
+        if f"{relative}::{change}" in blocked:
+            continue
+        return relative, f".{bad}", f".{good}", change
+    return None
+
+
 def _refuse_edit(root: Path, relative: str, old: str, new: str) -> str | None:
     path = root / relative
     try:
@@ -433,23 +628,44 @@ def _refuse_edit(root: Path, relative: str, old: str, new: str) -> str | None:
     return block_reason_for_write(relative, updated, previous, root)
 
 
-def _attempt(root: Path, output: str, architect: Any, hints: list[str] | None = None) -> dict[str, Any] | None:
+def _apply_or_refuse(root: Path, architect: Any, relative: str, old: str, new: str,
+                     kind: str, change: str, extra: dict | None = None) -> dict[str, Any] | None:
+    refused = _refuse_edit(root, relative, old, new)
+    if refused:
+        return {"path": relative, "kind": kind, "change": change, "refused": refused, "human_review": True}
+    if architect.apply_edit(relative, old, new, backup=True):
+        result = {"path": relative, "kind": kind, "change": change}
+        if extra:
+            result.update(extra)
+        return result
+    return None
+
+
+def _attempt(root: Path, output: str, architect: Any, hints: list[str] | None = None,
+             blocked: set[str] | None = None) -> dict[str, Any] | None:
+    blocked = blocked or set()
     name_edit = _name_error_edit(root, output, hints)
     if name_edit:
         relative, missing, replacement = name_edit
-        refused = _refuse_edit(root, relative, missing, replacement)
-        if refused:
-            return {
-                "path": relative,
-                "kind": "name_error",
-                "change": f"{missing} -> {replacement}",
-                "refused": refused,
-                "human_review": True,
-            }
-        applied = architect.apply_edit(relative, missing, replacement, backup=True)
-        if applied:
-            return {"path": relative, "kind": "name_error", "change": f"{missing} -> {replacement}"}
-        return None
+        change = f"{missing} -> {replacement}"
+        if f"{relative}::{change}" not in blocked:
+            result = _apply_or_refuse(root, architect, relative, missing, replacement, "name_error", change)
+            if result is not None:
+                return result
+    # A name defined elsewhere in the repo but not imported here: add the one import.
+    import_edit = _missing_import_edit(root, output, blocked)
+    if import_edit:
+        relative, old, new, change = import_edit
+        result = _apply_or_refuse(root, architect, relative, old, new, "missing_import", change)
+        if result is not None:
+            return result
+    # A renamed module attribute with one close match among the module's own symbols.
+    attr_edit = _attribute_close_match_edit(root, output, blocked)
+    if attr_edit:
+        relative, old, new, change = attr_edit
+        result = _apply_or_refuse(root, architect, relative, old, new, "attribute_rename", change)
+        if result is not None:
+            return result
     failing = _failing_tests(output)
     assertions = _assertions(root, failing or None)
     by_function: dict[str, list[dict[str, Any]]] = {}
@@ -476,6 +692,8 @@ def _attempt(root: Path, output: str, architect: Any, hints: list[str] | None = 
     rank = {path: index for index, path in enumerate(order)}
     candidates.sort(key=lambda item: rank.get(item[0], len(order)))
     for relative, old, new, function_name in candidates:
+        if f"{relative}::{old} -> {new}" in blocked:
+            continue
         refused = _refuse_edit(root, relative, old, new)
         if refused:
             return {
@@ -494,16 +712,26 @@ def _attempt(root: Path, output: str, architect: Any, hints: list[str] | None = 
 
 
 def repair_sandbox(root: Path) -> dict[str, Any]:
-    """Repair a project in place; a suite timeout becomes a held report, never a crash."""
+    """Repair a project in place; a suite timeout becomes a held report, never a crash.
+
+    Disk hygiene runs at the end of every cycle (owner 12:30), even on crash or timeout, so a
+    stale base-temp dir can never be left behind to fill the disk.
+    """
+    root = Path(root).resolve()
     try:
         return _repair_sandbox(root)
     except SuiteTimedOut as exc:
-        root = root.resolve()
         branch = (_git(root, "rev-parse", "--abbrev-ref", "HEAD").stdout or "").strip()
         append_review(root, "repair_held", reason="suite_timed_out", branch=branch, timeout_s=exc.args[0])
         return {"schema": SCHEMA, "root": str(root), "live_trading": False, "may_act": False,
                 "edited_test": False, "status": "held", "reason": "suite_timed_out",
                 "timeout_s": exc.args[0], "branch": branch, "repairs": []}
+    finally:
+        try:
+            from aureon.autonomous import queen_repair_cleaner as cleaner
+            cleaner.clean_cycle(root)
+        except Exception:
+            pass
 
 
 
@@ -560,6 +788,15 @@ def _repair_sandbox(root: Path) -> dict[str, Any]:
     branch = _prepare_branch(root)
     report["branch"] = branch
     architect = load_architect()(repo_path=str(root))
+    # Disk guard (owner 12:30): if free space is low, clean first and skip the suite rather than crash.
+    from aureon.autonomous import queen_repair_cleaner as cleaner
+    space = cleaner.ensure_space(root)
+    report["free_bytes"] = space["free_bytes"]
+    if not space["ok"]:
+        report.update({"status": "held", "reason": "low_disk"})
+        append_review(root, "repair_held", reason="low_disk", branch=branch,
+                      free_bytes=space["free_bytes"])
+        return report
     before = _pytest(root)
     report["before_returncode"] = before.returncode
     if before.returncode == 0:
@@ -600,13 +837,36 @@ def _repair_sandbox(root: Path) -> dict[str, Any]:
                                      repairs=report["repairs"], architect=architect)
         report["gate"] = verdict
         report["regressions"] = []
-        if not verdict["verified"]:
-            # A pass the gate cannot prove does not count: revert, no commit.
-            _git(root, "checkout", "--", *paths)
+        targets_green = bool(red_before - prev_failed)
+        if not (verdict["verified"] and targets_green):
+            # Not fully provable (gate unverified, or only a narrowing with no target yet green).
+            # Drop any authored test, then try to land it as partial progress (owner's call,
+            # 11:54 GMT): at least one previously-failing test now passes or a failure's error
+            # narrowed, with zero regressions, and the benchmark gate still holds (seed benchmarks
+            # pass, nothing weakened). Otherwise revert, no commit.
             if verdict.get("authored_test"):
                 (root / verdict["authored_test"]).unlink(missing_ok=True)
-            report.update({"status": "unverified", "reason": ",".join(verdict["reasons"]), "paths": paths})
-            append_review(root, "repair_unverified", reason=report["reason"], branch=branch,
+                verdict["authored_test"] = None
+            if (cycle_fixed or cycle_narrowed) and verdict["seed_benchmarks"]["ok"] and not verdict["weakened"]:
+                _git(root, "add", *paths)
+                commit = _git(root, "commit", "-m",
+                              "self-repair (partial: progress, no regressions, gate holds): " + ", ".join(paths))
+                head = _git(root, "rev-parse", "--short", "HEAD")
+                report.update({
+                    "status": "repaired_partial", "reason": "partial_progress",
+                    "commit": (head.stdout or "").strip(), "commit_ok": commit.returncode == 0,
+                    "after_returncode": after.returncode, "paths": paths,
+                    "path": paths[0] if len(paths) == 1 else "",
+                    "fixed": sorted(cycle_fixed), "narrowed": cycle_narrowed,
+                })
+                append_review(root, "repair_committed_partial", reason=report["reason"], branch=branch,
+                              path=",".join(paths), commit=report["commit"], fixed=sorted(cycle_fixed),
+                              narrowed=len(cycle_narrowed), seed_benchmarks=verdict["seed_benchmarks"])
+                return report
+            _git(root, "checkout", "--", *paths)
+            reason = ",".join(verdict["reasons"]) or "no_proven_repair"
+            report.update({"status": "unverified", "reason": reason, "paths": paths})
+            append_review(root, "repair_unverified", reason=reason, branch=branch,
                           path=",".join(paths), gate=verdict)
             return report
         if verdict.get("authored_test"):
@@ -648,63 +908,224 @@ def _repair_sandbox(root: Path) -> dict[str, Any]:
         )
         return report
 
-    last = before
-    for _ in range(MAX_REPAIRS):
+    from aureon.autonomous import queen_repair_progress as progress
+    blocked: set[str] = set(progress.reverted_changes(root))
+    cycle_attempts: list[dict[str, Any]] = []
+    cycle_fixed: set[str] = set()
+    cycle_narrowed: list[dict[str, Any]] = []
+
+    def _exc_map(combined: str) -> dict[str, str]:
         try:
-            attempt = _attempt(root, output, architect, hints)
+            from aureon.autonomous import queen_repair_research as research
+            return {r["test_id"]: r.get("exception", "") for r in research.diagnose(root, combined)}
+        except Exception:
+            return {}
+
+    prev_failed: set[str] = set(red_before)
+    prev_exc = _exc_map(output)
+
+    def _log_cycle(committed: bool, reason: str) -> None:
+        progress.record_cycle(root, fixed=sorted(cycle_fixed), narrowed=cycle_narrowed,
+                              attempts=cycle_attempts, committed=committed, reason=reason)
+
+    def _finalize_and_log(after: subprocess.CompletedProcess[str]) -> dict[str, Any]:
+        result = _finalize(after)
+        _log_cycle(result.get("status") in {"repaired", "repaired_partial"}, result.get("reason", ""))
+        return result
+
+    # Diagnosis-derived maps: which failing test points at which source file (for scoping a
+    # fast, targeted re-test per candidate rather than the whole suite).
+    diagnosis_records = report.get("_diagnosis_records", []) or []
+    suspect_map = {r["test_id"]: r.get("suspected_file", "") for r in diagnosis_records}
+    tb_text = {r["test_id"]: " ".join(r.get("traceback_tail", []))[:2000] for r in diagnosis_records}
+    base_exc = {r["test_id"]: r.get("exception", "") for r in diagnosis_records} or dict(prev_exc)
+    work_exc = dict(base_exc)  # phase 1 updates this as fixes land; base_exc stays the baseline
+    refusals: list[dict[str, Any]] = []
+
+    def _targets_for(relative: str) -> list[str]:
+        """Originally-red tests that point at this source file (suspect or in the traceback)."""
+        hits = [t for t in red_before
+                if suspect_map.get(t) == relative or relative in tb_text.get(t, "")]
+        if not hits:  # fall back to a same-named test module, e.g. aureon/x/foo.py -> test_foo.py
+            stem = Path(relative).stem
+            hits = [t for t in red_before if Path(t.split("::")[0]).stem in {f"test_{stem}", stem}]
+        return sorted(set(hits))
+
+    _skip = {".git", "__pycache__", ".venv", "node_modules", "queen_backups", "state"}
+
+    def _module_test_files(relative: str) -> list[str]:
+        stem = Path(relative).stem
+        files: list[str] = []
+        if stem:
+            for path in root.rglob("test_*.py"):
+                if any(part in _skip for part in path.parts):
+                    continue
+                if stem in path.stem:
+                    files.append(path.relative_to(root).as_posix())
+        return sorted(set(files))
+
+    def _fast_scope(relative: str, targets: list[str]) -> list[str]:
+        # Whole test files, not single nodeids, so a sibling test in the same file catches a
+        # regression fast (owner 12:20: targeted test(s) PLUS that file's/module's tests).
+        files = set(_module_test_files(relative)) | {t.split("::")[0] for t in targets}
+        return sorted(files)[:12]
+
+    def _fast_run(scope: list[str]) -> tuple[set[str], dict[str, str]]:
+        try:
+            done = gate._pytest_paths(root, scope, timeout=_fast_timeout_s())
+        except subprocess.TimeoutExpired:
+            return set(), {}
+        out = (done.stdout or "") + "\n" + (done.stderr or "")
+        return gate.failed_nodeids(done.stdout or ""), _exc_map(out)
+
+    def _slice(rec: dict[str, Any]) -> str:
+        body = "\n".join(rec.get("traceback_tail", []))
+        return f"FAILED {rec['test_id']} - {rec.get('error', '')}\n{body}\n"
+
+    # ── Phase 1: one candidate per failing test, each proved against only its targeted/module
+    # tests (seconds). Many candidates per cycle, under a wall-clock budget (owner 12:20). ──
+    remaining = [r for r in diagnosis_records if r.get("test_id") in red_before]
+    if not remaining:
+        remaining = [{"test_id": t, "error": "", "traceback_tail": [], "exception": ""}
+                     for t in sorted(red_before)]
+    deadline = time.monotonic() + _inner_budget_s()
+    candidates = 0
+    for rec in remaining:
+        if candidates >= MAX_CANDIDATES or time.monotonic() > deadline:
+            break
+        try:
+            attempt = _attempt(root, _slice(rec), architect, hints, blocked)
         except SelfRepairBlocked as exc:
             report["reason"] = exc.reason
             append_review(root, "repair_refused", reason=exc.reason, branch=branch)
+            _log_cycle(False, exc.reason)
             return report
         if not attempt:
-            # The rule-based coder is out of proven edits. If it fixed something, prove and commit that.
-            if report["repairs"]:
-                return _finalize(last)
-            model = _try_model_fix(root, report, gate, architect, census_before, red_before, branch)
-            if model is not None:
-                return model
-            report["reason"] = "no_proven_repair"
-            append_review(root, "repair_held", reason=report["reason"], branch=branch)
-            return report
+            continue
+        candidates += 1
         if attempt.get("refused"):
-            report["status"] = "human_review"
-            report["human_review"] = True
-            report["reason"] = attempt["refused"]
-            report["path"] = attempt.get("path", "")
-            append_review(
-                root,
-                "human_review_required",
-                reason=report["reason"],
-                branch=branch,
-                path=attempt.get("path", ""),
-                human_review=True,
-            )
-            return report
-        after = _pytest(root)
-        last = after
-        output = (after.stdout or "") + "\n" + (after.stderr or "")
-        # No-regression rule (owner's call, 10:43 GMT): a fix must not turn a green test red. Regressions
-        # are measured against the baseline red set; a test newly failing was not failing before.
-        failed_after = gate.failed_nodeids(after.stdout or "")
-        regressions = sorted(failed_after - red_before)
-        if attempt.get("path") and regressions:
-            architect.restore_backup(attempt["path"])
-            report.update({"status": "held", "reason": "regression", "regressions": regressions,
-                           "path": attempt["path"]})
+            # A refused edit (a live-flag/gate/credential guard) is flagged for human review; its
+            # change is never applied. Keep trying other failures and surface it if nothing lands.
+            refusals.append(attempt)
+            cycle_attempts.append({"path": attempt.get("path"), "kind": attempt.get("kind"),
+                                   "change": attempt.get("change"), "result": "refused",
+                                   "refused": attempt["refused"]})
+            append_review(root, "human_review_required", reason=attempt["refused"], branch=branch,
+                          path=attempt.get("path", ""), human_review=True)
+            continue
+        relative = attempt.get("path", "")
+        blocked.add(f"{relative}::{attempt.get('change', '')}")  # never re-pick the same edit
+        targets = sorted(set(_targets_for(relative)) | {rec["test_id"]})
+        fast_failed, fast_exc = _fast_run(_fast_scope(relative, targets))
+        # No-regression rule, fast scope (owner 10:43): a scoped test that was green must not go red.
+        fast_regressions = sorted(fast_failed - red_before)
+        if fast_regressions:
+            architect.restore_backup(relative)
+            cycle_attempts.append({"path": relative, "kind": attempt.get("kind"),
+                                   "change": attempt.get("change"), "result": "reverted_regression",
+                                   "regressions": fast_regressions})
             append_review(root, "repair_reverted", reason="regression", branch=branch,
-                          path=attempt["path"], regressions=regressions)
-            return report
+                          path=relative, regressions=fast_regressions)
+            continue
+        this_fixed = sorted(t for t in targets if t not in fast_failed)
+        this_narrowed = [{"test": t, "from": work_exc.get(t, ""), "to": fast_exc.get(t, "")}
+                         for t in targets if t in fast_failed
+                         and progress.is_narrower(work_exc.get(t, ""), fast_exc.get(t, ""))]
+        if not (this_fixed or this_narrowed):
+            architect.restore_backup(relative)
+            cycle_attempts.append({"path": relative, "kind": attempt.get("kind"),
+                                   "change": attempt.get("change"), "result": "reverted_inert"})
+            continue
+        # Bank the fix. Its backup stays, so later edits layer on top; the final suite confirms it.
         report["repairs"].append(attempt)
-        before = after
-        # Keep fixing while any originally-red test is still red; verify once the targets are all green.
-        if not (red_before & failed_after):
-            return _finalize(after)
-    if report["repairs"]:
-        return _finalize(last)
-    report["reason"] = "repair_limit_reached"
-    append_review(root, "repair_held", reason=report["reason"], branch=branch)
-    return report
+        cycle_attempts.append({"path": relative, "kind": attempt.get("kind"),
+                               "change": attempt.get("change"), "result": "kept",
+                               "fixed": this_fixed, "narrowed": [n["test"] for n in this_narrowed]})
+        cleaner.clean_cycle(root)  # housekeep right after a fix is banked (owner 12:30)
+        for t in this_fixed:
+            work_exc[t] = ""
+        for n in this_narrowed:
+            work_exc[n["test"]] = n["to"]
 
+    # Repair-priority order (a path that keeps failing goes last); also the order bisect drops in.
+    order = _rank_repair_paths([item["path"] for item in report["repairs"] if item.get("path")])
+    _rank = {path: index for index, path in enumerate(order)}
+    report["repairs"].sort(key=lambda item: _rank.get(item.get("path", ""), len(order)))
+
+    if not report["repairs"] and refusals:
+        # Nothing landed and at least one edit was a safety-refused change: surface for human review.
+        report.update({"status": "human_review", "human_review": True,
+                       "reason": refusals[0]["refused"], "path": refusals[0].get("path", "")})
+        _log_cycle(False, report["reason"])
+        return report
+
+    if not report["repairs"]:
+        model = _try_model_fix(root, report, gate, architect, census_before, red_before, branch)
+        if model is not None:
+            _log_cycle(model.get("status") == "repaired", model.get("reason", ""))
+            return model
+        report["reason"] = "no_proven_repair"
+        append_review(root, "repair_held", reason=report["reason"], branch=branch)
+        _log_cycle(False, report["reason"])
+        return report
+
+    # ── Phase 2: ONE full suite confirms no regression across all banked fixes. If one appears,
+    # bisect by reverting the most-recently banked patch and retry, keeping the rest (owner 12:20). ──
+    full = _pytest(root)
+    full_failed = gate.failed_nodeids(full.stdout or "")
+    if sorted(full_failed - red_before) and report["repairs"]:
+        # A regression spans the banked set. Isolate the offending patch by reverting one at a
+        # time (newest first), keeping every patch that is not the culprit (owner 12:20). Snapshot
+        # each banked file so an innocent revert is put straight back.
+        banked_content: dict[str, bytes | None] = {}
+        for item in report["repairs"]:
+            try:
+                banked_content[item["path"]] = (root / item["path"]).read_bytes()
+            except OSError:
+                banked_content[item["path"]] = None
+        culprit = None
+        for index in range(len(report["repairs"]) - 1, -1, -1):
+            if len(report["repairs"]) - 1 - index >= BISECT_MAX:
+                break
+            path = report["repairs"][index]["path"]
+            architect.restore_backup(path)
+            trial = _pytest(root)
+            trial_failed = gate.failed_nodeids(trial.stdout or "")
+            if not sorted(trial_failed - red_before):
+                culprit, full, full_failed = index, trial, trial_failed
+                break
+            # Not the (sole) culprit: put its fix back and try the next patch.
+            if banked_content.get(path) is not None:
+                (root / path).write_bytes(banked_content[path])
+        if culprit is not None:
+            dropped = report["repairs"].pop(culprit)
+            blocked.add(f"{dropped['path']}::{dropped.get('change', '')}")
+            cycle_attempts.append({"path": dropped.get("path"), "kind": dropped.get("kind"),
+                                   "change": dropped.get("change"), "result": "reverted_bisect"})
+            append_review(root, "repair_reverted", reason="full_suite_regression", branch=branch,
+                          path=dropped.get("path"))
+
+    full_output = (full.stdout or "") + "\n" + (full.stderr or "")
+    if sorted(full_failed - red_before) or not report["repairs"]:
+        # Could not isolate a clean set: revert everything that is left, commit nothing.
+        for item in report["repairs"]:
+            architect.restore_backup(item["path"])
+        _git(root, "checkout", "--", ".")
+        report["repairs"] = []
+        report.update({"status": "unverified", "reason": "full_suite_regression"})
+        append_review(root, "repair_unverified", reason=report["reason"], branch=branch)
+        _log_cycle(False, report["reason"])
+        return report
+
+    # Clean full suite (zero regressions). Recompute the banked outcome from the authoritative run.
+    final_exc = _exc_map(full_output)
+    prev_failed = set(full_failed)
+    cycle_fixed = set(sorted(red_before - full_failed))
+    cycle_narrowed = [{"test": t, "from": base_exc.get(t, ""), "to": final_exc.get(t, "")}
+                      for t in sorted(red_before & full_failed)
+                      if progress.is_narrower(base_exc.get(t, ""), final_exc.get(t, ""))]
+    report["full_suite_regressions"] = []
+    return _finalize_and_log(full)
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Repair a Python project from its own tests.")

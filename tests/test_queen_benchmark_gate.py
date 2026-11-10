@@ -66,13 +66,17 @@ def test_seed_benchmark_failure_makes_fix_unverified_and_reverts(tmp_path, monke
     assert "repair_unverified" in review_log_path(root).read_text(encoding="utf-8")
 
 
-def test_authored_test_that_was_not_red_first_is_rejected(tmp_path, monkeypatch):
+def test_authored_test_that_was_not_red_first_is_not_a_full_proof(tmp_path, monkeypatch):
+    # The authored regression test did not go red-before/green-after, so the fix cannot earn the
+    # full "proven" stamp. But it still turned an originally-red test green with no regression and
+    # a holding gate, so it lands as partial progress (owner's call, 11:54) -- the bogus authored
+    # test is dropped, only the real source fix is committed.
     root = _sandbox(tmp_path, monkeypatch)
     monkeypatch.setattr(gate, "red_then_green", lambda *a, **k: {"red_before": False, "green_after": True})
     report = repair_sandbox(root)
-    assert report["status"] == "unverified"
-    assert "authored_test_not_red_then_green" in report["reason"]
-    assert _commits(root) == 1
+    assert report["status"] == "repaired_partial", report
+    assert report["reason"] == "partial_progress"
+    assert _commits(root) == 2  # initial sandbox commit + the partial fix
 
 
 def test_weakened_test_blocks_the_fix(tmp_path, monkeypatch):

@@ -134,3 +134,27 @@ def test_hint_from_error_text_feeds_the_name_repair(tmp_path):
     assert hints == ["b"]
     assert _name_error_edit(root, output) is None  # 'bxyz' is not one edit from 'b'
     assert _name_error_edit(root, output, hints) == ("calc.py", "bxyz", "b")
+
+
+def test_diagnose_captures_variable_width_headers_and_deep_exception(tmp_path):
+    # pytest pads long/parametrised failure headers with a single underscore each side.
+    # The capture must still find the section and surface the deepest real exception line,
+    # not leave the record with empty error text (owner's call, 11:53).
+    from aureon.autonomous import queen_repair_research as R
+    output = (
+        "=================================== FAILURES ===================================\n"
+        "_ test_worker_refuses[core/x.py:bind:governance] _\n"
+        "tests/test_stage.py:179: in test_worker_refuses\n"
+        "    assert completed.returncode == 0\n"
+        "E   AssertionError: subprocess failed\n"
+        "E     ImportError: checkout aureon/core/hnc_field.py differs from pin bb0450311968\n"
+        "E   assert 1 == 0\n"
+        "=========================== short test summary info ============================\n"
+        "FAILED tests/test_stage.py::test_worker_refuses[core/x.py:bind:governance]\n"
+    )
+    records = R.diagnose(tmp_path, output)
+    assert len(records) == 1
+    rec = records[0]
+    assert rec["error"], "error text must not be empty"
+    assert "differs from pin" in rec["error"]
+    assert rec["exception"] == "ImportError"
