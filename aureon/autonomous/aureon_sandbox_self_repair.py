@@ -499,6 +499,38 @@ def repair_sandbox(root: Path) -> dict[str, Any]:
                 "timeout_s": exc.args[0], "branch": branch, "repairs": []}
 
 
+
+def _try_model_fix(root: Path, report: dict[str, Any], gate: Any, architect: Any,
+                   census_before: dict[str, dict[str, int]], red_before: set[str],
+                   branch: str) -> dict[str, Any] | None:
+    """Opt-in (AUREON_QUEEN_REPAIR_CODER=1): let Aureon's own coding organ author a diff for a
+    failing test and prove it through the same gate and no-regression rule. None => not taken."""
+    try:
+        from aureon.autonomous import queen_repair_coder as coder
+    except Exception:
+        return None
+    if not coder.coder_enabled():
+        return None
+    records = report.get("_diagnosis_records") or []
+    if not records:
+        return None
+    findings = report.get("_findings_by_test") or {}
+    try:
+        delta = coder.attempt_model_fixes(
+            root, records, gate=gate, architect=architect, pytest_fn=_pytest,
+            census_before=census_before, red_before=red_before, branch=branch,
+            findings_by_test=findings,
+        )
+    except Exception as exc:
+        report["model_fix_error"] = f"{type(exc).__name__}: {exc}"[:300]
+        return None
+    if delta.get("status") == "repaired":
+        report.update(delta)
+        return report
+    report["coder_backend"] = delta.get("coder_backend")
+    return None
+
+
 def _repair_sandbox(root: Path) -> dict[str, Any]:
     """Repair a project in place. Edits implementations only, then retests."""
 
@@ -541,11 +573,75 @@ def _repair_sandbox(root: Path) -> dict[str, Any]:
         findings = research.research(root, diagnosis)
         research.write_diagnosis(root, diagnosis, findings)
         hints = [name for record in diagnosis for name in research.hinted_names(record, findings)]
+        findings_by_test = {f["test_id"]: " ".join(s.get("summary", "") for s in f.get("sources", []))[:600]
+                            for f in findings}
         report.update({"failures": len(diagnosis), "diagnosis": research.compact(diagnosis),
                        "research": [{"test": f["test_id"], "sources": len(f["sources"])} for f in findings],
-                       "hints": hints[:10]})
+                       "hints": hints[:10], "_diagnosis_records": diagnosis,
+                       "_findings_by_test": findings_by_test})
     except Exception as exc:  # diagnosis must never stop the repair
         report["diagnosis_error"] = f"{type(exc).__name__}: {exc}"[:300]
+    def _finalize(after: subprocess.CompletedProcess[str]) -> dict[str, Any]:
+        """Verify the accumulated repairs through the gate and commit, or revert as unverified.
+
+        Proven = the benchmark gate verifies (seed benchmarks pass, the authored test is red
+        before and green after, nothing weakened) AND no previously-passing test regressed.
+        The whole suite need not pass; unrelated pre-existing failures are left alone.
+        """
+        paths = sorted({item["path"] for item in report["repairs"] if item.get("path")})
+        verdict = gate.verify_repair(root, census_before=census_before, red_before=red_before,
+                                     repairs=report["repairs"], architect=architect)
+        report["gate"] = verdict
+        report["regressions"] = []
+        if not verdict["verified"]:
+            # A pass the gate cannot prove does not count: revert, no commit.
+            _git(root, "checkout", "--", *paths)
+            if verdict.get("authored_test"):
+                (root / verdict["authored_test"]).unlink(missing_ok=True)
+            report.update({"status": "unverified", "reason": ",".join(verdict["reasons"]), "paths": paths})
+            append_review(root, "repair_unverified", reason=report["reason"], branch=branch,
+                          path=",".join(paths), gate=verdict)
+            return report
+        if verdict.get("authored_test"):
+            report["authored_test"] = verdict["authored_test"]
+        _git(root, "add", *paths, *([verdict["authored_test"]] if verdict.get("authored_test") else []))
+        commit = _git(root, "commit", "-m", "self-repair (gate-verified, no regressions): " + ", ".join(paths))
+        head = _git(root, "rev-parse", "--short", "HEAD")
+        report.update(
+            {
+                "status": "repaired",
+                "reason": "retested_on_branch",
+                "commit": (head.stdout or "").strip(),
+                "commit_ok": commit.returncode == 0,
+                "after_returncode": after.returncode,
+                "path": paths[0] if len(paths) == 1 else "",
+                "paths": paths,
+            }
+        )
+        if len(paths) == 1 and report["repairs"]:
+            change = report["repairs"][0].get("change", "")
+            parts = change.split(" -> ")
+            if len(parts) == 2 and parts[0].startswith("return ") and parts[1].startswith("return "):
+                try:
+                    report["previous_return"] = ast.literal_eval(parts[0][len("return ") :])
+                    report["repaired_return"] = ast.literal_eval(parts[1][len("return ") :])
+                except (SyntaxError, ValueError):
+                    pass
+        append_review(
+            root,
+            "repair_committed",
+            reason=report["reason"],
+            branch=branch,
+            path=",".join(paths),
+            commit=report["commit"],
+            tests_passed=True,
+            verified=True,
+            authored_test=report.get("authored_test"),
+            seed_benchmarks=verdict["seed_benchmarks"],
+        )
+        return report
+
+    last = before
     for _ in range(MAX_REPAIRS):
         try:
             attempt = _attempt(root, output, architect, hints)
@@ -554,6 +650,12 @@ def _repair_sandbox(root: Path) -> dict[str, Any]:
             append_review(root, "repair_refused", reason=exc.reason, branch=branch)
             return report
         if not attempt:
+            # The rule-based coder is out of proven edits. If it fixed something, prove and commit that.
+            if report["repairs"]:
+                return _finalize(last)
+            model = _try_model_fix(root, report, gate, architect, census_before, red_before, branch)
+            if model is not None:
+                return model
             report["reason"] = "no_proven_repair"
             append_review(root, "repair_held", reason=report["reason"], branch=branch)
             return report
@@ -572,71 +674,26 @@ def _repair_sandbox(root: Path) -> dict[str, Any]:
             )
             return report
         after = _pytest(root)
+        last = after
         output = (after.stdout or "") + "\n" + (after.stderr or "")
-        if after.returncode != 0 and attempt.get("path"):
-            # Keep the edit only when the suite got closer: fewer failures, or this file's NameError/assert is gone.
-            # A still-failing suite is fine if another independent bug remains. Revert only when the failure count rises.
-            before_failed = before.stdout.count("FAILED")
-            after_failed = after.stdout.count("FAILED")
-            if after_failed > before_failed:
-                architect.restore_backup(attempt["path"])
-                report["reason"] = "retest_failed_change_reverted"
-                append_review(root, "repair_reverted", reason=report["reason"], branch=branch, path=attempt["path"])
-                return report
+        # No-regression rule (owner's call, 10:43 GMT): a fix must not turn a green test red. Regressions
+        # are measured against the baseline red set; a test newly failing was not failing before.
+        failed_after = gate.failed_nodeids(after.stdout or "")
+        regressions = sorted(failed_after - red_before)
+        if attempt.get("path") and regressions:
+            architect.restore_backup(attempt["path"])
+            report.update({"status": "held", "reason": "regression", "regressions": regressions,
+                           "path": attempt["path"]})
+            append_review(root, "repair_reverted", reason="regression", branch=branch,
+                          path=attempt["path"], regressions=regressions)
+            return report
         report["repairs"].append(attempt)
         before = after
-        if after.returncode == 0:
-            paths = sorted({item["path"] for item in report["repairs"] if item.get("path")})
-            verdict = gate.verify_repair(root, census_before=census_before, red_before=red_before,
-                                         repairs=report["repairs"], architect=architect)
-            report["gate"] = verdict
-            if not verdict["verified"]:
-                # A pass the gate cannot prove does not count: revert, no commit.
-                _git(root, "checkout", "--", *paths)
-                if verdict.get("authored_test"):
-                    (root / verdict["authored_test"]).unlink(missing_ok=True)
-                report.update({"status": "unverified", "reason": ",".join(verdict["reasons"]), "paths": paths})
-                append_review(root, "repair_unverified", reason=report["reason"], branch=branch,
-                              path=",".join(paths), gate=verdict)
-                return report
-            if verdict.get("authored_test"):
-                report["authored_test"] = verdict["authored_test"]
-            _git(root, "add", *paths, *([verdict["authored_test"]] if verdict.get("authored_test") else []))
-            commit = _git(root, "commit", "-m", "self-repair: tests pass after " + ", ".join(paths))
-            head = _git(root, "rev-parse", "--short", "HEAD")
-            report.update(
-                {
-                    "status": "repaired",
-                    "reason": "retested_on_branch",
-                    "commit": (head.stdout or "").strip(),
-                    "commit_ok": commit.returncode == 0,
-                    "after_returncode": 0,
-                    "path": paths[0] if len(paths) == 1 else "",
-                    "paths": paths,
-                }
-            )
-            if len(paths) == 1 and report["repairs"]:
-                change = report["repairs"][0].get("change", "")
-                parts = change.split(" -> ")
-                if len(parts) == 2 and parts[0].startswith("return ") and parts[1].startswith("return "):
-                    try:
-                        report["previous_return"] = ast.literal_eval(parts[0][len("return ") :])
-                        report["repaired_return"] = ast.literal_eval(parts[1][len("return ") :])
-                    except (SyntaxError, ValueError):
-                        pass
-            append_review(
-                root,
-                "repair_committed",
-                reason=report["reason"],
-                branch=branch,
-                path=",".join(paths),
-                commit=report["commit"],
-                tests_passed=True,
-                verified=True,
-                authored_test=report.get("authored_test"),
-                seed_benchmarks=verdict["seed_benchmarks"],
-            )
-            return report
+        # Keep fixing while any originally-red test is still red; verify once the targets are all green.
+        if not (red_before & failed_after):
+            return _finalize(after)
+    if report["repairs"]:
+        return _finalize(last)
     report["reason"] = "repair_limit_reached"
     append_review(root, "repair_held", reason=report["reason"], branch=branch)
     return report
@@ -651,7 +708,8 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"ok": False, "reason": "root_not_found", "root": str(root)}))
         return 2
     report = repair_sandbox(root)
-    print(json.dumps(report, indent=2, sort_keys=True, default=str))
+    printable = {k: v for k, v in report.items() if not k.startswith("_")}
+    print(json.dumps(printable, indent=2, sort_keys=True, default=str))
     return 0 if report["status"] in {"repaired", "already_passing"} else 2
 
 

@@ -231,7 +231,7 @@ def link_system(module_name: str) -> None:
 
 
 _RELAY_LINKED: set = set()
-_RELAY_KINDS = {"linked", "trying", "seeing", "not_doing", "building"}
+_RELAY_KINDS = {"linked", "trying", "seeing", "not_doing", "building", "attempt"}
 
 
 def relay_state(module_name: str, kind: str, payload: Optional[dict] = None) -> None:

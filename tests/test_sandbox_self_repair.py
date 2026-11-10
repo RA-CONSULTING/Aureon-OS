@@ -306,3 +306,51 @@ def test_repairs_denominator_parity_and_literal_in_one_sandbox(tmp_path: Path, m
     assert "return n // 2" not in text
     assert "return n % 2 == 1" not in text
     assert "assert third(9) == 3" in (root / "test_bands.py").read_text(encoding="utf-8")
+
+
+# ── no-regression proof rule (owner's call, 10:43 GMT) ───────────────────────
+
+def test_fix_commits_despite_unrelated_pre_existing_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = tmp_path / "sandbox"
+    root.mkdir()
+    (root / "bands.py").write_text("def band_count():\n    return 7\n", encoding="utf-8")
+    # One fixable failure (wrong literal return) and one unrelated failure the rule-based coder cannot touch.
+    (root / "test_bands.py").write_text(
+        "from bands import band_count\n\n"
+        "def test_bands():\n    assert band_count() == 8\n\n"
+        "def test_unrelated_known_gap():\n    assert False\n",
+        encoding="utf-8",
+    )
+    _enable(root, monkeypatch)
+    report = repair_sandbox(root)
+    assert report["status"] == "repaired", report
+    assert report["gate"]["verified"] is True
+    assert report["regressions"] == []
+    assert "return 8" in (root / "bands.py").read_text(encoding="utf-8")
+    # The unrelated failure is still red; the whole suite did not have to pass.
+    assert report["after_returncode"] != 0
+
+
+def test_fix_that_turns_a_passing_test_red_is_held_as_regression(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = tmp_path / "sandbox"
+    root.mkdir()
+    (root / "arith.py").write_text("def add(a, b):\n    return a - b\n", encoding="utf-8")
+    (root / "test_arith.py").write_text(
+        "from arith import add\n\n"
+        "def test_add_sum():\n    assert add(2, 3) == 5\n\n"
+        "def test_keep_green():\n    assert add(5, 1) == 4\n",
+        encoding="utf-8",
+    )
+    _enable(root, monkeypatch)
+    report = repair_sandbox(root)
+    assert report["status"] == "held"
+    assert report["reason"] == "regression"
+    assert any("test_keep_green" in nodeid for nodeid in report["regressions"]), report
+    # The edit was reverted, so the previously-green test stays green.
+    assert "return a - b" in (root / "arith.py").read_text(encoding="utf-8")
+    log = review_log_path(root).read_text(encoding="utf-8")
+    assert "\"regression\"" in log or "'regression'" in log
