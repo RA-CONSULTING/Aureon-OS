@@ -254,7 +254,12 @@ def relay_state(module_name: str, kind: str, payload: Optional[dict] = None) -> 
             payload={"module": str(module_name), "kind": kind, "pid": os.getpid(),
                      "ts": time.time(), **(payload or {})},
         ))
-    except Exception:
+    except Exception as exc:  # never raise, but never hide either
+        try:
+            print(f"[baton relay] {module_name} {kind} not published: {type(exc).__name__}: {exc}"[:400],
+                  file=sys.stderr, flush=True)
+        except Exception:
+            pass
         return
 
 
