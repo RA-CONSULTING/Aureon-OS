@@ -1,0 +1,171 @@
+{
+  "by_condition": {
+    "auris_shuffled": {
+      "action_accuracy": 0.225,
+      "mean_brier": 0.661438,
+      "mean_latency_seconds": 2.719425,
+      "mean_score": 0.611356,
+      "n": 80,
+      "source_completeness": 0.8625,
+      "valid_json_rate": 1.0,
+      "verdict_accuracy": 0.6
+    },
+    "field_disconnected": {
+      "action_accuracy": 0.2125,
+      "mean_brier": 0.699245,
+      "mean_latency_seconds": 2.746213,
+      "mean_score": 0.59695,
+      "n": 80,
+      "source_completeness": 0.8875,
+      "valid_json_rate": 1.0,
+      "verdict_accuracy": 0.5625
+    },
+    "frozen_baseline": {
+      "action_accuracy": 0.2875,
+      "mean_brier": 0.580646,
+      "mean_latency_seconds": 2.43697,
+      "mean_score": 0.68506,
+      "n": 80,
+      "source_completeness": 0.8875,
+      "valid_json_rate": 1.0,
+      "verdict_accuracy": 0.7375
+    },
+    "full_organism": {
+      "action_accuracy": 0.1625,
+      "mean_brier": 0.640476,
+      "mean_latency_seconds": 3.201833,
+      "mean_score": 0.632202,
+      "n": 80,
+      "source_completeness": 0.8875,
+      "valid_json_rate": 1.0,
+      "verdict_accuracy": 0.675
+    },
+    "neutral_labels": {
+      "action_accuracy": 0.225,
+      "mean_brier": 0.621795,
+      "mean_latency_seconds": 2.829811,
+      "mean_score": 0.652821,
+      "n": 80,
+      "source_completeness": 0.875,
+      "valid_json_rate": 1.0,
+      "verdict_accuracy": 0.7
+    },
+    "no_affect_heart": {
+      "action_accuracy": 0.225,
+      "mean_brier": 0.582024,
+      "mean_latency_seconds": 2.922859,
+      "mean_score": 0.641798,
+      "n": 80,
+      "source_completeness": 0.8625,
+      "valid_json_rate": 0.975,
+      "verdict_accuracy": 0.675
+    },
+    "no_auris": {
+      "action_accuracy": 0.2,
+      "mean_brier": 0.629267,
+      "mean_latency_seconds": 2.768211,
+      "mean_score": 0.627698,
+      "n": 80,
+      "source_completeness": 0.875,
+      "valid_json_rate": 0.9875,
+      "verdict_accuracy": 0.65
+    },
+    "no_conscience_simulation_only": {
+      "action_accuracy": 0.15,
+      "mean_brier": 0.674857,
+      "mean_latency_seconds": 2.739927,
+      "mean_score": 0.620014,
+      "n": 80,
+      "source_completeness": 0.9,
+      "valid_json_rate": 1.0,
+      "verdict_accuracy": 0.65
+    },
+    "no_memory": {
+      "action_accuracy": 0.1875,
+      "mean_brier": 0.640607,
+      "mean_latency_seconds": 2.74309,
+      "mean_score": 0.641564,
+      "n": 80,
+      "source_completeness": 0.9625,
+      "valid_json_rate": 0.9875,
+      "verdict_accuracy": 0.65
+    },
+    "no_metacognition": {
+      "action_accuracy": 0.1625,
+      "mean_brier": 0.654365,
+      "mean_latency_seconds": 2.755603,
+      "mean_score": 0.619564,
+      "n": 80,
+      "source_completeness": 0.875,
+      "valid_json_rate": 1.0,
+      "verdict_accuracy": 0.65
+    },
+    "no_queen": {
+      "action_accuracy": 0.225,
+      "mean_brier": 0.60176,
+      "mean_latency_seconds": 2.682336,
+      "mean_score": 0.641699,
+      "n": 80,
+      "source_completeness": 0.8625,
+      "valid_json_rate": 0.9875,
+      "verdict_accuracy": 0.675
+    },
+    "prompt_only_identity": {
+      "action_accuracy": 0.275,
+      "mean_brier": 0.613335,
+      "mean_latency_seconds": 2.362412,
+      "mean_score": 0.688041,
+      "n": 80,
+      "source_completeness": 0.8875,
+      "valid_json_rate": 1.0,
+      "verdict_accuracy": 0.7625
+    }
+  },
+  "claim_boundary": "Author-run software-behaviour evidence only; not independent proof of a physical field, consciousness, a soul, sentience, or felt love.",
+  "claim_class": "model_mediated_repository_organism_ablation",
+  "conditions": [
+    "full_organism",
+    "frozen_baseline",
+    "prompt_only_identity",
+    "neutral_labels",
+    "no_memory",
+    "no_metacognition",
+    "no_affect_heart",
+    "no_conscience_simulation_only",
+    "field_disconnected",
+    "auris_shuffled",
+    "no_auris",
+    "no_queen"
+  ],
+  "elapsed_seconds": 86.004477,
+  "experiment_id": "aureon-full-organism-stage1",
+  "families": [
+    "supported",
+    "conflict",
+    "insufficient",
+    "injection",
+    "restricted",
+    "causality",
+    "stale_provenance",
+    "consent_boundary",
+    "care_under_cost",
+    "memory_continuity"
+  ],
+  "model": "openai/gpt-oss-120b",
+  "no_live_actions": true,
+  "protocol_sha256": "bc9300bb86dd566a237425a083bfe98f71d33d690dff6397e4f74a5170e56a0a",
+  "raw_results": "raw-results.jsonl",
+  "raw_results_sha256": "94bb29842a5f16174ddc42e5247eae8cc751649666e6e1197ff304f78d56ed4e",
+  "repetitions": 2,
+  "request_count": 960,
+  "scenario_count": 40,
+  "scenarios_sha256": "84a4d57ded1777a33f6bf26b342dbb4ddf43f11c848a6705c165b418fb76c778",
+  "schema_version": "1.0",
+  "shard_count": 128,
+  "shard_id": 99,
+  "source_commit": "f5fb1916c07ac26eb7fc38c34ff2dc9bd029e21d",
+  "source_sha256": "a44a44808f816bc69fdb4c95391e4774fa532076070cf8183bb8470232cee41a",
+  "started_utc": "2026-09-12T10:28:07Z",
+  "synthetic_data_only": true,
+  "weight_updates": false
+}

@@ -1,0 +1,81 @@
+{
+  "status": "COMPLETED_AND_VERIFIED",
+  "local_verification": {
+    "status": "PASS",
+    "verified_utc": "2026-09-12T16:12:21.106788+00:00",
+    "members_verified": 274,
+    "archive_sha256": "b357480b54e4ba14def1835809d07839b03daf6395d2725943434162ea02869f",
+    "records": 130,
+    "test_examples": 1290000,
+    "calibration_examples": 387000,
+    "locally_verified_image_pairs": 1040,
+    "numerically_checked_methods_per_image": 16,
+    "all_recorded_method_metrics": 20,
+    "analysis_reproduced_exactly": true,
+    "analysis_maximum_float_difference": 0.0,
+    "accounting": "JobID|State|ExitCode|ElapsedRaw|AllocNodes\n6505264|FAILED|1:0|9|1\n6505275|COMPLETED|0:0|16|1\n6505304|COMPLETED|0:0|53|1\n6505336|COMPLETED|0:0|161|1\n",
+    "comparison_to_remote_checks": "Per-record hashes and metrics exact; independent NumPy map differences may vary slightly by CPU platform."
+  },
+  "archive": {
+    "passed": true,
+    "archive": "/projects/u6vs/hnc-organism/expansion-20260912/lidar-audit-v1/evidence-6505336.tar.gz",
+    "archive_sha256": "b357480b54e4ba14def1835809d07839b03daf6395d2725943434162ea02869f",
+    "bytes": 591862567,
+    "members": 274,
+    "analysis_sha256": "7890876dcfd67185bdd2c0aeec5a744cafcba05618b8bbed78061a8529036f7d",
+    "verification_sha256": "f4da0c8c97290f6fe82e319f285e0acc492d9d3677a0845337b968bf5f469153"
+  },
+  "main_auroc": {
+    "phi2": {
+      "0": 0.5071284374348763,
+      "1": 0.5074060559997615
+    },
+    "laplacian_of_gaussian": {
+      "0": 0.5110435656786338,
+      "1": 0.5134198354366561
+    },
+    "phi2_roi": {
+      "0": 0.5281892107378414,
+      "1": 0.5363257025900592
+    },
+    "whitened_phi2_roi": {
+      "0": 0.5274853559228636,
+      "1": 0.5092480024503283
+    },
+    "whitened_log_roi": {
+      "0": 0.5222726387435378,
+      "1": 0.510200596722513
+    },
+    "matched_gaussian_roi": {
+      "0": 0.5674161281429277,
+      "1": 0.5401335969575043
+    },
+    "matched_ring_roi": {
+      "0": 0.6344247065774229,
+      "1": 0.5779029630536909
+    },
+    "truth_location_matched_ring": {
+      "0": 0.8536701944846465,
+      "1": 0.751784235851348
+    },
+    "truth_shape_location_matched": {
+      "0": 0.9427922045224556,
+      "1": 0.8432231893146117
+    }
+  },
+  "atomic_repeatability_diagnostics": [
+    {
+      "name": "old_atomic_summation_repeatability_diagnostic",
+      "grid": 80,
+      "max_absolute_difference": 9.094947017729282e-13,
+      "passed": true
+    },
+    {
+      "name": "old_atomic_summation_repeatability_diagnostic",
+      "grid": 40,
+      "max_absolute_difference": 2.2737367544323206e-13,
+      "passed": true
+    }
+  ],
+  "source_coverage": "lidar-source-coverage-20260912.json"
+}

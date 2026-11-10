@@ -1,0 +1,335 @@
+{
+  "status": "PASS",
+  "job": {
+    "JobID": "6503906",
+    "State": "COMPLETED",
+    "ExitCode": "0:0",
+    "ElapsedRaw": "19",
+    "AllocNodes": "1",
+    "AllocTRES": "billing=72,cpu=72,gres/gpu=4,mem=460000M,node=1"
+  },
+  "archive_sha256": "6d8bd196c9d1f95216f2f440b19e779f962c017fb1cd74385137f52dc1a9ae9a",
+  "archive_members": 24,
+  "source_and_result_hashes_verified": true,
+  "distinct_gpus": 4,
+  "profiles": [
+    {
+      "rank": 0,
+      "task": {
+        "gain": 0.5,
+        "tau": 10,
+        "delta": 1
+      },
+      "gpu": "a60ffa12-4165-a7d6-db6d-07535be98e0b",
+      "performance": [
+        {
+          "multiple": 1,
+          "median_seconds": 0.3965944049996324,
+          "trajectory_steps_per_second": 127154915.36005594,
+          "relative_throughput": 1.0,
+          "duplicate_parity": true
+        },
+        {
+          "multiple": 2,
+          "median_seconds": 0.40015858301194385,
+          "trajectory_steps_per_second": 252044714.9748869,
+          "relative_throughput": 1.9821861723645444,
+          "duplicate_parity": true
+        },
+        {
+          "multiple": 4,
+          "median_seconds": 0.3980167609988712,
+          "trajectory_steps_per_second": 506802053.9983543,
+          "relative_throughput": 3.985705566814129,
+          "duplicate_parity": true
+        }
+      ],
+      "full_horizon_setup": {
+        "horizon": 16777216,
+        "executed_recurrence_steps": 1,
+        "wall_seconds": 0.019722913013538346,
+        "peak_device_bytes": 4966060544,
+        "interpretation": "Setup plus full-horizon forcing construction and one trajectory step, not isolated forcing-kernel time."
+      },
+      "top_cpu": [
+        {
+          "name": "cudaLaunchKernel",
+          "calls": 5198,
+          "self_cpu_us": 26321.387000000002,
+          "self_device_us": 0
+        },
+        {
+          "name": "aten::mul",
+          "calls": 906,
+          "self_cpu_us": 6866.858999999988,
+          "self_device_us": 1621.2670000000471
+        },
+        {
+          "name": "aten::copy_",
+          "calls": 655,
+          "self_cpu_us": 3797.4750000001477,
+          "self_device_us": 1409.365000000078
+        }
+      ],
+      "top_device": [
+        {
+          "name": "aten::mul",
+          "calls": 906,
+          "self_cpu_us": 6866.858999999988,
+          "self_device_us": 1621.2670000000471
+        },
+        {
+          "name": "aten::copy_",
+          "calls": 655,
+          "self_cpu_us": 3797.4750000001477,
+          "self_device_us": 1409.365000000078
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<2, at::native::CUDAFunctor_add<double>, std::array<char*, 3ul> >(int, at::native::CUDAFunctor_add<double>, std::array<char*, 3ul>)",
+          "calls": 774,
+          "self_cpu_us": 0,
+          "self_device_us": 1336.3160000001044
+        }
+      ]
+    },
+    {
+      "rank": 1,
+      "task": {
+        "gain": 0.75,
+        "tau": 100,
+        "delta": 100
+      },
+      "gpu": "df166837-d89e-8830-2b42-a18fc1bfe7c5",
+      "performance": [
+        {
+          "multiple": 1,
+          "median_seconds": 0.4211662549932953,
+          "trajectory_steps_per_second": 119736392.46288332,
+          "relative_throughput": 1.0,
+          "duplicate_parity": true
+        },
+        {
+          "multiple": 2,
+          "median_seconds": 0.4249712259916123,
+          "trajectory_steps_per_second": 237328670.34623808,
+          "relative_throughput": 1.98209304176094,
+          "duplicate_parity": true
+        },
+        {
+          "multiple": 4,
+          "median_seconds": 0.4230362139933277,
+          "trajectory_steps_per_second": 476828473.13677394,
+          "relative_throughput": 3.9823186863140574,
+          "duplicate_parity": true
+        }
+      ],
+      "full_horizon_setup": {
+        "horizon": 16777216,
+        "executed_recurrence_steps": 1,
+        "wall_seconds": 0.018196078977780417,
+        "peak_device_bytes": 4966061568,
+        "interpretation": "Setup plus full-horizon forcing construction and one trajectory step, not isolated forcing-kernel time."
+      },
+      "top_cpu": [
+        {
+          "name": "cudaLaunchKernel",
+          "calls": 5198,
+          "self_cpu_us": 29964.42999999981,
+          "self_device_us": 0
+        },
+        {
+          "name": "aten::mul",
+          "calls": 906,
+          "self_cpu_us": 7004.218999999803,
+          "self_device_us": 1877.1299999997864
+        },
+        {
+          "name": "aten::copy_",
+          "calls": 655,
+          "self_cpu_us": 4070.2550000000774,
+          "self_device_us": 1503.5930000000517
+        }
+      ],
+      "top_device": [
+        {
+          "name": "aten::mul",
+          "calls": 906,
+          "self_cpu_us": 7004.218999999803,
+          "self_device_us": 1877.1299999997864
+        },
+        {
+          "name": "aten::copy_",
+          "calls": 655,
+          "self_cpu_us": 4070.2550000000774,
+          "self_device_us": 1503.5930000000517
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<2, at::native::CUDAFunctor_add<double>, std::array<char*, 3ul> >(int, at::native::CUDAFunctor_add<double>, std::array<char*, 3ul>)",
+          "calls": 774,
+          "self_cpu_us": 0,
+          "self_device_us": 1468.855000000025
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "task": {
+        "gain": 2.5,
+        "tau": 10,
+        "delta": 1
+      },
+      "gpu": "5aa1326d-ab69-c78b-8816-33438deefe45",
+      "performance": [
+        {
+          "multiple": 1,
+          "median_seconds": 0.410871756990673,
+          "trajectory_steps_per_second": 122736418.70483875,
+          "relative_throughput": 1.0,
+          "duplicate_parity": true
+        },
+        {
+          "multiple": 2,
+          "median_seconds": 0.4088027649850119,
+          "trajectory_steps_per_second": 246715200.18632406,
+          "relative_throughput": 2.0101222016232545,
+          "duplicate_parity": true
+        },
+        {
+          "multiple": 4,
+          "median_seconds": 0.4104986480087973,
+          "trajectory_steps_per_second": 491391903.4288197,
+          "relative_throughput": 4.0036356658779315,
+          "duplicate_parity": true
+        }
+      ],
+      "full_horizon_setup": {
+        "horizon": 16777216,
+        "executed_recurrence_steps": 1,
+        "wall_seconds": 0.030727438017493114,
+        "peak_device_bytes": 4966060544,
+        "interpretation": "Setup plus full-horizon forcing construction and one trajectory step, not isolated forcing-kernel time."
+      },
+      "top_cpu": [
+        {
+          "name": "cudaLaunchKernel",
+          "calls": 5198,
+          "self_cpu_us": 30196.557000000234,
+          "self_device_us": 0
+        },
+        {
+          "name": "aten::mul",
+          "calls": 906,
+          "self_cpu_us": 6436.809999999879,
+          "self_device_us": 1623.8250000000062
+        },
+        {
+          "name": "aten::add",
+          "calls": 515,
+          "self_cpu_us": 3435.7000000001262,
+          "self_device_us": 1106.5999999999713
+        }
+      ],
+      "top_device": [
+        {
+          "name": "aten::mul",
+          "calls": 906,
+          "self_cpu_us": 6436.809999999879,
+          "self_device_us": 1623.8250000000062
+        },
+        {
+          "name": "aten::copy_",
+          "calls": 655,
+          "self_cpu_us": 3273.770000000215,
+          "self_device_us": 1433.0369999998838
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<2, at::native::CUDAFunctor_add<double>, std::array<char*, 3ul> >(int, at::native::CUDAFunctor_add<double>, std::array<char*, 3ul>)",
+          "calls": 774,
+          "self_cpu_us": 0,
+          "self_device_us": 1338.4909999998363
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "task": {
+        "gain": 16.0,
+        "tau": 100,
+        "delta": 100
+      },
+      "gpu": "91cc7c10-f144-b203-9a94-b9aa711ea38b",
+      "performance": [
+        {
+          "multiple": 1,
+          "median_seconds": 0.40799270902061835,
+          "trajectory_steps_per_second": 123602522.50843905,
+          "relative_throughput": 1.0,
+          "duplicate_parity": true
+        },
+        {
+          "multiple": 2,
+          "median_seconds": 0.4120469529880211,
+          "trajectory_steps_per_second": 244772726.1871831,
+          "relative_throughput": 1.9803214466797883,
+          "duplicate_parity": true
+        },
+        {
+          "multiple": 4,
+          "median_seconds": 0.41507306799758226,
+          "trajectory_steps_per_second": 485976391.99557745,
+          "relative_throughput": 3.931767589633109,
+          "duplicate_parity": true
+        }
+      ],
+      "full_horizon_setup": {
+        "horizon": 16777216,
+        "executed_recurrence_steps": 1,
+        "wall_seconds": 0.020265136001398787,
+        "peak_device_bytes": 4966061568,
+        "interpretation": "Setup plus full-horizon forcing construction and one trajectory step, not isolated forcing-kernel time."
+      },
+      "top_cpu": [
+        {
+          "name": "cudaLaunchKernel",
+          "calls": 5198,
+          "self_cpu_us": 27476.22800000023,
+          "self_device_us": 0
+        },
+        {
+          "name": "aten::mul",
+          "calls": 906,
+          "self_cpu_us": 6351.3609999997625,
+          "self_device_us": 1922.982000000222
+        },
+        {
+          "name": "aten::copy_",
+          "calls": 655,
+          "self_cpu_us": 3576.9149999999263,
+          "self_device_us": 1544.9439999998867
+        }
+      ],
+      "top_device": [
+        {
+          "name": "aten::mul",
+          "calls": 906,
+          "self_cpu_us": 6351.3609999997625,
+          "self_device_us": 1922.982000000222
+        },
+        {
+          "name": "aten::copy_",
+          "calls": 655,
+          "self_cpu_us": 3576.9149999999263,
+          "self_device_us": 1544.9439999998867
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<2, at::native::CUDAFunctor_add<double>, std::array<char*, 3ul> >(int, at::native::CUDAFunctor_add<double>, std::array<char*, 3ul>)",
+          "calls": 774,
+          "self_cpu_us": 0,
+          "self_device_us": 1480.4669999996677
+        }
+      ]
+    }
+  ],
+  "allocated_node_hours": 0.005277777777777778,
+  "scope": "Short performance pilot; duplicated parameters, no new scientific validation."
+}

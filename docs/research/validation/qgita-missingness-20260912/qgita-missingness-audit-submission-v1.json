@@ -1,0 +1,13 @@
+{
+  "job_id": "6505031",
+  "remote": "/projects/u6vs/hnc-organism/expansion-20260912/qgita-missingness-audit-v1",
+  "archive_sha256": "84de10ab34645d68f202da0c7437b037c3791ee75209828ea80b8df79938a730",
+  "manifest_sha256": "3c0bf8b760e620f71b674197cfd774e92b62f9f34eaa1969595f3d9aad38b683",
+  "command": [
+    "sbatch",
+    "--parsable",
+    "--dependency=afterany:6504999",
+    "/projects/u6vs/hnc-organism/expansion-20260912/qgita-missingness-audit-v1/audit.sbatch"
+  ],
+  "submitted_utc": "2026-09-12T15:20:34.656114+00:00"
+}

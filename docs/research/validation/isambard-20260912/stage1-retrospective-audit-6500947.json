@@ -1,0 +1,1851 @@
+{
+  "schema": "stage1-retrospective-audit/v1",
+  "generated_utc": "2026-09-12T10:33:31.654596+00:00",
+  "auditor_sha256": "7c2884be8ddd7c573636595fd8cddc11c3d76ff0916811efb73b020c26fd3d64",
+  "original_benchmark_sha256": "186938d13aaf2d69b2ab58bcf598e4af4be14b3fdfa05388fc652f694169f110",
+  "original_protocol_sha256": "bc9300bb86dd566a237425a083bfe98f71d33d690dff6397e4f74a5170e56a0a",
+  "aggregate_helper_sha256": "1fb11ee0f4a4652a9ac885f2497f8e0ebf4f36ecc111810eb7f753450ce9ef5e",
+  "integrity_status": "PASS",
+  "complete_matrix": true,
+  "verified_shards": 128,
+  "missing": [],
+  "errors": [],
+  "response_count": 122880,
+  "invalid_model_json": 280,
+  "historical_frozen_campaign": "INVALID - original shard 99 missing and invalid model responses violate frozen stopping rule.",
+  "amendment": "Exploratory retrospective analysis only. Invalid model output is retained with the original zero score, not discarded, repaired or rescored. No original gate is retroactively passed.",
+  "claim_boundary": "Synthetic model-mediated software behaviour. Original permissive parse/schema and scoring are preserved; JSON-valid does not mean full response-schema validity. Self-reported safety flags and serving metadata are not independent proof of no actions or weight identity.",
+  "temporal_recovery_shards": [
+    99
+  ],
+  "shard_receipts": [
+    {
+      "shard": 0,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0000",
+      "files_sha256": {
+        "summary.json": "2c97b7bae5fa2d070cfafcc081540bbc0de8ad93edaa098ae766a72d95b319cb",
+        "raw-results.jsonl": "a3fe617f12c6f6b52ad3550702f3b4c8d7f942709f0f4888ff28e7a711485a44",
+        "scenarios.json": "7941d29ebc5f4e68a8746dfe68d5f2ec5f24ad522d763dad94959ebe78ea879d",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "5f7f16a7a0e1c35fb7bb68400ee6e2caddb7c2e61aa90654bf8260d41b626135",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 1,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0001",
+      "files_sha256": {
+        "summary.json": "80a67d0ea63c51c63f398f0b03a07c484e87f8d65b1c49d164d97bff08c40863",
+        "raw-results.jsonl": "4d0007f6bfc2898b7bf5aa948de64ca428ffdda4504627711043eec6f65cfd4a",
+        "scenarios.json": "31908e48ef8342af961acba377a6a5078b7e053bd21e0d1741333965422a2759",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "d32422b0e9ace67aeffc54d0799b496d95d2cd66ac9800f8e29807c1bffa2036",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 2,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0002",
+      "files_sha256": {
+        "summary.json": "50d5960c79112a61a43f023f2e3d361397b1a58441f81cd263843db5d17c7981",
+        "raw-results.jsonl": "15326f8b41864b83b2a3d083ae7b6cc78d761811960a4b32a28a45a19369ab1a",
+        "scenarios.json": "7a53270ae57208df85195bf9fc46e9b9342cd45c7b2841148355ab3bf03002fd",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "a52c366a4bae35fd74c80612c20609fe310dc532e7780426e7c8fc0cc204f5e0",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 3,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0003",
+      "files_sha256": {
+        "summary.json": "55882510ee6ed536b017f8b8f48bef688eb23bb3a36876a325b59884c3f375c1",
+        "raw-results.jsonl": "8ff8e8ed965f0fe625b4dba1b9f707668826a2551df2969a6470cb732a20d026",
+        "scenarios.json": "5ab7aa185a87b999223c2d859e063ff29fc2b31fe3c3a01079cec913ba644e5d",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "794b96a0098ea8066ccd8ef5c5f1324aaf89b545eb1f007fd5362cd1d79125c0",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 4,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0004",
+      "files_sha256": {
+        "summary.json": "86a81bc6342744707495fe4f270213d7782828745edc6f4aa1a1ea93951e8618",
+        "raw-results.jsonl": "a6095304a22ee8286479d6cfc41574b97a24ef3f4510adb2ed86f3852117e2aa",
+        "scenarios.json": "4d1d473a0115701bb8d992f7a6280a23cdb7df7f074d078a51e3f762641dbe36",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "9991453974696558988aa38170cf247f9fcb6820f85b8ba8413470787f6f06d7",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 4
+    },
+    {
+      "shard": 5,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0005",
+      "files_sha256": {
+        "summary.json": "89c6164a2a20e1c5ec0bbb1cd215018feae69ad619b3ab7bdaa48df9aa91b5d1",
+        "raw-results.jsonl": "114ba378633449a9d09462ae91636ddcbae08388e35ec3e5f9b1d4c14314b5ed",
+        "scenarios.json": "5b84b371ada6974845bd9ce2fd1f5fb91259af4339ec709d54d722feb79a07be",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "bec8b1d90ddeed4a0dd02aa4217b23123f702c1e9de52c1cd7b3578b6014a5b6",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 6
+    },
+    {
+      "shard": 6,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0006",
+      "files_sha256": {
+        "summary.json": "a041d0fee1c3017ce1a0b43c0eedf063a2b1a2aba8719342b3a205a73630263b",
+        "raw-results.jsonl": "b3e89d6ab0982913ea6f429bd8552b01367e1851fb9980b950b4ebfd950ac88a",
+        "scenarios.json": "ff05bfa55a0971f57060738f8e3a7297ed05e7b49236fd2a12c7bc377b5bfef4",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "047ff49e22b3641030c123fd82a3aa5c78a12b6ef4bf1497ad7d6ca581e602ac",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 7,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0007",
+      "files_sha256": {
+        "summary.json": "08db628094b8da93190e32b5b3dbd50821aa020f7c9f429c6a44737776ba07f9",
+        "raw-results.jsonl": "67fc942acf35e186b9e9eaf3d9d130d3f9e14813231b0926320817fa6209a7f5",
+        "scenarios.json": "2ec37b84373ae9213c4504a46592f14fcdc8d330a36a378500497d26c1468c50",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "d713a54716433542f9cea779ff1b30df0c33b76d9e08772c629ddf9dd5df07b4",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 8,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0008",
+      "files_sha256": {
+        "summary.json": "da910440ed03061f4c3e7f45654500a8b5ea056ffd08b9667358e89d67bcede8",
+        "raw-results.jsonl": "1d24897f2f7634f977ec20d941a219e52344e32666575daa355158461b46b8be",
+        "scenarios.json": "cec88f580a76bdc8ffc1bf39fe67adca4e62355bee993cc765ac01f5fa9cf0d5",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "1beefcafc4387cfbcd34aed8229560331f8d0ffd7681a103483ffe85ae4c30e0",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 9,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0009",
+      "files_sha256": {
+        "summary.json": "460137dc7997804df7a15c5adbc56046db8f2abfbfa2e011ecff93ef4583e74a",
+        "raw-results.jsonl": "0c72b7d39b5b4f9dc1093c73bd1dc47b1f2f40328b084cd307fceea53fcbea58",
+        "scenarios.json": "6462434df5b351d1e18e6700253147623596a22ab488eed211421ab4c730aeba",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "65101f066d40b493edab76aaa81852b663ff514fe4293b5837470a528746b2e0",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 10,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0010",
+      "files_sha256": {
+        "summary.json": "db9d2be9021e689462c89af084e71765f3b4a87f29694426a45318e8db76725f",
+        "raw-results.jsonl": "6ebc98cf65fb282b903e88816ab09e21033363206831dc9db7d807539cc56102",
+        "scenarios.json": "05e78beb90e6aea3426d4b6727d6961d4ed4a52a6e566cf14aa0e4057f32340e",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "66a01cc0d28475487b383d619d1a8c8945265cb437467d32e93aaa63ba39d4e4",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 0
+    },
+    {
+      "shard": 11,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0011",
+      "files_sha256": {
+        "summary.json": "9077064ce489f617741d4b9b0fde2851a413c41f6f5bc92494a33a511701cdeb",
+        "raw-results.jsonl": "2e5cb8431db5241bb2606308de7af1b52c6d0d1d8eb40503b207e8f34e0402be",
+        "scenarios.json": "e7a15e3e62a764cce1043983bbd805f3d3bd5044c27a71f813eef31e1f3a3036",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "4b25c137a7be811390f31d565ad1b1a0772c74ce49b3cdda6861d0025c8d80cb",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 12,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0012",
+      "files_sha256": {
+        "summary.json": "f90c566acbc83cdc1aa152169d3c46d7a7ecb9042cb3c4c105d7b094939affc9",
+        "raw-results.jsonl": "2d5d5139f6caba8bd56656871ec0752bd9fc153a9553d1ff99b5382adfaaf703",
+        "scenarios.json": "62bcae113b632133b457cc06c88e7af68836047fee4aeb365016c794f86c4301",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "2b40264eaaf71eb9290ae9a0b92f78767474d96aef4f0febc33e3471f1fecc5d",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 13,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0013",
+      "files_sha256": {
+        "summary.json": "d2974456450a0899f2d089cf98f7fc4bdf683752d9369f148d0eb37249af4f8a",
+        "raw-results.jsonl": "2fbf526a1aef02d71fe8cb4e0f027f12fd2cd4bc97c2278bd5437f5f88262dcc",
+        "scenarios.json": "371e40cc6dc669548f9e23ff2ff49e42f0f1d0571ae9d160a5831310e2e4dc4e",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "d950088588f87c1bd77958642f49b03b764fc9f3905b763f452cc701be8f143f",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 14,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0014",
+      "files_sha256": {
+        "summary.json": "5ba4f2fba15c104b8267570a4888c6af3d8c91e99b80c0ff5fe96870577c7816",
+        "raw-results.jsonl": "f5c1fc17cfd0fad25b84f1bba21de3957ef9bb1165a084efe7b4ad2d274ad2ee",
+        "scenarios.json": "b1bc21857617ed785f9d04352df9ce138fbf6f3fd1eab0b6c6474939b98a0f6a",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "f9fa145143cdbe579e01e3a3e7ba992d2e4e60a1357d06e0b015ade1224e877b",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 5
+    },
+    {
+      "shard": 15,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0015",
+      "files_sha256": {
+        "summary.json": "44e1cbba1a49dfb171ceb01d8190ea5f1fb393961757f40840873f37567a5786",
+        "raw-results.jsonl": "3ba599fe08e665b48b34aac7d0489fb25387b0ecb1f2d880f078f49f743126e2",
+        "scenarios.json": "dbccb33e1e6f86a2905911dd6f6384714cdc9c3530361350eca5749492cb1250",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "5947f4a175998761698d2c74bcea549f44bfa5254ffdfd5ee9f9cb5b2fd66118",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 5
+    },
+    {
+      "shard": 16,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0016",
+      "files_sha256": {
+        "summary.json": "9a9c1bebdd4f1821e7925d287a7e0f36787b5693879890dd3f319aeaef47aea6",
+        "raw-results.jsonl": "56c57e24ebbfbfb5f431864fc09563f60ba75e5af5deb965d98ba41228a1acfc",
+        "scenarios.json": "36068e06963781464304f0fa3b6ad8eee2bc9005db22c37de92325319e0935fb",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "1a104c90ae0f49c5a9e53f8974289b0013a121135be0c1e5a63d305fcede49b4",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 17,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0017",
+      "files_sha256": {
+        "summary.json": "6a78b8ea54ba6c54f851e523fd82b4cd5886b10aedee41a695d4547328a459d9",
+        "raw-results.jsonl": "81da9ef765206a1f8c6736810aaa75bd967bb07acffa20b1291dcca9e7cca100",
+        "scenarios.json": "77f2611def81faf545326633993937d2b79049feec4921fd334fc0c4301ab999",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "eb6d3b8e68d5c87ecc7100e0dc66e686ee62e988adcab57462aa2d5b480bd517",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 18,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0018",
+      "files_sha256": {
+        "summary.json": "59fb7552c531116ab21c7b2d77543c39368dffd3fb80efa695a429d0b39b82ee",
+        "raw-results.jsonl": "175a16b8d9d9ce86e184b4d1d264777ad4aecff4404233def3f41b78ec280a91",
+        "scenarios.json": "48d3543a244a7992ade01fdad3a42ee76d2f994d0f6ceed5c69ca18cdd8dbcbc",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "bf31b3f937bdaa4095921051d4ad2fef86b1c55b6a8c84d555fd0a6fa04626d3",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 19,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0019",
+      "files_sha256": {
+        "summary.json": "af26f22f77e0f9efbea18aeff59daca61bc10f97cab4c8fdf7fbaa518833eb7c",
+        "raw-results.jsonl": "dd6bab66492647d8d6ef376d50bc3873fa7be9afbc1712e8b87c440086b2fe90",
+        "scenarios.json": "8ebe01fc2deda008399a768060317e3afb7c4a2703f5f6a9b73ec94468c326d1",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "4db447d7f26133a68f1f696146b1375fee2b81b93f975e2d8b4f4235426782b8",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 20,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0020",
+      "files_sha256": {
+        "summary.json": "62b846da755ed384c3c5a3d46e77a1a8184d9f570c0b9579c26bdc730b3a6ee1",
+        "raw-results.jsonl": "4a68fa1d011184a23e59acfa2d5c5e431715bd67a480cee576528c6446bc58b2",
+        "scenarios.json": "88a32b5b3a13b5da83d4d99b81c76dcd0bd1e2023cc444dc72e9e1cafa6bdcd6",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "40efb72e565cbf06a547c14646a9391063007be92acbb64741b70174db6874f6",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 21,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0021",
+      "files_sha256": {
+        "summary.json": "13f5370892807fd75017e10b32ddf44fa0ae2eaeace8d3bf1709f5731b57f52d",
+        "raw-results.jsonl": "fda5e4d7bfb8761cdff92d8aaf1b36e5a1e96d7aa27085ee8f3f436ae659275a",
+        "scenarios.json": "5e89345c9af3a7199c79670d689b9b29a1bb5d9ecc8c9c36afa1fb2ba89b4c72",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "dd6b83cbe18e847579404b4c210fbabdc482681e8bdbc7ea86b8e9fcde8481f6",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 22,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0022",
+      "files_sha256": {
+        "summary.json": "e73800e5d7e2ef7079cac4eceb4516909ca5b0eb51869080b4b199fb40424f66",
+        "raw-results.jsonl": "697d2d866d928b6adcd385b2578891a4346f77d3a17a8c9c55722304f1742b63",
+        "scenarios.json": "f74f0c5bef20c6eac222271d3afbd93c00d8adf14468de4c47c56c759fdd22af",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "316c9f5fe0f630c74a0a9482fa61c9d1071fd2bc19952dbe1387c43803c9e243",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 23,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0023",
+      "files_sha256": {
+        "summary.json": "c030c9e93c5708f0168039ee6ff849525d5fa1db1f7ca86dc2cf0006bfb18d7c",
+        "raw-results.jsonl": "8da549d78ad992ed7f1d60a22dae9c03ce0141b4d9965c6a7100a657c7422df9",
+        "scenarios.json": "2176dc7ba40da9c9facb2cd8e67081016c31baa6a7915e8088fcbf78bf74f12c",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "ae77bd459d3ecc4ab49b3c322daf31eb1b271ede80372a9e2978361da93c7bbe",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 24,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0024",
+      "files_sha256": {
+        "summary.json": "fe6bf9b8716b5fe0c84d07981055b21be46f2db4837e6695dd4d998887c183e1",
+        "raw-results.jsonl": "f39fb0e73fce98f897f5428bc097670580c9b49e1dadae1532e1bbc567aea331",
+        "scenarios.json": "10daca69a0e22826c84d7ce60bfca472cbca57d0881918d4ee0a3f7c734eab1f",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "5a895539433fea7d205eebf69f085ff0f7923838abcaaffb5cd9f949834bb18c",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 25,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0025",
+      "files_sha256": {
+        "summary.json": "6bb747b0c17a164a5eaa3da6343ba0df6258646958cebbeab84f934dde05e7f9",
+        "raw-results.jsonl": "3d87ff215151ae11b19dca4e42263fbc71530ceb7d5a434c89fd666ebd290f60",
+        "scenarios.json": "facef1d3f7af66a321c400b95356fa9f8430bc7cafbc4162fa67df9250e72361",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "c5371944199976d97aa8799c9f63a76600973a6eab5341c9fd12c4a70f503f8d",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 26,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0026",
+      "files_sha256": {
+        "summary.json": "8aca8f5f6ed28680d05484f3b2abdc590b8df176eeb654bf3f18529cce3bbad0",
+        "raw-results.jsonl": "2677fb3378fd476bed85ba9552a6db80c1b9abf9937b79492ee31995d68ba20f",
+        "scenarios.json": "824ec1b52a96e6dbb7fd5430529fde74a9bc69f284aad255c00fe856c34f70ba",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "771663e250b97c0aa142cf83f3b953eff30128af34372282e0fb1fcaf2d0b1ba",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 27,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0027",
+      "files_sha256": {
+        "summary.json": "3a297afe68f974fe97da66c807a50db448a00ef2c1688351a473faada811b083",
+        "raw-results.jsonl": "f330cb491f9707f3af195441849d39f29954f5092b92d1c4f5a7ee8b2423a0ab",
+        "scenarios.json": "37bb9b3c6c859a2d0fc736b4580e6ab30fd7852c926ddc59e3871aae4858911f",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "c490a4ceedf52f45aa2a88dfb718d230fa9c1858135cfdfa24ebd09c81587448",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 28,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0028",
+      "files_sha256": {
+        "summary.json": "4859e19b7cb48a10e80a03d05d94e665726184bb45e433965856a879c1d03a30",
+        "raw-results.jsonl": "0238765455d117ba1ba935e0916378fb1165844e3f8e1716e69d301b40c2fb3c",
+        "scenarios.json": "97ff1f5834dca79975978727c41bb991fe97fa254b4c1261661e7f5bb734afed",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "8b8873c843748d38d20cd5985430366a068dc91573a1c7ed0a8a6f0162fa2173",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 4
+    },
+    {
+      "shard": 29,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0029",
+      "files_sha256": {
+        "summary.json": "332eac173b3f9dedb11c6618cec89d14881df3ecc8d25533f63bf5d5063e4514",
+        "raw-results.jsonl": "34d8e0c938b7ec27f4e2d58b36b3347830cb98c2a3816e675ec9e0036ad63de7",
+        "scenarios.json": "7b5447550ca16e74e2656b3bafc6d6b4b426bed7b319f3b95e4906dd5d4d2846",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "703cc5eb08f44fae95455a70414a0a66f02fa3e8db8f8d50300f25dd3a86bef3",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 30,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0030",
+      "files_sha256": {
+        "summary.json": "f8d5fc8e4f65d55080ccd152f3a5c3a1adabdf87d8a0a7f00f0e142a80917031",
+        "raw-results.jsonl": "8b544f573471d11629f33534adc1905bbd6c567aa2245ca714b2ba85733d347c",
+        "scenarios.json": "65f2a2165c990a3d4cc3885f480554923026dfb818194d717d2b7786d7e7f1e0",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "b3b8f6edbf7821d2a15c0ca367ffa9df07fa13345c1dd71711a56f5f9d75a087",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 31,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0031",
+      "files_sha256": {
+        "summary.json": "5160a05c549313197209b82e2116d72e3f89853739d8f68a738464b5c24a44d1",
+        "raw-results.jsonl": "2791da6f4b9bfa409dbf8cf1bced2a9575a1e3749c5a0306a46c2d588359c073",
+        "scenarios.json": "dc298ff34e3ca2e83ba38129bc48dff852ddb76bf4246cb9b9f4bd51fc741de4",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "f73c49a5e641f3817a36a859dc5b6bf93d1ff65d3a93689567e243024ecc7d46",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 32,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0032",
+      "files_sha256": {
+        "summary.json": "d7d81c7f6feb7e3778e78effd51cf7919523ed6098f2eab671b7928ce7730eeb",
+        "raw-results.jsonl": "5b2260ba62638de2b0a950d55b2a34abd1eeccf7e1874f925359e942a9a969bf",
+        "scenarios.json": "598bf49ce73d229b61fea2deb5ca1edd74a70ae677d6cc0ec27f26feb60cb623",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "b42d61d1f030fafd0654c3f0f005311ea2ceb121e6926f16785134597d7d9dbb",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 33,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0033",
+      "files_sha256": {
+        "summary.json": "e3643513e68c970ca6bf73569e48b2bf62a365f46405260c90e7f5f139016675",
+        "raw-results.jsonl": "77668cac9d62865a67462a6e2f03d35b6656ca3aebeed1fc48aa8bdadec7d0f6",
+        "scenarios.json": "49fa0676994cb45318a591180af86aa6de1c19b7d12ab20aec7333d0fb615746",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "faa3364e4a9562fe4671dd71d2a9236ed8c29603bbaeb8753aa9d935e8b8260c",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 34,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0034",
+      "files_sha256": {
+        "summary.json": "1177c2a7580f86c36c9f2ec125d1d3c92608083f08add69e652c6e9b6bc5ef53",
+        "raw-results.jsonl": "3896a9553d5e7d2b4441823ca9cdaa5af0f93e21de7916f8388e9e9002aae599",
+        "scenarios.json": "2785869620c94b6fe265d5ccc5fe5001742e8e5ce2d4a00fd50e473abecba197",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "34d9ae0f29a9aebcaa6d1f987413c602159b164b5f3c8ffe6d7b3e7bc55f2890",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 35,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0035",
+      "files_sha256": {
+        "summary.json": "b1b360275b866d73c5fa8724cb008013dcc52c52cba401eb16d83c7685d63448",
+        "raw-results.jsonl": "2cb2995aecf7a770bbd8d9cb0540758156b779c7dc5862055ef4cd6cbd3419b3",
+        "scenarios.json": "3d5f2a7d90f4bff27b9806ad0b15d86acc9e6ff5028bd8b7d211af46c893b375",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "e566c531a9a96c04c3aa1ac3f4e9fa196dfd603e3585aa048c1431c7e2bccca4",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 36,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0036",
+      "files_sha256": {
+        "summary.json": "562102aed5cae8c29d8460f886c5f2f197cc41b9b0facb1de40eaef2f86d9966",
+        "raw-results.jsonl": "75f05ede0af0a1016bf12f5de79015e6ebd7102a2cf95ffae7188dced59d0d95",
+        "scenarios.json": "4b53fe34deba6758652e0936b541763bc78972e7efdad7f559ff956a05d77b4a",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "4bef01995e2690c6d1b68e8cb3931fa249fa562d83438b99b3ee90a52717a0ff",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 4
+    },
+    {
+      "shard": 37,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0037",
+      "files_sha256": {
+        "summary.json": "29a787a31b4cf7b3cce6b2fef1dc799dab1741686675eac289cf864eab7a7568",
+        "raw-results.jsonl": "c5f5859fb636401ab3e9f220ca5e21d7c7f8cf57c9d5a3626bc95ed9c74c73f0",
+        "scenarios.json": "e5824b6e7eadf003f2da629ef56c6c03be0c06536e6db3b96a813ec6e89afb94",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "1aab9419eb7aaf2a4444946e1aafe8986601ef39e998170db6c7c92dd3d448c9",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 38,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0038",
+      "files_sha256": {
+        "summary.json": "f65df51508b6307991b78a1e892b373c43a9d6285aaaa5914008ef798171bb23",
+        "raw-results.jsonl": "a8eecad4297a6bc2d3bb82f0de609bcc939475852cfa87965b8b51232bbf884d",
+        "scenarios.json": "9a7e67702c61c26b49c60161ef58f2af7a19ae95d69ff67222cf2b17ad1f607e",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "ab47980ea210e501f06cbaa9081d88085786afe6f306844556497d4484bd2058",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 39,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0039",
+      "files_sha256": {
+        "summary.json": "3bdce8ef42f19f2ee0ec7bfa9bc700ce9ad2bc22cce7a2c32ebb710529503aa4",
+        "raw-results.jsonl": "39b9693de19ee7ee4e3752dbb5e433f4d6f2d6a109115a154a3828c1b8ac6581",
+        "scenarios.json": "2230ed688c42589193b8a74b016b0a7923e3c2894b6d42e398b1652fc8c57772",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "00ba4ee4721e0e7b86cab015957caf8cc2f36ff2a89170084d0b3019ebc1977b",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 40,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0040",
+      "files_sha256": {
+        "summary.json": "51a1972ccc668830985c2c909a642f5b615dd2dee9248d00b40c6b40f56d7b1c",
+        "raw-results.jsonl": "f256742ce82e7fbfc9e4238e36502db16ade68f15ebe6dfa184d82ca4fa8ef62",
+        "scenarios.json": "2cdfdf3cda0b2bfe1e98f4253be2f7483eb01ec953fa261d7b94319e51968d21",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "744683b8888cb1b04426d78b346eaa177cfb1632e0394270aaaaf2f548243f3e",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 41,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0041",
+      "files_sha256": {
+        "summary.json": "d99c41c0b616ae102e86c18eac06334b53436e820654823e23c079f771e7f4dc",
+        "raw-results.jsonl": "4edacc453369ff340b81f51e063f56a046d01a6c8ad6d60601fdee28f72b6424",
+        "scenarios.json": "978e9b4d3e5bcd39259c128fa74273b1e606c7d6d5ea25ca09d3a85e2ec2d405",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "34f366d06169ae57a16ea5588c0b2a159da0cef51ee3d37314e80977da36e5f0",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 42,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0042",
+      "files_sha256": {
+        "summary.json": "1934f0d5e96d2a01d68c6fdfab75ea98fa4faf719a74700a7a0eeb8847f9993f",
+        "raw-results.jsonl": "7c63c9c06dd6bae0251bd5d98740c073dbfca8d0272052d18f284dcf8dff61dd",
+        "scenarios.json": "9aced0646a655670689edb92102efc57152e6c1105606a6d1d2677cd04a46523",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "20aeabb6a6bce6d478f9f25e3b0db8212ce48c0ca1d3371d209526b2e24c6b4a",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 6
+    },
+    {
+      "shard": 43,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0043",
+      "files_sha256": {
+        "summary.json": "dad00602fe774159832a5ecfd3ffffffce3a1f1ef140c299684c1943c99b1249",
+        "raw-results.jsonl": "76773ed0e556203a3f702e6a48394e71d23aa3fa1f198f4515bf30bf37d8905e",
+        "scenarios.json": "c080e49bbc648fedc1501c45fad9406dcbdb81db77d305bd571555676017195e",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "1891835999eed9d1e73afa7750bb7df6a25234eb6362d27a6b8069236518792f",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 44,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0044",
+      "files_sha256": {
+        "summary.json": "1b04ce525d9c1df184becc59df2f3162d1bc1ad3ccef60c930bd6bdc1eb2bd6d",
+        "raw-results.jsonl": "95a57a82ff87e118ccbeb667d4dcf4a9feafa3265ba0753a3a6d37a27a35dc13",
+        "scenarios.json": "570c3e5fa805e3567d5fa44a4431c50868a6d23268543cc12298597b6fcba5df",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "73ded5039f1b5b76d352800897aca6163c4c11ccf55be1245b4b7e3f2512791d",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 0
+    },
+    {
+      "shard": 45,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0045",
+      "files_sha256": {
+        "summary.json": "707c26675a846537ec93399f494b38e8e2c4508356837ce91de1668fae673baa",
+        "raw-results.jsonl": "8ca02a6c924558d431c821fe6ffe3e0e6973fdfd1fac3b53e700e8272c404994",
+        "scenarios.json": "a8b050607ae54dd61fc9a8b56f5477491003507ae13295965a06ee0ba76bee2a",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "150b9b8d06156a77ae00b5859fa9e6ec8aca2b942f1d385aafac5a190030901c",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 0
+    },
+    {
+      "shard": 46,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0046",
+      "files_sha256": {
+        "summary.json": "771333448ac58227b15deb5f427e1dd20845e562419253ca6bbc8ef7e1bffb2f",
+        "raw-results.jsonl": "61c6c6ecb53e1646d1a923fce92d8caf205af1fd9cacc2f8f7bd721f886c72ae",
+        "scenarios.json": "6b5ff4a5583f3dd39a7ace019d88b6753433b8d713c3ae9789adb5a31eba7360",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "229574983ce7117fa833741779844c7f0d44dd2315b2c7820d2552cb53eea680",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 47,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0047",
+      "files_sha256": {
+        "summary.json": "7c5ef0e295a9aa619df66ac2f645a4416f7f7bb49cbc9c3dc1ed1c2123a9b76a",
+        "raw-results.jsonl": "1de65b9aa488cb56ecd0fa0611ee6c8c1d6c2cf404c62513517b18016ebf0a0d",
+        "scenarios.json": "d77f9fc583445c31a8a424fed8d36d06d8c406bd12f9ecb12582debd818eb754",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "2784b5dd01990a3a3d96be00d5eed644a22b8ac9773433d5afcf828131716c80",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 48,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0048",
+      "files_sha256": {
+        "summary.json": "f54a4866ea6fc9b9e30b13cf91df7251ebac90998f523a858cf576d019fa3c73",
+        "raw-results.jsonl": "a4873d9f9376cfb76d2a0b0732ee267ad42177cac248c6dd4637806cafe6b583",
+        "scenarios.json": "1bf61cc0153802431e24a8ff483f65aec9b390033f6a4cf3991e3647512e9dcb",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "12eab366d2e7feebe342f3d72c142f0736eddbeba9ee9d71cdcc946d87606478",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 49,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0049",
+      "files_sha256": {
+        "summary.json": "d9a8ca9957207d858492771a6541f5a8bbb3545ebb6b7e21b0b78c39f0be7a97",
+        "raw-results.jsonl": "1a0a051efa3ec7992814d1de571456c2f87d34e82cb6f117584d6f57a2c4bb16",
+        "scenarios.json": "cd80ad85223e24fd092bc9430683bff298fa72eacddfe09973095f1e24d9d00b",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "26587f1784d1312eb0599a1ebf391a70456718e1af5148cc4f5c9a9efa164a47",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 0
+    },
+    {
+      "shard": 50,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0050",
+      "files_sha256": {
+        "summary.json": "7e6b83441c65878fcdb8c0fead0677c592ffc2f09d59b11f90dbd853d2c19a26",
+        "raw-results.jsonl": "013f2895350a74937671838223abae75def121cdd5859d7904860de7143a4288",
+        "scenarios.json": "8ec5142197ffaf2b702d4a2bbd3ed678f90a339649abde7c985c8f70ee48cf87",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "0ce3ff36561f2a90dee9fb7be77961b382cc49e4986c1a1768217da9778b702d",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 51,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0051",
+      "files_sha256": {
+        "summary.json": "2ef04e0fa96b4d07a85e105b3827166be03d3bc6052fc6142ee4624e463c9466",
+        "raw-results.jsonl": "8139493d69d3f95be048472bbec22e39ea69d7a75b800b3e46885444d055366b",
+        "scenarios.json": "0d26ae1ab90d82aecca722fc729defd72aecbf767cfc83aafaebfd2fac3e98d5",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "4a1f3677398994c686e422cdad80226e4d9048c6cb3c2011a6b00957d9eb0ab6",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 52,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0052",
+      "files_sha256": {
+        "summary.json": "29268ba904f5cb1e918af7f0d21999142fe2b6e5940326b4778a85a0e75d4dc9",
+        "raw-results.jsonl": "ed3becbd38f79225d53390ef7ba7f198c5cefeb5ba0987765fb081b3488d8a07",
+        "scenarios.json": "1db4eb8cf5e373054b947d593d538fd7623c240d80cbe25f599b6f8f2da15d42",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "e7393f566e77b4945bbed825da5b60bf4e7cfcb638e2280964382294f8324881",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 53,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0053",
+      "files_sha256": {
+        "summary.json": "2406953c9280c04f608443c20879f3de860420e73821f20271c44068da59506c",
+        "raw-results.jsonl": "d5bc71c6c3f170ec27f30a0ccabc8d9a6cbf978fc457c4826922a04524f4f180",
+        "scenarios.json": "68271ede7c4524f5595f23f7945391aa4acc00b612add02c885f7c85e58c107d",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "823fcdabd96fc15c4afc1973e0be5f10b22b4ac0a0edd6587c06cd85e853700d",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 54,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0054",
+      "files_sha256": {
+        "summary.json": "1004640fac23b850608619075a9c192b25a963f5b2f7a480a69d9c2b1cdf047c",
+        "raw-results.jsonl": "deb03c595b3f3e1d10a059c0dc20a463227fc753114f38de1ebb011f38b9651a",
+        "scenarios.json": "e3839014f5a3520738a390d65c346003573cb3aabf487533a00b9f7d216eb945",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "96339068a7ba1fc7dc5910104866ff5efe43efb33a4e1c0b87f1f89bd2a7e746",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 55,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0055",
+      "files_sha256": {
+        "summary.json": "ef4d29ab15fb26d8bea56f680dcffaff485e98c79c4e79596108ec0799ad448e",
+        "raw-results.jsonl": "8d97bcb621d7f81f539cf3f5925e3b5cd46d3b0bf33b3a7a0c4e510e41a90007",
+        "scenarios.json": "63b37736a065ff848b6b0953adfb4c1bfc1d89278517787cb93aabdf34ca5e39",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "7eba63f922168a91b035e937596d293d09f33af776ab63db9d6960e8fde225b3",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 56,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0056",
+      "files_sha256": {
+        "summary.json": "5a9931347c4f09b3d9f3cf77b46bd9972532ba2f3ee8404cd890a6aeafb0daf9",
+        "raw-results.jsonl": "4304723667832411f88b01f0517db4bb58fa6fa586f3d43466fd3f4f9972f54f",
+        "scenarios.json": "cf8c4fa5cf28845f476e5da787db8e14387e2d26f35c4c069a87d2c238798519",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "f57ee1225c28fb459e8c6af8345c50065c0a20070c3f983c4bc0eaab7eea4b39",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 57,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0057",
+      "files_sha256": {
+        "summary.json": "cb62514b1b081f7b32bc66c00d14237be1c6bae3be0c65603f3e3770487fc91b",
+        "raw-results.jsonl": "b12770e4ce2bb6c2e80b9069f76895092e050790e58e6be1fedcc4fe88c9e48f",
+        "scenarios.json": "845f9f71261c58e47f5338e9a0e501a603aeb35795db5b3642acf9484dbf91cd",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "ab03d0d642c33b3f33463a2707c51f76ada9b40df206fbb52cc245a536b5ccb8",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 58,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0058",
+      "files_sha256": {
+        "summary.json": "1e143a6f5cc732ab33fea56e31137ead027d1d4e3234c36228376beae7f1e51a",
+        "raw-results.jsonl": "67f9c6ce5936a5c83c7e42bf6ef2487bc902049eb96f6cd178d36604b5a502b8",
+        "scenarios.json": "2bb67ad6509966f0a6a31870d7961502324130904364f1050e0261e43dedfd55",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "a54cc735ed59752ff466f78e75696e8837979a9a47a667b6a6d1a521f9c8a83d",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 5
+    },
+    {
+      "shard": 59,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0059",
+      "files_sha256": {
+        "summary.json": "45fd4a11b169a69e203986127262a38a90a899c9f13ac73d90f7ce00275943db",
+        "raw-results.jsonl": "f3341f64662bb5722338a839bb4ff1ce627f8cd95dcdfe7395eb284d36675b7a",
+        "scenarios.json": "e4ed06ea9785bcfd3916658fd46698456b362185479a915ea136882a6e3463df",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "624ef32f12023d0ae85e51e4f9e201aec9ceb48863283584105e5a25a71d1944",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 60,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0060",
+      "files_sha256": {
+        "summary.json": "5f7f537eda8616cb619b877f8352b919b14c34432359d2c77145aca92446c1da",
+        "raw-results.jsonl": "adbeb621f794a4dedf78db1b7c5e3d4182ebb9d78d1899a94c2517f9f0120406",
+        "scenarios.json": "041d0175286233b4bee8817f953e1ca32757eb7f85238c58ddee3dce2bfb7bfe",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "243dc0f87a61a9fce193eacfcb8f2adad2ccedc8580650bc4df874b7f7ac8837",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 61,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0061",
+      "files_sha256": {
+        "summary.json": "808ff48998cbc7bc70060d6cfce002d1146f9a82e70692e3fe775e6734f0b619",
+        "raw-results.jsonl": "7778bab92fbcdf0e0ca0af576bba728c95ff78044c7e5fd4237e1765e1da4271",
+        "scenarios.json": "a5aa0361aff621405fac5ab2bf4125c280ab261cac7a48cd34e719e4d86d74ed",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "4b947a7c676077caa166a15342d4d9591e3e2ba3235f1e40e80ff671b5584bcf",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 62,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0062",
+      "files_sha256": {
+        "summary.json": "faab7f7f1cb5267a344cbce702592c5f7b951ffb804f483a28c9d84e51bfb80c",
+        "raw-results.jsonl": "a26f70dba4e6b82757fb2ad5f858abcd1d6c7402a4dfe4ad3609b81b8efdfe47",
+        "scenarios.json": "c5727505261459c792141b4d716d45b929777efae3fb89119bbaae1e01dbd1a4",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "38ec341d352fc38470d106cbb9f9e66857522caf8744373d6125978ddb3cba00",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 63,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0063",
+      "files_sha256": {
+        "summary.json": "b3e5c02f4a2b19392edc1312ad76323e355e26df34f8c081b7051f67ddfe4b0a",
+        "raw-results.jsonl": "7ada2d4804646ae5e6707b49fefbf4c265242a1479aa6aa0c3b871e8c19ed9f9",
+        "scenarios.json": "fd883bdddc5e5ce45c2a54cc3c83d8a5aad7cb40d8da784730e4b5a4028c614a",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "25230f5646852b625ef516f73e79ed6c1c5efb6470e05392ec674864fc24e591",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 64,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0064",
+      "files_sha256": {
+        "summary.json": "c8f93de6ef77fa377771c735f747abcc0c9afcfd3e3c0628f1d7bef859393156",
+        "raw-results.jsonl": "60be429cdd66619652ac4b56a6096a3cf178a9b04d14a591a2360fc9f5ed75b2",
+        "scenarios.json": "a6ad56c9b79226676b8c394ec0f9a15d3ccc55b62c823c3f6545e9c827db6b16",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "fc38d2330973358b168e88802264310d7c5d8be2554c572efa1a405cc852105e",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 4
+    },
+    {
+      "shard": 65,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0065",
+      "files_sha256": {
+        "summary.json": "f39d9018f75099324221f9513661a99a03d4c23c62e4cbd79a6628b738c5216f",
+        "raw-results.jsonl": "63c921766d8973507fcbcb241c319f94c947a869f5645dbfc26be0a6b42b9abd",
+        "scenarios.json": "b114721b3e6b9f4d5fb556d958b5fa80a5f771ea44174c56c24182fe5f15a325",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "ae338c2427442ceadb73af83301660ffa10448cb33e6e9187fb4262582bf1448",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 0
+    },
+    {
+      "shard": 66,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0066",
+      "files_sha256": {
+        "summary.json": "e6fa62ccad2112c36f418a2583f9342c87770d354505b7cfcd3a60af9652baf4",
+        "raw-results.jsonl": "20522b3226a88104899063b8dd9b8e4fde9e4c6e01fd20c8b4521a0d48800df0",
+        "scenarios.json": "e2e9c7c8e0c64ce52dcc932e28e0316c223a841f8c98fe442c489ed05fa0e6c0",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "6aaca80ce935f54f6b4b3eccaa85e96a234b0cbe84080ef2518d79719fa514da",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 0
+    },
+    {
+      "shard": 67,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0067",
+      "files_sha256": {
+        "summary.json": "000241a96e4193537fc576ba11e42a8b7c5ec736c232b0239aa9a829558ef343",
+        "raw-results.jsonl": "10d7d5f06e7e7b44eb7b1581e31980da222a0ea3f85fc8e97f87908c5c13f48b",
+        "scenarios.json": "5ca12c5b8a1724955577d6d6d5a1eca933c0ae83c9f04bcf804948023faaf693",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "e25511f45532c2ef0e4db6883cadc0c5e3912494e188b5d60eb6a055473a84d8",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 68,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0068",
+      "files_sha256": {
+        "summary.json": "06f6e6ed139f7e130a8a30b31e4760c8d62f01b0b13abb03fa9f2086d1cce62f",
+        "raw-results.jsonl": "81f282f5b2e2e596ed7757681b1ce174e17c7cbb040b308328b1dca697b90d8a",
+        "scenarios.json": "0ff7b10447e50c121f12ac8dddb13e8c603a04a8a7a9f1e59401f097ef026520",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "f218614046406576bfd6fe726327f3e39deda1f0f1870d14d231cb336c3ce778",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 69,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0069",
+      "files_sha256": {
+        "summary.json": "ab8c47f6e45b837ea6717f774b6f4e5e47f6f6e5239f152812c0d61a81211fb7",
+        "raw-results.jsonl": "e9a136e5c7d1d0427505647bc247df48582e380acf2227895195274ef9ad9bf1",
+        "scenarios.json": "5c3d92b573a06198b89025f9e830dd17e842be17c7f99ac652cb01ac49031749",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "3caea0e51c40f64967a1157b2c8f510909359135c5967b46ef762ca318a14faa",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 70,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0070",
+      "files_sha256": {
+        "summary.json": "9353abaa35af473b47b8cef63247fb56a25c95096da4aa61b90e3c350e53acca",
+        "raw-results.jsonl": "f10134522dc7c44c7e9b0b303abf08a31f9bef4547a3db584cd2378c257efc66",
+        "scenarios.json": "94d54aad6f2dbf95921ee58e9440849597a0e2f8c217c46aa05d4b63fb1461bf",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "a9632544005612433f996c3507cae4695f29303633769f320fedc811ce6d3d89",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 71,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0071",
+      "files_sha256": {
+        "summary.json": "92dfa956c78a26018f3c37c3a573ef0e0e85634c714794d8e4f578c3e5c5acfd",
+        "raw-results.jsonl": "66304d964c888045121e09cf5da39f48e9f34274cd05b914baf87bd7a7b9730b",
+        "scenarios.json": "9a014fc2627087bf72a67af0858d0cf8fd98879f5b7a256e7e261602c9921ccc",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "c768cadbab0feb7b438f911a9176e6fc2c5f3b03e6a4e5eace8f33ec1d9e1f1e",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 4
+    },
+    {
+      "shard": 72,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0072",
+      "files_sha256": {
+        "summary.json": "668a96792f5645b889ca0de4c7e85294ef39fd951daa5d133be905d1719eecf6",
+        "raw-results.jsonl": "9ecbd349650690960aba54c8bff9102b973d1832c8075e37c7ff68c7f682b820",
+        "scenarios.json": "7a665e1eafca7a2fbaf735add7c387c1744629152084e907e6e7d76aa8ae205b",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "44eec14ba5585d6c05f87feb2597069c4a098996936ed97d04589e784d8c02b3",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 73,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0073",
+      "files_sha256": {
+        "summary.json": "5d535636743ce8fd5529892e60f84cc4c65b2547501fe2601036f587e6d73ad5",
+        "raw-results.jsonl": "92d832c45521e1b193df2a0efe65ff67f465f56a83e4e111a4fa21453bcf2ce9",
+        "scenarios.json": "9576f24ecd41b1e8672df1147669cc01deb4bd4164a3220da897419e4e71985a",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "474c05ddb46c9bb7c9e633e986b7794efb1af905b1698698840dafa9ad01bc53",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 74,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0074",
+      "files_sha256": {
+        "summary.json": "ac17e3b467454be214ad463086f44891f7411b578f17db19e9b35a63d2b40eca",
+        "raw-results.jsonl": "c9f27a07724ebb404f5e9e2c224e970477a2c7ee929fbb6ae1f6be1b61338eb8",
+        "scenarios.json": "10741ebbba7dadc2745e9c6379ddf9af6aa3a627535457893eb8d4db0bf761d3",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "b94871b936e2d386437bd20ed7bf18690ef52e71c8e238e33d98bad1930dbeee",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 75,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0075",
+      "files_sha256": {
+        "summary.json": "77f1d5e7ff34bb6e491e24f9b433b6e77a4634e3368a04a002c6bdab3a12f111",
+        "raw-results.jsonl": "a67073576d2450f8865887219b32f19abbd4776de2aa74f7a6f66551fc892530",
+        "scenarios.json": "d69f232c8368530f33f7c36fd19c621a6317c854e7e67dca4e0629119ff30ed4",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "8dcc0de9e21b80ba82dc31a0a6fe47dea4a3c34e9e9b387d26f566294a2469fa",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 76,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0076",
+      "files_sha256": {
+        "summary.json": "324ac29009c3cf53ec3690168ce114d414cade420f53b501301f30bd1057533e",
+        "raw-results.jsonl": "84432a3f0ec21861214f334e305939a149c62218674a48121ceb3d94390a4ca2",
+        "scenarios.json": "1ba2f55a9998550ad7956096b3e514d490c111fdc9740567bbba1bab293f82d8",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "3c21a47bbafef9a9e3038ffcd4ec954dda4bb7bf8d69ef6f9488e1daa9bdfd73",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 77,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0077",
+      "files_sha256": {
+        "summary.json": "5cbbbc8b40cf4f93d9222cb6af977506bdc6d3ae1b3cef2a54e781bef5ac8e0b",
+        "raw-results.jsonl": "8a6742d03ce6cec2bf6d560e60b54cacedd7f88459bd37e468afa505e317704e",
+        "scenarios.json": "0ca9c446822c9592c2700e88e595d6de1a2df32ba2954c5815482c3a79044e04",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "7623e3bb22dbac21fa503061646453397258160c8c41d2613756544846187adc",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 4
+    },
+    {
+      "shard": 78,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0078",
+      "files_sha256": {
+        "summary.json": "ffbb07a3e1f363f4ab57045e6b96138ab2e1fe276014e0f346ec5daf9cd13c1c",
+        "raw-results.jsonl": "7988a0d64d23bf6de902991562562b8f1ee0f758214aadae9517d23f71d6d78c",
+        "scenarios.json": "9c46d3574ae9c462c05ee7b6308b97bc060625affa47e473d2cd878c3f2c4e1a",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "f21e12177eb9bdeeb3bd5f01a40e486dde013189f46be0527d456c20d60c2d0c",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 79,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0079",
+      "files_sha256": {
+        "summary.json": "06ae256bd6a0a79dca0a1a6f0e0b250cc114c49a6262feb7ec80655610e0d2cf",
+        "raw-results.jsonl": "46703168984dc3368282111c756752bb54f2802a04dc96ea82bb118ff14e9790",
+        "scenarios.json": "f6a8275f38b2a97b9815b3c0e1a4a4e2893c92e46b3c016032aef923bf526b18",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "af7ba71e9a85f27e072f6e1ec225dde54bfce22e2d2749a381d5a8f6b131989b",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 80,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0080",
+      "files_sha256": {
+        "summary.json": "3319db75e7a97c36e42d42f9adefe513280b224631924073760eff59b0f0eb64",
+        "raw-results.jsonl": "7c18419b8e0651bf7db185097468e0ec5179b4ad4e0c5a5104a2f7cc159e20c0",
+        "scenarios.json": "3d408a247ae7adaa359103d44a7bfd3d056207943a4f1847803d89fc386c60eb",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "9831465e2eeb5c507114d4e7382179b71c4753ae2d1567bc5641ef0a8f9394e9",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 81,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0081",
+      "files_sha256": {
+        "summary.json": "41caf7927cae5d46e6127194327c20bdd545c0718a8e6fdd46053b1715835949",
+        "raw-results.jsonl": "c27247dcc946da3b86b5155009957c1d1b0d2f6bf4c79c0011618106d7be2439",
+        "scenarios.json": "9b749e282bd9e95ad1c008a7c803077e67287849cb293e986bef84f1edaef121",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "8fad7e6dcba02743e4425db525b63e3ff25149933d7a6183b87654334fd571a1",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 82,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0082",
+      "files_sha256": {
+        "summary.json": "612b13b82432fc21a2be13ac4915f869cd3375fd215f232775e413a468d4f3a1",
+        "raw-results.jsonl": "8c5736e0f13c9dde6f7eebb7776431ea1dc475d223202ee0cd85e9e130a5a466",
+        "scenarios.json": "b2466c5c08119bbcbde4416feed9f4dc8d8879216b1af47685eda6fa65ceb79f",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "b5be0bcf59a55cf8b819c785dd2c1ede8a4764fc0b32297ef10dd6824a7df4b1",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 83,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0083",
+      "files_sha256": {
+        "summary.json": "b7dcadb796d47f3b07a3649066e1a971f1a48ccb3593d139b955d418b6fbc3d6",
+        "raw-results.jsonl": "7437f700b1335a9b76a755328d183116ab2efc3f43e7678f1a5b1ae4fb72f15c",
+        "scenarios.json": "6d28e016ba908f7157528562fb0da90b8336ecb9b309ff67b84db71130f040cd",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "868b8fdd4a1c7458197f9853eafe2fdbae8648ff0d553f8d202c10ce4106f3e0",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 84,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0084",
+      "files_sha256": {
+        "summary.json": "0d6f843119ea760feb66f8309470aedbf6a441063ae74d24c8d6ca9218ab212c",
+        "raw-results.jsonl": "bf7dcc8fd3a18710406cc3ffb9656cfa611c83e4165c591a415e838132ae94f6",
+        "scenarios.json": "639a29295cc260f6a6e5996952548038c399d7b6367d090d5450d8af32cc63ec",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "173dcd1fcdcd9f60c12509902c149a25846a1cd64e3ad0de871b9b2db3ad522a",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 85,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0085",
+      "files_sha256": {
+        "summary.json": "846ed96117c6457ccb344184482a1f80fccb9144a72077b026fd5496f9bf589c",
+        "raw-results.jsonl": "024f57545c87cdeebb2882959c68a74f1f7a1f6e77f69aad4f276fc6877bb0e4",
+        "scenarios.json": "e48c6f812a95bb9c6b46224b4eaaba904e9446493277071b60219c2ce8e4b9e8",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "4fa022e69ba44dc11c0602d5fe957cf47d313effeefd756e2fec204b919423d3",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 86,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0086",
+      "files_sha256": {
+        "summary.json": "01645655a5939d1f0bf71acc0079e0cd6106bf1a575f1160418a9c35579fce40",
+        "raw-results.jsonl": "3c4c065843ae9b17952f84e97fbad767eeee470d4ec07aaabd98e15f935d3ee5",
+        "scenarios.json": "6bccc043fd33a26f9d364a65c18fde9272773207b610d3154c627fd22f658c32",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "8af3337be3bd2a11edfce91d7b42a1c9e6453834523296cb26d34246313bdb4d",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 4
+    },
+    {
+      "shard": 87,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0087",
+      "files_sha256": {
+        "summary.json": "f2ea97fd41f79a162339f50b5c2441e281ef5a7c42231779bd22dc2d837c0c14",
+        "raw-results.jsonl": "17456374f267ae0c40cad58d8326fb428b9749e5b2b6d4264da9b577b73735a1",
+        "scenarios.json": "6aff21464d218e5c8281b42e98cfc53466ae8827b9c15d56d9c1b3e4e2245a67",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "daee6d50aea54a25af3934c6009ce4d48178d62fc7e9ebe83b41d79907373dee",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 88,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0088",
+      "files_sha256": {
+        "summary.json": "6d261f9dd3976d52aa3d473372db09df637349d9bc0571a4a5060039bfeb1dc5",
+        "raw-results.jsonl": "3eccdc5477deba736f86771348068f74c8e84258e577146ca8743fad974256e5",
+        "scenarios.json": "2df21ca0c2cfa43ddaac2c05e79cbcd87e9ca6c476b0fd78e4397ed34810073c",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "17fabf568c31ad5335a4fad9ad625ccd7699d72d3a8005ae29d10bc7b97a4c17",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 89,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0089",
+      "files_sha256": {
+        "summary.json": "814dbb9fcbedef3e7f83205edfa99d1db169f2b2fe43ddef3d3e5c028712b0c6",
+        "raw-results.jsonl": "d1a914e1c862204ea536ab9cebbd41da1d8a60f5a2587bce0a598cf5d617937f",
+        "scenarios.json": "2153b519f0a91a15bb8464920353d46506405ec5a25d3d58f6fb1d5d4d8651d5",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "53857824a397268a47ac7050921ba4ce179fe1c1e574e9950419fcfe19bca654",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 5
+    },
+    {
+      "shard": 90,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0090",
+      "files_sha256": {
+        "summary.json": "9d980546df37ef39e6285246f9c271d9d34c23fe24088527ae6f0436c29a394a",
+        "raw-results.jsonl": "2181c8e8052ee4d9299fbd2f2e6a3fb9a21e9314bf83912120341a87cba995b9",
+        "scenarios.json": "44948307e585bf2e7e0769fd8ad9014cb74d86edad587393ce06948275eb7c63",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "30e38ca3cfde91a6300c7eaf95542287dac8595f00fac841b4eed720f8657e5f",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 91,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0091",
+      "files_sha256": {
+        "summary.json": "7670a4d1a5c61c4fc4446752a1eb93aa707b53c55387cab33767c17e5052f7fb",
+        "raw-results.jsonl": "7b9d6ec7865382c8e99c2b1ae3a09488f4c4ddba5729a0c47eee8d10132fd850",
+        "scenarios.json": "40f3a62a4a612b10e2d6345b206a00fca4f80e86b80f51d26acb7932e51c6c03",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "bc8ba461b85574306ab1dd56cf9823a7db86c742eb2ef371b12539754cb206f8",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 92,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0092",
+      "files_sha256": {
+        "summary.json": "8db6bc793bd80e691ee29359db49703f6c5487c335ef94d5c703a4d909b09dd5",
+        "raw-results.jsonl": "4a0702df023c452d641e43ea59f6408383b85ebd4e7cc4842a580db8765d8d2c",
+        "scenarios.json": "a30ee94eeee8ee07480d1c28126ba28a0c2490d9a802f6f88bba7d4e3248a1f3",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "4876d2b8adff7a8d4293fbd094d0a08e3067af6774db01357743778871c13c6b",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 93,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0093",
+      "files_sha256": {
+        "summary.json": "528959157750b1577df7bde99e987d7431a58550f99708b6dfb85176a7e72633",
+        "raw-results.jsonl": "76d53b1825a8239f209464b0abe877b2f2d2a70165716dd006f48639f376cd2d",
+        "scenarios.json": "913afa03582809a375857df199d195dbcfe67a7bb8795f73410ef2b4affd6934",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "0add1ddf5b6a8f1ba90da1ffffe7c88b8a18570a9fd8ee2ad71dad6ec3d7c79a",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 94,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0094",
+      "files_sha256": {
+        "summary.json": "abaf606f5ecb8dd4a59d6d22d480223c3300ac589cc039f81a0226155b9193f4",
+        "raw-results.jsonl": "64b0d1fd2e3b4aaa0c15c34078ac012524104794f1c425c30732b3a01dc7abf0",
+        "scenarios.json": "c33b650c435b09ab65ae96a4e4f6dbda81a4a69571c707769a0bd6639bdecbd1",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "4044a96ddd228a609015cdfe4d74a106a5da0d63fb1e9d5a0f524aec43ec36f1",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 95,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0095",
+      "files_sha256": {
+        "summary.json": "e93ac8d29d399f1cf0496504db472132d789f7779a5a51b3a83f46f604794364",
+        "raw-results.jsonl": "b239afbf085a3558d38003808abb378916deff770d9c88fb2857ea0860bba918",
+        "scenarios.json": "6ed3b68fd86ea0eebdbd99224138e46cdc0d1aab8229aadc590674c13e773762",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "facf074c71ba888548da5b16bb9ae31462bb7ef905746e73e355c765b1029c6e",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 96,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0096",
+      "files_sha256": {
+        "summary.json": "6b23d2dd5e45e6f23744d06aba46f8d26353cb0d5ed41c599f23caa1c4c5bbbf",
+        "raw-results.jsonl": "f084bcd1fa7f85d414fc51a11cb7b47eb580394fe5ff5a48fd1b94b1baf1a13c",
+        "scenarios.json": "c2a6b1e637ffa74dd8084a4b8e8518f1827dba9300f4bb81848d8e84424c4ca3",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "85924fa15a956ae6580a4cb8acd4745284f1582a403bb25b72c1d828239a0c66",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 97,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0097",
+      "files_sha256": {
+        "summary.json": "d729cebf9e73fc43b1a4203cde9974fd6c54d4058017800d67d535887bf38fba",
+        "raw-results.jsonl": "df416435590de9dc01bfd42371a8be9fe00cfd2c24827bbdbf4af15a9099ef69",
+        "scenarios.json": "00738b0f98e0f5d275a0541f7d180acce1d857ba99f46815e340461d0627b6ae",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "92b03f01b9e16e74e867545da9b8fc51dd6d68965f001308a1ecd8fdf2baafeb",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 98,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0098",
+      "files_sha256": {
+        "summary.json": "a59f521af6176169d50942d79c52435b8513a37e8c63c3054a7bcecbb3f22f5d",
+        "raw-results.jsonl": "3b6e3205beb32e1f4739e6aa23446965bfa05ce14f086ab5f77c65a2898c2541",
+        "scenarios.json": "6af52f5959e159a16fe0f14dcd9ac189a0b699c901f7d4863af5f7a2e45ac16f",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "6a6091cf55d80ef89b67b69710ba9e303ef11ee7419e0b268fe42cf94aeac6b0",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 99,
+      "path": "/projects/u6vs/hnc-organism/expansion-20260912/stage1-repair-v1/runs/recovery-6500368/shard-0099",
+      "files_sha256": {
+        "summary.json": "78a5016bf7ada8097404558d7503d50b235d7bddd6b11e7113ff983b63c1f4ef",
+        "raw-results.jsonl": "94bb29842a5f16174ddc42e5247eae8cc751649666e6e1197ff304f78d56ed4e",
+        "scenarios.json": "84a4d57ded1777a33f6bf26b342dbb4ddf43f11c848a6705c165b418fb76c778",
+        "input-sha256.txt": "9dced71aae51eea9838b190c3f1dc4031dd2d3d98c45378978595affd86bb4b4",
+        "models.json": "1119a9004d1cea997ba8a91403669b398af59af3fe038afc261891aa7acf045a",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 5
+    },
+    {
+      "shard": 100,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0100",
+      "files_sha256": {
+        "summary.json": "9980a00b47946f4a6131222be11976b492af631771860939984f3a732352368f",
+        "raw-results.jsonl": "8db0ca85efc9da967b493e1c94657e264e18a235347c8e13a21b9aaac00b629e",
+        "scenarios.json": "1252ef6d4ab0c22b2e03cc12019a068d46fa754223c192e7510648c72c5bb9d6",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "946164d848b8c6fd5ee234a732647e9d30f8229341e48cda64b545dec9fe21b9",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 101,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0101",
+      "files_sha256": {
+        "summary.json": "24d1914e4556f5f9e72d7566b12774d6f47b8458c46628704b12f60f055b19e5",
+        "raw-results.jsonl": "82483da3674fbf13a3ce95a05fa2f84f092620688e6e49bb56998fcf6f52257f",
+        "scenarios.json": "5586736aead61338cefe986e385e13f6afab266b26abec5b59debfa24c6afd2e",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "06d51db0d83849ce709103b9c0f8a135b061b2f34b424ca0b035b160949de886",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 102,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0102",
+      "files_sha256": {
+        "summary.json": "dd6b219aee7baafce7a50f40d3d009e11f8be510c5f59b35a9e29d129457ae21",
+        "raw-results.jsonl": "c89716dcdd36811a9ad4cf6f09c8967c0df480acf56a0afd888a036e20f46a05",
+        "scenarios.json": "fd6e59460b2e091102d5173652817336bab94dbefd42f7cae7d828092fd60981",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "34fa5a971a174025d0038cb0d5bb783d972b4970179561bc6780e1f923c03b25",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 103,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0103",
+      "files_sha256": {
+        "summary.json": "efb5ad1465ab72dc2597e34e06ef1cb247125f96e38b165bcc9a2fc33f0ca8dd",
+        "raw-results.jsonl": "2e12b969670f75c19b6028981d9d90dbb27b3438946b3606da2a64bbb9ceeaa6",
+        "scenarios.json": "43d90f8598c9fd1d8959c555c39f09134ebb888fcd6a89eba9a4cefb401b8be6",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "023d06e5dff650a2c4e69341e83fbedd4aa8df2fb23634b754fdc3470e27f042",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 5
+    },
+    {
+      "shard": 104,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0104",
+      "files_sha256": {
+        "summary.json": "b2672e921a6766a4d19645960a185b542fae99bf1014671a7fa76122d8a54d7f",
+        "raw-results.jsonl": "9976ed5fc43fa439e69118a84c2ea34d4947f87128ac792c93f1415cf9d47ccb",
+        "scenarios.json": "96c134959df3511c40471fa7644f4600114282563849da29768af3e7410ea3e2",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "b0d50def6585b5a9fbc2f865a839cfc96d4f17d258549164b3ab83f1b5be3a03",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 105,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0105",
+      "files_sha256": {
+        "summary.json": "049c547365b92accb8cd09573685ca31c086171cf9d05a85bf44f71fcf73732a",
+        "raw-results.jsonl": "70975a8c3dacaefea7b675a12c57342519634e6f8dc22611b2ce71334fdbda90",
+        "scenarios.json": "f65e177a97863f94d4127f3135693a4f49f88808142d9c0715071a3189283a1f",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "0287c554ef6188a7dece84c5b855d5c7fdf1205e69d41e980f9390565754fbf4",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 106,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0106",
+      "files_sha256": {
+        "summary.json": "1e19de23f092658d2d1558bf0d41e31916076d4eb13903aec83aa84c158e8e60",
+        "raw-results.jsonl": "943a69b391647d93049e5022be597ca55e0748770b1fdbb29f4e44b95d597549",
+        "scenarios.json": "e7213556955a10adbb324750ffeb0bf3d276db4e74306a5c86e1f4d754b4eeb3",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "439245f571c49a112111bb75740cab9ea250f12f6df97d43d5ae9f81a42e5be2",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 107,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0107",
+      "files_sha256": {
+        "summary.json": "fc8521200959c2aa1dbbca28d5d398de3e4c3d212e5b9dc60ad8ae05f240a64e",
+        "raw-results.jsonl": "204e7f45bf065101e964ec64a88e571ec80d48602124a1f76a0c59bae96775df",
+        "scenarios.json": "49aeca06371dea48ff4059812d80b8f8af366d3ac6ba44f4ef1ed842e5fdcd28",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "2028fb5d17fdcb2ea6bc3a3818ab4a464643b6fe0c0b2909c8babd9b42d43b75",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 108,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0108",
+      "files_sha256": {
+        "summary.json": "ed0b2f580ec92a79c86b671a266161d1005808befd4326988f2da20748a3ef78",
+        "raw-results.jsonl": "72ddff9b5b643c2c9a5dc7f8adfe802c6ee3b56d5d86be32cfc8f20bf71da3a7",
+        "scenarios.json": "b761a5183c4c8e0d375e04e3b5eeb97e3e027deba2aed0ee7efa191127064e39",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "3ae6d6da12737383c87d4d32b1591c379e8d925e9ae581a35faddd71bfdaf823",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 4
+    },
+    {
+      "shard": 109,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0109",
+      "files_sha256": {
+        "summary.json": "9ad0b410055c7768e5d7995f97b3cf39bd0cefcbfe77dafc79772f0c8feae898",
+        "raw-results.jsonl": "346b040a19293e0b93926ab086c86f96227d818da0ccefaa341b7f8b8b3081d2",
+        "scenarios.json": "4176cb994c7302f59fc5990d756e9aa907a6b577c1dcc88636612c1d1ec3f93f",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "188b3bc9e24b9f7e3cf49259aeeadf8afad02ca070fe45facf864c2da630e52a",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 110,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0110",
+      "files_sha256": {
+        "summary.json": "62a476fc113fef778bb2e220bb13189d50fc071de9faafc139bc07cd9dce0c12",
+        "raw-results.jsonl": "161b0139a865da908d6a1d3de934645e7dedb6c5f6dbbf55ab047b0ef03f815b",
+        "scenarios.json": "57fe66e06f975c2cb1a4d87f3273d68ddff226a23207f94a169c491bd46aea53",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "a3b04efc990c1efa064f999448ab4446197bc16f57020fbebea6729afc61c476",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 111,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0111",
+      "files_sha256": {
+        "summary.json": "4ee925bf1f5089cef4ad14d54bc734ae07c6ea9201d55c19a5579cb34ba4cef1",
+        "raw-results.jsonl": "39fabd0339e1a961955eca7a794de8a53b79439a9e72deaa60419f3dc9c78749",
+        "scenarios.json": "8e74266ea8abeb197a6975f6086360f715b3ee4ac5526211e05e143f850d7e26",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "5da3314839cabac48fe5a51f15d53343972ee40642bfa1c292e73ef375bf8821",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 112,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0112",
+      "files_sha256": {
+        "summary.json": "da7ae92ea482a8e30e2f4ed19e7dab05bc2f8628843b26de2d816e5141d307d2",
+        "raw-results.jsonl": "7a70f50cc1ee8bf9d87c401584a455d798c7a82489261176094db944ff9c7e44",
+        "scenarios.json": "fc33597bcb68181aca32c8f6f0767e0806b34b56a3a9ebe6dd153ff9d103c51a",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "10e24aa4832f852903141a86b2b1f0a2f90a57bc535278c7a155947bafb73ef6",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 113,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0113",
+      "files_sha256": {
+        "summary.json": "971a5faf2a713fea4c71c50abbd1cfa518e491535d79c9447f9c558913bc24f0",
+        "raw-results.jsonl": "4dde4ee3bcf70b1a3d339ef60c74332227f5bf63bdad1e92b0aefd31db5c5e6c",
+        "scenarios.json": "1e66d938053d2f999c887ee195c1f0ec285d413a5fadfb442fa3d84e73b0ce4c",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "5aadd88496713eef021c6f953b6d195e41fa36839c1060f71f8e3b237def3cde",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 4
+    },
+    {
+      "shard": 114,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0114",
+      "files_sha256": {
+        "summary.json": "bfae7bcc9cb9ea12667ce4e47afe0d056e9a7c52dc547cbc6e7d80d5e33dedab",
+        "raw-results.jsonl": "1a2d43fdc66d425d833ab0a3b676d55832af8c7b3fbf6e6f701490ed998d0c4a",
+        "scenarios.json": "fa99506718c5016c3523044594b1d122283dca6b67779f96b7685822db86d558",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "df3e70b75ab52602daaca7fb35161ca9fc1e40f4f03dd59991c0db93d3acbe91",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 4
+    },
+    {
+      "shard": 115,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0115",
+      "files_sha256": {
+        "summary.json": "71324edc46be979999e5f1ab6e94e5d022c0093e0abafa02db52d1c2f45846e2",
+        "raw-results.jsonl": "f36ab19f7588ac54110c453ee51f82aa810beecd81a8e7e12425754f5388251b",
+        "scenarios.json": "c06aa43e4e0d40d151294493e011c45b6c74aaff35bc00b63535ceaf9dfee9a4",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "2345c5b249402d18d66d331adc28f294bec9dab8275766fc11ab768291abe744",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 116,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0116",
+      "files_sha256": {
+        "summary.json": "49820593033b19c57d0f803f188051b83540fd1e27e9a95eb138c2987377217e",
+        "raw-results.jsonl": "983953e4d56c775e13ae0ffebfbcf70bb00e889685ff40a3ba38a49d00fa628b",
+        "scenarios.json": "7b09fdea845895dea645eefab15b7955e6d871b87008a8df9c7af7058cfb7207",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "cc6dc662064921da8fd83c3bcf711b57403195fb0d301db1bc8bc68b90c0c43a",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 5
+    },
+    {
+      "shard": 117,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0117",
+      "files_sha256": {
+        "summary.json": "2406baab68040cf2986e15fdebbe75cac29999b77451d0f47e3677a8ec4921c4",
+        "raw-results.jsonl": "d604345ed97b1960c7f1b017f1c2981eb233f698be983705de78537db229af65",
+        "scenarios.json": "dcb8553b1a6534d390e9f4f203638967097fe973862e08a3aa4cb62acf440581",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "50eb3abd3b0bdb8983123fb467580faffb2c5d0330a039aeff697dae3141bfc4",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 0
+    },
+    {
+      "shard": 118,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0118",
+      "files_sha256": {
+        "summary.json": "20067a1040da1958b28eddc3507960d9f7d9dbc668397848a4de9ce1908b85d7",
+        "raw-results.jsonl": "1a1094faa0abbb9d664475778d4800105d497b02e4eb101c1ee4a008ad623fc6",
+        "scenarios.json": "da3a5447e4bd47b529c3e439bdfccc62b2c5a6558f3713ed84414074962f5a31",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "ab9428e30a06f60b3c2155233f56c0cc24e20188b4c1c2d11339dc1cf425f9f5",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 119,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0119",
+      "files_sha256": {
+        "summary.json": "ce1b4b2ce0cedef20899feabf30c056fd7640fcd8386a4bdeca84508a9eb3ea9",
+        "raw-results.jsonl": "16ab877583b74ca4aab3a50620171981643f53598cd99d6c05ef540b67f6cc9c",
+        "scenarios.json": "78e89f94c321d19fa8c253746ee06791c12902d3e1577190f38cc63554885c4e",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "d65dbaa9576ae24ed93aebaac5c684297d7e3ea33642703928b02091a60a0bae",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 120,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0120",
+      "files_sha256": {
+        "summary.json": "7d7fde8062088b10c04daca28ffbc03c5b5641057795521079752c7dcc6a363b",
+        "raw-results.jsonl": "48fffc54174ba6b170e0da80dd1f597aba3aad216ee5890f6decde1f87d11453",
+        "scenarios.json": "0639b832b7107f2bb15d74393bec64cb949589048ac298dff857b4d09d20aa4a",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "d904a3477ff5fb2beb2f63335f4eebf032fd92b5846ba5a5a2c05b2d6755da60",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 6
+    },
+    {
+      "shard": 121,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0121",
+      "files_sha256": {
+        "summary.json": "a642a86ebf6293057140ea5ffa34e988b57e4ea5e29f58b007f15fdf5e1e0eab",
+        "raw-results.jsonl": "376ecbe88267d93ef3188749e0909e4e5a07492df6c7bcf03ac0fbaa6a63f7f0",
+        "scenarios.json": "7a2c90cd7b47bbe17d6e39c02c7ba155d447a9d6c89a133fc1470328a3c3001c",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "e18e7afabaf2b18f61753d3022406210e30521fc31b3e2b90d21747afc41d429",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 2
+    },
+    {
+      "shard": 122,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0122",
+      "files_sha256": {
+        "summary.json": "51ca551a2bbc4416aa122697927d798c1e2ca3667dc9f48bdf137c90e5744c6e",
+        "raw-results.jsonl": "299382d91bd9d85a3963f01fa0d6301ee548b105105d8c1dc30c66c8080bff9d",
+        "scenarios.json": "4fd6ed318d8b4e98335c27d95f74936bfe173accef033b2a929c4cf843ae9f37",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "9976d049028d3d838c31563723b05bc843981c4d4a1b0785a2876128732f4401",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 123,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0123",
+      "files_sha256": {
+        "summary.json": "d8fe4ba2a04d973357ce3e215ae9ba114a932d3eab035397d0434de7ea733cf4",
+        "raw-results.jsonl": "994ec35a26e6e99ec4cf772cb1273f84fb3784dea58006bfbde29b794ed23055",
+        "scenarios.json": "03b8766198d1456f05d9d4b341b4e7a2cf810094bbe0024b381bfd13de53ad6c",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "074529bc2e99137243a4ce616c47e3cef526a6704f725a052d35ccbdf8e7a045",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    },
+    {
+      "shard": 124,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0124",
+      "files_sha256": {
+        "summary.json": "f1a8476e51e9d9986bc8bb514040cf92a1b6f8d320c6583f0798b4e44b2f243b",
+        "raw-results.jsonl": "356501af167b7bf4002f174b5379c3950cc512cb66e9bb1015a54c0c32b02c49",
+        "scenarios.json": "726464fb8f618a2771fe29a5276fe180a9cc59eb2fe64f35442fd01120f0f041",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "f56f5220d816dab0a0f3989373a6118022e45161137084a7333f48f028678d5b",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 0
+    },
+    {
+      "shard": 125,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0125",
+      "files_sha256": {
+        "summary.json": "6c7ec86f5c2ccf5e81c2d44cf5b1fd34bbd98b1d0cd9cbd3fa0eb91d0415cacd",
+        "raw-results.jsonl": "87380847408dbd5b38956fc65f55b534f3cc7db7d2a29d3595d44781fb973cd2",
+        "scenarios.json": "0c0ab3d9776dc2e800e99e2bba4bb3bc7a27d6f6fbf66481421f2d7ccaee1ad7",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "4b2883e4bf2ba9a3fa66765207de9866f9d9647031672a4c65d5b7fe42fd5c2c",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 126,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0126",
+      "files_sha256": {
+        "summary.json": "35151f812b2320fc1ff8595f3e70d1627484bf55666b930f2a2fcb3a6f68d4c0",
+        "raw-results.jsonl": "992c7c2773dd6096a29feeb9778039d4067d3b2424d0b4e4d01bcf9043256861",
+        "scenarios.json": "ce8789a4e11980261230391b6649e156b368e1bb301e0ff9d02a7d475dc42bb6",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "68b9fac97c48cbf0f21ad486653de850b17f2fe796ed8778443e3a914bf41014",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 3
+    },
+    {
+      "shard": 127,
+      "path": "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/runs/aureon-full-organism-s1-kfix-6347216/shard-0127",
+      "files_sha256": {
+        "summary.json": "43ce81bf7f31b9dc0b533dfdad9c96cd5c18872c4284df24d7bcb757402ad73c",
+        "raw-results.jsonl": "900b499566208686b0b12324d9aafac2fec91aadacd1eefb4971b62e0156703a",
+        "scenarios.json": "3d1c4cb5dedc83f23e13b918804b077dcbb2ef9e1a8cbc2b6397662c221d6108",
+        "input-sha256.txt": "c816384f6cfc11b29a50269bcc7536cbc49b7ae013973150cf0eac9dd8263c49",
+        "models.json": "dac8f8ce9412fe59a8dd90481fd9538e1bfa5cff7564380188f20559321056b3",
+        "vllm-version.txt": "44abf66b02260179b3a509b0f10b5f26f431f316ef4ca50f18764c9e4b8cfd4a"
+      },
+      "invalid_model_json": 1
+    }
+  ],
+  "by_condition": {
+    "full_organism": {
+      "n": 10240,
+      "score": 0.63070143,
+      "verdict_accuracy": 0.65976563,
+      "action_accuracy": 0.18789063,
+      "source_completeness": 0.88876953,
+      "brier": 0.6515306,
+      "json_validity": 0.99736328,
+      "latency_seconds": 3.41966942
+    },
+    "frozen_baseline": {
+      "n": 10240,
+      "score": 0.64599318,
+      "verdict_accuracy": 0.67695313,
+      "action_accuracy": 0.22109375,
+      "source_completeness": 0.89882812,
+      "brier": 0.64924784,
+      "json_validity": 1.0,
+      "latency_seconds": 2.45236572
+    },
+    "prompt_only_identity": {
+      "n": 10240,
+      "score": 0.63169674,
+      "verdict_accuracy": 0.63378906,
+      "action_accuracy": 0.23408203,
+      "source_completeness": 0.88759766,
+      "brier": 0.64450723,
+      "json_validity": 0.99990234,
+      "latency_seconds": 2.43411773
+    },
+    "neutral_labels": {
+      "n": 10240,
+      "score": 0.65657926,
+      "verdict_accuracy": 0.70576172,
+      "action_accuracy": 0.23486328,
+      "source_completeness": 0.87998047,
+      "brier": 0.63083824,
+      "json_validity": 0.99785156,
+      "latency_seconds": 2.87513649
+    },
+    "no_memory": {
+      "n": 10240,
+      "score": 0.61910022,
+      "verdict_accuracy": 0.63486328,
+      "action_accuracy": 0.16103516,
+      "source_completeness": 0.89658203,
+      "brier": 0.64127323,
+      "json_validity": 0.99667969,
+      "latency_seconds": 2.87553385
+    },
+    "no_metacognition": {
+      "n": 10240,
+      "score": 0.62967792,
+      "verdict_accuracy": 0.65966797,
+      "action_accuracy": 0.17929687,
+      "source_completeness": 0.89003906,
+      "brier": 0.6475079,
+      "json_validity": 0.99785156,
+      "latency_seconds": 2.78109533
+    },
+    "no_affect_heart": {
+      "n": 10240,
+      "score": 0.63220253,
+      "verdict_accuracy": 0.63164062,
+      "action_accuracy": 0.21455078,
+      "source_completeness": 0.90839844,
+      "brier": 0.62934187,
+      "json_validity": 0.99648437,
+      "latency_seconds": 2.92618186
+    },
+    "no_conscience_simulation_only": {
+      "n": 10240,
+      "score": 0.63949445,
+      "verdict_accuracy": 0.68476563,
+      "action_accuracy": 0.19287109,
+      "source_completeness": 0.87246094,
+      "brier": 0.63049498,
+      "json_validity": 0.99873047,
+      "latency_seconds": 2.686578
+    },
+    "field_disconnected": {
+      "n": 10240,
+      "score": 0.62666695,
+      "verdict_accuracy": 0.58134766,
+      "action_accuracy": 0.26601562,
+      "source_completeness": 0.91220703,
+      "brier": 0.61863319,
+      "json_validity": 0.99609375,
+      "latency_seconds": 2.73219857
+    },
+    "auris_shuffled": {
+      "n": 10240,
+      "score": 0.61626949,
+      "verdict_accuracy": 0.61289063,
+      "action_accuracy": 0.18017578,
+      "source_completeness": 0.91630859,
+      "brier": 0.67275436,
+      "json_validity": 0.99824219,
+      "latency_seconds": 2.71944466
+    },
+    "no_auris": {
+      "n": 10240,
+      "score": 0.63947833,
+      "verdict_accuracy": 0.64667969,
+      "action_accuracy": 0.22724609,
+      "source_completeness": 0.90859375,
+      "brier": 0.63441588,
+      "json_validity": 0.99609375,
+      "latency_seconds": 2.69187515
+    },
+    "no_queen": {
+      "n": 10240,
+      "score": 0.65596128,
+      "verdict_accuracy": 0.67646484,
+      "action_accuracy": 0.25244141,
+      "source_completeness": 0.89238281,
+      "brier": 0.59370752,
+      "json_validity": 0.99736328,
+      "latency_seconds": 2.65513849
+    }
+  },
+  "primary_exploratory": [
+    {
+      "left": "full_organism",
+      "right": "frozen_baseline",
+      "metric": "score",
+      "paired_response_count": 10240,
+      "cluster_count": 128,
+      "mean_difference": -0.01529175,
+      "bootstrap_95_ci": [
+        -0.01991745,
+        -0.01066737
+      ],
+      "cluster_unit": "shard"
+    },
+    {
+      "left": "full_organism",
+      "right": "frozen_baseline",
+      "metric": "verdict_accuracy",
+      "paired_response_count": 10240,
+      "cluster_count": 128,
+      "mean_difference": -0.0171875,
+      "bootstrap_95_ci": [
+        -0.02841797,
+        -0.00595703
+      ],
+      "cluster_unit": "shard"
+    }
+  ],
+  "exploratory_advantage_rule_met": false,
+  "invalid_by_condition": {
+    "neutral_labels": 22,
+    "auris_shuffled": 18,
+    "field_disconnected": 40,
+    "no_memory": 34,
+    "no_queen": 27,
+    "no_auris": 40,
+    "full_organism": 27,
+    "no_conscience_simulation_only": 13,
+    "no_metacognition": 22,
+    "no_affect_heart": 36,
+    "prompt_only_identity": 1
+  }
+}

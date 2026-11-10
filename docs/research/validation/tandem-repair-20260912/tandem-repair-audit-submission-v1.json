@@ -1,0 +1,13 @@
+{
+  "job_id": "6506656",
+  "remote": "/projects/u6vs/hnc-organism/expansion-20260912/tandem-audit-v1",
+  "archive_sha256": "f2a35446031d5a114ef58be93a79497871d489a10691621e437561c48858b676",
+  "manifest_sha256": "6478d963bfef6ffa948ee57dff391385f64e71fa478376c185b03e764101ae24",
+  "command": [
+    "sbatch",
+    "--parsable",
+    "--dependency=afterany:6506509",
+    "/projects/u6vs/hnc-organism/expansion-20260912/tandem-audit-v1/audit.sbatch"
+  ],
+  "submitted_utc": "2026-09-12T17:02:34.728148+00:00"
+}

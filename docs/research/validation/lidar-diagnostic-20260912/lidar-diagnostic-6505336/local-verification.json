@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "verified_utc": "2026-09-12T16:12:21.106788+00:00",
+  "members_verified": 274,
+  "archive_sha256": "b357480b54e4ba14def1835809d07839b03daf6395d2725943434162ea02869f",
+  "records": 130,
+  "test_examples": 1290000,
+  "calibration_examples": 387000,
+  "locally_verified_image_pairs": 1040,
+  "numerically_checked_methods_per_image": 16,
+  "all_recorded_method_metrics": 20,
+  "analysis_reproduced_exactly": true,
+  "analysis_maximum_float_difference": 0.0,
+  "accounting": "JobID|State|ExitCode|ElapsedRaw|AllocNodes\n6505264|FAILED|1:0|9|1\n6505275|COMPLETED|0:0|16|1\n6505304|COMPLETED|0:0|53|1\n6505336|COMPLETED|0:0|161|1\n",
+  "comparison_to_remote_checks": "Per-record hashes and metrics exact; independent NumPy map differences may vary slightly by CPU platform."
+}

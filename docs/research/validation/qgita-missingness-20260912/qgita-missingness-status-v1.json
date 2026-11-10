@@ -1,0 +1,293 @@
+{
+  "observed_utc": "2026-09-12T15:24:28.304794+00:00",
+  "accounting": {
+    "6504865": {
+      "JobID": "6504865",
+      "State": "COMPLETED",
+      "ExitCode": "0:0",
+      "ElapsedRaw": "16",
+      "AllocNodes": "1"
+    },
+    "6504865.batch": {
+      "JobID": "6504865.batch",
+      "State": "COMPLETED",
+      "ExitCode": "0:0",
+      "ElapsedRaw": "16",
+      "AllocNodes": "1"
+    },
+    "6504958": {
+      "JobID": "6504958",
+      "State": "COMPLETED",
+      "ExitCode": "0:0",
+      "ElapsedRaw": "17",
+      "AllocNodes": "1"
+    },
+    "6504958.batch": {
+      "JobID": "6504958.batch",
+      "State": "COMPLETED",
+      "ExitCode": "0:0",
+      "ElapsedRaw": "17",
+      "AllocNodes": "1"
+    },
+    "6504999": {
+      "JobID": "6504999",
+      "State": "COMPLETED",
+      "ExitCode": "0:0",
+      "ElapsedRaw": "134",
+      "AllocNodes": "1"
+    },
+    "6504999.batch": {
+      "JobID": "6504999.batch",
+      "State": "COMPLETED",
+      "ExitCode": "0:0",
+      "ElapsedRaw": "134",
+      "AllocNodes": "1"
+    },
+    "6505031": {
+      "JobID": "6505031",
+      "State": "COMPLETED",
+      "ExitCode": "0:0",
+      "ElapsedRaw": "146",
+      "AllocNodes": "1"
+    },
+    "6505031.batch": {
+      "JobID": "6505031.batch",
+      "State": "COMPLETED",
+      "ExitCode": "0:0",
+      "ElapsedRaw": "146",
+      "AllocNodes": "1"
+    }
+  },
+  "full_out": [
+    "{\"dataset_id\": \"240\", \"blocks_created\": 37, \"blocks_reused\": 0, \"new_mask_sets_computed\": 207, \"total_sets_by_phase\": {\"historical\": 15, \"new_masks\": 192}, \"elapsed_seconds\": 85.84428991400637, \"peak_rss_KiB\": 371392, \"clean_sha256\": \"325eb0d6a396f0a9c2d9cc240d98e9e75f1a6119ca62038be0c11133df1da457\"}",
+    "{\"dataset_id\": \"241\", \"blocks_created\": 37, \"blocks_reused\": 0, \"new_mask_sets_computed\": 207, \"total_sets_by_phase\": {\"historical\": 15, \"new_masks\": 192}, \"elapsed_seconds\": 85.62605076099862, \"peak_rss_KiB\": 387968, \"clean_sha256\": \"9c696956710ab5d3a0edfd49c7cf0d8e4a88fc53fa8daa7186f1d1e8a51c7cfb\"}",
+    "{\"dataset_id\": \"242\", \"blocks_created\": 30, \"blocks_reused\": 7, \"new_mask_sets_computed\": 180, \"total_sets_by_phase\": {\"historical\": 15, \"new_masks\": 192}, \"elapsed_seconds\": 29.43832036398817, \"peak_rss_KiB\": 79872, \"clean_sha256\": \"459c96abdef242199a088c7bc51dda70687152062bb39441ce13b249f6a6f99e\"}",
+    "{\"dataset_id\": \"243\", \"blocks_created\": 37, \"blocks_reused\": 0, \"new_mask_sets_computed\": 207, \"total_sets_by_phase\": {\"historical\": 15, \"new_masks\": 192}, \"elapsed_seconds\": 27.78048733100877, \"peak_rss_KiB\": 79872, \"clean_sha256\": \"d5234378355ad3b57455bc333ac5622aaf0977050602deb470aba24b244632ac\"}",
+    "{\"dataset_id\": \"244\", \"blocks_created\": 30, \"blocks_reused\": 7, \"new_mask_sets_computed\": 180, \"total_sets_by_phase\": {\"historical\": 15, \"new_masks\": 192}, \"elapsed_seconds\": 29.656121195992455, \"peak_rss_KiB\": 114304, \"clean_sha256\": \"43915242c0b1d7b1f057627d25580a532a66564f04bb87c5e4dceeb2b80994a0\"}",
+    "{\"dataset_id\": \"245\", \"blocks_created\": 37, \"blocks_reused\": 0, \"new_mask_sets_computed\": 207, \"total_sets_by_phase\": {\"historical\": 15, \"new_masks\": 192}, \"elapsed_seconds\": 32.62160056701396, \"peak_rss_KiB\": 114176, \"clean_sha256\": \"c41a94edafcb3458a2ca6a7a3b56a8324c96be143f4ce4e6694735dc798fa468\"}",
+    "{\"dataset_id\": \"246\", \"blocks_created\": 30, \"blocks_reused\": 7, \"new_mask_sets_computed\": 180, \"total_sets_by_phase\": {\"historical\": 15, \"new_masks\": 192}, \"elapsed_seconds\": 29.122223714977736, \"peak_rss_KiB\": 116736, \"clean_sha256\": \"9bbcc412bb6fbe0e5742e71e655265ae30182c099285d558275794f8d2e81a16\"}",
+    "{\"dataset_id\": \"247\", \"blocks_created\": 37, \"blocks_reused\": 0, \"new_mask_sets_computed\": 207, \"total_sets_by_phase\": {\"historical\": 15, \"new_masks\": 192}, \"elapsed_seconds\": 23.868287566991057, \"peak_rss_KiB\": 79872, \"clean_sha256\": \"8032f61c7beefdbc08d85efc3609f2d1ad6ac43d6050418d0183e6637d586e3b\"}",
+    "{\"dataset_id\": \"248\", \"blocks_created\": 30, \"blocks_reused\": 7, \"new_mask_sets_computed\": 180, \"total_sets_by_phase\": {\"historical\": 15, \"new_masks\": 192}, \"elapsed_seconds\": 1.0045024749997538, \"peak_rss_KiB\": 79872, \"clean_sha256\": \"87584df98caaf81f5296864b9e037060f81ab5ff9bd9471dc39516c865776220\"}",
+    "{\"dataset_id\": \"249\", \"blocks_created\": 37, \"blocks_reused\": 0, \"new_mask_sets_computed\": 207, \"total_sets_by_phase\": {\"historical\": 15, \"new_masks\": 192}, \"elapsed_seconds\": 1.3086593330081087, \"peak_rss_KiB\": 43008, \"clean_sha256\": \"c377a1ecbdb4fe411fad5d74cb6e81b18637204aa4c4d621076c9dda935c12c2\"}",
+    "{\"dataset_id\": \"250\", \"blocks_created\": 37, \"blocks_reused\": 0, \"new_mask_sets_computed\": 207, \"total_sets_by_phase\": {\"historical\": 15, \"new_masks\": 192}, \"elapsed_seconds\": 1.290425510989735, \"peak_rss_KiB\": 43008, \"clean_sha256\": \"a9d09af4c4a3bdb419535aaea144a59f002d4738080bd004ddb6b7b79c43b068\"}",
+    "{\"schema\": \"qgita-missingness-wave/v1\", \"status\": \"COMPLETE\", \"job\": \"6504999\", \"pilot\": false, \"config_sha256\": \"6542b5da1898b69963255054fc9fcd7c3917cc5bf8e037883c68373decb7675d\", \"input_manifest_sha256\": \"18df898020d3a966581c80471aecfb82a80eb8e28d8d21e5883c7ea935838f22\", \"series\": 250, \"workers\": 32, \"new_replicates\": 32, \"elapsed_seconds\": 129.94517636101227, \"completed_utc\": \"2026-09-12T15:21:38.473584+00:00\"}"
+  ],
+  "full_err": [
+    "test_control_and_imputed_attribution (__main__.MissingChecks.test_control_and_imputed_attribution) ... ok",
+    "test_independent_scalar_oracle (__main__.MissingChecks.test_independent_scalar_oracle) ... ok",
+    "test_invalid_inputs_rejected (__main__.MissingChecks.test_invalid_inputs_rejected) ... ok",
+    "test_masked_values_cannot_change_output (__main__.MissingChecks.test_masked_values_cannot_change_output) ... ok",
+    "test_no_evidence_abstains (__main__.MissingChecks.test_no_evidence_abstains) ... ok",
+    "test_prefix_causality (__main__.MissingChecks.test_prefix_causality) ... ok",
+    "test_tie_rule_earliest (__main__.MissingChecks.test_tie_rule_earliest) ... ok",
+    "",
+    "----------------------------------------------------------------------",
+    "Ran 8 tests in 0.062s",
+    "",
+    "OK"
+  ],
+  "audit_out": [
+    "              -0.01403719925264243",
+    "            ],",
+    "            \"centered_bootstrap_two_sided_p\": 4.999750012499375e-05",
+    "          }",
+    "        },",
+    "        \"noninferior_to_clean\": true,",
+    "        \"mean_scoreable_fraction\": 0.9044307233552566",
+    "      }",
+    "    }",
+    "  }",
+    "}",
+    "{\"archive\": \"/projects/u6vs/hnc-organism/expansion-20260912/qgita-missingness-audit-v1/evidence-6505031.tar.gz\", \"bytes\": 7856042, \"sha256\": \"52e8da3b3751f7fb8960bc8c793e0ae3c0be19a6d8dc163f4d8a443f5f9ace9e\", \"source_arrays_exported\": false}"
+  ],
+  "audit_err": [
+    "test_analytic_family_contrasts (__main__.AuditChecks.test_analytic_family_contrasts) ... ok",
+    "test_independent_bank_and_endpoint (__main__.AuditChecks.test_independent_bank_and_endpoint) ... ok",
+    "",
+    "----------------------------------------------------------------------",
+    "Ran 2 tests in 0.058s",
+    "",
+    "OK"
+  ],
+  "audit_summary": {
+    "status": "PASS",
+    "verified_mask_sets": 51750,
+    "verified_candidate_control_outcomes": 103500
+  },
+  "new_mask_results": {
+    "mcar_01": {
+      "family_macro": {
+        "clean": 0.28551631304188846,
+        "locf": 0.15543647728550222,
+        "observed": 0.28402505101374187
+      },
+      "contrasts": {
+        "observed_minus_locf": {
+          "estimate": 0.12858857372823965,
+          "percentile_95_interval": [
+            0.05692802312377519,
+            0.21271412513972154
+          ],
+          "centered_bootstrap_two_sided_p": 0.0014999250037498126,
+          "holm_adjusted_p": 0.0015999200039998
+        },
+        "observed_minus_clean": {
+          "estimate": -0.0014912620281466189,
+          "percentile_95_interval": [
+            -0.0030963224937759415,
+            -0.00013319231519759125
+          ],
+          "centered_bootstrap_two_sided_p": 0.04844757762111895
+        }
+      },
+      "noninferior_to_clean": true,
+      "mean_scoreable_fraction": 0.989997803386954
+    },
+    "mcar_05": {
+      "family_macro": {
+        "clean": 0.28551631304188846,
+        "locf": 0.14146466167925567,
+        "observed": 0.28339080374726155
+      },
+      "contrasts": {
+        "observed_minus_locf": {
+          "estimate": 0.1419261420680059,
+          "percentile_95_interval": [
+            0.06739652945715126,
+            0.22833106152714316
+          ],
+          "centered_bootstrap_two_sided_p": 0.0007999600019999,
+          "holm_adjusted_p": 0.0015999200039998
+        },
+        "observed_minus_clean": {
+          "estimate": -0.002125509294626937,
+          "percentile_95_interval": [
+            -0.007064843724050882,
+            0.003715761656688368
+          ],
+          "centered_bootstrap_two_sided_p": 0.4309284535773211
+        }
+      },
+      "noninferior_to_clean": true,
+      "mean_scoreable_fraction": 0.950002940787497
+    },
+    "mcar_10": {
+      "family_macro": {
+        "clean": 0.28551631304188846,
+        "locf": 0.12868064573427426,
+        "observed": 0.275280549963854
+      },
+      "contrasts": {
+        "observed_minus_locf": {
+          "estimate": 0.14659990422957972,
+          "percentile_95_interval": [
+            0.07601159972396088,
+            0.2283405472815139
+          ],
+          "centered_bootstrap_two_sided_p": 0.00034998250087495624,
+          "holm_adjusted_p": 0.0010499475026248687
+        },
+        "observed_minus_clean": {
+          "estimate": -0.010235763078034494,
+          "percentile_95_interval": [
+            -0.021098953047032885,
+            0.0014890771598082505
+          ],
+          "centered_bootstrap_two_sided_p": 0.07404629768511574
+        }
+      },
+      "noninferior_to_clean": true,
+      "mean_scoreable_fraction": 0.8999979783762072
+    },
+    "mcar_20": {
+      "family_macro": {
+        "clean": 0.28551631304188846,
+        "locf": 0.12072051800412574,
+        "observed": 0.26449684992384
+      },
+      "contrasts": {
+        "observed_minus_locf": {
+          "estimate": 0.14377633191971426,
+          "percentile_95_interval": [
+            0.07677877769364942,
+            0.22073840522245042
+          ],
+          "centered_bootstrap_two_sided_p": 0.00024998750062496874,
+          "holm_adjusted_p": 0.000999950002499875
+        },
+        "observed_minus_clean": {
+          "estimate": -0.021019463118048472,
+          "percentile_95_interval": [
+            -0.03972652784018872,
+            -0.001609013455640698
+          ],
+          "centered_bootstrap_two_sided_p": 0.030848457577121145
+        }
+      },
+      "noninferior_to_clean": true,
+      "mean_scoreable_fraction": 0.7995914459058617
+    },
+    "burst_05": {
+      "family_macro": {
+        "clean": 0.28551631304188846,
+        "locf": 0.1334629305317445,
+        "observed": 0.2761638180216345
+      },
+      "contrasts": {
+        "observed_minus_locf": {
+          "estimate": 0.14270088748989004,
+          "percentile_95_interval": [
+            0.07783123609260519,
+            0.21325647205522527
+          ],
+          "centered_bootstrap_two_sided_p": 0.00014999250037498125,
+          "holm_adjusted_p": 0.0008999550022498875
+        },
+        "observed_minus_clean": {
+          "estimate": -0.009352495020253971,
+          "percentile_95_interval": [
+            -0.01620642181618644,
+            -0.004054771993201103
+          ],
+          "centered_bootstrap_two_sided_p": 0.005499725013749313
+        }
+      },
+      "noninferior_to_clean": true,
+      "mean_scoreable_fraction": 0.9509399335089057
+    },
+    "burst_10": {
+      "family_macro": {
+        "clean": 0.28551631304188846,
+        "locf": 0.12008719425998837,
+        "observed": 0.2613117105214691
+      },
+      "contrasts": {
+        "observed_minus_locf": {
+          "estimate": 0.14122451626148075,
+          "percentile_95_interval": [
+            0.07824069117312604,
+            0.20940388520726397
+          ],
+          "centered_bootstrap_two_sided_p": 0.00014999250037498125,
+          "holm_adjusted_p": 0.0008999550022498875
+        },
+        "observed_minus_clean": {
+          "estimate": -0.024204602520419335,
+          "percentile_95_interval": [
+            -0.03491365982629369,
+            -0.01403719925264243
+          ],
+          "centered_bootstrap_two_sided_p": 4.999750012499375e-05
+        }
+      },
+      "noninferior_to_clean": true,
+      "mean_scoreable_fraction": 0.9044307233552566
+    }
+  },
+  "export": {
+    "archive": "/projects/u6vs/hnc-organism/expansion-20260912/qgita-missingness-audit-v1/evidence-6505031.tar.gz",
+    "bytes": 7856042,
+    "sha256": "52e8da3b3751f7fb8960bc8c793e0ae3c0be19a6d8dc163f4d8a443f5f9ace9e",
+    "source_arrays_exported": false
+  }
+}

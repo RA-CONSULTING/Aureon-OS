@@ -1,0 +1,20 @@
+[
+  {
+    "path": "public/celtic-ogham-feda.json",
+    "blob": "cb14d19823a5e6747738974125cffa152356d99e",
+    "sha256": "1f3964df68fad98c62cb05d0e1ae0cac523c59f9bcc74eda596ff09054055bef",
+    "local": "C:\\Users\\samle\\Documents\\Codex\\2026-09-05\\k\\work\\legacy-system-review\\code\\celtic-ogham-feda.json"
+  },
+  {
+    "path": "aureon/decoders/celtic_ogham.py",
+    "blob": "ab6830d0b940191e916ebfe90ca8823f340ecd80",
+    "sha256": "bf33706dc5b28f1c96b74d1c9dbc4996e9914990be5df8af43d03acf5a91efcd",
+    "local": "C:\\Users\\samle\\Documents\\Codex\\2026-09-05\\k\\work\\legacy-system-review\\code\\celtic_ogham.py"
+  },
+  {
+    "path": "docs/research/ANCIENT_CONVERGENCE.md",
+    "blob": "7660ec040d93b78538bf7a4bd13e8be841b59cce",
+    "sha256": "c5ccfed396054d0705b57b7215e0c8c62a89d000a1ea867764dce421651ba59b",
+    "local": "C:\\Users\\samle\\Documents\\Codex\\2026-09-05\\k\\work\\legacy-system-review\\code\\ANCIENT_CONVERGENCE.md"
+  }
+]

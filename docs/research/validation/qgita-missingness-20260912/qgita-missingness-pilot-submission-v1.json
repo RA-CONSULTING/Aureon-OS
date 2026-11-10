@@ -1,0 +1,12 @@
+{
+  "job_id": "6504958",
+  "remote": "/projects/u6vs/hnc-organism/expansion-20260912/qgita-missingness-v1",
+  "archive_sha256": "580b28d266d06ea0f1c032e6c7eb1cfe9803e47155c6df60e19d7ed3f10d5597",
+  "manifest_sha256": "18df898020d3a966581c80471aecfb82a80eb8e28d8d21e5883c7ea935838f22",
+  "command": [
+    "sbatch",
+    "--parsable",
+    "/projects/u6vs/hnc-organism/expansion-20260912/qgita-missingness-v1/pilot.sbatch"
+  ],
+  "submitted_utc": "2026-09-12T15:13:45.558907+00:00"
+}

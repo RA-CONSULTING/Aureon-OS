@@ -1,0 +1,128 @@
+{
+  "job_id": "6506293",
+  "remote": "/projects/u6vs/hnc-organism/expansion-20260912/tandem-repair-v1",
+  "manifest_sha256": "ecea7bc161a3c0daafa198758d13b7889ba144f8fd7a17472c1b7d670674016e",
+  "command": [
+    "sbatch",
+    "--parsable",
+    "/projects/u6vs/hnc-organism/expansion-20260912/tandem-repair-v1/pilot.sbatch"
+  ],
+  "submitted_utc": "2026-09-12T16:48:15.748963+00:00",
+  "preflight_job_id": "6506231",
+  "preflight": {
+    "passed": true,
+    "checks": [
+      {
+        "name": "archived_historical_stream_exact",
+        "shard": 0,
+        "trials": 256,
+        "fields": 12,
+        "passed": true
+      },
+      {
+        "name": "archived_historical_stream_exact",
+        "shard": 31,
+        "trials": 256,
+        "fields": 12,
+        "passed": true
+      },
+      {
+        "name": "native_whitening_dense_covariance_precision_identity",
+        "sizes": [
+          8,
+          33,
+          128
+        ],
+        "noise_models": 3,
+        "passed": true
+      },
+      {
+        "name": "population_variance_noise_is_not_fixed_record_rms",
+        "rms_std": 0.175486166404779,
+        "passed": true
+      },
+      {
+        "name": "conditional_gaussian_bound_and_glrt",
+        "critical_distance_for_80_percent": 3.0117116111574744,
+        "passed": true
+      },
+      {
+        "name": "sampling_alias_identity",
+        "aliases": [
+          {
+            "stated_hz": 528.0,
+            "signed_alias_hz": -472.0
+          },
+          {
+            "stated_hz": 639.0,
+            "signed_alias_hz": -361.0
+          },
+          {
+            "stated_hz": 741.0,
+            "signed_alias_hz": -259.0
+          },
+          {
+            "stated_hz": 852.0,
+            "signed_alias_hz": -148.0
+          },
+          {
+            "stated_hz": 963.0,
+            "signed_alias_hz": -37.0
+          }
+        ],
+        "passed": true
+      },
+      {
+        "name": "finite_amended_generator_and_selection",
+        "stage": "population_noise",
+        "passed": true
+      },
+      {
+        "name": "finite_amended_generator_and_selection",
+        "stage": "beta_one",
+        "passed": true
+      },
+      {
+        "name": "finite_amended_generator_and_selection",
+        "stage": "nonselected_echo",
+        "passed": true
+      },
+      {
+        "name": "finite_amended_generator_and_selection",
+        "stage": "sampling_2000",
+        "passed": true
+      },
+      {
+        "name": "finite_amended_generator_and_selection",
+        "stage": "duration_8192ms",
+        "passed": true
+      },
+      {
+        "name": "finite_amended_generator_and_selection",
+        "stage": "duration_32768ms",
+        "passed": true
+      }
+    ],
+    "native_library_sha256": "9207b8f2e2410b707e67b397152b636dffac625ad4a7fc7077a7b44a1b30af3d",
+    "native_build": {
+      "source_sha256": "29331187f0a045dfc20b354f912058186061b406b50f2743910589efe3b0ad6d",
+      "library_sha256": "9207b8f2e2410b707e67b397152b636dffac625ad4a7fc7077a7b44a1b30af3d",
+      "command": [
+        "g++",
+        "-O2",
+        "-shared",
+        "-fPIC",
+        "-ffp-contract=off",
+        "-o",
+        "/projects/u6vs/hnc-organism/expansion-20260912/tandem-repair-v1/whiten-29331187f0a045df.163975.tmp.so",
+        "/projects/u6vs/hnc-organism/expansion-20260912/tandem-repair-v1/whiten.cpp"
+      ],
+      "compiler": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0"
+    },
+    "runtime": {
+      "torch": "2.8.0a0+5228986c39.nv25.05",
+      "device": "NVIDIA GH200 120GB"
+    }
+  },
+  "preflight_accounting": "6506231|COMPLETED|0:0|18\n6506231.batch|COMPLETED|0:0|18\n"
+}

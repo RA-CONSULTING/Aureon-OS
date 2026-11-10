@@ -1,0 +1,3 @@
+A  aureon/wisdom/maeshowe_epigraphy.py
+M  aureon/wisdom/maeshowe_seer_decode.py
+A  tests/research/test_maeshowe_epigraphy.py

@@ -1,0 +1,21 @@
+d3f92d2d8e107e0400271273ac86dba33fdb7301.docx: OK
+d3f92d2d8e107e0400271273ac86dba33fdb7301.txt: OK
+d4662f447ac00ba405510a28491e71bbf8e70dec.docx: OK
+d4662f447ac00ba405510a28491e71bbf8e70dec.txt: OK
+diagnostic-config.json: OK
+diagnostic.py: OK
+full.sbatch: OK
+harmonic_lidar_benchmark.py: OK
+original-000.json: OK
+original-032.json: OK
+original-verified-summary.json: OK
+paper-provenance.json: OK
+pilot.sbatch: OK
+PROTOCOL-AMENDMENT.md: OK
+protocol.json: OK
+run_diagnostic.py: OK
+SOURCE_AUDIT.md: OK
+test_diagnostic.py: OK
+{"passed": true, "grouped_checks": 9}
+{"stem": "historical-000", "seconds": 1.3960259320156183, "methods": {"phi2": 0.51, "sqrt2": 0.5067, "phi": 0.5088, "octave": 0.514, "three": 0.5058, "linear_frequency": 0.4986, "laplacian_of_gaussian": 0.5113, "jitter_null_00": 0.5079, "jitter_null_01": 0.5061, "jitter_null_02": 0.5093, "jitter_null_03": 0.5132, "phi2_roi": 0.5363, "whitened_phi2_roi": 0.527, "whitened_log_roi": 0.5268, "matched_gaussian_roi": 0.5776, "matched_ring_roi": 0.6344, "truth_location_phi2": 0.6423, "truth_location_whitened_phi2": 0.5601, "truth_location_matched_ring": 0.8498, "truth_shape_location_matched": 0.944}}
+{"stem": "historical-032", "seconds": 0.89911786900484, "methods": {"phi2": 0.5197, "sqrt2": 0.5122, "phi": 0.5198, "octave": 0.5239, "three": 0.4993, "linear_frequency": 0.4905, "laplacian_of_gaussian": 0.5238, "jitter_null_00": 0.5145, "jitter_null_01": 0.5162, "jitter_null_02": 0.5142, "jitter_null_03": 0.5221, "phi2_roi": 0.5384, "whitened_phi2_roi": 0.5088, "whitened_log_roi": 0.5057, "matched_gaussian_roi": 0.5383, "matched_ring_roi": 0.5764, "truth_location_phi2": 0.6397, "truth_location_whitened_phi2": 0.525, "truth_location_matched_ring": 0.7431, "truth_shape_location_matched": 0.8508}}

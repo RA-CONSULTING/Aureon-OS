@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "verified_utc": "2026-09-12T14:50:01.139104+00:00",
+  "archive_sha256": "a0ef39e6531a5542f73054ddbab9ba6744f8c1499601335c776a7aefdd60b004",
+  "archive_members_verified": 63,
+  "recovery_calls_reparsed_and_rescored": 53760,
+  "combined_evaluation_requests": 184320,
+  "original_source_hashes_reverified": true,
+  "paired_statistics_recomputed_exactly": true,
+  "original_degraded_first_run_preserved": true,
+  "script_sha256": "942df44426fdb853cefafcd62f5a3973e56ddd154574f71a279743d94c1e3425",
+  "analysis_sha256": "15da09fc0fd1a27c088e07efd1706feb80ce980e41f278e8bfefbad93f3a8be2"
+}

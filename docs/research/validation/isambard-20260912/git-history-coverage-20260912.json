@@ -1,0 +1,120 @@
+{
+  "timestamp_utc": "2026-09-12T07:57:14.959761Z",
+  "repo": "/projects/u6vs/hnc-organism/repo/Aureon-OS.git",
+  "fetch_success": true,
+  "namespace": "refs/history/20260912",
+  "refs_before": 254,
+  "refs_after": 550,
+  "refreshed_refs": 248,
+  "commit_count": 3431,
+  "commits_with_changes": 3431,
+  "changes": 207384,
+  "path_blob_versions": 36396,
+  "unique_blobs": 26109,
+  "deleted_paths": 8933,
+  "extensions": [
+    [
+      ".py",
+      15870
+    ],
+    [
+      ".json",
+      7961
+    ],
+    [
+      ".md",
+      3753
+    ],
+    [
+      ".tsx",
+      1714
+    ],
+    [
+      ".bak",
+      1486
+    ],
+    [
+      ".ts",
+      1387
+    ],
+    [
+      ".html",
+      1271
+    ],
+    [
+      ".sh",
+      328
+    ],
+    [
+      ".png",
+      293
+    ],
+    [
+      ".pdf",
+      256
+    ],
+    [
+      ".jsonl",
+      225
+    ],
+    [
+      "",
+      211
+    ],
+    [
+      ".txt",
+      211
+    ],
+    [
+      ".docx",
+      166
+    ],
+    [
+      ".csv",
+      97
+    ],
+    [
+      ".yml",
+      93
+    ],
+    [
+      ".ps1",
+      88
+    ],
+    [
+      ".jpg",
+      86
+    ],
+    [
+      ".js",
+      75
+    ],
+    [
+      ".toml",
+      64
+    ],
+    [
+      ".sql",
+      63
+    ],
+    [
+      ".cmd",
+      60
+    ],
+    [
+      ".webp",
+      58
+    ],
+    [
+      ".conf",
+      56
+    ],
+    [
+      ".zip",
+      51
+    ]
+  ],
+  "roots": [
+    "0cefcc1d1f3807b9380c16c70799a95dc2a25ebf 2025-11-16T23:09:40Z 2025-11-16T23:09:40Z Initial commit from template vite_react_shadcn_ts_20250728_minor"
+  ]
+}

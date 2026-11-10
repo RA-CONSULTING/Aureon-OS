@@ -1,0 +1,32 @@
+{
+  "schema": "qgita-missingness-study/v1",
+  "version": "observed-triplet/v1",
+  "historical_replicates": 5,
+  "new_replicates": 32,
+  "historical_scenarios": [
+    "mcar_05",
+    "mcar_10",
+    "burst_05"
+  ],
+  "new_scenarios": [
+    "mcar_01",
+    "mcar_05",
+    "mcar_10",
+    "mcar_20",
+    "burst_05",
+    "burst_10"
+  ],
+  "historical_root_seed": 20260728,
+  "new_root_seed": 20260912,
+  "bootstrap_draws": 20000,
+  "bootstrap_seed_sequence": [
+    20260912,
+    41
+  ],
+  "noninferiority_margin": -0.05,
+  "source_series": 250,
+  "source_families": 46,
+  "canonical_sha256": "924411087c598c3f86632b6272ca3caf3673cff1f5ac277db5888e0f93b27ddb",
+  "historical_sha256": "365c573ec8f5714a8003f3ec3b0e3a55bf029050dfdf0797b4f820911115faf7",
+  "cache_manifest_sha256": "882ecb8a999f1f6648994f5f4d02c24666447fcaaf2b1f4a77fba9b2fabed252"
+}

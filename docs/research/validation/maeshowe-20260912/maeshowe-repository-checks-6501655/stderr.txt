@@ -1,0 +1,21 @@
+test_duplicate_mark_identifiers_rejected (test_maeshowe_epigraphy.IntegrationTests.test_duplicate_mark_identifiers_rejected) ... ok
+test_epigraphy_cli_does_not_enter_frequency_model (test_maeshowe_epigraphy.IntegrationTests.test_epigraphy_cli_does_not_enter_frequency_model) ... ok
+test_legacy_numerics_retained_and_labelled (test_maeshowe_epigraphy.IntegrationTests.test_legacy_numerics_retained_and_labelled) ... ok
+test_mixing_observation_and_symbolic_inputs_rejected (test_maeshowe_epigraphy.IntegrationTests.test_mixing_observation_and_symbolic_inputs_rejected) ... ok
+test_bad_count_types_rejected (test_maeshowe_epigraphy.ReaderTests.test_bad_count_types_rejected) ... ok
+test_barnes_middle_group_example (test_maeshowe_epigraphy.ReaderTests.test_barnes_middle_group_example) ... ok
+test_explicit_forward_convention (test_maeshowe_epigraphy.ReaderTests.test_explicit_forward_convention) ... ok
+test_invalid_alternative_preserves_uncertainty (test_maeshowe_epigraphy.ReaderTests.test_invalid_alternative_preserves_uncertainty) ... ok
+test_legacy_preset_is_explicit_and_separate (test_maeshowe_epigraphy.ReaderTests.test_legacy_preset_is_explicit_and_separate) ... ok
+test_missing_direction_and_extra_fields_rejected (test_maeshowe_epigraphy.ReaderTests.test_missing_direction_and_extra_fields_rejected) ... ok
+test_multiple_readings_retained_without_ranking (test_maeshowe_epigraphy.ReaderTests.test_multiple_readings_retained_without_ranking) ... ok
+test_orientation_never_silently_swapped (test_maeshowe_epigraphy.ReaderTests.test_orientation_never_silently_swapped) ... ok
+test_reverse_numbering_distinguishes_old_mapping (test_maeshowe_epigraphy.ReaderTests.test_reverse_numbering_distinguishes_old_mapping) ... ok
+test_too_many_branches_not_forced_to_fit (test_maeshowe_epigraphy.ReaderTests.test_too_many_branches_not_forced_to_fit) ... ok
+test_unequal_group_limits (test_maeshowe_epigraphy.ReaderTests.test_unequal_group_limits) ... ok
+test_unknown_remains_unobserved (test_maeshowe_epigraphy.ReaderTests.test_unknown_remains_unobserved) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.224s
+
+OK

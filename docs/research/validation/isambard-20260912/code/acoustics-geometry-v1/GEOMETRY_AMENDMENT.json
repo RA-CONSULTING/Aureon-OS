@@ -1,0 +1,32 @@
+{
+  "schema": "acoustics-geometry-amendment/v1",
+  "reason": "Historical coffer FD residuals exceed the frozen acceptance threshold; replace that comparison with verified converged solves.",
+  "tasks": [
+    {
+      "geometry": "coffer",
+      "dx": 0.2
+    },
+    {
+      "geometry": "coffer",
+      "dx": 0.15
+    },
+    {
+      "geometry": "coffer",
+      "dx": 0.1
+    },
+    {
+      "geometry": "opening",
+      "dx": 0.1
+    }
+  ],
+  "seed": 1,
+  "method": "ARPACK shift-invert on the original assembled geometry matrix; no analytic eigenvector guesses",
+  "controls": "Preserve original rigid coffer voxel and doorway pressure-release conventions. These geometries retain their documented simplifications.",
+  "acceptance": {
+    "nonzero_modes": 26,
+    "max_relative_residual": 1e-08,
+    "max_orthogonality_error": 1e-08
+  },
+  "historical_verdict_unchanged": "INCONCLUSIVE",
+  "interpretation": "New solver convergence evidence; not validation of archaeological or physical interpretations. Residuals do not imply a universal squared-error bound without spectral-gap conditions."
+}

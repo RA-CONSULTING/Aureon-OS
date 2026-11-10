@@ -1,0 +1,14 @@
+{
+  "archive": "/projects/u6vs/hnc-organism/expansion-20260912/hnc-throughput-v1/profile-6503906-evidence.tar.gz",
+  "sha256": "6d8bd196c9d1f95216f2f440b19e779f962c017fb1cd74385137f52dc1a9ae9a",
+  "accounting": "JobID|State|ExitCode|ElapsedRaw|AllocNodes|AllocTRES\n6503906|COMPLETED|0:0|19|1|billing=72,cpu=72,gres/gpu=4,mem=460000M,node=1\n6503906.batch|COMPLETED|0:0|19|1|cpu=72,gres/gpu=4,mem=460000M,node=1\n6503906.0|COMPLETED|0:0|18|1|cpu=32,gres/gpu=4,mem=460000M,node=1\n",
+  "job": {
+    "JobID": "6503906",
+    "State": "COMPLETED",
+    "ExitCode": "0:0",
+    "ElapsedRaw": "19",
+    "AllocNodes": "1",
+    "AllocTRES": "billing=72,cpu=72,gres/gpu=4,mem=460000M,node=1"
+  },
+  "remote_run": "/projects/u6vs/hnc-organism/expansion-20260912/hnc-throughput-v1/runs/profile-6503906"
+}

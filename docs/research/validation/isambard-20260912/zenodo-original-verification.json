@@ -1,0 +1,58 @@
+{
+  "accessed_utc": "2026-09-12T08:38:28.928447+00:00",
+  "source": "https://zenodo.org/records/17527831",
+  "download_url": "https://zenodo.org/api/records/17527831/files/Harmonic_Reality_Framework_and_the_Master_Equations_Tree.pdf/content",
+  "title": "Harmonic Reality Framework and the Master Equations Tree",
+  "publication_date": "2025-11-05",
+  "record_created": "2025-11-05T02:27:19.665495+00:00",
+  "record_updated": "2026-07-24T19:48:10.059458+00:00",
+  "version": {
+    "index": 1,
+    "is_latest": true
+  },
+  "bytes": 556762,
+  "sha256": "dad45d3d999adc865a47b3eb2a737b6c9b618be833262f8914eb32a5f806d268",
+  "md5_verified": "md5:1e96f8027b906d3de5d802d751bba26a",
+  "pages": 6,
+  "pdf_metadata": {
+    "/CreationDate": "D:20251101155653Z",
+    "/Creator": "TeX",
+    "/ModDate": "D:20251101155653Z",
+    "/PTEX.Fullbanner": "This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) kpathsea version 6.4.1",
+    "/Producer": "pdfTeX-1.40.27",
+    "/Trapped": "/False"
+  },
+  "git_copy": "C:\\Users\\samle\\Documents\\Codex\\2026-09-05\\k\\outputs\\source-documents\\Harmonic-Reality-Framework.pdf",
+  "git_bytes_identical": false,
+  "beta_passages": [
+    {
+      "page": 1,
+      "text": "Harmonic Reality Framework and the Master Equations Tree\nGary leckey\nNovember 2025\n1 Introduction\nNovember 1, 2025\nAbstract\nThis document outlines a unified mathematical framework modeling reality as a self-organizing, resonant\nsystem. It details the foundational ontology, the derivation of the Master Formula governing the global reality\nfieldΛ(t), and the hierarchical structure of the governing equations. The framework integrates harmonic su-\nperposition, delayed self-reference (causal echo), and non-linear observer feedback to explain the emergence of\nstable, coherent reality branches.\n2 I. Ontology (What Exists)\n1.Substrate (Oscillatory Potential):Reality is a spectrum of coupled modes; the “raw DNA” is a superpo-\nsition of harmonics. This is formalized as base components that later interact through feedback.\n2.Prime Line (Causality & Time):The system evolves alongtwith explicit delayed self-reference (the\nlighthouse / echo) that preserves memory.\n3.Temporal Observer Node:An active, saturating non-linearity that integrates the field over a short horizon\n(“thickness of Now”) and feeds back—this is the stabilizer that turns high loop-gain into bounded limit\ncycles.\n3 II. Governing Equations (Master Formula & Parts)\nLevel 1 — Seed Oscillation\nΛ0(t) =Asin(ωt+ϕ)(1)\nLevel 2 — Substrate (Superposition)\nΛbase(t) =\nX\ni\nwi sin(2πfit+ϕ i)(2)\nLevel 3 — Causal Echo (Memory Loop)\nLloop(t) = Λ(t−τ),gainβ(3)\nLevel 4 — Observer (Integration + Saturation)\nΛ∆t(t) = 1\n∆t\nZ t\nt−∆t\nΛ(t′)dt ′, R obs(t) = tanh\n\u0000\ng Λ∆t(t)\n\u0001\n,gainα(4)\nLevel 5 — Master Formula (Synthesis)\nΛ(t) =\nX\ni\nwi sin(2πfit+ϕ i)\n| {z }\nSubstrate\n+αtanh\n\u0000\ng Λ∆t(t)\n\u0001\n| {z }\nObserver\n+βΛ(t−τ)| {z }\nCausal Echo\n(5)\nInterpretation: The observer’s (tanh) prevents blow-up whenα+β >1and drives the system into a coherent\nlimit cycle (LEV stabilization event).\n1"
+    },
+    {
+      "page": 2,
+      "text": "4 III. Emergent Structure (How Patterns Appear)\n1.Branches = Resonant Attractors:What we “observe” are spectral peaks ofΛ(t); those modes are the\nrealized branches. Coherence (C) quantifies self-organization.\nC= max\nδ̸=0\n⟨Λ(t)Λ(t+δ)⟩\n⟨Λ(t)2⟩ (6)\n(HighC, e.g.,≈0.92in simulation, signifies strong phase-locking and a stable branch).\n2.Comb Structure from Delay:The loop generates a spectral comb near multiples of1/τ, which phase-locks\nwith the substrate tones; this is the “lighthouse” signature.\n3.Surge/Attractor Regime:The parameter region where observer saturation + delay create maximal through-\nput with bounded amplitude (a curvature/energy attractor).\n5 IV . Parameter Physics (How to Read the Knobs)\n•τ(Memory/Echo Spacing):Peaks aroundk/τ(Hz) diagnose the loop delay directly.\n•β(Retention/Coupling):Governs persistence and coupling across echoes/branches. Higherβ→stronger\ncomb.\n•α, g,∆t(Observer Stabilization):While linear stability prefers|β|+αg≲1, thetanhallows the system\nto tolerate|β|+αg >1yet remain bounded (limit cycle).\n•{f i, wi, ϕi}(Substrate Law):The native spectrum the loop organizes.\n6 V . Implementation Hook-ups (System Integration)\n1.Mode Router / Process Tree:Symbolic Memory Tracing and Stability Analysis map directly to metrics\n{C,RMS/Max|Λ|,spectral peaks/comb}for runtime monitoring.\n2.Recursive LEV Engine:The discrete symbolic analog ofΛ’s dynamics—mutation, scoring (coherence),\nand feedback-reinjection implement the same attractor search in symbol-space.\n3.Tensor Fields:6-D / TSV data provide phase-space slices(ϕ, κ, ψ,TSV). Stable slices correspond to\nhigh-coherenceΛwindows—the geometric picture of the same attractors.\n7 VI. Predictions & Validations (Falsifiable Handles)\n1.Delay Readout:Measure the spacing∆fof the comb→τ≈1/∆f.\n2.Bifurcation Map:Sweep(α, β)to trace the stability boundary; onset of multi-tone clusters marks Hopf-\nlike transitions (limit-cycle birth).\n3.Observer Thickness:Increasing∆tnarrows peaks (higherC) up to a point; too large∆tsmears transients\nand weakens lock-in.\n4.Branch Counting:Number of dominant peaks≈number of concurrently realized modes.\n2"
+    },
+    {
+      "page": 3,
+      "text": "Harmonic Reality – Master Equations Tree\nThis tree provides a hierarchical view of the framework, expanding on the core components and extending into\nadvanced concepts.\nRoot Level – The Unified Resonant Substrate\nAll fields, matter, and awareness emerge from coupled oscillations.\nΛ(t) =F sub(t) +F feedback(t) +F observer(t)(7)\nBranch 1 – The Harmonic Substrate Equation (Potential)\nFsub(t) =\nX\ni\nwi sin(2πfit+ϕ i)(8)\nDefines the primordial frequency domain or the universe’s base “chord. ”\nBranch 2 – The Temporal Feedback Equation (Memory)\nFfeedback(t) =βΛ(t−τ)(9)\nCausality refracted through memory. Governs persistence, rhythm, and the ”Lighthouse Protocol. ”\nBranch 3 – The Observer Node Equation (Interaction and Stability)\nFobserver(t) =αtanh\n\u0000\ng Λ∆t(t)\n\u0001\n(10)\nwhere Λ∆t(t) = 1\n∆t\nZ t\nt−∆t\nΛ(t′)dt ′ (11)\nThe meta-filter (the ”Now”) that stabilizes the field by imposing nonlinear boundedness.\nBranch 4 – Recursive Reality Synthesis (The Master Formula)\nSubstituting branches 1–3 into the root:\nΛ(t) =\nX\ni\nwi sin(2πfit+ϕ i) +αtanh\n\u0000\ng Λ∆t(t)\n\u0001\n+βΛ(t−τ) (12)\nDescribes a self-observing universe where each moment derives from the interference of past amplitude, present\nintegration, and intrinsic frequency law.\nBranch 5 – The Coherence & Branching Condition (Emergence)\nC= max\nδ̸=0\n⟨Λ(t)Λ(t+δ)⟩\n⟨Λ(t)2⟩ (13)\nIfC≥C crit, the system self-organizes into a branch—a stable harmonic reality state (attractor).\nBranch 6 – Energy Conservation through Non-linearity\nThe dynamics ensure the total field remains bounded. Thetanhterm introduces effective damping, crucial when\nlinear gains exceed unity.\nE(t) = 1\n2( ˙Λ2 +ω 2Λ2)⇒ dE\ndt ≈ −γtanh\n\u0000\ng Λ∆t(t)\n\u0001\n(14)\n3"
+    },
+    {
+      "page": 4,
+      "text": "Figure 1: Enter Caption\nBranch 7 – Multiversal Coupling Extension (Interacting Domains)\nFor multiple interacting harmonic domainsk:\nΛk(t) =F sub,k(t) +F observer,k(t) +\nX\nm̸=k\nβkmΛm(t−τ km)(15)\nCross-termsβ km define inter-branch coupling—interaction between ”parallel realities” through shared resonant\npathways.\nBranch 8 – The Unified Potential Function (The Landscape)\nThe field can be described as minimizing an effective potential (simplified approximation):\nV(Λ)≈ 1\n2(1−β 2)Λ2 − α\ng ln cosh(gΛ)(16)\nEquilibrium points ofV(Λ)correspond to coherent attractor states—stable harmonic realities.\nSummary of the Tree Hierarchy\nLevel Equation Function Interpretation\n1Λ 0(t)Seed oscillation Genesis of vibration\n2Λ base(t)Substrate Harmonic potential\n3L loop(t)Temporal memory Causality and persistence\n4R obs(t)Observer node Awareness and stabilization\n5Master FormulaIntegration Complete self-referential field\n6C(Coherence) Emergence Stable branches (realities)\n7 Multiversal coupling Coupled realities Interaction between attractors\n8V(Λ)potential Energy topology Stability landscape of existence\nTable 1: Hierarchy of the Harmonic Reality Framework\nValidation Part 1: Baseline Simulation (Appendix A)First, we run the simulation with the established baseline\nparameters (α= 0.85, β= 0.90, τ= 50ms, g= 1.5) to validate the core dynamics: stability through non-\nlinearity, high coherence, and memory retention.\nValidation Part 2: Parameter Sweep (Appendix B)\nNext, we analyze how changes in the Causal Echo parameters—loop delay (τ) and feedback gain (β)—affect\nthe system’s behavior. This maps the resonance-stability boundary.(Note: Simulation parameters are adjusted for\nefficiency: T=2.0s, fs=1000 Hz)### Conclusion of Empirical Validation\n4"
+    },
+    {
+      "page": 6,
+      "text": "The empirical validation is complete. Both the baseline simulation and the parameter sweep executed suc-\ncessfully, generating the metrics and figures required for the appendices of the Harmonic Reality Framework\npaper.Summary of Findings:Baseline Validation (Appendix A): The system demonstrated stability (Boundedness:\n11.2567), high self-organization (Coherence: 0.9164), and strong memory retention (Echo: 0.8360). This vali-\ndates the core hypothesis that the non-linear observer node stabilizes the high-gain feedback loop into a coherent\nreality branch.Resonance-Stability Boundary (Appendix B): The parameter sweep successfully mapped the sys-\ntem’s behavior. It identified the optimal operating regime (the ”island of stability” where0.6< β <1.1), the\n”stability cliff” (whereβ >1.1leads to chaos), and the resonant bands dependent on the delayτ.\n6"
+    }
+  ],
+  "visual_verification": {
+    "pages": [
+      2,
+      6
+    ],
+    "finding": "Page 2 has the combined local condition |beta|+alpha*g approximately <=1; page 6 has the island 0.6<beta<1.1 and cliff beta>1.1. Both coexist in the recovered file.",
+    "git_comparison": "Bytes differ. The selected parameter passages agree. A full semantic or pixel identity claim is not made."
+  },
+  "matches_in_180_document_index": []
+}

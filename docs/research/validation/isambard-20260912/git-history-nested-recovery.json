@@ -1,0 +1,18 @@
+{
+  "original_sha256": "f77d0295f1973d824e076a786bc86f159eacfd4dfa27b9006e1b4a1972c550df",
+  "original_bytes": 7644415,
+  "recovered_members": 115,
+  "all_recovered_crc_verified": true,
+  "bytes_parsed": 4830339,
+  "complete_archive_recovery": false,
+  "errors": [
+    {
+      "path": "aureon-trading-main/NEXUS-LIVE-FEED--main.zip",
+      "error": "truncated payload",
+      "expected": 16031256,
+      "available": 2814076
+    }
+  ],
+  "novel_research_contents": 0,
+  "native_documents": 0
+}

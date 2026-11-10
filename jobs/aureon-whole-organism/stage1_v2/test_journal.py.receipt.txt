@@ -1,0 +1,9 @@
+test_balanced_condition_plan_is_deterministic (__main__.JournalTests.test_balanced_condition_plan_is_deterministic) ... ok
+test_durable_roundtrip_and_torn_tail_rejected (__main__.JournalTests.test_durable_roundtrip_and_torn_tail_rejected) ... ok
+test_interrupted_final_index_retains_completed_http (__main__.JournalTests.test_interrupted_final_index_retains_completed_http) ... ok
+test_resume_requires_matching_attempt (__main__.JournalTests.test_resume_requires_matching_attempt) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.032s
+
+OK

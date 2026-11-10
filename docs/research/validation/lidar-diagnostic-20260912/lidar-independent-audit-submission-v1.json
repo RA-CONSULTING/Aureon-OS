@@ -1,0 +1,12 @@
+{
+  "job_id": "6505336",
+  "remote": "/projects/u6vs/hnc-organism/expansion-20260912/lidar-audit-v1",
+  "archive_sha256": "4ba85c4876db2e11636c01a1848683632feb7ca1caf1bd1be8fa3de65775ec27",
+  "manifest_sha256": "67e6606bd04b6d618c69bad5a4492f615199bec5d9d29c9d1862d796a111a924",
+  "command": [
+    "sbatch",
+    "--parsable",
+    "/projects/u6vs/hnc-organism/expansion-20260912/lidar-audit-v1/audit.sbatch"
+  ],
+  "submitted_utc": "2026-09-12T16:00:02.537767+00:00"
+}

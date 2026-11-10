@@ -1,0 +1,654 @@
+{
+  "schema": "maeshowe-source-audit/v2",
+  "audit_date": "2026-09-12",
+  "scope": "Local CPU reproduction, not an Isambard run or archaeological observation.",
+  "source_versions": [
+    {
+      "blob": "759f5501fe42901b0250b5f02b600a6d3fcd44d0",
+      "sha256": "e75541e3d47c5d1ac2ef4823f0fb7cd042ccb6089b53c565374faafe2457ef5c"
+    },
+    {
+      "blob": "c2d6a2910d9fb95b151c920021fbaf2591522e58",
+      "sha256": "0c066ed68863f7742273d26ad1b15fed6806d25efe50174cad9821706d23746b"
+    }
+  ],
+  "source_versions_same_numerical_baseline": true,
+  "baseline": {
+    "timestamp": 1789211615.7080076,
+    "n_total": 13,
+    "n_complete": 9,
+    "n_incomplete": 4,
+    "n_phi_resonant": 1,
+    "n_exact_phi": 1,
+    "n_zero_beat": 2,
+    "mean_caller_hz": 369.6923,
+    "mean_seer_hz": 398.9756,
+    "master_beat_hz": 29.2832,
+    "schumann_mode": 4,
+    "schumann_hz": 27.3,
+    "schumann_delta": 1.9832,
+    "schumann_pct": 0.9274,
+    "gamma": 0.493163,
+    "gamma_status": "ACTIVE_FIELD",
+    "pivot_decoded": false,
+    "prophecy": "Maeshowe Lattice Γ=0.4932 — ACTIVE FIELD — transmission in progress. Circuit open. 9/13 inscriptions transmitting. Master beat 29.28 Hz — Schumann Mode 4 at 27.3 Hz (Δ1.98 Hz, 92.7% proximity). Nr.15 PIVOT UNREAD — contact ADS (Univ. York) for RTI archive access. Phi-resonant: 1/9 complete. Exact: 1. Zero-beat carriers: 2.",
+    "readings": [
+      {
+        "id": "FUTHORK",
+        "label": "Complete Alphabet (Futhork Seed-Bank)",
+        "wall": "SW",
+        "auris_node": "CARGOSHIP",
+        "caller_hz": 174.0,
+        "seer_hz": 281.54,
+        "beat_hz": 107.54,
+        "rune": "HAGALAZ",
+        "unicode": "ᚺ",
+        "mode": "GROWTH",
+        "complete": true,
+        "is_pivot": false,
+        "zero_beat": false,
+        "phi_score": 1.0,
+        "phi": {
+          "rune_name": "HAGALAZ",
+          "rune_hz": 281.54,
+          "wall_node_hz": 174.0,
+          "ratio": 0.618029,
+          "phi_target": "PHI_INV",
+          "phi_distance": 5e-06,
+          "is_phi_resonant": true,
+          "is_exact": true
+        }
+      },
+      {
+        "id": "NR1",
+        "label": "Nr.1 — Zero-Beat Carrier",
+        "wall": "SW",
+        "auris_node": "CARGOSHIP",
+        "caller_hz": 174.0,
+        "seer_hz": 174.0,
+        "beat_hz": 0.0,
+        "rune": "FEHU",
+        "unicode": "ᚠ",
+        "mode": "GENESIS",
+        "complete": true,
+        "is_pivot": false,
+        "zero_beat": true,
+        "phi_score": 0.1,
+        "phi": {
+          "rune_name": "FEHU",
+          "rune_hz": 174.0,
+          "wall_node_hz": 174.0,
+          "ratio": 1.0,
+          "phi_target": "PHI_INV",
+          "phi_distance": 0.381966,
+          "is_phi_resonant": false,
+          "is_exact": false
+        }
+      },
+      {
+        "id": "NR9",
+        "label": "Nr.9 — Twig-Rune Cipher A (NE Zero-Beat)",
+        "wall": "NE",
+        "auris_node": "OWL",
+        "caller_hz": 528.0,
+        "seer_hz": 528.0,
+        "beat_hz": 0.0,
+        "rune": "RAIDHO",
+        "unicode": "ᚱ",
+        "mode": "GENESIS",
+        "complete": true,
+        "is_pivot": false,
+        "zero_beat": true,
+        "phi_score": 0.1,
+        "phi": {
+          "rune_name": "RAIDHO",
+          "rune_hz": 528.0,
+          "wall_node_hz": 528.0,
+          "ratio": 1.0,
+          "phi_target": "PHI_INV",
+          "phi_distance": 0.381966,
+          "is_phi_resonant": false,
+          "is_exact": false
+        }
+      },
+      {
+        "id": "NR11",
+        "label": "Nr.11 — Crusader Provenance Stamp",
+        "wall": "NE",
+        "auris_node": "OWL",
+        "caller_hz": 528.0,
+        "seer_hz": 417.0,
+        "beat_hz": 111.0,
+        "rune": "ANSUZ",
+        "unicode": "ᚨ",
+        "mode": "GENESIS",
+        "complete": true,
+        "is_pivot": false,
+        "zero_beat": false,
+        "phi_score": 0.1,
+        "phi": {
+          "rune_name": "ANSUZ",
+          "rune_hz": 417.0,
+          "wall_node_hz": 528.0,
+          "ratio": 0.789773,
+          "phi_target": "PHI_INV",
+          "phi_distance": 0.171739,
+          "is_phi_resonant": false,
+          "is_exact": false
+        }
+      },
+      {
+        "id": "NR12",
+        "label": "Nr.12 — Master Carver Identity",
+        "wall": "NE",
+        "auris_node": "OWL",
+        "caller_hz": 528.0,
+        "seer_hz": 639.0,
+        "beat_hz": 111.0,
+        "rune": "KENAZ",
+        "unicode": "ᚲ",
+        "mode": "GENESIS",
+        "complete": true,
+        "is_pivot": false,
+        "zero_beat": false,
+        "phi_score": 0.1,
+        "phi": {
+          "rune_name": "KENAZ",
+          "rune_hz": 639.0,
+          "wall_node_hz": 528.0,
+          "ratio": 0.826291,
+          "phi_target": "PHI_INV",
+          "phi_distance": 0.208257,
+          "is_phi_resonant": false,
+          "is_exact": false
+        }
+      },
+      {
+        "id": "NR15",
+        "label": "Nr.15 — PIVOT (Unread Twig Cipher)",
+        "wall": "NE",
+        "auris_node": "OWL",
+        "caller_hz": 528.0,
+        "seer_hz": null,
+        "beat_hz": null,
+        "rune": null,
+        "unicode": null,
+        "mode": null,
+        "complete": false,
+        "is_pivot": true,
+        "zero_beat": false,
+        "phi_score": 0.0,
+        "phi": null
+      },
+      {
+        "id": "NRXXXII",
+        "label": "Nr.XXXII — Dragon and Knot Visual Key",
+        "wall": "NE",
+        "auris_node": "OWL",
+        "caller_hz": 528.0,
+        "seer_hz": 674.72,
+        "beat_hz": 146.72,
+        "rune": "JERA",
+        "unicode": "ᛃ",
+        "mode": "GROWTH",
+        "complete": false,
+        "is_pivot": false,
+        "zero_beat": false,
+        "phi_score": 0.1,
+        "phi": {
+          "rune_name": "JERA",
+          "rune_hz": 674.72,
+          "wall_node_hz": 528.0,
+          "ratio": 0.782547,
+          "phi_target": "PHI_INV",
+          "phi_distance": 0.164513,
+          "is_phi_resonant": false,
+          "is_exact": false
+        }
+      },
+      {
+        "id": "NR20",
+        "label": "Nr.20 — Master Carver Certification",
+        "wall": "SE",
+        "auris_node": "FALCON",
+        "caller_hz": 210.0,
+        "seer_hz": 107.54,
+        "beat_hz": 102.46,
+        "rune": "TIWAZ",
+        "unicode": "ᛏ",
+        "mode": "RETURN",
+        "complete": true,
+        "is_pivot": false,
+        "zero_beat": false,
+        "phi_score": 0.1,
+        "phi": {
+          "rune_name": "TIWAZ",
+          "rune_hz": 107.54,
+          "wall_node_hz": 210.0,
+          "ratio": 0.512095,
+          "phi_target": "PHI_INV",
+          "phi_distance": 0.105939,
+          "is_phi_resonant": false,
+          "is_exact": false
+        }
+      },
+      {
+        "id": "LODBROK",
+        "label": "Lodbrok Inscription — Temporal Depth Acknowledgement",
+        "wall": "SE",
+        "auris_node": "FALCON",
+        "caller_hz": 210.0,
+        "seer_hz": 526.56,
+        "beat_hz": 316.56,
+        "rune": "OTHALA",
+        "unicode": "ᛟ",
+        "mode": "RETURN",
+        "complete": true,
+        "is_pivot": false,
+        "zero_beat": false,
+        "phi_score": 0.1,
+        "phi": {
+          "rune_name": "OTHALA",
+          "rune_hz": 526.56,
+          "wall_node_hz": 210.0,
+          "ratio": 0.398815,
+          "phi_target": "PHI_INV",
+          "phi_distance": 0.219219,
+          "is_phi_resonant": false,
+          "is_exact": false
+        }
+      },
+      {
+        "id": "NR23",
+        "label": "Nr.23 — Lineage Continuation",
+        "wall": "SE",
+        "auris_node": "FALCON",
+        "caller_hz": 210.0,
+        "seer_hz": 176.14,
+        "beat_hz": 33.86,
+        "rune": "BERKANO",
+        "unicode": "ᛒ",
+        "mode": "RETURN",
+        "complete": true,
+        "is_pivot": false,
+        "zero_beat": false,
+        "phi_score": 0.1,
+        "phi": {
+          "rune_name": "BERKANO",
+          "rune_hz": 176.14,
+          "wall_node_hz": 210.0,
+          "ratio": 0.838762,
+          "phi_target": "PHI_INV",
+          "phi_distance": 0.220728,
+          "is_phi_resonant": false,
+          "is_exact": false
+        }
+      },
+      {
+        "id": "TNW",
+        "label": "T-NW — Treasure Pointer (North-West)",
+        "wall": "NW",
+        "auris_node": "DEER",
+        "caller_hz": 396.0,
+        "seer_hz": 741.0,
+        "beat_hz": 345.0,
+        "rune": "GEBO",
+        "unicode": "ᚷ",
+        "mode": "GENESIS",
+        "complete": true,
+        "is_pivot": false,
+        "zero_beat": false,
+        "phi_score": 0.1,
+        "phi": {
+          "rune_name": "GEBO",
+          "rune_hz": 741.0,
+          "wall_node_hz": 396.0,
+          "ratio": 0.534413,
+          "phi_target": "PHI_INV",
+          "phi_distance": 0.083621,
+          "is_phi_resonant": false,
+          "is_exact": false
+        }
+      },
+      {
+        "id": "T2",
+        "label": "T-2 — Secondary Treasure Pointer",
+        "wall": "NW",
+        "auris_node": "DEER",
+        "caller_hz": 396.0,
+        "seer_hz": 852.0,
+        "beat_hz": 456.0,
+        "rune": "WUNJO",
+        "unicode": "ᚹ",
+        "mode": "GENESIS",
+        "complete": false,
+        "is_pivot": false,
+        "zero_beat": false,
+        "phi_score": 0.1,
+        "phi": {
+          "rune_name": "WUNJO",
+          "rune_hz": 852.0,
+          "wall_node_hz": 396.0,
+          "ratio": 0.464789,
+          "phi_target": "PHI_INV",
+          "phi_distance": 0.153245,
+          "is_phi_resonant": false,
+          "is_exact": false
+        }
+      },
+      {
+        "id": "NR18",
+        "label": "Nr.18 — The Óðr Warning",
+        "wall": "NW",
+        "auris_node": "DEER",
+        "caller_hz": 396.0,
+        "seer_hz": 461.14,
+        "beat_hz": 65.14,
+        "rune": "NAUDHIZ",
+        "unicode": "ᚾ",
+        "mode": "GROWTH",
+        "complete": false,
+        "is_pivot": false,
+        "zero_beat": false,
+        "phi_score": 0.1,
+        "phi": {
+          "rune_name": "NAUDHIZ",
+          "rune_hz": 461.14,
+          "wall_node_hz": 396.0,
+          "ratio": 0.858741,
+          "phi_target": "PHI_INV",
+          "phi_distance": 0.240707,
+          "is_phi_resonant": false,
+          "is_exact": false
+        }
+      }
+    ],
+    "wall_auris": {
+      "NE": {
+        "node": "OWL",
+        "freq": 528.0,
+        "spirit": "Wisdom",
+        "domain": "Pattern",
+        "role": "Solstice terminus — master archive wall"
+      },
+      "NW": {
+        "node": "DEER",
+        "freq": 396.0,
+        "spirit": "Grace",
+        "domain": "Stability",
+        "role": "Treasure vector direction (NW pointer)"
+      },
+      "SW": {
+        "node": "CARGOSHIP",
+        "freq": 174.0,
+        "spirit": "Persistence",
+        "domain": "Volume",
+        "role": "Light source — seed-bank deposit wall"
+      },
+      "SE": {
+        "node": "FALCON",
+        "freq": 210.0,
+        "spirit": "Precision",
+        "domain": "Momentum",
+        "role": "Master carver station (Nr.20)"
+      }
+    },
+    "chamber": {
+      "side_m": 4.57,
+      "solstice_axis": "NE→SW",
+      "temporal_depth_yr": 4800,
+      "standing_wave_hz": 37.53
+    },
+    "thresholds": {
+      "dead_field": 0.35,
+      "lighthouse": 0.945,
+      "phi": 1.618034,
+      "phi_inv": 0.618034,
+      "phi_tolerance": 0.01
+    }
+  },
+  "all_24_hypothetical_pivot_candidates": [
+    {
+      "left": 1,
+      "right": 1,
+      "rune": "FEHU",
+      "gamma": 0.499095,
+      "master_beat_hz": 6.7857,
+      "status": "ACTIVE_FIELD",
+      "n_complete": 10
+    },
+    {
+      "left": 1,
+      "right": 2,
+      "rune": "URUZ",
+      "gamma": 0.497747,
+      "master_beat_hz": 17.8857,
+      "status": "ACTIVE_FIELD",
+      "n_complete": 10
+    },
+    {
+      "left": 1,
+      "right": 3,
+      "rune": "THURISAZ",
+      "gamma": 0.51342,
+      "master_beat_hz": 28.9857,
+      "status": "ACTIVE_FIELD",
+      "n_complete": 10
+    },
+    {
+      "left": 1,
+      "right": 4,
+      "rune": "ANSUZ",
+      "gamma": 0.509708,
+      "master_beat_hz": 31.0857,
+      "status": "ACTIVE_FIELD",
+      "n_complete": 10
+    },
+    {
+      "left": 1,
+      "right": 5,
+      "rune": "RAIDHO",
+      "gamma": 0.513261,
+      "master_beat_hz": 42.1857,
+      "status": "ACTIVE_FIELD",
+      "n_complete": 10
+    },
+    {
+      "left": 1,
+      "right": 6,
+      "rune": "KENAZ",
+      "gamma": 0.488944,
+      "master_beat_hz": 53.2857,
+      "status": "ACTIVE_FIELD",
+      "n_complete": 10
+    },
+    {
+      "left": 1,
+      "right": 7,
+      "rune": "GEBO",
+      "gamma": 0.443611,
+      "master_beat_hz": 63.4857,
+      "status": "ACTIVE_FIELD",
+      "n_complete": 10
+    },
+    {
+      "left": 1,
+      "right": 8,
+      "rune": "WUNJO",
+      "gamma": 0.437593,
+      "master_beat_hz": 74.5857,
+      "status": "ACTIVE_FIELD",
+      "n_complete": 10
+    },
+    {
+      "left": 2,
+      "right": 1,
+      "rune": "HAGALAZ",
+      "gamma": 0.480459,
+      "master_beat_hz": 17.5397,
+      "status": "ACTIVE_FIELD",
+      "n_complete": 10
+    },
+    {
+      "left": 2,
+      "right": 2,
+      "rune": "NAUDHIZ",
+      "gamma": 0.515712,
+      "master_beat_hz": 35.4997,
+      "status": "ACTIVE_FIELD",
+      "n_complete": 10
+    },
+    {
+      "left": 2,
+      "right": 3,
+      "rune": "ISA",
+      "gamma": 0.488171,
+      "master_beat_hz": 53.4597,
+      "status": "ACTIVE_FIELD",
+      "n_complete": 10
+    },
+    {
+      "left": 2,
+      "right": 4,
+      "rune": "JERA",
+      "gamma": 0.473068,
+      "master_beat_hz": 56.8577,
+      "status": "ACTIVE_FIELD",
+      "n_complete": 10
+    },
+    {
+      "left": 2,
+      "right": 5,
+      "rune": "EIHWAZ",
+      "gamma": 0.438246,
+      "master_beat_hz": 74.8177,
+      "status": "ACTIVE_FIELD",
+      "n_complete": 10
+    },
+    {
+      "left": 2,
+      "right": 6,
+      "rune": "PERTHRO",
+      "gamma": 0.325769,
+      "master_beat_hz": 92.7777,
+      "status": "DEAD_FIELD",
+      "n_complete": 10
+    },
+    {
+      "left": 2,
+      "right": 7,
+      "rune": "ALGIZ",
+      "gamma": 0.325769,
+      "master_beat_hz": 109.2817,
+      "status": "DEAD_FIELD",
+      "n_complete": 10
+    },
+    {
+      "left": 2,
+      "right": 8,
+      "rune": "SOWILO",
+      "gamma": 0.325769,
+      "master_beat_hz": 127.2417,
+      "status": "DEAD_FIELD",
+      "n_complete": 10
+    },
+    {
+      "left": 3,
+      "right": 1,
+      "rune": "TIWAZ",
+      "gamma": 0.329337,
+      "master_beat_hz": 0.1397,
+      "status": "DEAD_FIELD",
+      "n_complete": 10
+    },
+    {
+      "left": 3,
+      "right": 2,
+      "rune": "BERKANO",
+      "gamma": 0.504561,
+      "master_beat_hz": 6.9997,
+      "status": "ACTIVE_FIELD",
+      "n_complete": 10
+    },
+    {
+      "left": 3,
+      "right": 3,
+      "rune": "EHWAZ",
+      "gamma": 0.519611,
+      "master_beat_hz": 13.8597,
+      "status": "ACTIVE_FIELD",
+      "n_complete": 10
+    },
+    {
+      "left": 3,
+      "right": 4,
+      "rune": "MANNAZ",
+      "gamma": 0.513774,
+      "master_beat_hz": 15.1577,
+      "status": "ACTIVE_FIELD",
+      "n_complete": 10
+    },
+    {
+      "left": 3,
+      "right": 5,
+      "rune": "LAGUZ",
+      "gamma": 0.559061,
+      "master_beat_hz": 22.0177,
+      "status": "ACTIVE_FIELD",
+      "n_complete": 10
+    },
+    {
+      "left": 3,
+      "right": 6,
+      "rune": "INGWAZ",
+      "gamma": 0.514211,
+      "master_beat_hz": 28.8777,
+      "status": "ACTIVE_FIELD",
+      "n_complete": 10
+    },
+    {
+      "left": 3,
+      "right": 7,
+      "rune": "DAGAZ",
+      "gamma": 0.517594,
+      "master_beat_hz": 35.1817,
+      "status": "ACTIVE_FIELD",
+      "n_complete": 10
+    },
+    {
+      "left": 3,
+      "right": 8,
+      "rune": "OTHALA",
+      "gamma": 0.512621,
+      "master_beat_hz": 42.0417,
+      "status": "ACTIVE_FIELD",
+      "n_complete": 10
+    }
+  ],
+  "pivot_gamma_range": [
+    0.325769,
+    0.559061
+  ],
+  "lighthouse_candidates": 0,
+  "pivot_only_upper_bound_even_with_perfect_phi_and_schumann_scores": 0.9307692307692308,
+  "lighthouse_threshold": 0.945,
+  "constructed_phi_identity": "f/(f*phi)=1/phi and f/(f/phi)=phi; these identities do not measure archaeological encoding.",
+  "chamber_frequency_model": {
+    "side_m": 4.57,
+    "speed_of_sound_m_s": 343,
+    "ideal_1d_closed_mode_hz": 37.527352297593,
+    "measured": false
+  },
+  "spherical_geodesic": {
+    "coordinates_deg": [
+      58.99,
+      -3.19,
+      -89.19,
+      110.65
+    ],
+    "radius_km": 6371.0088,
+    "initial_bearing_deg": 178.54831611055263,
+    "great_circle_distance_km": 16602.463508660716
+  },
+  "qualification": "All pivot assignments are counterfactual model inputs. None is a reading of inscription 15. No original files were edited."
+}

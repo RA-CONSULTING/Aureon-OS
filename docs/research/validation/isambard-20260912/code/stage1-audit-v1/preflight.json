@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "checks": [
+    "invalid model retained at zero",
+    "rescored response rejected",
+    "duplicate pair rejected",
+    "wrong model rejected",
+    "boolean repetition rejected",
+    "false safety declaration rejected",
+    "wrong source pin rejected",
+    "missing pair rejected",
+    "malformed receipt rejected",
+    "malformed receipt rejected"
+  ],
+  "auditor_sha256": "7c2884be8ddd7c573636595fd8cddc11c3d76ff0916811efb73b020c26fd3d64",
+  "test_sha256": "45c719e2e1907e1b60e07c174c092e5970b44ed9b7451c7e6a0ecff3ffa530a8"
+}

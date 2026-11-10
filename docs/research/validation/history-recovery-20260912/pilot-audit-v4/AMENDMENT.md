@@ -1,0 +1,1 @@
+Audit v3 job 6504601 could not find the host scheduler command inside the original PyTorch container. Capture the authoritative scheduler record in the batch shell, then read and hash that record inside the container. All simulation output and audit checks remain unchanged. Original failed audits are retained; no recurrence rerun is performed.

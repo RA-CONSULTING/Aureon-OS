@@ -1,0 +1,11 @@
+{
+  "frozen_utc": "2026-09-12T12:11:54.460002+00:00",
+  "revision": "stage1-v2-initial",
+  "model_outcomes_observed": false,
+  "evidence_class": "prospective_synthetic_prompt_context_ablation",
+  "task_templates": 80,
+  "evaluation_templates": 60,
+  "planned_evaluation_responses": 184320,
+  "planned_pilot_responses": 7680,
+  "source_commit": "f5fb1916c07ac26eb7fc38c34ff2dc9bd029e21d"
+}

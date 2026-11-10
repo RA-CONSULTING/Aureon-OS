@@ -1,0 +1,1576 @@
+{
+  "observed_utc": "2026-09-12T17:24:42.505560+00:00",
+  "accounting": "6506231|COMPLETED|0:0|18|1\n6506231.batch|COMPLETED|0:0|18|1\n6506293|COMPLETED|0:0|51|1\n6506293.batch|COMPLETED|0:0|51|1\n6506509|COMPLETED|0:0|656|8\n6506509.batch|COMPLETED|0:0|656|1\n6506509.0|COMPLETED|0:0|655|8\n6506656|COMPLETED|0:0|29|1\n6506656.batch|COMPLETED|0:0|29|1\n",
+  "queue": "",
+  "records": [
+    {
+      "stage": 0,
+      "cell": 0,
+      "trials": 10368,
+      "gpu_uuid": "1fa3cf84-8005-73a2-3c85-a1fccc7365b0",
+      "elapsed_seconds": 15.754767956997966
+    },
+    {
+      "stage": 0,
+      "cell": 1,
+      "trials": 10368,
+      "gpu_uuid": "3555b8c7-eeb7-2484-fce1-731555ed0313",
+      "elapsed_seconds": 15.078337791986996
+    },
+    {
+      "stage": 0,
+      "cell": 2,
+      "trials": 10368,
+      "gpu_uuid": "d24dbdcb-ebce-9dad-fc5a-aeb6ee03af6f",
+      "elapsed_seconds": 16.767113038979005
+    },
+    {
+      "stage": 0,
+      "cell": 3,
+      "trials": 10368,
+      "gpu_uuid": "7f3a5d9e-5a55-3ce7-b350-79ab5412af64",
+      "elapsed_seconds": 15.58738582499791
+    },
+    {
+      "stage": 0,
+      "cell": 4,
+      "trials": 10368,
+      "gpu_uuid": "bca3487d-06ab-4011-b59d-a6103e01c302",
+      "elapsed_seconds": 14.283763609011658
+    },
+    {
+      "stage": 0,
+      "cell": 5,
+      "trials": 10368,
+      "gpu_uuid": "e05ea364-d36d-0493-9974-5e637e7da8ac",
+      "elapsed_seconds": 16.594529138994403
+    },
+    {
+      "stage": 0,
+      "cell": 6,
+      "trials": 10368,
+      "gpu_uuid": "614af505-e9c8-b2be-31f0-d3f336bd40fa",
+      "elapsed_seconds": 15.329683877003845
+    },
+    {
+      "stage": 0,
+      "cell": 7,
+      "trials": 10368,
+      "gpu_uuid": "9a2da807-7910-4dd6-bfbe-f23c797a43ed",
+      "elapsed_seconds": 15.850588778004749
+    },
+    {
+      "stage": 0,
+      "cell": 8,
+      "trials": 10368,
+      "gpu_uuid": "5e84e7d2-f338-feef-4879-acdd6738d0b2",
+      "elapsed_seconds": 16.552220015990315
+    },
+    {
+      "stage": 0,
+      "cell": 9,
+      "trials": 10368,
+      "gpu_uuid": "e0b32c38-5405-abe1-0a2e-eef8ae1f84cb",
+      "elapsed_seconds": 16.754610284988303
+    },
+    {
+      "stage": 0,
+      "cell": 10,
+      "trials": 10368,
+      "gpu_uuid": "8c227f86-2559-06dd-6f71-8f12ba4d58e2",
+      "elapsed_seconds": 16.687876445997972
+    },
+    {
+      "stage": 0,
+      "cell": 11,
+      "trials": 10368,
+      "gpu_uuid": "e92b0d4e-e56e-4c81-1fd0-a6b4412d54b1",
+      "elapsed_seconds": 15.829030079999939
+    },
+    {
+      "stage": 0,
+      "cell": 12,
+      "trials": 10368,
+      "gpu_uuid": "c7372efa-f31a-bcea-b064-03185cfb3712",
+      "elapsed_seconds": 15.972107401001267
+    },
+    {
+      "stage": 0,
+      "cell": 13,
+      "trials": 10368,
+      "gpu_uuid": "9027181e-cf64-bae9-732c-7d67885af6a3",
+      "elapsed_seconds": 16.358503097988432
+    },
+    {
+      "stage": 0,
+      "cell": 14,
+      "trials": 10368,
+      "gpu_uuid": "048f1d89-373e-cd31-5bff-fc2a230ad865",
+      "elapsed_seconds": 16.170469232980395
+    },
+    {
+      "stage": 0,
+      "cell": 15,
+      "trials": 10368,
+      "gpu_uuid": "283052ab-056b-5747-310b-3538b4557d30",
+      "elapsed_seconds": 16.446690943004796
+    },
+    {
+      "stage": 0,
+      "cell": 16,
+      "trials": 10368,
+      "gpu_uuid": "5c1085c3-ed6c-127b-6db5-944f26db5b46",
+      "elapsed_seconds": 15.980463563988451
+    },
+    {
+      "stage": 0,
+      "cell": 17,
+      "trials": 10368,
+      "gpu_uuid": "c25a5611-4b1e-746a-b106-1320fce69dc2",
+      "elapsed_seconds": 15.905045894993236
+    },
+    {
+      "stage": 0,
+      "cell": 18,
+      "trials": 10368,
+      "gpu_uuid": "143d1cb0-dd22-a7b5-3cd3-2cf19aa9d077",
+      "elapsed_seconds": 15.598229630995775
+    },
+    {
+      "stage": 0,
+      "cell": 19,
+      "trials": 10368,
+      "gpu_uuid": "2df507e2-0482-527c-751b-eb13b9c14db2",
+      "elapsed_seconds": 16.28246195797692
+    },
+    {
+      "stage": 0,
+      "cell": 20,
+      "trials": 10368,
+      "gpu_uuid": "828e4fb3-4354-76d4-352b-aaf903b7b899",
+      "elapsed_seconds": 15.128321652009618
+    },
+    {
+      "stage": 0,
+      "cell": 21,
+      "trials": 10368,
+      "gpu_uuid": "d93f3a1f-4984-7fc8-0a81-d37f27928925",
+      "elapsed_seconds": 15.147500528983073
+    },
+    {
+      "stage": 0,
+      "cell": 22,
+      "trials": 10368,
+      "gpu_uuid": "83db8a39-0ff0-a9e7-202f-deeb59ba1fb4",
+      "elapsed_seconds": 16.585221998015186
+    },
+    {
+      "stage": 0,
+      "cell": 23,
+      "trials": 10368,
+      "gpu_uuid": "3081d63c-8c5e-991d-487e-e16883734a6f",
+      "elapsed_seconds": 15.857359526009532
+    },
+    {
+      "stage": 0,
+      "cell": 24,
+      "trials": 10368,
+      "gpu_uuid": "d65db077-5b49-f9f7-8776-4e0f5e316197",
+      "elapsed_seconds": 16.436458930984372
+    },
+    {
+      "stage": 0,
+      "cell": 25,
+      "trials": 10368,
+      "gpu_uuid": "cdae93be-2946-2380-1121-f2a0ddb7695a",
+      "elapsed_seconds": 16.704557734978152
+    },
+    {
+      "stage": 0,
+      "cell": 26,
+      "trials": 10368,
+      "gpu_uuid": "2fddcdb7-154a-2173-03e5-0245305514bf",
+      "elapsed_seconds": 15.95668179198401
+    },
+    {
+      "stage": 0,
+      "cell": 27,
+      "trials": 10368,
+      "gpu_uuid": "e6d9d0f9-bb3a-5a6e-0572-8b7403e02a1c",
+      "elapsed_seconds": 16.699678385979496
+    },
+    {
+      "stage": 0,
+      "cell": 28,
+      "trials": 10368,
+      "gpu_uuid": "e75aa1e1-2ef9-87fa-7d68-28b9830fca4a",
+      "elapsed_seconds": 15.43178962499951
+    },
+    {
+      "stage": 0,
+      "cell": 29,
+      "trials": 10368,
+      "gpu_uuid": "5c59cb3b-c092-7044-893b-9dbcd70997af",
+      "elapsed_seconds": 16.18783644598443
+    },
+    {
+      "stage": 0,
+      "cell": 30,
+      "trials": 10368,
+      "gpu_uuid": "af3f2079-b9fb-b4f9-006f-f8169c21479d",
+      "elapsed_seconds": 16.418288784014294
+    },
+    {
+      "stage": 0,
+      "cell": 31,
+      "trials": 10368,
+      "gpu_uuid": "6ff2a902-c79c-d79c-fa31-6e6aea3b4385",
+      "elapsed_seconds": 16.255118253990076
+    },
+    {
+      "stage": 1,
+      "cell": 0,
+      "trials": 10368,
+      "gpu_uuid": "1fa3cf84-8005-73a2-3c85-a1fccc7365b0",
+      "elapsed_seconds": 12.89152775797993
+    },
+    {
+      "stage": 1,
+      "cell": 1,
+      "trials": 10368,
+      "gpu_uuid": "3555b8c7-eeb7-2484-fce1-731555ed0313",
+      "elapsed_seconds": 12.833662985998672
+    },
+    {
+      "stage": 1,
+      "cell": 2,
+      "trials": 10368,
+      "gpu_uuid": "d24dbdcb-ebce-9dad-fc5a-aeb6ee03af6f",
+      "elapsed_seconds": 13.876362776005408
+    },
+    {
+      "stage": 1,
+      "cell": 3,
+      "trials": 10368,
+      "gpu_uuid": "7f3a5d9e-5a55-3ce7-b350-79ab5412af64",
+      "elapsed_seconds": 12.614146488980623
+    },
+    {
+      "stage": 1,
+      "cell": 4,
+      "trials": 10368,
+      "gpu_uuid": "bca3487d-06ab-4011-b59d-a6103e01c302",
+      "elapsed_seconds": 12.846345842990559
+    },
+    {
+      "stage": 1,
+      "cell": 5,
+      "trials": 10368,
+      "gpu_uuid": "e05ea364-d36d-0493-9974-5e637e7da8ac",
+      "elapsed_seconds": 13.777723214996513
+    },
+    {
+      "stage": 1,
+      "cell": 6,
+      "trials": 10368,
+      "gpu_uuid": "614af505-e9c8-b2be-31f0-d3f336bd40fa",
+      "elapsed_seconds": 12.754577998974128
+    },
+    {
+      "stage": 1,
+      "cell": 7,
+      "trials": 10368,
+      "gpu_uuid": "9a2da807-7910-4dd6-bfbe-f23c797a43ed",
+      "elapsed_seconds": 13.361866477003787
+    },
+    {
+      "stage": 1,
+      "cell": 8,
+      "trials": 10368,
+      "gpu_uuid": "5e84e7d2-f338-feef-4879-acdd6738d0b2",
+      "elapsed_seconds": 13.418978658010019
+    },
+    {
+      "stage": 1,
+      "cell": 9,
+      "trials": 10368,
+      "gpu_uuid": "e0b32c38-5405-abe1-0a2e-eef8ae1f84cb",
+      "elapsed_seconds": 13.659708516992396
+    },
+    {
+      "stage": 1,
+      "cell": 10,
+      "trials": 10368,
+      "gpu_uuid": "8c227f86-2559-06dd-6f71-8f12ba4d58e2",
+      "elapsed_seconds": 13.604420267016394
+    },
+    {
+      "stage": 1,
+      "cell": 11,
+      "trials": 10368,
+      "gpu_uuid": "e92b0d4e-e56e-4c81-1fd0-a6b4412d54b1",
+      "elapsed_seconds": 12.756521773990244
+    },
+    {
+      "stage": 1,
+      "cell": 12,
+      "trials": 10368,
+      "gpu_uuid": "c7372efa-f31a-bcea-b064-03185cfb3712",
+      "elapsed_seconds": 12.92932594101876
+    },
+    {
+      "stage": 1,
+      "cell": 13,
+      "trials": 10368,
+      "gpu_uuid": "9027181e-cf64-bae9-732c-7d67885af6a3",
+      "elapsed_seconds": 13.429434759018477
+    },
+    {
+      "stage": 1,
+      "cell": 14,
+      "trials": 10368,
+      "gpu_uuid": "048f1d89-373e-cd31-5bff-fc2a230ad865",
+      "elapsed_seconds": 13.072210095997434
+    },
+    {
+      "stage": 1,
+      "cell": 15,
+      "trials": 10368,
+      "gpu_uuid": "283052ab-056b-5747-310b-3538b4557d30",
+      "elapsed_seconds": 13.444041747017764
+    },
+    {
+      "stage": 1,
+      "cell": 16,
+      "trials": 10368,
+      "gpu_uuid": "5c1085c3-ed6c-127b-6db5-944f26db5b46",
+      "elapsed_seconds": 13.437156792002497
+    },
+    {
+      "stage": 1,
+      "cell": 17,
+      "trials": 10368,
+      "gpu_uuid": "c25a5611-4b1e-746a-b106-1320fce69dc2",
+      "elapsed_seconds": 12.715684141003294
+    },
+    {
+      "stage": 1,
+      "cell": 18,
+      "trials": 10368,
+      "gpu_uuid": "143d1cb0-dd22-a7b5-3cd3-2cf19aa9d077",
+      "elapsed_seconds": 13.145898424001643
+    },
+    {
+      "stage": 1,
+      "cell": 19,
+      "trials": 10368,
+      "gpu_uuid": "2df507e2-0482-527c-751b-eb13b9c14db2",
+      "elapsed_seconds": 13.291643780976301
+    },
+    {
+      "stage": 1,
+      "cell": 20,
+      "trials": 10368,
+      "gpu_uuid": "828e4fb3-4354-76d4-352b-aaf903b7b899",
+      "elapsed_seconds": 12.338791209011106
+    },
+    {
+      "stage": 1,
+      "cell": 21,
+      "trials": 10368,
+      "gpu_uuid": "d93f3a1f-4984-7fc8-0a81-d37f27928925",
+      "elapsed_seconds": 13.018849959014915
+    },
+    {
+      "stage": 1,
+      "cell": 22,
+      "trials": 10368,
+      "gpu_uuid": "83db8a39-0ff0-a9e7-202f-deeb59ba1fb4",
+      "elapsed_seconds": 13.849052950012265
+    },
+    {
+      "stage": 1,
+      "cell": 23,
+      "trials": 10368,
+      "gpu_uuid": "3081d63c-8c5e-991d-487e-e16883734a6f",
+      "elapsed_seconds": 12.844406279997202
+    },
+    {
+      "stage": 1,
+      "cell": 24,
+      "trials": 10368,
+      "gpu_uuid": "d65db077-5b49-f9f7-8776-4e0f5e316197",
+      "elapsed_seconds": 13.646311801014235
+    },
+    {
+      "stage": 1,
+      "cell": 25,
+      "trials": 10368,
+      "gpu_uuid": "cdae93be-2946-2380-1121-f2a0ddb7695a",
+      "elapsed_seconds": 14.047716636006953
+    },
+    {
+      "stage": 1,
+      "cell": 26,
+      "trials": 10368,
+      "gpu_uuid": "2fddcdb7-154a-2173-03e5-0245305514bf",
+      "elapsed_seconds": 13.300913549988763
+    },
+    {
+      "stage": 1,
+      "cell": 27,
+      "trials": 10368,
+      "gpu_uuid": "e6d9d0f9-bb3a-5a6e-0572-8b7403e02a1c",
+      "elapsed_seconds": 13.711040566995507
+    },
+    {
+      "stage": 1,
+      "cell": 28,
+      "trials": 10368,
+      "gpu_uuid": "e75aa1e1-2ef9-87fa-7d68-28b9830fca4a",
+      "elapsed_seconds": 12.616061056993203
+    },
+    {
+      "stage": 1,
+      "cell": 29,
+      "trials": 10368,
+      "gpu_uuid": "5c59cb3b-c092-7044-893b-9dbcd70997af",
+      "elapsed_seconds": 13.268587881000713
+    },
+    {
+      "stage": 1,
+      "cell": 30,
+      "trials": 10368,
+      "gpu_uuid": "af3f2079-b9fb-b4f9-006f-f8169c21479d",
+      "elapsed_seconds": 13.450402134010801
+    },
+    {
+      "stage": 1,
+      "cell": 31,
+      "trials": 10368,
+      "gpu_uuid": "6ff2a902-c79c-d79c-fa31-6e6aea3b4385",
+      "elapsed_seconds": 13.332732471986674
+    },
+    {
+      "stage": 2,
+      "cell": 0,
+      "trials": 10368,
+      "gpu_uuid": "1fa3cf84-8005-73a2-3c85-a1fccc7365b0",
+      "elapsed_seconds": 12.844285913015483
+    },
+    {
+      "stage": 2,
+      "cell": 1,
+      "trials": 10368,
+      "gpu_uuid": "3555b8c7-eeb7-2484-fce1-731555ed0313",
+      "elapsed_seconds": 12.86985674200696
+    },
+    {
+      "stage": 2,
+      "cell": 2,
+      "trials": 10368,
+      "gpu_uuid": "d24dbdcb-ebce-9dad-fc5a-aeb6ee03af6f",
+      "elapsed_seconds": 13.961891482002102
+    },
+    {
+      "stage": 2,
+      "cell": 3,
+      "trials": 10368,
+      "gpu_uuid": "7f3a5d9e-5a55-3ce7-b350-79ab5412af64",
+      "elapsed_seconds": 12.67873558701831
+    },
+    {
+      "stage": 2,
+      "cell": 4,
+      "trials": 10368,
+      "gpu_uuid": "bca3487d-06ab-4011-b59d-a6103e01c302",
+      "elapsed_seconds": 12.860472476982977
+    },
+    {
+      "stage": 2,
+      "cell": 5,
+      "trials": 10368,
+      "gpu_uuid": "e05ea364-d36d-0493-9974-5e637e7da8ac",
+      "elapsed_seconds": 13.779133903997717
+    },
+    {
+      "stage": 2,
+      "cell": 6,
+      "trials": 10368,
+      "gpu_uuid": "614af505-e9c8-b2be-31f0-d3f336bd40fa",
+      "elapsed_seconds": 12.703304051014129
+    },
+    {
+      "stage": 2,
+      "cell": 7,
+      "trials": 10368,
+      "gpu_uuid": "9a2da807-7910-4dd6-bfbe-f23c797a43ed",
+      "elapsed_seconds": 13.348942023993004
+    },
+    {
+      "stage": 2,
+      "cell": 8,
+      "trials": 10368,
+      "gpu_uuid": "5e84e7d2-f338-feef-4879-acdd6738d0b2",
+      "elapsed_seconds": 13.439390310988529
+    },
+    {
+      "stage": 2,
+      "cell": 9,
+      "trials": 10368,
+      "gpu_uuid": "e0b32c38-5405-abe1-0a2e-eef8ae1f84cb",
+      "elapsed_seconds": 13.639193025999703
+    },
+    {
+      "stage": 2,
+      "cell": 10,
+      "trials": 10368,
+      "gpu_uuid": "8c227f86-2559-06dd-6f71-8f12ba4d58e2",
+      "elapsed_seconds": 13.580661426996812
+    },
+    {
+      "stage": 2,
+      "cell": 11,
+      "trials": 10368,
+      "gpu_uuid": "e92b0d4e-e56e-4c81-1fd0-a6b4412d54b1",
+      "elapsed_seconds": 12.797293242998421
+    },
+    {
+      "stage": 2,
+      "cell": 12,
+      "trials": 10368,
+      "gpu_uuid": "c7372efa-f31a-bcea-b064-03185cfb3712",
+      "elapsed_seconds": 12.92184314597398
+    },
+    {
+      "stage": 2,
+      "cell": 13,
+      "trials": 10368,
+      "gpu_uuid": "9027181e-cf64-bae9-732c-7d67885af6a3",
+      "elapsed_seconds": 13.4001575220027
+    },
+    {
+      "stage": 2,
+      "cell": 14,
+      "trials": 10368,
+      "gpu_uuid": "048f1d89-373e-cd31-5bff-fc2a230ad865",
+      "elapsed_seconds": 13.115799444989534
+    },
+    {
+      "stage": 2,
+      "cell": 15,
+      "trials": 10368,
+      "gpu_uuid": "283052ab-056b-5747-310b-3538b4557d30",
+      "elapsed_seconds": 13.331693547981558
+    },
+    {
+      "stage": 2,
+      "cell": 16,
+      "trials": 10368,
+      "gpu_uuid": "5c1085c3-ed6c-127b-6db5-944f26db5b46",
+      "elapsed_seconds": 13.60002030900796
+    },
+    {
+      "stage": 2,
+      "cell": 17,
+      "trials": 10368,
+      "gpu_uuid": "c25a5611-4b1e-746a-b106-1320fce69dc2",
+      "elapsed_seconds": 12.739054953999585
+    },
+    {
+      "stage": 2,
+      "cell": 18,
+      "trials": 10368,
+      "gpu_uuid": "143d1cb0-dd22-a7b5-3cd3-2cf19aa9d077",
+      "elapsed_seconds": 13.154905253992183
+    },
+    {
+      "stage": 2,
+      "cell": 19,
+      "trials": 10368,
+      "gpu_uuid": "2df507e2-0482-527c-751b-eb13b9c14db2",
+      "elapsed_seconds": 13.254243472998496
+    },
+    {
+      "stage": 2,
+      "cell": 20,
+      "trials": 10368,
+      "gpu_uuid": "828e4fb3-4354-76d4-352b-aaf903b7b899",
+      "elapsed_seconds": 12.341118306008866
+    },
+    {
+      "stage": 2,
+      "cell": 21,
+      "trials": 10368,
+      "gpu_uuid": "d93f3a1f-4984-7fc8-0a81-d37f27928925",
+      "elapsed_seconds": 12.924610582995228
+    },
+    {
+      "stage": 2,
+      "cell": 22,
+      "trials": 10368,
+      "gpu_uuid": "83db8a39-0ff0-a9e7-202f-deeb59ba1fb4",
+      "elapsed_seconds": 13.82663467497332
+    },
+    {
+      "stage": 2,
+      "cell": 23,
+      "trials": 10368,
+      "gpu_uuid": "3081d63c-8c5e-991d-487e-e16883734a6f",
+      "elapsed_seconds": 12.844328173989197
+    },
+    {
+      "stage": 2,
+      "cell": 24,
+      "trials": 10368,
+      "gpu_uuid": "d65db077-5b49-f9f7-8776-4e0f5e316197",
+      "elapsed_seconds": 13.423512112000026
+    },
+    {
+      "stage": 2,
+      "cell": 25,
+      "trials": 10368,
+      "gpu_uuid": "cdae93be-2946-2380-1121-f2a0ddb7695a",
+      "elapsed_seconds": 14.147647912992397
+    },
+    {
+      "stage": 2,
+      "cell": 26,
+      "trials": 10368,
+      "gpu_uuid": "2fddcdb7-154a-2173-03e5-0245305514bf",
+      "elapsed_seconds": 13.257835969998268
+    },
+    {
+      "stage": 2,
+      "cell": 27,
+      "trials": 10368,
+      "gpu_uuid": "e6d9d0f9-bb3a-5a6e-0572-8b7403e02a1c",
+      "elapsed_seconds": 13.651693118008552
+    },
+    {
+      "stage": 2,
+      "cell": 28,
+      "trials": 10368,
+      "gpu_uuid": "e75aa1e1-2ef9-87fa-7d68-28b9830fca4a",
+      "elapsed_seconds": 12.606860086991219
+    },
+    {
+      "stage": 2,
+      "cell": 29,
+      "trials": 10368,
+      "gpu_uuid": "5c59cb3b-c092-7044-893b-9dbcd70997af",
+      "elapsed_seconds": 13.190851828025188
+    },
+    {
+      "stage": 2,
+      "cell": 30,
+      "trials": 10368,
+      "gpu_uuid": "af3f2079-b9fb-b4f9-006f-f8169c21479d",
+      "elapsed_seconds": 13.50330136998673
+    },
+    {
+      "stage": 2,
+      "cell": 31,
+      "trials": 10368,
+      "gpu_uuid": "6ff2a902-c79c-d79c-fa31-6e6aea3b4385",
+      "elapsed_seconds": 13.380740206019254
+    },
+    {
+      "stage": 3,
+      "cell": 0,
+      "trials": 10368,
+      "gpu_uuid": "1fa3cf84-8005-73a2-3c85-a1fccc7365b0",
+      "elapsed_seconds": 12.727503162022913
+    },
+    {
+      "stage": 3,
+      "cell": 1,
+      "trials": 10368,
+      "gpu_uuid": "3555b8c7-eeb7-2484-fce1-731555ed0313",
+      "elapsed_seconds": 12.86691827699542
+    },
+    {
+      "stage": 3,
+      "cell": 2,
+      "trials": 10368,
+      "gpu_uuid": "d24dbdcb-ebce-9dad-fc5a-aeb6ee03af6f",
+      "elapsed_seconds": 13.823493511008564
+    },
+    {
+      "stage": 3,
+      "cell": 3,
+      "trials": 10368,
+      "gpu_uuid": "7f3a5d9e-5a55-3ce7-b350-79ab5412af64",
+      "elapsed_seconds": 12.69144855500781
+    },
+    {
+      "stage": 3,
+      "cell": 4,
+      "trials": 10368,
+      "gpu_uuid": "bca3487d-06ab-4011-b59d-a6103e01c302",
+      "elapsed_seconds": 12.83148289800738
+    },
+    {
+      "stage": 3,
+      "cell": 5,
+      "trials": 10368,
+      "gpu_uuid": "e05ea364-d36d-0493-9974-5e637e7da8ac",
+      "elapsed_seconds": 13.774970827013021
+    },
+    {
+      "stage": 3,
+      "cell": 6,
+      "trials": 10368,
+      "gpu_uuid": "614af505-e9c8-b2be-31f0-d3f336bd40fa",
+      "elapsed_seconds": 12.706446378986584
+    },
+    {
+      "stage": 3,
+      "cell": 7,
+      "trials": 10368,
+      "gpu_uuid": "9a2da807-7910-4dd6-bfbe-f23c797a43ed",
+      "elapsed_seconds": 13.40139701400767
+    },
+    {
+      "stage": 3,
+      "cell": 8,
+      "trials": 10368,
+      "gpu_uuid": "5e84e7d2-f338-feef-4879-acdd6738d0b2",
+      "elapsed_seconds": 13.467015494010411
+    },
+    {
+      "stage": 3,
+      "cell": 9,
+      "trials": 10368,
+      "gpu_uuid": "e0b32c38-5405-abe1-0a2e-eef8ae1f84cb",
+      "elapsed_seconds": 13.712953262991505
+    },
+    {
+      "stage": 3,
+      "cell": 10,
+      "trials": 10368,
+      "gpu_uuid": "8c227f86-2559-06dd-6f71-8f12ba4d58e2",
+      "elapsed_seconds": 13.727552569995169
+    },
+    {
+      "stage": 3,
+      "cell": 11,
+      "trials": 10368,
+      "gpu_uuid": "e92b0d4e-e56e-4c81-1fd0-a6b4412d54b1",
+      "elapsed_seconds": 12.65353680899716
+    },
+    {
+      "stage": 3,
+      "cell": 12,
+      "trials": 10368,
+      "gpu_uuid": "c7372efa-f31a-bcea-b064-03185cfb3712",
+      "elapsed_seconds": 12.937215260986704
+    },
+    {
+      "stage": 3,
+      "cell": 13,
+      "trials": 10368,
+      "gpu_uuid": "9027181e-cf64-bae9-732c-7d67885af6a3",
+      "elapsed_seconds": 13.38489701601793
+    },
+    {
+      "stage": 3,
+      "cell": 14,
+      "trials": 10368,
+      "gpu_uuid": "048f1d89-373e-cd31-5bff-fc2a230ad865",
+      "elapsed_seconds": 13.143227830005344
+    },
+    {
+      "stage": 3,
+      "cell": 15,
+      "trials": 10368,
+      "gpu_uuid": "283052ab-056b-5747-310b-3538b4557d30",
+      "elapsed_seconds": 13.411445213016123
+    },
+    {
+      "stage": 3,
+      "cell": 16,
+      "trials": 10368,
+      "gpu_uuid": "5c1085c3-ed6c-127b-6db5-944f26db5b46",
+      "elapsed_seconds": 13.608436050999444
+    },
+    {
+      "stage": 3,
+      "cell": 17,
+      "trials": 10368,
+      "gpu_uuid": "c25a5611-4b1e-746a-b106-1320fce69dc2",
+      "elapsed_seconds": 12.758064159017522
+    },
+    {
+      "stage": 3,
+      "cell": 18,
+      "trials": 10368,
+      "gpu_uuid": "143d1cb0-dd22-a7b5-3cd3-2cf19aa9d077",
+      "elapsed_seconds": 13.145018192008138
+    },
+    {
+      "stage": 3,
+      "cell": 19,
+      "trials": 10368,
+      "gpu_uuid": "2df507e2-0482-527c-751b-eb13b9c14db2",
+      "elapsed_seconds": 13.348329824017128
+    },
+    {
+      "stage": 3,
+      "cell": 20,
+      "trials": 10368,
+      "gpu_uuid": "828e4fb3-4354-76d4-352b-aaf903b7b899",
+      "elapsed_seconds": 12.317837082024198
+    },
+    {
+      "stage": 3,
+      "cell": 21,
+      "trials": 10368,
+      "gpu_uuid": "d93f3a1f-4984-7fc8-0a81-d37f27928925",
+      "elapsed_seconds": 12.749533946975134
+    },
+    {
+      "stage": 3,
+      "cell": 22,
+      "trials": 10368,
+      "gpu_uuid": "83db8a39-0ff0-a9e7-202f-deeb59ba1fb4",
+      "elapsed_seconds": 13.826867374009453
+    },
+    {
+      "stage": 3,
+      "cell": 23,
+      "trials": 10368,
+      "gpu_uuid": "3081d63c-8c5e-991d-487e-e16883734a6f",
+      "elapsed_seconds": 12.831723315001
+    },
+    {
+      "stage": 3,
+      "cell": 24,
+      "trials": 10368,
+      "gpu_uuid": "d65db077-5b49-f9f7-8776-4e0f5e316197",
+      "elapsed_seconds": 13.432679176999955
+    },
+    {
+      "stage": 3,
+      "cell": 25,
+      "trials": 10368,
+      "gpu_uuid": "cdae93be-2946-2380-1121-f2a0ddb7695a",
+      "elapsed_seconds": 14.039991897006985
+    },
+    {
+      "stage": 3,
+      "cell": 26,
+      "trials": 10368,
+      "gpu_uuid": "2fddcdb7-154a-2173-03e5-0245305514bf",
+      "elapsed_seconds": 13.247628423006972
+    },
+    {
+      "stage": 3,
+      "cell": 27,
+      "trials": 10368,
+      "gpu_uuid": "e6d9d0f9-bb3a-5a6e-0572-8b7403e02a1c",
+      "elapsed_seconds": 13.702654407999944
+    },
+    {
+      "stage": 3,
+      "cell": 28,
+      "trials": 10368,
+      "gpu_uuid": "e75aa1e1-2ef9-87fa-7d68-28b9830fca4a",
+      "elapsed_seconds": 12.601422651001485
+    },
+    {
+      "stage": 3,
+      "cell": 29,
+      "trials": 10368,
+      "gpu_uuid": "5c59cb3b-c092-7044-893b-9dbcd70997af",
+      "elapsed_seconds": 13.263902359001804
+    },
+    {
+      "stage": 3,
+      "cell": 30,
+      "trials": 10368,
+      "gpu_uuid": "af3f2079-b9fb-b4f9-006f-f8169c21479d",
+      "elapsed_seconds": 13.496407689002808
+    },
+    {
+      "stage": 3,
+      "cell": 31,
+      "trials": 10368,
+      "gpu_uuid": "6ff2a902-c79c-d79c-fa31-6e6aea3b4385",
+      "elapsed_seconds": 13.349502492987085
+    },
+    {
+      "stage": 4,
+      "cell": 0,
+      "trials": 10368,
+      "gpu_uuid": "1fa3cf84-8005-73a2-3c85-a1fccc7365b0",
+      "elapsed_seconds": 25.0452989229816
+    },
+    {
+      "stage": 4,
+      "cell": 1,
+      "trials": 10368,
+      "gpu_uuid": "3555b8c7-eeb7-2484-fce1-731555ed0313",
+      "elapsed_seconds": 25.165601762011647
+    },
+    {
+      "stage": 4,
+      "cell": 2,
+      "trials": 10368,
+      "gpu_uuid": "d24dbdcb-ebce-9dad-fc5a-aeb6ee03af6f",
+      "elapsed_seconds": 26.98552132898476
+    },
+    {
+      "stage": 4,
+      "cell": 3,
+      "trials": 10368,
+      "gpu_uuid": "7f3a5d9e-5a55-3ce7-b350-79ab5412af64",
+      "elapsed_seconds": 25.168001463986002
+    },
+    {
+      "stage": 4,
+      "cell": 4,
+      "trials": 10368,
+      "gpu_uuid": "bca3487d-06ab-4011-b59d-a6103e01c302",
+      "elapsed_seconds": 25.32508315501036
+    },
+    {
+      "stage": 4,
+      "cell": 5,
+      "trials": 10368,
+      "gpu_uuid": "e05ea364-d36d-0493-9974-5e637e7da8ac",
+      "elapsed_seconds": 26.96200974099338
+    },
+    {
+      "stage": 4,
+      "cell": 6,
+      "trials": 10368,
+      "gpu_uuid": "614af505-e9c8-b2be-31f0-d3f336bd40fa",
+      "elapsed_seconds": 25.153438113018638
+    },
+    {
+      "stage": 4,
+      "cell": 7,
+      "trials": 10368,
+      "gpu_uuid": "9a2da807-7910-4dd6-bfbe-f23c797a43ed",
+      "elapsed_seconds": 26.177864518016577
+    },
+    {
+      "stage": 4,
+      "cell": 8,
+      "trials": 10368,
+      "gpu_uuid": "5e84e7d2-f338-feef-4879-acdd6738d0b2",
+      "elapsed_seconds": 26.355035801010672
+    },
+    {
+      "stage": 4,
+      "cell": 9,
+      "trials": 10368,
+      "gpu_uuid": "e0b32c38-5405-abe1-0a2e-eef8ae1f84cb",
+      "elapsed_seconds": 26.75931656200555
+    },
+    {
+      "stage": 4,
+      "cell": 10,
+      "trials": 10368,
+      "gpu_uuid": "8c227f86-2559-06dd-6f71-8f12ba4d58e2",
+      "elapsed_seconds": 26.773918164981296
+    },
+    {
+      "stage": 4,
+      "cell": 11,
+      "trials": 10368,
+      "gpu_uuid": "e92b0d4e-e56e-4c81-1fd0-a6b4412d54b1",
+      "elapsed_seconds": 24.948678109998582
+    },
+    {
+      "stage": 4,
+      "cell": 12,
+      "trials": 10368,
+      "gpu_uuid": "c7372efa-f31a-bcea-b064-03185cfb3712",
+      "elapsed_seconds": 25.38070375501411
+    },
+    {
+      "stage": 4,
+      "cell": 13,
+      "trials": 10368,
+      "gpu_uuid": "9027181e-cf64-bae9-732c-7d67885af6a3",
+      "elapsed_seconds": 26.20381440699566
+    },
+    {
+      "stage": 4,
+      "cell": 14,
+      "trials": 10368,
+      "gpu_uuid": "048f1d89-373e-cd31-5bff-fc2a230ad865",
+      "elapsed_seconds": 25.669769822998205
+    },
+    {
+      "stage": 4,
+      "cell": 15,
+      "trials": 10368,
+      "gpu_uuid": "283052ab-056b-5747-310b-3538b4557d30",
+      "elapsed_seconds": 26.410896357992897
+    },
+    {
+      "stage": 4,
+      "cell": 16,
+      "trials": 10368,
+      "gpu_uuid": "5c1085c3-ed6c-127b-6db5-944f26db5b46",
+      "elapsed_seconds": 26.491200767981354
+    },
+    {
+      "stage": 4,
+      "cell": 17,
+      "trials": 10368,
+      "gpu_uuid": "c25a5611-4b1e-746a-b106-1320fce69dc2",
+      "elapsed_seconds": 25.097485785983736
+    },
+    {
+      "stage": 4,
+      "cell": 18,
+      "trials": 10368,
+      "gpu_uuid": "143d1cb0-dd22-a7b5-3cd3-2cf19aa9d077",
+      "elapsed_seconds": 25.856444556993665
+    },
+    {
+      "stage": 4,
+      "cell": 19,
+      "trials": 10368,
+      "gpu_uuid": "2df507e2-0482-527c-751b-eb13b9c14db2",
+      "elapsed_seconds": 26.212579191982513
+    },
+    {
+      "stage": 4,
+      "cell": 20,
+      "trials": 10368,
+      "gpu_uuid": "828e4fb3-4354-76d4-352b-aaf903b7b899",
+      "elapsed_seconds": 24.131209705985384
+    },
+    {
+      "stage": 4,
+      "cell": 21,
+      "trials": 10368,
+      "gpu_uuid": "d93f3a1f-4984-7fc8-0a81-d37f27928925",
+      "elapsed_seconds": 25.029230414016638
+    },
+    {
+      "stage": 4,
+      "cell": 22,
+      "trials": 10368,
+      "gpu_uuid": "83db8a39-0ff0-a9e7-202f-deeb59ba1fb4",
+      "elapsed_seconds": 26.917964308988303
+    },
+    {
+      "stage": 4,
+      "cell": 23,
+      "trials": 10368,
+      "gpu_uuid": "3081d63c-8c5e-991d-487e-e16883734a6f",
+      "elapsed_seconds": 25.21658225299325
+    },
+    {
+      "stage": 4,
+      "cell": 24,
+      "trials": 10368,
+      "gpu_uuid": "d65db077-5b49-f9f7-8776-4e0f5e316197",
+      "elapsed_seconds": 26.421829788014293
+    },
+    {
+      "stage": 4,
+      "cell": 25,
+      "trials": 10368,
+      "gpu_uuid": "cdae93be-2946-2380-1121-f2a0ddb7695a",
+      "elapsed_seconds": 27.344229609996546
+    },
+    {
+      "stage": 4,
+      "cell": 26,
+      "trials": 10368,
+      "gpu_uuid": "2fddcdb7-154a-2173-03e5-0245305514bf",
+      "elapsed_seconds": 26.011739460984245
+    },
+    {
+      "stage": 4,
+      "cell": 27,
+      "trials": 10368,
+      "gpu_uuid": "e6d9d0f9-bb3a-5a6e-0572-8b7403e02a1c",
+      "elapsed_seconds": 27.168871836998733
+    },
+    {
+      "stage": 4,
+      "cell": 28,
+      "trials": 10368,
+      "gpu_uuid": "e75aa1e1-2ef9-87fa-7d68-28b9830fca4a",
+      "elapsed_seconds": 24.75997608801117
+    },
+    {
+      "stage": 4,
+      "cell": 29,
+      "trials": 10368,
+      "gpu_uuid": "5c59cb3b-c092-7044-893b-9dbcd70997af",
+      "elapsed_seconds": 25.826680775993736
+    },
+    {
+      "stage": 4,
+      "cell": 30,
+      "trials": 10368,
+      "gpu_uuid": "af3f2079-b9fb-b4f9-006f-f8169c21479d",
+      "elapsed_seconds": 26.487065335997613
+    },
+    {
+      "stage": 4,
+      "cell": 31,
+      "trials": 10368,
+      "gpu_uuid": "6ff2a902-c79c-d79c-fa31-6e6aea3b4385",
+      "elapsed_seconds": 26.064777891995618
+    },
+    {
+      "stage": 5,
+      "cell": 0,
+      "trials": 10368,
+      "gpu_uuid": "1fa3cf84-8005-73a2-3c85-a1fccc7365b0",
+      "elapsed_seconds": 98.94385054300074
+    },
+    {
+      "stage": 5,
+      "cell": 1,
+      "trials": 10368,
+      "gpu_uuid": "3555b8c7-eeb7-2484-fce1-731555ed0313",
+      "elapsed_seconds": 101.22269602899905
+    },
+    {
+      "stage": 5,
+      "cell": 2,
+      "trials": 10368,
+      "gpu_uuid": "d24dbdcb-ebce-9dad-fc5a-aeb6ee03af6f",
+      "elapsed_seconds": 106.91231290297583
+    },
+    {
+      "stage": 5,
+      "cell": 3,
+      "trials": 10368,
+      "gpu_uuid": "7f3a5d9e-5a55-3ce7-b350-79ab5412af64",
+      "elapsed_seconds": 100.4069473510026
+    },
+    {
+      "stage": 5,
+      "cell": 4,
+      "trials": 10368,
+      "gpu_uuid": "bca3487d-06ab-4011-b59d-a6103e01c302",
+      "elapsed_seconds": 100.26140679899254
+    },
+    {
+      "stage": 5,
+      "cell": 5,
+      "trials": 10368,
+      "gpu_uuid": "e05ea364-d36d-0493-9974-5e637e7da8ac",
+      "elapsed_seconds": 107.44356850598706
+    },
+    {
+      "stage": 5,
+      "cell": 6,
+      "trials": 10368,
+      "gpu_uuid": "614af505-e9c8-b2be-31f0-d3f336bd40fa",
+      "elapsed_seconds": 98.98055180400843
+    },
+    {
+      "stage": 5,
+      "cell": 7,
+      "trials": 10368,
+      "gpu_uuid": "9a2da807-7910-4dd6-bfbe-f23c797a43ed",
+      "elapsed_seconds": 103.44375455399859
+    },
+    {
+      "stage": 5,
+      "cell": 8,
+      "trials": 10368,
+      "gpu_uuid": "5e84e7d2-f338-feef-4879-acdd6738d0b2",
+      "elapsed_seconds": 104.66532840099535
+    },
+    {
+      "stage": 5,
+      "cell": 9,
+      "trials": 10368,
+      "gpu_uuid": "e0b32c38-5405-abe1-0a2e-eef8ae1f84cb",
+      "elapsed_seconds": 105.72423561601317
+    },
+    {
+      "stage": 5,
+      "cell": 10,
+      "trials": 10368,
+      "gpu_uuid": "8c227f86-2559-06dd-6f71-8f12ba4d58e2",
+      "elapsed_seconds": 105.87489893799648
+    },
+    {
+      "stage": 5,
+      "cell": 11,
+      "trials": 10368,
+      "gpu_uuid": "e92b0d4e-e56e-4c81-1fd0-a6b4412d54b1",
+      "elapsed_seconds": 98.33543444299721
+    },
+    {
+      "stage": 5,
+      "cell": 12,
+      "trials": 10368,
+      "gpu_uuid": "c7372efa-f31a-bcea-b064-03185cfb3712",
+      "elapsed_seconds": 101.57334267700207
+    },
+    {
+      "stage": 5,
+      "cell": 13,
+      "trials": 10368,
+      "gpu_uuid": "9027181e-cf64-bae9-732c-7d67885af6a3",
+      "elapsed_seconds": 102.99144441599492
+    },
+    {
+      "stage": 5,
+      "cell": 14,
+      "trials": 10368,
+      "gpu_uuid": "048f1d89-373e-cd31-5bff-fc2a230ad865",
+      "elapsed_seconds": 102.40762314901804
+    },
+    {
+      "stage": 5,
+      "cell": 15,
+      "trials": 10368,
+      "gpu_uuid": "283052ab-056b-5747-310b-3538b4557d30",
+      "elapsed_seconds": 102.95213093800703
+    },
+    {
+      "stage": 5,
+      "cell": 16,
+      "trials": 10368,
+      "gpu_uuid": "5c1085c3-ed6c-127b-6db5-944f26db5b46",
+      "elapsed_seconds": 104.9728310549981
+    },
+    {
+      "stage": 5,
+      "cell": 17,
+      "trials": 10368,
+      "gpu_uuid": "c25a5611-4b1e-746a-b106-1320fce69dc2",
+      "elapsed_seconds": 98.64957468400826
+    },
+    {
+      "stage": 5,
+      "cell": 18,
+      "trials": 10368,
+      "gpu_uuid": "143d1cb0-dd22-a7b5-3cd3-2cf19aa9d077",
+      "elapsed_seconds": 101.96370991598815
+    },
+    {
+      "stage": 5,
+      "cell": 19,
+      "trials": 10368,
+      "gpu_uuid": "2df507e2-0482-527c-751b-eb13b9c14db2",
+      "elapsed_seconds": 103.29826494099689
+    },
+    {
+      "stage": 5,
+      "cell": 20,
+      "trials": 10368,
+      "gpu_uuid": "828e4fb3-4354-76d4-352b-aaf903b7b899",
+      "elapsed_seconds": 96.37564951297827
+    },
+    {
+      "stage": 5,
+      "cell": 21,
+      "trials": 10368,
+      "gpu_uuid": "d93f3a1f-4984-7fc8-0a81-d37f27928925",
+      "elapsed_seconds": 99.67278135300148
+    },
+    {
+      "stage": 5,
+      "cell": 22,
+      "trials": 10368,
+      "gpu_uuid": "83db8a39-0ff0-a9e7-202f-deeb59ba1fb4",
+      "elapsed_seconds": 107.3469310310029
+    },
+    {
+      "stage": 5,
+      "cell": 23,
+      "trials": 10368,
+      "gpu_uuid": "3081d63c-8c5e-991d-487e-e16883734a6f",
+      "elapsed_seconds": 100.7502704290091
+    },
+    {
+      "stage": 5,
+      "cell": 24,
+      "trials": 10368,
+      "gpu_uuid": "d65db077-5b49-f9f7-8776-4e0f5e316197",
+      "elapsed_seconds": 104.44791396099026
+    },
+    {
+      "stage": 5,
+      "cell": 25,
+      "trials": 10368,
+      "gpu_uuid": "cdae93be-2946-2380-1121-f2a0ddb7695a",
+      "elapsed_seconds": 107.42848594099632
+    },
+    {
+      "stage": 5,
+      "cell": 26,
+      "trials": 10368,
+      "gpu_uuid": "2fddcdb7-154a-2173-03e5-0245305514bf",
+      "elapsed_seconds": 103.34503049901105
+    },
+    {
+      "stage": 5,
+      "cell": 27,
+      "trials": 10368,
+      "gpu_uuid": "e6d9d0f9-bb3a-5a6e-0572-8b7403e02a1c",
+      "elapsed_seconds": 106.49590843700571
+    },
+    {
+      "stage": 5,
+      "cell": 28,
+      "trials": 10368,
+      "gpu_uuid": "e75aa1e1-2ef9-87fa-7d68-28b9830fca4a",
+      "elapsed_seconds": 97.86751705000643
+    },
+    {
+      "stage": 5,
+      "cell": 29,
+      "trials": 10368,
+      "gpu_uuid": "5c59cb3b-c092-7044-893b-9dbcd70997af",
+      "elapsed_seconds": 102.20752667900524
+    },
+    {
+      "stage": 5,
+      "cell": 30,
+      "trials": 10368,
+      "gpu_uuid": "af3f2079-b9fb-b4f9-006f-f8169c21479d",
+      "elapsed_seconds": 104.18974239198724
+    },
+    {
+      "stage": 5,
+      "cell": 31,
+      "trials": 10368,
+      "gpu_uuid": "6ff2a902-c79c-d79c-fa31-6e6aea3b4385",
+      "elapsed_seconds": 102.96172159098205
+    },
+    {
+      "stage": 6,
+      "cell": 0,
+      "trials": 10368,
+      "gpu_uuid": "1fa3cf84-8005-73a2-3c85-a1fccc7365b0",
+      "elapsed_seconds": 399.81297849700786
+    },
+    {
+      "stage": 6,
+      "cell": 1,
+      "trials": 10368,
+      "gpu_uuid": "3555b8c7-eeb7-2484-fce1-731555ed0313",
+      "elapsed_seconds": 412.0874607449805
+    },
+    {
+      "stage": 6,
+      "cell": 2,
+      "trials": 10368,
+      "gpu_uuid": "d24dbdcb-ebce-9dad-fc5a-aeb6ee03af6f",
+      "elapsed_seconds": 434.7552677770145
+    },
+    {
+      "stage": 6,
+      "cell": 3,
+      "trials": 10368,
+      "gpu_uuid": "7f3a5d9e-5a55-3ce7-b350-79ab5412af64",
+      "elapsed_seconds": 404.9540686960099
+    },
+    {
+      "stage": 6,
+      "cell": 4,
+      "trials": 10368,
+      "gpu_uuid": "bca3487d-06ab-4011-b59d-a6103e01c302",
+      "elapsed_seconds": 421.43767371599097
+    },
+    {
+      "stage": 6,
+      "cell": 5,
+      "trials": 10368,
+      "gpu_uuid": "e05ea364-d36d-0493-9974-5e637e7da8ac",
+      "elapsed_seconds": 450.5150808619801
+    },
+    {
+      "stage": 6,
+      "cell": 6,
+      "trials": 10368,
+      "gpu_uuid": "614af505-e9c8-b2be-31f0-d3f336bd40fa",
+      "elapsed_seconds": 405.99030026598484
+    },
+    {
+      "stage": 6,
+      "cell": 7,
+      "trials": 10368,
+      "gpu_uuid": "9a2da807-7910-4dd6-bfbe-f23c797a43ed",
+      "elapsed_seconds": 418.7396192010201
+    },
+    {
+      "stage": 6,
+      "cell": 8,
+      "trials": 10368,
+      "gpu_uuid": "5e84e7d2-f338-feef-4879-acdd6738d0b2",
+      "elapsed_seconds": 424.6838605439989
+    },
+    {
+      "stage": 6,
+      "cell": 9,
+      "trials": 10368,
+      "gpu_uuid": "e0b32c38-5405-abe1-0a2e-eef8ae1f84cb",
+      "elapsed_seconds": 429.7543586989923
+    },
+    {
+      "stage": 6,
+      "cell": 10,
+      "trials": 10368,
+      "gpu_uuid": "8c227f86-2559-06dd-6f71-8f12ba4d58e2",
+      "elapsed_seconds": 430.4151015370153
+    },
+    {
+      "stage": 6,
+      "cell": 11,
+      "trials": 10368,
+      "gpu_uuid": "e92b0d4e-e56e-4c81-1fd0-a6b4412d54b1",
+      "elapsed_seconds": 399.32381169698783
+    },
+    {
+      "stage": 6,
+      "cell": 12,
+      "trials": 10368,
+      "gpu_uuid": "c7372efa-f31a-bcea-b064-03185cfb3712",
+      "elapsed_seconds": 414.0808686270029
+    },
+    {
+      "stage": 6,
+      "cell": 13,
+      "trials": 10368,
+      "gpu_uuid": "9027181e-cf64-bae9-732c-7d67885af6a3",
+      "elapsed_seconds": 419.6632367419952
+    },
+    {
+      "stage": 6,
+      "cell": 14,
+      "trials": 10368,
+      "gpu_uuid": "048f1d89-373e-cd31-5bff-fc2a230ad865",
+      "elapsed_seconds": 419.8618259719806
+    },
+    {
+      "stage": 6,
+      "cell": 15,
+      "trials": 10368,
+      "gpu_uuid": "283052ab-056b-5747-310b-3538b4557d30",
+      "elapsed_seconds": 419.7044768750202
+    },
+    {
+      "stage": 6,
+      "cell": 16,
+      "trials": 10368,
+      "gpu_uuid": "5c1085c3-ed6c-127b-6db5-944f26db5b46",
+      "elapsed_seconds": 429.8124099370034
+    },
+    {
+      "stage": 6,
+      "cell": 17,
+      "trials": 10368,
+      "gpu_uuid": "c25a5611-4b1e-746a-b106-1320fce69dc2",
+      "elapsed_seconds": 401.48096583102597
+    },
+    {
+      "stage": 6,
+      "cell": 18,
+      "trials": 10368,
+      "gpu_uuid": "143d1cb0-dd22-a7b5-3cd3-2cf19aa9d077",
+      "elapsed_seconds": 416.52150277100736
+    },
+    {
+      "stage": 6,
+      "cell": 19,
+      "trials": 10368,
+      "gpu_uuid": "2df507e2-0482-527c-751b-eb13b9c14db2",
+      "elapsed_seconds": 418.8566653380112
+    },
+    {
+      "stage": 6,
+      "cell": 20,
+      "trials": 10368,
+      "gpu_uuid": "828e4fb3-4354-76d4-352b-aaf903b7b899",
+      "elapsed_seconds": 397.1549150010105
+    },
+    {
+      "stage": 6,
+      "cell": 21,
+      "trials": 10368,
+      "gpu_uuid": "d93f3a1f-4984-7fc8-0a81-d37f27928925",
+      "elapsed_seconds": 404.4818105290178
+    },
+    {
+      "stage": 6,
+      "cell": 22,
+      "trials": 10368,
+      "gpu_uuid": "83db8a39-0ff0-a9e7-202f-deeb59ba1fb4",
+      "elapsed_seconds": 433.71618528701947
+    },
+    {
+      "stage": 6,
+      "cell": 23,
+      "trials": 10368,
+      "gpu_uuid": "3081d63c-8c5e-991d-487e-e16883734a6f",
+      "elapsed_seconds": 411.7935289599991
+    },
+    {
+      "stage": 6,
+      "cell": 24,
+      "trials": 10368,
+      "gpu_uuid": "d65db077-5b49-f9f7-8776-4e0f5e316197",
+      "elapsed_seconds": 423.4773692369927
+    },
+    {
+      "stage": 6,
+      "cell": 25,
+      "trials": 10368,
+      "gpu_uuid": "cdae93be-2946-2380-1121-f2a0ddb7695a",
+      "elapsed_seconds": 434.1158459809958
+    },
+    {
+      "stage": 6,
+      "cell": 26,
+      "trials": 10368,
+      "gpu_uuid": "2fddcdb7-154a-2173-03e5-0245305514bf",
+      "elapsed_seconds": 419.4400566809927
+    },
+    {
+      "stage": 6,
+      "cell": 27,
+      "trials": 10368,
+      "gpu_uuid": "e6d9d0f9-bb3a-5a6e-0572-8b7403e02a1c",
+      "elapsed_seconds": 438.327577537013
+    },
+    {
+      "stage": 6,
+      "cell": 28,
+      "trials": 10368,
+      "gpu_uuid": "e75aa1e1-2ef9-87fa-7d68-28b9830fca4a",
+      "elapsed_seconds": 397.4027473790047
+    },
+    {
+      "stage": 6,
+      "cell": 29,
+      "trials": 10368,
+      "gpu_uuid": "5c59cb3b-c092-7044-893b-9dbcd70997af",
+      "elapsed_seconds": 414.9463601289899
+    },
+    {
+      "stage": 6,
+      "cell": 30,
+      "trials": 10368,
+      "gpu_uuid": "af3f2079-b9fb-b4f9-006f-f8169c21479d",
+      "elapsed_seconds": 421.5848699659982
+    },
+    {
+      "stage": 6,
+      "cell": 31,
+      "trials": 10368,
+      "gpu_uuid": "6ff2a902-c79c-d79c-fa31-6e6aea3b4385",
+      "elapsed_seconds": 418.9906972000026
+    }
+  ],
+  "completed_receipt_count": 224
+}

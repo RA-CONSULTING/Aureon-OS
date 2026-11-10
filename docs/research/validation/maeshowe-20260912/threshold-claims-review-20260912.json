@@ -1,0 +1,239 @@
+{
+  "schema": "threshold-claim-review/v1",
+  "date": "2026-09-12",
+  "scope": "All 23 numbered manuscript ledger entries inventoried. Selected source checks; not 23 completed external validations.",
+  "source_blob": "f85954729805568b84e2050d05b07d1d581fa2a3",
+  "source_sha256": "461b6ee801e7732f73a98948b7c0328d1781c632a9d2548bdd0be0de0d47f788",
+  "entries": [
+    {
+      "id": "WHO.GR1",
+      "claim_paraphrase": "Greek Hyperboreans and named travellers",
+      "assessment": "Source tradition identified; exact passages and event dates remain to be collated. Literary identity does not establish biological identity.",
+      "source_citations_as_written": [
+        "Hesiod fragments; Pindar Pythian X; Hecataeus via Diodorus II.47; Herodotus 4.32-36; Pausanias 1.18.5 + 5.7.7-8."
+      ],
+      "extracted_text_line": 18,
+      "status": "source_validation_pending"
+    },
+    {
+      "id": "WHO.GR2",
+      "claim_paraphrase": "Roman descriptions of northern inhabitants",
+      "assessment": "Dependency review required: Roman accounts reusing Greek sources cannot supply a fully independent stream.",
+      "source_citations_as_written": [
+        "Pliny Naturalis Historia IV.89-91; Pomponius Mela De Chorographia III.36-37; Strabo Geographica II.5.8 + VII.3.1."
+      ],
+      "extracted_text_line": 29,
+      "status": "source_validation_pending"
+    },
+    {
+      "id": "WHO.IR1",
+      "claim_paraphrase": "Insular voyage figures as threshold residents",
+      "assessment": "Primary passage and genre review required; narrative characters have not been independently identified as a historical population.",
+      "source_citations_as_written": [
+        "Selmer 1959 Navigatio Sancti Brendani §28.74-93; Lebor na hUidre Voyage of Mael Dúin; Voyage of Bran (Imram Brain)."
+      ],
+      "extracted_text_line": 40,
+      "status": "source_validation_pending"
+    },
+    {
+      "id": "WHO.HO1",
+      "claim_paraphrase": "Hopi Ant-People as mortal guardians",
+      "assessment": "Original-language and Hopi-authoritative source review required. The mortal demographic classification is unverified.",
+      "source_citations_as_written": [
+        "Voth 1905 The Traditions of the Hopi (Field Columbian Museum Publication 96); Hopi Cultural Preservation Office continuous oral record; Waters 1963 Book of the Hopi."
+      ],
+      "extracted_text_line": 50,
+      "status": "source_validation_pending"
+    },
+    {
+      "id": "WHO.EG1",
+      "claim_paraphrase": "Egyptian Akhu and Imy-Duat as a resident population",
+      "assessment": "Correction required: funerary Akhu include transformed dead; an earthly population does not follow from the terminology.",
+      "source_citations_as_written": [
+        "Pyramid Texts (Faulkner 1969 trans.); Coffin Texts (Faulkner 1973-1978); Amduat NK theological elaboration; Allen 2005 The Ancient Egyptian Pyramid Texts."
+      ],
+      "extracted_text_line": 60,
+      "status": "correction_required"
+    },
+    {
+      "id": "WHO.PO1",
+      "claim_paraphrase": "Polynesian southern-voyage guardians",
+      "assessment": "Precise oral source, attribution and interpretation require review; geographic encounters cannot be inferred from motif coding alone.",
+      "source_citations_as_written": [
+        "Smith 1899 Polynesian Society; Wehi et al. 2021 J. Royal Society of NZ (PMC11485871); Maori oral tradition continuous to present."
+      ],
+      "extracted_text_line": 70,
+      "status": "source_validation_pending"
+    },
+    {
+      "id": "WHO.VE1",
+      "claim_paraphrase": "Uttarakuru and Siddhas as mortal threshold specialists",
+      "assessment": "Textual chronology and category review required; cross-cultural equivalence remains interpretive.",
+      "source_citations_as_written": [
+        "Mahabharata Sabha Parva 28 + Vana Parva tirtha-yatra section; Ramayana Kishkindha Kanda; Vishnu Purana; Skanda Purana."
+      ],
+      "extracted_text_line": 80,
+      "status": "source_validation_pending"
+    },
+    {
+      "id": "WANT.1",
+      "claim_paraphrase": "Calendar-linked offerings towards Hyperborea",
+      "assessment": "Correction required: Herodotus 4.33 documents the direction from Hyperborea to Delos. Reverse route and Metonic shipment require separate evidence.",
+      "source_citations_as_written": [
+        "Herodotus Histories 4.32-36; Hecataeus via Diodorus II.47; Pausanias 1.18.5 + 5.7.7-8."
+      ],
+      "extracted_text_line": 98,
+      "status": "correction_required"
+    },
+    {
+      "id": "WANT.2",
+      "claim_paraphrase": "Personnel sent to and retained at thresholds",
+      "assessment": "Correction required for the Greek route; other examples require separate dated source cards.",
+      "source_citations_as_written": [
+        "Herodotus 4.33 (maidens at Delos); Pausanias 1.18.5 (Olen the Hyperborean poet); Dicuil 825 CE (papar in Iceland); Selmer Navigatio (Brendan); Adomnán Vita Columbae c.700 CE (Cormac)."
+      ],
+      "extracted_text_line": 109,
+      "status": "correction_required"
+    },
+    {
+      "id": "WANT.3",
+      "claim_paraphrase": "Ritual offerings as a common exchange system",
+      "assessment": "Comparative coding hypothesis; distinct funerary, devotional and economic acts must retain their source-specific meanings.",
+      "source_citations_as_written": [
+        "Pyramid Texts (Faulkner 1969); Voth 1905 Hopi tradition; Mahabharata + Skanda Purana; Selmer Navigatio (four-station cycle); Insular monastic Office tradition."
+      ],
+      "extracted_text_line": 120,
+      "status": "source_validation_pending"
+    },
+    {
+      "id": "WANT.4",
+      "claim_paraphrase": "Maintenance of teaching as a shared transaction",
+      "assessment": "Testable comparative category; a common institution or historical transmission chain is unestablished.",
+      "source_citations_as_written": [
+        "Selmer Navigatio §28.74-93; Voth 1905 Hopi emergence narrative; Iamblichus De Vita Pythagorica 28.140-141; Pyramid Texts; Vedic guru-shishya parampara documented across Upanishads."
+      ],
+      "extracted_text_line": 131,
+      "status": "source_validation_pending"
+    },
+    {
+      "id": "GAVE.1",
+      "claim_paraphrase": "Calendrical mathematics supplied by threshold populations",
+      "assessment": "Evidence for calendar systems must be separated from evidence for the asserted supplier and route.",
+      "source_citations_as_written": [
+        "Hecataeus via Diodorus II.47; Coligny Calendar physical artifact (Musée Gallo-Romain Lyon); Censorinus De Die Natali on the Sothic cycle; Geminus Introduction to the Phenomena."
+      ],
+      "extracted_text_line": 148,
+      "status": "source_validation_pending"
+    },
+    {
+      "id": "GAVE.2",
+      "claim_paraphrase": "Northern astronomy as a foundation of mathematical geography",
+      "assessment": "Passage-by-passage transmission review required; observations, later reports and modern reconstruction need separate dates.",
+      "source_citations_as_written": [
+        "Pytheas via Strabo Geographica + Pliny Naturalis Historia + Geminus + Cleomedes; Eratosthenes via Strabo + Cleomedes; Hipparchus via Ptolemy Almagest."
+      ],
+      "extracted_text_line": 158,
+      "status": "source_validation_pending"
+    },
+    {
+      "id": "GAVE.3",
+      "claim_paraphrase": "Abaris transmitting an integrated Pythagorean system",
+      "assessment": "Later source composition dates and legendary content require explicit handling; historical encounter unverified here.",
+      "source_citations_as_written": [
+        "Iamblichus De Vita Pythagorica 28.140-141; Porphyry Vita Pythagorae 29; Diogenes Laertius VIII; Plato Phaedo + Republic + Timaeus."
+      ],
+      "extracted_text_line": 169,
+      "status": "source_validation_pending"
+    },
+    {
+      "id": "GAVE.4",
+      "claim_paraphrase": "Navigation knowledge transmitted through the network",
+      "assessment": "Correction required: AD 1021 evidence supports Norse presence, not Leif personally. Other links remain unverified.",
+      "source_citations_as_written": [
+        "Selmer Navigatio §22 + §28; Johnston 2014; Grœnlendinga saga + Eiríks saga rauða; Kuitems 2021 Nature 601:388; Smith 1899; Wehi 2021; Imago Mundi (Pierre d'Ailly) Columbus annotations."
+      ],
+      "extracted_text_line": 180,
+      "status": "correction_required"
+    },
+    {
+      "id": "GAVE.5",
+      "claim_paraphrase": "Relics, ivory and burials as proof of threshold journeys",
+      "assessment": "Object provenance and narrative claims need separate treatment; no single provenance category authenticates all examples.",
+      "source_citations_as_written": [
+        "Selmer Navigatio §28.80; Frei et al. 2015 walrus-ivory trade; Herodotus 4.34-35 (maiden-burials at Delos); Pausanias 1.43.4."
+      ],
+      "extracted_text_line": 191,
+      "status": "source_validation_pending"
+    },
+    {
+      "id": "GAVE.6",
+      "claim_paraphrase": "Agricultural techniques received from the threshold",
+      "assessment": "Specific farming evidence may be independently supportable; a common teaching source remains unestablished.",
+      "source_citations_as_written": [
+        "Voth 1905 Hopi tradition; Caulfield et al. 2014 Céide Fields; Church 2013 Quaternary Sci. Reviews; Curtin 2021 Nature Comms Earth & Environ.; Margaryan 2020 Nature 585:390."
+      ],
+      "extracted_text_line": 202,
+      "status": "source_validation_pending"
+    },
+    {
+      "id": "SHAPE.1",
+      "claim_paraphrase": "Continuous Abaris-to-modern-physics transmission",
+      "assessment": "Causal genealogy unverified; similarity and later influence do not authenticate the initial Abaris transmission.",
+      "source_citations_as_written": [
+        "Iamblichus + Porphyry (Pythagoras); Plato Phaedo + Republic + Timaeus; Euclid Elements; Apollonius Conics; Archimedes; Kepler Mysterium + Harmonices Mundi; Newton Principia."
+      ],
+      "extracted_text_line": 219,
+      "status": "source_validation_pending"
+    },
+    {
+      "id": "SHAPE.2",
+      "claim_paraphrase": "Brendan/Vinland knowledge contributing to Columbus",
+      "assessment": "Exact annotated manuscript folios and intermediate links required; known Norse presence does not establish the proposed whole chain.",
+      "source_citations_as_written": [
+        "Selmer 1959 Navigatio (125+ surviving manuscripts); Pierre d'Ailly Imago Mundi (Columbus's annotated copy in Biblioteca Colombina); Hauksbók manuscript; Kuitems et al. 2021 Nature 601:388."
+      ],
+      "extracted_text_line": 231,
+      "status": "source_validation_pending"
+    },
+    {
+      "id": "SHAPE.3",
+      "claim_paraphrase": "Coligny mathematics surviving through Easter and Gregorian reform",
+      "assessment": "Chronological and technical source audit required; common calendrical cycles do not demonstrate that route of transmission.",
+      "source_citations_as_written": [
+        "Coligny Calendar physical artifact (Musée Gallo-Romain Lyon); Council of Nicaea 325 CE Easter calculation; Gregorian calendar reform 1582; Olmsted 1992 Gaulish Calendar; Le Contel & Verdier 1997."
+      ],
+      "extracted_text_line": 242,
+      "status": "source_validation_pending"
+    },
+    {
+      "id": "SHAPE.4",
+      "claim_paraphrase": "Vedic threshold teaching as ancestor of modern practices and numerals",
+      "assessment": "Distinct mathematical and religious histories must be traced separately; shared threshold origin unverified.",
+      "source_citations_as_written": [
+        "Yoga Sutras of Patanjali; Hatha Yoga Pradipika; Brahmagupta + Aryabhata + Kerala-school mathematics; Kabat-Zinn 1990 Full Catastrophe Living; peer-reviewed yoga-and-meditation clinical literature."
+      ],
+      "extracted_text_line": 253,
+      "status": "source_validation_pending"
+    },
+    {
+      "id": "SHAPE.5",
+      "claim_paraphrase": "Hopi continuity as an uninterrupted control case",
+      "assessment": "The proposed control design and claim of no major disruption are unverified; requires Hopi-authoritative context and an independent comparison design.",
+      "source_citations_as_written": [
+        "Voth 1905; Hopi Cultural Preservation Office continuous documentation; Waters 1963 Book of the Hopi; Whiteley 1988 Deliberate Acts; ongoing Hopi tribal documentation."
+      ],
+      "extracted_text_line": 264,
+      "status": "source_validation_pending"
+    },
+    {
+      "id": "SHAPE.6",
+      "claim_paraphrase": "Egyptian threshold tradition as foundation of modern timekeeping",
+      "assessment": "Separate documented technical influences from the claimed threshold-population source; full causal chain unverified.",
+      "source_citations_as_written": [
+        "Pyramid Texts; Censorinus De Die Natali (Sothic cycle); Ptolemy Almagest; al-Battani + al-Tusi; Toledan + Alfonsine Tables; Copernicus De Revolutionibus 1543."
+      ],
+      "extracted_text_line": 275,
+      "status": "source_validation_pending"
+    }
+  ]
+}

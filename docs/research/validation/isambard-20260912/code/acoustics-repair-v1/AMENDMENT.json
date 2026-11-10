@@ -1,0 +1,32 @@
+{
+  "schema": "acoustics-repair-protocol/v1",
+  "status": "post-hoc engineering and numerical amendment; frozen historical verdict unchanged",
+  "original_solver_sha256": "47adeef1ed42b1458ed3cfc576c560216608013ac6826f5a4f38a183b673567d",
+  "changes": [
+    "Count nonzero cosine indices using integer addition for coffer Galerkin basis normalization.",
+    "Actually enforce the analytic fmax cutoff for controls and spectral basis truncation.",
+    "Compare all requested low discrete modes, without silently truncating validation at 60 Hz.",
+    "Add independent random-vector ARPACK shift-invert solves of the assembled dx=0.20 matrix, seeds 1,2,3; maxiter 3000, tol 1e-11; no analytic initial vectors.",
+    "Require all 26 nonzero eigenvalues, finite output, relative residual <=1e-8 and eigenvalue relative error <=1e-6 for each random-start solve.",
+    "Use one closest-mode-to-Schumann distance per room in the same 0.1<f<60 Hz band. Report the empirical fraction and plus-one calibration, not a mode-vs-room Mann-Whitney comparison.",
+    "Retain original G1/G2/G3 targets and all negative results; new controls do not retroactively pass the old preregistration."
+  ],
+  "random_seeds": [
+    1,
+    2,
+    3
+  ],
+  "random_dx": 0.2,
+  "galerkin_cutoffs_hz": [
+    200,
+    300,
+    380
+  ],
+  "controls": {
+    "seed": 42,
+    "rooms": 10000,
+    "dimensions_sampling": "unchanged original generator"
+  },
+  "method_reference": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.eigsh.html",
+  "claim_class": "computational_simulation"
+}

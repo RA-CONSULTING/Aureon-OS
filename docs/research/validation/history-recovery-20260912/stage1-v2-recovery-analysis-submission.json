@@ -1,0 +1,13 @@
+{
+  "job_id": "6504504",
+  "remote": "/projects/u6vs/hnc-organism/expansion-20260912/stage1-v2-recovery-analysis-v1",
+  "archive_sha256": "9442349951499bf97c5f8805c46152f837537370c109a87db7747dc877f28399",
+  "manifest_sha256": "76c79f000aeaaf469029eb39cf058f389542a5d431fca09c854f170109732555",
+  "command": [
+    "sbatch",
+    "--parsable",
+    "--dependency=afterany:6503592",
+    "/projects/u6vs/hnc-organism/expansion-20260912/stage1-v2-recovery-analysis-v1/audit.sbatch"
+  ],
+  "submitted_utc": "2026-09-12T14:45:24.117001+00:00"
+}

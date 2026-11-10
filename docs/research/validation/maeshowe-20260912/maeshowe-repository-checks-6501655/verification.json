@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "job_id": "6501655",
+  "tests_passed": 16,
+  "source_hashes": {
+    "aureon/wisdom/maeshowe_epigraphy.py": "a482fc01e60b96d422a45749de1216e2e0982a3905bbba724004324d0fa42334",
+    "aureon/wisdom/maeshowe_seer_decode.py": "44ff3182a7d4f4bfdfe80305b3bf5a1060c9430cc184a4a6066000296fe034e3",
+    "tests/research/test_maeshowe_epigraphy.py": "421fdb145ea234e15645512bd9ad15a81ab4f265031108249cae3009e61d497a"
+  },
+  "staged_files": 3,
+  "committed": false,
+  "published": false
+}

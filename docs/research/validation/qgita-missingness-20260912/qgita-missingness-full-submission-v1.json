@@ -1,0 +1,23 @@
+{
+  "job_id": "6504999",
+  "submitted_utc": "2026-09-12T15:19:24.210852+00:00",
+  "command": [
+    "sbatch",
+    "--parsable",
+    "--time=00:15:00",
+    "/projects/u6vs/hnc-organism/expansion-20260912/qgita-missingness-v1/full.sbatch"
+  ],
+  "resource_decision": {
+    "nodes": 1,
+    "workers": 32,
+    "projected_seconds": 463.0661563006573,
+    "walltime_seconds": 900,
+    "ceiling_node_hours": 0.25,
+    "pilot_verified_mask_sets": 1242,
+    "pilot_summary_sha256": "d18f68b9291b553a696ac0f9043af3a54e80d2241720f27f4a5c86139c7bc9a0",
+    "pilot_allocated_node_hours": 0.004722222222222222,
+    "rule": "Observed row-weighted pilot CPU effort divided across 32 workers, bounded by a worst-rate longest-series task; 50 percent margin plus one minute; five-minute rounding"
+  },
+  "input_manifest_sha256": "18df898020d3a966581c80471aecfb82a80eb8e28d8d21e5883c7ea935838f22",
+  "candidate_control_outcomes": 103500
+}

@@ -1,0 +1,15 @@
+{
+  "source_sha256": "29331187f0a045dfc20b354f912058186061b406b50f2743910589efe3b0ad6d",
+  "library_sha256": "9207b8f2e2410b707e67b397152b636dffac625ad4a7fc7077a7b44a1b30af3d",
+  "command": [
+    "g++",
+    "-O2",
+    "-shared",
+    "-fPIC",
+    "-ffp-contract=off",
+    "-o",
+    "/projects/u6vs/hnc-organism/expansion-20260912/tandem-repair-v1/whiten-29331187f0a045df.163975.tmp.so",
+    "/projects/u6vs/hnc-organism/expansion-20260912/tandem-repair-v1/whiten.cpp"
+  ],
+  "compiler": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0"
+}

@@ -1,0 +1,17 @@
+{
+  "schema": "isambard-portal-observation/v1",
+  "project": "u6vs",
+  "dashboard_url": "https://portal.isambard.ac.uk/projects/547855075ec145e1bb6ec956ffb77057/",
+  "usage_url": "https://portal.isambard.ac.uk/projects/547855075ec145e1bb6ec956ffb77057/openportal-reports/",
+  "start": "2026-08-24",
+  "end": "2026-11-22",
+  "balance_start_month_nhr": 4992.53,
+  "estimated_spend_month_nhr": 79.44,
+  "estimated_end_month_balance_nhr": 4913.09,
+  "refreshed_all_time_usage_hours_display": 86.9,
+  "usage_cache_label": "Cached just now",
+  "browser_access": "Authenticated Gary Leckey project dashboard and refreshed Usage Report.",
+  "boundary": "Dashboard values retain their original monthly/estimated labels; no separate exact real-time spendable-credit field was exposed. The usage heading is rounded to one decimal.",
+  "recorded_utc": "2026-09-12T10:28:04.297645+00:00",
+  "observation_date_utc": "2026-09-12"
+}

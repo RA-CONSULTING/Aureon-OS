@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "verified_utc": "2026-09-12T17:21:35.217042+00:00",
+  "archive_sha256": "0cd7385e58799e65dd1f10a5c5ab675748861ee5749fcec6a43980cf344a8de5",
+  "archive_bytes": 486760874,
+  "members": 451,
+  "full_records": 2322432,
+  "eligible_records": 2308096,
+  "independently_recomputed_rate_cells": 11844,
+  "all_frozen_analysis_reproduced": true,
+  "analysis_exact": false,
+  "analysis_maximum_float_difference": 1.7763568394002505e-15,
+  "remote_independent_saved_channels_verified": 448,
+  "boundary": "All downloaded payload hashes verified. Independent eligibility, thresholds and rate/stratum/cell counts recalculated locally; frozen uncertainty and summaries reproduced. Saved-channel numeric checks are those in the verified remote audit, not a second local waveform regeneration."
+}

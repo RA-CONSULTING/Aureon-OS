@@ -1,0 +1,20 @@
+{
+  "schema": "hnc-history-amendment/v1",
+  "reference_beta": 1.0,
+  "question": "Does the finite-horizon behaviour near beta=1 persist across four explicit initial histories, and is low Lyapunov growth accompanied by secular drift?",
+  "cells": 128,
+  "histories": 4,
+  "trajectories": 25214464,
+  "horizon": 33554432,
+  "trajectory_work_relative_to_previous_full_run": 8,
+  "original_kernel_sha256": "1eac7d95222b480e3e54d02c0e92d939a2b6ac39d5b2e33c1d196f0dec96014c",
+  "changed_kernel_sha256": "82ca58ce2251a3262a08f79100f000b575bb61537448c28a590695db0370c540",
+  "changes": [
+    "Named initial history axis and consistent initial rolling sums",
+    "Checkpoint identity includes history names and initialization version",
+    "Read-only endpoint/history-mean observables",
+    "Double horizon; original parameter grid, forcing and recurrence preserved"
+  ],
+  "scope": "Finite-horizon computational simulation; no global stability, physical validation or historical decipherment claim",
+  "reference_provenance": "Author beta=1 correction; parameter roles in other manuscripts remain distinct"
+}

@@ -1,0 +1,31 @@
+{
+  "schema": "tandem-repair-result/v1",
+  "stage_id": 1,
+  "stage": {
+    "name": "population_noise",
+    "beta": 0.9,
+    "fs": 1000.0,
+    "steps": 2048,
+    "noise": "stationary_gaussian",
+    "exclude_selected": false
+  },
+  "shard": 11,
+  "pilot": false,
+  "trials": 10368,
+  "batch_size": 512,
+  "gain": 0.75,
+  "tau_steps": 50,
+  "delta_steps": 100,
+  "array_sha256": "df31eb9dfc23270ccd029c0f093ae2ec7afcf34c0219a90ea27752476db0b936",
+  "input_manifest_sha256": "ecea7bc161a3c0daafa198758d13b7889ba144f8fd7a17472c1b7d670674016e",
+  "elapsed_seconds": 12.756521773990244,
+  "completed_utc": "2026-09-12T17:06:07.195274+00:00",
+  "gpu_uuid": "e92b0d4e-e56e-4c81-1fd0-a6b4412d54b1",
+  "device": "NVIDIA GH200 120GB",
+  "slurm_job_id": "6506509",
+  "memory_peak_bytes": 657317888,
+  "noise_rms_mean": 0.9983442429417193,
+  "noise_rms_std": 0.05018201168485514,
+  "max_selected_weight_after": 0.7546874151743687,
+  "gaussian_bound_valid": true
+}

@@ -1,0 +1,10 @@
+{
+  "job_id": "6503592",
+  "submitted_utc": "2026-09-12T13:58:39.848089+00:00",
+  "remote": "/projects/u6vs/hnc-organism/expansion-20260912/stage1-v2-recovery-v1",
+  "archive_sha256": "f28d32698bea5042411c9fb7ebae325b6f4771b867ae62a08572d73819ba827b",
+  "manifest_sha256": "d4213bd2a9df14a75196344a4e584a29d17332a8fcc16b867a9cff93bdb9ac4b",
+  "pilot_calls": 7680,
+  "replication_calls": 46080,
+  "ceiling_node_hours": 1.5
+}

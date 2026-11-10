@@ -1,0 +1,12 @@
+{
+  "job_id": "6504865",
+  "remote": "/projects/u6vs/hnc-organism/expansion-20260912/qgita-source-cache-v1",
+  "archive_sha256": "c3d5f33a98837e832d9dfdab1621aedd646b8b576e2a4dc02530f82070a25b37",
+  "manifest_sha256": "d385f23157e75b12ea31985451384fe8f9cc814d7d53d27b5cff20ea7d768381",
+  "command": [
+    "sbatch",
+    "--parsable",
+    "/projects/u6vs/hnc-organism/expansion-20260912/qgita-source-cache-v1/prepare.sbatch"
+  ],
+  "submitted_utc": "2026-09-12T15:05:02.643234+00:00"
+}

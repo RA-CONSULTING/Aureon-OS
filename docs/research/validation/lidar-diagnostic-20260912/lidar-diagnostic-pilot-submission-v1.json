@@ -1,0 +1,12 @@
+{
+  "job_id": "6505264",
+  "remote": "/projects/u6vs/hnc-organism/expansion-20260912/lidar-diagnostic-v1",
+  "archive_sha256": "f2e630a32f808305ebc190e3364a31c725c398fb50791e0462f164342f0eb42a",
+  "manifest_sha256": "04c12916c59d8f3f2ec507bcadcbc3e79cf6f4a69f16fa671203d35167a6694a",
+  "command": [
+    "sbatch",
+    "--parsable",
+    "/projects/u6vs/hnc-organism/expansion-20260912/lidar-diagnostic-v1/pilot.sbatch"
+  ],
+  "submitted_utc": "2026-09-12T15:51:00.197271+00:00"
+}

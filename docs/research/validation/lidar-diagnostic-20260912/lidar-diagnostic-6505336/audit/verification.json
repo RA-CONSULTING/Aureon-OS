@@ -1,0 +1,2626 @@
+{
+  "passed": true,
+  "verified_utc": "2026-09-12T16:02:33.236874+00:00",
+  "records": 130,
+  "test_examples": 1290000,
+  "calibration_examples": 387000,
+  "input_manifest_sha256": "255d45a1222770eac0916adbab1233b7480a0b719f8cbca42a30b8681b4cbb13",
+  "rank_gpu_uuids": {
+    "0": [
+      "d07e360d-0ea9-3850-bd24-3513c8cc4705"
+    ],
+    "1": [
+      "984c5216-954c-ec1c-7f17-9759903d7d37"
+    ],
+    "2": [
+      "f4ddff78-db24-df25-ada4-5a8120f45e16"
+    ],
+    "3": [
+      "f99ea534-dc37-6e6a-6ac2-ce61101ce88e"
+    ]
+  },
+  "verifications": [
+    {
+      "file": "historical-000.json",
+      "arrays_sha256": "f113a90102ac2f9c128c6f7427228c171d0e3b0f9f8c6eeccfb487fc7c49ab7d",
+      "result_sha256": "179c68e6deeb2158e9284d3abdb40a6b3860ab7b9704b591ecf6fe46bffab113",
+      "test_examples": 5000,
+      "calibration_examples": 1500,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.7533531010703882e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.687538997430238e-14
+        }
+      ]
+    },
+    {
+      "file": "historical-032.json",
+      "arrays_sha256": "9b1e03bc591860eed5e108a2e55e820bfdefc121919f909fdeacea231dfa5dcf",
+      "result_sha256": "8fd4dc68e935b2676089b8723831e1301b83cb7691326ea7969cc6d5d3661136",
+      "test_examples": 5000,
+      "calibration_examples": 1500,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.0547118733938987e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.194245199571014e-14
+        }
+      ]
+    },
+    {
+      "file": "new-000.json",
+      "arrays_sha256": "3c20aebea9e4ba1e2a07b8a2870c8ba6f303121467cd8971e1ea8921774ad736",
+      "result_sha256": "d2704510271d2d120635175b9a0159cbf5f818aeb76e8cd5e667e7d22a5f0a41",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.4786782909226304e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.4868995751603507e-14
+        }
+      ]
+    },
+    {
+      "file": "new-001.json",
+      "arrays_sha256": "55430b01c058c73bac2135c7de4fa5aa5b85d0303eccf2acea3732af66e2b0ef",
+      "result_sha256": "222433d323c5f3b41a8bb3954a6c585c1b14d53ad1f5654b9c247808308fc502",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.993605777301127e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 6.217248937900877e-15
+        }
+      ]
+    },
+    {
+      "file": "new-002.json",
+      "arrays_sha256": "08f532a19cd22da51bf72df1a80d6ef9d1fc5dd3c89581ac07aa3c10b4feb29d",
+      "result_sha256": "ea1c98b1f3c95f647ef56c629de85381d26bc620fff406c379b148420b4ca7ac",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 5.861977570020827e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.199040866595169e-14
+        }
+      ]
+    },
+    {
+      "file": "new-003.json",
+      "arrays_sha256": "228c73416da15a3ac042ddd3644ce76937edd0c60e8995d9800b9bf55479c142",
+      "result_sha256": "5e16190bc1c3fcfd6329fe4df19dfe21077fcd93d9823fc582f9b7878cfef638",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 8.881784197001252e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.993605777301127e-15
+        }
+      ]
+    },
+    {
+      "file": "new-004.json",
+      "arrays_sha256": "8d147c764b02e1e68442b634b8c8ea5258a159659cc668fe8556b5fce7a4a770",
+      "result_sha256": "1a1071d82841fd80e6a26b02f04a18b46d8c33901bbdb985288a72247cef61b0",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.509903313490213e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.4868995751603507e-14
+        }
+      ]
+    },
+    {
+      "file": "new-005.json",
+      "arrays_sha256": "8ad138e1ae7c84d943260473a9c5b4c11558b43d5c4395fb42efb0ca7ba11bfa",
+      "result_sha256": "eda1fdfee1399f8e588fa04c17b61a16c71b125e4c0309e5bffad5badc70da60",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.2434497875801753e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.993605777301127e-15
+        }
+      ]
+    },
+    {
+      "file": "new-006.json",
+      "arrays_sha256": "7a730c489804ec37e3a2cdf78ebddc4a5dc130f06f2f8e0af3db5d3cb74de762",
+      "result_sha256": "4cf60ff556d957b1310b40af7e21309a76792c7cd326b242fd3096ea41241422",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.5987211554602254e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.8207657603852567e-14
+        }
+      ]
+    },
+    {
+      "file": "new-007.json",
+      "arrays_sha256": "a78bc3fb3efcf6847dda217bc6822088c8d97950fbd4462d756594cfff6e2cf7",
+      "result_sha256": "7d12fd680ce68f01dddc915f8c4cd183e0355dc81befe96ad087a879ff01759b",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.3766765505351941e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 6.661338147750939e-15
+        }
+      ]
+    },
+    {
+      "file": "new-008.json",
+      "arrays_sha256": "e842fe88c2ac0bfe3868f3c759899b8eed4a0bb1375ed7db5b1e7e4cd55a5b63",
+      "result_sha256": "b818e6b4f37be5bfff8bcfc0960c7ba37b616b10228c77b2940745a5a603e2d5",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.199040866595169e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 3.197442310920451e-14
+        }
+      ]
+    },
+    {
+      "file": "new-009.json",
+      "arrays_sha256": "c8f9c6464514f901238eaadfb39e85f711365c8a3a8787ebc5312ebfca31516f",
+      "result_sha256": "f3d93f4506af401b8890688e555784c0d94dca6d8f759374adff5431fd4cd382",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.549516567451064e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.105427357601002e-15
+        }
+      ]
+    },
+    {
+      "file": "new-010.json",
+      "arrays_sha256": "f3e666290e3327e77910e56fe18d886fa20411ad438507ab42e2c4cea2db7276",
+      "result_sha256": "01b1d684ab9ef000543f3fbadf467b6ef8de4be61982eb61ab5c0004836bccd3",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.9539925233402755e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.842170943040401e-14
+        }
+      ]
+    },
+    {
+      "file": "new-011.json",
+      "arrays_sha256": "aa68f35a22180275f5eeae028f38e6cb6f8806286a5b09adc117c0474148e277",
+      "result_sha256": "034b439555c5175de410be8f048960dadaacfb6144d1aaa6ef82a304439410f4",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.993605777301127e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.549516567451064e-15
+        }
+      ]
+    },
+    {
+      "file": "new-012.json",
+      "arrays_sha256": "e7af08f58c07669a3f2a272faa8efc3a2a9d5ce26b768ed753b8b3f38b5d6373",
+      "result_sha256": "bb995fcd2d2ef94d228bd62efc633c15c02c57a10434ab341fa8027d05937b0f",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.042810365310288e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.7319479184152442e-14
+        }
+      ]
+    },
+    {
+      "file": "new-013.json",
+      "arrays_sha256": "357c5da88987444bf3e0d5801f18f5d7321e4c9ebb79b7466c299a676478bd90",
+      "result_sha256": "8e80ebb5ee0bd7ee2a0d05d2f77f8ed5d95530032c365f5d5742f9649e887c79",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 5.329070518200751e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.105427357601002e-15
+        }
+      ]
+    },
+    {
+      "file": "new-014.json",
+      "arrays_sha256": "1680072269daa843d380cfba4b8d1cf60c95a9357a2a4c996a59dbc6ecb00ee3",
+      "result_sha256": "7982e33093a005bec57040a05a0b71a29e408fb43870c8ae0e2d070256ad69d1",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.842170943040401e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 9.769962616701378e-15
+        }
+      ]
+    },
+    {
+      "file": "new-015.json",
+      "arrays_sha256": "de9a2ba48679fd48373e64dcaa531fb4afb3136c1dd0e6d5469226767b18b6df",
+      "result_sha256": "9b01c8ccd5f6dda7031da7d1e90462e3fcbb9b859cbd38b5eedafe12393be103",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 8.881784197001252e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.105427357601002e-15
+        }
+      ]
+    },
+    {
+      "file": "new-016.json",
+      "arrays_sha256": "01c8397bb5904c324bf2af20ca2a97ab783f04f8c949da83af27873c8aa04095",
+      "result_sha256": "2da2d0af3e1cc4385c17f3afa0b8a63e41980726d8b2d8bda1f189ac50ac1cf0",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.1546319456101628e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.1316282072803006e-14
+        }
+      ]
+    },
+    {
+      "file": "new-017.json",
+      "arrays_sha256": "5fdf8f0149fa36f03dcb83009b8c020a28afd9d10bf945df269bc427265923c1",
+      "result_sha256": "12db1f10c0ad5f2c2de281e479ee19538f01ca73f837686f01b691188e4fae34",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.993605777301127e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 3.9968028886505635e-15
+        }
+      ]
+    },
+    {
+      "file": "new-018.json",
+      "arrays_sha256": "674ab93fbbf96415c53076bbdc71154625fa9d3cf3f9e20f5e2c828cfa081741",
+      "result_sha256": "42364d09b027ecc6c5ae3da259a351836a3ca8d2d2238378e9f02485c2f1bb05",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.0872192862952943e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.3092638912203256e-14
+        }
+      ]
+    },
+    {
+      "file": "new-019.json",
+      "arrays_sha256": "ed64bed03fbd049f66af6770cc00ab7afb95e6ad76874c533e0ef1d0686331f7",
+      "result_sha256": "20c67adb858e6eeaf6fe9f48932c8e538b8ba5f754cc9d4b8dc5d3d266f993bb",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 8.43769498715119e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.1546319456101628e-14
+        }
+      ]
+    },
+    {
+      "file": "new-020.json",
+      "arrays_sha256": "b3cfa77b230dcd173df588c4c85ca745181c6859d60a297ffd52b87c72761984",
+      "result_sha256": "3858eb9782ea1fba9428d7867601c1cbbc1a6349c09f2c11f7cfd928c87fe03a",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.842170943040401e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.6431300764452317e-14
+        }
+      ]
+    },
+    {
+      "file": "new-021.json",
+      "arrays_sha256": "460fd039b46492e985839652ba5fe984226b0935204e0c1b71c9ef41bca763db",
+      "result_sha256": "8d1c532249564f86cf97c20c1d10c7d2f4fe77c856ca186ab4cbdc11d90efb07",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 4.440892098500626e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 8.881784197001252e-15
+        }
+      ]
+    },
+    {
+      "file": "new-022.json",
+      "arrays_sha256": "596391752a10e978294ec11d54b186f6286bab80ac8a2553e59c6454383e9fcd",
+      "result_sha256": "26dfa522a37d53e5694bba1870bdd6f99c62e703ebec7f53c517fe9d90581ea5",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.0658141036401503e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.219024881038422e-13
+        }
+      ]
+    },
+    {
+      "file": "new-023.json",
+      "arrays_sha256": "e815691863622ee127b12d95dbdf2ac0552227d3d4f6d89b21af5d76e1fc1c82",
+      "result_sha256": "b0359c8578bca4aafad48c7614e9af5ca466bb8dc0afcbc1710be55446da3f61",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.2434497875801753e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 8.881784197001252e-15
+        }
+      ]
+    },
+    {
+      "file": "new-024.json",
+      "arrays_sha256": "33d71021b7aa649976aee0a7d02bc9fa7a23cb31e801e8ab97d425aa0936703d",
+      "result_sha256": "71d743fd5beae2102e29ee52d14f085ab435c7608ff882a27cfdd4393506aeee",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 3.064215547965432e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.220446049250313e-14
+        }
+      ]
+    },
+    {
+      "file": "new-025.json",
+      "arrays_sha256": "3a1165be20a75ea9c52e19b5243b277570866cdac1de63b8509caddfb52d73f3",
+      "result_sha256": "663aefc031ce7a0f088a5298c41b535a83c21c2eefc9b464fd8309108aff245c",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 6.217248937900877e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 5.329070518200751e-15
+        }
+      ]
+    },
+    {
+      "file": "new-026.json",
+      "arrays_sha256": "b69be3e513d6cb072a4de3384b1fb4bcd61f6e89b752115de21cd6eb4b40441b",
+      "result_sha256": "6b0179124f2eef0077874e12e5d5c32c570265cbe816bbdfd0f350eb329dcf11",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.554312234475219e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 3.4638958368304884e-14
+        }
+      ]
+    },
+    {
+      "file": "new-027.json",
+      "arrays_sha256": "2255e4ee1f22bb6bfecb60b03f722760b2c2136c5d5faeebbff0877ff749a681",
+      "result_sha256": "aa7d5d4f07492a87ff94702e09f00cedc810854635eb291eb2e2027dcce81788",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 4.440892098500626e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.3322676295501878e-14
+        }
+      ]
+    },
+    {
+      "file": "new-028.json",
+      "arrays_sha256": "cde8d53510de51a1661a32086561084ab6e4ef48822cf894f906c57c88643c0a",
+      "result_sha256": "746c132d1f4417ca68636a5d91c326ad63496c02ca1d219a9069a95d40a272b4",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.842170943040401e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.509903313490213e-14
+        }
+      ]
+    },
+    {
+      "file": "new-029.json",
+      "arrays_sha256": "354ddd7dfcf0e0cbb28985876f345b4fba01b4e915b38155630c47533acb58b6",
+      "result_sha256": "17df8834386c340ef580e5d59ea6d653bcee926d4b43e4025742bf5481c3da26",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.199040866595169e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.993605777301127e-15
+        }
+      ]
+    },
+    {
+      "file": "new-030.json",
+      "arrays_sha256": "dca58fc6983a1105d635a20df7133a718c4062e8bdb247951efb29186e4de8b6",
+      "result_sha256": "606fa96c3481a514a9281b15abb22046b2425722bd52bcc1e3c2a57f267bde1c",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.398081733190338e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 3.019806626980426e-14
+        }
+      ]
+    },
+    {
+      "file": "new-031.json",
+      "arrays_sha256": "e84b91080b2a52c4fa0e88fc9af75a415a82fa085de9b76e54147ef8e1c3c767",
+      "result_sha256": "87932ac4e476ee43c9c8bc76d65fa3844eb666ef13d3c126469d799998ea968d",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 4.440892098500626e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.105427357601002e-15
+        }
+      ]
+    },
+    {
+      "file": "new-032.json",
+      "arrays_sha256": "0013ac41238f7ff0a5c37c6ec2a7949670c9c097d44ae3508db26c1dfbabaea7",
+      "result_sha256": "9dc18553ec0e8c27caf1b58273bbaf78c209c610f0c8f44969419c52ef20c9f3",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.9095836023552692e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.0658141036401503e-14
+        }
+      ]
+    },
+    {
+      "file": "new-033.json",
+      "arrays_sha256": "050a1df3cb4bfa1289a09bde8d67abdb091c48c2bc4d174a123543d484c276a1",
+      "result_sha256": "b0f7abeb244623ac0c0b8a48799ec4d437f28679e43c898d6d48d82f0d67868f",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.5987211554602254e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 4.884981308350689e-15
+        }
+      ]
+    },
+    {
+      "file": "new-034.json",
+      "arrays_sha256": "f73dc26961901e5e7778e3aee0b52421ed844cbbade3926dcb618fb72efbee0a",
+      "result_sha256": "cda6397c5a41b3b108354e1951dfdba6fbec3d4a85418d3ce0dd53a63cf53a44",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.0872192862952943e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 5.3290705182007514e-14
+        }
+      ]
+    },
+    {
+      "file": "new-035.json",
+      "arrays_sha256": "83e8176c942a534baa26214234e9851d542fd43f8b870623e3346717a38c1bd3",
+      "result_sha256": "0569c426baddfc6992d99e8c3a68ceb5a50a1c8664bc1469d53cd491bba704fa",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 6.217248937900877e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.021405182655144e-14
+        }
+      ]
+    },
+    {
+      "file": "new-036.json",
+      "arrays_sha256": "1f31faad6ba5c0e7c55f4e39b8a56c435d49f8515da2d24f14735aaad99f386b",
+      "result_sha256": "664c26dd097b737e7065a705e234280ea87666e4e09ed20fbbb437e05225885b",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.9095836023552692e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.865174681370263e-14
+        }
+      ]
+    },
+    {
+      "file": "new-037.json",
+      "arrays_sha256": "b4dc06a3574fa2f903032ea636ae8c0aa20273a5f6c664ecbfe44638fb7a4b8e",
+      "result_sha256": "50be2a896a1c3f178de314bb6e8b8f69bbcb4f68902ba5adb7abd0c2da17fda1",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.6431300764452317e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.2434497875801753e-14
+        }
+      ]
+    },
+    {
+      "file": "new-038.json",
+      "arrays_sha256": "df47ede714cf25aef50c6798c4d0c0cae6812e2605e6b38203e4870016b34e59",
+      "result_sha256": "678a73ecb7371e33a38e85cc2240005e177c0b4a1bb17c32c0b097d216b8d5fd",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.865174681370263e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.9539925233402755e-14
+        }
+      ]
+    },
+    {
+      "file": "new-039.json",
+      "arrays_sha256": "a4f4aa24b4fc20c42297db49bf79b175ba6a41d8bdd51d80ed71801bd29d8aac",
+      "result_sha256": "80d6f32915d979d01e044a1a2b39daec21fdcf38f9378631a7d08dea862e4bcb",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 6.661338147750939e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 6.217248937900877e-15
+        }
+      ]
+    },
+    {
+      "file": "new-040.json",
+      "arrays_sha256": "683a6ad3338c77059cef62eda71586e255e711d6d31947a6a69f36ae494fc15f",
+      "result_sha256": "8e327b2da7f2e9d6a8d3ecb7aa0508fc95243ca90b06dfa654b514379d137eeb",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.1316282072803006e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 4.973799150320701e-14
+        }
+      ]
+    },
+    {
+      "file": "new-041.json",
+      "arrays_sha256": "20410134ff935e38260fea657b17b581536a5df0ab4d096a083363faff8dafba",
+      "result_sha256": "fef41ed63a99e69fb45d236a777467faf001f1a111e474518f4b78fef3282eba",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.993605777301127e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 8.881784197001252e-15
+        }
+      ]
+    },
+    {
+      "file": "new-042.json",
+      "arrays_sha256": "2dd3de1219558e20679a720247af78e0a0a15f540b3f3cfa2e689fdf45fd7e11",
+      "result_sha256": "af98cd00a5fb803a634782f47d36dbb126257af8d2e22d3a209070b90d3b8fce",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.1546319456101628e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.687538997430238e-14
+        }
+      ]
+    },
+    {
+      "file": "new-043.json",
+      "arrays_sha256": "5f9a3169b8664be93f06b6057de9dc4be7e0c3edfd62fc699025a1e9e25df3f3",
+      "result_sha256": "0a3b146da7c61dba66f1c10ff259e37495c9dd18618f8e99b5b2906fa49f7818",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 4.440892098500626e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.993605777301127e-15
+        }
+      ]
+    },
+    {
+      "file": "new-044.json",
+      "arrays_sha256": "cd80fed5f5ddbbe4de0413a205cd8aa73e015d48eafb8207669fd8c753b26e4e",
+      "result_sha256": "91079f4d700128730e9cf19b7833c4751721885de280af2e947e11ed1af92815",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 9.769962616701378e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.3092638912203256e-14
+        }
+      ]
+    },
+    {
+      "file": "new-045.json",
+      "arrays_sha256": "08cb22310fa434a072df7747297fb2662a331ebbd777f5ae94a438697ffae783",
+      "result_sha256": "e6172a66e537c5fbdc4d241a68ae1fbc910f8cac8bce15cb84aee3fc52c1572d",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 4.884981308350689e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.993605777301127e-15
+        }
+      ]
+    },
+    {
+      "file": "new-046.json",
+      "arrays_sha256": "4f28715e031c647f604dfad54e9e9e13d127b175458e438b491af5647fc135a4",
+      "result_sha256": "0ed136dd4782bde2cb7fdd0a726e8ed12ad9ebe1616c985bfab6d793ec50d2c1",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.3322676295501878e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.353672812205332e-14
+        }
+      ]
+    },
+    {
+      "file": "new-047.json",
+      "arrays_sha256": "8695fe5b17bd8a62db9847c0c536f41cbe96b028cbaa9e196b3abba9a8e5d690",
+      "result_sha256": "ff686804d2fc8f5d470fd3210d66f984c6d6bbbf6064175fc4364e8cbf57cc28",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 6.217248937900877e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.105427357601002e-15
+        }
+      ]
+    },
+    {
+      "file": "new-048.json",
+      "arrays_sha256": "0d478416101dc52c9f8e0dee1f8973d0e6b1b6f2d7675440b8160d5497abf784",
+      "result_sha256": "ec242a3c484a52bcb90ec96a1cc4bb000a75afef92179481ede078a16db779d7",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.993605777301127e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.509903313490213e-14
+        }
+      ]
+    },
+    {
+      "file": "new-049.json",
+      "arrays_sha256": "513deb509a66280e91d64e6465b28d8148fdf66b2a07949ce9e6b072d7dcb4ce",
+      "result_sha256": "70d9df6da078b5bc44c4de53d22ead98c4e706f593ae579edfdbc2e7e41ac275",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.0658141036401503e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.554312234475219e-14
+        }
+      ]
+    },
+    {
+      "file": "new-050.json",
+      "arrays_sha256": "8cb90adc79974ca577cc796f8f28ad6bb94665faeaf0311c1327eac9282d6956",
+      "result_sha256": "7842957f513270cb585ac737fc591141dd21cc0bb79981841ddfc60eba773683",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.7763568394002505e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.4210854715202004e-14
+        }
+      ]
+    },
+    {
+      "file": "new-051.json",
+      "arrays_sha256": "54041932830ac636904cd1571456cbf6cb2b46c61a5ec349c88a891dded73d44",
+      "result_sha256": "75dbb7dd07d8a8bf7d2e4b38a79ab83a864eeca5accd8e726f2346c7a2dd677b",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.3322676295501878e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 5.773159728050814e-15
+        }
+      ]
+    },
+    {
+      "file": "new-052.json",
+      "arrays_sha256": "05fd2abebbb301c16f7b70f1146baadf1b332a8488f1b366cb55bd36b0a27d9a",
+      "result_sha256": "86344ab44f463c1b18db448e3294e1d876d39c6010a06e1b20d0a92ffb40f475",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.3092638912203256e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.9095836023552692e-14
+        }
+      ]
+    },
+    {
+      "file": "new-053.json",
+      "arrays_sha256": "5fba0a7764f47d511c86e86b6e90239142b2598577124c8a64001feeae5b0ec9",
+      "result_sha256": "77411cd96c8ce27a0011439d34b305af553abfb049fbf1bfd99e0df6d1d7611f",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.0658141036401503e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 3.9968028886505635e-15
+        }
+      ]
+    },
+    {
+      "file": "new-054.json",
+      "arrays_sha256": "2d4dcc6193f36dac6322de8f4bba73bb4fc7c2114b7b0fd515aff3819609caae",
+      "result_sha256": "eb307e44f4f305e02692333b8bb7f092cac8d11287eba51897836e9bb939e9fd",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.042810365310288e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.687538997430238e-14
+        }
+      ]
+    },
+    {
+      "file": "new-055.json",
+      "arrays_sha256": "32323586f43b1d21d68f44e60aad72cda8e59117af0e5d2a5cba1cb6a8251950",
+      "result_sha256": "3464254312548056e9fc756b5a3f1abb772f933f19d63fc0500f7d5c7615f323",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 9.325873406851315e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.993605777301127e-15
+        }
+      ]
+    },
+    {
+      "file": "new-056.json",
+      "arrays_sha256": "957c5c8324abd185afbb3f58167d13e3f75d5dbcd9195cf5893eda8a150f3019",
+      "result_sha256": "bd510d1ef9d27bc84544db78fafe66d804a83f27944834a9e5c3b3edbc710496",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.9539925233402755e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.930988785010413e-14
+        }
+      ]
+    },
+    {
+      "file": "new-057.json",
+      "arrays_sha256": "3665e7680cccf6cd52690dce4ce017458ea46a1da0e01066acb008fcb3c408cf",
+      "result_sha256": "99c39a47c42f1483442680ebd4ddb46a756bb705c112f0dda2c48e65e8bc03e7",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 3.9968028886505635e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.0658141036401503e-14
+        }
+      ]
+    },
+    {
+      "file": "new-058.json",
+      "arrays_sha256": "5f39ecc12c29bef4609ff299353952eccadc944f791391253765312141c09262",
+      "result_sha256": "ce553f5986f243510f29c7e3f60a05fae47b2cc99cc917ee444a94a59d2644e6",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.7763568394002505e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.1546319456101628e-14
+        }
+      ]
+    },
+    {
+      "file": "new-059.json",
+      "arrays_sha256": "a9e814b30388dbd18ebf52b3f7f5cfbb299f285e396c33c08e3948ec824975b3",
+      "result_sha256": "3d5ce0e7e409f836f5c48d8b5ff257161b0b9b10fa08f36ef5a65c3dba3a89b3",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.549516567451064e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 6.217248937900877e-15
+        }
+      ]
+    },
+    {
+      "file": "new-060.json",
+      "arrays_sha256": "4e59b88110e02bfce58511be9b715bc62bb9088b567782360e4d45305ca346d4",
+      "result_sha256": "3c87502ee657cdc410443deaed8796d40b46a055240fe001323fa9ba954d4c34",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.7763568394002505e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.4868995751603507e-14
+        }
+      ]
+    },
+    {
+      "file": "new-061.json",
+      "arrays_sha256": "b4de182520910e133013f172a0dbba8bc68a0412895133d4a96e159abcba383d",
+      "result_sha256": "9c17408b1dafbc759181404ea215c34a73e221ff8caa395879202f10eaf08fc9",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 5.329070518200751e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 6.661338147750939e-15
+        }
+      ]
+    },
+    {
+      "file": "new-062.json",
+      "arrays_sha256": "0e57a93fa41b9e214fd6bb943a2ff655f26bb157069c1361ca6f85680e39e077",
+      "result_sha256": "c9aaaf5db30eb3c52c8d18d35305c3620089dc3ef500d480832d11d46de148f7",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.3092638912203256e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.6431300764452317e-14
+        }
+      ]
+    },
+    {
+      "file": "new-063.json",
+      "arrays_sha256": "11ad79dd51d8a06004e5b27121ce440fd80ccb11b1f895d5ce69c33390873359",
+      "result_sha256": "5f5a76a80f3af126512a93819beb42a7bd0d2ab555107dccc3f888e644aac19e",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.549516567451064e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 9.769962616701378e-15
+        }
+      ]
+    },
+    {
+      "file": "new-064.json",
+      "arrays_sha256": "d0c105180484e3bf5ec1f2e84e5629bb960c8630073d5075ab14d2a7402c30e0",
+      "result_sha256": "8aa279f60159486b67aae338c144693425f7d8cc71b7fdf1fa0c39ab274b939f",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.509903313490213e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.9539925233402755e-14
+        }
+      ]
+    },
+    {
+      "file": "new-065.json",
+      "arrays_sha256": "7564135a2f35f107866bb48dbfca74c031efd3b46486c3a9fe610019778abb64",
+      "result_sha256": "7340fc5b760bda0abfece69ca61847e6c1684a72bb36d0bbd2363e7d46403d08",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.993605777301127e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 6.217248937900877e-15
+        }
+      ]
+    },
+    {
+      "file": "new-066.json",
+      "arrays_sha256": "d303d7607582ae92017bfb91246c0e9959c1ccef35d3e9de1e356a655a822c54",
+      "result_sha256": "35a89f97443560dbba08ff3d19f8074922c240017b094485a8830740def50da9",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 8.43769498715119e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.5987211554602254e-14
+        }
+      ]
+    },
+    {
+      "file": "new-067.json",
+      "arrays_sha256": "c9ed6d5edb61a1bf32275dd6be7cd706dc5b7dd0336d61a28615db2fd324348e",
+      "result_sha256": "fb74c498f3523920c48bf9b1eade7065ee4da52cdfe94bdbd00aa88035ab1535",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.993605777301127e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 6.217248937900877e-15
+        }
+      ]
+    },
+    {
+      "file": "new-068.json",
+      "arrays_sha256": "d36b0582d91166b1c92ea97e6ff88ffbc8011192781e218811eaa729d04b70c8",
+      "result_sha256": "c7e9e19769d2dda59d339645d3a9d02e715dc4310eef2fe16424c679543118ff",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.509903313490213e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.220446049250313e-14
+        }
+      ]
+    },
+    {
+      "file": "new-069.json",
+      "arrays_sha256": "c60be645108bf4624f53b4d3ce25306d3bcec75b1e07f1e2bcdcd5c36a1096a4",
+      "result_sha256": "486d88ee8868dc2266c71672203c584184e34054ab75c6b382796687b19224fb",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.549516567451064e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 5.329070518200751e-15
+        }
+      ]
+    },
+    {
+      "file": "new-070.json",
+      "arrays_sha256": "5df77782e3771006872fb02de3b5ce7177bff30e9af938a6022fbc27f0858ce3",
+      "result_sha256": "fd39cd1465a15281325f2a6062f19a1f739adab2b01913160625481973ca849d",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 3.2862601528904634e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 9.769962616701378e-15
+        }
+      ]
+    },
+    {
+      "file": "new-071.json",
+      "arrays_sha256": "acda741878cc736fe4aca3f3e0f4bed803ca3a8e3664581bb6a5fa1475c8eac2",
+      "result_sha256": "bceb4ab7fb3e40af48f078bd200de6c1ef0e04b58db703848144f187ff4b1ad1",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.199040866595169e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.105427357601002e-15
+        }
+      ]
+    },
+    {
+      "file": "new-072.json",
+      "arrays_sha256": "8c5001dceb7993315c55a8d270058fd2841e1f66cd7ebfa1329d1404b45c599e",
+      "result_sha256": "1d8d110a3bd9dcc8e76c07c067122a021ba93277a073d903ea9f1707d6fe5dad",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.042810365310288e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.220446049250313e-14
+        }
+      ]
+    },
+    {
+      "file": "new-073.json",
+      "arrays_sha256": "d8fbc6872671a0aed3b5a3e3686838e5a401eb97ccc8abd690a91b4d897b9d92",
+      "result_sha256": "83403e14f51e5ff2e69f3a52c9d5d52ce1d815e8dbc361c0138dab41370e0550",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.993605777301127e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.549516567451064e-15
+        }
+      ]
+    },
+    {
+      "file": "new-074.json",
+      "arrays_sha256": "bd0e995a3e6f87d60f4291fa8fa7735ae4d3b6931b7a8e4eec5620ea7ea218a0",
+      "result_sha256": "c0435a7245c592b7f432d2e79f04959a24477eaeb032147fa3a9ce760505cae5",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.7319479184152442e-13
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.7763568394002505e-14
+        }
+      ]
+    },
+    {
+      "file": "new-075.json",
+      "arrays_sha256": "f2c3eb5fdac0b5242f25bcca193ae20cce5811294963c5eb475368c38e47f5b8",
+      "result_sha256": "96bb6c38f11dffe029118abd2ebd2fbd604d78dec961c789ecc6a3a05ec2679f",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 8.881784197001252e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 9.769962616701378e-15
+        }
+      ]
+    },
+    {
+      "file": "new-076.json",
+      "arrays_sha256": "fdfe72bc7d4fc631b27aec01c121c508fa255073cee92f8ce71c30d56b6f8960",
+      "result_sha256": "8d40580c0c5c682d14a67a5fabe505821f662088b9adc663b35f25f0e2f55d34",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 9.769962616701378e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.9539925233402755e-14
+        }
+      ]
+    },
+    {
+      "file": "new-077.json",
+      "arrays_sha256": "5989926e7eabd1e86790216873368b65dbec85e50620d4e249a5eb5e7976f3e0",
+      "result_sha256": "a0725931a3a3e06a89c09b7dc58d136b2d9568993ce2b377136db869269de01c",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.865174681370263e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.993605777301127e-15
+        }
+      ]
+    },
+    {
+      "file": "new-078.json",
+      "arrays_sha256": "0b3aa6fcb07bb42a3cfeff9d6d553c048601a5b9f877a8029f8157b31934539c",
+      "result_sha256": "e4a6de8d2300425050b9bee450534a8eec2103ba7eee3b55ffd5300f41bbbc7e",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.9539925233402755e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.199040866595169e-14
+        }
+      ]
+    },
+    {
+      "file": "new-079.json",
+      "arrays_sha256": "5640b92342b0e584fa37bfca61a0beea9b423c212c5b75fe791dbfead528a17d",
+      "result_sha256": "26bc3f8d7a4674407a5b1939feab8c7db390014e4210aaee9571c16b4e187ddf",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.0658141036401503e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 9.325873406851315e-15
+        }
+      ]
+    },
+    {
+      "file": "new-080.json",
+      "arrays_sha256": "648386e4ad53ad389b0c168c2ecf428ade795084ee0fd580357d819af678ed21",
+      "result_sha256": "8e8b29969e7428efa564c47656eb5be3f3ea63545d4b29c220c394ef29c9a48c",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.865174681370263e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.1102230246251565e-14
+        }
+      ]
+    },
+    {
+      "file": "new-081.json",
+      "arrays_sha256": "a1f22d7b528b46c6e25409c291ff721d880f5e6bc8773d8a4ca35f14cb20a69d",
+      "result_sha256": "bd0635a1c1496ca1ca623faadff5917b07b7e08c6cb057af584824a0c34dc8a8",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.549516567451064e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.3322676295501878e-14
+        }
+      ]
+    },
+    {
+      "file": "new-082.json",
+      "arrays_sha256": "c86464fd7dbcb126560ae3982552ee791cec6497b7c6a51b38654613b098ad2a",
+      "result_sha256": "dc20424aa35c87048eee8503e47f1f19495a608cc213156cf152ae7dec895cfd",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.042810365310288e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 3.3306690738754696e-14
+        }
+      ]
+    },
+    {
+      "file": "new-083.json",
+      "arrays_sha256": "92c9d0d5e7dba9776e7f9edf89518d708d85cad61ec8b7ad972a2e9a04aca7cc",
+      "result_sha256": "f7720543fe586bf7346c9532aaf4b274b61a24618e8af0b1050f19a17e01602c",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.993605777301127e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.105427357601002e-15
+        }
+      ]
+    },
+    {
+      "file": "new-084.json",
+      "arrays_sha256": "f4170b15d1ec0fca7148055dfeb2152071118154e63c251d8e5539bfd9d3ad55",
+      "result_sha256": "820da132e299c425c25d31d5a454538f8045ef41bc793b788fbf9d3a39731447",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.3092638912203256e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.9984014443252818e-14
+        }
+      ]
+    },
+    {
+      "file": "new-085.json",
+      "arrays_sha256": "d6407ebbfb0812a598175fc2fa814aa880d484fd3f927b3873a3a8ca20eb3b08",
+      "result_sha256": "c9f5991e58c8be995e310ff05971f2f0cafc3f699d4e9a7786e2c6827eb60608",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.993605777301127e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 8.43769498715119e-15
+        }
+      ]
+    },
+    {
+      "file": "new-086.json",
+      "arrays_sha256": "c38d9bb4b3efbc331d1e64c1634be4acd9f5a56deeaf311cab2b02358e947586",
+      "result_sha256": "b5afcc886ed2975d313d827cfc3d13e364b4c4291031c9fdab4cc7b837bd7f48",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.3322676295501878e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.509903313490213e-14
+        }
+      ]
+    },
+    {
+      "file": "new-087.json",
+      "arrays_sha256": "b1d44f3f6a4667a4d3625905f49335864d53b1b3bd28d2f9ace82077d757bc7c",
+      "result_sha256": "1f1fd36d90d0fafece3fc845cc111f27564fba4b92b13a28f1ba0747393298d0",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 3.9968028886505635e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 6.217248937900877e-15
+        }
+      ]
+    },
+    {
+      "file": "new-088.json",
+      "arrays_sha256": "47485d8298fe9201b9a51ed04424436f39dbf95e18076b648acd01ffa29ad645",
+      "result_sha256": "6073378167f8770e0f92bca932bf1bc0266dd2e25d2bf8b35be5cbe37e78d6c5",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.5987211554602254e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.1316282072803006e-14
+        }
+      ]
+    },
+    {
+      "file": "new-089.json",
+      "arrays_sha256": "58a02970fd920bed842e2633190c7c17d98b8b559c169bb27f04b8afea76830c",
+      "result_sha256": "65ba1104392f21d41087903384f422c1d265f343b7e9aa309763b8149da22aa7",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.2878587085651816e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.105427357601002e-15
+        }
+      ]
+    },
+    {
+      "file": "new-090.json",
+      "arrays_sha256": "d2835233d0f2d0def1ababe0cb12164113a1ed8070fe787a1a54f6d3245ba2dd",
+      "result_sha256": "a7c89a07b44a0779b1cbd3b5646d77d1aa98e842ba8db605a973fda59040bddd",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.5757174171303632e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 3.552713678800501e-14
+        }
+      ]
+    },
+    {
+      "file": "new-091.json",
+      "arrays_sha256": "ee41cde0742ec06efa3a91d00e2a8407dde947783a31e745780d92c93d60f746",
+      "result_sha256": "a14d3fea1df2afcab7e5e4a69b0610c2de39d5618dfdf77b2dbd24718100f445",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 9.769962616701378e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.993605777301127e-15
+        }
+      ]
+    },
+    {
+      "file": "new-092.json",
+      "arrays_sha256": "746f50d0bf8f6d1b1505a502c09499b4fcd98d44a404160406c4debdf3b85e67",
+      "result_sha256": "7431c807d9c274a432b8c5607406b3e5e4cb8a443537eaf697a5a87bed457d0f",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.6645352591003757e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 8.881784197001252e-15
+        }
+      ]
+    },
+    {
+      "file": "new-093.json",
+      "arrays_sha256": "4578d2110ef570ef841af7f875fe5fa2b36ecc72a246342ea9e6a87332a90338",
+      "result_sha256": "50873d6c82ffe27ad3f184ca763a9b9e52c76b5f336a2bcb1131d87170518c72",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.1546319456101628e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.3322676295501878e-14
+        }
+      ]
+    },
+    {
+      "file": "new-094.json",
+      "arrays_sha256": "058050712dc2077228d03bef598bbc9a43dd8d2483353f1a07269f0421e91161",
+      "result_sha256": "d2346185ae700de7b7ee4ac302dcbba308de9ca0480332055cee7a594e093df7",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.398081733190338e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.042810365310288e-14
+        }
+      ]
+    },
+    {
+      "file": "new-095.json",
+      "arrays_sha256": "babacb9cae4e1b10eac29c6bf964d0776abb16a94bf30f7787747d5bc1977572",
+      "result_sha256": "62bc786ec1c28650d7bd4d592f87f6a3559839163e67651f90b06309d6e02773",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 3.552713678800501e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.993605777301127e-15
+        }
+      ]
+    },
+    {
+      "file": "new-096.json",
+      "arrays_sha256": "f84a9069e8226c9c51e918282296cdf80eb98dc4c4f4ff37cfe599f6dd03c27e",
+      "result_sha256": "31ada5f89042e5878bac25a4cc5c6a711241aef2a61086671f68f62f5b6c1c66",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.220446049250313e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.5987211554602254e-14
+        }
+      ]
+    },
+    {
+      "file": "new-097.json",
+      "arrays_sha256": "b6f8ba942bab2f303287f5b6b654d567c3e2d6d60d78776f675e1292ffcd4bc7",
+      "result_sha256": "978eca56174ff3c2d4e48dfb3f4a346b819bf4111f6b890f22cda011e13a5797",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.105427357601002e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.0658141036401503e-14
+        }
+      ]
+    },
+    {
+      "file": "new-098.json",
+      "arrays_sha256": "f6cb47dce7bc65fbf8c44357a0d1bb346bb3487f24955078b34f551747f0a304",
+      "result_sha256": "e870cfd5084e17f523c1581f41a59c1a7fd56d3028ba0df251805072672253ee",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.7763568394002505e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 3.108624468950438e-14
+        }
+      ]
+    },
+    {
+      "file": "new-099.json",
+      "arrays_sha256": "7ae556075b1836819f006318d9b67bc5c797dfd34e6cd4f09c3b528b0cdd7545",
+      "result_sha256": "50a4776a760d48daf2e2c91b1de691b9468bfc88fd0628400128efe28afc9013",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 3.552713678800501e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 7.105427357601002e-15
+        }
+      ]
+    },
+    {
+      "file": "new-100.json",
+      "arrays_sha256": "2a57b1e69c04d0bdc6fc27efe944f18325cbdbc4aa57084c050aa08ba0a5817f",
+      "result_sha256": "fe38ad3d0e26b021e5c8e42d475787b42134226075b4a51826843ac05a1c76a8",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.220446049250313e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.353672812205332e-14
+        }
+      ]
+    },
+    {
+      "file": "new-101.json",
+      "arrays_sha256": "9b2d940ee3b012ee1659d51c74f7416a62a6acecb1d93235b97ba9ab5d650d87",
+      "result_sha256": "e3483095a8bd35daa8bfddc7ef918166e0348a80499b38c585e4944018565682",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.0658141036401503e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.4210854715202004e-14
+        }
+      ]
+    },
+    {
+      "file": "new-102.json",
+      "arrays_sha256": "c8b5e86ee4946b87353845dbd2c8a29edf8d18bc371d6de947f75cd0285641a0",
+      "result_sha256": "c7bbd2b083e42ebd94638fdcb9415a495b2cdcd7bb54925b5079c597cb4b3bc9",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.5987211554602254e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.509903313490213e-14
+        }
+      ]
+    },
+    {
+      "file": "new-103.json",
+      "arrays_sha256": "7ca0f5a59a74b3649b2774430741e37850d81bb99e833265cffa17975b42811c",
+      "result_sha256": "47de740b5ddc5bef247081da7905f0d17d47c051deea036843674a61a348a6e0",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.8762769116165146e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 8.881784197001252e-15
+        }
+      ]
+    },
+    {
+      "file": "new-104.json",
+      "arrays_sha256": "0f52e26992c46f728ea012ec6f0ddbed71db50849da9513021ff40d954e8176f",
+      "result_sha256": "97fedb3f11ff8887a8e994a203229412102bce2616f1af9f253bfaeb03617317",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.842170943040401e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.1760371282653068e-14
+        }
+      ]
+    },
+    {
+      "file": "new-105.json",
+      "arrays_sha256": "1742329544cb2070d7f6d6908dd343fe91356bd673c256056f37740020c7d746",
+      "result_sha256": "c2167cc1721ff7f437e7bc8961d759c6eb20a809eeb6b16c02451b2d43631bd6",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.0658141036401503e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.2434497875801753e-14
+        }
+      ]
+    },
+    {
+      "file": "new-106.json",
+      "arrays_sha256": "e3a7d321e73425ccb06abc600feecfedf03476b0b02172332639eea171a53479",
+      "result_sha256": "ad3e834ddfe207b9ae5529006144fb10ac512fa727b6e9afe42c7e8e7ff6d9f2",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.6645352591003757e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.8207657603852567e-14
+        }
+      ]
+    },
+    {
+      "file": "new-107.json",
+      "arrays_sha256": "d4f911e9a547b382c70df63eb9654888b68fec83515e37404f1b494f902f82fc",
+      "result_sha256": "2bd65d6302a194d640211c273fdb30d87647509170998c8ec49b4bb335ae7782",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 6.328271240363392e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 5.773159728050814e-15
+        }
+      ]
+    },
+    {
+      "file": "new-108.json",
+      "arrays_sha256": "1abab40851c41dfd37a0c7571a97d429f1be1a5a2f3b891dcb1a8ae11da19ae0",
+      "result_sha256": "2b951db66703b184d4b55de1cf6ea3e8afa799ac1287450506c0a941197b07d8",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.6431300764452317e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.5987211554602254e-14
+        }
+      ]
+    },
+    {
+      "file": "new-109.json",
+      "arrays_sha256": "c37274133e551b21a69608db0028d7d176f8a0d0ca6743de0fbff175f94a5753",
+      "result_sha256": "10a867e6b0888eb8a7045032383f7d5279f34500ce6c9cf196b4a4f5f527e59b",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.0658141036401503e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 6.661338147750939e-15
+        }
+      ]
+    },
+    {
+      "file": "new-110.json",
+      "arrays_sha256": "ab4ad72f9ee5e2ad63d980da0a4acdbb0c68e1413b0e4fc5e2c2654233b8ef77",
+      "result_sha256": "043868ff353e64dfdb28b7dad679a62da51f9c61790e512d8aee877e67423910",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 9.769962616701378e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.042810365310288e-14
+        }
+      ]
+    },
+    {
+      "file": "new-111.json",
+      "arrays_sha256": "c46cbe8809500f617079252692ccde970809e0c3cad52bc19b371a07cfbe479b",
+      "result_sha256": "2430000276f2d25ae3893c60bb6e0fd343745f1cf6843af0a7e289aabd95fa5f",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.1102230246251565e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 5.329070518200751e-15
+        }
+      ]
+    },
+    {
+      "file": "new-112.json",
+      "arrays_sha256": "b08fd0f4485121be199f6533739cef9b6cc9d2379bbb4ff45f486f4340610dda",
+      "result_sha256": "aa316a95fcd985901c7ccfaa1e5c240e285082484b701f0c54e77c6cd9e4b5e8",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.2434497875801753e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.398081733190338e-14
+        }
+      ]
+    },
+    {
+      "file": "new-113.json",
+      "arrays_sha256": "e3881cd02985b6977b6dec1e135f3c902533c2e66d1ee41bd9aa3c3d073e4d40",
+      "result_sha256": "11a04d29f83bcbae37efe02b9d8fae179674c359095a99528ea2d99d84851f3d",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 5.329070518200751e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 4.1744385725905886e-14
+        }
+      ]
+    },
+    {
+      "file": "new-114.json",
+      "arrays_sha256": "78b10ccb1011c85d9c9b9ae9c3a6a53d7caff8b458d98d71560fc54ab160cb30",
+      "result_sha256": "6c18f5c6a03a08b8a333ed086bbe48c764d927e33f84d93ca0fdf8fe685b71d8",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.1316282072803006e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.4868995751603507e-14
+        }
+      ]
+    },
+    {
+      "file": "new-115.json",
+      "arrays_sha256": "96c925ebe383c3f965ded7ab2d94ab492e880eda5b29b910e42d00ee64094943",
+      "result_sha256": "5fa95ac984ad77f305b9fd7bfd604920e61fb8613f5b7134f192baa57439d523",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.4210854715202004e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.0658141036401503e-14
+        }
+      ]
+    },
+    {
+      "file": "new-116.json",
+      "arrays_sha256": "f29ea927f1e2061c6e14ff7532726893db9f1ee77bc38249f4d102b5b0ae7224",
+      "result_sha256": "e5918129a86ea3850a945964a16dbe8a551312949c0a5d12c7e7ec566dbed91e",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.3322676295501878e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 3.375077994860476e-14
+        }
+      ]
+    },
+    {
+      "file": "new-117.json",
+      "arrays_sha256": "eec3b4848003583b82e03846ebd389699dfb310c18ff6cf95a85c42afa9d91ae",
+      "result_sha256": "5992d0ccd6c509b88051c7817dd6585e442627bc16dddc46400f449f7de510c4",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 4.884981308350689e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.2878587085651816e-14
+        }
+      ]
+    },
+    {
+      "file": "new-118.json",
+      "arrays_sha256": "c16cb599c0576ae31908fb775c66185307e8b793b3c051b34f2955cc7c6e5147",
+      "result_sha256": "a2a683167d4e37eee637011aebfce1c964f50912b3b24a25d34ad78dd4d1fb4d",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.398081733190338e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.554312234475219e-14
+        }
+      ]
+    },
+    {
+      "file": "new-119.json",
+      "arrays_sha256": "8c519f57ffa05546a428f6a6c7d3484e11177a0b1cdc68014652e2b62c2e2cba",
+      "result_sha256": "f05ed12bcbe4754d7f8a0c4f9f6608d930c2e95887870f136e84ea8addf11801",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 8.881784197001252e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 4.440892098500626e-15
+        }
+      ]
+    },
+    {
+      "file": "new-120.json",
+      "arrays_sha256": "9f975f4cfa56b263e8247de81bc2be444cdc5e470c63192d84fba183009f074b",
+      "result_sha256": "425538da7eed6935a0b94a9fc7a970d663f716d0d861ca7dedcbe6cfacc51c8a",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.0658141036401503e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.9539925233402755e-14
+        }
+      ]
+    },
+    {
+      "file": "new-121.json",
+      "arrays_sha256": "4d00715cf0a49d6d17b872788cc610973e9e2bd1a8d8551656045d7c9c291271",
+      "result_sha256": "8ab8d6b7a15fc8d9862d33bdcceac1ef5297ce3dc1531bf91732778608b21e72",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.687538997430238e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.2434497875801753e-14
+        }
+      ]
+    },
+    {
+      "file": "new-122.json",
+      "arrays_sha256": "10ea75be41a68c12cc41c79f0b4823b4b456d0ad604032dd843d665e5b86f3a4",
+      "result_sha256": "2164bd98a449bff61c7ea7c7b5f361986f6997eeef372ad2ed7745ac4fc0911a",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.1316282072803006e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.398081733190338e-14
+        }
+      ]
+    },
+    {
+      "file": "new-123.json",
+      "arrays_sha256": "31274dc647878b52bfefc6219f9ee506381f4b951e08d6af375b0935fc219990",
+      "result_sha256": "6d775ddbaa0a4e1f64dc34b986ccedcbc3f0d2e61653dfa53cca948a82257273",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.0658141036401503e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 6.217248937900877e-15
+        }
+      ]
+    },
+    {
+      "file": "new-124.json",
+      "arrays_sha256": "5180e2fd9062d79418ae98f20d0a49ae383891143a357da001ec85ecfe9bf45e",
+      "result_sha256": "c80861e624f83bbb0744ce8e40dd524def07f0ee9d68e61e7ebf756b1b9a2972",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.5987211554602254e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.4868995751603507e-14
+        }
+      ]
+    },
+    {
+      "file": "new-125.json",
+      "arrays_sha256": "8301f9cc5ed6aea3996c1053fa3ae339db194ea55cd616e8a83858c85bd2b43f",
+      "result_sha256": "190d9c820de78351f7143ad0bd87a25da26bb75f973ee027296973df92efd4e1",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 8.881784197001252e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.3322676295501878e-14
+        }
+      ]
+    },
+    {
+      "file": "new-126.json",
+      "arrays_sha256": "493952041ba2cc065340890292284d9640bd999519ab97cc1eeb683f57be670f",
+      "result_sha256": "95ec1d4c610f10124ba5db03adf70131c72091f6395816ff5e9c1dd90e6b5270",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.687538997430238e-14
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 2.042810365310288e-14
+        }
+      ]
+    },
+    {
+      "file": "new-127.json",
+      "arrays_sha256": "82eace3298f268aaa065ef89e884fff5333775fd3cb0144a0b85164560e03caa",
+      "result_sha256": "3860194011291441615d33d3e18f2c83d4e0fc9b11eeb31e4b558247f030fc93",
+      "test_examples": 10000,
+      "calibration_examples": 3000,
+      "max_metric_difference": 0,
+      "sample_scores": [
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 3.9968028886505635e-15
+        },
+        {
+          "examples": 4,
+          "methods": 16,
+          "max_absolute_score_difference": 1.021405182655144e-14
+        }
+      ]
+    }
+  ],
+  "accounting": "JobID|State|ExitCode|ElapsedRaw|AllocNodes\n6505264|FAILED|1:0|9|1\n6505275|COMPLETED|0:0|16|1\n6505304|COMPLETED|0:0|53|1\n",
+  "numerical_check": "Independent NumPy calculation of 16 method scores and all chosen positions on 1040 saved image/template pairs; 20 methods and all strata metrics on every stored example."
+}

@@ -1,0 +1,1219 @@
+{
+  "status": "VERIFIED_CONDITIONAL_SIMULATION",
+  "verification": {
+    "status": "PASS",
+    "verified_utc": "2026-09-12T17:21:35.217042+00:00",
+    "archive_sha256": "0cd7385e58799e65dd1f10a5c5ab675748861ee5749fcec6a43980cf344a8de5",
+    "archive_bytes": 486760874,
+    "members": 451,
+    "full_records": 2322432,
+    "eligible_records": 2308096,
+    "independently_recomputed_rate_cells": 11844,
+    "all_frozen_analysis_reproduced": true,
+    "analysis_exact": false,
+    "analysis_maximum_float_difference": 1.7763568394002505e-15,
+    "remote_independent_saved_channels_verified": 448,
+    "boundary": "All downloaded payload hashes verified. Independent eligibility, thresholds and rate/stratum/cell counts recalculated locally; frozen uncertainty and summaries reproduced. Saved-channel numeric checks are those in the verified remote audit, not a second local waveform regeneration."
+  },
+  "stages": [
+    {
+      "stage": {
+        "name": "legacy_control",
+        "beta": 0.9,
+        "fs": 1000.0,
+        "steps": 2048,
+        "noise": "record_normalised",
+        "exclude_selected": false
+      },
+      "metrics": {
+        "D0": {
+          "evaluation": {
+            "n": 116592,
+            "hits": 1119,
+            "rate": 0.009597571016879374,
+            "configuration_cell_bootstrap_ci95": [
+              0.0076140710144057735,
+              0.011675809894619029
+            ]
+          },
+          "target": {
+            "n": 31014,
+            "hits": 8388,
+            "rate": 0.2704585026117237,
+            "configuration_cell_bootstrap_ci95": [
+              0.23120740437788823,
+              0.3069352776092213
+            ]
+          },
+          "weak": {
+            "n": 3446,
+            "hits": 42,
+            "rate": 0.012188044109112013,
+            "configuration_cell_bootstrap_ci95": [
+              0.006978722181272274,
+              0.018049753420754353
+            ]
+          },
+          "positive": {
+            "n": 96488,
+            "hits": 9048,
+            "rate": 0.09377331896194345,
+            "configuration_cell_bootstrap_ci95": [
+              0.08040126555309202,
+              0.10629518879660509
+            ]
+          },
+          "detector_gate_pass": false
+        },
+        "sphere_diagnostic": {
+          "evaluation": {
+            "n": 116592,
+            "hits": 1199,
+            "rate": 0.01028372444078496,
+            "configuration_cell_bootstrap_ci95": [
+              0.009485558024269355,
+              0.011095356862209164
+            ]
+          },
+          "target": {
+            "n": 31014,
+            "hits": 31014,
+            "rate": 1.0,
+            "configuration_cell_bootstrap_ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "weak": {
+            "n": 3446,
+            "hits": 3446,
+            "rate": 1.0,
+            "configuration_cell_bootstrap_ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "positive": {
+            "n": 96488,
+            "hits": 96488,
+            "rate": 1.0,
+            "configuration_cell_bootstrap_ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "detector_gate_pass": true
+        },
+        "conditional_glrt": {
+          "evaluation": {
+            "n": 116592,
+            "hits": 1161,
+            "rate": 0.009957801564429807,
+            "configuration_cell_bootstrap_ci95": [
+              0.009357460142557075,
+              0.010582869247326524
+            ]
+          },
+          "target": {
+            "n": 31014,
+            "hits": 27283,
+            "rate": 0.8796994905526536,
+            "configuration_cell_bootstrap_ci95": [
+              0.8632997362832023,
+              0.8939364711934157
+            ]
+          },
+          "weak": {
+            "n": 3446,
+            "hits": 1151,
+            "rate": 0.3340104468949507,
+            "configuration_cell_bootstrap_ci95": [
+              0.28807658833768496,
+              0.37829997098926604
+            ]
+          },
+          "positive": {
+            "n": 96488,
+            "hits": 40020,
+            "rate": 0.41476660310090374,
+            "configuration_cell_bootstrap_ci95": [
+              0.399696242485706,
+              0.4283747502370723
+            ]
+          },
+          "detector_gate_pass": true
+        }
+      },
+      "bounds": null,
+      "diagnostics": {
+        "noise_rms_mean": 1.0,
+        "noise_rms_std": 6.918121552782919e-17,
+        "selected_weight_before_mean": 0.20520113871928966,
+        "selected_weight_after_max": 0.7810147666823228,
+        "effective_branches_mean": 9.390421275077802,
+        "sphere_h1_error_positive_median": 1.1102230246251565e-16,
+        "sphere_null_error_eval_median": 0.0
+      }
+    },
+    {
+      "stage": {
+        "name": "population_noise",
+        "beta": 0.9,
+        "fs": 1000.0,
+        "steps": 2048,
+        "noise": "stationary_gaussian",
+        "exclude_selected": false
+      },
+      "metrics": {
+        "D0": {
+          "evaluation": {
+            "n": 116592,
+            "hits": 1112,
+            "rate": 0.009537532592287635,
+            "configuration_cell_bootstrap_ci95": [
+              0.007569749946289203,
+              0.011587066561068834
+            ]
+          },
+          "target": {
+            "n": 31014,
+            "hits": 8434,
+            "rate": 0.271941703746695,
+            "configuration_cell_bootstrap_ci95": [
+              0.23251874788267352,
+              0.30850313099814763
+            ]
+          },
+          "weak": {
+            "n": 3446,
+            "hits": 41,
+            "rate": 0.011897852582704585,
+            "configuration_cell_bootstrap_ci95": [
+              0.006956521739130435,
+              0.017681159420289853
+            ]
+          },
+          "positive": {
+            "n": 96488,
+            "hits": 9100,
+            "rate": 0.0943122460824144,
+            "configuration_cell_bootstrap_ci95": [
+              0.08093648177043229,
+              0.10687332122688414
+            ]
+          },
+          "detector_gate_pass": false
+        },
+        "sphere_diagnostic": {
+          "evaluation": {
+            "n": 116592,
+            "hits": 1180,
+            "rate": 0.010120763002607383,
+            "configuration_cell_bootstrap_ci95": [
+              0.009417719775489825,
+              0.010886416095359492
+            ]
+          },
+          "target": {
+            "n": 31014,
+            "hits": 6558,
+            "rate": 0.2114528922422132,
+            "configuration_cell_bootstrap_ci95": [
+              0.20174254115226337,
+              0.2215433553256298
+            ]
+          },
+          "weak": {
+            "n": 3446,
+            "hits": 40,
+            "rate": 0.011607661056297156,
+            "configuration_cell_bootstrap_ci95": [
+              0.008393632416787264,
+              0.015335648148148149
+            ]
+          },
+          "positive": {
+            "n": 96488,
+            "hits": 7408,
+            "rate": 0.07677638670093691,
+            "configuration_cell_bootstrap_ci95": [
+              0.07334036044973545,
+              0.08039089436297928
+            ]
+          },
+          "detector_gate_pass": false
+        },
+        "conditional_glrt": {
+          "evaluation": {
+            "n": 116592,
+            "hits": 1175,
+            "rate": 0.010077878413613284,
+            "configuration_cell_bootstrap_ci95": [
+              0.009512413484384146,
+              0.010679483295417775
+            ]
+          },
+          "target": {
+            "n": 31014,
+            "hits": 27342,
+            "rate": 0.881601857225769,
+            "configuration_cell_bootstrap_ci95": [
+              0.8652543324115705,
+              0.8959442275183087
+            ]
+          },
+          "weak": {
+            "n": 3446,
+            "hits": 1179,
+            "rate": 0.3421358096343587,
+            "configuration_cell_bootstrap_ci95": [
+              0.2960066547567227,
+              0.3872093023255814
+            ]
+          },
+          "positive": {
+            "n": 96488,
+            "hits": 40228,
+            "rate": 0.4169223115827875,
+            "configuration_cell_bootstrap_ci95": [
+              0.40178480848861287,
+              0.4306687114810535
+            ]
+          },
+          "detector_gate_pass": true
+        }
+      },
+      "bounds": {
+        "target": {
+          "uniform_null_oracle_power_bound": 0.8822185900609765,
+          "delay_only_oracle_power": 0.9217107652204244
+        },
+        "weak": {
+          "uniform_null_oracle_power_bound": 0.34572507539280184,
+          "delay_only_oracle_power": 0.45939719942673846
+        },
+        "positive": {
+          "uniform_null_oracle_power_bound": 0.4183726804639997,
+          "delay_only_oracle_power": 0.46001364538003436
+        }
+      },
+      "diagnostics": {
+        "noise_rms_mean": 0.9987306618298349,
+        "noise_rms_std": 0.05003045424006713,
+        "selected_weight_before_mean": 0.20520113871928966,
+        "selected_weight_after_max": 0.7810147666823228,
+        "effective_branches_mean": 9.390421275077802,
+        "sphere_h1_error_positive_median": 0.03316391947872799,
+        "sphere_null_error_eval_median": 0.03139334857716658
+      }
+    },
+    {
+      "stage": {
+        "name": "beta_one",
+        "beta": 1.0,
+        "fs": 1000.0,
+        "steps": 2048,
+        "noise": "stationary_gaussian",
+        "exclude_selected": false
+      },
+      "metrics": {
+        "D0": {
+          "evaluation": {
+            "n": 116592,
+            "hits": 1276,
+            "rate": 0.010944147111294085,
+            "configuration_cell_bootstrap_ci95": [
+              0.009694541704669291,
+              0.012128886794853515
+            ]
+          },
+          "target": {
+            "n": 31014,
+            "hits": 7456,
+            "rate": 0.24040755787708776,
+            "configuration_cell_bootstrap_ci95": [
+              0.2126700434153401,
+              0.26739554706454793
+            ]
+          },
+          "weak": {
+            "n": 3446,
+            "hits": 30,
+            "rate": 0.008705745792222866,
+            "configuration_cell_bootstrap_ci95": [
+              0.005218904030153668,
+              0.012775842044134728
+            ]
+          },
+          "positive": {
+            "n": 96488,
+            "hits": 8125,
+            "rate": 0.08420736257358429,
+            "configuration_cell_bootstrap_ci95": [
+              0.07471679286021982,
+              0.0935857536310827
+            ]
+          },
+          "detector_gate_pass": false
+        },
+        "sphere_diagnostic": {
+          "evaluation": {
+            "n": 116592,
+            "hits": 1207,
+            "rate": 0.010352339783175518,
+            "configuration_cell_bootstrap_ci95": [
+              0.009563263345684095,
+              0.01118109425413606
+            ]
+          },
+          "target": {
+            "n": 31014,
+            "hits": 5922,
+            "rate": 0.1909460243760882,
+            "configuration_cell_bootstrap_ci95": [
+              0.1819264867815033,
+              0.2010199363979657
+            ]
+          },
+          "weak": {
+            "n": 3446,
+            "hits": 35,
+            "rate": 0.010156703424260012,
+            "configuration_cell_bootstrap_ci95": [
+              0.006678281068524971,
+              0.013937282229965157
+            ]
+          },
+          "positive": {
+            "n": 96488,
+            "hits": 6746,
+            "rate": 0.06991542989801841,
+            "configuration_cell_bootstrap_ci95": [
+              0.0664327655400296,
+              0.07379774848411232
+            ]
+          },
+          "detector_gate_pass": false
+        },
+        "conditional_glrt": {
+          "evaluation": {
+            "n": 116592,
+            "hits": 1279,
+            "rate": 0.010969877864690544,
+            "configuration_cell_bootstrap_ci95": [
+              0.010020286523970785,
+              0.011940019063180828
+            ]
+          },
+          "target": {
+            "n": 31014,
+            "hits": 26621,
+            "rate": 0.8583542916102406,
+            "configuration_cell_bootstrap_ci95": [
+              0.8426729726098712,
+              0.8722045528886558
+            ]
+          },
+          "weak": {
+            "n": 3446,
+            "hits": 1046,
+            "rate": 0.3035403366221706,
+            "configuration_cell_bootstrap_ci95": [
+              0.2654661632297415,
+              0.3411529611742617
+            ]
+          },
+          "positive": {
+            "n": 96488,
+            "hits": 38598,
+            "rate": 0.4000290191526407,
+            "configuration_cell_bootstrap_ci95": [
+              0.38634809089468264,
+              0.41257387963263437
+            ]
+          },
+          "detector_gate_pass": true
+        }
+      },
+      "bounds": {
+        "target": {
+          "uniform_null_oracle_power_bound": 0.8546141339967842,
+          "delay_only_oracle_power": 0.9174282165231956
+        },
+        "weak": {
+          "uniform_null_oracle_power_bound": 0.2947083050563873,
+          "delay_only_oracle_power": 0.4510951243218488
+        },
+        "positive": {
+          "uniform_null_oracle_power_bound": 0.39627844455549827,
+          "delay_only_oracle_power": 0.45673965915151515
+        }
+      },
+      "diagnostics": {
+        "noise_rms_mean": 0.9987306618298349,
+        "noise_rms_std": 0.05003045424006713,
+        "selected_weight_before_mean": 0.18229507950151233,
+        "selected_weight_after_max": 0.7822524846136452,
+        "effective_branches_mean": 9.939974218753624,
+        "sphere_h1_error_positive_median": 0.033316713511322815,
+        "sphere_null_error_eval_median": 0.03181889621655076
+      }
+    },
+    {
+      "stage": {
+        "name": "nonselected_echo",
+        "beta": 1.0,
+        "fs": 1000.0,
+        "steps": 2048,
+        "noise": "stationary_gaussian",
+        "exclude_selected": true
+      },
+      "metrics": {
+        "D0": {
+          "evaluation": {
+            "n": 116592,
+            "hits": 1231,
+            "rate": 0.010558185810347193,
+            "configuration_cell_bootstrap_ci95": [
+              0.009318730648314536,
+              0.011733223548785508
+            ]
+          },
+          "target": {
+            "n": 31014,
+            "hits": 6348,
+            "rate": 0.20468175662603985,
+            "configuration_cell_bootstrap_ci95": [
+              0.17755249537124765,
+              0.2316853531712882
+            ]
+          },
+          "weak": {
+            "n": 3446,
+            "hits": 26,
+            "rate": 0.0075449796865931515,
+            "configuration_cell_bootstrap_ci95": [
+              0.004356665698518733,
+              0.011317551659567006
+            ]
+          },
+          "positive": {
+            "n": 96488,
+            "hits": 6993,
+            "rate": 0.07247533372025537,
+            "configuration_cell_bootstrap_ci95": [
+              0.06313566112986674,
+              0.08179138759673246
+            ]
+          },
+          "detector_gate_pass": false
+        },
+        "sphere_diagnostic": {
+          "evaluation": {
+            "n": 116592,
+            "hits": 1277,
+            "rate": 0.010952724029092906,
+            "configuration_cell_bootstrap_ci95": [
+              0.01002408812122978,
+              0.011923742137461559
+            ]
+          },
+          "target": {
+            "n": 31014,
+            "hits": 5758,
+            "rate": 0.1856580898948862,
+            "configuration_cell_bootstrap_ci95": [
+              0.1751777842134054,
+              0.19734883717253152
+            ]
+          },
+          "weak": {
+            "n": 3446,
+            "hits": 28,
+            "rate": 0.00812536273940801,
+            "configuration_cell_bootstrap_ci95": [
+              0.0052264429082192546,
+              0.011294526498696786
+            ]
+          },
+          "positive": {
+            "n": 96488,
+            "hits": 6615,
+            "rate": 0.06855774811375508,
+            "configuration_cell_bootstrap_ci95": [
+              0.06460406001704543,
+              0.07298636723877368
+            ]
+          },
+          "detector_gate_pass": false
+        },
+        "conditional_glrt": {
+          "evaluation": {
+            "n": 116592,
+            "hits": 1224,
+            "rate": 0.010498147385755455,
+            "configuration_cell_bootstrap_ci95": [
+              0.009443897785174385,
+              0.011611950668751085
+            ]
+          },
+          "target": {
+            "n": 31014,
+            "hits": 26146,
+            "rate": 0.8430386277165152,
+            "configuration_cell_bootstrap_ci95": [
+              0.8265479866713008,
+              0.8578049427029495
+            ]
+          },
+          "weak": {
+            "n": 3446,
+            "hits": 888,
+            "rate": 0.2576900754497969,
+            "configuration_cell_bootstrap_ci95": [
+              0.22441287329660772,
+              0.29065040650406504
+            ]
+          },
+          "positive": {
+            "n": 96488,
+            "hits": 37126,
+            "rate": 0.3847732360500788,
+            "configuration_cell_bootstrap_ci95": [
+              0.37150685638657427,
+              0.39692344620647796
+            ]
+          },
+          "detector_gate_pass": true
+        }
+      },
+      "bounds": {
+        "target": {
+          "uniform_null_oracle_power_bound": 0.8382223562693272,
+          "delay_only_oracle_power": 0.9129785305209559
+        },
+        "weak": {
+          "uniform_null_oracle_power_bound": 0.2577527724351773,
+          "delay_only_oracle_power": 0.4284341606387311
+        },
+        "positive": {
+          "uniform_null_oracle_power_bound": 0.38151388705693795,
+          "delay_only_oracle_power": 0.44977163671742854
+        }
+      },
+      "diagnostics": {
+        "noise_rms_mean": 0.9987306618298349,
+        "noise_rms_std": 0.05003045424006713,
+        "selected_weight_before_mean": 0.18229507950151233,
+        "selected_weight_after_max": 0.0,
+        "effective_branches_mean": 9.997673850312085,
+        "sphere_h1_error_positive_median": 0.033383106312576516,
+        "sphere_null_error_eval_median": 0.03181889621655076
+      }
+    },
+    {
+      "stage": {
+        "name": "sampling_2000",
+        "beta": 1.0,
+        "fs": 2000.0,
+        "steps": 4096,
+        "noise": "stationary_gaussian",
+        "exclude_selected": true
+      },
+      "metrics": {
+        "D0": {
+          "evaluation": {
+            "n": 116592,
+            "hits": 1198,
+            "rate": 0.010275147522986139,
+            "configuration_cell_bootstrap_ci95": [
+              0.008884782537898832,
+              0.011607844477091804
+            ]
+          },
+          "target": {
+            "n": 31014,
+            "hits": 6659,
+            "rate": 0.21470948603856324,
+            "configuration_cell_bootstrap_ci95": [
+              0.1862706692809684,
+              0.24280193236714975
+            ]
+          },
+          "weak": {
+            "n": 3446,
+            "hits": 19,
+            "rate": 0.005513639001741149,
+            "configuration_cell_bootstrap_ci95": [
+              0.0028935185185185184,
+              0.008713331397037467
+            ]
+          },
+          "positive": {
+            "n": 96488,
+            "hits": 7387,
+            "rate": 0.07655874305613133,
+            "configuration_cell_bootstrap_ci95": [
+              0.06683090667922731,
+              0.086279321318124
+            ]
+          },
+          "detector_gate_pass": false
+        },
+        "sphere_diagnostic": {
+          "evaluation": {
+            "n": 116592,
+            "hits": 1171,
+            "rate": 0.010043570742418005,
+            "configuration_cell_bootstrap_ci95": [
+              0.009310297309401592,
+              0.010786509044920223
+            ]
+          },
+          "target": {
+            "n": 31014,
+            "hits": 6065,
+            "rate": 0.1955568452956729,
+            "configuration_cell_bootstrap_ci95": [
+              0.1844861454901125,
+              0.20748073355977903
+            ]
+          },
+          "weak": {
+            "n": 3446,
+            "hits": 31,
+            "rate": 0.008995937318630296,
+            "configuration_cell_bootstrap_ci95": [
+              0.005508843142939983,
+              0.013024696297922574
+            ]
+          },
+          "positive": {
+            "n": 96488,
+            "hits": 6932,
+            "rate": 0.07184313075201061,
+            "configuration_cell_bootstrap_ci95": [
+              0.0676631542817372,
+              0.07632322272895702
+            ]
+          },
+          "detector_gate_pass": false
+        },
+        "conditional_glrt": {
+          "evaluation": {
+            "n": 116592,
+            "hits": 1248,
+            "rate": 0.01070399341292713,
+            "configuration_cell_bootstrap_ci95": [
+              0.00974238109898581,
+              0.011721703368430455
+            ]
+          },
+          "target": {
+            "n": 31014,
+            "hits": 27871,
+            "rate": 0.898658670277939,
+            "configuration_cell_bootstrap_ci95": [
+              0.8815458404942691,
+              0.9141389979200214
+            ]
+          },
+          "weak": {
+            "n": 3446,
+            "hits": 1555,
+            "rate": 0.4512478235635519,
+            "configuration_cell_bootstrap_ci95": [
+              0.4020886972096246,
+              0.4985456660849331
+            ]
+          },
+          "positive": {
+            "n": 96488,
+            "hits": 43485,
+            "rate": 0.45067780449382305,
+            "configuration_cell_bootstrap_ci95": [
+              0.4340307293180277,
+              0.466206739250789
+            ]
+          },
+          "detector_gate_pass": true
+        }
+      },
+      "bounds": {
+        "target": {
+          "uniform_null_oracle_power_bound": 0.8947416568581318,
+          "delay_only_oracle_power": 0.9496481798204051
+        },
+        "weak": {
+          "uniform_null_oracle_power_bound": 0.43878193040492,
+          "delay_only_oracle_power": 0.6512942778587657
+        },
+        "positive": {
+          "uniform_null_oracle_power_bound": 0.44456343598560305,
+          "delay_only_oracle_power": 0.5147655583527045
+        }
+      },
+      "diagnostics": {
+        "noise_rms_mean": 0.9987974327882928,
+        "noise_rms_std": 0.04945922952923177,
+        "selected_weight_before_mean": 0.1834452659896976,
+        "selected_weight_after_max": 0.0,
+        "effective_branches_mean": 9.951725195322574,
+        "sphere_h1_error_positive_median": 0.028835967931915563,
+        "sphere_null_error_eval_median": 0.02760236258235882
+      }
+    },
+    {
+      "stage": {
+        "name": "duration_8192ms",
+        "beta": 1.0,
+        "fs": 2000.0,
+        "steps": 16384,
+        "noise": "stationary_gaussian",
+        "exclude_selected": true
+      },
+      "metrics": {
+        "D0": {
+          "evaluation": {
+            "n": 116592,
+            "hits": 1165,
+            "rate": 0.009992109235625086,
+            "configuration_cell_bootstrap_ci95": [
+              0.00765545154063773,
+              0.012331232173212388
+            ]
+          },
+          "target": {
+            "n": 31014,
+            "hits": 5880,
+            "rate": 0.18959179725285355,
+            "configuration_cell_bootstrap_ci95": [
+              0.15684299516908212,
+              0.22002281826238212
+            ]
+          },
+          "weak": {
+            "n": 3446,
+            "hits": 3,
+            "rate": 0.0008705745792222867,
+            "configuration_cell_bootstrap_ci95": [
+              0.0,
+              0.002617039837161966
+            ]
+          },
+          "positive": {
+            "n": 96488,
+            "hits": 6848,
+            "rate": 0.07097255617278833,
+            "configuration_cell_bootstrap_ci95": [
+              0.059018719933924824,
+              0.0822322122566304
+            ]
+          },
+          "detector_gate_pass": false
+        },
+        "sphere_diagnostic": {
+          "evaluation": {
+            "n": 116592,
+            "hits": 1265,
+            "rate": 0.010849801015507067,
+            "configuration_cell_bootstrap_ci95": [
+              0.010082695376698913,
+              0.011616144297373295
+            ]
+          },
+          "target": {
+            "n": 31014,
+            "hits": 8983,
+            "rate": 0.2896433868575482,
+            "configuration_cell_bootstrap_ci95": [
+              0.2763083241731875,
+              0.30354609496932533
+            ]
+          },
+          "weak": {
+            "n": 3446,
+            "hits": 48,
+            "rate": 0.013929193267556587,
+            "configuration_cell_bootstrap_ci95": [
+              0.01045599767644496,
+              0.017446932247746436
+            ]
+          },
+          "positive": {
+            "n": 96488,
+            "hits": 10193,
+            "rate": 0.1056400795953901,
+            "configuration_cell_bootstrap_ci95": [
+              0.10063047325019436,
+              0.11082960520455917
+            ]
+          },
+          "detector_gate_pass": false
+        },
+        "conditional_glrt": {
+          "evaluation": {
+            "n": 116592,
+            "hits": 1175,
+            "rate": 0.010077878413613284,
+            "configuration_cell_bootstrap_ci95": [
+              0.009117263620145465,
+              0.011146770096794123
+            ]
+          },
+          "target": {
+            "n": 31014,
+            "hits": 29825,
+            "rate": 0.9616624750112852,
+            "configuration_cell_bootstrap_ci95": [
+              0.9481481481481482,
+              0.9736155407364453
+            ]
+          },
+          "weak": {
+            "n": 3446,
+            "hits": 2692,
+            "rate": 0.7811955890887986,
+            "configuration_cell_bootstrap_ci95": [
+              0.7324230098779779,
+              0.8266170852230397
+            ]
+          },
+          "positive": {
+            "n": 96488,
+            "hits": 54566,
+            "rate": 0.5655211010695631,
+            "configuration_cell_bootstrap_ci95": [
+              0.5456401011231299,
+              0.5837438512938178
+            ]
+          },
+          "detector_gate_pass": true
+        }
+      },
+      "bounds": {
+        "target": {
+          "uniform_null_oracle_power_bound": 0.9599879316080174,
+          "delay_only_oracle_power": 0.9895172480239495
+        },
+        "weak": {
+          "uniform_null_oracle_power_bound": 0.7683999947934421,
+          "delay_only_oracle_power": 0.9236082789276949
+        },
+        "positive": {
+          "uniform_null_oracle_power_bound": 0.5590556656897187,
+          "delay_only_oracle_power": 0.6312214220407245
+        }
+      },
+      "diagnostics": {
+        "noise_rms_mean": 0.9997194237856473,
+        "noise_rms_std": 0.024881379483175703,
+        "selected_weight_before_mean": 0.1936793428772428,
+        "selected_weight_after_max": 0.0,
+        "effective_branches_mean": 9.576664960970133,
+        "sphere_h1_error_positive_median": 0.014327101721973157,
+        "sphere_null_error_eval_median": 0.01319622504984136
+      }
+    },
+    {
+      "stage": {
+        "name": "duration_32768ms",
+        "beta": 1.0,
+        "fs": 2000.0,
+        "steps": 65536,
+        "noise": "stationary_gaussian",
+        "exclude_selected": true
+      },
+      "metrics": {
+        "D0": {
+          "evaluation": {
+            "n": 116592,
+            "hits": 1275,
+            "rate": 0.010935570193495265,
+            "configuration_cell_bootstrap_ci95": [
+              0.008370979180596589,
+              0.013472341165064735
+            ]
+          },
+          "target": {
+            "n": 31014,
+            "hits": 5897,
+            "rate": 0.19013993680273425,
+            "configuration_cell_bootstrap_ci95": [
+              0.15630278511763127,
+              0.22209302794373
+            ]
+          },
+          "weak": {
+            "n": 3446,
+            "hits": 0,
+            "rate": 0.0,
+            "configuration_cell_bootstrap_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "positive": {
+            "n": 96488,
+            "hits": 7543,
+            "rate": 0.07817552441754415,
+            "configuration_cell_bootstrap_ci95": [
+              0.06485966472361376,
+              0.09076525228240606
+            ]
+          },
+          "detector_gate_pass": false
+        },
+        "sphere_diagnostic": {
+          "evaluation": {
+            "n": 116592,
+            "hits": 1214,
+            "rate": 0.010412378207767256,
+            "configuration_cell_bootstrap_ci95": [
+              0.009657609441471112,
+              0.011164927976386137
+            ]
+          },
+          "target": {
+            "n": 31014,
+            "hits": 11890,
+            "rate": 0.3833752498871477,
+            "configuration_cell_bootstrap_ci95": [
+              0.3679124854526204,
+              0.3990060347887824
+            ]
+          },
+          "weak": {
+            "n": 3446,
+            "hits": 77,
+            "rate": 0.022344747533372025,
+            "configuration_cell_bootstrap_ci95": [
+              0.017136218414173687,
+              0.0278503046127067
+            ]
+          },
+          "positive": {
+            "n": 96488,
+            "hits": 13561,
+            "rate": 0.1405459746289694,
+            "configuration_cell_bootstrap_ci95": [
+              0.1344025110952543,
+              0.1468474191242057
+            ]
+          },
+          "detector_gate_pass": false
+        },
+        "conditional_glrt": {
+          "evaluation": {
+            "n": 116592,
+            "hits": 1170,
+            "rate": 0.010034993824619184,
+            "configuration_cell_bootstrap_ci95": [
+              0.009028317676457164,
+              0.011151939839343702
+            ]
+          },
+          "target": {
+            "n": 31014,
+            "hits": 30554,
+            "rate": 0.985167988650287,
+            "configuration_cell_bootstrap_ci95": [
+              0.9747399785979959,
+              0.9937592850386188
+            ]
+          },
+          "weak": {
+            "n": 3446,
+            "hits": 3232,
+            "rate": 0.9378990133488102,
+            "configuration_cell_bootstrap_ci95": [
+              0.904927536231884,
+              0.9667245370370371
+            ]
+          },
+          "positive": {
+            "n": 96488,
+            "hits": 65150,
+            "rate": 0.6752134980515712,
+            "configuration_cell_bootstrap_ci95": [
+              0.6545057406134372,
+              0.6942461237691397
+            ]
+          },
+          "detector_gate_pass": true
+        }
+      },
+      "bounds": {
+        "target": {
+          "uniform_null_oracle_power_bound": 0.9843735152397493,
+          "delay_only_oracle_power": 0.9980628844113684
+        },
+        "weak": {
+          "uniform_null_oracle_power_bound": 0.9352634653445264,
+          "delay_only_oracle_power": 0.9834899273233391
+        },
+        "positive": {
+          "uniform_null_oracle_power_bound": 0.6673401524581772,
+          "delay_only_oracle_power": 0.7368289374302954
+        }
+      },
+      "diagnostics": {
+        "noise_rms_mean": 0.9999517772532541,
+        "noise_rms_std": 0.012508650949652624,
+        "selected_weight_before_mean": 0.1598668239993836,
+        "selected_weight_after_max": 0.0,
+        "effective_branches_mean": 10.677415126201344,
+        "sphere_h1_error_positive_median": 0.00699669672571529,
+        "sphere_null_error_eval_median": 0.006470963152830078
+      }
+    }
+  ],
+  "contrasts": {
+    "repetitions": 20000,
+    "seed": 49120926,
+    "unit": "configuration cell; paired stages; conditional on fixed 32-cell panel",
+    "bootstrap": "Resample whole configuration cells; recompute pooled rates using paired counts. Thresholds remain the declared fitted calibration thresholds. Intervals do not include threshold refitting or independently sampled physical systems.",
+    "rows": [
+      {
+        "from_stage": 0,
+        "to_stage": 1,
+        "method": "conditional_glrt",
+        "target": {
+          "pooled_difference": 0.0019023666731153854,
+          "paired_cell_bootstrap_ci95": [
+            0.0011301624204850258,
+            0.0026897570963352302
+          ],
+          "cell_mean_difference": 0.0019036663788626201
+        },
+        "power_sign_flip_p": 4.999750012499375e-05,
+        "evaluation": {
+          "pooled_difference": 0.00012007684918347722,
+          "paired_cell_bootstrap_ci95": [
+            -0.00017217037980785804,
+            0.00039998638344226553
+          ]
+        },
+        "power_sign_flip_p_holm": 0.0002999850007499625
+      },
+      {
+        "from_stage": 1,
+        "to_stage": 2,
+        "method": "conditional_glrt",
+        "target": {
+          "pooled_difference": -0.02324756561552843,
+          "paired_cell_bootstrap_ci95": [
+            -0.03195289120571487,
+            -0.014883490815627778
+          ],
+          "cell_mean_difference": -0.02324998246673771
+        },
+        "power_sign_flip_p": 4.999750012499375e-05,
+        "evaluation": {
+          "pooled_difference": 0.0008919994510772598,
+          "paired_cell_bootstrap_ci95": [
+            8.576814859335415e-06,
+            0.0018163975069729003
+          ]
+        },
+        "power_sign_flip_p_holm": 0.0002999850007499625
+      },
+      {
+        "from_stage": 2,
+        "to_stage": 3,
+        "method": "conditional_glrt",
+        "target": {
+          "pooled_difference": -0.015315663893725406,
+          "paired_cell_bootstrap_ci95": [
+            -0.0197825228331831,
+            -0.011598943668374098
+          ],
+          "cell_mean_difference": -0.015304459948857822
+        },
+        "power_sign_flip_p": 4.999750012499375e-05,
+        "evaluation": {
+          "pooled_difference": -0.00047173047893508957,
+          "paired_cell_bootstrap_ci95": [
+            -0.0009430080241410056,
+            0.0
+          ]
+        },
+        "power_sign_flip_p_holm": 0.0002999850007499625
+      },
+      {
+        "from_stage": 3,
+        "to_stage": 4,
+        "method": "conditional_glrt",
+        "target": {
+          "pooled_difference": 0.05562004256142383,
+          "paired_cell_bootstrap_ci95": [
+            0.04946881804665815,
+            0.0616173341071774
+          ],
+          "cell_mean_difference": 0.055604318426343655
+        },
+        "power_sign_flip_p": 4.999750012499375e-05,
+        "evaluation": {
+          "pooled_difference": 0.00020584602717167548,
+          "paired_cell_bootstrap_ci95": [
+            -0.0006382761437908491,
+            0.0011064223960477564
+          ]
+        },
+        "power_sign_flip_p_holm": 0.0002999850007499625
+      },
+      {
+        "from_stage": 4,
+        "to_stage": 5,
+        "method": "conditional_glrt",
+        "target": {
+          "pooled_difference": 0.06300380473334621,
+          "paired_cell_bootstrap_ci95": [
+            0.055749123305783924,
+            0.0706281688920201
+          ],
+          "cell_mean_difference": 0.06295382011406156
+        },
+        "power_sign_flip_p": 4.999750012499375e-05,
+        "evaluation": {
+          "pooled_difference": -0.0006261149993138457,
+          "paired_cell_bootstrap_ci95": [
+            -0.0014151914368052687,
+            0.00016627196631571807
+          ]
+        },
+        "power_sign_flip_p_holm": 0.0002999850007499625
+      },
+      {
+        "from_stage": 5,
+        "to_stage": 6,
+        "method": "conditional_glrt",
+        "target": {
+          "pooled_difference": 0.023505513639001774,
+          "paired_cell_bootstrap_ci95": [
+            0.017183067673257075,
+            0.030819464311558863
+          ],
+          "cell_mean_difference": 0.023468913424952307
+        },
+        "power_sign_flip_p": 4.999750012499375e-05,
+        "evaluation": {
+          "pooled_difference": -4.28845889941e-05,
+          "paired_cell_bootstrap_ci95": [
+            -0.0010420581502613678,
+            0.000903932001298785
+          ]
+        },
+        "power_sign_flip_p_holm": 0.0002999850007499625
+      }
+    ]
+  },
+  "jobs": {
+    "preflight": "6506231",
+    "pilot": "6506293",
+    "full": "6506509",
+    "audit": "6506656"
+  },
+  "physical_node_hours": 1.485,
+  "physical_or_historical_validation": false
+}

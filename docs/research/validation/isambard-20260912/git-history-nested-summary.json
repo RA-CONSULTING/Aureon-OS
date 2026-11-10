@@ -1,0 +1,15 @@
+{
+  "top_level_archives": 16,
+  "distinct_archives_including_nested": 17,
+  "members": 2277,
+  "new_research_contents": 25,
+  "new_native_documents": 1,
+  "failures": [
+    {
+      "container": "9c917c37658d4ca10e2b2ef84efedc4947dee548!/aureon-trading.zip",
+      "error": "ValueError"
+    }
+  ],
+  "archive_bytes": 375464,
+  "archive_sha256": "92d28be8997aba8fcb6743f46369399453038cba4dd27a428bd49c0bc54d2925"
+}

@@ -1,0 +1,66 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "name": "original_generator_bitwise_and_rng",
+      "grid": 80,
+      "null": true,
+      "passed": true
+    },
+    {
+      "name": "original_generator_bitwise_and_rng",
+      "grid": 80,
+      "null": false,
+      "passed": true
+    },
+    {
+      "name": "original_generator_bitwise_and_rng",
+      "grid": 40,
+      "null": true,
+      "passed": true
+    },
+    {
+      "name": "original_generator_bitwise_and_rng",
+      "grid": 40,
+      "null": false,
+      "passed": true
+    },
+    {
+      "name": "ties_and_known_metrics_order_invariant",
+      "passed": true
+    },
+    {
+      "name": "old_atomic_summation_repeatability_diagnostic",
+      "grid": 80,
+      "max_absolute_difference": 9.094947017729282e-13,
+      "passed": true
+    },
+    {
+      "name": "independent_numpy_psd_maps_oracle_sign_truth_isolation",
+      "grid": 80,
+      "passed": true
+    },
+    {
+      "name": "old_atomic_summation_repeatability_diagnostic",
+      "grid": 40,
+      "max_absolute_difference": 2.2737367544323206e-13,
+      "passed": true
+    },
+    {
+      "name": "independent_numpy_psd_maps_oracle_sign_truth_isolation",
+      "grid": 40,
+      "passed": true
+    }
+  ],
+  "environment": {
+    "hostname": "nid010344",
+    "python": "3.12.11",
+    "torch": "2.8.0+cu129",
+    "device": "cuda",
+    "gpu_name": "NVIDIA GH200 120GB",
+    "dtype": "float64",
+    "slurm_job_id": "6505275",
+    "slurm_array_job_id": null,
+    "slurm_array_task_id": null
+  }
+}

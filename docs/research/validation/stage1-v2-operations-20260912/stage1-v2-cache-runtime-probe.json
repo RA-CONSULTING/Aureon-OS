@@ -1,0 +1,81 @@
+{
+  "vllm/compilation/compiler_interface.py": [
+    {
+      "line": 341,
+      "text": "        inductor_cache = os.path.join(self.base_cache_dir, \"inductor_cache\")\n        os.makedirs(inductor_cache, exist_ok=True)\n        os.environ[\"TORCHINDUCTOR_CACHE_DIR\"] = inductor_cache\n        triton_cache = os.path.join(self.base_cache_dir, \"triton_cache\")\n        os.makedirs(triton_cache, exist_ok=True)\n        os.environ[\"TRITON_CACHE_DIR\"] = triton_cache\n"
+    },
+    {
+      "line": 344,
+      "text": "        triton_cache = os.path.join(self.base_cache_dir, \"triton_cache\")\n        os.makedirs(triton_cache, exist_ok=True)\n        os.environ[\"TRITON_CACHE_DIR\"] = triton_cache\n\n    def compile(\n        self,\n        graph: fx.GraphModule,"
+    }
+  ],
+  "vllm/config/compilation.py": [
+    {
+      "line": 581,
+      "text": "    \"\"\"Configuration for dynamic shapes options\"\"\"\n\n    local_cache_dir: str = field(default=None, init=False)  # type: ignore\n    \"\"\"local cache dir for each rank\"\"\"\n\n    fast_moe_cold_start = True\n    \"\"\"Optimization for fast MOE cold start."
+    },
+    {
+      "line": 655,
+      "text": "            \"debug_dump_path\",\n            \"cache_dir\",\n            \"local_cache_dir\",\n            \"traced_files\",\n            \"compilation_time\",\n            \"static_forward_context\",\n            \"pass_config\",  # handled separately below"
+    }
+  ],
+  "vllm/compilation/backends.py": [
+    {
+      "line": 793,
+      "text": "            hash_key = hashlib.sha256(str(factors).encode()).hexdigest()[:10]\n            cache_dir = os.path.join(\n                envs.VLLM_CACHE_ROOT, \"torch_compile_cache\", hash_key\n            )\n            self.compilation_config.cache_dir = cache_dir\n\n        cache_dir = self.compilation_config.cache_dir"
+    },
+    {
+      "line": 802,
+      "text": "        rank = vllm_config.parallel_config.rank\n        dp_rank = vllm_config.parallel_config.data_parallel_index\n        local_cache_dir = os.path.join(cache_dir, f\"rank_{rank}_{dp_rank}\", self.prefix)\n        os.makedirs(local_cache_dir, exist_ok=True)\n        self.compilation_config.local_cache_dir = local_cache_dir\n\n        # Honors opt-outs such as CompilationMode.NONE or VLLM_DISABLE_COMPILE_CACHE."
+    },
+    {
+      "line": 803,
+      "text": "        dp_rank = vllm_config.parallel_config.data_parallel_index\n        local_cache_dir = os.path.join(cache_dir, f\"rank_{rank}_{dp_rank}\", self.prefix)\n        os.makedirs(local_cache_dir, exist_ok=True)\n        self.compilation_config.local_cache_dir = local_cache_dir\n\n        # Honors opt-outs such as CompilationMode.NONE or VLLM_DISABLE_COMPILE_CACHE.\n        disable_cache = not is_compile_cache_enabled(self.inductor_config)"
+    },
+    {
+      "line": 804,
+      "text": "        local_cache_dir = os.path.join(cache_dir, f\"rank_{rank}_{dp_rank}\", self.prefix)\n        os.makedirs(local_cache_dir, exist_ok=True)\n        self.compilation_config.local_cache_dir = local_cache_dir\n\n        # Honors opt-outs such as CompilationMode.NONE or VLLM_DISABLE_COMPILE_CACHE.\n        disable_cache = not is_compile_cache_enabled(self.inductor_config)\n"
+    },
+    {
+      "line": 814,
+      "text": "            logger.info_once(\n                \"Using cache directory: %s for vLLM's torch.compile\",\n                local_cache_dir,\n                scope=\"local\",\n            )\n\n        self.compiler_manager.initialize_cache("
+    },
+    {
+      "line": 819,
+      "text": "\n        self.compiler_manager.initialize_cache(\n            local_cache_dir, disable_cache, self.prefix\n        )\n\n        # Reuses existing cache key\n"
+    },
+    {
+      "line": 830,
+      "text": "            compiler_hash,\n            code_hash,\n            local_cache_dir,\n        )\n\n        # Persist and log only hash-relevant factors together.\n        try:"
+    },
+    {
+      "line": 840,
+      "text": "                config_hash,\n            )\n            meta_path = os.path.join(local_cache_dir, \"cache_key_factors.json\")\n            if not os.path.exists(meta_path):\n                with open(meta_path, \"w\") as f:\n                    json.dump(\n                        {"
+    },
+    {
+      "line": 862,
+      "text": "                    \"limited.\"\n                ),\n                local_cache_dir,\n                exc_info=True,\n            )\n\n        # when dynamo calls the backend, it means the bytecode"
+    },
+    {
+      "line": 951,
+      "text": "                    fake_mode.shape_env.var_to_range[s] = ValueRanges(0, r.upper)\n\n        graph_path = os.path.join(local_cache_dir, \"computation_graph.py\")\n        if not os.path.exists(graph_path):\n            # code adapted from\n            # https://github.com/thuml/depyf/blob/dab831108a752d1facc00acdd6d4243891845c37/depyf/explain/patched_lazy_format_graph_code.py#L30\n            # use `print_readable` because it can include submodules"
+    }
+  ],
+  "triton/knobs.py": [
+    {
+      "line": 340,
+      "text": "\n\nclass cache_knobs(base_knobs):\n    home_dir: env_str = env_str(\"TRITON_HOME\", os.path.expanduser(\"~/\"))\n\n    dump_dir = env_str_callable_default(\"TRITON_DUMP_DIR\", lambda: cache.get_triton_dir(\"dump\"))\n    override_dir = env_str_callable_default(\"TRITON_OVERRIDE_DIR\", lambda: cache.get_triton_dir(\"override\"))"
+    },
+    {
+      "line": 345,
+      "text": "    dump_dir = env_str_callable_default(\"TRITON_DUMP_DIR\", lambda: cache.get_triton_dir(\"dump\"))\n    override_dir = env_str_callable_default(\"TRITON_OVERRIDE_DIR\", lambda: cache.get_triton_dir(\"override\"))\n    dir = env_str_callable_default(\"TRITON_CACHE_DIR\", lambda: cache.get_triton_dir(\"cache\"))\n\n    manager_class: env_class[CacheManager] = env_class(\"TRITON_CACHE_MANAGER\", \"CacheManager\")\n    remote_manager_class: env_class[RemoteCacheBackend] = env_class(\"TRITON_REMOTE_CACHE_BACKEND\", \"RemoteCacheBackend\")\n"
+    }
+  ],
+  "selected_login_environment": {
+    "LOCALDIR": "/local/user/1483807800",
+    "TMPDIR": "/local/user/1483807800",
+    "TRITON_CACHE_DIR": null,
+    "VLLM_CACHE_ROOT": null,
+    "TORCHINDUCTOR_CACHE_DIR": null
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "job_id": "6504601",
+  "remote": "/projects/u6vs/hnc-organism/expansion-20260912/hnc-history-audit-v3",
+  "archive_sha256": "e596b4ca3a67fa1c7184b23d002c3f849e7693104dd42b5056b8611f174867c7",
+  "manifest_sha256": "7a065e78c1867c4c5692d59587e2734548a204de0ef7fb092f413589ce0a7ece",
+  "command": [
+    "sbatch",
+    "--parsable",
+    "/projects/u6vs/hnc-organism/expansion-20260912/hnc-history-audit-v3/audit.sbatch"
+  ],
+  "submitted_utc": "2026-09-12T14:46:52.313379+00:00"
+}

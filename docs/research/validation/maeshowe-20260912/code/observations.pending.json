@@ -1,0 +1,15 @@
+[
+  {
+    "id": "Maeshowe-Barnes-15-unobserved",
+    "alphabet": "medieval_16",
+    "group_side": "left",
+    "group_order": "reverse",
+    "left_counts": null,
+    "right_counts": null,
+    "provenance": {
+      "kind": "placeholder_not_observation",
+      "note": "The declared orientation/order is an explicit candidate convention only. No RTI file has been acquired and no branches counted. The user's exact two twig symbols remain unidentified.",
+      "archive_reference": "https://doi.org/10.5284/1050103"
+    }
+  }
+]

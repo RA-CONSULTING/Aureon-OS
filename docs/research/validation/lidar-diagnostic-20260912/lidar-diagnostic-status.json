@@ -1,0 +1,37 @@
+{
+  "observed_utc": "2026-09-12T15:51:57.064905+00:00",
+  "accounting": "JobID|State|ExitCode|ElapsedRaw|AllocNodes\n6505264|FAILED|1:0|9|1\n6505264.batch|FAILED|1:0|9|1\n",
+  "files": 0,
+  "logs": {
+    "pilot-6505264.out": [
+      "d3f92d2d8e107e0400271273ac86dba33fdb7301.docx: OK",
+      "d3f92d2d8e107e0400271273ac86dba33fdb7301.txt: OK",
+      "d4662f447ac00ba405510a28491e71bbf8e70dec.docx: OK",
+      "d4662f447ac00ba405510a28491e71bbf8e70dec.txt: OK",
+      "diagnostic-config.json: OK",
+      "diagnostic.py: OK",
+      "full.sbatch: OK",
+      "harmonic_lidar_benchmark.py: OK",
+      "original-000.json: OK",
+      "original-032.json: OK",
+      "original-verified-summary.json: OK",
+      "paper-provenance.json: OK",
+      "pilot.sbatch: OK",
+      "PROTOCOL-AMENDMENT.md: OK",
+      "protocol.json: OK",
+      "run_diagnostic.py: OK",
+      "SOURCE_AUDIT.md: OK",
+      "test_diagnostic.py: OK"
+    ],
+    "pilot-6505264.err": [
+      "Traceback (most recent call last):",
+      "  File \"/projects/u6vs/hnc-organism/expansion-20260912/lidar-diagnostic-v1/test_diagnostic.py\", line 58, in <module>",
+      "    if __name__=='__main__':main()",
+      "                            ^^^^^^",
+      "  File \"/projects/u6vs/hnc-organism/expansion-20260912/lidar-diagnostic-v1/test_diagnostic.py\", line 52, in main",
+      "    assert torch.equal(score[:,:cutoff],other[0][:,:cutoff])",
+      "           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+      "AssertionError"
+    ]
+  }
+}

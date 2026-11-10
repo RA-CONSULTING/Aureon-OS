@@ -1,0 +1,16 @@
+# Current experiment campaign
+
+Latest verified observation: 2026-09-12T17:26:09.176111+00:00. The complete research repair and expansion goal remains active. Earlier results and failed experiments remain preserved.
+
+## Latest verified findings
+
+- [Verified Tandem results](tandem-results-20260912/Tandem-verified-results-2026-09-12.md): all 2.32 million simulated records and remote/local audits completed. With exact simulated components, longer records raise conditional target detection from 89.87% to 98.52% at about 1% false alarms; all-positive detection is 67.52% and harder cases/subgroups still fail. Original D0 remains weak; an exact-RMS noise artifact is demonstrated and removed. Source, old controls and complete results are staged.
+- [LiDAR diagnostic expansion](lidar-diagnostic-20260912/Harmonic-LiDAR-diagnostic-results-2026-09-12.md): 1.28 million new synthetic examples and independent audits completed. Original φ² amplitude AUROC remains 0.5073; whitening fails as a repair. A model-informed ring control improves but remains limited. Truth-informed diagnostics, phase/material coverage gaps and original failures are explicitly retained.
+- [QGITA missing-data repair](qgita-missingness-20260912/QGITA-missing-data-repair-results-2026-09-12.md): 103,500 candidate/control outcomes verified. The observed-triplet method improves the family-balanced localization measure in all six new-mask scenarios, with important remaining failures and limited absolute performance. All source, outcome and family-statistics audits passed; source and evidence are staged.
+- [Stage 1 v2 recovery](history-recovery-20260912/Stage1-v2-verified-recovery-comparison-2026-09-12.md): separately labelled whole-shard replication sensitivity gives 88.15% full supplied context, 84.06% baseline and 88.36% neutral labels. No clear advantage over neutral labels. Original degraded first-run results remain unchanged.
+- [HNC history expansion](history-recovery-20260912/HNC-four-history-expansion-2026-09-12.md): 6504653 remains RUNNING on 32 nodes/128 GPUs, 25,214,464 trajectories to 33,554,432 steps. At 2026-09-12T17:24:42.271426+00:00 all ranks had saved 22,020,096 steps and the latest maximum was 25,165,824; 2982 complete receipts. Audit 6504684 remains pending. Final scientific results are not yet available.
+- [Connected legacy system](legacy-system-20260912/Legacy-system-connected-review-2026-09-12.md): the people, Maeshowe, two-channel twig reading, recurring light, calendar and later reader are considered together across daily, seasonal and nineteen-year timing. A precise light-to-mark-to-passage binding remains unresolved.
+
+## Remaining scope
+
+Continue the oldest-source/reprint chronology, complete source-level public-paper review, QGITA specificity and transfer beyond this known panel, Tandem detection, harmonic LiDAR, AURIS, the capability arena, Doorbell/C6/C9, HNC V3, Gamma/conscience/weights/MCP, Math Angel/L(t), observational/Schumann/EPAS and repository/module/daemon failures. Numerical or software evidence does not establish independent scientific or physical validation. No claim that every experiment is repaired, and no commit or publication, is made by this staging operation.

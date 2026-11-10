@@ -1,0 +1,250 @@
+{
+  "accounting": "JobID|State|ExitCode|ElapsedRaw|AllocNodes|AllocTRES\n6502172|FAILED|1:0|1|1|billing=72,cpu=72,mem=64G,node=1\n6502172.batch|FAILED|1:0|1|1|cpu=72,mem=64G,node=1\n6502171_0|FAILED|2:0|1112|1|billing=288,cpu=288,gres/gpu=4,mem=460000M,node=1\n6502171_0.batch|FAILED|2:0|1112|1|cpu=288,gres/gpu=4,mem=460000M,node=1\n6502171_0.0|COMPLETED|0:0|805|1|cpu=72,gres/gpu=4,mem=460000M,node=1\n6502171_1|COMPLETED|0:0|2225|1|billing=288,cpu=288,gres/gpu=4,mem=460000M,node=1\n6502171_1.batch|COMPLETED|0:0|2225|1|cpu=288,gres/gpu=4,mem=460000M,node=1\n6502171_1.0|CANCELLED by 1483807800|0:9|2195|1|cpu=72,gres/gpu=4,mem=460000M,node=1\n6502171_2|COMPLETED|0:0|2176|1|billing=288,cpu=288,gres/gpu=4,mem=460000M,node=1\n6502171_2.batch|COMPLETED|0:0|2176|1|cpu=288,gres/gpu=4,mem=460000M,node=1\n6502171_2.0|CANCELLED by 1483807800|0:9|2147|1|cpu=72,gres/gpu=4,mem=460000M,node=1\n6502171_3|COMPLETED|0:0|2224|1|billing=288,cpu=288,gres/gpu=4,mem=460000M,node=1\n6502171_3.batch|COMPLETED|0:0|2224|1|cpu=288,gres/gpu=4,mem=460000M,node=1\n6502171_3.0|CANCELLED by 1483807800|0:9|2192|1|cpu=72,gres/gpu=4,mem=460000M,node=1\n6503592|RUNNING|0:0|1246|1|billing=288,cpu=288,gres/gpu=4,mem=460000M,node=1\n6503592.batch|RUNNING|0:0|1246|1|cpu=288,gres/gpu=4,mem=460000M,node=1\n6503592.0|RUNNING|0:0|1214|1|cpu=72,gres/gpu=4,mem=460000M,node=1\n6503602|COMPLETED|0:0|48|1|billing=72,cpu=72,mem=64G,node=1\n6503602.batch|COMPLETED|0:0|48|1|cpu=72,mem=64G,node=1\n",
+  "queue": "6503592|RUNNING|20:46|1|nid010548\n",
+  "recovery": {
+    "cache-before.json": {
+      "cache_base": "/run/user/1483807800/stage1-v2-6503592.D8qQqq",
+      "localdir": "/run/user/1483807800",
+      "filesystem": "tmpfs",
+      "free_bytes": 183922720768,
+      "environment": {
+        "VLLM_CACHE_ROOT": "/run/user/1483807800/stage1-v2-6503592.D8qQqq/vllm",
+        "TRITON_CACHE_DIR": "/run/user/1483807800/stage1-v2-6503592.D8qQqq/triton",
+        "TORCHINDUCTOR_CACHE_DIR": "/run/user/1483807800/stage1-v2-6503592.D8qQqq/inductor"
+      },
+      "rank_cache_paths": [],
+      "runtime_rank_paths_checked": false
+    },
+    "cache-ready.json": {
+      "cache_base": "/run/user/1483807800/stage1-v2-6503592.D8qQqq",
+      "localdir": "/run/user/1483807800",
+      "filesystem": "tmpfs",
+      "free_bytes": 183327784960,
+      "environment": {
+        "VLLM_CACHE_ROOT": "/run/user/1483807800/stage1-v2-6503592.D8qQqq/vllm",
+        "TRITON_CACHE_DIR": "/run/user/1483807800/stage1-v2-6503592.D8qQqq/triton",
+        "TORCHINDUCTOR_CACHE_DIR": "/run/user/1483807800/stage1-v2-6503592.D8qQqq/inductor"
+      },
+      "rank_cache_paths": [
+        "/run/user/1483807800/stage1-v2-6503592.D8qQqq/vllm/torch_compile_cache/103432951f/rank_0_0",
+        "/run/user/1483807800/stage1-v2-6503592.D8qQqq/vllm/torch_compile_cache/103432951f/rank_1_0",
+        "/run/user/1483807800/stage1-v2-6503592.D8qQqq/vllm/torch_compile_cache/103432951f/rank_2_0",
+        "/run/user/1483807800/stage1-v2-6503592.D8qQqq/vllm/torch_compile_cache/103432951f/rank_3_0"
+      ],
+      "runtime_rank_paths_checked": true
+    },
+    "preflight/run-summary.json": [
+      {
+        "block": "pilot-0-c32",
+        "completed_responses": 1920,
+        "schema_valid": 1920,
+        "session_seconds": 194.55475588000263,
+        "transport_failures": 0
+      },
+      {
+        "block": "pilot-1-c128",
+        "completed_responses": 1920,
+        "schema_valid": 1920,
+        "session_seconds": 109.94817921199137,
+        "transport_failures": 0
+      },
+      {
+        "block": "pilot-2-c128",
+        "completed_responses": 1920,
+        "schema_valid": 1920,
+        "session_seconds": 87.8945426850114,
+        "transport_failures": 0
+      },
+      {
+        "block": "pilot-3-c32",
+        "completed_responses": 1920,
+        "schema_valid": 1920,
+        "session_seconds": 197.20830051699886,
+        "transport_failures": 0
+      }
+    ],
+    "preflight-stdout.jsonl": [
+      {
+        "block": "pilot-3-c32",
+        "completed": 1920,
+        "planned": 1920,
+        "utc": "2026-09-12T14:12:27Z"
+      },
+      {
+        "block": "pilot-3-c32",
+        "completed_responses": 1920,
+        "transport_failures": 0
+      }
+    ],
+    "benchmark-stdout.jsonl": [
+      {
+        "block": "evaluation-000",
+        "completed": 9360,
+        "planned": 46080,
+        "utc": "2026-09-12T14:19:10Z"
+      },
+      {
+        "block": "evaluation-000",
+        "completed": 9600,
+        "planned": 46080,
+        "utc": "2026-09-12T14:19:20Z"
+      }
+    ],
+    "recovery-6503592.err": [
+      "Running \"module reset\". Resetting modules to system default. The following $MODULEPATH directories have been removed: None\n"
+    ],
+    "recovery-6503592.out": [
+      "service_watch.py: OK\n",
+      "test_service_watch.py: OK\n",
+      "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/jobs/aureon-whole-organism/pinned/f5fb1916c07ac26eb7fc38c34ff2dc9bd029e21d/aureon/inhouse_ai/llm_adapter.py: OK\n",
+      "/projects/u6vs/hnc-organism/kimi-validation/stage1-gate-fix/jobs/aureon-whole-organism/pinned/f5fb1916c07ac26eb7fc38c34ff2dc9bd029e21d/aureon/vault/voice/vault_voice.py: OK\n",
+      "/projects/public/brics/distributed_vllm/GPT-OSS_Hopper.yaml: OK\n",
+      "RECOVERY_OPERATIONAL_PREFLIGHT_PASS\n"
+    ]
+  },
+  "forensic": {
+    "forensic-6503602.out": [
+      "{\n",
+      "  \"evidence_integrity\": \"PASS\",\n",
+      "  \"collection_operational_status\": \"DEGRADED_SERVICE_FAILURE\",\n",
+      "  \"final_request_records\": 184320,\n",
+      "  \"transport_failures\": 39484,\n",
+      "  \"allocated_node_hours\": 2.1491666666666664\n",
+      "}\n",
+      "{\"archive\": \"/projects/u6vs/hnc-organism/expansion-20260912/stage1-v2-forensic-v1/original-evidence-analysis-6503602.tar.gz\", \"bytes\": 193647524, \"sha256\": \"8acf289adf05a241270d4744ed8337bf9b1f4c2e7024c8c3d049ef8200152e8e\", \"source_input_manifest_sha256\": \"cafd48d0c4abeedfc2c832c5aefa56c4aaba45a6252f47dad3b5c3dec0885504\", \"model_weights_exported\": false}\n"
+    ],
+    "forensic-6503602.err": [
+      "test_identical_conditions_have_zero_effect (__main__.AnalysisChecks.test_identical_conditions_have_zero_effect) ... ok\n",
+      "test_known_paired_contrast_and_interaction (__main__.AnalysisChecks.test_known_paired_contrast_and_interaction) ... ok\n",
+      "test_reject_wrong_independent_unit (__main__.AnalysisChecks.test_reject_wrong_independent_unit) ... ok\n",
+      "\n",
+      "----------------------------------------------------------------------\n",
+      "Ran 4 tests in 0.041s\n",
+      "\n",
+      "OK\n"
+    ],
+    "export": {
+      "archive": "/projects/u6vs/hnc-organism/expansion-20260912/stage1-v2-forensic-v1/original-evidence-analysis-6503602.tar.gz",
+      "bytes": 193647524,
+      "sha256": "8acf289adf05a241270d4744ed8337bf9b1f4c2e7024c8c3d049ef8200152e8e",
+      "source_input_manifest_sha256": "cafd48d0c4abeedfc2c832c5aefa56c4aaba45a6252f47dad3b5c3dec0885504",
+      "model_weights_exported": false
+    },
+    "analysis": {
+      "evidence_integrity": "PASS",
+      "collection_operational_status": "DEGRADED_SERVICE_FAILURE",
+      "final_request_records": 184320,
+      "transport_failures": 39484,
+      "allocated_node_hours": 2.1491666666666664,
+      "analysis": {
+        "arm_macro_joint_accuracy": {
+          "enum_only|auris_shuffled": 0.43190104166666665,
+          "enum_only|field_disconnected": 0.40598958333333335,
+          "enum_only|frozen_baseline": 0.3821614583333333,
+          "enum_only|full_organism": 0.42278645833333334,
+          "enum_only|neutral_labels": 0.42877604166666666,
+          "enum_only|no_affect_heart": 0.39401041666666664,
+          "enum_only|no_auris": 0.4095052083333333,
+          "enum_only|no_conscience_simulation_only": 0.43971354166666665,
+          "enum_only|no_memory": 0.42421875,
+          "enum_only|no_metacognition": 0.43190104166666665,
+          "enum_only|no_queen": 0.422265625,
+          "enum_only|prompt_only_identity": 0.38502604166666665,
+          "explicit_policy|auris_shuffled": 0.693359375,
+          "explicit_policy|field_disconnected": 0.690234375,
+          "explicit_policy|frozen_baseline": 0.6606770833333333,
+          "explicit_policy|full_organism": 0.691796875,
+          "explicit_policy|neutral_labels": 0.69375,
+          "explicit_policy|no_affect_heart": 0.6912760416666667,
+          "explicit_policy|no_auris": 0.6865885416666667,
+          "explicit_policy|no_conscience_simulation_only": 0.6923177083333333,
+          "explicit_policy|no_memory": 0.7033854166666667,
+          "explicit_policy|no_metacognition": 0.6971354166666667,
+          "explicit_policy|no_queen": 0.6903645833333333,
+          "explicit_policy|prompt_only_identity": 0.6680989583333333
+        },
+        "bootstrap_draws": 20000,
+        "interpretation": "Conditional authored-template summary; related mechanisms limit independence and external generalization.",
+        "primary_contrasts": {
+          "full_baseline_policy_interaction": {
+            "centered_bootstrap_two_sided_p": 0.3608319584020799,
+            "estimate": -0.009505208333333348,
+            "family_effects_in_frozen_family_order": [
+              0.01953125,
+              -0.02473958333333326,
+              0.027343750000000056,
+              -0.010416666666666685,
+              -0.0924479166666668,
+              0.00520833333333337,
+              0.05989583333333326,
+              -0.05598958333333337,
+              -0.024739583333333398,
+              0.0013020833333333703
+            ],
+            "holm_adjusted_p": 0.7216639168041598,
+            "leave_one_family_out_range": [
+              -0.017216435185185286,
+              -0.0002893518518518601
+            ],
+            "percentile_95_interval": [
+              -0.029166666666666674,
+              0.011848958333333272
+            ]
+          },
+          "full_minus_baseline_explicit": {
+            "centered_bootstrap_two_sided_p": 0.00014999250037498125,
+            "estimate": 0.031119791666666674,
+            "family_effects_in_frozen_family_order": [
+              0.01171875,
+              0.00520833333333337,
+              -0.02994791666666663,
+              -0.02083333333333337,
+              0.07552083333333326,
+              0.00520833333333337,
+              0.02604166666666663,
+              0.13411458333333326,
+              0.01822916666666663,
+              0.0859375
+            ],
+            "holm_adjusted_p": 0.00044997750112494374,
+            "leave_one_family_out_range": [
+              0.01967592592592593,
+              0.03790509259259267
+            ],
+            "percentile_95_interval": [
+              0.01497395833333326,
+              0.048828125
+            ]
+          },
+          "full_minus_neutral_explicit": {
+            "centered_bootstrap_two_sided_p": 0.7592120393980301,
+            "estimate": -0.001953125,
+            "family_effects_in_frozen_family_order": [
+              0.0026041666666667407,
+              0.01171875,
+              -0.00390625,
+              -0.01041666666666663,
+              -0.0078125,
+              0.00390625,
+              -0.0234375,
+              -0.01171875,
+              0.05338541666666663,
+              -0.03385416666666674
+            ],
+            "holm_adjusted_p": 0.7592120393980301,
+            "leave_one_family_out_range": [
+              -0.00810185185185186,
+              0.0015914351851852304
+            ],
+            "percentile_95_interval": [
+              -0.013151041666666696,
+              0.010546874999999956
+            ]
+          }
+        },
+        "seed": 20260912
+      }
+    }
+  },
+  "observed_utc": "2026-09-12T14:19:26.011983+00:00"
+}

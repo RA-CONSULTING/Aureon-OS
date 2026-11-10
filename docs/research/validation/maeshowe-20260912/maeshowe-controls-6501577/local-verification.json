@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "job_id": "6501577",
+  "scheduler_state": "COMPLETED",
+  "unique_configurations": 120960,
+  "verified_result_files": 4,
+  "export_sha256": "ef00715678676572465309cb1fe83fee0ad14add89046ec02b33538a455a9e9a",
+  "input_manifest_matches": true,
+  "protocol_matches": true,
+  "all_reported_rank_counts_recomputed": true
+}

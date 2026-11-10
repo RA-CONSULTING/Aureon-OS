@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+September 2026 repair: the frequency lattice below is a preserved symbolic
+model, not a physical decipherment. Its reproducible baseline is gamma
+0.493163 with 9/13 complete, not the paper's 0.8223 with 8/13.
+Use --epigraphy-input for candidate transliteration from supplied counts
+under an explicitly declared medieval convention. No image reading is implied.
+
+Historical model documentation follows:
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                              ║
 ║   ᚠ  MAESHOWE SEER DECODE — The Falling Node Transmission Protocol  ᚠ       ║
@@ -773,11 +780,13 @@ class MaeshoweDecoder:
           2. completeness_ratio   — fraction of inscriptions with decoded runes
           3. schumann_score       — proximity of master beat to Schumann mode 4
 
-        Formula (calibrated to research paper baseline Γ = 0.8223):
+        Model formula (the paper baseline 0.8223 does not reproduce):
           Γ = phi_score × 0.50 + completeness × 0.30 + schumann_score × 0.20
 
-        The Γ = 0.8223 baseline with 8/13 complete and strong phi scores
-        confirms the lattice is ACTIVE FIELD, awaiting the Nr.15 pivot.
+        The implemented baseline is Γ = 0.493163 with 9/13 complete.
+        ACTIVE_FIELD is a model state, not evidence of a physical field.
+        Even perfect component scores with only the pivot added cannot
+        reach 0.945: 0.5 + 0.3 * 10/13 + 0.2 = 0.930769.
         """
         complete_readings = [r for r in readings if r.complete and r.seer_hz is not None]
         n_complete = len(complete_readings)
@@ -985,6 +994,10 @@ class MaeshoweDecoder:
             })
 
         return {
+            "evidence_class": "symbolic_model_only",
+            "physical_reading_verified": False,
+            "rune_mapping": "legacy_elder_24_forward_for_model_reproduction",
+            "epigraphic_reader": "maeshowe_epigraphy.py; explicit conventions required",
             "timestamp":       lattice.timestamp,
             "n_total":         lattice.n_total,
             "n_complete":      lattice.n_complete,
@@ -1222,7 +1235,7 @@ def print_lattice_report(lattice: MaeshoweLattice) -> None:
     print(f"  Status: {lattice.gamma_status}")
     print(f"  Kill-switch threshold : {GAMMA_DEAD_FIELD}")
     print(f"  Lighthouse threshold  : {GAMMA_LIGHTHOUSE}")
-    print(f"  Pivot (Nr.15) decoded : {'YES' if lattice.pivot_decoded else 'NO — fieldwork required'}")
+    print(f"  Pivot model input supplied : {'YES — unverified' if lattice.pivot_decoded else 'NO'}")
     print()
     print("PROPHECY")
     print("─" * 55)
@@ -1263,6 +1276,10 @@ def print_lattice_report(lattice: MaeshoweLattice) -> None:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def _cli():
+    import sys
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(
         prog        = "maeshowe_seer_decode",
         description = (
@@ -1291,7 +1308,41 @@ def _cli():
         help="Print the oracle score for Seer integration (0.0-1.0).",
     )
 
+    parser.add_argument(
+        "--epigraphy-input", metavar="JSON_FILE",
+        help="Read supplied branch-count alternatives with explicit alphabet, side and group order; no frequency model.",
+    )
     args = parser.parse_args()
+    if args.epigraphy_input:
+        if args.pivot or args.twig or args.futhork or args.oracle_score:
+            parser.error("--epigraphy-input cannot be combined with symbolic-model inputs")
+        import hashlib
+        import importlib.util
+        from pathlib import Path
+        reader_path = Path(__file__).with_name("maeshowe_epigraphy.py")
+        spec = importlib.util.spec_from_file_location("maeshowe_candidate_reader", reader_path)
+        reader = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(reader)
+        try:
+            data = Path(args.epigraphy_input).read_bytes()
+            records = json.loads(data)
+            if not isinstance(records, list):
+                raise ValueError("input must be a list of mark records")
+            outputs = [reader.interpret(record) for record in records]
+            ids = [record["id"] for record in outputs]
+            if len(ids) != len(set(ids)):
+                raise ValueError("mark identifiers must be unique")
+        except (ValueError, OSError) as exc:
+            parser.error(str(exc))
+        print(json.dumps({
+            "schema": "twig-count-candidates/v1",
+            "input_sha256": hashlib.sha256(data).hexdigest(),
+            "reader_sha256": hashlib.sha256(reader_path.read_bytes()).hexdigest(),
+            "records": outputs,
+        }, indent=2, ensure_ascii=False))
+        return
+    if not args.json:
+        print("Symbolic frequency model: no physical rune reading or historical confidence is verified.")
     decoder = MaeshoweDecoder()
 
     if args.futhork:
@@ -1321,7 +1372,7 @@ def _cli():
         rune = decoder.set_pivot_rune(left, right)
         if rune:
             print(
-                f"\nNr.15 PIVOT DECODED: {rune.unicode} {rune.name} "
+                f"\nNr.15 HYPOTHETICAL MODEL INPUT: {rune.unicode} {rune.name} "
                 f"at {rune.effective_hz:.2f} Hz ({rune.mode} mode)\n"
                 "Recalculating lattice coherence Γ...\n"
             )

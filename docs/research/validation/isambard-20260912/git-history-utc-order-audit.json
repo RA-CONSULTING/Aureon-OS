@@ -1,0 +1,728 @@
+{
+  "path_blob_count": 36396,
+  "utc_order_corrections": 38,
+  "changes": [
+    {
+      "previous": {
+        "path": "AUREON_WHITE_PAPER_RESEARCH_HUB.pdf",
+        "blob": "58563dc4225db585c37820e31f17ee3bc7647066",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "AUREON_WHITE_PAPER_RESEARCH_HUB.pdf",
+        "blob": "58563dc4225db585c37820e31f17ee3bc7647066",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "A_Dynamic_Systems_Model_of_Coherence_Gro.pdf",
+        "blob": "a4e8132f5f3df8e681ec43d6ad15814b9cd64461",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "A_Dynamic_Systems_Model_of_Coherence_Gro.pdf",
+        "blob": "a4e8132f5f3df8e681ec43d6ad15814b9cd64461",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "EPAS_Unified_Architecture_Project_Druid (1).pdf",
+        "blob": "1c7c78af8b53375c5f56bbae4e2eb6dafe66bd46",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "EPAS_Unified_Architecture_Project_Druid (1).pdf",
+        "blob": "1c7c78af8b53375c5f56bbae4e2eb6dafe66bd46",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "Emergent_Symbolic_Resonance_and_Algorith (1).pdf",
+        "blob": "fedcf7d5551cc76d9eed4707f486897245001838",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "Emergent_Symbolic_Resonance_and_Algorith (1).pdf",
+        "blob": "fedcf7d5551cc76d9eed4707f486897245001838",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "Emergent_Symbolic_Resonance_and_Algorith.pdf",
+        "blob": "7294ac9847c12f853c4a42f47c6bbfc7fad3aab0",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "Emergent_Symbolic_Resonance_and_Algorith.pdf",
+        "blob": "7294ac9847c12f853c4a42f47c6bbfc7fad3aab0",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "Emergent_Symbolic_Resonance_and_Lifelike.pdf",
+        "blob": "ac68002b8a990dedbc38f8b9351124e454872cac",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "Emergent_Symbolic_Resonance_and_Lifelike.pdf",
+        "blob": "ac68002b8a990dedbc38f8b9351124e454872cac",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "Feasibility_Assessment_of_the_Electro_Pl (1).pdf",
+        "blob": "72cb478503031d22ee7f65f1f61527cbe417cbad",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "Feasibility_Assessment_of_the_Electro_Pl (1).pdf",
+        "blob": "72cb478503031d22ee7f65f1f61527cbe417cbad",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "HNC_2026_Prediction_Of_2026_WOW_Signal_B.docx",
+        "blob": "35967359981833a6f966f632ae68303ec02247b1",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "HNC_2026_Prediction_Of_2026_WOW_Signal_B.docx",
+        "blob": "35967359981833a6f966f632ae68303ec02247b1",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "HNC_Evolutionary_Framework.pdf",
+        "blob": "755e5f135234948d0b5f32253fa3943b9d06ff0a",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "HNC_Evolutionary_Framework.pdf",
+        "blob": "755e5f135234948d0b5f32253fa3943b9d06ff0a",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "HNC_Grand_Unified_v2_PrimarySource_Lecke.docx",
+        "blob": "1f021db64d3a8c4596b3ca770b79df62d0229dcd",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "HNC_Grand_Unified_v2_PrimarySource_Lecke.docx",
+        "blob": "1f021db64d3a8c4596b3ca770b79df62d0229dcd",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "HNC_MYCELIUM_WHITEPAPER_1.docx",
+        "blob": "3166eb54e198238dfbbb89c98cf03689b3ed4f2e",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "HNC_MYCELIUM_WHITEPAPER_1.docx",
+        "blob": "3166eb54e198238dfbbb89c98cf03689b3ed4f2e",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "Harmonic_Nexus_Theory_Part_2_Validation.pdf",
+        "blob": "b62aaf942c926434d9f2cd4b723ca942c501b5f6",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "Harmonic_Nexus_Theory_Part_2_Validation.pdf",
+        "blob": "b62aaf942c926434d9f2cd4b723ca942c501b5f6",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "Harmonic_Nexus_Theory_of_Becoming (1).pdf",
+        "blob": "c5b75c31a1a2cf9f02d500d28acf8940fca4f3f1",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "Harmonic_Nexus_Theory_of_Becoming (1).pdf",
+        "blob": "c5b75c31a1a2cf9f02d500d28acf8940fca4f3f1",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "Harmonic_Reality_Framework_and_the_Maste.pdf",
+        "blob": "5cb500f7ab72ac834f7ff7b4f204eacf87fd6a76",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "Harmonic_Reality_Framework_and_the_Maste.pdf",
+        "blob": "5cb500f7ab72ac834f7ff7b4f204eacf87fd6a76",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "Lambda_Materialization_Gradient_Integrit.docx",
+        "blob": "3f034d1eaade59ced2e95b3ce6521df028b4c530",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "Lambda_Materialization_Gradient_Integrit.docx",
+        "blob": "3f034d1eaade59ced2e95b3ce6521df028b4c530",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "Lumina_Subsystem_Integrated_Quantum_Ampl (2).pdf",
+        "blob": "3f7f563536b21c49f387dba472278a49b39677c5",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "Lumina_Subsystem_Integrated_Quantum_Ampl (2).pdf",
+        "blob": "3f7f563536b21c49f387dba472278a49b39677c5",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "Maeshowe_Seer_Decode_Report (2).docx",
+        "blob": "39639ad8340674611a0a2b600859e943b531865a",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "Maeshowe_Seer_Decode_Report (2).docx",
+        "blob": "39639ad8340674611a0a2b600859e943b531865a",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "Modeling_Light_Dynamics_Through_Astronom (2).pdf",
+        "blob": "e0b97a108bc2a8eca7a2265bf8e51420272d5688",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "Modeling_Light_Dynamics_Through_Astronom (2).pdf",
+        "blob": "e0b97a108bc2a8eca7a2265bf8e51420272d5688",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "Project_Alfie_A_Theoretical_Framework_an (2).pdf",
+        "blob": "376805d8f9b5d3b425ec77deba228981bf46c258",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "Project_Alfie_A_Theoretical_Framework_an (2).pdf",
+        "blob": "376805d8f9b5d3b425ec77deba228981bf46c258",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "Project_Druid_Technical_Architecture_for.pdf",
+        "blob": "66563ad793297ae3c87493a5df7d675566b99a32",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "Project_Druid_Technical_Architecture_for.pdf",
+        "blob": "66563ad793297ae3c87493a5df7d675566b99a32",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "Quantum_Gravity_in_the_Act_A_Two_Stage_C (2).pdf",
+        "blob": "c14f53c7a5de662040131af8efcbc7806a36daac",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "Quantum_Gravity_in_the_Act_A_Two_Stage_C (2).pdf",
+        "blob": "c14f53c7a5de662040131af8efcbc7806a36daac",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "Quantum_Gravity_in_the_Act_QGITA_Lightho (1).pdf",
+        "blob": "01353784743c7d6300f1712d1e1e9a5ebecdb1ea",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "Quantum_Gravity_in_the_Act_QGITA_Lightho (1).pdf",
+        "blob": "01353784743c7d6300f1712d1e1e9a5ebecdb1ea",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "THE_PHI_SQUARED_CHAIN_Sumer_to_Rome_to_N.pdf",
+        "blob": "d958502c539e450a288ae9d65de9addaf01e8acc",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "THE_PHI_SQUARED_CHAIN_Sumer_to_Rome_to_N.pdf",
+        "blob": "d958502c539e450a288ae9d65de9addaf01e8acc",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "Tandem_in_Unity_A_Unified_Framework_for (1).pdf",
+        "blob": "509e414c259d6372c4df8ae9ce041af389429af9",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "Tandem_in_Unity_A_Unified_Framework_for (1).pdf",
+        "blob": "509e414c259d6372c4df8ae9ce041af389429af9",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "Tandem_in_Unity_A_Unified_Framework_for.pdf",
+        "blob": "98320919ad2e556f0ea307253b4cdf211609d9f9",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "Tandem_in_Unity_A_Unified_Framework_for.pdf",
+        "blob": "98320919ad2e556f0ea307253b4cdf211609d9f9",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "Tandem_in_Unity_Unifying_Resonant_Fields (1).pdf",
+        "blob": "c821faa2f07795e66c1b56184c6f277f296c3e2b",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "Tandem_in_Unity_Unifying_Resonant_Fields (1).pdf",
+        "blob": "c821faa2f07795e66c1b56184c6f277f296c3e2b",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "Tandem_in_Unity_Unifying_Resonant_Fields.pdf",
+        "blob": "8cc92e4516b5b001c870703a6c1aac1875b637fa",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "Tandem_in_Unity_Unifying_Resonant_Fields.pdf",
+        "blob": "8cc92e4516b5b001c870703a6c1aac1875b637fa",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "The_Barons_Banner.pdf",
+        "blob": "7eeb9e00469dca6bcb3c968645a0b37e38fbabb6",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "The_Barons_Banner.pdf",
+        "blob": "7eeb9e00469dca6bcb3c968645a0b37e38fbabb6",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "The_Dormant_Seed (2).docx",
+        "blob": "189bdc0dd4d8303a47cbbeaf473fa7161962197e",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "The_Dormant_Seed (2).docx",
+        "blob": "189bdc0dd4d8303a47cbbeaf473fa7161962197e",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "The_HNC_and_the_Aureon_Trading_Framework.pdf",
+        "blob": "202d2daed269458f20d596c85808a56c7cb23107",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "The_HNC_and_the_Aureon_Trading_Framework.pdf",
+        "blob": "202d2daed269458f20d596c85808a56c7cb23107",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "The_Harmonic_Nexus_Core_HNC_A_Unified_Fr (1).pdf",
+        "blob": "e99a668b8eab78be173c56e777a2df550696758e",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "The_Harmonic_Nexus_Core_HNC_A_Unified_Fr (1).pdf",
+        "blob": "e99a668b8eab78be173c56e777a2df550696758e",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "The_Harmonic_Nexus_Core_and_Auris_Conjec (1).pdf",
+        "blob": "47f6741147ce2593aaee2eba15ce660931489cdd",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "The_Harmonic_Nexus_Core_and_Auris_Conjec (1).pdf",
+        "blob": "47f6741147ce2593aaee2eba15ce660931489cdd",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "The_LuminaCell_v2_Architecture_A_High_Po (1).pdf",
+        "blob": "980573e22bcc5a8917028913dbe747e1abd7a791",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "The_LuminaCell_v2_Architecture_A_High_Po (1).pdf",
+        "blob": "980573e22bcc5a8917028913dbe747e1abd7a791",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "The_Math_Angel_Protocol_A_Mathematical_F.docx",
+        "blob": "ba89efce5a7a902ccb1a25e36b19bdf75f77042b",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "The_Math_Angel_Protocol_A_Mathematical_F.docx",
+        "blob": "ba89efce5a7a902ccb1a25e36b19bdf75f77042b",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "The_Sagittarius_Convergence_Leckey_2026 (2).docx",
+        "blob": "3a498d539e7b53d1d7349ec02ae44c20c259bba1",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "The_Sagittarius_Convergence_Leckey_2026 (2).docx",
+        "blob": "3a498d539e7b53d1d7349ec02ae44c20c259bba1",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "Unified_Framework_of_Symbolic_Emergence (1).pdf",
+        "blob": "f5d0495e534126df8d58c41c13c0abf3a6a268a1",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "Unified_Framework_of_Symbolic_Emergence (1).pdf",
+        "blob": "f5d0495e534126df8d58c41c13c0abf3a6a268a1",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "Unified_Framework_of_Symbolic_Emergence.pdf",
+        "blob": "f5d0495e534126df8d58c41c13c0abf3a6a268a1",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "Unified_Framework_of_Symbolic_Emergence.pdf",
+        "blob": "f5d0495e534126df8d58c41c13c0abf3a6a268a1",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    },
+    {
+      "previous": {
+        "path": "What_Does_Life_Mean_To_You_Validation_of.pdf",
+        "blob": "e95c3ed381efdd55cc042e5b0389cfad9f0f0713",
+        "commit": "9b95137f4ef5058c9ae2bd83e8efef444b487833",
+        "authored": "2026-04-05T08:28:04Z",
+        "committed": "2026-04-05T08:28:04Z",
+        "change": "A"
+      },
+      "utc_corrected": {
+        "path": "What_Does_Life_Mean_To_You_Validation_of.pdf",
+        "blob": "e95c3ed381efdd55cc042e5b0389cfad9f0f0713",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A",
+        "utc": 1775377574
+      }
+    }
+  ]
+}

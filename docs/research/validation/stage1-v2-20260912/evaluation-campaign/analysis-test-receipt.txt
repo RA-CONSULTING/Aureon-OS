@@ -1,0 +1,9 @@
+test_holm_preserves_input_order (__main__.AnalysisChecks.test_holm_preserves_input_order) ... ok
+test_identical_conditions_have_zero_effect (__main__.AnalysisChecks.test_identical_conditions_have_zero_effect) ... ok
+test_known_paired_contrast_and_interaction (__main__.AnalysisChecks.test_known_paired_contrast_and_interaction) ... ok
+test_reject_wrong_independent_unit (__main__.AnalysisChecks.test_reject_wrong_independent_unit) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.321s
+
+OK

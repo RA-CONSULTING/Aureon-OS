@@ -1,0 +1,16 @@
+{
+  "job_id": "6505304",
+  "submitted_utc": "2026-09-12T15:55:41.099077+00:00",
+  "resource_decision": {
+    "pilot_job": "6505275",
+    "accounting": "JobID|State|ExitCode|ElapsedRaw|AllocNodes\n6505275|COMPLETED|0:0|16|1\n",
+    "tests_sha256": "b777b3226e331f47e96572428eba05a339817855b75883ae1ba8e58a10b0b745",
+    "projection_seconds": 89.34565964899957,
+    "with_margin_seconds": 194.01848947349936,
+    "ceiling_seconds": 600,
+    "nodes": 1,
+    "gpus": 4,
+    "new_test_examples": 1280000,
+    "new_calibration_examples": 384000
+  }
+}

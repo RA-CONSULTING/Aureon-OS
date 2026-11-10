@@ -1,0 +1,1 @@
+Audit v1 job 6504298 failed because the integer file-size attribute was accidentally called as a function. This version removes those parentheses only. All scientific inputs, thresholds, simulation results and prior evidence remain unchanged. The original 45-second pilot 6504297 is re-audited; it is not rerun.

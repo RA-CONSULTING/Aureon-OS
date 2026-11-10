@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "synthetic_series": 12,
+  "positive_negative_linear_and_constant": true,
+  "independent_frozen_trend_match": true,
+  "source_sha256": "9a9f32bae080e7b5afd5b77e108a0f1543d053d82e7fb82756af0341d510e2a4",
+  "test_sha256": "35c444448ce2310df1fdfb253c5064f37ab58b7b06961f10e4a5837d32901617"
+}

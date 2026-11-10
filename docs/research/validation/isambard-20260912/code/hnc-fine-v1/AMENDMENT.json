@@ -1,0 +1,20 @@
+{
+  "schema": "hnc-fine-amendment/v1",
+  "reason": "Four-million-step scan reached the 0.0005 beta-grid resolution limit; expand equation parameter coverage and observe a finer grid for longer.",
+  "beta_spacing": 5e-06,
+  "main_grid": [
+    0.9995,
+    1.0015
+  ],
+  "cells": 128,
+  "trajectories": 6303616,
+  "horizon_steps": 16777216,
+  "preceding_audit": "6497683",
+  "mathematical_recurrence": "unchanged; new source adds graceful stop checks and completed-step reporting only",
+  "original_kernel_sha256": "bb0e231ec1a39abc5b1096413fab6cbd3c68ce2934b7e4ba82fbfb2566b6fe9d",
+  "new_kernel_sha256": "1eac7d95222b480e3e54d02c0e92d939a2b6ac39d5b2e33c1d196f0dec96014c",
+  "reference_provenance": "author correction; oldest matching archival beta=1 document still unrecovered",
+  "interruption_policy": "Stop callback checked every 1024 completed steps; atomic checkpoint and receipt report actual completed step. Resume only hash/identity-matched receipts, preserving interrupted attempts.",
+  "production_gate": "Bitwise parity, interrupted resume equivalence, signal delivery, configuration mismatch rejection and corruption rejection must pass on Isambard before production submission.",
+  "scope": "computational simulation; no global/asymptotic or physical validation claim"
+}

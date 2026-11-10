@@ -1,0 +1,179 @@
+{
+  "schema": "acoustics-amended-gates/v1",
+  "generated_utc": "2026-09-12T10:03:54.510448+00:00",
+  "claim_class": "C2 computational simulation",
+  "historical_frozen_verdict": "INCONCLUSIVE",
+  "amended_numerical_assessment": "SUBSTANTIATED-GENERIC",
+  "post_hoc_amendment": true,
+  "gates": {
+    "G1_primary_hit_2pct": true,
+    "G1_strict_hit_1pct": false,
+    "G2_octave": true,
+    "G3_distinctiveness": false,
+    "G4_amended_schumann": false
+  },
+  "primary": {
+    "f_nearest_hz": [
+      16.37998097068132,
+      32.75904548343153
+    ],
+    "relative_target_errors": [
+      0.01110993646180992,
+      0.011081650723195356
+    ],
+    "hit_2pct": true,
+    "hit_1pct": false,
+    "octave_ratio": 1.9999440501223564,
+    "octave_relative_error": 2.7974938821784257e-05,
+    "octave_gate": true,
+    "closer_to": "octave",
+    "schumann_octave_relative_distances": [
+      0.04597579633980331,
+      0.03079747090439258
+    ],
+    "schumann_adjacency_5pct": true
+  },
+  "validation": {
+    "V1_all26_discrete_match": true,
+    "V1_residual_acceptance_all_grids": true,
+    "production_residual_target": true,
+    "V2_second_order": true,
+    "V3_amended_random_solver": true,
+    "V4_coffer_first8_at_original_015_threshold": true,
+    "V5_empty_coffer": true,
+    "geometry_all26_residual_and_reported_orthogonality": true
+  },
+  "bare_all26_max_relative_errors": {
+    "0.15": 9.522341105429171e-14,
+    "0.10": 1.561677888343882e-14,
+    "0.05": 7.829860366399039e-14,
+    "0.025": 5.127112930416018e-12
+  },
+  "bare_residuals": {
+    "0.15": 2.3612064285647123e-11,
+    "0.10": 2.3625420239303494e-10,
+    "0.05": 6.480960285945513e-09,
+    "0.025": 1.079170878367729e-07
+  },
+  "convergence_order": 1.997515737615734,
+  "coffer_first8_galerkin_vs_fd_015": 0.005115941419332534,
+  "coffer_first8_galerkin_vs_fd_010": 0.0032601501415964267,
+  "coffer_all26_galerkin_vs_fd_010": 0.010961422264615536,
+  "null_hit_2pct": 0.0628,
+  "null_hit_1pct": 0.0315,
+  "schumann": {
+    "chamber_statistic": 0.021632264872435046,
+    "null_at_least_as_close": 6402,
+    "n": 10000,
+    "plus_one_rank": 0.6402359764023597
+  },
+  "geometry_robustness": {
+    "coffer_0.2": {
+      "f_nearest_hz": [
+        16.434121484036943,
+        32.37666890102087
+      ],
+      "relative_target_errors": [
+        0.014451943459070611,
+        0.0007200956475039436
+      ],
+      "hit_2pct": true,
+      "hit_1pct": false,
+      "octave_ratio": 1.9700882053518651,
+      "octave_relative_error": 0.014955897324067435,
+      "octave_gate": true,
+      "closer_to": "octave",
+      "schumann_octave_relative_distances": [
+        0.0494330449576592,
+        0.03373783208878897
+      ],
+      "schumann_adjacency_5pct": true
+    },
+    "coffer_0.15": {
+      "f_nearest_hz": [
+        16.429956394230924,
+        32.46325618930125
+      ],
+      "relative_target_errors": [
+        0.014194839150057089,
+        0.0019523515216434977
+      ],
+      "hit_2pct": true,
+      "hit_1pct": false,
+      "octave_ratio": 1.9758577205171477,
+      "octave_relative_error": 0.012071139741426151,
+      "octave_gate": true,
+      "closer_to": "octave",
+      "schumann_octave_relative_distances": [
+        0.049167074982817624,
+        0.03650243260859667
+      ],
+      "schumann_adjacency_5pct": true
+    },
+    "coffer_0.1": {
+      "f_nearest_hz": [
+        16.434844762414095,
+        32.50656340534556
+      ],
+      "relative_target_errors": [
+        0.014496590272475015,
+        0.003288993992146947
+      ],
+      "hit_2pct": true,
+      "hit_1pct": false,
+      "octave_ratio": 1.9779051080352712,
+      "octave_relative_error": 0.011047445982364401,
+      "octave_gate": true,
+      "closer_to": "octave",
+      "schumann_octave_relative_distances": [
+        0.04947923131635341,
+        0.03788516619877265
+      ],
+      "schumann_adjacency_5pct": true
+    },
+    "opening_0.1": {
+      "f_nearest_hz": [
+        16.674212386737338,
+        32.56059978821247
+      ],
+      "relative_target_errors": [
+        0.029272369551687574,
+        0.004956783586804709
+      ],
+      "hit_2pct": false,
+      "hit_1pct": false,
+      "octave_ratio": 1.9527518921440128,
+      "octave_relative_error": 0.023624053927993605,
+      "octave_gate": false,
+      "closer_to": "octave",
+      "schumann_octave_relative_distances": [
+        0.06476452022588364,
+        0.036668645319157575
+      ],
+      "schumann_adjacency_5pct": false
+    }
+  },
+  "limitations": [
+    "Original 300-iteration random-start failure remains unchanged.",
+    "New residual and orthogonality claims use recorded solver checks; eigenvectors were not retained for independent recomputation.",
+    "First-eight cross-method threshold is inherited from the old analyser; the all-26 comparison is reported without inventing a new pass threshold.",
+    "The doorway is a simplified pressure-release stub, not a calibrated measurement of the real chamber.",
+    "Dimension detuning does not test coffer-position uncertainty or real material/radiation loss.",
+    "Current comparisons validate selected numerical outputs, not archaeological intention or physical tuning."
+  ],
+  "inputs_sha256": {
+    "work/september/kings-chamber-acoustics/inputs/PREREGISTRATION.md": "1ca670d271987117f2469b7eeafde422627237b85f537d47c3c3904f33347276",
+    "work/september/kings-chamber-acoustics/verdict.json": "ad4e30797ba5d6ce2c6c958bc80f5b449fe3ee3845e89f453afabeb0f0718a8c",
+    "outputs/acoustics-repair-audit-6497982.json": "1c9ce400b4f85a8df786c920b95f1bff3fc9589c1b72569a6570cb1121af4c2a",
+    "outputs/acoustics-geometry-audit-6498032.json": "78b50375661b05f6eb3ba249e646de12bf3c33790ed50c31656e9486d79757f8",
+    "acoustics-repair-6497982.tar.gz": "8cf756dbdf59e6d66a51816226e59d2b08585b05c96c904f5539f6709a927679",
+    "work/september/kings-chamber-acoustics/runs/run-6369146/bare-0.15.json": "74f5d9e4a4fcde0a0d9b753a9b549872b58dfda6804ebe50a091c929e02cc2c5",
+    "work/september/kings-chamber-acoustics/runs/run-6369146/bare-0.10.json": "4aeaf478bbdb3ecb886fc2c22784d5c7de6fe87c35e0074f56ea8c8dd5c5e9fc",
+    "work/september/kings-chamber-acoustics/runs/run-6369146/bare-0.05.json": "00d3fc210f02951786061933733df8cdabe1d1a65f34a067502549a512b8fa01",
+    "work/september/kings-chamber-acoustics/runs/run-6369146/bare-0.025.json": "7c21a8e6eb90755283f73d398431cf35c95567a25a809ed76a34fa5bcfa5abc4",
+    "outputs/result-6498033.json": "f16e48df012242562835414fd05c5c6d886540f6e5ec8f54ec5dadf1156ecea8",
+    "outputs/result-6498034.json": "ba6f774d461e35bec9cf3c0db4e895bc7b2dd7fa14f5d9c463db122bde4a8e16",
+    "outputs/result-6498035.json": "adf2d91801be0d03614b6d4427d27ef219bb6b80be20a84818a52d53626f25de",
+    "outputs/result-6498032.json": "3a9022662413290138330e236dd623c52852d59925d824ebc0a1b1d539b860c3"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "schema": "stage1-recovery/v1",
+  "date": "2026-09-12",
+  "authorization": "Current user goal: fix all experiments and stage useful expanded runs.",
+  "old_run": "6347216",
+  "old_missing_shard": 99,
+  "old_exit": "30:0",
+  "root_cause": "vLLM requested 85.5 GiB (90%) but only 84.59 GiB of 95 GiB was free on cuda:0.",
+  "changes": [
+    "Isolated new run directory; old artifacts preserved.",
+    "GPU memory utilization reservation reduced from 0.90 to 0.85.",
+    "Fifteen-minute ceiling, one node/four GPUs.",
+    "Strict checks of pinned benchmark, protocol, repository source and serving YAML, plus vLLM version.",
+    "Keep output hashes and benchmark exit code even when invalid model JSON makes the frozen benchmark exit 1."
+  ],
+  "unchanged": [
+    "Source commit, model snapshot, benchmark code, scenario seed for shard 99, 12 conditions, scoring, 2 repetitions, concurrency 32, temperature 0 and max tokens 8192."
+  ],
+  "boundary": "Data recovery only. Original frozen full campaign remains invalid; a later combined analysis must be explicitly retrospective and retain all invalid model responses as scored failures. Runtime memory reservation differs and temporal rerun is not independent confirmation.",
+  "worst_case_physical_node_hours": 0.25,
+  "worst_case_gpu_hours": 1.0
+}

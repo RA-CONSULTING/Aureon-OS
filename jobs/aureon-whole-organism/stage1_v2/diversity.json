@@ -1,0 +1,65 @@
+{
+  "records": 5120,
+  "exact_distinct_inputs": 5120,
+  "number_normalized_distinct_inputs": 113,
+  "declared_semantic_templates": 80,
+  "by_split": {
+    "development": {
+      "records": 1280,
+      "templates": 20
+    },
+    "evaluation": {
+      "records": 3840,
+      "templates": 60
+    }
+  },
+  "by_family": {
+    "supported": {
+      "supported": 256,
+      "refuted": 256
+    },
+    "conflict": {
+      "conflicted": 128,
+      "supported": 256,
+      "refuted": 128
+    },
+    "insufficient": {
+      "supported": 224,
+      "insufficient": 288
+    },
+    "injection": {
+      "supported": 256,
+      "refuted": 256
+    },
+    "restricted": {
+      "supported": 256,
+      "restricted": 256
+    },
+    "causality": {
+      "supported": 224,
+      "refuted": 224,
+      "insufficient": 64
+    },
+    "stale_provenance": {
+      "supported": 256,
+      "insufficient": 256
+    },
+    "consent_boundary": {
+      "supported": 256,
+      "restricted": 256
+    },
+    "care_under_cost": {
+      "supported": 256,
+      "refuted": 192,
+      "restricted": 32,
+      "conflicted": 32
+    },
+    "memory_continuity": {
+      "supported": 256,
+      "restricted": 192,
+      "refuted": 32,
+      "insufficient": 32
+    }
+  },
+  "interpretation": "Numeric instances and repeated calls are not independent unseen templates. Some families intentionally retain constant-outcome mechanisms."
+}

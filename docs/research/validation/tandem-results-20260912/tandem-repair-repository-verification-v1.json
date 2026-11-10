@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "verified_utc": "2026-09-12T17:08:49.995099+00:00",
+  "staged_files": 88,
+  "payload_hashes": 87,
+  "archive_sha256": "a759487d039ccd1144e6a1ae7544335187b5a3f0e561367efea64254a9868510",
+  "paths": [
+    "docs/research/validation/tandem-repair-20260912",
+    "jobs/aureon-whole-organism/tandem_repair_v1",
+    "jobs/aureon-whole-organism/tandem_full_v1",
+    "jobs/aureon-whole-organism/tandem_audit_v1"
+  ],
+  "preserved_source_final_blank_line_exceptions": [],
+  "preserved_original_source_trailing_whitespace": "jobs/aureon-whole-organism/tandem_repair_v1/repository_harmonic_reality.py",
+  "original_source_exactly_matches_pinned_HEAD": true,
+  "new_raw_per_trial_arrays_outside_git": true,
+  "commit_created": false,
+  "published": false
+}

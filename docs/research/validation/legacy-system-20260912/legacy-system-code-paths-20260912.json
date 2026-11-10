@@ -1,0 +1,925 @@
+{
+  "aureon/governance/celtic_voice_bank.py": [
+    {
+      "path": "aureon/governance/celtic_voice_bank.py",
+      "blob": "96d47996178f1e19a3e27414032320cb424ffcb1",
+      "commit": "f5fb1916c07ac26eb7fc38c34ff2dc9bd029e21d",
+      "authored": "2026-08-14T07:13:53+01:00",
+      "committed": "2026-08-14T07:13:53+01:00",
+      "change": "A",
+      "utc": 1786688033
+    }
+  ],
+  "aureon/wisdom/celtic_preemptive_strike.py": [
+    {
+      "path": "aureon/wisdom/celtic_preemptive_strike.py",
+      "blob": "345136028dfceb4ecde88bad4a90a36e1091526f",
+      "commit": "f5fb1916c07ac26eb7fc38c34ff2dc9bd029e21d",
+      "authored": "2026-08-14T07:13:53+01:00",
+      "committed": "2026-08-14T07:13:53+01:00",
+      "change": "M",
+      "utc": 1786688033
+    },
+    {
+      "path": "aureon/wisdom/celtic_preemptive_strike.py",
+      "blob": "9fe3b563ef88fc9403b3c0b5365b6ecdbd89d433",
+      "commit": "4ea3e68a23b9a43e3f2ec7976954cefc236c487b",
+      "authored": "2026-04-19T15:31:55+01:00",
+      "committed": "2026-04-19T15:31:55+01:00",
+      "change": "M",
+      "utc": 1776609115
+    },
+    {
+      "path": "aureon/wisdom/celtic_preemptive_strike.py",
+      "blob": "ac8419295f4bc66b6a770189b7648c1c1fec4b80",
+      "commit": "18fe19d78a75e2376088f9a30bf961f3c1a4d225",
+      "authored": "2026-03-25T06:30:25Z",
+      "committed": "2026-03-25T06:30:25Z",
+      "change": "A",
+      "utc": 1774420225
+    }
+  ],
+  "tests/test_celtic_voice_bank.py": [
+    {
+      "path": "tests/test_celtic_voice_bank.py",
+      "blob": "cc4fd636abcb22e3c7c545c07a2ae312823e6efe",
+      "commit": "f5fb1916c07ac26eb7fc38c34ff2dc9bd029e21d",
+      "authored": "2026-08-14T07:13:53+01:00",
+      "committed": "2026-08-14T07:13:53+01:00",
+      "change": "A",
+      "utc": 1786688033
+    }
+  ],
+  "wisdom_data/celtic_wisdom.json": [
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "829db19563e5708ece92eca722a58f9e46c73d9e",
+      "commit": "f5fb1916c07ac26eb7fc38c34ff2dc9bd029e21d",
+      "authored": "2026-08-14T07:13:53+01:00",
+      "committed": "2026-08-14T07:13:53+01:00",
+      "change": "M",
+      "utc": 1786688033
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "4e30492fec56d51e103cde3cfc58aae8b34ee6bc",
+      "commit": "cc3909ae7ea57b03677004fd19afdf2864a35805",
+      "authored": "2026-08-05T19:11:17Z",
+      "committed": "2026-08-05T19:11:17Z",
+      "change": "M",
+      "utc": 1785957077
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "997afbf63b841c4a0d6ed7ab01ce73d5d0ad7d1b",
+      "commit": "5696f488eeec4241e10a7a1096ff795a26e131c1",
+      "authored": "2026-08-05T18:21:52Z",
+      "committed": "2026-08-05T18:21:52Z",
+      "change": "M",
+      "utc": 1785954112
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "30da94ebae64fbc30a7a500d54950dd415003802",
+      "commit": "c7dea54f14ca6296875259e38e13308655f43801",
+      "authored": "2026-07-28T05:03:57Z",
+      "committed": "2026-07-28T05:03:57Z",
+      "change": "M",
+      "utc": 1785215037
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "3d6ab9dac3806e156e454ac04db835628b28f547",
+      "commit": "77017dcda1e14f822112a8f2c7000fb50fc93dd9",
+      "authored": "2026-07-28T03:13:13Z",
+      "committed": "2026-07-28T03:13:13Z",
+      "change": "M",
+      "utc": 1785208393
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "8841f88b058f75f8bb19e001a9d91eafe498860d",
+      "commit": "472de763969aea2adf7bb61ca92688ca45f76ffd",
+      "authored": "2026-07-28T02:30:18Z",
+      "committed": "2026-07-28T02:30:18Z",
+      "change": "M",
+      "utc": 1785205818
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "f711386a7beac4069c46d30fc8955dc5660ae8a5",
+      "commit": "cb39e1531bc82664a3bcb7b717fab1a2fa03fbbb",
+      "authored": "2026-07-27T21:12:45Z",
+      "committed": "2026-07-27T21:12:45Z",
+      "change": "M",
+      "utc": 1785186765
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "752f276be895739d87ed3062026729e348ccc0c3",
+      "commit": "99e855a077ebf169b3ef28b0f1d8497e6069888f",
+      "authored": "2026-07-27T21:00:04Z",
+      "committed": "2026-07-27T21:00:04Z",
+      "change": "M",
+      "utc": 1785186004
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "bbefc9b7d3e07bd8c43d9f07c3acf2b55d04131d",
+      "commit": "cf8eab643d306197df967e0d0e5dca4d8e1a0500",
+      "authored": "2026-07-26T00:49:13Z",
+      "committed": "2026-07-26T00:49:13Z",
+      "change": "M",
+      "utc": 1785026953
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "990dbfee5ea3a04a2104021f9c92958d18b611a6",
+      "commit": "939ea07d63431c6858c7e470ca825fee766453fc",
+      "authored": "2026-07-26T00:24:56Z",
+      "committed": "2026-07-26T00:24:56Z",
+      "change": "M",
+      "utc": 1785025496
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "d4a9680aa73580ebaba4e455270f3ab64a87e692",
+      "commit": "75b5f5aa1399a5c77278216f808374f09f554c45",
+      "authored": "2026-07-26T00:18:38Z",
+      "committed": "2026-07-26T00:18:38Z",
+      "change": "M",
+      "utc": 1785025118
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "a51990d6cdbe488ce47c78267a50ea65822647f7",
+      "commit": "b73131384ce85cb574968b8b4987cd82b7592a6e",
+      "authored": "2026-07-26T00:01:43Z",
+      "committed": "2026-07-26T00:01:43Z",
+      "change": "M",
+      "utc": 1785024103
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "7d7309007a6eee926b474c0ea59f3e0527a6bb6d",
+      "commit": "b5912f7fae1c30c14b2c544858fddaf35d9cf02a",
+      "authored": "2026-07-25T23:35:38Z",
+      "committed": "2026-07-25T23:35:38Z",
+      "change": "M",
+      "utc": 1785022538
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "693130d682ea4972dbc57f157241f943972b748e",
+      "commit": "547fef72710687710a99a4eb22fc7e5fc9407b05",
+      "authored": "2026-07-25T23:07:13Z",
+      "committed": "2026-07-25T23:07:13Z",
+      "change": "M",
+      "utc": 1785020833
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "5994dd5b4ec23b19d60ed5ec17ecad9149ab5f1a",
+      "commit": "c54df2086a983d1bcb572a8c707c8d32efb3e483",
+      "authored": "2026-07-25T21:55:19Z",
+      "committed": "2026-07-25T21:55:19Z",
+      "change": "M",
+      "utc": 1785016519
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "709a800752f2d1d3a5d845d916fc60940086b060",
+      "commit": "deb0b0a3fe0f50b50c5c9e16414460bc4e573a41",
+      "authored": "2026-07-25T21:39:10Z",
+      "committed": "2026-07-25T21:39:10Z",
+      "change": "M",
+      "utc": 1785015550
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "297e44da5d80091d05c1736d61cb607ada9045fb",
+      "commit": "52f667fe9f2ebc1b827dc433c1005368f5d29dfc",
+      "authored": "2026-01-27T16:51:41Z",
+      "committed": "2026-01-27T16:51:41Z",
+      "change": "M",
+      "utc": 1769532701
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "6f8d5fa2902e7434b2a0cbbd31a52f05b8fce3f3",
+      "commit": "d9141b17f995af57988bc6636e2e871365b87fc8",
+      "authored": "2026-01-24T19:02:50Z",
+      "committed": "2026-01-24T19:02:50Z",
+      "change": "M",
+      "utc": 1769281370
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "5051d698781e2dc7f4419137cf2ff30fce74c3c0",
+      "commit": "4f2ab6979fa41850c64c2947a82b96db300df52f",
+      "authored": "2026-01-17T19:04:41Z",
+      "committed": "2026-01-17T19:04:41Z",
+      "change": "M",
+      "utc": 1768676681
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "bddbef225a1fa94a1dd5d4b12168e36cb50a47de",
+      "commit": "1081f1fda6e32161313fc00ae8521c90126f3176",
+      "authored": "2026-01-03T09:30:17Z",
+      "committed": "2026-01-03T09:30:17Z",
+      "change": "M",
+      "utc": 1767432617
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "d56b46b73004f36b7935792622192fb6acb5b910",
+      "commit": "d2f03558b842821a4ea0bf7ac5e456143c50f03f",
+      "authored": "2026-01-02T11:07:06Z",
+      "committed": "2026-01-02T11:07:06Z",
+      "change": "M",
+      "utc": 1767352026
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "c6d01a0926b11f8236fe42910446167f38356f76",
+      "commit": "569ad54e24164b8347a26153c91ecb1f4166eb5d",
+      "authored": "2026-01-01T16:30:54Z",
+      "committed": "2026-01-01T16:30:54Z",
+      "change": "M",
+      "utc": 1767285054
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "d487d0ade54f8a1d198c5eecaf9f301f48c7245f",
+      "commit": "bf3000c2b1ae1e270e4d4ef50df1b71809dc16cd",
+      "authored": "2025-12-30T18:32:24Z",
+      "committed": "2025-12-30T18:32:24Z",
+      "change": "M",
+      "utc": 1767119544
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "1ad158ca6558164866767aa6e20bd4a68a70027d",
+      "commit": "c5366edd6c9df66f1c3f16f15c2bcda8a046ef94",
+      "authored": "2025-12-27T19:38:57Z",
+      "committed": "2025-12-27T19:38:57Z",
+      "change": "M",
+      "utc": 1766864337
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "ec88a44b2ebbe07ae89c1fb75147c8293e49fe13",
+      "commit": "38351ae3c537dc3ca8d31aa0a2da08d225eba2ca",
+      "authored": "2025-12-18T18:20:35Z",
+      "committed": "2025-12-18T18:21:35Z",
+      "change": "M",
+      "utc": 1766082095
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "40bf17f216ea091c0bc7f7982a5446a6ed6bb6cd",
+      "commit": "6c11ef3277c1612430c9d8ff905a3d947405ca89",
+      "authored": "2025-12-15T10:31:58Z",
+      "committed": "2025-12-15T10:31:58Z",
+      "change": "M",
+      "utc": 1765794718
+    },
+    {
+      "path": "wisdom_data/celtic_wisdom.json",
+      "blob": "a434ee5d790146d06f8e3cbbedf64d2133a0352c",
+      "commit": "5d334d0b0b1c849295af0243428e094667c0b501",
+      "authored": "2025-12-15T09:47:28Z",
+      "committed": "2025-12-15T10:02:29Z",
+      "change": "A",
+      "utc": 1765792949
+    }
+  ],
+  "Kings_Accounting_Suite/aureon_systems/test_queen_celtic_wisdom.py": [
+    {
+      "path": "Kings_Accounting_Suite/aureon_systems/test_queen_celtic_wisdom.py",
+      "blob": "1f9cba814c1822605ad5fab63d91768c38b79142",
+      "commit": "6fcb47f9fccf84181608b487f5bd73560fa9ba05",
+      "authored": "2026-05-13T22:34:39+01:00",
+      "committed": "2026-05-13T22:34:39+01:00",
+      "change": "A",
+      "utc": 1778708079
+    }
+  ],
+  "aureon/decoders/celtic_ogham.py": [
+    {
+      "path": "aureon/decoders/celtic_ogham.py",
+      "blob": "ab6830d0b940191e916ebfe90ca8823f340ecd80",
+      "commit": "dfea2e36ab062500a2f79b6784d2cd1a1a12dbca",
+      "authored": "2026-03-09T15:13:06Z",
+      "committed": "2026-03-09T15:13:06Z",
+      "change": "A",
+      "utc": 1773069186
+    }
+  ],
+  "aureon/wisdom/celtic_warfare_live.py": [
+    {
+      "path": "aureon/wisdom/celtic_warfare_live.py",
+      "blob": "ece701a38107b9bc56c4054ff47ae2b707ac8a57",
+      "commit": "19ff07559c56d707ef1ad0373df71224cd3d4dd9",
+      "authored": "2026-07-13T08:29:56Z",
+      "committed": "2026-07-13T08:29:56Z",
+      "change": "M",
+      "utc": 1783931396
+    },
+    {
+      "path": "aureon/wisdom/celtic_warfare_live.py",
+      "blob": "9fbe123bb5d4e1dfee8143064f01d11b370f23a3",
+      "commit": "4ea3e68a23b9a43e3f2ec7976954cefc236c487b",
+      "authored": "2026-04-19T15:31:55+01:00",
+      "committed": "2026-04-19T15:31:55+01:00",
+      "change": "M",
+      "utc": 1776609115
+    },
+    {
+      "path": "aureon/wisdom/celtic_warfare_live.py",
+      "blob": "37692884244485d08c931c9af378b6c2af235a96",
+      "commit": "18fe19d78a75e2376088f9a30bf961f3c1a4d225",
+      "authored": "2026-03-25T06:30:25Z",
+      "committed": "2026-03-25T06:30:25Z",
+      "change": "A",
+      "utc": 1774420225
+    }
+  ],
+  "aureon/wisdom/maeshowe_seer_decode.py": [
+    {
+      "path": "aureon/wisdom/maeshowe_seer_decode.py",
+      "blob": "c2d6a2910d9fb95b151c920021fbaf2591522e58",
+      "commit": "4ea3e68a23b9a43e3f2ec7976954cefc236c487b",
+      "authored": "2026-04-19T15:31:55+01:00",
+      "committed": "2026-04-19T15:31:55+01:00",
+      "change": "M",
+      "utc": 1776609115
+    },
+    {
+      "path": "aureon/wisdom/maeshowe_seer_decode.py",
+      "blob": "759f5501fe42901b0250b5f02b600a6d3fcd44d0",
+      "commit": "18fe19d78a75e2376088f9a30bf961f3c1a4d225",
+      "authored": "2026-03-25T06:30:25Z",
+      "committed": "2026-03-25T06:30:25Z",
+      "change": "A",
+      "utc": 1774420225
+    }
+  ],
+  "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/06_ancient_convergence_140aa7429c.md": [
+    {
+      "path": "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/06_ancient_convergence_140aa7429c.md",
+      "blob": "e3bc0626ec33faeed84eb662ee69eb820b583562",
+      "commit": "b4bfe63756791c427cdbdd64fe56301aced1e7ef",
+      "authored": "2026-07-12T20:53:38+01:00",
+      "committed": "2026-07-12T20:53:38+01:00",
+      "change": "A",
+      "utc": 1783886018
+    }
+  ],
+  "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/ANCIENT_CONVERGENCE_c5ccfed396.md": [
+    {
+      "path": "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/ANCIENT_CONVERGENCE_c5ccfed396.md",
+      "blob": "7660ec040d93b78538bf7a4bd13e8be841b59cce",
+      "commit": "b4bfe63756791c427cdbdd64fe56301aced1e7ef",
+      "authored": "2026-07-12T20:53:38+01:00",
+      "committed": "2026-07-12T20:53:38+01:00",
+      "change": "A",
+      "utc": 1783886018
+    }
+  ],
+  "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/ANCIENT_CONVERGENCE_d94970a904.md": [
+    {
+      "path": "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/ANCIENT_CONVERGENCE_d94970a904.md",
+      "blob": "7660ec040d93b78538bf7a4bd13e8be841b59cce",
+      "commit": "b4bfe63756791c427cdbdd64fe56301aced1e7ef",
+      "authored": "2026-07-12T20:53:38+01:00",
+      "committed": "2026-07-12T20:53:38+01:00",
+      "change": "A",
+      "utc": 1783886018
+    }
+  ],
+  "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/CELTIC_WARFARE_GUIDE_a52ced5ab1.md": [
+    {
+      "path": "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/CELTIC_WARFARE_GUIDE_a52ced5ab1.md",
+      "blob": "24600969c9ae9769796a5f0d859a4e4d1cc1444a",
+      "commit": "b4bfe63756791c427cdbdd64fe56301aced1e7ef",
+      "authored": "2026-07-12T20:53:38+01:00",
+      "committed": "2026-07-12T20:53:38+01:00",
+      "change": "A",
+      "utc": 1783886018
+    }
+  ],
+  "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/CELTIC_WARFARE_GUIDE_f5595d29bc.md": [
+    {
+      "path": "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/CELTIC_WARFARE_GUIDE_f5595d29bc.md",
+      "blob": "24600969c9ae9769796a5f0d859a4e4d1cc1444a",
+      "commit": "b4bfe63756791c427cdbdd64fe56301aced1e7ef",
+      "authored": "2026-07-12T20:53:38+01:00",
+      "committed": "2026-07-12T20:53:38+01:00",
+      "change": "A",
+      "utc": 1783886018
+    }
+  ],
+  "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/Maeshowe_Seer_Decode_Report_2026_850caff6cd.docx": [
+    {
+      "path": "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/Maeshowe_Seer_Decode_Report_2026_850caff6cd.docx",
+      "blob": "dd2cfa85c8e64d220b96c46df23b6d5fef4dd5c2",
+      "commit": "b4bfe63756791c427cdbdd64fe56301aced1e7ef",
+      "authored": "2026-07-12T20:53:38+01:00",
+      "committed": "2026-07-12T20:53:38+01:00",
+      "change": "A",
+      "utc": 1783886018
+    }
+  ],
+  "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/Maeshowe_Seer_Decode_Report_6a6de04554.docx": [
+    {
+      "path": "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/Maeshowe_Seer_Decode_Report_6a6de04554.docx",
+      "blob": "39639ad8340674611a0a2b600859e943b531865a",
+      "commit": "b4bfe63756791c427cdbdd64fe56301aced1e7ef",
+      "authored": "2026-07-12T20:53:38+01:00",
+      "committed": "2026-07-12T20:53:38+01:00",
+      "change": "A",
+      "utc": 1783886018
+    }
+  ],
+  "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/The_Dormant_Seed_74cc76ed2c.docx": [
+    {
+      "path": "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/The_Dormant_Seed_74cc76ed2c.docx",
+      "blob": "189bdc0dd4d8303a47cbbeaf473fa7161962197e",
+      "commit": "b4bfe63756791c427cdbdd64fe56301aced1e7ef",
+      "authored": "2026-07-12T20:53:38+01:00",
+      "committed": "2026-07-12T20:53:38+01:00",
+      "change": "A",
+      "utc": 1783886018
+    }
+  ],
+  "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/celtic_wisdom_14a577a2be.json": [
+    {
+      "path": "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/celtic_wisdom_14a577a2be.json",
+      "blob": "656b255866539d8445e7b56a4a9dbc58b67a44da",
+      "commit": "b4bfe63756791c427cdbdd64fe56301aced1e7ef",
+      "authored": "2026-07-12T20:53:38+01:00",
+      "committed": "2026-07-12T20:53:38+01:00",
+      "change": "A",
+      "utc": 1783886018
+    }
+  ],
+  "docs/guides/CELTIC_WARFARE_GUIDE.md": [
+    {
+      "path": "docs/guides/CELTIC_WARFARE_GUIDE.md",
+      "blob": "24600969c9ae9769796a5f0d859a4e4d1cc1444a",
+      "commit": "7b13d7c59b1774ecfb8a9bfae213df877f80c8b5",
+      "authored": "2026-04-20T08:44:56Z",
+      "committed": "2026-04-20T08:44:56Z",
+      "change": "A",
+      "utc": 1776674696
+    }
+  ],
+  "docs/research/ANCIENT_CONVERGENCE.md": [
+    {
+      "path": "docs/research/ANCIENT_CONVERGENCE.md",
+      "blob": "7660ec040d93b78538bf7a4bd13e8be841b59cce",
+      "commit": "563d5acf86e382e7fdc901e6464aced00f6d5e96",
+      "authored": "2026-04-01T19:41:10Z",
+      "committed": "2026-04-01T19:41:10Z",
+      "change": "M",
+      "utc": 1775072470
+    },
+    {
+      "path": "docs/research/ANCIENT_CONVERGENCE.md",
+      "blob": "2fb4a62e2da40f070174108a136c9584bcc2fd00",
+      "commit": "961444c64e92e01809784e66e0483f8d35302714",
+      "authored": "2026-04-01T17:59:50Z",
+      "committed": "2026-04-01T17:59:50Z",
+      "change": "A",
+      "utc": 1775066390
+    }
+  ],
+  "docs/research/whitepapers/Maeshowe_Seer_Decode_Report.docx": [
+    {
+      "path": "docs/research/whitepapers/Maeshowe_Seer_Decode_Report.docx",
+      "blob": "39639ad8340674611a0a2b600859e943b531865a",
+      "commit": "aa80e6678a4707c42db6cdffb1bf2acd61fe9c4f",
+      "authored": "2026-04-20T08:26:30Z",
+      "committed": "2026-04-20T08:26:30Z",
+      "change": "A",
+      "utc": 1776673590
+    }
+  ],
+  "docs/research/whitepapers/Maeshowe_Seer_Decode_Report_2026.docx": [
+    {
+      "path": "docs/research/whitepapers/Maeshowe_Seer_Decode_Report_2026.docx",
+      "blob": "dd2cfa85c8e64d220b96c46df23b6d5fef4dd5c2",
+      "commit": "5f3f3ca9ffb5117003ef5364b805bd815d752a7c",
+      "authored": "2026-04-05T08:01:40Z",
+      "committed": "2026-04-05T08:01:40Z",
+      "change": "A",
+      "utc": 1775376100
+    }
+  ],
+  "docs/research/whitepapers/Maeshowe_Seer_Decode_Report_rev2.docx": [
+    {
+      "path": "docs/research/whitepapers/Maeshowe_Seer_Decode_Report_rev2.docx",
+      "blob": "39639ad8340674611a0a2b600859e943b531865a",
+      "commit": "aca5df3fd815849d0230c6f964f51f86aed5db04",
+      "authored": "2026-04-05T08:34:30Z",
+      "committed": "2026-04-05T08:34:30Z",
+      "change": "A",
+      "utc": 1775378070
+    }
+  ],
+  "docs/research/whitepapers/The_Dormant_Seed.docx": [
+    {
+      "path": "docs/research/whitepapers/The_Dormant_Seed.docx",
+      "blob": "189bdc0dd4d8303a47cbbeaf473fa7161962197e",
+      "commit": "5f3f3ca9ffb5117003ef5364b805bd815d752a7c",
+      "authored": "2026-04-05T08:01:40Z",
+      "committed": "2026-04-05T08:01:40Z",
+      "change": "A",
+      "utc": 1775376100
+    }
+  ],
+  "imports/Kimi_Agent_Aureon_20260408/aureon-trading-main-snapshot/aureon/decoders/celtic_ogham.py": [
+    {
+      "path": "imports/Kimi_Agent_Aureon_20260408/aureon-trading-main-snapshot/aureon/decoders/celtic_ogham.py",
+      "blob": "ab6830d0b940191e916ebfe90ca8823f340ecd80",
+      "commit": "b9c2c9da4da1ea3510ecef3cfc3c667f5c3317fb",
+      "authored": "2026-04-08T12:16:15+01:00",
+      "committed": "2026-04-08T12:16:15+01:00",
+      "change": "A",
+      "utc": 1775646975
+    }
+  ],
+  "imports/Kimi_Agent_Aureon_20260408/aureon-trading-main-snapshot/aureon/wisdom/celtic_preemptive_strike.py": [
+    {
+      "path": "imports/Kimi_Agent_Aureon_20260408/aureon-trading-main-snapshot/aureon/wisdom/celtic_preemptive_strike.py",
+      "blob": "ac8419295f4bc66b6a770189b7648c1c1fec4b80",
+      "commit": "b9c2c9da4da1ea3510ecef3cfc3c667f5c3317fb",
+      "authored": "2026-04-08T12:16:15+01:00",
+      "committed": "2026-04-08T12:16:15+01:00",
+      "change": "A",
+      "utc": 1775646975
+    }
+  ],
+  "imports/Kimi_Agent_Aureon_20260408/aureon-trading-main-snapshot/aureon/wisdom/celtic_warfare_live.py": [
+    {
+      "path": "imports/Kimi_Agent_Aureon_20260408/aureon-trading-main-snapshot/aureon/wisdom/celtic_warfare_live.py",
+      "blob": "37692884244485d08c931c9af378b6c2af235a96",
+      "commit": "b9c2c9da4da1ea3510ecef3cfc3c667f5c3317fb",
+      "authored": "2026-04-08T12:16:15+01:00",
+      "committed": "2026-04-08T12:16:15+01:00",
+      "change": "A",
+      "utc": 1775646975
+    }
+  ],
+  "imports/Kimi_Agent_Aureon_20260408/aureon-trading-main-snapshot/aureon/wisdom/maeshowe_seer_decode.py": [
+    {
+      "path": "imports/Kimi_Agent_Aureon_20260408/aureon-trading-main-snapshot/aureon/wisdom/maeshowe_seer_decode.py",
+      "blob": "759f5501fe42901b0250b5f02b600a6d3fcd44d0",
+      "commit": "b9c2c9da4da1ea3510ecef3cfc3c667f5c3317fb",
+      "authored": "2026-04-08T12:16:15+01:00",
+      "committed": "2026-04-08T12:16:15+01:00",
+      "change": "A",
+      "utc": 1775646975
+    }
+  ],
+  "imports/Kimi_Agent_Aureon_20260408/aureon-trading-main-snapshot/docs/CELTIC_WARFARE_GUIDE.md": [
+    {
+      "path": "imports/Kimi_Agent_Aureon_20260408/aureon-trading-main-snapshot/docs/CELTIC_WARFARE_GUIDE.md",
+      "blob": "24600969c9ae9769796a5f0d859a4e4d1cc1444a",
+      "commit": "b9c2c9da4da1ea3510ecef3cfc3c667f5c3317fb",
+      "authored": "2026-04-08T12:16:15+01:00",
+      "committed": "2026-04-08T12:16:15+01:00",
+      "change": "A",
+      "utc": 1775646975
+    }
+  ],
+  "imports/Kimi_Agent_Aureon_20260408/aureon-trading-main-snapshot/docs/research/ANCIENT_CONVERGENCE.md": [
+    {
+      "path": "imports/Kimi_Agent_Aureon_20260408/aureon-trading-main-snapshot/docs/research/ANCIENT_CONVERGENCE.md",
+      "blob": "7660ec040d93b78538bf7a4bd13e8be841b59cce",
+      "commit": "b9c2c9da4da1ea3510ecef3cfc3c667f5c3317fb",
+      "authored": "2026-04-08T12:16:15+01:00",
+      "committed": "2026-04-08T12:16:15+01:00",
+      "change": "A",
+      "utc": 1775646975
+    }
+  ],
+  "public/celtic-ogham-feda.json": [
+    {
+      "path": "public/celtic-ogham-feda.json",
+      "blob": "cb14d19823a5e6747738974125cffa152356d99e",
+      "commit": "93c77f4e82245e077c1b3f31b54bcc7b515d5a46",
+      "authored": "2026-02-21T05:57:02Z",
+      "committed": "2026-02-21T05:57:02Z",
+      "change": "A",
+      "utc": 1771653422
+    }
+  ],
+  "tests/test_queen_celtic_wisdom.py": [
+    {
+      "path": "tests/test_queen_celtic_wisdom.py",
+      "blob": "60c2e2ea05bb724ba684efb6c88bfa17dcfe9d40",
+      "commit": "f959e73c4fd275717c5357dc5862381bdcccf7bc",
+      "authored": "2026-07-13T08:24:24Z",
+      "committed": "2026-07-13T08:24:24Z",
+      "change": "M",
+      "utc": 1783931064
+    },
+    {
+      "path": "tests/test_queen_celtic_wisdom.py",
+      "blob": "4115170037119d5d3ac61e541b863f865fec3c78",
+      "commit": "6fd1d9d870b2bded83e6b4d9785a572d2e3094ac",
+      "authored": "2026-03-24T23:43:21Z",
+      "committed": "2026-03-24T23:43:21Z",
+      "change": "A",
+      "utc": 1774395801
+    }
+  ],
+  "research/wisdom_traditions/celtic_wisdom.json": [
+    {
+      "path": "research/wisdom_traditions/celtic_wisdom.json",
+      "blob": "297e44da5d80091d05c1736d61cb607ada9045fb",
+      "commit": "fdd679ebbd5f9dbb88ab30ec89d49000e1eb4193",
+      "authored": "2026-04-23T09:13:35Z",
+      "committed": "2026-04-23T09:13:35Z",
+      "change": "A",
+      "utc": 1776935615
+    }
+  ],
+  "1_substrate/data_models/wisdom/celtic_wisdom.json": [
+    {
+      "path": "1_substrate/data_models/wisdom/celtic_wisdom.json",
+      "blob": "297e44da5d80091d05c1736d61cb607ada9045fb",
+      "commit": "c3f2958d089454c9c96f950069009b435b578d8d",
+      "authored": "2026-04-23T09:01:31Z",
+      "committed": "2026-04-23T09:01:31Z",
+      "change": "A",
+      "utc": 1776934891
+    }
+  ],
+  "2_dynamics/trading_logic/celtic_preemptive_strike.py": [
+    {
+      "path": "2_dynamics/trading_logic/celtic_preemptive_strike.py",
+      "blob": "ac8419295f4bc66b6a770189b7648c1c1fec4b80",
+      "commit": "c3f2958d089454c9c96f950069009b435b578d8d",
+      "authored": "2026-04-23T09:01:31Z",
+      "committed": "2026-04-23T09:01:31Z",
+      "change": "A",
+      "utc": 1776934891
+    }
+  ],
+  "3_forcing/execution_engines/celtic_warfare_live.py": [
+    {
+      "path": "3_forcing/execution_engines/celtic_warfare_live.py",
+      "blob": "37692884244485d08c931c9af378b6c2af235a96",
+      "commit": "a7a661a3d5972f24f6f358a700c17fac228b4b9f",
+      "authored": "2026-04-23T08:46:09Z",
+      "committed": "2026-04-23T08:46:09Z",
+      "change": "A",
+      "utc": 1776933969
+    }
+  ],
+  "docs/CELTIC_WARFARE_GUIDE.md": [
+    {
+      "path": "docs/CELTIC_WARFARE_GUIDE.md",
+      "blob": "24600969c9ae9769796a5f0d859a4e4d1cc1444a",
+      "commit": "6fd1d9d870b2bded83e6b4d9785a572d2e3094ac",
+      "authored": "2026-03-24T23:43:21Z",
+      "committed": "2026-03-24T23:43:21Z",
+      "change": "A",
+      "utc": 1774395801
+    }
+  ],
+  "aureon/decoders/maeshowe_seer_decode.py": [
+    {
+      "path": "aureon/decoders/maeshowe_seer_decode.py",
+      "blob": "759f5501fe42901b0250b5f02b600a6d3fcd44d0",
+      "commit": "0d83306aab0e1f6d6a06582757b8f4919492176e",
+      "authored": "2026-04-11T00:39:36Z",
+      "committed": "2026-04-11T00:39:36Z",
+      "change": "A",
+      "utc": 1775867976
+    }
+  ],
+  "Maeshowe_Seer_Decode_Report.docx": [
+    {
+      "path": "Maeshowe_Seer_Decode_Report.docx",
+      "blob": "39639ad8340674611a0a2b600859e943b531865a",
+      "commit": "c93148c94ff531698009e4451ddb253d8750d8ac",
+      "authored": "2026-04-08T11:43:55+01:00",
+      "committed": "2026-04-08T11:43:55+01:00",
+      "change": "A",
+      "utc": 1775645035
+    }
+  ],
+  "Maeshowe_Seer_Decode_Report (2).docx": [
+    {
+      "path": "Maeshowe_Seer_Decode_Report (2).docx",
+      "blob": "39639ad8340674611a0a2b600859e943b531865a",
+      "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+      "authored": "2026-04-05T09:26:14+01:00",
+      "committed": "2026-04-05T09:26:14+01:00",
+      "change": "A",
+      "utc": 1775377574
+    }
+  ],
+  "Maeshowe_Seer_Decode_Report_2026.docx": [
+    {
+      "path": "Maeshowe_Seer_Decode_Report_2026.docx",
+      "blob": "dd2cfa85c8e64d220b96c46df23b6d5fef4dd5c2",
+      "commit": "7787e45c832ccb216c55dc965df51a16db45a895",
+      "authored": "2026-03-24T11:20:41Z",
+      "committed": "2026-03-24T11:20:41Z",
+      "change": "A",
+      "utc": 1774351241
+    }
+  ],
+  "The_Dormant_Seed (2).docx": [
+    {
+      "path": "The_Dormant_Seed (2).docx",
+      "blob": "189bdc0dd4d8303a47cbbeaf473fa7161962197e",
+      "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+      "authored": "2026-04-05T09:26:14+01:00",
+      "committed": "2026-04-05T09:26:14+01:00",
+      "change": "A",
+      "utc": 1775377574
+    }
+  ],
+  "aureon/celtic_preemptive_strike.py": [
+    {
+      "path": "aureon/celtic_preemptive_strike.py",
+      "blob": "ac8419295f4bc66b6a770189b7648c1c1fec4b80",
+      "commit": "6fd1d9d870b2bded83e6b4d9785a572d2e3094ac",
+      "authored": "2026-03-24T23:43:21Z",
+      "committed": "2026-03-24T23:43:21Z",
+      "change": "A",
+      "utc": 1774395801
+    }
+  ],
+  "aureon/celtic_warfare_live.py": [
+    {
+      "path": "aureon/celtic_warfare_live.py",
+      "blob": "37692884244485d08c931c9af378b6c2af235a96",
+      "commit": "6fd1d9d870b2bded83e6b4d9785a572d2e3094ac",
+      "authored": "2026-03-24T23:43:21Z",
+      "committed": "2026-03-24T23:43:21Z",
+      "change": "A",
+      "utc": 1774395801
+    }
+  ],
+  "aureon/maeshowe_seer_decode.py": [
+    {
+      "path": "aureon/maeshowe_seer_decode.py",
+      "blob": "759f5501fe42901b0250b5f02b600a6d3fcd44d0",
+      "commit": "6fd1d9d870b2bded83e6b4d9785a572d2e3094ac",
+      "authored": "2026-03-24T23:43:21Z",
+      "committed": "2026-03-24T23:43:21Z",
+      "change": "A",
+      "utc": 1774395801
+    }
+  ],
+  "docs/Maeshowe_Seer_Decode_Report_2026.docx": [
+    {
+      "path": "docs/Maeshowe_Seer_Decode_Report_2026.docx",
+      "blob": "dd2cfa85c8e64d220b96c46df23b6d5fef4dd5c2",
+      "commit": "6fd1d9d870b2bded83e6b4d9785a572d2e3094ac",
+      "authored": "2026-03-24T23:43:21Z",
+      "committed": "2026-03-24T23:43:21Z",
+      "change": "A",
+      "utc": 1774395801
+    }
+  ],
+  "docs/The_Dormant_Seed.docx": [
+    {
+      "path": "docs/The_Dormant_Seed.docx",
+      "blob": "189bdc0dd4d8303a47cbbeaf473fa7161962197e",
+      "commit": "6fd1d9d870b2bded83e6b4d9785a572d2e3094ac",
+      "authored": "2026-03-24T23:43:21Z",
+      "committed": "2026-03-24T23:43:21Z",
+      "change": "A",
+      "utc": 1774395801
+    }
+  ],
+  "The_Dormant_Seed.docx": [
+    {
+      "path": "The_Dormant_Seed.docx",
+      "blob": "189bdc0dd4d8303a47cbbeaf473fa7161962197e",
+      "commit": "7787e45c832ccb216c55dc965df51a16db45a895",
+      "authored": "2026-03-24T11:20:41Z",
+      "committed": "2026-03-24T11:20:41Z",
+      "change": "A",
+      "utc": 1774351241
+    }
+  ],
+  "maeshowe_seer_decode.py": [
+    {
+      "path": "maeshowe_seer_decode.py",
+      "blob": "759f5501fe42901b0250b5f02b600a6d3fcd44d0",
+      "commit": "3c4fa3021113311cc470b630baf0018d6770b112",
+      "authored": "2026-03-09T10:36:43Z",
+      "committed": "2026-03-09T10:36:43Z",
+      "change": "A",
+      "utc": 1773052603
+    }
+  ],
+  "celtic_warfare_live.py": [
+    {
+      "path": "celtic_warfare_live.py",
+      "blob": "37692884244485d08c931c9af378b6c2af235a96",
+      "commit": "648d3468add99b569e5c6121a475bc8f42ef24de",
+      "authored": "2026-02-05T23:31:07Z",
+      "committed": "2026-02-05T23:31:07Z",
+      "change": "M",
+      "utc": 1770334267
+    },
+    {
+      "path": "celtic_warfare_live.py",
+      "blob": "6df5a41e11c7d69f4fdab8e691727ca9e81da2dc",
+      "commit": "a332c6ca0b5253577ac41345f64f7a9e2a22b49c",
+      "authored": "2026-02-03T11:48:21Z",
+      "committed": "2026-02-03T11:48:21Z",
+      "change": "M",
+      "utc": 1770119301
+    },
+    {
+      "path": "celtic_warfare_live.py",
+      "blob": "c0bb3aa1ceebe8c8b3ff1e1d1a5209f0afab5f76",
+      "commit": "46c677d40ddc1ed5cde7df08310549bd00950a55",
+      "authored": "2026-02-03T11:40:35Z",
+      "committed": "2026-02-03T11:40:35Z",
+      "change": "M",
+      "utc": 1770118835
+    },
+    {
+      "path": "celtic_warfare_live.py",
+      "blob": "76d3f25d2db3a1fe1028f40e183d8e33b56797ce",
+      "commit": "7692224b53136db4076d2043fd52d82979c3b64c",
+      "authored": "2026-01-27T11:39:02Z",
+      "committed": "2026-01-27T11:39:02Z",
+      "change": "M",
+      "utc": 1769513942
+    },
+    {
+      "path": "celtic_warfare_live.py",
+      "blob": "035dd23f6fe2d5fabd4b465409f89c1f040f732b",
+      "commit": "38351ae3c537dc3ca8d31aa0a2da08d225eba2ca",
+      "authored": "2025-12-18T18:20:35Z",
+      "committed": "2025-12-18T18:21:35Z",
+      "change": "A",
+      "utc": 1766082095
+    }
+  ],
+  "celtic_preemptive_strike.py": [
+    {
+      "path": "celtic_preemptive_strike.py",
+      "blob": "ac8419295f4bc66b6a770189b7648c1c1fec4b80",
+      "commit": "7692224b53136db4076d2043fd52d82979c3b64c",
+      "authored": "2026-01-27T11:39:02Z",
+      "committed": "2026-01-27T11:39:02Z",
+      "change": "M",
+      "utc": 1769513942
+    },
+    {
+      "path": "celtic_preemptive_strike.py",
+      "blob": "4e67091cb057652a2facf18f2c2839f3a302e173",
+      "commit": "38351ae3c537dc3ca8d31aa0a2da08d225eba2ca",
+      "authored": "2025-12-18T18:20:35Z",
+      "committed": "2025-12-18T18:21:35Z",
+      "change": "A",
+      "utc": 1766082095
+    }
+  ],
+  "test_queen_celtic_wisdom.py": [
+    {
+      "path": "test_queen_celtic_wisdom.py",
+      "blob": "4115170037119d5d3ac61e541b863f865fec3c78",
+      "commit": "7692224b53136db4076d2043fd52d82979c3b64c",
+      "authored": "2026-01-27T11:39:02Z",
+      "committed": "2026-01-27T11:39:02Z",
+      "change": "M",
+      "utc": 1769513942
+    },
+    {
+      "path": "test_queen_celtic_wisdom.py",
+      "blob": "2b5c5fabb3f15a0084610e6c42fbe1c82c5a951d",
+      "commit": "d7b3a5babb76df3238bf7b4a98c01d17783cf618",
+      "authored": "2026-01-26T20:18:43Z",
+      "committed": "2026-01-26T20:18:43Z",
+      "change": "A",
+      "utc": 1769458723
+    }
+  ],
+  "CELTIC_WARFARE_GUIDE.md": [
+    {
+      "path": "CELTIC_WARFARE_GUIDE.md",
+      "blob": "24600969c9ae9769796a5f0d859a4e4d1cc1444a",
+      "commit": "38351ae3c537dc3ca8d31aa0a2da08d225eba2ca",
+      "authored": "2025-12-18T18:20:35Z",
+      "committed": "2025-12-18T18:21:35Z",
+      "change": "A",
+      "utc": 1766082095
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "observed_utc": "2026-09-12T15:59:29.915956+00:00",
+  "accounting": "JobID|State|ExitCode|ElapsedRaw|AllocNodes\n6505275|COMPLETED|0:0|16|1\n6505275.batch|COMPLETED|0:0|16|1\n6505304|COMPLETED|0:0|53|1\n6505304.batch|COMPLETED|0:0|53|1\n",
+  "files": 130,
+  "logs": {
+    "pilot-6505275.out": [
+      "d3f92d2d8e107e0400271273ac86dba33fdb7301.docx: OK",
+      "d3f92d2d8e107e0400271273ac86dba33fdb7301.txt: OK",
+      "d4662f447ac00ba405510a28491e71bbf8e70dec.docx: OK",
+      "d4662f447ac00ba405510a28491e71bbf8e70dec.txt: OK",
+      "diagnostic-config.json: OK",
+      "diagnostic.py: OK",
+      "full.sbatch: OK",
+      "harmonic_lidar_benchmark.py: OK",
+      "original-000.json: OK",
+      "original-032.json: OK",
+      "original-verified-summary.json: OK",
+      "paper-provenance.json: OK",
+      "pilot.sbatch: OK",
+      "PROTOCOL-AMENDMENT.md: OK",
+      "protocol.json: OK",
+      "run_diagnostic.py: OK",
+      "SOURCE_AUDIT.md: OK",
+      "test_diagnostic.py: OK",
+      "{\"passed\": true, \"grouped_checks\": 9}",
+      "{\"stem\": \"historical-000\", \"seconds\": 1.3960259320156183, \"methods\": {\"phi2\": 0.51, \"sqrt2\": 0.5067, \"phi\": 0.5088, \"octave\": 0.514, \"three\": 0.5058, \"linear_frequency\": 0.4986, \"laplacian_of_gaussian\": 0.5113, \"jitter_null_00\": 0.5079, \"jitter_null_01\": 0.5061, \"jitter_null_02\": 0.5093, \"jitter_null_03\": 0.5132, \"phi2_roi\": 0.5363, \"whitened_phi2_roi\": 0.527, \"whitened_log_roi\": 0.5268, \"matched_gaussian_roi\": 0.5776, \"matched_ring_roi\": 0.6344, \"truth_location_phi2\": 0.6423, \"truth_location_whitened_phi2\": 0.5601, \"truth_location_matched_ring\": 0.8498, \"truth_shape_location_matched\": 0.944}}",
+      "{\"stem\": \"historical-032\", \"seconds\": 0.89911786900484, \"methods\": {\"phi2\": 0.5197, \"sqrt2\": 0.5122, \"phi\": 0.5198, \"octave\": 0.5239, \"three\": 0.4993, \"linear_frequency\": 0.4905, \"laplacian_of_gaussian\": 0.5238, \"jitter_null_00\": 0.5145, \"jitter_null_01\": 0.5162, \"jitter_null_02\": 0.5142, \"jitter_null_03\": 0.5221, \"phi2_roi\": 0.5384, \"whitened_phi2_roi\": 0.5088, \"whitened_log_roi\": 0.5057, \"matched_gaussian_roi\": 0.5383, \"matched_ring_roi\": 0.5764, \"truth_location_phi2\": 0.6397, \"truth_location_whitened_phi2\": 0.525, \"truth_location_matched_ring\": 0.7431, \"truth_shape_location_matched\": 0.8508}}"
+    ],
+    "pilot-6505275.err": []
+  },
+  "historical-000.json": {
+    "seconds": 1.3960259320156183,
+    "original_differences": {},
+    "auroc": {
+      "phi2": 0.5099758303321329,
+      "sqrt2": 0.5066580232092837,
+      "phi": 0.5088288115246098,
+      "octave": 0.514047218887555,
+      "three": 0.5058199279711885,
+      "linear_frequency": 0.49859191676670667,
+      "laplacian_of_gaussian": 0.511271868747499,
+      "jitter_null_00": 0.5079007603041217,
+      "jitter_null_01": 0.5061488595438175,
+      "jitter_null_02": 0.5092899559823929,
+      "jitter_null_03": 0.5132166466586635,
+      "phi2_roi": 0.5362975590236094,
+      "whitened_phi2_roi": 0.5269971988795519,
+      "whitened_log_roi": 0.5267988795518207,
+      "matched_gaussian_roi": 0.5776259303721488,
+      "matched_ring_roi": 0.6343758303321329,
+      "truth_location_phi2": 0.6422786714685874,
+      "truth_location_whitened_phi2": 0.5600877150860344,
+      "truth_location_matched_ring": 0.8497819927971189,
+      "truth_shape_location_matched": 0.944044337735094
+    }
+  },
+  "historical-032.json": {
+    "seconds": 0.89911786900484,
+    "original_differences": {},
+    "auroc": {
+      "phi2": 0.5197336157476601,
+      "sqrt2": 0.5121779978268518,
+      "phi": 0.5198121767658109,
+      "octave": 0.5238867895727929,
+      "three": 0.4993082310346742,
+      "linear_frequency": 0.49048843673014003,
+      "laplacian_of_gaussian": 0.523832708871907,
+      "jitter_null_00": 0.5145266682656208,
+      "jitter_null_01": 0.5162055700241875,
+      "jitter_null_02": 0.5142265043754967,
+      "jitter_null_03": 0.5221038864663686,
+      "phi2_roi": 0.5384389781691571,
+      "whitened_phi2_roi": 0.5088246743677798,
+      "whitened_log_roi": 0.5056719935090359,
+      "matched_gaussian_roi": 0.5382514557388663,
+      "matched_ring_roi": 0.5764474707592211,
+      "truth_location_phi2": 0.6396543699206342,
+      "truth_location_whitened_phi2": 0.5250376844883909,
+      "truth_location_matched_ring": 0.7431137907547282,
+      "truth_shape_location_matched": 0.8507740660318958
+    }
+  }
+}

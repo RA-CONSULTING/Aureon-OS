@@ -1,0 +1,12 @@
+{
+  "job": "6501165",
+  "scheduler_state": "COMPLETED",
+  "elapsed_seconds": 8,
+  "downloaded_sha256": {
+    "diagnostics.json": "a3f71f6c89930bad56ed8cdfb346a5ba14f0a1e8e9fc5e8bffa5c67942bbd86e",
+    "export.json": "902eeb0d942f51fe7a4c5b88d0567912e860d58a15351f0b581e415cbaa8511f",
+    "stage1-verified-responses.tar.gz": "2f18e2f57f11a41d91aef58fb6a07aed4a87bff9f85c3ad9c9b003baa41d97fa"
+  },
+  "verified_archive_members": 769,
+  "verification": "PASS"
+}

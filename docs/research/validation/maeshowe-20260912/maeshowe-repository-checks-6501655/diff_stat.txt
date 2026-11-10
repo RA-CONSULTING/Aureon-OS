@@ -1,0 +1,4 @@
+ aureon/wisdom/maeshowe_epigraphy.py       | 116 +++++++++++++++++++++++++++++
+ aureon/wisdom/maeshowe_seer_decode.py     |  61 ++++++++++++++--
+ tests/research/test_maeshowe_epigraphy.py | 117 ++++++++++++++++++++++++++++++
+ 3 files changed, 289 insertions(+), 5 deletions(-)

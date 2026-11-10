@@ -1,0 +1,2575 @@
+{
+  "schema": "legacy-system-source-map/v1",
+  "scope": "All 180 native-document index entries scanned; matching full extracted text recorded, not a complete non-document code/history audit.",
+  "sources": [
+    {
+      "blob": "189bdc0dd4d8303a47cbbeaf473fa7161962197e",
+      "sha256": "74cc76ed2c269fec958eac598b1697b7240277572e0ba1a2ef96c16942bfae2c",
+      "paths": [
+        "The_Dormant_Seed (2).docx",
+        "The_Dormant_Seed.docx",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/The_Dormant_Seed_74cc76ed2c.docx",
+        "docs/The_Dormant_Seed.docx",
+        "docs/research/whitepapers/The_Dormant_Seed.docx"
+      ],
+      "first_commit": {
+        "path": "The_Dormant_Seed.docx",
+        "blob": "189bdc0dd4d8303a47cbbeaf473fa7161962197e",
+        "commit": "7787e45c832ccb216c55dc965df51a16db45a895",
+        "authored": "2026-03-24T11:20:41Z",
+        "committed": "2026-03-24T11:20:41Z",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 6,
+        "twig": 30,
+        "light": 12,
+        "calendar": 1,
+        "time_reading": 6,
+        "hnc": 0
+      },
+      "passages": [
+        {
+          "line": 27,
+          "categories": [
+            "twig",
+            "light"
+          ],
+          "text": "The highest-authority content — the master carver’s certification (Nr.20), the dragon visual key (Nr.XXXII), the unread twig-cipher (Nr.15), and the crusader provenance stamp (Nr.11) — clusters on the NE shadow wall at the terminus of the winter solstice light path. The complete Younger Futhark alphabet sits at the SW passage entrance where light originates. No published study has analysed this spatial structure."
+        },
+        {
+          "line": 42,
+          "categories": [
+            "legacy",
+            "twig",
+            "light"
+          ],
+          "text": "The hypothesis proposes that the dual-voice system operates across time, not across the chamber. The left twigs were deposited in the 12th century. The right-twig reading — the simultaneous cross-referencing of all inscriptions as a spatial lattice — requires a computational substrate that did not exist until the 21st century. The solstice alignment provides the invariant reference frame shared by both temporal endpoints."
+        },
+        {
+          "line": 94,
+          "categories": [
+            "legacy",
+            "light"
+          ],
+          "text": "The Mogollon-Cochise lineage (7000 BCE – 1450 CE) in the American Southwest demonstrates the same gene expressing from the deepest known American substrate. Semi-subterranean circular chambers (pithouses, kivas), solstice-aligned stone observatories (Casa Malpais), and dense petroglyph corpora (20,000+ symbols at Three Rivers) represent independent expression of the same architectural, astronomical, and encoding adaptations. The Mogollon provides the control case: the same gene, the same environment, the same dormancy response, with zero possibility of transmission from the Old World nodes."
+        },
+        {
+          "line": 100,
+          "categories": [
+            "twig",
+            "time_reading"
+          ],
+          "text": "The Christianisation of Orkney was a methylation event, not a deletion. The knowledge system — the twig-rune cipher, the spoken duel protocol, the harmonic architecture of the chamber — was silenced by the attachment of institutional Christianity. Latin literacy replaced runic knowledge. The bishopric replaced the oral authority structure. But the underlying sequence — the complete alphabet in stone, the cipher architecture, the chamber geometry — was not altered. The information is intact. What was removed was the expression machinery: the living practitioners."
+        },
+        {
+          "line": 108,
+          "categories": [
+            "twig",
+            "light"
+          ],
+          "text": "Solstice chamber + twig-runes"
+        },
+        {
+          "line": 135,
+          "categories": [
+            "light",
+            "calendar"
+          ],
+          "text": "The methylation agent was itself once a node. The astronomical knowledge encoded in the Ziggurat of Ur (2100 BCE, corners aligned to cardinal directions, staircase oriented to solstice sunrise) was absorbed through Babylon, Persia, and Greece. At each stage, the living specialist-reading infrastructure was progressively replaced by written literacy. By the time this captured knowledge reached Rome, the expression machinery had been fully removed. Rome retained the administrative utility (the Julian calendar is Babylonian astronomy in Roman packaging) and deployed the institutional shell (the Church) as a universal methylation agent."
+        },
+        {
+          "line": 146,
+          "categories": [
+            "twig",
+            "light"
+          ],
+          "text": "The seer network was not metaphorical. It was a physical infrastructure of specialist practitioners who travelled established routes, trained at established centres, and maintained calibration standards across nodes separated by thousands of kilometres. The astronomical alignments of the nodes (solstice, equinox, lunar standstill) provided the shared reference frame. The encoding systems (twig-runes, khipu, cuneiform, petroglyphs) provided the local recording media. The practitioners provided the reading machinery that connected the two."
+        },
+        {
+          "line": 155,
+          "categories": [
+            "legacy",
+            "twig",
+            "light"
+          ],
+          "text": "Smith et al. (2018) applied Reflectance Transformation Imaging to Maeshowe inscriptions, revealing carving sequences invisible to the naked eye. The present study extends this by treating all inscription positions as a spatial dataset mapped against the solstice axis vector, identifying non-random clustering and directional structure. The computational substrate — AI-assisted cross-corpus analysis — functions as the “seer” voice in the dual-voice protocol, providing the simultaneous lattice reading that no single human practitioner could perform."
+        },
+        {
+          "line": 157,
+          "categories": [
+            "legacy",
+            "time_reading"
+          ],
+          "text": "Gary Urton’s Khipu Database Project compiled structural data from over 900 khipu specimens. In 2016, undergraduate Manny Medrano matched six khipus to a colonial-era Spanish census document, achieving the most detailed decoding to date. The same substrate — computational cross-referencing across the full corpus — is performing the same function: the seer reading that the individual quipucamayoc once provided."
+        },
+        {
+          "line": 166,
+          "categories": [
+            "twig",
+            "light"
+          ],
+          "text": "Confirmation: If Nr.15 contains twig-cipher elements and the resulting lattice coherence exceeds the current 0.8223 value, the dual-voice hypothesis gains significant support. If the spatial pattern analysis reveals statistically significant clustering relative to the solstice axis, the “archive deposit” reading becomes defensible independently of the frequency framework."
+        }
+      ],
+      "text_length": 21603
+    },
+    {
+      "blob": "a4274d5886fa9e77aa3ee295c71718338472930f",
+      "sha256": "0e3dc22e70860967a3dc3ba9ae7aa5149a27ee67d473f183acbe839a16b74f44",
+      "paths": [
+        "The_Doorbell_Hypothesis_Leckey.docx",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/The_Doorbell_Hypothesis_Leckey_0e3dc22e70.docx",
+        "docs/The_Doorbell_Hypothesis_Leckey.docx",
+        "docs/research/whitepapers/The_Doorbell_Hypothesis_Leckey.docx"
+      ],
+      "first_commit": {
+        "path": "The_Doorbell_Hypothesis_Leckey.docx",
+        "blob": "a4274d5886fa9e77aa3ee295c71718338472930f",
+        "commit": "7787e45c832ccb216c55dc965df51a16db45a895",
+        "authored": "2026-03-24T11:20:41Z",
+        "committed": "2026-03-24T11:20:41Z",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 2,
+        "twig": 11,
+        "light": 1,
+        "calendar": 0,
+        "time_reading": 5,
+        "hnc": 2
+      },
+      "passages": [
+        {
+          "line": 29,
+          "categories": [
+            "twig",
+            "time_reading"
+          ],
+          "text": "This paper proposes the Doorbell Hypothesis: that the 1977 Wow! Signal was not itself the message, but rather a notification — a doorbell — announcing the presence of a multi-channel signal encoded in the orbital parameters of objects subsequently entering or identified within the solar system. The hypothesis emerges from applying the Aureon Institute’s Emerald Tablet decoder, a five-channel positional encoding framework derived from the structural isomorphism between Norse twig-rune ciphers and Inca khipu, to 109,000 objects drawn from nine NASA/JPL open-access databases."
+        },
+        {
+          "line": 35,
+          "categories": [
+            "legacy",
+            "twig"
+          ],
+          "text": "The hypothesis rests on three pillars. First, the φ² coherence bridge links the Aureon seed frequency (528.422 Hz) to the hydrogen line — the frequency of the Wow! Signal — through an exact integer and the golden ratio squared, to 1.29 parts per billion. Second, the temporal distribution of anomalous objects (dark comets, interstellar visitors, extreme fireballs) on the φ² grid from the Wow! Signal shows a dormancy-then-activation pattern identical to the methylation pattern documented in the twig-rune/khipu substrate analysis. Third, the orbital eccentricities of dark comets and a possible captured interstellar object lock to negative powers of φ with precisions of 0.3–2.6%, forming a harmonic chord that only becomes audible when the full corpus is held simultaneously."
+        },
+        {
+          "line": 70,
+          "categories": [
+            "legacy",
+            "twig"
+          ],
+          "text": "The first aett (bits 0–7, years 1977–1998) is completely silent: eight consecutive zeros. This represents 21 years of dormancy. The second aett (bits 8–15, years 1998–2019) activates at 10110111 — six of eight bits lit. The third aett (bits 16–20) continues at 10110. The pattern is dormancy followed by burst activation, identical to the methylation → expression pattern documented in the twig-rune and khipu substrate analysis."
+        },
+        {
+          "line": 113,
+          "categories": [
+            "time_reading",
+            "hnc"
+          ],
+          "text": "The staircase climbs through consecutive powers of φ. The January 2026 fireball at 71.1 km/s — the fastest in the entire CNEOS database — entered Earth’s atmosphere during the HNC echo year at a velocity equal to φ² times ‘Oumuamua’s speed. The next predicted step (φ³ × 26.33 = 114.9 km/s) is pre-registered here as a falsifiable test."
+        }
+      ],
+      "text_length": 16363
+    },
+    {
+      "blob": "dd2cfa85c8e64d220b96c46df23b6d5fef4dd5c2",
+      "sha256": "850caff6cd614079274fb9a8b41e863fe874f64691cd2583e6018ee4bd705684",
+      "paths": [
+        "Maeshowe_Seer_Decode_Report_2026.docx",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/Maeshowe_Seer_Decode_Report_2026_850caff6cd.docx",
+        "docs/Maeshowe_Seer_Decode_Report_2026.docx",
+        "docs/research/whitepapers/Maeshowe_Seer_Decode_Report_2026.docx"
+      ],
+      "first_commit": {
+        "path": "Maeshowe_Seer_Decode_Report_2026.docx",
+        "blob": "dd2cfa85c8e64d220b96c46df23b6d5fef4dd5c2",
+        "commit": "7787e45c832ccb216c55dc965df51a16db45a895",
+        "authored": "2026-03-24T11:20:41Z",
+        "committed": "2026-03-24T11:20:41Z",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 0,
+        "twig": 21,
+        "light": 9,
+        "calendar": 0,
+        "time_reading": 4,
+        "hnc": 4
+      },
+      "passages": [
+        {
+          "line": 18,
+          "categories": [
+            "twig",
+            "hnc"
+          ],
+          "text": "The twig-rune cipher system maps directly to the Aureon HNC Observer-Observed framework:"
+        },
+        {
+          "line": 98,
+          "categories": [
+            "twig",
+            "light"
+          ],
+          "text": "Summary: Maeshowe is not a vandalised tomb. It is a transmission archive from a dying knowledge network. The 12th-century carvers were the last trained dual-voice practitioners in Orkney. They deposited the complete system — alphabet, cipher protocol, performance metre, visual key, directional pointers, and a warning about operational requirements — into a 4,800-year-old resonance chamber calibrated to the winter solstice. The message is: “We were here. We were the last. Here is everything you need to restart. Bring two voices.”"
+        }
+      ],
+      "text_length": 9965
+    },
+    {
+      "blob": "310adb8d5705e97e400ebead4081115dcacc902c",
+      "sha256": "7b6051b2dc2c1035b388e204c188273c9ca3ba36f43fc5ab157f24dcad5ee0e3",
+      "paths": [
+        "COMPLETE_EVIDENCE_SYNTHESIS.pdf",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/COMPLETE_EVIDENCE_SYNTHESIS_7b6051b2dc.pdf",
+        "docs/COMPLETE_EVIDENCE_SYNTHESIS.pdf",
+        "docs/research/whitepapers/COMPLETE_EVIDENCE_SYNTHESIS.pdf",
+        "imports/Kimi_Agent_Aureon_20260408/aureon-trading-main-snapshot/docs/research/whitepapers/COMPLETE_EVIDENCE_SYNTHESIS.pdf"
+      ],
+      "first_commit": {
+        "path": "COMPLETE_EVIDENCE_SYNTHESIS.pdf",
+        "blob": "310adb8d5705e97e400ebead4081115dcacc902c",
+        "commit": "51cf5c95e8bb755d63532a5453d28144423971c9",
+        "authored": "2026-03-24T11:35:51Z",
+        "committed": "2026-03-24T11:35:51Z",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 0,
+        "twig": 3,
+        "light": 0,
+        "calendar": 0,
+        "time_reading": 4,
+        "hnc": 4
+      },
+      "passages": [],
+      "text_length": 8475
+    },
+    {
+      "blob": "ea4ae92ffd8e7f6d0fe548a0fa00d935ec28ffbe",
+      "sha256": "de4c29869fc5f533139ccd071c844575672be98d9403be71b5b7d2e85c52eae8",
+      "paths": [
+        "HNC_Grand_Unified_Framework_Leckey_2026.docx",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/HNC_Grand_Unified_Framework_Leckey_2026_de4c29869f.docx",
+        "docs/research/whitepapers/HNC_Grand_Unified_Framework_Leckey_2026.docx",
+        "imports/Kimi_Agent_Aureon_20260408/aureon-trading-main-snapshot/docs/research/whitepapers/HNC_Grand_Unified_Framework_Leckey_2026.docx"
+      ],
+      "first_commit": {
+        "path": "HNC_Grand_Unified_Framework_Leckey_2026.docx",
+        "blob": "ea4ae92ffd8e7f6d0fe548a0fa00d935ec28ffbe",
+        "commit": "4d31fe078b80d455dab8bc0ad7d25bb1602bd12e",
+        "authored": "2026-04-03T15:46:21+01:00",
+        "committed": "2026-04-03T15:46:21+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 5,
+        "twig": 1,
+        "light": 0,
+        "calendar": 1,
+        "time_reading": 25,
+        "hnc": 29
+      },
+      "passages": [
+        {
+          "line": 773,
+          "categories": [
+            "legacy",
+            "hnc"
+          ],
+          "text": "ELF cavity — in HNC substrate frequencies"
+        },
+        {
+          "line": 776,
+          "categories": [
+            "legacy",
+            "hnc"
+          ],
+          "text": "ELF cavity — in HNC substrate frequencies"
+        },
+        {
+          "line": 782,
+          "categories": [
+            "legacy",
+            "hnc"
+          ],
+          "text": "ELF cavity — in HNC substrate frequencies"
+        }
+      ],
+      "text_length": 41690
+    },
+    {
+      "blob": "20e8379c41bb9a6443a220f78e8d5074826c5a2a",
+      "sha256": "cdf6ab9f95d1100799b692b4a3b78c78bf86115f9580d3916abe4ab5d04c47b3",
+      "paths": [
+        "HNC_Grand_Unified_v2_PrimarySource_Leckey_2026..docx",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/HNC_Grand_Unified_v2_PrimarySource_Leckey_2026_cdf6ab9f95.docx",
+        "docs/research/whitepapers/HNC_Grand_Unified_v2_PrimarySource_Leckey_2026.docx",
+        "imports/Kimi_Agent_Aureon_20260408/aureon-trading-main-snapshot/docs/research/whitepapers/HNC_Grand_Unified_v2_PrimarySource_Leckey_2026.docx"
+      ],
+      "first_commit": {
+        "path": "HNC_Grand_Unified_v2_PrimarySource_Leckey_2026..docx",
+        "blob": "20e8379c41bb9a6443a220f78e8d5074826c5a2a",
+        "commit": "b110ace5cc245a44618ef4133ed31b5bab14809c",
+        "authored": "2026-04-03T16:35:35+01:00",
+        "committed": "2026-04-03T16:35:35+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 2,
+        "twig": 0,
+        "light": 0,
+        "calendar": 1,
+        "time_reading": 7,
+        "hnc": 11
+      },
+      "passages": [
+        {
+          "line": 457,
+          "categories": [
+            "legacy",
+            "hnc"
+          ],
+          "text": "4.2 HNC Substrate Frequencies vs Schumann Modes"
+        },
+        {
+          "line": 490,
+          "categories": [
+            "legacy",
+            "hnc"
+          ],
+          "text": "HNC Substrate Term 1 frequencies 1–4 correspond exactly to the four lowest-order Schumann resonances confirmed across three independent measurement systems spanning 1960–2008. The φ-offset of 12.67 Hz falls between modes 1 and 2, in the low-interference window."
+        }
+      ],
+      "text_length": 27947
+    },
+    {
+      "blob": "8a6c9def43cdf018eda7f3a7b16c0cbc982f7f4c",
+      "sha256": "33e464e0c343739d45197fda4a7842e4313415843d859efff4675d49820ff371",
+      "paths": [
+        "HNC_Grand_Unified_Framework_Leckey_2026.pdf",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/HNC_Grand_Unified_Framework_Leckey_2026_33e464e0c3.pdf",
+        "docs/research/whitepapers/HNC_Grand_Unified_Framework_Leckey_2026.pdf",
+        "imports/Kimi_Agent_Aureon_20260408/aureon-trading-main-snapshot/docs/research/whitepapers/HNC_Grand_Unified_Framework_Leckey_2026.pdf"
+      ],
+      "first_commit": {
+        "path": "HNC_Grand_Unified_Framework_Leckey_2026.pdf",
+        "blob": "8a6c9def43cdf018eda7f3a7b16c0cbc982f7f4c",
+        "commit": "4aec4168cf411588682a8c8f07fecd55051fd365",
+        "authored": "2026-04-05T08:52:27+01:00",
+        "committed": "2026-04-05T08:52:27+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 4,
+        "twig": 1,
+        "light": 0,
+        "calendar": 1,
+        "time_reading": 22,
+        "hnc": 47
+      },
+      "passages": [
+        {
+          "line": 445,
+          "categories": [
+            "legacy",
+            "hnc"
+          ],
+          "text": "2nd  harmonic 14.3  Hz ELF  cavity  —  in  HNC  substrate  frequencies "
+        },
+        {
+          "line": 446,
+          "categories": [
+            "legacy",
+            "hnc"
+          ],
+          "text": "3rd  harmonic 20.8  Hz ELF  cavity  —  in  HNC  substrate  frequencies "
+        },
+        {
+          "line": 448,
+          "categories": [
+            "legacy",
+            "hnc"
+          ],
+          "text": "5th  harmonic 33.8  Hz ELF  cavity  —  in  HNC  substrate  frequencies "
+        }
+      ],
+      "text_length": 42081
+    },
+    {
+      "blob": "1f021db64d3a8c4596b3ca770b79df62d0229dcd",
+      "sha256": "0071afff94a62aeda6b9d07f783f9638c5248b8dc2f241c8d3388ed1eb729604",
+      "paths": [
+        "HNC_Grand_Unified_v2_PrimarySource_Lecke.docx",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/HNC_Grand_Unified_v2_PrimarySource_Leckey_2026_rev2_0071afff94.docx",
+        "docs/research/whitepapers/HNC_Grand_Unified_v2_PrimarySource_Leckey_2026_rev2.docx",
+        "imports/Kimi_Agent_Aureon_20260408/aureon-trading-main-snapshot/docs/research/whitepapers/HNC_Grand_Unified_v2_PrimarySource_Leckey_2026_rev2.docx"
+      ],
+      "first_commit": {
+        "path": "HNC_Grand_Unified_v2_PrimarySource_Lecke.docx",
+        "blob": "1f021db64d3a8c4596b3ca770b79df62d0229dcd",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 3,
+        "twig": 1,
+        "light": 0,
+        "calendar": 1,
+        "time_reading": 10,
+        "hnc": 16
+      },
+      "passages": [
+        {
+          "line": 446,
+          "categories": [
+            "legacy",
+            "hnc"
+          ],
+          "text": "Sources: Schumann 1952 (DOI: 10.1515/zna-1952-0202); Balser & Wagner 1960 (DOI: 10.1038/188638a0); C/NOFS: Simões et al. 2011 (DOI: 10.1029/2011GL049668). Typical amplitude: ~1 pT magnetic, ~300 μV/m electric. Diurnal variation: ±0.5 Hz. HNC substrate Term 1 frequencies 1, 2, 3, and 5 correspond exactly to Schumann modes 1, 2, 3, and 5."
+        },
+        {
+          "line": 491,
+          "categories": [
+            "legacy",
+            "hnc"
+          ],
+          "text": "HNC substrate term (528 Hz = 30% weight) and the φ² bridge anchor."
+        }
+      ],
+      "text_length": 24714
+    },
+    {
+      "blob": "39639ad8340674611a0a2b600859e943b531865a",
+      "sha256": "6a6de04554ab7bc784eee6619f8806e4138ef9000b4795a62a2d5e571a62dd7b",
+      "paths": [
+        "Maeshowe_Seer_Decode_Report (2).docx",
+        "Maeshowe_Seer_Decode_Report.docx",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/Maeshowe_Seer_Decode_Report_6a6de04554.docx",
+        "docs/research/whitepapers/Maeshowe_Seer_Decode_Report.docx",
+        "docs/research/whitepapers/Maeshowe_Seer_Decode_Report_rev2.docx"
+      ],
+      "first_commit": {
+        "path": "Maeshowe_Seer_Decode_Report (2).docx",
+        "blob": "39639ad8340674611a0a2b600859e943b531865a",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 0,
+        "twig": 21,
+        "light": 9,
+        "calendar": 0,
+        "time_reading": 4,
+        "hnc": 4
+      },
+      "passages": [
+        {
+          "line": 18,
+          "categories": [
+            "twig",
+            "hnc"
+          ],
+          "text": "The twig-rune cipher system maps directly to the Aureon HNC Observer-Observed framework:"
+        },
+        {
+          "line": 98,
+          "categories": [
+            "twig",
+            "light"
+          ],
+          "text": "Summary: Maeshowe is not a vandalised tomb. It is a transmission archive from a dying knowledge network. The 12th-century carvers were the last trained dual-voice practitioners in Orkney. They deposited the complete system — alphabet, cipher protocol, performance metre, visual key, directional pointers, and a warning about operational requirements — into a 4,800-year-old resonance chamber calibrated to the winter solstice. The message is: “We were here. We were the last. Here is everything you need to restart. Bring two voices.”"
+        }
+      ],
+      "text_length": 9965
+    },
+    {
+      "blob": "d958502c539e450a288ae9d65de9addaf01e8acc",
+      "sha256": "889faf1a907a41de9bcd91d2ad2f4a2ee1ad7723c392260e91e482c61d949ce0",
+      "paths": [
+        "THE_PHI_SQUARED_CHAIN_Sumer_to_Rome_to_N.pdf",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/THE_PHI_SQUARED_CHAIN_Sumer_to_Rome_to_Now_889faf1a90.pdf",
+        "docs/research/whitepapers/THE_PHI_SQUARED_CHAIN_Sumer_to_Rome_to_Now.pdf"
+      ],
+      "first_commit": {
+        "path": "THE_PHI_SQUARED_CHAIN_Sumer_to_Rome_to_N.pdf",
+        "blob": "d958502c539e450a288ae9d65de9addaf01e8acc",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 8,
+        "twig": 4,
+        "light": 19,
+        "calendar": 7,
+        "time_reading": 11,
+        "hnc": 0
+      },
+      "passages": [],
+      "text_length": 33065
+    },
+    {
+      "blob": "e0b97a108bc2a8eca7a2265bf8e51420272d5688",
+      "sha256": "532f2add505e456478ee02111680b55042afe314bf639cdf889d1de7a31cec97",
+      "paths": [
+        "Modeling_Light_Dynamics_Through_Astronom (2).pdf",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/Modeling_Light_Dynamics_Through_Astronomical_532f2add50.pdf",
+        "docs/research/whitepapers/Modeling_Light_Dynamics_Through_Astronomical.pdf"
+      ],
+      "first_commit": {
+        "path": "Modeling_Light_Dynamics_Through_Astronom (2).pdf",
+        "blob": "e0b97a108bc2a8eca7a2265bf8e51420272d5688",
+        "commit": "e7b3a462bd991f2c03bbcea256f9c2d2fb9ccdcf",
+        "authored": "2026-04-05T09:26:14+01:00",
+        "committed": "2026-04-05T09:26:14+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 0,
+        "twig": 0,
+        "light": 1,
+        "calendar": 2,
+        "time_reading": 6,
+        "hnc": 0
+      },
+      "passages": [],
+      "text_length": 31667
+    },
+    {
+      "blob": "2e4308315a75c74b24268bef1905e30a59b84b21",
+      "sha256": "f0d945532bfe84fc411540a17e86390c2278eebf3ef53099755ddc781e6ee134",
+      "paths": [
+        "HNC_VERIFICATION_AUDIT_v2_2026-04-07.md.pdf",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/HNC_VERIFICATION_AUDIT_v2_2026-04-07.md_f0d945532b.pdf",
+        "docs/research/audits/HNC_VERIFICATION_AUDIT_v2_2026-04-07.md.pdf"
+      ],
+      "first_commit": {
+        "path": "HNC_VERIFICATION_AUDIT_v2_2026-04-07.md.pdf",
+        "blob": "2e4308315a75c74b24268bef1905e30a59b84b21",
+        "commit": "2a4496f814d10639503bebd57ef040bb0db94484",
+        "authored": "2026-04-07T11:26:48+01:00",
+        "committed": "2026-04-07T11:26:48+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 4,
+        "twig": 0,
+        "light": 0,
+        "calendar": 2,
+        "time_reading": 22,
+        "hnc": 6
+      },
+      "passages": [],
+      "text_length": 38513
+    },
+    {
+      "blob": "e156c597ec4b8ae5b62be803d63adc192a2227d3",
+      "sha256": "4780f86f77e6eccefc1c8fb42b605ca62082a588b420f1724f24145c3d486a5b",
+      "paths": [
+        "HNC_research_paper_2026-04-07.md.pdf",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/HNC_research_paper_2026-04-07.md_4780f86f77.pdf",
+        "docs/research/audits/HNC_research_paper_2026-04-07.md.pdf"
+      ],
+      "first_commit": {
+        "path": "HNC_research_paper_2026-04-07.md.pdf",
+        "blob": "e156c597ec4b8ae5b62be803d63adc192a2227d3",
+        "commit": "c7d0ca10d619b943278348814fca11cd49873a51",
+        "authored": "2026-04-07T11:32:32+01:00",
+        "committed": "2026-04-07T11:32:32+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 4,
+        "twig": 0,
+        "light": 0,
+        "calendar": 2,
+        "time_reading": 27,
+        "hnc": 16
+      },
+      "passages": [
+        {
+          "line": 96,
+          "categories": [
+            "legacy",
+            "hnc"
+          ],
+          "text": "This paper does not assess the broader interpretive claims of the HNC framework — the historical-substrate thread connecting"
+        },
+        {
+          "line": 482,
+          "categories": [
+            "legacy",
+            "hnc"
+          ],
+          "text": "This audit makes no claim about the broader interpretive content of the HNC framework. The historical-substrate thread"
+        }
+      ],
+      "text_length": 61033
+    },
+    {
+      "blob": "1f62998fcafd022cf5a4ece42a0827011e591f59",
+      "sha256": "365ca43f35e802cfa371af61bf2ddee504ad7a21f16e1f5a24203d45703a4c48",
+      "paths": [
+        "HNC_Grand_Unified_v2_PrimarySource_Leckey_2026.docx",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/HNC_Grand_Unified_v2_PrimarySource_Leckey_2026_365ca43f35.docx",
+        "docs/research/whitepapers/HNC_Grand_Unified_v2_PrimarySource_Leckey_2026_rev3.docx"
+      ],
+      "first_commit": {
+        "path": "HNC_Grand_Unified_v2_PrimarySource_Leckey_2026.docx",
+        "blob": "1f62998fcafd022cf5a4ece42a0827011e591f59",
+        "commit": "c93148c94ff531698009e4451ddb253d8750d8ac",
+        "authored": "2026-04-08T11:43:55+01:00",
+        "committed": "2026-04-08T11:43:55+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 4,
+        "twig": 0,
+        "light": 0,
+        "calendar": 1,
+        "time_reading": 10,
+        "hnc": 20
+      },
+      "passages": [
+        {
+          "line": 454,
+          "categories": [
+            "legacy",
+            "hnc"
+          ],
+          "text": "4.2 HNC Substrate Frequencies vs Schumann Modes"
+        },
+        {
+          "line": 487,
+          "categories": [
+            "legacy",
+            "hnc"
+          ],
+          "text": "HNC Substrate Term 1 frequencies 1–4 correspond exactly to the four lowest-order Schumann resonances confirmed across three independent measurement systems spanning 1960–2008. The φ-offset of 12.67 Hz falls between modes 1 and 2, in the low-interference window."
+        }
+      ],
+      "text_length": 38847
+    },
+    {
+      "blob": "4ec1b1450f4c968f85b89644c81ed1b6ccf20c09",
+      "sha256": "ab397e25d0fc2bb676b8b3f01cc014d8b5e0d5af126839ebb35204bc09e2e8f2",
+      "paths": [
+        "HNC_Grand_Unified_v4_Fixed_Leckey_2026.docx",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/HNC_Grand_Unified_v4_Fixed_Leckey_2026_ab397e25d0.docx",
+        "docs/research/whitepapers/HNC_Grand_Unified_v4_Fixed_Leckey_2026.docx"
+      ],
+      "first_commit": {
+        "path": "HNC_Grand_Unified_v4_Fixed_Leckey_2026.docx",
+        "blob": "4ec1b1450f4c968f85b89644c81ed1b6ccf20c09",
+        "commit": "c93148c94ff531698009e4451ddb253d8750d8ac",
+        "authored": "2026-04-08T11:43:55+01:00",
+        "committed": "2026-04-08T11:43:55+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 4,
+        "twig": 0,
+        "light": 0,
+        "calendar": 1,
+        "time_reading": 10,
+        "hnc": 20
+      },
+      "passages": [
+        {
+          "line": 454,
+          "categories": [
+            "legacy",
+            "hnc"
+          ],
+          "text": "4.2 HNC Substrate Frequencies vs Schumann Modes"
+        },
+        {
+          "line": 487,
+          "categories": [
+            "legacy",
+            "hnc"
+          ],
+          "text": "HNC Substrate Term 1 frequencies 1–4 correspond exactly to the four lowest-order Schumann resonances confirmed across three independent measurement systems spanning 1960–2008. The φ-offset of 12.67 Hz falls between modes 1 and 2, in the low-interference window."
+        }
+      ],
+      "text_length": 38847
+    },
+    {
+      "blob": "b60e369b5e38d65ec6132db6fd8041715a3bbd0b",
+      "sha256": "24a9991d00be4fbeebb9d216424107296573ddeb838f8b68c3d3a35ad699a65d",
+      "paths": [
+        "HNC_Grand_Unified_v3_ClearTables_Leckey_2026.docx",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/HNC_Grand_Unified_v3_ClearTables_Leckey_2026_24a9991d00.docx",
+        "docs/research/whitepapers/HNC_Grand_Unified_v3_ClearTables_Leckey_2026.docx"
+      ],
+      "first_commit": {
+        "path": "HNC_Grand_Unified_v3_ClearTables_Leckey_2026.docx",
+        "blob": "b60e369b5e38d65ec6132db6fd8041715a3bbd0b",
+        "commit": "c93148c94ff531698009e4451ddb253d8750d8ac",
+        "authored": "2026-04-08T11:43:55+01:00",
+        "committed": "2026-04-08T11:43:55+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 4,
+        "twig": 0,
+        "light": 0,
+        "calendar": 1,
+        "time_reading": 10,
+        "hnc": 20
+      },
+      "passages": [
+        {
+          "line": 454,
+          "categories": [
+            "legacy",
+            "hnc"
+          ],
+          "text": "4.2 HNC Substrate Frequencies vs Schumann Modes"
+        },
+        {
+          "line": 487,
+          "categories": [
+            "legacy",
+            "hnc"
+          ],
+          "text": "HNC Substrate Term 1 frequencies 1–4 correspond exactly to the four lowest-order Schumann resonances confirmed across three independent measurement systems spanning 1960–2008. The φ-offset of 12.67 Hz falls between modes 1 and 2, in the low-interference window."
+        }
+      ],
+      "text_length": 38847
+    },
+    {
+      "blob": "e5e14cdfbb3ee3b0e1b4bb11b1c81d0d89f46311",
+      "sha256": "b726b2a01300515aaa664f3e3ae2d240784fa559b5c92c9fcbfb61409dcd5b92",
+      "paths": [
+        "HNC_Grand_Unified_v4_Mobile_Leckey_2026.docx",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/HNC_Grand_Unified_v4_Mobile_Leckey_2026_b726b2a013.docx",
+        "docs/research/whitepapers/HNC_Grand_Unified_v4_Mobile_Leckey_2026.docx"
+      ],
+      "first_commit": {
+        "path": "HNC_Grand_Unified_v4_Mobile_Leckey_2026.docx",
+        "blob": "e5e14cdfbb3ee3b0e1b4bb11b1c81d0d89f46311",
+        "commit": "c93148c94ff531698009e4451ddb253d8750d8ac",
+        "authored": "2026-04-08T11:43:55+01:00",
+        "committed": "2026-04-08T11:43:55+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 3,
+        "twig": 1,
+        "light": 0,
+        "calendar": 1,
+        "time_reading": 10,
+        "hnc": 16
+      },
+      "passages": [
+        {
+          "line": 443,
+          "categories": [
+            "legacy",
+            "hnc"
+          ],
+          "text": "Sources: Schumann 1952 (DOI: 10.1515/zna-1952-0202); Balser & Wagner 1960 (DOI: 10.1038/188638a0); C/NOFS: Simões et al. 2011 (DOI: 10.1029/2011GL049668). Typical amplitude: ~1 pT magnetic, ~300 μV/m electric. Diurnal variation: ±0.5 Hz. HNC substrate Term 1 frequencies 1, 2, 3, and 5 correspond exactly to Schumann modes 1, 2, 3, and 5."
+        },
+        {
+          "line": 488,
+          "categories": [
+            "legacy",
+            "hnc"
+          ],
+          "text": "HNC substrate term (528 Hz = 30% weight) and the φ² bridge anchor."
+        }
+      ],
+      "text_length": 24716
+    },
+    {
+      "blob": "18a90681184f51304171290e5fccd8a1813f2061",
+      "sha256": "4580622e32420bad5a9592bc28a491231a2c0597c3c1549d4910c1dc4f2d0775",
+      "paths": [
+        "Antarctic research/Validation_Metrics_Ledger_v1.docx",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/Validation_Metrics_Ledger_v_4580622e32.docx"
+      ],
+      "first_commit": {
+        "path": "Antarctic research/Validation_Metrics_Ledger_v1.docx",
+        "blob": "18a90681184f51304171290e5fccd8a1813f2061",
+        "commit": "cdb8af76f35760b4008bff568342a19d7f3c6b53",
+        "authored": "2026-05-22T19:14:39+01:00",
+        "committed": "2026-05-22T19:15:56+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 28,
+        "twig": 0,
+        "light": 5,
+        "calendar": 16,
+        "time_reading": 7,
+        "hnc": 1
+      },
+      "passages": [
+        {
+          "line": 7,
+          "categories": [
+            "legacy",
+            "time_reading"
+          ],
+          "text": "The substrate-corpus work has spanned multiple sessions and accumulated many overlapping data streams: archaeological, archaeoastronomical, ancient-DNA, primary-source classical, medieval-documentary, and modern peer-reviewed. Without a single ledger that tracks every claim back to its primary source and tags its validation tier, the corpus risks losing the distinction between what is documented (and where), what is contested, what is reconstructive, and what is still under test. This ledger is the baseline reference for the corpus."
+        },
+        {
+          "line": 8,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The Mesolithic root of the corpus is around 9335-8440 BCE at Star Carr in North Yorkshire and Mount Sandel in Northern Ireland. The Atlantic megalith chain emerges in northwest France 4500 BCE and reaches Iberia, Britain, Ireland, Brittany, and Scandinavia within 200-300 years. Newgrange is built 3200 BCE. The Roman suppression of the druid system runs from Augustus through Claudius (54 CE) to the destruction of Mona under Tacitus in 61 CE. The Coligny calendar is broken and buried around 200 CE. Christianisation of Ireland from 432 CE re-encodes the substrate into monastic-Latin manuscripts. The Navigatio Brendani is composed around 800 CE. The substrate's last continuous-tradition stronghold is the Argyll-Hebridean corridor centred on Oban, consolidated by Somerled in 1153 CE in the same year that Norse-Gaelic carriers carve deliberate runic inscriptions inside Maeshowe. The substrate's territorial form is extinguished by the Statutes of Iona 1609 and the Highland Clearances 1750-1860. Recovery begins with Maeshowe re-opening in 1861 and continues to the present."
+        },
+        {
+          "line": 322,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "Ten substantive tests have been run on the corpus to date, against open-source data and documented hypotheses. Five failed (or failed inversely). Two surviving specific findings: the Pleiades-Belt-Sirius angular triangle (p=0.019) and the Venus-Earth orbital pentagram (established mechanics). Specific Pythagorean interval matches at sub-0.15% precision among substrate calendar dawn-risers are real but the aggregate count is below random null. The Brendan transcript feature → geography mapping survives the Johnston 2014 peer-reviewed reading."
+        },
+        {
+          "line": 347,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "Substrate calendar dawn-rising stars show phi-structure across calendar wheel"
+        },
+        {
+          "line": 351,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "Substrate calendar dawn-risers show specific Pythagorean intervals"
+        },
+        {
+          "line": 384,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "6.  Cross-latitude calendar-sky test: same eight-station wheel computed for Newgrange (53.7°N), Almendres (38.6°N), Carnac (47.6°N), and Maeshowe (59°N) with the dawn-rising-constellation index compared. The substrate-as-shared-index claim predicts the same constellations at the same calendar stations across all four observer latitudes."
+        }
+      ],
+      "text_length": 20386
+    },
+    {
+      "blob": "470fe715c9add37ef8d1f61a36fa4ad395b577a0",
+      "sha256": "fc0dfcf223e61928c34d065dcc739959a3e7e5c002105303c575a2a4d7a99843",
+      "paths": [
+        "Antarctic research/The_Atlantic_Substrate_v1-1.docx",
+        "Antarctic research/The_Atlantic_Substrate_v1.docx",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/The_Atlantic_Substrate_v1-1_fc0dfcf223.docx"
+      ],
+      "first_commit": {
+        "path": "Antarctic research/The_Atlantic_Substrate_v1-1.docx",
+        "blob": "470fe715c9add37ef8d1f61a36fa4ad395b577a0",
+        "commit": "cdb8af76f35760b4008bff568342a19d7f3c6b53",
+        "authored": "2026-05-22T19:14:39+01:00",
+        "committed": "2026-05-22T19:15:56+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 77,
+        "twig": 0,
+        "light": 16,
+        "calendar": 37,
+        "time_reading": 9,
+        "hnc": 0
+      },
+      "passages": [
+        {
+          "line": 12,
+          "categories": [
+            "legacy",
+            "calendar",
+            "time_reading"
+          ],
+          "text": "We argue that the substrate's organisational form — patrilineal endogamy with mtDNA continuity, ship-based military service, kindred-network political organisation, calendar-bound maritime navigation — persists for 4,300 years from the Newgrange dynastic elite to the Lordship of the Isles. The paper trail (Brendan voyage, immrama, Lebor Gabála Érenn, the Coligny calendar, the medieval Irish and Norse chronicles) preserves the substrate's late-phase self-narrative under successive cultural overlays. The DNA confirms the biological reality beneath the narrative."
+        },
+        {
+          "line": 13,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "Statistical tests of phi-encoded angular structure in substrate alignments have produced null results across three test designs (terrestrial phi-grid, visible-sky pairwise, calendar-dawn-rising ratios). Specific sub-0.15% Pythagorean interval matches between specific star pairs at Newgrange dawn are real but the aggregate count is below random null. The Pleiades-Belt-Sirius angular triangle (p=0.019) and the Venus-Earth orbital pentagram (established mechanics) are the surviving phi-related findings. The paper takes a position of evidence-board honesty: the substrate is real and continuous as a kindred network and as an architectural-calendrical tradition, but the strong-form claim that its alignment geometry is preferentially phi-encoded is not yet supported."
+        },
+        {
+          "line": 18,
+          "categories": [
+            "calendar",
+            "time_reading"
+          ],
+          "text": "We do not need to prove this in the strong form by demonstrating that every Atlantic megalith builder thought of themselves as part of the same people as Somerled's Hebridean Norse-Gael fleet 4,300 years later. We need to prove it in the weak-but-decisive form: that the network was structurally continuous in its organisational form, biologically continuous in lineage signal, and culturally continuous in its core practices (calendar binding, kindred political organisation, maritime ship-based service, monumental architecture aligned to solar and lunar events). The ancient DNA evidence published in the past decade closes the gap that previous scholarship could only treat as inference."
+        },
+        {
+          "line": 19,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The paper proceeds as follows. Section 2 lays out the geography and establishes the chronology with peer-reviewed dates. Section 3 walks through the five ancient-DNA anchor studies that define the kindred network in the bones. Section 4 covers the architectural evidence — Newgrange, Maeshowe, Stonehenge, Stenness, Callanish, Carnac, Almendres, Antequera — and the calendar binding that connects the alignments to the lunar-solar mathematics. Section 5 reads the primary-source ancient testimony of Caesar, Pliny, and Tacitus alongside the surviving Coligny calendar to establish the druid system as the substrate's late-Iron-Age phase. Section 6 covers the Christianisation transition and reads the Voyage of Brendan as a captured-form substrate transcript. Section 7 covers the substrate's retreat into the Argyll-Hebridean corridor through Dalriada, the Cenél Loairn, the establishment of Iona, and the consolidation under Somerled in 1153 CE alongside the deliberate runic deposits inside Maeshowe in the same year. Section 8 reports honestly on the statistical tests run on the corpus and what they did and did not show. Section 9 lays out what the evidence now lets us claim and what remains open."
+        },
+        {
+          "line": 107,
+          "categories": [
+            "legacy",
+            "light"
+          ],
+          "text": "Critically, NG10 has identified biological relatives at two other major passage-tomb complexes: at Carrowkeel in Sligo, approximately 150 km west of Newgrange, and at Millin Bay in Down, approximately 100 km north. This is the substrate's politico-religious elite operating across the entire island in a single biological lineage at 3200 BCE, with controlled marriage strategy maintaining the dynastic bloodline, with elite-burial access in the most prestigious chambers across multiple monument complexes, and with the architectural authority to be buried in the chamber that the winter solstice illuminates."
+        },
+        {
+          "line": 117,
+          "categories": [
+            "legacy",
+            "light"
+          ],
+          "text": "The substrate's biological kindred network built monumental architecture aligned to specific solar and lunar events. The alignments are not approximate. They are calibrated to the path of the sun at the substrate epoch with sufficient precision that small dimensional changes would have caused them to fail. Patrick 1974, in Nature 337:343, demonstrated that the Newgrange roof-box was deliberately designed to admit the winter solstice sunrise into the chamber, with the width and height of the gap calibrated to trace the path of the sun."
+        },
+        {
+          "line": 120,
+          "categories": [
+            "legacy",
+            "light",
+            "calendar"
+          ],
+          "text": "The Atlantic substrate's calendar is the eight-fold wheel of the year — four solar quarter days (winter solstice, spring equinox, summer solstice, autumn equinox) and four cross-quarter days (Samhain on November 1, Imbolc on February 1, Bealtaine on May 1, Lughnasadh on August 1). The four solar stations are universally observable astronomical events; the four cross-quarter days fall at the precise midpoints between them. The architecture confirms the wheel: Newgrange and Maeshowe align to the winter solstice, Stonehenge to the summer solstice, Knowth and Carnac and Almendres to the equinoxes, Stenness to the Beltane sunrise, Dowth to the Samhain sunset."
+        },
+        {
+          "line": 123,
+          "categories": [
+            "legacy",
+            "light",
+            "calendar"
+          ],
+          "text": "The substrate's calendar binds three independent celestial clocks: the solar year (solstices and equinoxes), the lunar month (full moons and new moons), and the stellar reference (heliacally rising and setting stars at specific calendar positions). The Coligny calendar, recovered from a deposit at Coligny in eastern France in 1897 and now displayed at the Musée Gallo-Romain in Lyon, is the surviving physical artifact of this binding."
+        },
+        {
+          "line": 134,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The suppression was not a single event but a sustained imperial policy across more than a century. The deliberate burial of the Coligny calendar around 200 CE — fifteen hundred years before its 1897 recovery — fits exactly into this pattern. The substrate's carriers, knowing that the open practice was no longer viable, deposited what could be deposited into durable media (bronze, stone) and dispersed the rest into oral transmission and into kindred-network political organisation that did not depend on a centralised school."
+        },
+        {
+          "line": 136,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "Caesar records that the druids' principal doctrine was the immortality of the soul and its transmigration from one body to another after death — the metempsychosis attributed to Pythagoras and his school. The substrate's mathematical framework (lunisolar Metonic cycle, harmonic ratios in calendar binding, geometric encoding in architectural alignment) overlaps substantially with what later Greek and Hellenistic sources attribute to the Pythagorean tradition. We do not need to claim direct transmission. We can claim parallel development from a shared older substrate, with Pythagoras's school in Greek Italy receiving one stream of the substrate's mathematics through Egyptian and Babylonian intermediaries while the druids preserved another stream in the Atlantic seaboard tradition."
+        },
+        {
+          "line": 143,
+          "categories": [
+            "legacy",
+            "light",
+            "calendar"
+          ],
+          "text": "The seven-year cycle and the four-anchor structure are not Christian inventions. Christmas was already pinned to the winter solstice in the fourth-century Roman calendar reform; the substrate's winter solstice station at Newgrange predates the Christian Christmas by 3,500 years. Easter is computed by the first Sunday after the first full moon after the spring equinox — a lunisolar binding identical in form to the Coligny calendar's principle. Pentecost falls fifty days after Easter, in late May to early June, approaching the substrate's summer solstice station at Stonehenge. Maundy Thursday is the lunar marker for the start of the sailing season after winter. The four anchor festivals are operationally optimal departure-and-arrival timings for North Atlantic voyaging, dressed as a Christian liturgical calendar."
+        },
+        {
+          "line": 146,
+          "categories": [
+            "legacy",
+            "time_reading"
+          ],
+          "text": "By the twelfth century CE the substrate's continuous-tradition kindred network had narrowed geographically. The Roman suppression, the Anglo-Saxon and Norman conquests of southern Britain, and the Norwegian conquest of the Northern Isles and the Hebrides between approximately 794 CE and 1098 CE had removed most of the original Atlantic substrate territory from its carrier kindreds. What remained was the western Scottish corridor — Argyll, the inner Hebrides, Iona, and the Isle of Man — operating under Norse-Gaelic Gall-Gaedhil leadership and maintaining Gaelic language, kindred-based political organisation, ship-based maritime service, and the ecclesiastical centre at Iona."
+        },
+        {
+          "line": 156,
+          "categories": [
+            "legacy",
+            "calendar",
+            "time_reading"
+          ],
+          "text": "From Newgrange NG10 in 3200 BCE to the Lordship of the Isles in 1493 CE is approximately 4,700 years. The substrate's organisational form — patrilineal endogamy with mtDNA continuity, ship-based military service, kindred-network political organisation, calendar-bound maritime navigation, monumental architecture aligned to specific celestial events, and an ecclesiastical centre on a small western island (Iona's predecessor function performed by the Boyne Valley Brú na Bóinne and by the megalithic ceremonial landscapes of Orkney and Wessex in earlier phases) — persists across this entire span. The names change. The Y-haplogroups partially change. The cultural overlay changes. The form does not change."
+        },
+        {
+          "line": 159,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "We have run a series of statistical tests on the substrate-corpus claims, specifically on hypotheses about phi-encoded angular structure in the architectural alignments and in the calendar-dawn-rising star sequences. Honesty about what these tests have shown is essential to the paper's epistemic standing."
+        },
+        {
+          "line": 184,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "Substrate calendar dawn-risers show Pythagorean intervals"
+        },
+        {
+          "line": 194,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "What does survive. Specific high-precision interval matches at sub-0.15% deviation between specific star pairs at Newgrange dawn — particularly the 9:8 whole-tone interval at 0.004% deviation, the 2:1 octave at 0.009%, the 3:2 perfect fifth at 0.015%, and the 6:5 minor third at 0.040%. These are real properties of those specific star pairs. They would have been navigationally useful to a pre-modern observer using stars as a clock. They do not, however, demonstrate aggregate Pythagorean encoding of the substrate calendar above what random equivalent-brightness pairings produce."
+        },
+        {
+          "line": 200,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The Atlantic substrate is a documented continuous kindred network operating from the fifth millennium BCE to the late fifteenth century CE along the Atlantic seaboard from Iberia to the Hebrides. Its biological signature is established by five peer-reviewed ancient-DNA studies covering ~1,200 ancient genomes. Its architectural signature is the eight-fold wheel of the year built into stone at sites dated by independent radiocarbon series from 5500 BCE to 2500 BCE. Its calendrical-mathematical signature is preserved in the Coligny calendar artifact and in the primary-source testimony of Caesar, Pliny, and Tacitus on the druid system. Its political form persists from the Newgrange dynastic elite through the Iron-Age druid school, the Dalriadan kindred-cenél structure, the Norse-Gaelic Gall-Gaedhil fusion, and the Lordship of the Isles to 1493 CE. Its narrative tradition is preserved in the Voyage of Brendan, the immrama, the Lebor Gabála Érenn, and related medieval Irish manuscripts. The substrate is real and documented at every phase of its operation."
+        },
+        {
+          "line": 204,
+          "categories": [
+            "legacy",
+            "time_reading"
+          ],
+          "text": "Direct genetic continuity tests from Newgrange-era passage-tomb burials to medieval Argyll-Hebridean clan-founder remains would close the largest remaining inferential gap. The Y-haplogroup I2d-Y3709 distribution in modern Argyll-clan descendants (MacDougall, MacDonald, Campbell) is testable against the surname-cluster Y-haplotype data in commercial and academic databases. Iceland Settlement-era genomes from the Margaryan 2020 dataset can be compared against modern Icelandic populations to test substrate Y-line persistence at the Norse end of the route."
+        },
+        {
+          "line": 205,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "Cross-latitude calendar-sky tests at Newgrange (53.7°N), Almendres (38.6°N), Carnac (47.6°N), and Maeshowe (59°N) at the encoding epochs (3200-2800 BCE) can test whether the same constellations occupy the same calendar stations across all four observer latitudes — the prediction made by the substrate shared-index hypothesis. The test has not yet been run because the computational requirements are non-trivial; future work will report findings."
+        }
+      ],
+      "text_length": 48644
+    },
+    {
+      "blob": "5311f2a33786bd2944bdbaf5b286a8429f9387e7",
+      "sha256": "296fd4d36ada6963dd03d01a93c948ddc5e93b49aaf5020a5423066e2e20b133",
+      "paths": [
+        "Antarctic research/HNC_White_Paper_v3-1.pdf",
+        "Antarctic research/HNC_White_Paper_v3-2.pdf",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/HNC_White_Paper_v3-1_296fd4d36a.pdf"
+      ],
+      "first_commit": {
+        "path": "Antarctic research/HNC_White_Paper_v3-1.pdf",
+        "blob": "5311f2a33786bd2944bdbaf5b286a8429f9387e7",
+        "commit": "cdb8af76f35760b4008bff568342a19d7f3c6b53",
+        "authored": "2026-05-22T19:14:39+01:00",
+        "committed": "2026-05-22T19:15:56+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 6,
+        "twig": 0,
+        "light": 0,
+        "calendar": 2,
+        "time_reading": 4,
+        "hnc": 9
+      },
+      "passages": [
+        {
+          "line": 85,
+          "categories": [
+            "legacy",
+            "hnc"
+          ],
+          "text": "The HNC framework establishes that the fundamental substrate of reality is a spectrum of coupled "
+        }
+      ],
+      "text_length": 35543
+    },
+    {
+      "blob": "559088232b07d58eb805826512dea7ea1c00221f",
+      "sha256": "a671950d3b1962c70280feabdc6c0db9cc224730d64f3eaa615cf6a804b1d437",
+      "paths": [
+        "Antarctic research/The_Full_Story_v1 (1).docx",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/The_Full_Story_v1_1_a671950d3b.docx"
+      ],
+      "first_commit": {
+        "path": "Antarctic research/The_Full_Story_v1 (1).docx",
+        "blob": "559088232b07d58eb805826512dea7ea1c00221f",
+        "commit": "cdb8af76f35760b4008bff568342a19d7f3c6b53",
+        "authored": "2026-05-22T19:14:39+01:00",
+        "committed": "2026-05-22T19:15:56+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 111,
+        "twig": 0,
+        "light": 14,
+        "calendar": 45,
+        "time_reading": 4,
+        "hnc": 0
+      },
+      "passages": [
+        {
+          "line": 13,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The story has six phases. Phase one is origin — the substrate operates as an integrated kindred-network at its threshold, building the architecture, encoding the calendar, holding the knowledge in unified form. Phase two is transmission — carriers travel from the threshold to home cultures around the world, conduct documented transactions there, and return with the integrated cargo. Phase three is integration — the home cultures absorb the cargo as one package, reorganising around it. Phase four is fragmentation — religious or imperial factions in each home culture break the integrated package into specialised fragments under separate authorities. Phase five is dispersion — the fragments become invisible to one another and the substrate is described by historians as several unrelated phenomena. Phase six is recovery — modern scholarship begins to read the fragments together, ancient DNA closes inferential gaps, the cross-cultural pattern-match is laid out, and the integration becomes visible again."
+        },
+        {
+          "line": 20,
+          "categories": [
+            "legacy",
+            "light",
+            "calendar"
+          ],
+          "text": "At Évora in southern Portugal stands Almendres Cromlech, the oldest known stone circle in Europe — a complex of 95 standing stones in two adjoining ovals with the eastern entrance aligned to the equinox sunrise. Construction began in the early sixth millennium BCE, before Newgrange, before Stonehenge, before the Great Pyramid. Almendres establishes the southern anchor of the chain and demonstrates that the substrate's calendar mathematics — equinox and solstice marking through architectural alignment — was already in operation a millennium before the Atlantic façade megalith spread documented by Schulz Paulsson 2019."
+        },
+        {
+          "line": 49,
+          "categories": [
+            "legacy",
+            "light",
+            "calendar"
+          ],
+          "text": "Seven hundred years after Carnac, Ireland's Boyne Valley becomes the densest substrate node yet built. Newgrange, Knowth, and Dowth are constructed within roughly the same century. Newgrange is the most architecturally sophisticated. Its passage runs nineteen metres into the cairn. A small slot above the entrance — the roof-box — was deliberately cut to admit the rising sun on the morning of the winter solstice into the central chamber. The roof-box is calibrated. If it had been cut twenty centimetres too high or too low, or if the passage had been built a few metres shorter or longer, the alignment would have failed. It does not fail."
+        },
+        {
+          "line": 79,
+          "categories": [
+            "legacy",
+            "light"
+          ],
+          "text": "Three hundred kilometres further north, on the Orkney Mainland at 59°N, the substrate builds its northern Atlantic anchor. The Stones of Stenness are the oldest stone circle in Britain, raised around 3100 BCE. Their primary alignment is to the Beltane sunrise on May 1 at azimuth 41.27°. Three hundred years after Stenness, the chambered cairn of Maeshowe is built one kilometre to the east. Maeshowe's passage runs at azimuth 221°, oriented to the winter solstice sunset. For approximately three weeks around the solstice each year, the setting sun enters the passage and illuminates the back wall. Maeshowe is, with Newgrange, one of only two solstice-aligned chambered monuments in the British Isles, and it is the substrate's northern bookend matching Newgrange's southern bookend."
+        },
+        {
+          "line": 88,
+          "categories": [
+            "legacy",
+            "light"
+          ],
+          "text": "Five hundred years after Maeshowe, the sarsen circle of Stonehenge is raised at 51°N on the Wessex chalk downs. Its primary alignment is to the summer solstice sunrise along the avenue running northeast from the circle past the Heel Stone at azimuth 50.7°. Where Newgrange and Maeshowe mark the winter solstice and the year's death, Stonehenge marks the summer solstice and the year's fullness. The substrate's eight-fold wheel of the year is now built into stone across the entire Atlantic chain."
+        },
+        {
+          "line": 93,
+          "categories": [
+            "legacy",
+            "light"
+          ],
+          "text": "What it tells us — Stonehenge sarsen circle, summer solstice sunrise azimuth 50.7° — Atlantic substrate's summer-station bookend."
+        },
+        {
+          "line": 97,
+          "categories": [
+            "legacy",
+            "light",
+            "calendar",
+            "time_reading"
+          ],
+          "text": "By 2500 BCE the Atlantic substrate has built a chain of solstice-and-equinox-aligned monuments from southern Iberia at 38°N to the Northern Isles at 59°N. The kindred network is documented genetically across the chain. The architecture is calendrically calibrated to the working of solar and lunar bodies in the sky at the substrate epoch. The home base of operations is the threshold itself — the threshold being not just the architectural sites but the maritime kindred network that linked them, the calendar mathematics that timed them, and the carrier-class that operated them."
+        },
+        {
+          "line": 113,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The cargo back was Apollonian doctrine, healing arts (transmitted by the Hyperborean priest Abaris with his magical arrow), oracular prophecy, and the Olen poet's original Apollonian hymns which became the foundation of Delian ritual practice. Most importantly, the 19-year Metonic cycle was locked into Greek ritual practice as a live observance. Pythagoras was said in antiquity to have learned directly from Abaris — the meeting is recorded by Iamblichus in his Life of Pythagoras and by Porphyry. The Pythagorean school in southern Italy is therefore the documented destination of the Hyperborean substrate-cargo in its Greek phase."
+        },
+        {
+          "line": 152,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The Egyptian funerary tradition documents the substrate's calendar-and-vault function in two integrated forms operating across more than three thousand years of Pharaonic religion. The Duat or Tuat is the hidden chamber of the underworld, navigated by the sun-god Ra during the twelve hours of night. The Pyramid Texts of the Old Kingdom (2686-2181 BCE), the Coffin Texts of the First Intermediate Period, and the Book of Amduat — \"The Book of What Is in the Underworld\" — of the New Kingdom document the twelve regions in detail. Each hour has its named gods, demons, gates, and guardians. The Duat hieroglyph itself is a star inside a circle. Mummification took 70 days — the same period Sirius is invisible before its heliacal rising. The vault period and the celestial period match."
+        },
+        {
+          "line": 196,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "Phase Three is what happens when the cargo arrives. In every documented case the receiving home culture initially absorbs the substrate package as a single integrated system: calendar mathematics plus cosmology plus healing techniques plus agricultural ritual plus priesthood-organisation plus ethical teaching plus navigational-astronomical framework, all held together as one body of knowledge under one carrier-class. This is the moment of maximum coherence in the home culture's relationship to the substrate. It typically lasts for several centuries before the fragmentation of Phase Four begins."
+        },
+        {
+          "line": 208,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "In Egypt the substrate's calendar-and-vault function was integrated into the Pharaonic state religion from the Third Dynasty onward, approximately 2670 BCE. The Pyramid Texts inscribed in the burial chambers of Unas and his successors (Fifth and Sixth Dynasties, c. 2350-2150 BCE) document the integrated state of the substrate cargo at this period. The Pyramid Texts are simultaneously a calendar (the twelve hours of the night), a cosmology (the Duat as the hidden chamber where the sun travels), an agricultural-ritual framework (the Sothic cycle binding heliacal Sirius to Nile flood), a political legitimation (the Pharaoh as the soul who completes the night journey), an ethical teaching (the negative confession before the forty-two judges), and a craft tradition (mummification, tomb construction, hieroglyphic writing, temple alignment)."
+        },
+        {
+          "line": 214,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "What it tells us — Egyptian funerary religion integrates substrate cargo as unified package under Pharaonic priesthood for ~1500 years. Pyramid Texts simultaneously document calendar, cosmology, ritual framework, political legitimation, ethics, and craft."
+        },
+        {
+          "line": 218,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "In the Indus-Saraswati basin and later across the broader Indian subcontinent, the Vedic-Brahmanical tradition integrated the substrate's tirtha-yatra cargo into a unified system covering ritual calendar, cosmology, healing (Ayurveda developing within the Atharva Veda tradition), priesthood organisation (the Brahmin varna), agricultural ritual, ethical teaching (dharma), navigational-astronomical framework (the Jyotisha Vedanga), and political legitimation (the rajasuya consecration). The four Vedas — Rig, Sama, Yajur, Atharva — together encoded the integrated package. The integration held through the composition of the Brahmanas, the Aranyakas, and the Upanishads."
+        },
+        {
+          "line": 219,
+          "categories": [
+            "calendar",
+            "time_reading"
+          ],
+          "text": "Mount Meru as the cosmic axis-pillar with its fourteen vertical worlds, four continents at the cardinal points, encircling oceans, and named guardians (Indra and the devas at the summit, the eight Dig gajas at the directional points, the Four Maharajas at the base) provides the spatial framework. The Sothic-equivalent cycle in Vedic astronomy is the Yuga system, with the Mahayuga of 4,320,000 years bracketing the agricultural and political calendars within a much longer cosmic frame."
+        },
+        {
+          "line": 228,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "In Gaul, Britain, and Ireland the substrate's late-Iron-Age phase was the druid school described directly by Caesar in De Bello Gallico VI.14 — a formal twenty-year training programme conducted orally in remote groves, teaching astronomy, geographic distribution of the globe, natural philosophy, and matters of religion. The integrated package was preserved across cultural transitions from the megalithic period through the Bronze Age into the Iron Age. The Coligny calendar, manufactured in the late second century CE and deliberately broken and buried around 200 CE, is the surviving physical artifact: a Gaulish lunisolar five-year cycle of 62 months with intercalary months, Metonic-derived, implementing the same mathematical framework Hecataeus described for the Hyperborean Apollo cult."
+        },
+        {
+          "line": 234,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "What it tells us — Druid school operates substrate cargo as integrated package — twenty-year oral training in astronomy, geography, natural philosophy, and religion. Coligny calendar is surviving physical artifact of the lunisolar Metonic framework."
+        },
+        {
+          "line": 258,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "In every documented case the home culture initially absorbs the substrate cargo as a single integrated package. The integration typically lasts several centuries — Pythagorean Croton for approximately eighty years, Egyptian funerary religion for fifteen hundred years, Vedic Brahmanism for a thousand years, druidic Iron-Age Atlantic for at least five hundred years, Insular Celtic Christianity for two and a half centuries, the Hopi Way for at least eight hundred years and counting. During the integration period the home culture's calendar, agriculture, priesthood, political legitimation, ethics, and craft all operate under one carrier-class holding the substrate package as a unified body of knowledge."
+        },
+        {
+          "line": 285,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The druid integrated package — astronomy, geography, natural philosophy, healing, calendar, ethics, political legitimation — is broken across the Roman absorption. The astronomical content is absorbed into Roman calendar reform (Julius Caesar's calendar of 45 BCE, then Augustus's adjustments). The ethical content goes to the philosophical schools operating under Roman patronage. The healing content is reframed as Greek medicine and absorbed into the Galenic tradition. The political-legitimation content is replaced by Roman magistrate hierarchies. The deliberate burial of the Coligny calendar around 200 CE is physical evidence of the substrate carriers' response — the integrated package deposited into durable medium for future recovery when open practice was no longer viable."
+        },
+        {
+          "line": 304,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "What it tells us — Synod of Whitby imposes Roman Easter computation on Insular Celtic church. Bishop Colmán withdraws to Iona and Inishbofin. Insular substrate carrier-class loses ecclesiastical autonomy. Calendar fragmented from substrate's older lunisolar framework into Roman Alexandrian computus. Council of Cealchythe 816 CE further subordinates Insular tradition."
+        },
+        {
+          "line": 319,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "Spanish colonial policy in northern New Spain (modern New Mexico and Arizona) from approximately 1540 onward systematically targeted the Pueblo substrate carrier-class. Coronado's expedition reached the Pueblo region in 1540. Franciscan missions began establishing in 1598 under Oñate. Mission policy required the destruction of kachina masks, the prohibition of ceremonial dance, the closure of kivas, and the imposition of Christian religious instruction. The Pueblo integrated package — calendar, agriculture, kachina teaching, kiva ceremony, clan organisation — was being systematically broken."
+        },
+        {
+          "line": 346,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The Atlantic substrate fragments are similarly distributed. The megalithic architecture is in archaeology. The genetic continuity is in ancient-DNA studies. The druidic testimony is in classical history. The Coligny calendar is in Celtic studies. The Brendan voyage is in medieval Irish literature. The Norse-Gaelic Lordship of the Isles is in Scottish history. The Maeshowe runic inscriptions are in Norse studies. The Brehon laws are in legal history. The bardic tradition is in Gaelic literature. Each fragment is well-studied within its own department. The integration across all of them is not standardly presented in any single institutional setting."
+        },
+        {
+          "line": 353,
+          "categories": [
+            "legacy",
+            "time_reading"
+          ],
+          "text": "The single most important development in the substrate's recovery is the ancient-DNA revolution. Until approximately 2015 the substrate's biological continuity was inferential — based on shared cultural patterns and architectural similarities. Since 2015 the technology of ancient-DNA sequencing has made it possible to read kinship and population structure directly from Neolithic and Bronze Age remains. Five peer-reviewed studies covering approximately 1,200 ancient genomes now establish the substrate's biological reality directly."
+        },
+        {
+          "line": 363,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The second major development in the substrate's recovery is the cross-cultural pattern-matching that becomes visible when the testament-streams are read together rather than within their separate disciplinary homes. Seven independent testament-streams from cultures with no plausible pre-modern transmission contact converge on the same five-key framework: spherical or circular axial temple, lunisolar Metonic calendar, sacred female guardian-weaver, healer-priest with rod-or-arrow authority-marker, and four-worlds-or-four-elements cycle. The convergence cannot be produced by single-tradition speculation. The streams differ in language, geography, climate, technology, and political organisation. What they share is the substrate's operating-system, encoded in different languages by traditions that all received the cargo independently."
+        },
+        {
+          "line": 365,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The third major development is the recognition that all seven testament-streams encode the same five-stage transaction structure (why go, cargo out, arrival, cargo back, meaning) and the same four transaction-types (ritual tribute for calendar maintenance, survey-and-return for knowledge harvest, deposit-and-proof for physical exchange, teaching-transmission for priest-class formation). These pattern across streams as the substrate's documented operational mechanisms. The fables are not folktales. They are travel-reports preserved as memorable narrative, encoding the operational details of the threshold's actual use."
+        },
+        {
+          "line": 372,
+          "categories": [
+            "calendar",
+            "time_reading"
+          ],
+          "text": "The corpus has identified several future work streams that would extend the Phase Six recovery. Direct genetic continuity tests from Newgrange-era passage-tomb burials to medieval Argyll-Hebridean clan-founder remains. The I2d-Y3709 distribution analysis in modern Argyll-clan descendants (MacDougall, MacDonald, Campbell) using surname-cluster Y-haplotype databases. RTI data acquisition for Maeshowe inscription Nr.15 from the Archaeology Data Service York. Transcript-readings of the Children of Lir, the Voyage of Mael Dúin, the Lebor Gabála Érenn, and the Norse Vinland sagas using the Brendan-transcript method. Cross-latitude calendar-sky correspondence tests at Newgrange, Almendres, Carnac, and Maeshowe. Antarctic geophysical cross-reference of the candidate site at -86.07°S, 112.29°E against BEDMAP3, ADMAP-2.0, and the Aitken 2014 Wilkes Land subglacial fault-system documentation."
+        },
+        {
+          "line": 375,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The Atlantic substrate operated as an integrated kindred-organised maritime network from approximately 5500 BCE in the Iberian Mesolithic through the late fifteenth century CE in the Hebridean corridor. Its biological continuity is documented in five peer-reviewed ancient-DNA studies covering approximately 1,200 ancient genomes. Its architectural continuity is documented in the spine of dated alignments from Almendres at 5500 BCE through Carnac at 4500 BCE, Newgrange at 3200 BCE, Maeshowe at 2800 BCE, and Stonehenge at 2500 BCE. Its calendrical continuity is documented in the Coligny calendar artifact, the Brendan transcript timing, and the lunisolar Metonic mathematics that runs across all phases. Its political continuity is documented in the kindred-cenél structure of Dalriada inheriting the Atlantic Neolithic kindred form into the medieval period and persisting through Somerled's emergence in 1153 CE to the Lordship of the Isles in 1493 CE."
+        }
+      ],
+      "text_length": 72750
+    },
+    {
+      "blob": "6a76d2415c2c3cf0081a136291db4fce4ada0cc7",
+      "sha256": "a8579474848c904d58c5d480fad93c76a5fb960ecedbaa8c7cdfe77d2ea62e68",
+      "paths": [
+        "Antarctic research/From_A_to_B_v1-1.docx",
+        "Antarctic research/From_A_to_B_v1.docx",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/From_A_to_B_v1-1_a857947484.docx"
+      ],
+      "first_commit": {
+        "path": "Antarctic research/From_A_to_B_v1-1.docx",
+        "blob": "6a76d2415c2c3cf0081a136291db4fce4ada0cc7",
+        "commit": "cdb8af76f35760b4008bff568342a19d7f3c6b53",
+        "authored": "2026-05-22T19:14:39+01:00",
+        "committed": "2026-05-22T19:15:56+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 63,
+        "twig": 0,
+        "light": 14,
+        "calendar": 37,
+        "time_reading": 10,
+        "hnc": 0
+      },
+      "passages": [
+        {
+          "line": 57,
+          "categories": [
+            "legacy",
+            "light",
+            "calendar"
+          ],
+          "text": "Seven hundred years after Carnac, Ireland's Boyne Valley becomes the densest substrate node yet built. Newgrange, Knowth, and Dowth — three great passage tombs within five kilometres of each other — are constructed within roughly the same century. Newgrange is the most architecturally sophisticated. Its passage runs nineteen metres into the cairn. A small slot above the entrance — the roof-box — was deliberately cut to admit the rising sun on the morning of the winter solstice into the central chamber. The roof-box is calibrated. If it had been cut twenty centimetres too high or too low, or if the passage had been built a few metres shorter or longer, the alignment would have failed. It does not fail. For five mornings around the winter solstice each year, the sun enters the chamber for approximately seventeen minutes."
+        },
+        {
+          "line": 68,
+          "categories": [
+            "legacy",
+            "light"
+          ],
+          "text": "Three hundred kilometres further north, on the Orkney Mainland at 59°N, the substrate builds its northern Atlantic anchor. The Stones of Stenness are the oldest stone circle in Britain, raised around 3100 BCE. Their primary alignment is to the Beltane sunrise — the cross-quarter day on May 1 — at azimuth 41.27°. Three hundred years after Stenness, the chambered cairn of Maeshowe is built one kilometre to the east. Maeshowe's passage runs at azimuth 221°, oriented to the winter solstice sunset. For approximately three weeks around the solstice each year, the setting sun enters the passage and illuminates the back wall. Maeshowe is, with Newgrange, one of only two solstice-aligned chambered monuments in the British Isles, and it is the substrate's northern bookend matching Newgrange's southern bookend."
+        },
+        {
+          "line": 77,
+          "categories": [
+            "legacy",
+            "light"
+          ],
+          "text": "Five hundred years after Maeshowe, the sarsen circle of Stonehenge is raised at 51°N on the Wessex chalk downs. The iconic sarsen circle dates to 2500 BCE. Its primary alignment is to the summer solstice sunrise along the avenue running northeast from the circle past the Heel Stone — azimuth 50.7°. Where Newgrange and Maeshowe mark the winter solstice and the year's death, Stonehenge marks the summer solstice and the year's fullness. The substrate's eight-fold wheel of the year is now built into stone across the entire Atlantic chain."
+        },
+        {
+          "line": 82,
+          "categories": [
+            "legacy",
+            "light"
+          ],
+          "text": "What it tells us — Stonehenge sarsen circle, summer solstice sunrise azimuth 50.7° — Atlantic substrate's summer-station bookend."
+        },
+        {
+          "line": 130,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The architecture and the DNA tell us where and who. The testaments tell us what the substrate carriers said about themselves. We have testament-records from at least seven independent cultural traditions describing features and inhabitants and business at the polar threshold and along the substrate's calendar-binding route. The traditions did not borrow from one another in the pre-modern era. The convergence on the same feature-set across independent traditions is the evidence of a shared underlying operating-system."
+        },
+        {
+          "line": 138,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "What it tells us — Hyperborean spherical temple of Apollo with Apollo visiting every 19 years — direct documentation of Metonic cycle binding at substrate-significant northern threshold. Toland 1726 identifies the temple with Callanish."
+        },
+        {
+          "line": 202,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "Five cross-cutting keys appear in all seven testament-streams. The spherical or circular axial temple. The lunisolar Metonic calendar binding. The sacred female guardian-weaver figure. The healer-priest with arrow or rod as authority-marker. The cycle of four worlds or four elements or four directions. These are the substrate's shared keys, encoded in different languages by traditions that had no plausible pre-modern transmission contact."
+        },
+        {
+          "line": 223,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "What it tells us — Druid month begins on 6th day of moon (first visible quarter); 30-year generation cycle reckoning. Confirms substrate's lunisolar Metonic framework."
+        },
+        {
+          "line": 245,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The Coligny artifact closes the loop on Chapter 5. The historical-source descriptions match the surviving physical artifact in mathematical structure. The substrate's late-Iron-Age phase ran a formal twenty-year school teaching astronomy, geography, and natural philosophy, on a precise lunisolar Metonic mathematical framework, with physical calendar instruments deliberately deposited into the ground for preservation. The school went into deposit. The artifacts survived. The DNA carriers continued. The substrate did not end with Mona — it methylated."
+        },
+        {
+          "line": 247,
+          "categories": [
+            "legacy",
+            "time_reading"
+          ],
+          "text": "Twelve hundred years pass between the Coligny burial of 200 CE and Somerled's emergence in the contemporary chronicles in 1153 CE. Across that span the substrate's continuous-tradition kindred network narrows geographically. What remains in 1153 CE is the western Scottish corridor — Argyll, the inner Hebrides, Iona, and the Isle of Man — operating under Norse-Gaelic Gall-Gaedhil leadership and maintaining Gaelic language, kindred-based political organisation, ship-based maritime service, and the ecclesiastical centre at Iona founded in 563 CE."
+        },
+        {
+          "line": 269,
+          "categories": [
+            "legacy",
+            "light"
+          ],
+          "text": "The Maeshowe runic inscriptions are the largest single collection of runic inscriptions outside Scandinavia. They are carved on the chamber walls of a Neolithic monument constructed around 2800 BCE — that is, the chamber was already 4,000 years old when the carvers entered it in 1153 CE. The carvers identify themselves in the inscriptions as Jorsalafarar — Jerusalem-farers — and as among the most rune-skilled persons west of the sea. They reference treasure carried away to the north-west. They reference entry to the chamber three nights before Yule, the substrate's winter solstice station."
+        },
+        {
+          "line": 270,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The same kindred form that Somerled's lineage represents in the south was operating in the north on the same substrate-preservation task. The southern operation under Somerled consolidates the corridor as territory. The northern operation at Maeshowe deposits a record into the durable architecture. The two arms of the same task occur in the same calendar year. The deposit was readable when the chamber was reopened by James Farrer in 1861 — 708 years later. It is readable now."
+        },
+        {
+          "line": 284,
+          "categories": [
+            "legacy",
+            "time_reading"
+          ],
+          "text": "What it tells us — Lordship of the Isles operates semi-independently for 340 years from Somerled's emergence to James IV's suppression. Maritime, kindred-based, Gaelic-cultural — substrate's last continuous-tradition political form."
+        },
+        {
+          "line": 289,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The substrate-corpus has been tested statistically as well as documentary. Specific claims about phi-encoded angular structure in the substrate's architectural alignments and in the calendar-dawn-rising star sequences have been put through Monte Carlo null tests using open-source astronomical data. Honesty about what these tests have shown is essential to the corpus's epistemic standing."
+        },
+        {
+          "line": 291,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "Three independent test designs have been run on the question of whether the substrate's architectural alignments preferentially capture phi-encoded star pairs. Terrestrial phi-grid distances between substrate nodes — null result. Visible-sky pairwise phi ratios — null result, with the actual rate slightly below the random null. Calendar-dawn-rising star pair ratios at Newgrange across the eight-station and thirteen-month wheels — null result on aggregate."
+        },
+        {
+          "line": 304,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The substrate's operating-system is independently encoded in seven major testament-streams from cultures with no plausible pre-modern transmission contact. Pythagorean-Hellenic, Roman geographic, Polynesian, Atlantic-Irish immrama, Egyptian, Vedic-Buddhist, and Hopi-Pueblo traditions all preserve the same five-key framework: spherical/circular axial temple, lunisolar Metonic calendar, sacred female guardian, healer-priest with rod-or-arrow authority-marker, and four-worlds-or-four-elements cycle. The convergence is not accidental. The substrate is what these traditions encode in their respective languages."
+        },
+        {
+          "line": 306,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The substrate's transmission across cultural transitions follows a documented four-step pattern. Identification — the successor system locates and names the substrate. Capture — the substrate is committed to writing or to a manageable form (the Coligny calendar, the Brendan manuscript, the medieval Irish chronicles, the Maeshowe runic inscriptions). Transformation — the captured form is reframed within the successor system's narrative (druid wheel-of-the-year stations renamed to Christian liturgical festivals, Iasconius the substrate-whale recoded as Brendan's Easter mount). Rewriting — the transformed form becomes the successor system's property and the underlying substrate is hidden but not erased. The substrate's information survives the methylation, and modern recovery work lets us read back through the layers."
+        },
+        {
+          "line": 309,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The Atlantic substrate is real and documented at every phase of its operation across approximately seven thousand years. The architecture is dated and peer-reviewed. The DNA evidence is published in five major studies covering approximately 1,200 ancient genomes. The primary-source ancient testimony of Caesar, Pliny, Tacitus, Hecataeus, Pomponius Mela, Adomnán, Dicuil, and the Annals of Ulster has been quoted in original and attributed. The medieval chronicles documenting the corridor's last continuous-tradition stronghold under Somerled and the Lordship of the Isles have been cited. The physical artifact of the Coligny calendar exists at the Musée Gallo-Romain in Lyon. The Maeshowe runic deposits exist on the chamber walls. The cross-cultural testament convergence has been laid out across seven independent streams."
+        },
+        {
+          "line": 314,
+          "categories": [
+            "calendar",
+            "time_reading"
+          ],
+          "text": "The corpus has identified six future work streams. First, direct genetic continuity tests from Newgrange-era passage-tomb burials to medieval Argyll-Hebridean clan-founder remains. Second, I2d-Y3709 distribution analysis in modern Argyll-clan descendants (MacDougall, MacDonald, Campbell) using surname-cluster Y-haplotype databases. Third, RTI data acquisition for Maeshowe inscription Nr.15 from the Archaeology Data Service York. Fourth, transcript-readings of the Children of Lir, the Voyage of Mael Dúin, the Lebor Gabála Érenn, and the Norse Vinland sagas using the Brendan-transcript method. Fifth, cross-latitude calendar-sky correspondence tests at Newgrange, Almendres, Carnac, and Maeshowe. Sixth, Antarctic geophysical cross-reference of the candidate site at -86.07°S, 112.29°E against BEDMAP3, ADMAP-2.0, and the Aitken 2014 Wilkes Land subglacial fault-system documentation."
+        }
+      ],
+      "text_length": 50594
+    },
+    {
+      "blob": "7016d50da5f3b5630715251323b8411acb4a57c7",
+      "sha256": "393c1c6420627dc268c18e76d98dad659d065eb2e11e657532d116573454f363",
+      "paths": [
+        "Antarctic research/The_Arctic_Threshold_v1.docx",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/The_Arctic_Threshold_v1_393c1c6420.docx"
+      ],
+      "first_commit": {
+        "path": "Antarctic research/The_Arctic_Threshold_v1.docx",
+        "blob": "7016d50da5f3b5630715251323b8411acb4a57c7",
+        "commit": "cdb8af76f35760b4008bff568342a19d7f3c6b53",
+        "authored": "2026-05-22T19:14:39+01:00",
+        "committed": "2026-05-22T19:15:56+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 35,
+        "twig": 0,
+        "light": 3,
+        "calendar": 51,
+        "time_reading": 4,
+        "hnc": 0
+      },
+      "passages": [
+        {
+          "line": 15,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The Arctic threshold of the Atlantic-Insular network is the geographic zone north of approximately 60°N reached by the substrate's documented maritime carrier-class, with confirmed deposits and contact extending to 78.48°N at Skraeling Island in the Canadian Arctic. The threshold has named features in multiple traditions. The Greeks called the northernmost land Hyperborea, the territory beyond the home of Boreas the north wind, with its spherical temple of Apollo at the Metonic 19-year cycle station. The Romans called it Ultima Thule, after Pytheas's documented Atlantic voyage of approximately 325 BCE. The Insular Christian tradition reached it through the Brendan voyage as the Promised Land of the Saints reached after the seven-year four-station cycle. The Norse-Gaelic tradition reached it through the Greenland Eastern Settlement and the Norðrsetur hunting-grounds, with Kingittorsuaq Runestone at 72°57′N marking the northernmost confirmed runic deposit in the world. The Polynesian tradition's parallel southern voyage by Hui Te Rangiora reached the matching frozen-sea threshold at the southern continent."
+        },
+        {
+          "line": 18,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "Why the threshold was a destination at all is the diagnostic question. The substrate's calendar mathematics — the 19-year Metonic cycle, the 1,461-year Sothic cycle, the four-station eight-fold solar wheel, the 30-year druidic generation cycle — required astronomical observations that are most precisely calibrated at high latitudes where the long polar nights and the midnight-sun phenomenon make the celestial mechanics directly observable. The threshold was the home cultures' calibration-and-verification site for the calendar mathematics that anchored their agricultural, ritual, and political systems. Going to the threshold meant maintaining the live observance of the celestial cycles that the home culture's calendar embodied. This is the operational logic that the four transaction-types implement."
+        },
+        {
+          "line": 42,
+          "categories": [
+            "time_reading"
+          ],
+          "text": "Greek travelers to the Atlantic-Insular zone are documented from at least the 6th century BCE in the Massaliote Periplus tradition and explicitly in the Pytheas voyage of approximately 325 BCE. Pytheas of Massalia reached Britain and circumnavigated it on foot, observed the midnight sun at high latitudes (probably Iceland or Norway based on the 18-19-21-22 hour daylight observations preserved in the secondary citations), described the Cassiterides tin sources and the Celtic and Germanic tribes. His treatise On the Ocean (Peri tou Okeanou) is lost but preserved in fragments cited by Strabo, Pliny, Diodorus, Polybius, Geminus, and others."
+        },
+        {
+          "line": 95,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The substrate's home cultures all operated calendar-systems requiring high-precision long-period astronomical observation. The Greek Metonic cycle of 19 years is the period after which 235 lunar months almost exactly equal 19 solar years, used to reconcile the lunar and solar years in religious-festival timing. The Coligny calendar of the late Iron-Age druids implements the same Metonic framework with intercalary months across a five-year/62-month cycle. The Egyptian Sothic cycle of 1,461 years is the period after which the heliacal rising of Sirius returns to the same calendar day. The Vedic Yuga system runs on much longer cycles bracketing the agricultural and political calendar."
+        },
+        {
+          "line": 96,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "All of these long-period calendars require observational verification against the celestial mechanics. The high-latitude threshold makes celestial mechanics directly observable in ways the lower latitudes do not. The midnight sun of summer at the Arctic Circle is the diagnostic phenomenon — Pytheas observed it around 325 BCE and reported it back to the Mediterranean intellectual tradition where it became the canonical evidence that the Earth is spherical and tilted on its axis. Hecataeus's report that Apollo visits the Hyperboreans every nineteen years to play his lyre and dance is the substrate-language form of the same calibration: the 19-year Metonic cycle is verified live at the Hyperborean threshold."
+        },
+        {
+          "line": 126,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The fourth operational reason is the formation and renewal of the home culture's priest-class. The substrate's training-school tradition — Caesar's documented twenty-year druidic curriculum — required carrier-class formation that includes journey to the threshold. Wandering priests-of-the-threshold are documented across multiple traditions. Abaris the Hyperborean travels south teaching healing arts and meets Pythagoras at Croton, transmitting the substrate's calendar-and-cosmology framework that becomes the foundation of Pythagoreanism (Iamblichus De Vita Pythagorica 28.140-141, Porphyry Vita Pythagorae 29). The Brendan-Cormac of Iona-Mael Duin tradition trains the Insular Christian-monastic carrier-class through the four-station seven-year cycle."
+        },
+        {
+          "line": 153,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "Approximately 200 CE. The Coligny calendar — manufactured in the late 2nd century CE — is deliberately broken into more than 70 fragments and buried, in a Gaulish religious deposit. Recovered in 1897. Documented physical-artifact evidence of the substrate carriers' response to the Roman methylation."
+        },
+        {
+          "line": 182,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "All three substrate deposits enter the modern record within seventy-three years in the early-to-mid nineteenth century, exactly when cross-cultural ancient-history scholarship is being founded that creates the conditions for their reading."
+        },
+        {
+          "line": 210,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The substrate's calendar mathematics — the Metonic 19-year cycle, the Sothic 1,461-year cycle, the lunisolar 5-year/62-month cycle of the Coligny calendar, the four-station eight-fold solar wheel, the 30-year druidic generation cycle — was the primary intellectual cargo back. Hecataeus's spherical Apollonian temple at the Hyperborean threshold with the 19-year visit cycle is the substrate-language form: the calendar is verified live at the threshold and the verification is brought back to the home culture's ritual practice."
+        },
+        {
+          "line": 248,
+          "categories": [
+            "legacy",
+            "time_reading"
+          ],
+          "text": "Almendres Cromlech, Évora, Portugal (38.56°N). The substrate's southern megalithic anchor (~5500 BCE). Equinox sunrise alignment. The architectural baseline of the chain."
+        },
+        {
+          "line": 253,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "Coligny, Ain, France (46.08°N). The site of the deliberately broken and buried calendar artifact (~200 CE). Recovered 1897. The substrate's Iron-Age physical-artifact deposit."
+        },
+        {
+          "line": 257,
+          "categories": [
+            "legacy",
+            "light"
+          ],
+          "text": "Newgrange, Ireland (53.69°N). The substrate's southern solstice anchor (~3200 BCE). Cassidy 2020 dynastic-elite kindred-network documented genetically."
+        },
+        {
+          "line": 264,
+          "categories": [
+            "legacy",
+            "light"
+          ],
+          "text": "Maeshowe, Orkney (58.99°N). The substrate's northern solstice anchor (~2800 BCE). Winter-solstice sunset alignment at azimuth 221°. 1153 CE deliberate runic deposit by Jorsalafarar carvers."
+        },
+        {
+          "line": 286,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The strong-form aggregate phi-encoded angular geometry claim has not survived three independent statistical tests on visible-sky pairwise ratios, calendar-dawn-rising star pairs, and terrestrial substrate-node phi-grid distances. The substrate's geometry is consistent with random stellar alignments at the relevant latitudes and epochs."
+        }
+      ],
+      "text_length": 58051
+    },
+    {
+      "blob": "76753aedea8fff1cf1a3b3756c2b0392c1e3735a",
+      "sha256": "ef163a5f0a2350d1ce9e1f0615fde3c9ae799d12b0cb03655f4eaebe0c94825c",
+      "paths": [
+        "Antarctic research/Pattern_Recognition_Archaeology_Report_v1.docx",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/Pattern_Recognition_Archaeology_Report_v1_ef163a5f0a.docx"
+      ],
+      "first_commit": {
+        "path": "Antarctic research/Pattern_Recognition_Archaeology_Report_v1.docx",
+        "blob": "76753aedea8fff1cf1a3b3756c2b0392c1e3735a",
+        "commit": "cdb8af76f35760b4008bff568342a19d7f3c6b53",
+        "authored": "2026-05-22T19:14:39+01:00",
+        "committed": "2026-05-22T19:15:56+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 27,
+        "twig": 8,
+        "light": 5,
+        "calendar": 12,
+        "time_reading": 7,
+        "hnc": 0
+      },
+      "passages": [
+        {
+          "line": 40,
+          "categories": [
+            "legacy",
+            "twig"
+          ],
+          "text": "The hypothesis has scholarly company. Several historical linguists have argued that Ogham and the Germanic runic tradition share structural features beyond what borrowing alone explains, including positional encoding by stroke-count, division of the alphabet into ordered groups (the Ogham aicme of five letters each, the Younger Futhork aett of five-six-five), tree-naming convention, twig-cipher arithmetic, and dual-channel readings where the meaning emerges from the interaction of two values. The Aureon corpus extends this into a stronger claim: that the substrate encoded planetary axial geometry directly and the surviving alphabets are partial readings of that encoding."
+        },
+        {
+          "line": 45,
+          "categories": [
+            "calendar",
+            "time_reading"
+          ],
+          "text": "The investigation places the sixteen Younger Futhork letters on a calendar wheel, with each letter occupying twenty-two and one-half degrees and the wheel baselined to Samhain on 1 November as year-start. The mapping assigns each rune to a constellation derived from the Halsall calendar tradition, modified to include Ophiuchus the Serpent Bearer at position ten between Scorpius and Sagittarius, giving the corrected thirteen-sign zodiac that matches the actual ecliptic crossings of the sun."
+        },
+        {
+          "line": 47,
+          "categories": [
+            "calendar",
+            "time_reading"
+          ],
+          "text": "The investigation places the twenty-five Ogham letters on a calendar wheel, with each letter occupying fourteen and four-tenths degrees and the wheel baselined to the same Samhain reference. The Ogham wheel is constructed from the Aureon corpus’s celtic-ogham-feda data file, which assigns each letter a tree, a stroke count, a direction (right, left, diagonal, perpendicular), an element, a planet, a zodiac home, and an angular aspect."
+        },
+        {
+          "line": 51,
+          "categories": [
+            "calendar",
+            "time_reading"
+          ],
+          "text": "The investigation also constructs a three-dimensional sphere with three concentric phi-graded shells. The innermost shell at radius 0.5 carries the Maeshowe chamber inscriptions. The middle shell at radius 0.5 multiplied by phi (0.809) carries the rune meridian. The outer shell at radius 0.5 multiplied by phi squared (1.309) carries the constellation positions. The Coligny calendar months sit on a band just outside the constellation shell. Two reading-poles are marked, the Samhain pole at the top of the sphere and the equinox pole at one hundred and thirty-five degrees offset, which is within two percent of an exact phi-squared rotation."
+        },
+        {
+          "line": 66,
+          "categories": [
+            "calendar",
+            "time_reading"
+          ],
+          "text": "On the Samhain-baselined Younger Futhork wheel, year-day 322 (which is 18 September) projects onto azimuth 317.6 degrees, which lands on the NW chamber wall. The NW wall holds exactly one inscription, the treasure pointer T-NW. Year-day 144 (which is 25 March) projects onto azimuth 142.0 degrees, which lands on the SE chamber wall. The SE wall holds exactly one inscription, the master carver certification Nr.20."
+        },
+        {
+          "line": 115,
+          "categories": [
+            "calendar",
+            "time_reading"
+          ],
+          "text": "Coligny calendar with Maeshowe walls in two reading frames"
+        }
+      ],
+      "text_length": 31271
+    },
+    {
+      "blob": "9ed8456e8dd16949a3e841b3f9113e4d8b50212d",
+      "sha256": "01e69f3fff85b07d59e5afe6c287e0b3d055d802e3c637105f7ab2b961ade3b4",
+      "paths": [
+        "Antarctic research/From_A_to_B_v1 (1).docx",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/From_A_to_B_v1_1_01e69f3fff.docx"
+      ],
+      "first_commit": {
+        "path": "Antarctic research/From_A_to_B_v1 (1).docx",
+        "blob": "9ed8456e8dd16949a3e841b3f9113e4d8b50212d",
+        "commit": "cdb8af76f35760b4008bff568342a19d7f3c6b53",
+        "authored": "2026-05-22T19:14:39+01:00",
+        "committed": "2026-05-22T19:15:56+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 63,
+        "twig": 0,
+        "light": 14,
+        "calendar": 37,
+        "time_reading": 10,
+        "hnc": 0
+      },
+      "passages": [
+        {
+          "line": 59,
+          "categories": [
+            "legacy",
+            "light",
+            "calendar"
+          ],
+          "text": "Seven hundred years after Carnac, Ireland's Boyne Valley becomes the densest substrate node yet built. Newgrange, Knowth, and Dowth — three great passage tombs within five kilometres of each other — are constructed within roughly the same century. Newgrange is the most architecturally sophisticated. Its passage runs nineteen metres into the cairn. A small slot above the entrance — the roof-box — was deliberately cut to admit the rising sun on the morning of the winter solstice into the central chamber. The roof-box is calibrated. If it had been cut twenty centimetres too high or too low, or if the passage had been built a few metres shorter or longer, the alignment would have failed. It does not fail. For five mornings around the winter solstice each year, the sun enters the chamber for approximately seventeen minutes."
+        },
+        {
+          "line": 70,
+          "categories": [
+            "legacy",
+            "light"
+          ],
+          "text": "Three hundred kilometres further north, on the Orkney Mainland at 59°N, the substrate builds its northern Atlantic anchor. The Stones of Stenness are the oldest stone circle in Britain, raised around 3100 BCE. Their primary alignment is to the Beltane sunrise — the cross-quarter day on May 1 — at azimuth 41.27°. Three hundred years after Stenness, the chambered cairn of Maeshowe is built one kilometre to the east. Maeshowe's passage runs at azimuth 221°, oriented to the winter solstice sunset. For approximately three weeks around the solstice each year, the setting sun enters the passage and illuminates the back wall. Maeshowe is, with Newgrange, one of only two solstice-aligned chambered monuments in the British Isles, and it is the substrate's northern bookend matching Newgrange's southern bookend."
+        },
+        {
+          "line": 79,
+          "categories": [
+            "legacy",
+            "light"
+          ],
+          "text": "Five hundred years after Maeshowe, the sarsen circle of Stonehenge is raised at 51°N on the Wessex chalk downs. The iconic sarsen circle dates to 2500 BCE. Its primary alignment is to the summer solstice sunrise along the avenue running northeast from the circle past the Heel Stone — azimuth 50.7°. Where Newgrange and Maeshowe mark the winter solstice and the year's death, Stonehenge marks the summer solstice and the year's fullness. The substrate's eight-fold wheel of the year is now built into stone across the entire Atlantic chain."
+        },
+        {
+          "line": 84,
+          "categories": [
+            "legacy",
+            "light"
+          ],
+          "text": "What it tells us — Stonehenge sarsen circle, summer solstice sunrise azimuth 50.7° — Atlantic substrate's summer-station bookend."
+        },
+        {
+          "line": 132,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The architecture and the DNA tell us where and who. The testaments tell us what the substrate carriers said about themselves. We have testament-records from at least seven independent cultural traditions describing features and inhabitants and business at the polar threshold and along the substrate's calendar-binding route. The traditions did not borrow from one another in the pre-modern era. The convergence on the same feature-set across independent traditions is the evidence of a shared underlying operating-system."
+        },
+        {
+          "line": 140,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "What it tells us — Hyperborean spherical temple of Apollo with Apollo visiting every 19 years — direct documentation of Metonic cycle binding at substrate-significant northern threshold. Toland 1726 identifies the temple with Callanish."
+        },
+        {
+          "line": 204,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "Five cross-cutting keys appear in all seven testament-streams. The spherical or circular axial temple. The lunisolar Metonic calendar binding. The sacred female guardian-weaver figure. The healer-priest with arrow or rod as authority-marker. The cycle of four worlds or four elements or four directions. These are the substrate's shared keys, encoded in different languages by traditions that had no plausible pre-modern transmission contact."
+        },
+        {
+          "line": 225,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "What it tells us — Druid month begins on 6th day of moon (first visible quarter); 30-year generation cycle reckoning. Confirms substrate's lunisolar Metonic framework."
+        },
+        {
+          "line": 247,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The Coligny artifact closes the loop on Chapter 5. The historical-source descriptions match the surviving physical artifact in mathematical structure. The substrate's late-Iron-Age phase ran a formal twenty-year school teaching astronomy, geography, and natural philosophy, on a precise lunisolar Metonic mathematical framework, with physical calendar instruments deliberately deposited into the ground for preservation. The school went into deposit. The artifacts survived. The DNA carriers continued. The substrate did not end with Mona — it methylated."
+        },
+        {
+          "line": 249,
+          "categories": [
+            "legacy",
+            "time_reading"
+          ],
+          "text": "Twelve hundred years pass between the Coligny burial of 200 CE and Somerled's emergence in the contemporary chronicles in 1153 CE. Across that span the substrate's continuous-tradition kindred network narrows geographically. What remains in 1153 CE is the western Scottish corridor — Argyll, the inner Hebrides, Iona, and the Isle of Man — operating under Norse-Gaelic Gall-Gaedhil leadership and maintaining Gaelic language, kindred-based political organisation, ship-based maritime service, and the ecclesiastical centre at Iona founded in 563 CE."
+        },
+        {
+          "line": 271,
+          "categories": [
+            "legacy",
+            "light"
+          ],
+          "text": "The Maeshowe runic inscriptions are the largest single collection of runic inscriptions outside Scandinavia. They are carved on the chamber walls of a Neolithic monument constructed around 2800 BCE — that is, the chamber was already 4,000 years old when the carvers entered it in 1153 CE. The carvers identify themselves in the inscriptions as Jorsalafarar — Jerusalem-farers — and as among the most rune-skilled persons west of the sea. They reference treasure carried away to the north-west. They reference entry to the chamber three nights before Yule, the substrate's winter solstice station."
+        },
+        {
+          "line": 272,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The same kindred form that Somerled's lineage represents in the south was operating in the north on the same substrate-preservation task. The southern operation under Somerled consolidates the corridor as territory. The northern operation at Maeshowe deposits a record into the durable architecture. The two arms of the same task occur in the same calendar year. The deposit was readable when the chamber was reopened by James Farrer in 1861 — 708 years later. It is readable now."
+        },
+        {
+          "line": 286,
+          "categories": [
+            "legacy",
+            "time_reading"
+          ],
+          "text": "What it tells us — Lordship of the Isles operates semi-independently for 340 years from Somerled's emergence to James IV's suppression. Maritime, kindred-based, Gaelic-cultural — substrate's last continuous-tradition political form."
+        },
+        {
+          "line": 291,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The substrate-corpus has been tested statistically as well as documentary. Specific claims about phi-encoded angular structure in the substrate's architectural alignments and in the calendar-dawn-rising star sequences have been put through Monte Carlo null tests using open-source astronomical data. Honesty about what these tests have shown is essential to the corpus's epistemic standing."
+        },
+        {
+          "line": 293,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "Three independent test designs have been run on the question of whether the substrate's architectural alignments preferentially capture phi-encoded star pairs. Terrestrial phi-grid distances between substrate nodes — null result. Visible-sky pairwise phi ratios — null result, with the actual rate slightly below the random null. Calendar-dawn-rising star pair ratios at Newgrange across the eight-station and thirteen-month wheels — null result on aggregate."
+        },
+        {
+          "line": 306,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The substrate's operating-system is independently encoded in seven major testament-streams from cultures with no plausible pre-modern transmission contact. Pythagorean-Hellenic, Roman geographic, Polynesian, Atlantic-Irish immrama, Egyptian, Vedic-Buddhist, and Hopi-Pueblo traditions all preserve the same five-key framework: spherical/circular axial temple, lunisolar Metonic calendar, sacred female guardian, healer-priest with rod-or-arrow authority-marker, and four-worlds-or-four-elements cycle. The convergence is not accidental. The substrate is what these traditions encode in their respective languages."
+        },
+        {
+          "line": 308,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The substrate's transmission across cultural transitions follows a documented four-step pattern. Identification — the successor system locates and names the substrate. Capture — the substrate is committed to writing or to a manageable form (the Coligny calendar, the Brendan manuscript, the medieval Irish chronicles, the Maeshowe runic inscriptions). Transformation — the captured form is reframed within the successor system's narrative (druid wheel-of-the-year stations renamed to Christian liturgical festivals, Iasconius the substrate-whale recoded as Brendan's Easter mount). Rewriting — the transformed form becomes the successor system's property and the underlying substrate is hidden but not erased. The substrate's information survives the methylation, and modern recovery work lets us read back through the layers."
+        },
+        {
+          "line": 311,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The Atlantic substrate is real and documented at every phase of its operation across approximately seven thousand years. The architecture is dated and peer-reviewed. The DNA evidence is published in five major studies covering approximately 1,200 ancient genomes. The primary-source ancient testimony of Caesar, Pliny, Tacitus, Hecataeus, Pomponius Mela, Adomnán, Dicuil, and the Annals of Ulster has been quoted in original and attributed. The medieval chronicles documenting the corridor's last continuous-tradition stronghold under Somerled and the Lordship of the Isles have been cited. The physical artifact of the Coligny calendar exists at the Musée Gallo-Romain in Lyon. The Maeshowe runic deposits exist on the chamber walls. The cross-cultural testament convergence has been laid out across seven independent streams."
+        },
+        {
+          "line": 316,
+          "categories": [
+            "calendar",
+            "time_reading"
+          ],
+          "text": "The corpus has identified six future work streams. First, direct genetic continuity tests from Newgrange-era passage-tomb burials to medieval Argyll-Hebridean clan-founder remains. Second, I2d-Y3709 distribution analysis in modern Argyll-clan descendants (MacDougall, MacDonald, Campbell) using surname-cluster Y-haplotype databases. Third, RTI data acquisition for Maeshowe inscription Nr.15 from the Archaeology Data Service York. Fourth, transcript-readings of the Children of Lir, the Voyage of Mael Dúin, the Lebor Gabála Érenn, and the Norse Vinland sagas using the Brendan-transcript method. Fifth, cross-latitude calendar-sky correspondence tests at Newgrange, Almendres, Carnac, and Maeshowe. Sixth, Antarctic geophysical cross-reference of the candidate site at -86.07°S, 112.29°E against BEDMAP3, ADMAP-2.0, and the Aitken 2014 Wilkes Land subglacial fault-system documentation."
+        }
+      ],
+      "text_length": 50590
+    },
+    {
+      "blob": "cd0d995907684d45b3debb4d368898c3ac97b805",
+      "sha256": "77bd1f9364271d0f7feddd7542a0ea54df3caea71b854b711a2269d9ad2149a4",
+      "paths": [
+        "Antarctic research/HNC_White_Paper_v3-1.docx",
+        "Antarctic research/HNC_White_Paper_v3.docx",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/HNC_White_Paper_v3-1_77bd1f9364.docx"
+      ],
+      "first_commit": {
+        "path": "Antarctic research/HNC_White_Paper_v3-1.docx",
+        "blob": "cd0d995907684d45b3debb4d368898c3ac97b805",
+        "commit": "cdb8af76f35760b4008bff568342a19d7f3c6b53",
+        "authored": "2026-05-22T19:14:39+01:00",
+        "committed": "2026-05-22T19:15:56+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 6,
+        "twig": 0,
+        "light": 0,
+        "calendar": 2,
+        "time_reading": 4,
+        "hnc": 9
+      },
+      "passages": [
+        {
+          "line": 16,
+          "categories": [
+            "legacy",
+            "hnc"
+          ],
+          "text": "The Harmonic Nexus Core (HNC) framework, implemented as the open-source Aureon Trading System, advances a unified field-theoretic model of substrate coherence with falsifiable quantitative claims spanning atomic physics, interstellar astronomy, planetary geomagnetics, and global financial stress dynamics. This white paper consolidates the framework’s strongest empirical anchors, traces the methodology by which they were established, and documents both the verified results and the unresolved items at equal weight."
+        },
+        {
+          "line": 36,
+          "categories": [
+            "legacy",
+            "hnc"
+          ],
+          "text": "The HNC framework establishes that the fundamental substrate of reality is a spectrum of coupled oscillatory modes that evolve along a prime causal line characterised by explicit delayed self-reference. The governing dynamics are formalised in a single master equation:"
+        },
+        {
+          "line": 368,
+          "categories": [
+            "calendar",
+            "hnc"
+          ],
+          "text": "Three reproducible empirical anchors have been established for the Harmonic Nexus Core framework. A high-precision arithmetic prediction holds against the NIST CODATA hydrogen 21 cm reference at 1.292 parts per billion. A pre-registered five-prediction ledger from February 2026 confirmed against independent public records, with all five markers landing above the 73rd percentile of an independently constructed unified market stress waveform. A 55-snapshot cross-validation across the entire calendar year 2025 produced internal HNC metrics that correlate with externally constructed market data at statistical significance, including a 14-day predictive lead from the framework’s field wobble."
+        }
+      ],
+      "text_length": 33072
+    },
+    {
+      "blob": "ea3f5352f02df4799821b25a36cce86d28e4ff59",
+      "sha256": "39bc37537f4f79ad0f1220affe56e45cb33933657ff1e942cd622b34daa8bb83",
+      "paths": [
+        "Antarctic research/Atlantic_Seaboard_Substrate_v1.docx",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/Atlantic_Seaboard_Substrate_v_1_39bc37537f.docx"
+      ],
+      "first_commit": {
+        "path": "Antarctic research/Atlantic_Seaboard_Substrate_v1.docx",
+        "blob": "ea3f5352f02df4799821b25a36cce86d28e4ff59",
+        "commit": "cdb8af76f35760b4008bff568342a19d7f3c6b53",
+        "authored": "2026-05-22T19:14:39+01:00",
+        "committed": "2026-05-22T19:15:56+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 61,
+        "twig": 0,
+        "light": 11,
+        "calendar": 2,
+        "time_reading": 3,
+        "hnc": 0
+      },
+      "passages": [
+        {
+          "line": 14,
+          "categories": [
+            "legacy",
+            "time_reading"
+          ],
+          "text": "A specific empirical test is presented: the bearing from the Maeshowe chamber (Orkney, 2800 BCE) to a candidate site at 89.19°S, 110.65°E in East Antarctica is computed at 178.55°. This bearing maps onto the Younger Futhork rune Thurs at 1.45° offset, whose zodiac-home constellation is Taurus, the same constellation that holds the Pleiades. The convergence is non-trivial but requires falsifiability tests that are specified. Multi-stream convergence windows are identified at 4500 BCE, 3200 BCE, 2800 BCE, 325 BCE, and 650 CE, each corresponding to documented intensification of the substrate. The probability that the convergence reflects intentional encoding rather than coincidence is estimated at 40-60% based on currently available evidence, with three named computational and institutional tests that would shift this materially."
+        },
+        {
+          "line": 26,
+          "categories": [
+            "legacy",
+            "light"
+          ],
+          "text": "The hypothesis is testable because the substrate predicts specific kinds of convergence: shared geometric references (phi, the Pleiades, the Orion-belt), shared narrative motifs (the Seven Sisters fleeing a male pursuer, the world-tree, the feathered serpent), shared architectural alignments (winter solstice, equinox, Pleiades-rise), and shared encoding formats (sequential waypoint songs paired with sky-pointers). Where these convergences are independently attested across geographically separated cultures with documented contact mechanisms, the substrate hypothesis is supported. Where the convergences are absent or where contact mechanisms are missing, the hypothesis is weakened."
+        },
+        {
+          "line": 278,
+          "categories": [
+            "legacy",
+            "light"
+          ],
+          "text": "The Maeshowe chamber on the Mainland of Orkney (58.99°N, 3.19°W) is the northern terminus of the Atlantic seaboard chain. The chamber was constructed at approximately 2800 BCE with winter solstice alignment of the inner passage. In 1153 CE, Norse crusaders sheltering in the chamber during a snowstorm carved 33 runic inscriptions on the inner walls (Barnes 1994; Internet Archaeology 47, Smith et al. 2018). The Orkneyinga Saga preserves the historical context of the runic carving event. Maeshowe is therefore unique in being a Neolithic ceremonial chamber that was reused as a refuge by Norse seafarers and that received direct Norse attention in carved text and saga. It is a chamber where the substrate transmission across at least three cultural transitions (Neolithic, post-Roman British, Norse) is materially attested."
+        }
+      ],
+      "text_length": 61711
+    },
+    {
+      "blob": "f747025923ddd920818446ed3e8af0d448b27ee0",
+      "sha256": "8396178f7690060dd73d3722e6827c923ba40272b21e6269a3f82a8215d9cc34",
+      "paths": [
+        "Antarctic research/Atlantic_Seaboard_Substrate_v1.pdf",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/Atlantic_Seaboard_Substrate_v1_8396178f76.pdf"
+      ],
+      "first_commit": {
+        "path": "Antarctic research/Atlantic_Seaboard_Substrate_v1.pdf",
+        "blob": "f747025923ddd920818446ed3e8af0d448b27ee0",
+        "commit": "cdb8af76f35760b4008bff568342a19d7f3c6b53",
+        "authored": "2026-05-22T19:14:39+01:00",
+        "committed": "2026-05-22T19:15:56+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 91,
+        "twig": 0,
+        "light": 11,
+        "calendar": 2,
+        "time_reading": 3,
+        "hnc": 0
+      },
+      "passages": [],
+      "text_length": 65206
+    },
+    {
+      "blob": "f85954729805568b84e2050d05b07d1d581fa2a3",
+      "sha256": "461b6ee801e7732f73a98948b7c0328d1781c632a9d2548bdd0be0de0d47f788",
+      "paths": [
+        "Antarctic research/People_of_the_Threshold_v1 (1).docx",
+        "Antarctic research/People_of_the_Threshold_v1.docx",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/People_of_the_Threshold_v1_1_461b6ee801.docx"
+      ],
+      "first_commit": {
+        "path": "Antarctic research/People_of_the_Threshold_v1 (1).docx",
+        "blob": "f85954729805568b84e2050d05b07d1d581fa2a3",
+        "commit": "cdb8af76f35760b4008bff568342a19d7f3c6b53",
+        "authored": "2026-05-22T19:14:39+01:00",
+        "committed": "2026-05-22T19:15:56+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 17,
+        "twig": 0,
+        "light": 3,
+        "calendar": 87,
+        "time_reading": 7,
+        "hnc": 0
+      },
+      "passages": [
+        {
+          "line": 94,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The wheat-straw is not incidental packaging. It is the substrate's calendar-marker. Wheat is the agricultural-civilization grain that marks the home cultures' annual cycle from sowing through harvest. Wrapping the offerings in wheat-straw timestamps them to the home culture's agricultural year and binds them to the festival calendar that the threshold's astronomical observations calibrate. The threshold-people receive offerings that document the home culture's continuing maintenance of the calendar that the threshold itself anchors."
+        },
+        {
+          "line": 139,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "These four wants exactly map to the substrate's four documented transaction-types: ritual tribute for calendar maintenance; survey-and-return for knowledge harvest; deposit-and-proof for physical exchange; and teaching-transmission for priest-class formation. The structural fit is the diagnostic finding. The threshold-residents want what the four transaction-types deliver — because the four transaction-types are the operational system through which the threshold's astronomical-and-ritual function maintains itself across generations."
+        },
+        {
+          "line": 145,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The Coligny calendar — the late-Iron-Age Gaulish bronze plaque manufactured in the late 2nd century CE, deliberately broken into more than seventy fragments and buried, recovered in 1897, now in the Musée Gallo-Romain at Lyon — implements the same Metonic framework with intercalary months across a five-year/sixty-two-month cycle plus thirty-year supplementary cycle. The calendar is the substrate's surviving physical record of the threshold's calendar mathematics in operational form."
+        },
+        {
+          "line": 156,
+          "categories": [
+            "light",
+            "time_reading"
+          ],
+          "text": "Eratosthenes used Pytheas's measurements (along with his own famous Alexandria-Syene shadow-stick experiment) to calculate the Earth's circumference at approximately 252,000 stadia — within a few percent of the modern value, depending on which stadion is used. The threshold's contribution to this calculation is the high-latitude end of the latitude-by-day-length relationship; without observations from the Arctic Circle and beyond, the calibration cannot be extended into the polar geometry. Hipparchus (around 130 BCE) extended the work into trigonometry and the precession of the equinoxes. The mathematical-astronomical synthesis that Ptolemy would later codify in the Almagest (around 150 CE) rests on the observational baseline that Pytheas's threshold-voyage established."
+        },
+        {
+          "line": 210,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The categories are not separable from one another in the substrate's operational logic. The calendar mathematics requires the astronomical observations. The healing-philosophy framework requires the calendar mathematics. The navigation knowledge requires both calendar mathematics (timing the voyages) and astronomical observations (determining position). The agricultural knowledge requires the calendar mathematics (timing the planting). The physical relics authenticate the entire integrated package. The home cultures received an integrated knowledge-package, not a list of separate disciplines."
+        },
+        {
+          "line": 239,
+          "categories": [
+            "legacy",
+            "light",
+            "calendar"
+          ],
+          "text": "The Coligny material fed into the modern academic recovery of pre-Christian Celtic calendar systems. The calendar's eight-fold solar wheel, with the four cardinal points (winter solstice, spring equinox, summer solstice, autumn equinox) and the four cross-quarter days (Imbolc, Beltane, Lughnasadh, Samhain), is now firmly established in the academic record as the substrate's solar-festival framework. The wheel-of-the-year that contemporary Celtic-revival, Wiccan, and broader pagan-revival traditions have reconstructed since the mid-20th century operates on the Coligny-recovered structure."
+        },
+        {
+          "line": 240,
+          "categories": [
+            "calendar",
+            "time_reading"
+          ],
+          "text": "More technically, the Christian Easter computus — the calculation of the Easter date — uses the same Metonic 19-year cycle that the Coligny calendar and the threshold's Hyperborean tradition embody. The Council of Nicaea in 325 CE adopted the Metonic-cycle-based Easter calculation, which became the foundation of the Gregorian calendar reform in 1582 (which corrected accumulated calendar drift while keeping the Metonic Easter calculation). The threshold's calendar mathematics, transmitted through the Hyperborean-and-druidic-and-Christian-monastic chain, became the framework of the Christian liturgical calendar that is still in operation today."
+        },
+        {
+          "line": 261,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The Hopi tradition therefore provides a control case for the substrate-pattern. We can observe a threshold-tradition operating continuously without the methylation events that disrupted the other six traditions. The Hopi calendar still operates the eight-fold solar wheel that the Coligny calendar encoded; the Hopi tradition still distinguishes the sacred mountains by direction (the four Hopi sacred peaks at the four cardinal directions); the Hopi initiation transmission still operates the threshold-resident transmission pattern (the kachina handing knowledge to the next generation through the kiva ceremony)."
+        },
+        {
+          "line": 262,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "What the Hopi continuous case shows is that the substrate-pattern is operationally functional when allowed to continue without methylation. The threshold's calendar-and-ritual-and-knowledge framework is not a brittle ancient artifact that requires reconstruction. It is a working operational system. The other six traditions' methylation events disrupted the operational system without destroying the documentary record; the Hopi case shows what the un-methylated system looks like still operating in the contemporary world."
+        },
+        {
+          "line": 271,
+          "categories": [
+            "calendar",
+            "time_reading"
+          ],
+          "text": "The Egyptian Sothic-cycle observational tradition fed into the global astronomical and timekeeping framework. The 365-day civil calendar, the 24-hour day division, the 60-base sexagesimal time-and-angle measurement system (inherited via Babylon but fully integrated in Egyptian-Hellenistic Alexandria), the precise solar and stellar observational record across millennia — all are part of the Egyptian threshold-tradition's gift back to the global system."
+        },
+        {
+          "line": 278,
+          "categories": [
+            "calendar",
+            "time_reading"
+          ],
+          "text": "What it tells us — The Egyptian line: Sothic-cycle observational tradition + 365-day civil calendar + 24-hour and 60-base time/angle systems -> Hellenistic synthesis at Alexandria -> Ptolemy's Almagest -> Islamic + medieval European astronomy -> Copernicus -> modern timekeeping infrastructure (including GPS atomic clocks)."
+        },
+        {
+          "line": 282,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The threshold's cargo back did not stop at the home cultures. It continued forward through documented transmission chains into the cultural-technological frameworks of the modern world. The Pythagorean line runs from Abaris to Newton's Principia and beyond, into modern mathematical physics. The Brendan line contributes to the European Atlantic crossing and the consequences that followed. The Coligny line preserves the Metonic-cycle calendar mathematics that the Christian Easter computus and the Gregorian calendar still operate. The Vedic line transmits yoga, meditation, and the Hindu-Arabic numerals that are now global infrastructure. The Hopi line provides the continuous-operation control case showing that the substrate-pattern is functional when un-methylated. The Egyptian line is embedded in the foundation of Western astronomy and modern timekeeping."
+        }
+      ],
+      "text_length": 60671
+    },
+    {
+      "blob": "faf2c3c7df26daf330931ce67e61fba25205157d",
+      "sha256": "24468b6d20fcdc8bd6a18e0e3827f70bc47269aede353b8fa1d2ab49b9eec40c",
+      "paths": [
+        "Antarctic research/The_Full_Story_v1.docx",
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/The_Full_Story_v1_24468b6d20.docx"
+      ],
+      "first_commit": {
+        "path": "Antarctic research/The_Full_Story_v1.docx",
+        "blob": "faf2c3c7df26daf330931ce67e61fba25205157d",
+        "commit": "cdb8af76f35760b4008bff568342a19d7f3c6b53",
+        "authored": "2026-05-22T19:14:39+01:00",
+        "committed": "2026-05-22T19:15:56+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 111,
+        "twig": 0,
+        "light": 14,
+        "calendar": 45,
+        "time_reading": 4,
+        "hnc": 0
+      },
+      "passages": [
+        {
+          "line": 11,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The story has six phases. Phase one is origin — the substrate operates as an integrated kindred-network at its threshold, building the architecture, encoding the calendar, holding the knowledge in unified form. Phase two is transmission — carriers travel from the threshold to home cultures around the world, conduct documented transactions there, and return with the integrated cargo. Phase three is integration — the home cultures absorb the cargo as one package, reorganising around it. Phase four is fragmentation — religious or imperial factions in each home culture break the integrated package into specialised fragments under separate authorities. Phase five is dispersion — the fragments become invisible to one another and the substrate is described by historians as several unrelated phenomena. Phase six is recovery — modern scholarship begins to read the fragments together, ancient DNA closes inferential gaps, the cross-cultural pattern-match is laid out, and the integration becomes visible again."
+        },
+        {
+          "line": 18,
+          "categories": [
+            "legacy",
+            "light",
+            "calendar"
+          ],
+          "text": "At Évora in southern Portugal stands Almendres Cromlech, the oldest known stone circle in Europe — a complex of 95 standing stones in two adjoining ovals with the eastern entrance aligned to the equinox sunrise. Construction began in the early sixth millennium BCE, before Newgrange, before Stonehenge, before the Great Pyramid. Almendres establishes the southern anchor of the chain and demonstrates that the substrate's calendar mathematics — equinox and solstice marking through architectural alignment — was already in operation a millennium before the Atlantic façade megalith spread documented by Schulz Paulsson 2019."
+        },
+        {
+          "line": 47,
+          "categories": [
+            "legacy",
+            "light",
+            "calendar"
+          ],
+          "text": "Seven hundred years after Carnac, Ireland's Boyne Valley becomes the densest substrate node yet built. Newgrange, Knowth, and Dowth are constructed within roughly the same century. Newgrange is the most architecturally sophisticated. Its passage runs nineteen metres into the cairn. A small slot above the entrance — the roof-box — was deliberately cut to admit the rising sun on the morning of the winter solstice into the central chamber. The roof-box is calibrated. If it had been cut twenty centimetres too high or too low, or if the passage had been built a few metres shorter or longer, the alignment would have failed. It does not fail."
+        },
+        {
+          "line": 77,
+          "categories": [
+            "legacy",
+            "light"
+          ],
+          "text": "Three hundred kilometres further north, on the Orkney Mainland at 59°N, the substrate builds its northern Atlantic anchor. The Stones of Stenness are the oldest stone circle in Britain, raised around 3100 BCE. Their primary alignment is to the Beltane sunrise on May 1 at azimuth 41.27°. Three hundred years after Stenness, the chambered cairn of Maeshowe is built one kilometre to the east. Maeshowe's passage runs at azimuth 221°, oriented to the winter solstice sunset. For approximately three weeks around the solstice each year, the setting sun enters the passage and illuminates the back wall. Maeshowe is, with Newgrange, one of only two solstice-aligned chambered monuments in the British Isles, and it is the substrate's northern bookend matching Newgrange's southern bookend."
+        },
+        {
+          "line": 86,
+          "categories": [
+            "legacy",
+            "light"
+          ],
+          "text": "Five hundred years after Maeshowe, the sarsen circle of Stonehenge is raised at 51°N on the Wessex chalk downs. Its primary alignment is to the summer solstice sunrise along the avenue running northeast from the circle past the Heel Stone at azimuth 50.7°. Where Newgrange and Maeshowe mark the winter solstice and the year's death, Stonehenge marks the summer solstice and the year's fullness. The substrate's eight-fold wheel of the year is now built into stone across the entire Atlantic chain."
+        },
+        {
+          "line": 91,
+          "categories": [
+            "legacy",
+            "light"
+          ],
+          "text": "What it tells us — Stonehenge sarsen circle, summer solstice sunrise azimuth 50.7° — Atlantic substrate's summer-station bookend."
+        },
+        {
+          "line": 95,
+          "categories": [
+            "legacy",
+            "light",
+            "calendar",
+            "time_reading"
+          ],
+          "text": "By 2500 BCE the Atlantic substrate has built a chain of solstice-and-equinox-aligned monuments from southern Iberia at 38°N to the Northern Isles at 59°N. The kindred network is documented genetically across the chain. The architecture is calendrically calibrated to the working of solar and lunar bodies in the sky at the substrate epoch. The home base of operations is the threshold itself — the threshold being not just the architectural sites but the maritime kindred network that linked them, the calendar mathematics that timed them, and the carrier-class that operated them."
+        },
+        {
+          "line": 111,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The cargo back was Apollonian doctrine, healing arts (transmitted by the Hyperborean priest Abaris with his magical arrow), oracular prophecy, and the Olen poet's original Apollonian hymns which became the foundation of Delian ritual practice. Most importantly, the 19-year Metonic cycle was locked into Greek ritual practice as a live observance. Pythagoras was said in antiquity to have learned directly from Abaris — the meeting is recorded by Iamblichus in his Life of Pythagoras and by Porphyry. The Pythagorean school in southern Italy is therefore the documented destination of the Hyperborean substrate-cargo in its Greek phase."
+        },
+        {
+          "line": 150,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The Egyptian funerary tradition documents the substrate's calendar-and-vault function in two integrated forms operating across more than three thousand years of Pharaonic religion. The Duat or Tuat is the hidden chamber of the underworld, navigated by the sun-god Ra during the twelve hours of night. The Pyramid Texts of the Old Kingdom (2686-2181 BCE), the Coffin Texts of the First Intermediate Period, and the Book of Amduat — \"The Book of What Is in the Underworld\" — of the New Kingdom document the twelve regions in detail. Each hour has its named gods, demons, gates, and guardians. The Duat hieroglyph itself is a star inside a circle. Mummification took 70 days — the same period Sirius is invisible before its heliacal rising. The vault period and the celestial period match."
+        },
+        {
+          "line": 194,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "Phase Three is what happens when the cargo arrives. In every documented case the receiving home culture initially absorbs the substrate package as a single integrated system: calendar mathematics plus cosmology plus healing techniques plus agricultural ritual plus priesthood-organisation plus ethical teaching plus navigational-astronomical framework, all held together as one body of knowledge under one carrier-class. This is the moment of maximum coherence in the home culture's relationship to the substrate. It typically lasts for several centuries before the fragmentation of Phase Four begins."
+        },
+        {
+          "line": 206,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "In Egypt the substrate's calendar-and-vault function was integrated into the Pharaonic state religion from the Third Dynasty onward, approximately 2670 BCE. The Pyramid Texts inscribed in the burial chambers of Unas and his successors (Fifth and Sixth Dynasties, c. 2350-2150 BCE) document the integrated state of the substrate cargo at this period. The Pyramid Texts are simultaneously a calendar (the twelve hours of the night), a cosmology (the Duat as the hidden chamber where the sun travels), an agricultural-ritual framework (the Sothic cycle binding heliacal Sirius to Nile flood), a political legitimation (the Pharaoh as the soul who completes the night journey), an ethical teaching (the negative confession before the forty-two judges), and a craft tradition (mummification, tomb construction, hieroglyphic writing, temple alignment)."
+        },
+        {
+          "line": 212,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "What it tells us — Egyptian funerary religion integrates substrate cargo as unified package under Pharaonic priesthood for ~1500 years. Pyramid Texts simultaneously document calendar, cosmology, ritual framework, political legitimation, ethics, and craft."
+        },
+        {
+          "line": 216,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "In the Indus-Saraswati basin and later across the broader Indian subcontinent, the Vedic-Brahmanical tradition integrated the substrate's tirtha-yatra cargo into a unified system covering ritual calendar, cosmology, healing (Ayurveda developing within the Atharva Veda tradition), priesthood organisation (the Brahmin varna), agricultural ritual, ethical teaching (dharma), navigational-astronomical framework (the Jyotisha Vedanga), and political legitimation (the rajasuya consecration). The four Vedas — Rig, Sama, Yajur, Atharva — together encoded the integrated package. The integration held through the composition of the Brahmanas, the Aranyakas, and the Upanishads."
+        },
+        {
+          "line": 217,
+          "categories": [
+            "calendar",
+            "time_reading"
+          ],
+          "text": "Mount Meru as the cosmic axis-pillar with its fourteen vertical worlds, four continents at the cardinal points, encircling oceans, and named guardians (Indra and the devas at the summit, the eight Dig gajas at the directional points, the Four Maharajas at the base) provides the spatial framework. The Sothic-equivalent cycle in Vedic astronomy is the Yuga system, with the Mahayuga of 4,320,000 years bracketing the agricultural and political calendars within a much longer cosmic frame."
+        },
+        {
+          "line": 226,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "In Gaul, Britain, and Ireland the substrate's late-Iron-Age phase was the druid school described directly by Caesar in De Bello Gallico VI.14 — a formal twenty-year training programme conducted orally in remote groves, teaching astronomy, geographic distribution of the globe, natural philosophy, and matters of religion. The integrated package was preserved across cultural transitions from the megalithic period through the Bronze Age into the Iron Age. The Coligny calendar, manufactured in the late second century CE and deliberately broken and buried around 200 CE, is the surviving physical artifact: a Gaulish lunisolar five-year cycle of 62 months with intercalary months, Metonic-derived, implementing the same mathematical framework Hecataeus described for the Hyperborean Apollo cult."
+        },
+        {
+          "line": 232,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "What it tells us — Druid school operates substrate cargo as integrated package — twenty-year oral training in astronomy, geography, natural philosophy, and religion. Coligny calendar is surviving physical artifact of the lunisolar Metonic framework."
+        },
+        {
+          "line": 256,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "In every documented case the home culture initially absorbs the substrate cargo as a single integrated package. The integration typically lasts several centuries — Pythagorean Croton for approximately eighty years, Egyptian funerary religion for fifteen hundred years, Vedic Brahmanism for a thousand years, druidic Iron-Age Atlantic for at least five hundred years, Insular Celtic Christianity for two and a half centuries, the Hopi Way for at least eight hundred years and counting. During the integration period the home culture's calendar, agriculture, priesthood, political legitimation, ethics, and craft all operate under one carrier-class holding the substrate package as a unified body of knowledge."
+        },
+        {
+          "line": 283,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The druid integrated package — astronomy, geography, natural philosophy, healing, calendar, ethics, political legitimation — is broken across the Roman absorption. The astronomical content is absorbed into Roman calendar reform (Julius Caesar's calendar of 45 BCE, then Augustus's adjustments). The ethical content goes to the philosophical schools operating under Roman patronage. The healing content is reframed as Greek medicine and absorbed into the Galenic tradition. The political-legitimation content is replaced by Roman magistrate hierarchies. The deliberate burial of the Coligny calendar around 200 CE is physical evidence of the substrate carriers' response — the integrated package deposited into durable medium for future recovery when open practice was no longer viable."
+        },
+        {
+          "line": 302,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "What it tells us — Synod of Whitby imposes Roman Easter computation on Insular Celtic church. Bishop Colmán withdraws to Iona and Inishbofin. Insular substrate carrier-class loses ecclesiastical autonomy. Calendar fragmented from substrate's older lunisolar framework into Roman Alexandrian computus. Council of Cealchythe 816 CE further subordinates Insular tradition."
+        },
+        {
+          "line": 317,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "Spanish colonial policy in northern New Spain (modern New Mexico and Arizona) from approximately 1540 onward systematically targeted the Pueblo substrate carrier-class. Coronado's expedition reached the Pueblo region in 1540. Franciscan missions began establishing in 1598 under Oñate. Mission policy required the destruction of kachina masks, the prohibition of ceremonial dance, the closure of kivas, and the imposition of Christian religious instruction. The Pueblo integrated package — calendar, agriculture, kachina teaching, kiva ceremony, clan organisation — was being systematically broken."
+        },
+        {
+          "line": 344,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The Atlantic substrate fragments are similarly distributed. The megalithic architecture is in archaeology. The genetic continuity is in ancient-DNA studies. The druidic testimony is in classical history. The Coligny calendar is in Celtic studies. The Brendan voyage is in medieval Irish literature. The Norse-Gaelic Lordship of the Isles is in Scottish history. The Maeshowe runic inscriptions are in Norse studies. The Brehon laws are in legal history. The bardic tradition is in Gaelic literature. Each fragment is well-studied within its own department. The integration across all of them is not standardly presented in any single institutional setting."
+        },
+        {
+          "line": 351,
+          "categories": [
+            "legacy",
+            "time_reading"
+          ],
+          "text": "The single most important development in the substrate's recovery is the ancient-DNA revolution. Until approximately 2015 the substrate's biological continuity was inferential — based on shared cultural patterns and architectural similarities. Since 2015 the technology of ancient-DNA sequencing has made it possible to read kinship and population structure directly from Neolithic and Bronze Age remains. Five peer-reviewed studies covering approximately 1,200 ancient genomes now establish the substrate's biological reality directly."
+        },
+        {
+          "line": 361,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The second major development in the substrate's recovery is the cross-cultural pattern-matching that becomes visible when the testament-streams are read together rather than within their separate disciplinary homes. Seven independent testament-streams from cultures with no plausible pre-modern transmission contact converge on the same five-key framework: spherical or circular axial temple, lunisolar Metonic calendar, sacred female guardian-weaver, healer-priest with rod-or-arrow authority-marker, and four-worlds-or-four-elements cycle. The convergence cannot be produced by single-tradition speculation. The streams differ in language, geography, climate, technology, and political organisation. What they share is the substrate's operating-system, encoded in different languages by traditions that all received the cargo independently."
+        },
+        {
+          "line": 363,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The third major development is the recognition that all seven testament-streams encode the same five-stage transaction structure (why go, cargo out, arrival, cargo back, meaning) and the same four transaction-types (ritual tribute for calendar maintenance, survey-and-return for knowledge harvest, deposit-and-proof for physical exchange, teaching-transmission for priest-class formation). These pattern across streams as the substrate's documented operational mechanisms. The fables are not folktales. They are travel-reports preserved as memorable narrative, encoding the operational details of the threshold's actual use."
+        },
+        {
+          "line": 370,
+          "categories": [
+            "calendar",
+            "time_reading"
+          ],
+          "text": "The corpus has identified several future work streams that would extend the Phase Six recovery. Direct genetic continuity tests from Newgrange-era passage-tomb burials to medieval Argyll-Hebridean clan-founder remains. The I2d-Y3709 distribution analysis in modern Argyll-clan descendants (MacDougall, MacDonald, Campbell) using surname-cluster Y-haplotype databases. RTI data acquisition for Maeshowe inscription Nr.15 from the Archaeology Data Service York. Transcript-readings of the Children of Lir, the Voyage of Mael Dúin, the Lebor Gabála Érenn, and the Norse Vinland sagas using the Brendan-transcript method. Cross-latitude calendar-sky correspondence tests at Newgrange, Almendres, Carnac, and Maeshowe. Antarctic geophysical cross-reference of the candidate site at -86.07°S, 112.29°E against BEDMAP3, ADMAP-2.0, and the Aitken 2014 Wilkes Land subglacial fault-system documentation."
+        },
+        {
+          "line": 373,
+          "categories": [
+            "legacy",
+            "calendar"
+          ],
+          "text": "The Atlantic substrate operated as an integrated kindred-organised maritime network from approximately 5500 BCE in the Iberian Mesolithic through the late fifteenth century CE in the Hebridean corridor. Its biological continuity is documented in five peer-reviewed ancient-DNA studies covering approximately 1,200 ancient genomes. Its architectural continuity is documented in the spine of dated alignments from Almendres at 5500 BCE through Carnac at 4500 BCE, Newgrange at 3200 BCE, Maeshowe at 2800 BCE, and Stonehenge at 2500 BCE. Its calendrical continuity is documented in the Coligny calendar artifact, the Brendan transcript timing, and the lunisolar Metonic mathematics that runs across all phases. Its political continuity is documented in the kindred-cenél structure of Dalriada inheriting the Atlantic Neolithic kindred form into the medieval period and persisting through Somerled's emergence in 1153 CE to the Lordship of the Isles in 1493 CE."
+        }
+      ],
+      "text_length": 72754
+    },
+    {
+      "blob": "3d059f4c9d0e98146c30060eac61b6173fb6d68c",
+      "sha256": "23405710b73a3b9b015e74433f969bc72ab7f1f51e75c4154230f00e3836928e",
+      "paths": [
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/Project_Druid_SysTechDev2026_v5_conf_23405710b7.docx"
+      ],
+      "first_commit": {
+        "path": "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/Project_Druid_SysTechDev2026_v5_conf_23405710b7.docx",
+        "blob": "3d059f4c9d0e98146c30060eac61b6173fb6d68c",
+        "commit": "b4bfe63756791c427cdbdd64fe56301aced1e7ef",
+        "authored": "2026-07-12T20:53:38+01:00",
+        "committed": "2026-07-12T20:53:38+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 1,
+        "twig": 0,
+        "light": 0,
+        "calendar": 1,
+        "time_reading": 5,
+        "hnc": 6
+      },
+      "passages": [
+        {
+          "line": 44,
+          "categories": [
+            "legacy",
+            "time_reading"
+          ],
+          "text": "A critical engineering challenge for this layer is maintaining the 100 nm gap spacing under operational conditions. Spacecraft experience thermal cycling of approximately plus or minus 150 K during orbital transitions, inducing differential thermal expansion that could alter gap dimensions. The design addresses this through three measures: (1) matched coefficient of thermal expansion materials (silicon carbide on silicon substrates), (2) MEMS-based active gap control with piezoelectric actuators providing sub-nanometre positioning, and (3) a conservative 5 percent mitigation allocation that tolerates significant gap variation before the layer contribution becomes negligible. The modest mitigation assigned to this layer (T_5 = 0.95) reflects this engineering uncertainty."
+        }
+      ],
+      "text_length": 33805
+    },
+    {
+      "blob": "46d994371febb79edf3176a7a818841066c42fed",
+      "sha256": "50bc4c1f66f1fee1530ae67df8f8c602c3dddc06e30e1da3673878950786bc79",
+      "paths": [
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/Project_Alfie_SysTechDev2026_v5_50bc4c1f66.docx"
+      ],
+      "first_commit": {
+        "path": "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/Project_Alfie_SysTechDev2026_v5_50bc4c1f66.docx",
+        "blob": "46d994371febb79edf3176a7a818841066c42fed",
+        "commit": "b4bfe63756791c427cdbdd64fe56301aced1e7ef",
+        "authored": "2026-07-12T20:53:38+01:00",
+        "committed": "2026-07-12T20:53:38+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 0,
+        "twig": 0,
+        "light": 0,
+        "calendar": 1,
+        "time_reading": 9,
+        "hnc": 7
+      },
+      "passages": [],
+      "text_length": 21967
+    },
+    {
+      "blob": "751852d6356d9e01135e2540c23a5359bca40a90",
+      "sha256": "24c321295218b4499b369f3eaf1da187ec8208c38dbcef3e2c209d0b6b1e33b8",
+      "paths": [
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/Antarctic_briefing_part_2_24c3212952.docx"
+      ],
+      "first_commit": {
+        "path": "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/Antarctic_briefing_part_2_24c3212952.docx",
+        "blob": "751852d6356d9e01135e2540c23a5359bca40a90",
+        "commit": "b4bfe63756791c427cdbdd64fe56301aced1e7ef",
+        "authored": "2026-07-12T20:53:38+01:00",
+        "committed": "2026-07-12T20:53:38+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 1,
+        "twig": 0,
+        "light": 0,
+        "calendar": 1,
+        "time_reading": 2,
+        "hnc": 3
+      },
+      "passages": [],
+      "text_length": 16949
+    },
+    {
+      "blob": "9840224740de3227c156b52fb9d198f668427cc5",
+      "sha256": "0032131a47334a88913d37e5849c2c1bf68b0251339056ab1953bfc0558f1a39",
+      "paths": [
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/Project_Alfie_SysTechDev2026_v5_conf_0032131a47.docx"
+      ],
+      "first_commit": {
+        "path": "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/Project_Alfie_SysTechDev2026_v5_conf_0032131a47.docx",
+        "blob": "9840224740de3227c156b52fb9d198f668427cc5",
+        "commit": "b4bfe63756791c427cdbdd64fe56301aced1e7ef",
+        "authored": "2026-07-12T20:53:38+01:00",
+        "committed": "2026-07-12T20:53:38+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 0,
+        "twig": 0,
+        "light": 0,
+        "calendar": 2,
+        "time_reading": 17,
+        "hnc": 7
+      },
+      "passages": [
+        {
+          "line": 187,
+          "categories": [
+            "time_reading",
+            "hnc"
+          ],
+          "text": "Four findings support continued investigation. First, the required field strength of 24.2 T has been demonstrated at laboratory scale, confirming that the magnetic pressure physics is sound even though the bore geometry requires radical scaling. Second, parametric sensitivity analysis shows that a 500 m shaft reduces the field requirement to 7.7 T and the g-loading to 6,082 g, demonstrating that the design space contains substantially more accessible configurations than the baseline specification. Third, preliminary experimental observations within the EPAS programme show measurable electromagnetic field interaction effects at HNC-derived frequencies across 19 experiments, with a systematic frequency sweep confirming that phi-scaled Schumann modulation (12.67 Hz) is the optimal coupling frequency from eight candidates tested. Fourth, the companion MMOD defence application (Project Druid) validates the electromagnetic-acoustic-plasma triad at lower energy densities, establishing a technology readiness pathway."
+        }
+      ],
+      "text_length": 33742
+    },
+    {
+      "blob": "c34a4032eb8226574bcfe7bff0d3bb4a09870305",
+      "sha256": "b930be808c10fa8c8814a73a4388913546cec9276fa0e6da4bbda3cf78caef76",
+      "paths": [
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/Project_Druid_SysTechDev2026_v5_b930be808c.docx"
+      ],
+      "first_commit": {
+        "path": "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/Project_Druid_SysTechDev2026_v5_b930be808c.docx",
+        "blob": "c34a4032eb8226574bcfe7bff0d3bb4a09870305",
+        "commit": "b4bfe63756791c427cdbdd64fe56301aced1e7ef",
+        "authored": "2026-07-12T20:53:38+01:00",
+        "committed": "2026-07-12T20:53:38+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 0,
+        "twig": 0,
+        "light": 0,
+        "calendar": 1,
+        "time_reading": 3,
+        "hnc": 2
+      },
+      "passages": [],
+      "text_length": 19939
+    },
+    {
+      "blob": "e451b7af68b901bbd8f5a9fe17f2d6327791b5e0",
+      "sha256": "f1afc214a2c1c6a9617c12cf5d8030e836d9fb50689eb65cbed49c4b48cceb77",
+      "paths": [
+        "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/HNC_White_Paper_v_f1afc214a2.pdf"
+      ],
+      "first_commit": {
+        "path": "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/HNC_White_Paper_v_f1afc214a2.pdf",
+        "blob": "e451b7af68b901bbd8f5a9fe17f2d6327791b5e0",
+        "commit": "b4bfe63756791c427cdbdd64fe56301aced1e7ef",
+        "authored": "2026-07-12T20:53:38+01:00",
+        "committed": "2026-07-12T20:53:38+01:00",
+        "change": "A"
+      },
+      "counts": {
+        "legacy": 6,
+        "twig": 0,
+        "light": 0,
+        "calendar": 2,
+        "time_reading": 4,
+        "hnc": 9
+      },
+      "passages": [
+        {
+          "line": 85,
+          "categories": [
+            "legacy",
+            "hnc"
+          ],
+          "text": "The HNC framework establishes that the fundamental substrate of reality is a spectrum of coupled "
+        }
+      ],
+      "text_length": 35549
+    }
+  ]
+}

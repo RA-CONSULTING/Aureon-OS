@@ -1,0 +1,366 @@
+{
+  "version": "1.0.0",
+  "schema": "celtic-ogham-star-chart",
+  "description": "Complete Celtic Ogham (25 Feda) with star-chart geometric decoders. The Ogham is a tree alphabet — each character (Fid) is a set of notches/strokes across a vertical stem (the Druim). These notch patterns map directly to planetary angular geometry: 1-5 strokes right, 1-5 left, 1-5 diagonal, 1-5 across, and 5 Forfeda (diphthongs). The number of strokes = the number of planetary connection points on the star map.",
+
+  "aicmi": {
+    "aicme_beithe": {
+      "name": "Aicme Beithe",
+      "domain": "Beginning & Foundation",
+      "direction": "right_of_stem",
+      "feda": ["beith", "luis", "fearn", "sail", "nion"]
+    },
+    "aicme_huatho": {
+      "name": "Aicme Huatho",
+      "domain": "Challenge & Protection",
+      "direction": "left_of_stem",
+      "feda": ["huath", "duir", "tinne", "coll", "quert"]
+    },
+    "aicme_muinn": {
+      "name": "Aicme Muinn",
+      "domain": "Harvest & Wisdom",
+      "direction": "diagonal_across",
+      "feda": ["muin", "gort", "ngetal", "straif", "ruis"]
+    },
+    "aicme_ailm": {
+      "name": "Aicme Ailm",
+      "domain": "Vowels & Spirit",
+      "direction": "perpendicular_across",
+      "feda": ["ailm", "onn", "ur", "eadhadh", "iodhadh"]
+    },
+    "forfeda": {
+      "name": "Forfeda",
+      "domain": "Advanced Symbols & Diphthongs",
+      "direction": "complex_angles",
+      "feda": ["eabhadh", "oir", "uilleann", "iphin", "emancholl"]
+    }
+  },
+
+  "feda": [
+    {
+      "id": "beith", "name": "Beith", "unicode": "\u1681", "number": 1, "aicme": "aicme_beithe",
+      "tree": "Birch", "strokes": 1, "direction": "right",
+      "meaning": "New beginnings, purification, fresh start, initiative",
+      "element": "Air", "planet": "Sun", "zodiac_home": "Aries",
+      "star_chart": {
+        "geometry": "SINGLE_RAY", "angular_aspect": "conjunction",
+        "trigger_angle_deg": 0, "tolerance_deg": 10,
+        "planet_pair": ["Sun", "Mercury"], "stroke_count": 1,
+        "description": "One stroke right — Sun conjunct Mercury (0\u00b0), the first ray of dawn."
+      },
+      "trading_signal": { "bias": "BUY", "domain": "initiation", "strength": 0.70 }
+    },
+    {
+      "id": "luis", "name": "Luis", "unicode": "\u1682", "number": 2, "aicme": "aicme_beithe",
+      "tree": "Rowan", "strokes": 2, "direction": "right",
+      "meaning": "Protection against enchantment, discernment, quickening of life",
+      "element": "Fire", "planet": "Moon", "zodiac_home": "Taurus",
+      "star_chart": {
+        "geometry": "DOUBLE_RAY", "angular_aspect": "sextile",
+        "trigger_angle_deg": 60, "tolerance_deg": 8,
+        "planet_pair": ["Moon", "Jupiter"], "stroke_count": 2,
+        "description": "Two strokes right — Moon sextile Jupiter (60\u00b0), protection shield activates."
+      },
+      "trading_signal": { "bias": "BUY", "domain": "protection", "strength": 0.68 }
+    },
+    {
+      "id": "fearn", "name": "Fearn", "unicode": "\u1683", "number": 3, "aicme": "aicme_beithe",
+      "tree": "Alder", "strokes": 3, "direction": "right",
+      "meaning": "Foundation, shield, oracle, bridging worlds",
+      "element": "Water", "planet": "Mars", "zodiac_home": "Aries",
+      "star_chart": {
+        "geometry": "TRIPLE_RAY", "angular_aspect": "trine",
+        "trigger_angle_deg": 120, "tolerance_deg": 8,
+        "planet_pair": ["Mars", "Venus"], "stroke_count": 3,
+        "description": "Three strokes right — Mars trine Venus (120\u00b0), warrior and lover bridge worlds."
+      },
+      "trading_signal": { "bias": "BUY", "domain": "foundation", "strength": 0.72 }
+    },
+    {
+      "id": "sail", "name": "Sail", "unicode": "\u1684", "number": 4, "aicme": "aicme_beithe",
+      "tree": "Willow", "strokes": 4, "direction": "right",
+      "meaning": "Intuition, lunar wisdom, flexibility, the feminine",
+      "element": "Water", "planet": "Moon", "zodiac_home": "Cancer",
+      "star_chart": {
+        "geometry": "QUAD_RAY", "angular_aspect": "square",
+        "trigger_angle_deg": 90, "tolerance_deg": 8,
+        "planet_pair": ["Moon", "Venus"], "stroke_count": 4,
+        "description": "Four strokes right — Moon square Venus (90\u00b0), lunar wisdom bends but does not break."
+      },
+      "trading_signal": { "bias": "HOLD", "domain": "intuition", "strength": 0.55 }
+    },
+    {
+      "id": "nion", "name": "Nion", "unicode": "\u1685", "number": 5, "aicme": "aicme_beithe",
+      "tree": "Ash", "strokes": 5, "direction": "right",
+      "meaning": "World tree connections, cosmic web, Yggdrasil parallel",
+      "element": "Air", "planet": "Jupiter", "zodiac_home": "Sagittarius",
+      "star_chart": {
+        "geometry": "PENTA_RAY", "angular_aspect": "quintile",
+        "trigger_angle_deg": 72, "tolerance_deg": 6,
+        "planet_pair": ["Jupiter", "Sun"], "stroke_count": 5,
+        "description": "Five strokes right — Jupiter quintile Sun (72\u00b0), the world-tree connections light up. Sacred pentagonal geometry."
+      },
+      "trading_signal": { "bias": "BUY", "domain": "expansion", "strength": 0.78 }
+    },
+    {
+      "id": "huath", "name": "Huath", "unicode": "\u1686", "number": 6, "aicme": "aicme_huatho",
+      "tree": "Hawthorn", "strokes": 1, "direction": "left",
+      "meaning": "Cleansing, patience, testing before entry, threshold guardian",
+      "element": "Fire", "planet": "Mars", "zodiac_home": "Scorpio",
+      "star_chart": {
+        "geometry": "SINGLE_LEFT", "angular_aspect": "semi-sextile",
+        "trigger_angle_deg": 30, "tolerance_deg": 6,
+        "planet_pair": ["Mars", "Saturn"], "stroke_count": 1,
+        "description": "One stroke left — Mars semi-sextile Saturn (30\u00b0), the thorn tests patience."
+      },
+      "trading_signal": { "bias": "HOLD", "domain": "patience", "strength": 0.40 }
+    },
+    {
+      "id": "duir", "name": "Duir", "unicode": "\u1687", "number": 7, "aicme": "aicme_huatho",
+      "tree": "Oak", "strokes": 2, "direction": "left",
+      "meaning": "Strength, doorway (door = duir), kingship, solid truth, endurance",
+      "element": "Earth", "planet": "Jupiter", "zodiac_home": "Leo",
+      "star_chart": {
+        "geometry": "DOUBLE_LEFT", "angular_aspect": "conjunction",
+        "trigger_angle_deg": 0, "tolerance_deg": 8,
+        "planet_pair": ["Jupiter", "Mars"], "stroke_count": 2,
+        "description": "Two strokes left — Jupiter conjunct Mars (0\u00b0), the oak door opens to the king."
+      },
+      "trading_signal": { "bias": "BUY", "domain": "strength", "strength": 0.85 }
+    },
+    {
+      "id": "tinne", "name": "Tinne", "unicode": "\u1688", "number": 8, "aicme": "aicme_huatho",
+      "tree": "Holly", "strokes": 3, "direction": "left",
+      "meaning": "Balance of opposites, combat readiness, sovereignty, challenge",
+      "element": "Fire", "planet": "Mars", "zodiac_home": "Aries",
+      "star_chart": {
+        "geometry": "TRIPLE_LEFT", "angular_aspect": "square",
+        "trigger_angle_deg": 90, "tolerance_deg": 8,
+        "planet_pair": ["Mars", "Sun"], "stroke_count": 3,
+        "description": "Three strokes left — Mars square Sun (90\u00b0), warrior meets sovereign. Combat stance."
+      },
+      "trading_signal": { "bias": "HOLD", "domain": "combat", "strength": 0.45 }
+    },
+    {
+      "id": "coll", "name": "Coll", "unicode": "\u1689", "number": 9, "aicme": "aicme_huatho",
+      "tree": "Hazel", "strokes": 4, "direction": "left",
+      "meaning": "Wisdom, poetic inspiration, Salmon of Knowledge, intuitive knowing",
+      "element": "Water", "planet": "Mercury", "zodiac_home": "Virgo",
+      "star_chart": {
+        "geometry": "QUAD_LEFT", "angular_aspect": "trine",
+        "trigger_angle_deg": 120, "tolerance_deg": 8,
+        "planet_pair": ["Mercury", "Neptune"], "stroke_count": 4,
+        "description": "Four strokes left — Mercury trine Neptune (120\u00b0), the Salmon of Knowledge swims upstream."
+      },
+      "trading_signal": { "bias": "BUY", "domain": "wisdom", "strength": 0.76 }
+    },
+    {
+      "id": "quert", "name": "Quert", "unicode": "\u168a", "number": 10, "aicme": "aicme_huatho",
+      "tree": "Apple", "strokes": 5, "direction": "left",
+      "meaning": "Choice, beauty, the Otherworld, Avalon, regeneration",
+      "element": "Earth", "planet": "Venus", "zodiac_home": "Libra",
+      "star_chart": {
+        "geometry": "PENTA_LEFT", "angular_aspect": "quintile",
+        "trigger_angle_deg": 72, "tolerance_deg": 6,
+        "planet_pair": ["Venus", "Neptune"], "stroke_count": 5,
+        "description": "Five strokes left — Venus quintile Neptune (72\u00b0), the Apple of Avalon. Choice reveals itself."
+      },
+      "trading_signal": { "bias": "HOLD", "domain": "choice", "strength": 0.60 }
+    },
+    {
+      "id": "muin", "name": "Muin", "unicode": "\u168b", "number": 11, "aicme": "aicme_muinn",
+      "tree": "Vine", "strokes": 1, "direction": "diagonal",
+      "meaning": "Prophecy, harvest, truth-telling, uninhibited expression",
+      "element": "Water", "planet": "Neptune", "zodiac_home": "Pisces",
+      "star_chart": {
+        "geometry": "SINGLE_DIAGONAL", "angular_aspect": "semi-square",
+        "trigger_angle_deg": 45, "tolerance_deg": 6,
+        "planet_pair": ["Neptune", "Jupiter"], "stroke_count": 1,
+        "description": "One stroke diagonal — Neptune semi-square Jupiter (45\u00b0), prophecy vine uncorks."
+      },
+      "trading_signal": { "bias": "HOLD", "domain": "prophecy", "strength": 0.58 }
+    },
+    {
+      "id": "gort", "name": "Gort", "unicode": "\u168c", "number": 12, "aicme": "aicme_muinn",
+      "tree": "Ivy", "strokes": 2, "direction": "diagonal",
+      "meaning": "Tenacity, spiral growth, binding connections, persistence",
+      "element": "Earth", "planet": "Saturn", "zodiac_home": "Capricorn",
+      "star_chart": {
+        "geometry": "DOUBLE_DIAGONAL", "angular_aspect": "sextile",
+        "trigger_angle_deg": 60, "tolerance_deg": 8,
+        "planet_pair": ["Saturn", "Pluto"], "stroke_count": 2,
+        "description": "Two strokes diagonal — Saturn sextile Pluto (60\u00b0), ivy spirals grip stone."
+      },
+      "trading_signal": { "bias": "HOLD", "domain": "persistence", "strength": 0.52 }
+    },
+    {
+      "id": "ngetal", "name": "nGetal", "unicode": "\u168d", "number": 13, "aicme": "aicme_muinn",
+      "tree": "Reed/Broom", "strokes": 3, "direction": "diagonal",
+      "meaning": "Healing, direct action, physician's power, wound-binding",
+      "element": "Water", "planet": "Moon", "zodiac_home": "Scorpio",
+      "star_chart": {
+        "geometry": "TRIPLE_DIAGONAL", "angular_aspect": "trine",
+        "trigger_angle_deg": 120, "tolerance_deg": 8,
+        "planet_pair": ["Moon", "Pluto"], "stroke_count": 3,
+        "description": "Three strokes diagonal — Moon trine Pluto (120\u00b0), deep emotional healing."
+      },
+      "trading_signal": { "bias": "BUY", "domain": "healing", "strength": 0.65 }
+    },
+    {
+      "id": "straif", "name": "Straif", "unicode": "\u168e", "number": 14, "aicme": "aicme_muinn",
+      "tree": "Blackthorn", "strokes": 4, "direction": "diagonal",
+      "meaning": "Discipline, compulsion, adversity as forge, the dark teacher",
+      "element": "Fire", "planet": "Saturn", "zodiac_home": "Scorpio",
+      "star_chart": {
+        "geometry": "QUAD_DIAGONAL", "angular_aspect": "square",
+        "trigger_angle_deg": 90, "tolerance_deg": 6,
+        "planet_pair": ["Saturn", "Mars"], "stroke_count": 4,
+        "description": "Four strokes diagonal — Saturn square Mars (90\u00b0), the blackthorn compels discipline."
+      },
+      "trading_signal": { "bias": "SELL", "domain": "discipline", "strength": 0.30 }
+    },
+    {
+      "id": "ruis", "name": "Ruis", "unicode": "\u168f", "number": 15, "aicme": "aicme_muinn",
+      "tree": "Elder", "strokes": 5, "direction": "diagonal",
+      "meaning": "Endings, judgment, transformation, the crone, death/rebirth",
+      "element": "Water", "planet": "Pluto", "zodiac_home": "Scorpio",
+      "star_chart": {
+        "geometry": "PENTA_DIAGONAL", "angular_aspect": "quintile",
+        "trigger_angle_deg": 72, "tolerance_deg": 6,
+        "planet_pair": ["Pluto", "Moon"], "stroke_count": 5,
+        "description": "Five strokes diagonal — Pluto quintile Moon (72\u00b0), the Elder's judgment."
+      },
+      "trading_signal": { "bias": "SELL", "domain": "endings", "strength": 0.25 }
+    },
+    {
+      "id": "ailm", "name": "Ailm", "unicode": "\u1690", "number": 16, "aicme": "aicme_ailm",
+      "tree": "Silver Fir / Pine", "strokes": 1, "direction": "across",
+      "meaning": "Clarity, overview, long sight, taking the high ground",
+      "element": "Air", "planet": "Sun", "zodiac_home": "Sagittarius",
+      "star_chart": {
+        "geometry": "HORIZONTAL_LINE", "angular_aspect": "opposition",
+        "trigger_angle_deg": 180, "tolerance_deg": 10,
+        "planet_pair": ["Sun", "Jupiter"], "stroke_count": 1,
+        "description": "One stroke across — Sun opposition Jupiter (180\u00b0), maximum panoramic view."
+      },
+      "trading_signal": { "bias": "HOLD", "domain": "overview", "strength": 0.62 }
+    },
+    {
+      "id": "onn", "name": "Onn", "unicode": "\u1691", "number": 17, "aicme": "aicme_ailm",
+      "tree": "Gorse/Furze", "strokes": 2, "direction": "across",
+      "meaning": "Gathering, attraction, solar fire, hope in dark times",
+      "element": "Fire", "planet": "Sun", "zodiac_home": "Leo",
+      "star_chart": {
+        "geometry": "DOUBLE_ACROSS", "angular_aspect": "sextile",
+        "trigger_angle_deg": 60, "tolerance_deg": 8,
+        "planet_pair": ["Sun", "Moon"], "stroke_count": 2,
+        "description": "Two strokes across — Sun sextile Moon (60\u00b0), solar fire gathers lunar water."
+      },
+      "trading_signal": { "bias": "BUY", "domain": "gathering", "strength": 0.72 }
+    },
+    {
+      "id": "ur", "name": "Ur", "unicode": "\u1692", "number": 18, "aicme": "aicme_ailm",
+      "tree": "Heather", "strokes": 3, "direction": "across",
+      "meaning": "Passion, generosity, the roaring fire, community warmth",
+      "element": "Fire", "planet": "Venus", "zodiac_home": "Leo",
+      "star_chart": {
+        "geometry": "TRIPLE_ACROSS", "angular_aspect": "trine",
+        "trigger_angle_deg": 120, "tolerance_deg": 8,
+        "planet_pair": ["Venus", "Mars"], "stroke_count": 3,
+        "description": "Three strokes across — Venus trine Mars (120\u00b0), passion ignites community."
+      },
+      "trading_signal": { "bias": "BUY", "domain": "passion", "strength": 0.74 }
+    },
+    {
+      "id": "eadhadh", "name": "Eadhadh", "unicode": "\u1693", "number": 19, "aicme": "aicme_ailm",
+      "tree": "Aspen / White Poplar", "strokes": 4, "direction": "across",
+      "meaning": "Endurance, overcoming fear, shield against terror, trembling spirit",
+      "element": "Air", "planet": "Uranus", "zodiac_home": "Aquarius",
+      "star_chart": {
+        "geometry": "QUAD_ACROSS", "angular_aspect": "square",
+        "trigger_angle_deg": 90, "tolerance_deg": 6,
+        "planet_pair": ["Uranus", "Moon"], "stroke_count": 4,
+        "description": "Four strokes across — Uranus square Moon (90\u00b0), the aspen trembles but endures."
+      },
+      "trading_signal": { "bias": "HOLD", "domain": "endurance", "strength": 0.38 }
+    },
+    {
+      "id": "iodhadh", "name": "Iodhadh", "unicode": "\u1694", "number": 20, "aicme": "aicme_ailm",
+      "tree": "Yew", "strokes": 5, "direction": "across",
+      "meaning": "Death/rebirth axis, the eternal, ancestor communication, immortality",
+      "element": "Earth", "planet": "Pluto", "zodiac_home": "Scorpio",
+      "star_chart": {
+        "geometry": "PENTA_ACROSS", "angular_aspect": "quintile",
+        "trigger_angle_deg": 72, "tolerance_deg": 6,
+        "planet_pair": ["Pluto", "Sun"], "stroke_count": 5,
+        "description": "Five strokes across — Pluto quintile Sun (72\u00b0), the yew-gate between worlds."
+      },
+      "trading_signal": { "bias": "HOLD", "domain": "rebirth", "strength": 0.50 }
+    },
+    {
+      "id": "eabhadh", "name": "Eabhadh", "unicode": "\u1695", "number": 21, "aicme": "forfeda",
+      "tree": "Aspen (Grove)", "strokes": 0, "direction": "complex",
+      "meaning": "Collective wisdom, grove consciousness, the whole is greater",
+      "element": "Air", "planet": "Mercury", "zodiac_home": "Gemini",
+      "star_chart": {
+        "geometry": "GROVE_PATTERN", "angular_aspect": "grand_trine",
+        "trigger_angle_deg": 120, "tolerance_deg": 8,
+        "planet_pair": ["Mercury", "Jupiter"], "stroke_count": 0,
+        "description": "Complex grove pattern — Grand Trine involving Mercury, hive mind activates."
+      },
+      "trading_signal": { "bias": "BUY", "domain": "collective", "strength": 0.70 }
+    },
+    {
+      "id": "oir", "name": "Oir", "unicode": "\u1696", "number": 22, "aicme": "forfeda",
+      "tree": "Spindle", "strokes": 0, "direction": "complex",
+      "meaning": "The sweet binding, obligation fulfilled, karmic completion",
+      "element": "Earth", "planet": "Saturn", "zodiac_home": "Libra",
+      "star_chart": {
+        "geometry": "SPINDLE_CROSS", "angular_aspect": "semi-sextile",
+        "trigger_angle_deg": 30, "tolerance_deg": 6,
+        "planet_pair": ["Saturn", "Jupiter"], "stroke_count": 0,
+        "description": "Spindle crossing — Saturn semi-sextile Jupiter (30\u00b0), obligation weaves completion."
+      },
+      "trading_signal": { "bias": "HOLD", "domain": "completion", "strength": 0.55 }
+    },
+    {
+      "id": "uilleann", "name": "Uilleann", "unicode": "\u1697", "number": 23, "aicme": "forfeda",
+      "tree": "Honeysuckle", "strokes": 0, "direction": "complex",
+      "meaning": "Hidden secrets, seeking the hidden treasure, fragrance trail",
+      "element": "Air", "planet": "Neptune", "zodiac_home": "Pisces",
+      "star_chart": {
+        "geometry": "SPIRAL_SEEK", "angular_aspect": "quincunx",
+        "trigger_angle_deg": 150, "tolerance_deg": 6,
+        "planet_pair": ["Neptune", "Venus"], "stroke_count": 0,
+        "description": "Spiral seeking — Neptune quincunx Venus (150\u00b0), the fragrance trail to hidden treasure."
+      },
+      "trading_signal": { "bias": "HOLD", "domain": "hidden", "strength": 0.48 }
+    },
+    {
+      "id": "iphin", "name": "Iphin", "unicode": "\u1698", "number": 24, "aicme": "forfeda",
+      "tree": "Gooseberry / Pine (variant)", "strokes": 0, "direction": "complex",
+      "meaning": "Sweetness of nature, the honey of truth, pure essence",
+      "element": "Water", "planet": "Venus", "zodiac_home": "Taurus",
+      "star_chart": {
+        "geometry": "HONEY_DROP", "angular_aspect": "trine",
+        "trigger_angle_deg": 120, "tolerance_deg": 8,
+        "planet_pair": ["Venus", "Jupiter"], "stroke_count": 0,
+        "description": "Honey drop — Venus trine Jupiter (120\u00b0), pure sweetness of truth."
+      },
+      "trading_signal": { "bias": "BUY", "domain": "sweetness", "strength": 0.80 }
+    },
+    {
+      "id": "emancholl", "name": "Emancholl", "unicode": "\u1699", "number": 25, "aicme": "forfeda",
+      "tree": "Witch Hazel / Twin of Hazel", "strokes": 0, "direction": "complex",
+      "meaning": "Double wisdom, mirrored insight, the twin seer, as above so below",
+      "element": "Water", "planet": "Mercury", "zodiac_home": "Virgo",
+      "star_chart": {
+        "geometry": "MIRROR_GLYPH", "angular_aspect": "opposition",
+        "trigger_angle_deg": 180, "tolerance_deg": 8,
+        "planet_pair": ["Mercury", "Neptune"], "stroke_count": 0,
+        "description": "Mirror glyph — Mercury opposition Neptune (180\u00b0), as above so below. Double wisdom."
+      },
+      "trading_signal": { "bias": "HOLD", "domain": "mirror", "strength": 0.62 }
+    }
+  ]
+}

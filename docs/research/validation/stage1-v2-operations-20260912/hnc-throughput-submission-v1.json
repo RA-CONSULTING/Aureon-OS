@@ -1,0 +1,9 @@
+{
+  "job_id": "6503906",
+  "remote": "/projects/u6vs/hnc-organism/expansion-20260912/hnc-throughput-v1",
+  "archive_sha256": "9ed06439f3f3db43d9d7de86a4dc0da2ce501f0ded40cfcb6ccbcdd537d56ff8",
+  "nodes": 1,
+  "gpus": 4,
+  "ceiling_node_hours": 0.3333333333333333,
+  "submitted_utc": "2026-09-12T14:11:10.429372+00:00"
+}

@@ -1,0 +1,14 @@
+{
+  "schema": "stage1-retrospective-amendment/v1",
+  "date": "2026-09-12",
+  "old_run": "6347216",
+  "recovery_job": "6500368",
+  "authority": "User-directed repair of all experiments; retrospective scope explicitly preserved.",
+  "analysis": "Keep the frozen source, fixture generation, parse behaviour and score function. Retain invalid model output at its original zero score in denominators. Recompute every score and summary, verify all 128 x 960 exact pair keys and known source/runtime hashes. Reject malformed or tampered receipt data.",
+  "inference": "Two primary full-versus-baseline exploratory intervals use the inherited 20,000-draw shard bootstrap, random seed 10091. The analysis is retrospective and includes a time-separated recovery of shard 99 with reduced GPU-memory reservation. It is not a frozen-protocol pass or prospective confirmation.",
+  "limitations": [
+    "Serving snapshot metadata is checked; full model-weight hashes were not retained.",
+    "Original permissive JSON parser and score semantics remain; schema validity and calibrated generalization require a new prospective protocol.",
+    "Any incomplete shard or identity/score mismatch blocks aggregate publication."
+  ]
+}

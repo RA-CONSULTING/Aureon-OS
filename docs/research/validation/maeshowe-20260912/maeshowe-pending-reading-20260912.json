@@ -1,0 +1,27 @@
+{
+  "schema": "twig-count-candidates/v1",
+  "input_sha256": "5ce4fce23637594fbe6ffbf47057123e9602737f8f5fac109f15206ba13310b6",
+  "reader_sha256": "a482fc01e60b96d422a45749de1216e2e0982a3905bbba724004324d0fa42334",
+  "records": [
+    {
+      "id": "Maeshowe-Barnes-15-unobserved",
+      "alphabet": "medieval_16",
+      "group_side": "left",
+      "group_order": "reverse",
+      "supplied_counts": {
+        "left": null,
+        "right": null
+      },
+      "provenance": {
+        "kind": "placeholder_not_observation",
+        "note": "The declared orientation/order is an explicit candidate convention only. No RTI file has been acquired and no branches counted. The user's exact two twig symbols remain unidentified.",
+        "archive_reference": "https://doi.org/10.5284/1050103"
+      },
+      "candidates": [],
+      "rejected_count_pairs": [],
+      "physical_reading_verified": false,
+      "interpretation": "candidate transliteration only; no translation, frequency or historical confidence",
+      "status": "UNOBSERVED_COUNTS"
+    }
+  ]
+}

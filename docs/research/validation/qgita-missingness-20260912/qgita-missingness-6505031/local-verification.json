@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "verified_utc": "2026-09-12T15:26:45.406809+00:00",
+  "archive_sha256": "52e8da3b3751f7fb8960bc8c793e0ae3c0be19a6d8dc163f4d8a443f5f9ace9e",
+  "archive_members_verified": 9506,
+  "verified_mask_sets": 51750,
+  "verified_candidate_control_outcomes": 103500,
+  "original_locf_decisions_rechecked": 3750,
+  "source_and_ledger_hashes_verified": true,
+  "local_endpoint_and_counter_recomputation": true,
+  "local_family_statistics_recomputed_exactly": true,
+  "full_score_timelines_independently_recomputed_on_isambard": true,
+  "raw_numeric_inputs_exported": false,
+  "script_sha256": "9ca21dd1955fbb52ef1c80a332204d435982522f35782a063dca1fe2174471ac",
+  "analysis_sha256": "3032469475da358ce0989ae3b3ec75e1892723daf2cfa6d246f6a4cfa7729c82"
+}

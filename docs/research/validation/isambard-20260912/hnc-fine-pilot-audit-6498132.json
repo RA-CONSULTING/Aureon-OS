@@ -1,0 +1,2460 @@
+{
+  "schema": "hnc-fine-audit/v1",
+  "status": "PASS",
+  "errors": [],
+  "expected_stop": 65536,
+  "job": "6498111",
+  "cells": 128,
+  "config_sha256": "9abad35ccff9c0a3d8c93632198b99e4dd5ce928edaa1ede347fb7f5bb7b294b",
+  "source_hashes": {
+    "config_sha256": "9abad35ccff9c0a3d8c93632198b99e4dd5ce928edaa1ede347fb7f5bb7b294b",
+    "harness_sha256": "1eac7d95222b480e3e54d02c0e92d939a2b6ac39d5b2e33c1d196f0dec96014c",
+    "runner_sha256": "e3051dbcddbf81094a322ea295214138e0f917a91b12d7dd1921c72b38750254"
+  },
+  "auditor_sha256": "c7abc5a7625dbbfb99fbb9fc7577227a8848cba30008bb64c3fe2312d975e248",
+  "summary": {
+    "escaped": 38587,
+    "stable": 5739529,
+    "beta1_stable": 15381,
+    "beta1_tested": 15488,
+    "receipt_count": 128,
+    "bounded_without_valid_lyapunov": 13293
+  },
+  "peak_allocated_bytes_max": 5047326208,
+  "cumulative_compute_seconds_max": 29.07524828100577,
+  "rows": [
+    {
+      "rank": 0,
+      "parameters": {
+        "gain": 0.5,
+        "tau": 10,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.061723135004286,
+      "peak_allocated_bytes": 4976302592,
+      "escaped": 363,
+      "stable": 34168,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 214,
+      "gpu_uuid": "ad5e2c3b-d816-8ec4-671d-c6f25eea3c4b",
+      "host": "nid010559"
+    },
+    {
+      "rank": 1,
+      "parameters": {
+        "gain": 0.5,
+        "tau": 10,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.2444421039836,
+      "peak_allocated_bytes": 4976302592,
+      "escaped": 363,
+      "stable": 35271,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 161,
+      "gpu_uuid": "a2d7599e-faba-d20b-40c2-48a63b948c53",
+      "host": "nid010559"
+    },
+    {
+      "rank": 2,
+      "parameters": {
+        "gain": 0.5,
+        "tau": 10,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.343068307993235,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 363,
+      "stable": 34684,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 137,
+      "gpu_uuid": "5a8f4823-a5db-db44-1f09-14a86bb5c781",
+      "host": "nid010559"
+    },
+    {
+      "rank": 3,
+      "parameters": {
+        "gain": 0.5,
+        "tau": 10,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.03272556400043,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 363,
+      "stable": 34100,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 127,
+      "gpu_uuid": "1bf2f6c5-5221-b9ee-748b-5f180d8a9c85",
+      "host": "nid010559"
+    },
+    {
+      "rank": 4,
+      "parameters": {
+        "gain": 0.5,
+        "tau": 25,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 24.512913968996145,
+      "peak_allocated_bytes": 4988605952,
+      "escaped": 359,
+      "stable": 45536,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 99,
+      "gpu_uuid": "15338241-25f6-756b-978d-4f91da109740",
+      "host": "nid010562"
+    },
+    {
+      "rank": 5,
+      "parameters": {
+        "gain": 0.5,
+        "tau": 25,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.109711212018738,
+      "peak_allocated_bytes": 4988605952,
+      "escaped": 358,
+      "stable": 48829,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 55,
+      "gpu_uuid": "71f4fa3d-5423-a1a0-9c36-3a510db28c05",
+      "host": "nid010562"
+    },
+    {
+      "rank": 6,
+      "parameters": {
+        "gain": 0.5,
+        "tau": 25,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.722824336000485,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 358,
+      "stable": 48851,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 33,
+      "gpu_uuid": "9533929f-965a-503e-9caf-004a84985883",
+      "host": "nid010562"
+    },
+    {
+      "rank": 7,
+      "parameters": {
+        "gain": 0.5,
+        "tau": 25,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.41045826798654,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 358,
+      "stable": 48857,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 27,
+      "gpu_uuid": "a440a2cb-6840-10bf-8d11-d3c35fbe0e2f",
+      "host": "nid010562"
+    },
+    {
+      "rank": 8,
+      "parameters": {
+        "gain": 0.5,
+        "tau": 50,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.232839461998083,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 242,
+      "stable": 48841,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 43,
+      "gpu_uuid": "249c2c1b-8488-3547-516d-0b7c598843b2",
+      "host": "nid010563"
+    },
+    {
+      "rank": 9,
+      "parameters": {
+        "gain": 0.5,
+        "tau": 50,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.993220413016388,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 242,
+      "stable": 48867,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 17,
+      "gpu_uuid": "9bec493c-7038-cd2a-56a6-1f8770158b95",
+      "host": "nid010563"
+    },
+    {
+      "rank": 10,
+      "parameters": {
+        "gain": 0.5,
+        "tau": 50,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.537606443016557,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 242,
+      "stable": 48872,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 12,
+      "gpu_uuid": "611e11f5-34c2-9651-2bcf-94145510928b",
+      "host": "nid010563"
+    },
+    {
+      "rank": 11,
+      "parameters": {
+        "gain": 0.5,
+        "tau": 50,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.104532850993564,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 48865,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 19,
+      "gpu_uuid": "94ff093c-51cc-ac56-6255-71465aa10b69",
+      "host": "nid010563"
+    },
+    {
+      "rank": 12,
+      "parameters": {
+        "gain": 0.5,
+        "tau": 100,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 24.47131632597302,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 32909,
+      "beta1_stable": 92,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "212e1de5-b438-7857-3c77-05e4f6cd400b",
+      "host": "nid010565"
+    },
+    {
+      "rank": 13,
+      "parameters": {
+        "gain": 0.5,
+        "tau": 100,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 24.996662180987187,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 48889,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "f823bebf-29cb-331e-ec83-db298ffe6465",
+      "host": "nid010565"
+    },
+    {
+      "rank": 14,
+      "parameters": {
+        "gain": 0.5,
+        "tau": 100,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 27.50190852099331,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 49005,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "692c306f-12fe-94c2-8157-0f0f3e661ac1",
+      "host": "nid010565"
+    },
+    {
+      "rank": 15,
+      "parameters": {
+        "gain": 0.5,
+        "tau": 100,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.718573074991582,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 49005,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "dcada916-040b-10d0-efa4-aeb4f22d8cb4",
+      "host": "nid010565"
+    },
+    {
+      "rank": 16,
+      "parameters": {
+        "gain": 0.75,
+        "tau": 10,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.11240257200552,
+      "peak_allocated_bytes": 4976302592,
+      "escaped": 363,
+      "stable": 34642,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 221,
+      "gpu_uuid": "274e12b4-e2db-bc61-8da6-c9999ef3f579",
+      "host": "nid010567"
+    },
+    {
+      "rank": 17,
+      "parameters": {
+        "gain": 0.75,
+        "tau": 10,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.151509948977036,
+      "peak_allocated_bytes": 4976302592,
+      "escaped": 363,
+      "stable": 35670,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 187,
+      "gpu_uuid": "866b14ab-3801-67af-eecf-d73f687dd289",
+      "host": "nid010567"
+    },
+    {
+      "rank": 18,
+      "parameters": {
+        "gain": 0.75,
+        "tau": 10,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.91177368100034,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 363,
+      "stable": 35208,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 178,
+      "gpu_uuid": "ceef0648-f906-fd31-c221-ef49c8118254",
+      "host": "nid010567"
+    },
+    {
+      "rank": 19,
+      "parameters": {
+        "gain": 0.75,
+        "tau": 10,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.45316496101441,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 363,
+      "stable": 34726,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 166,
+      "gpu_uuid": "e396f74d-2001-16c3-b230-7b2462eef615",
+      "host": "nid010567"
+    },
+    {
+      "rank": 20,
+      "parameters": {
+        "gain": 0.75,
+        "tau": 25,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.255076169996755,
+      "peak_allocated_bytes": 4988605952,
+      "escaped": 359,
+      "stable": 47274,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 129,
+      "gpu_uuid": "437309e1-5d9a-2910-7c5e-dd82167df0c7",
+      "host": "nid010575"
+    },
+    {
+      "rank": 21,
+      "parameters": {
+        "gain": 0.75,
+        "tau": 25,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.476504137011943,
+      "peak_allocated_bytes": 4988605952,
+      "escaped": 359,
+      "stable": 48791,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 93,
+      "gpu_uuid": "7309c267-3792-3889-959d-6a874b90abf6",
+      "host": "nid010575"
+    },
+    {
+      "rank": 22,
+      "parameters": {
+        "gain": 0.75,
+        "tau": 25,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.796113481977955,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 358,
+      "stable": 48806,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 78,
+      "gpu_uuid": "67489ece-7653-57f8-89bd-48f787e1f2c5",
+      "host": "nid010575"
+    },
+    {
+      "rank": 23,
+      "parameters": {
+        "gain": 0.75,
+        "tau": 25,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.051978822011733,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 358,
+      "stable": 48829,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 55,
+      "gpu_uuid": "ba759fb9-62be-735d-b443-e673611e5f19",
+      "host": "nid010575"
+    },
+    {
+      "rank": 24,
+      "parameters": {
+        "gain": 0.75,
+        "tau": 50,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 24.682099973986624,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 242,
+      "stable": 48816,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 68,
+      "gpu_uuid": "2ec56fbd-6c1a-94cb-c9a1-d78b4b3016e5",
+      "host": "nid010576"
+    },
+    {
+      "rank": 25,
+      "parameters": {
+        "gain": 0.75,
+        "tau": 50,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.278379669005517,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 242,
+      "stable": 48842,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 42,
+      "gpu_uuid": "926281cb-1092-a224-53d9-361b2db9e452",
+      "host": "nid010576"
+    },
+    {
+      "rank": 26,
+      "parameters": {
+        "gain": 0.75,
+        "tau": 50,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.464655212010257,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 242,
+      "stable": 48839,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 45,
+      "gpu_uuid": "ad73c7c6-62e8-457a-89aa-fffe0ded17b7",
+      "host": "nid010576"
+    },
+    {
+      "rank": 27,
+      "parameters": {
+        "gain": 0.75,
+        "tau": 50,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.867680711002322,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 48847,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 37,
+      "gpu_uuid": "b582de6f-9124-d20b-2e81-ec0c2f7bd3a5",
+      "host": "nid010576"
+    },
+    {
+      "rank": 28,
+      "parameters": {
+        "gain": 0.75,
+        "tau": 100,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 23.966535767001915,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 31016,
+      "beta1_stable": 82,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "45230451-6efc-1603-3b86-b7d40b37366d",
+      "host": "nid010578"
+    },
+    {
+      "rank": 29,
+      "parameters": {
+        "gain": 0.75,
+        "tau": 100,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.618224006000673,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 48911,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "f2e249de-3c59-c929-82ef-e8f7461cb7d6",
+      "host": "nid010578"
+    },
+    {
+      "rank": 30,
+      "parameters": {
+        "gain": 0.75,
+        "tau": 100,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.444600549002644,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 49005,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "ec61ed2c-6cb5-78c6-1692-504dc0efff45",
+      "host": "nid010578"
+    },
+    {
+      "rank": 31,
+      "parameters": {
+        "gain": 0.75,
+        "tau": 100,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.746443044990883,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 49005,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "c43d473e-33b8-9aca-d2e7-bca772d66c21",
+      "host": "nid010578"
+    },
+    {
+      "rank": 32,
+      "parameters": {
+        "gain": 1.0,
+        "tau": 10,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.684407231980003,
+      "peak_allocated_bytes": 4976302592,
+      "escaped": 363,
+      "stable": 34699,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 227,
+      "gpu_uuid": "d69577c0-e6e5-5f16-5870-47a5a883ede0",
+      "host": "nid010579"
+    },
+    {
+      "rank": 33,
+      "parameters": {
+        "gain": 1.0,
+        "tau": 10,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.582290163991274,
+      "peak_allocated_bytes": 4976302592,
+      "escaped": 363,
+      "stable": 35845,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 197,
+      "gpu_uuid": "7fe1f06c-ae99-57b7-fc55-1ae7fc2aea83",
+      "host": "nid010579"
+    },
+    {
+      "rank": 34,
+      "parameters": {
+        "gain": 1.0,
+        "tau": 10,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.931543712009443,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 363,
+      "stable": 35443,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 188,
+      "gpu_uuid": "79b70ed6-a1dd-8160-bc51-942d9c84b479",
+      "host": "nid010579"
+    },
+    {
+      "rank": 35,
+      "parameters": {
+        "gain": 1.0,
+        "tau": 10,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.149308255000506,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 363,
+      "stable": 35070,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 185,
+      "gpu_uuid": "c6b6a33c-81b1-50dc-da00-3c26204fa64a",
+      "host": "nid010579"
+    },
+    {
+      "rank": 36,
+      "parameters": {
+        "gain": 1.0,
+        "tau": 25,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 24.54720753102447,
+      "peak_allocated_bytes": 4988605952,
+      "escaped": 359,
+      "stable": 47856,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 135,
+      "gpu_uuid": "c5f0b076-e503-2830-0b1d-e4ff255fe44e",
+      "host": "nid010580"
+    },
+    {
+      "rank": 37,
+      "parameters": {
+        "gain": 1.0,
+        "tau": 25,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.526856802025577,
+      "peak_allocated_bytes": 4988605952,
+      "escaped": 359,
+      "stable": 48767,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 117,
+      "gpu_uuid": "540c1416-a6ee-cf8d-e3ca-5464d9605ab0",
+      "host": "nid010580"
+    },
+    {
+      "rank": 38,
+      "parameters": {
+        "gain": 1.0,
+        "tau": 25,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.913276661012787,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 359,
+      "stable": 48782,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 102,
+      "gpu_uuid": "a78e115c-71fc-4ab6-3def-3e8b3579380c",
+      "host": "nid010580"
+    },
+    {
+      "rank": 39,
+      "parameters": {
+        "gain": 1.0,
+        "tau": 25,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 27.25011546598398,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 359,
+      "stable": 48802,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 82,
+      "gpu_uuid": "a0bda5d9-1b0f-6e91-654b-80f7eb37d3b3",
+      "host": "nid010580"
+    },
+    {
+      "rank": 40,
+      "parameters": {
+        "gain": 1.0,
+        "tau": 50,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 24.521737169008702,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 242,
+      "stable": 48802,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 82,
+      "gpu_uuid": "7cdf5fb1-ca1d-b393-51f9-ecdf7e1e7577",
+      "host": "nid010583"
+    },
+    {
+      "rank": 41,
+      "parameters": {
+        "gain": 1.0,
+        "tau": 50,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.264073401980568,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 242,
+      "stable": 48821,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 63,
+      "gpu_uuid": "cbb60862-ae46-6a8d-a464-ae2719c15fe8",
+      "host": "nid010583"
+    },
+    {
+      "rank": 42,
+      "parameters": {
+        "gain": 1.0,
+        "tau": 50,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.851602685987018,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 242,
+      "stable": 48824,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 60,
+      "gpu_uuid": "7ca0da40-8ec0-c4b7-33a5-47d97158ebb3",
+      "host": "nid010583"
+    },
+    {
+      "rank": 43,
+      "parameters": {
+        "gain": 1.0,
+        "tau": 50,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.77009034497314,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 48821,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 63,
+      "gpu_uuid": "fc256f0f-8a4a-e942-beb3-dfed7f0a9c21",
+      "host": "nid010583"
+    },
+    {
+      "rank": 44,
+      "parameters": {
+        "gain": 1.0,
+        "tau": 100,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.7632855430129,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 37727,
+      "beta1_stable": 102,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "5fa6381a-4bb1-7d32-fae2-fb1bbde9c973",
+      "host": "nid010587"
+    },
+    {
+      "rank": 45,
+      "parameters": {
+        "gain": 1.0,
+        "tau": 100,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.107761260005645,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 48936,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "636a2495-579b-1db5-fa5d-0aafab9057d8",
+      "host": "nid010587"
+    },
+    {
+      "rank": 46,
+      "parameters": {
+        "gain": 1.0,
+        "tau": 100,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.57666110401624,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 49005,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "a6e01ab7-69e4-7c58-a55d-3d9c9bdf7537",
+      "host": "nid010587"
+    },
+    {
+      "rank": 47,
+      "parameters": {
+        "gain": 1.0,
+        "tau": 100,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.96730006398866,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 49005,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "4d9f11ab-0259-3168-b83f-fa32612720f3",
+      "host": "nid010587"
+    },
+    {
+      "rank": 48,
+      "parameters": {
+        "gain": 1.5,
+        "tau": 10,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.58842064801138,
+      "peak_allocated_bytes": 4976302592,
+      "escaped": 363,
+      "stable": 34296,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 226,
+      "gpu_uuid": "bd192c2e-22bb-6ec4-6c99-06627f5c96fd",
+      "host": "nid010589"
+    },
+    {
+      "rank": 49,
+      "parameters": {
+        "gain": 1.5,
+        "tau": 10,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.2539769540017,
+      "peak_allocated_bytes": 4976302592,
+      "escaped": 363,
+      "stable": 35973,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 221,
+      "gpu_uuid": "f8a6457b-5b64-3687-1417-9eb21d82bb3c",
+      "host": "nid010589"
+    },
+    {
+      "rank": 50,
+      "parameters": {
+        "gain": 1.5,
+        "tau": 10,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.520492731011473,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 363,
+      "stable": 35652,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 206,
+      "gpu_uuid": "6fe0b156-ca91-6497-36c4-1230b0fb0bc2",
+      "host": "nid010589"
+    },
+    {
+      "rank": 51,
+      "parameters": {
+        "gain": 1.5,
+        "tau": 10,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.80594851501519,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 363,
+      "stable": 35395,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 202,
+      "gpu_uuid": "00c0a3c9-4e1e-de05-5942-abb820a5c40f",
+      "host": "nid010589"
+    },
+    {
+      "rank": 52,
+      "parameters": {
+        "gain": 1.5,
+        "tau": 25,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 24.01173413399374,
+      "peak_allocated_bytes": 4988605952,
+      "escaped": 359,
+      "stable": 48348,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 148,
+      "gpu_uuid": "53589b81-3d95-ec43-3ca2-9395db17bdeb",
+      "host": "nid010590"
+    },
+    {
+      "rank": 53,
+      "parameters": {
+        "gain": 1.5,
+        "tau": 25,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.32178427602048,
+      "peak_allocated_bytes": 4988605952,
+      "escaped": 359,
+      "stable": 48747,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 137,
+      "gpu_uuid": "a17202b5-f6be-6a01-5fc0-0925dd1d8d87",
+      "host": "nid010590"
+    },
+    {
+      "rank": 54,
+      "parameters": {
+        "gain": 1.5,
+        "tau": 25,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.51926567099872,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 359,
+      "stable": 48769,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 115,
+      "gpu_uuid": "6ba0f76a-016f-a74a-f13b-9f30bd0187a1",
+      "host": "nid010590"
+    },
+    {
+      "rank": 55,
+      "parameters": {
+        "gain": 1.5,
+        "tau": 25,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.394646592991194,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 359,
+      "stable": 48775,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 109,
+      "gpu_uuid": "b431be7a-d55d-4aca-f7e5-76a419683089",
+      "host": "nid010590"
+    },
+    {
+      "rank": 56,
+      "parameters": {
+        "gain": 1.5,
+        "tau": 50,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.262032036989694,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 242,
+      "stable": 48790,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 94,
+      "gpu_uuid": "412637df-7143-1b26-bbca-2e3e09d0245d",
+      "host": "nid010594"
+    },
+    {
+      "rank": 57,
+      "parameters": {
+        "gain": 1.5,
+        "tau": 50,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.752699058997678,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 242,
+      "stable": 48805,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 79,
+      "gpu_uuid": "7f48dbe2-3f66-8802-9723-b91f0be6b8a2",
+      "host": "nid010594"
+    },
+    {
+      "rank": 58,
+      "parameters": {
+        "gain": 1.5,
+        "tau": 50,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 27.430641829996603,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 242,
+      "stable": 48804,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 80,
+      "gpu_uuid": "22b5e7cf-b109-34e1-afcd-e49471d01e43",
+      "host": "nid010594"
+    },
+    {
+      "rank": 59,
+      "parameters": {
+        "gain": 1.5,
+        "tau": 50,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.182194396998966,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 48805,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 79,
+      "gpu_uuid": "233beca4-d764-ece1-14b6-46020c4b54ef",
+      "host": "nid010594"
+    },
+    {
+      "rank": 60,
+      "parameters": {
+        "gain": 1.5,
+        "tau": 100,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.515113075001864,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 43673,
+      "beta1_stable": 112,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "a0d83583-4b13-3026-3ba8-0fd4285dd268",
+      "host": "nid010595"
+    },
+    {
+      "rank": 61,
+      "parameters": {
+        "gain": 1.5,
+        "tau": 100,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 27.017311971023446,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 48973,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "d7561fa1-3d51-d371-dcf1-94dcc0cbc0c8",
+      "host": "nid010595"
+    },
+    {
+      "rank": 62,
+      "parameters": {
+        "gain": 1.5,
+        "tau": 100,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.657589018985163,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 49005,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "e76ecf0b-d712-d566-ff4e-81d8e4e31c6c",
+      "host": "nid010595"
+    },
+    {
+      "rank": 63,
+      "parameters": {
+        "gain": 1.5,
+        "tau": 100,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.330223531025695,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 49005,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "989bd91e-5e5f-2305-41ff-337511d0dbd5",
+      "host": "nid010595"
+    },
+    {
+      "rank": 64,
+      "parameters": {
+        "gain": 2.5,
+        "tau": 10,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.29566678701667,
+      "peak_allocated_bytes": 4976302592,
+      "escaped": 363,
+      "stable": 33212,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 229,
+      "gpu_uuid": "eb058d29-decc-6bea-6cf4-6470523a0739",
+      "host": "nid010596"
+    },
+    {
+      "rank": 65,
+      "parameters": {
+        "gain": 2.5,
+        "tau": 10,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 27.014230059983674,
+      "peak_allocated_bytes": 4976302592,
+      "escaped": 363,
+      "stable": 35993,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 226,
+      "gpu_uuid": "277d2ffb-0d0f-fb2e-2b60-31a14cd3e7b6",
+      "host": "nid010596"
+    },
+    {
+      "rank": 66,
+      "parameters": {
+        "gain": 2.5,
+        "tau": 10,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.486553856986575,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 363,
+      "stable": 35783,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 221,
+      "gpu_uuid": "0a6b68eb-93b1-3ded-2b5b-52170308c2f4",
+      "host": "nid010596"
+    },
+    {
+      "rank": 67,
+      "parameters": {
+        "gain": 2.5,
+        "tau": 10,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 28.221221587009495,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 363,
+      "stable": 35636,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 218,
+      "gpu_uuid": "c858baf6-480b-651f-d1c4-abe57bc8b328",
+      "host": "nid010596"
+    },
+    {
+      "rank": 68,
+      "parameters": {
+        "gain": 2.5,
+        "tau": 25,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.29134407301899,
+      "peak_allocated_bytes": 4988605952,
+      "escaped": 359,
+      "stable": 48479,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 148,
+      "gpu_uuid": "a913d902-f951-42db-ccf4-c39cbfe019e2",
+      "host": "nid010597"
+    },
+    {
+      "rank": 69,
+      "parameters": {
+        "gain": 2.5,
+        "tau": 25,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 27.071914124011528,
+      "peak_allocated_bytes": 4988605952,
+      "escaped": 359,
+      "stable": 48722,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 162,
+      "gpu_uuid": "3fa5fcc8-031c-a53b-55aa-1fbd1cb41656",
+      "host": "nid010597"
+    },
+    {
+      "rank": 70,
+      "parameters": {
+        "gain": 2.5,
+        "tau": 25,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.379133339010878,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 359,
+      "stable": 48730,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 154,
+      "gpu_uuid": "918a87af-d7a6-3682-27ae-7053ea29d952",
+      "host": "nid010597"
+    },
+    {
+      "rank": 71,
+      "parameters": {
+        "gain": 2.5,
+        "tau": 25,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.94107787098619,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 359,
+      "stable": 48746,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 138,
+      "gpu_uuid": "673b9d65-ba04-690d-603e-2e66beefc13b",
+      "host": "nid010597"
+    },
+    {
+      "rank": 72,
+      "parameters": {
+        "gain": 2.5,
+        "tau": 50,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.0927286480146,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 242,
+      "stable": 48781,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 103,
+      "gpu_uuid": "58c1b82b-112d-e08e-e43c-47e8d72f0f78",
+      "host": "nid010602"
+    },
+    {
+      "rank": 73,
+      "parameters": {
+        "gain": 2.5,
+        "tau": 50,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 27.286867243994493,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 242,
+      "stable": 48787,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 97,
+      "gpu_uuid": "f9c082db-c342-4092-54f9-2a43d731d6f7",
+      "host": "nid010602"
+    },
+    {
+      "rank": 74,
+      "parameters": {
+        "gain": 2.5,
+        "tau": 50,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 27.84196080599213,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 242,
+      "stable": 48788,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 96,
+      "gpu_uuid": "86d7ac70-b31b-c513-f66a-48672b7f6dfa",
+      "host": "nid010602"
+    },
+    {
+      "rank": 75,
+      "parameters": {
+        "gain": 2.5,
+        "tau": 50,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.949882513988996,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 48787,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 97,
+      "gpu_uuid": "2371cb11-6ac5-c814-44c6-fad5d137ce8e",
+      "host": "nid010602"
+    },
+    {
+      "rank": 76,
+      "parameters": {
+        "gain": 2.5,
+        "tau": 100,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 24.93684134798241,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 46274,
+      "beta1_stable": 116,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "504ce77d-0620-96f9-d8f9-8cdefd3462b4",
+      "host": "nid010604"
+    },
+    {
+      "rank": 77,
+      "parameters": {
+        "gain": 2.5,
+        "tau": 100,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.390213671023957,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 49000,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "d84c7d85-f56a-1043-9dad-80e0780c6cb0",
+      "host": "nid010604"
+    },
+    {
+      "rank": 78,
+      "parameters": {
+        "gain": 2.5,
+        "tau": 100,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.85650401498424,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 49005,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "8cd38a56-1b6d-748d-b446-5535201059b1",
+      "host": "nid010604"
+    },
+    {
+      "rank": 79,
+      "parameters": {
+        "gain": 2.5,
+        "tau": 100,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.655278185004136,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 49005,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "05181c7a-e29b-e168-4f3d-febf0891644a",
+      "host": "nid010604"
+    },
+    {
+      "rank": 80,
+      "parameters": {
+        "gain": 4.0,
+        "tau": 10,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 27.768895385001088,
+      "peak_allocated_bytes": 4976302592,
+      "escaped": 363,
+      "stable": 31787,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 235,
+      "gpu_uuid": "7511d20f-bccc-e961-a4c4-671bdb43d733",
+      "host": "nid010605"
+    },
+    {
+      "rank": 81,
+      "parameters": {
+        "gain": 4.0,
+        "tau": 10,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 27.47368149700924,
+      "peak_allocated_bytes": 4976302592,
+      "escaped": 363,
+      "stable": 35768,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 228,
+      "gpu_uuid": "19d57a48-bdd1-6133-28f4-9603a1699d10",
+      "host": "nid010605"
+    },
+    {
+      "rank": 82,
+      "parameters": {
+        "gain": 4.0,
+        "tau": 10,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.54859003800084,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 363,
+      "stable": 35878,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 227,
+      "gpu_uuid": "45eba1bf-5bd3-6003-d3e5-7eebff17f077",
+      "host": "nid010605"
+    },
+    {
+      "rank": 83,
+      "parameters": {
+        "gain": 4.0,
+        "tau": 10,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 29.07524828100577,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 363,
+      "stable": 35761,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 227,
+      "gpu_uuid": "e27ffe8a-36ab-7055-8161-3bc3d462f848",
+      "host": "nid010605"
+    },
+    {
+      "rank": 84,
+      "parameters": {
+        "gain": 4.0,
+        "tau": 25,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.047882904997095,
+      "peak_allocated_bytes": 4988605952,
+      "escaped": 359,
+      "stable": 48628,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 133,
+      "gpu_uuid": "81083771-14eb-fe86-0c8e-2f4747a9da1d",
+      "host": "nid010612"
+    },
+    {
+      "rank": 85,
+      "parameters": {
+        "gain": 4.0,
+        "tau": 25,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.92490306298714,
+      "peak_allocated_bytes": 4988605952,
+      "escaped": 359,
+      "stable": 48727,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 157,
+      "gpu_uuid": "f0270e79-3263-974d-8f17-7c7d64e82129",
+      "host": "nid010612"
+    },
+    {
+      "rank": 86,
+      "parameters": {
+        "gain": 4.0,
+        "tau": 25,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.311812909989385,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 359,
+      "stable": 48722,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 162,
+      "gpu_uuid": "e0447277-8a99-d034-2c2e-dfeff05ee7ea",
+      "host": "nid010612"
+    },
+    {
+      "rank": 87,
+      "parameters": {
+        "gain": 4.0,
+        "tau": 25,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.0221398830181,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 359,
+      "stable": 48736,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 148,
+      "gpu_uuid": "e9cafe67-11a8-4db5-4e42-2073dc253361",
+      "host": "nid010612"
+    },
+    {
+      "rank": 88,
+      "parameters": {
+        "gain": 4.0,
+        "tau": 50,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.412294262001524,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 242,
+      "stable": 48776,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 108,
+      "gpu_uuid": "b8f8544f-36ca-a691-cf13-37ea43fa7fee",
+      "host": "nid010620"
+    },
+    {
+      "rank": 89,
+      "parameters": {
+        "gain": 4.0,
+        "tau": 50,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 24.32675484599895,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 242,
+      "stable": 48781,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 103,
+      "gpu_uuid": "7e3ca3b0-4d93-87b8-777a-d4c3c3645d8f",
+      "host": "nid010620"
+    },
+    {
+      "rank": 90,
+      "parameters": {
+        "gain": 4.0,
+        "tau": 50,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.75308310301625,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 242,
+      "stable": 48776,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 108,
+      "gpu_uuid": "000deb55-fe42-5e7b-7e9e-2848b23a28b7",
+      "host": "nid010620"
+    },
+    {
+      "rank": 91,
+      "parameters": {
+        "gain": 4.0,
+        "tau": 50,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 27.489038497005822,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 48779,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 105,
+      "gpu_uuid": "8c9cb21a-705e-951e-9a57-45472478d8a6",
+      "host": "nid010620"
+    },
+    {
+      "rank": 92,
+      "parameters": {
+        "gain": 4.0,
+        "tau": 100,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.98522488999879,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 46909,
+      "beta1_stable": 117,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "ef196e27-e83e-de28-81c2-021b61258214",
+      "host": "nid010627"
+    },
+    {
+      "rank": 93,
+      "parameters": {
+        "gain": 4.0,
+        "tau": 100,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.771043336979346,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 49002,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "7cb57312-53ee-36c2-361b-4d0fb13abb52",
+      "host": "nid010627"
+    },
+    {
+      "rank": 94,
+      "parameters": {
+        "gain": 4.0,
+        "tau": 100,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.622686791990418,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 49005,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "2da08a99-7105-8bcb-f721-0ba23e97dc2b",
+      "host": "nid010627"
+    },
+    {
+      "rank": 95,
+      "parameters": {
+        "gain": 4.0,
+        "tau": 100,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.544150443020044,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 49005,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "4b972a7b-5f55-d6e6-c653-6403dbe56645",
+      "host": "nid010627"
+    },
+    {
+      "rank": 96,
+      "parameters": {
+        "gain": 8.0,
+        "tau": 10,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 24.71425354402163,
+      "peak_allocated_bytes": 4976302592,
+      "escaped": 363,
+      "stable": 30793,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 231,
+      "gpu_uuid": "102d660a-1a3c-d645-fa61-2ba33e8f1687",
+      "host": "nid010637"
+    },
+    {
+      "rank": 97,
+      "parameters": {
+        "gain": 8.0,
+        "tau": 10,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.15853627899196,
+      "peak_allocated_bytes": 4976302592,
+      "escaped": 363,
+      "stable": 34924,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 233,
+      "gpu_uuid": "c80eb9fa-2638-aabd-eaf1-c2bd3a5b1c91",
+      "host": "nid010637"
+    },
+    {
+      "rank": 98,
+      "parameters": {
+        "gain": 8.0,
+        "tau": 10,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 24.80213499200181,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 363,
+      "stable": 35934,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 237,
+      "gpu_uuid": "3b572ac4-57c9-6902-e406-a586c016101a",
+      "host": "nid010637"
+    },
+    {
+      "rank": 99,
+      "parameters": {
+        "gain": 8.0,
+        "tau": 10,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.39895735902246,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 363,
+      "stable": 35895,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 234,
+      "gpu_uuid": "92aa0ab8-3126-d98c-63b5-0edf0b5f7522",
+      "host": "nid010637"
+    },
+    {
+      "rank": 100,
+      "parameters": {
+        "gain": 8.0,
+        "tau": 25,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.163381574006053,
+      "peak_allocated_bytes": 4988605952,
+      "escaped": 359,
+      "stable": 48667,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 123,
+      "gpu_uuid": "e1a93d2f-615d-c402-09cc-ffb23f4c7070",
+      "host": "nid010641"
+    },
+    {
+      "rank": 101,
+      "parameters": {
+        "gain": 8.0,
+        "tau": 25,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 24.831847552995896,
+      "peak_allocated_bytes": 4988605952,
+      "escaped": 359,
+      "stable": 48720,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 164,
+      "gpu_uuid": "214cb3ec-e7e3-d3e9-2ec7-1b2a43af7dd1",
+      "host": "nid010641"
+    },
+    {
+      "rank": 102,
+      "parameters": {
+        "gain": 8.0,
+        "tau": 25,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 27.045055223017698,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 359,
+      "stable": 48715,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 169,
+      "gpu_uuid": "8e8ecf29-04ca-8751-7149-ebb602dcbbf6",
+      "host": "nid010641"
+    },
+    {
+      "rank": 103,
+      "parameters": {
+        "gain": 8.0,
+        "tau": 25,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 24.71514090700657,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 359,
+      "stable": 48729,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 155,
+      "gpu_uuid": "c504bb1b-1408-4afc-cf3e-80f62d044822",
+      "host": "nid010641"
+    },
+    {
+      "rank": 104,
+      "parameters": {
+        "gain": 8.0,
+        "tau": 50,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 24.517052292998414,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 242,
+      "stable": 48774,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 110,
+      "gpu_uuid": "c9aff871-aa4d-689f-b1e3-8dfd3ca09d9d",
+      "host": "nid010643"
+    },
+    {
+      "rank": 105,
+      "parameters": {
+        "gain": 8.0,
+        "tau": 50,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.994831249001436,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 242,
+      "stable": 48775,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 109,
+      "gpu_uuid": "be626338-4322-173c-4128-c42e3b539ec3",
+      "host": "nid010643"
+    },
+    {
+      "rank": 106,
+      "parameters": {
+        "gain": 8.0,
+        "tau": 50,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.826440224976977,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 242,
+      "stable": 48770,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 114,
+      "gpu_uuid": "4984c0b3-9e13-5f60-b2fa-912bd1564148",
+      "host": "nid010643"
+    },
+    {
+      "rank": 107,
+      "parameters": {
+        "gain": 8.0,
+        "tau": 50,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.479580558021553,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 48769,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 115,
+      "gpu_uuid": "41386080-73ea-0180-955d-39d4d4de5955",
+      "host": "nid010643"
+    },
+    {
+      "rank": 108,
+      "parameters": {
+        "gain": 8.0,
+        "tau": 100,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.651210297015496,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 48022,
+      "beta1_stable": 119,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "fbb861e8-d7ce-4ae8-bcc5-230a30cb2b6e",
+      "host": "nid010644"
+    },
+    {
+      "rank": 109,
+      "parameters": {
+        "gain": 8.0,
+        "tau": 100,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 27.014946772978874,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 48986,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "65bf2358-3b24-20cc-6b3c-47fc519b3897",
+      "host": "nid010644"
+    },
+    {
+      "rank": 110,
+      "parameters": {
+        "gain": 8.0,
+        "tau": 100,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.712643643986667,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 49005,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "c4c20a5d-cd9b-a443-2697-e3e2faef85ab",
+      "host": "nid010644"
+    },
+    {
+      "rank": 111,
+      "parameters": {
+        "gain": 8.0,
+        "tau": 100,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.969760329986457,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 49005,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "b369a3c8-2c27-e773-39e7-5945f0df8f63",
+      "host": "nid010644"
+    },
+    {
+      "rank": 112,
+      "parameters": {
+        "gain": 16.0,
+        "tau": 10,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 24.449929950002115,
+      "peak_allocated_bytes": 4976302592,
+      "escaped": 363,
+      "stable": 29603,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 237,
+      "gpu_uuid": "bf81df0b-5128-48a5-abdc-e7b76d7a5b38",
+      "host": "nid010648"
+    },
+    {
+      "rank": 113,
+      "parameters": {
+        "gain": 16.0,
+        "tau": 10,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.96651469398057,
+      "peak_allocated_bytes": 4976302592,
+      "escaped": 363,
+      "stable": 33646,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 236,
+      "gpu_uuid": "70e639bc-6efa-f10b-ba8b-fd632b1db384",
+      "host": "nid010648"
+    },
+    {
+      "rank": 114,
+      "parameters": {
+        "gain": 16.0,
+        "tau": 10,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.955437183001777,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 363,
+      "stable": 35900,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 238,
+      "gpu_uuid": "488f0e78-8ab1-d36d-d29c-a29b23828739",
+      "host": "nid010648"
+    },
+    {
+      "rank": 115,
+      "parameters": {
+        "gain": 16.0,
+        "tau": 10,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.499847847997444,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 363,
+      "stable": 35953,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 238,
+      "gpu_uuid": "c51ad6c4-aa04-f459-d6a5-de8876b774b2",
+      "host": "nid010648"
+    },
+    {
+      "rank": 116,
+      "parameters": {
+        "gain": 16.0,
+        "tau": 25,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 24.01575737001258,
+      "peak_allocated_bytes": 4988605952,
+      "escaped": 359,
+      "stable": 48679,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 123,
+      "gpu_uuid": "1453dd05-ec81-4eeb-bc2f-a46fa9b3eac6",
+      "host": "nid010649"
+    },
+    {
+      "rank": 117,
+      "parameters": {
+        "gain": 16.0,
+        "tau": 25,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.392303629021626,
+      "peak_allocated_bytes": 4988605952,
+      "escaped": 359,
+      "stable": 48719,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 165,
+      "gpu_uuid": "02cc356d-126e-56e0-c4cd-1531a951e142",
+      "host": "nid010649"
+    },
+    {
+      "rank": 118,
+      "parameters": {
+        "gain": 16.0,
+        "tau": 25,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.425651008990826,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 359,
+      "stable": 48717,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 167,
+      "gpu_uuid": "49258002-b638-3747-a822-091150593a57",
+      "host": "nid010649"
+    },
+    {
+      "rank": 119,
+      "parameters": {
+        "gain": 16.0,
+        "tau": 25,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 24.790832137980033,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 359,
+      "stable": 48718,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 166,
+      "gpu_uuid": "fddef2a3-40de-7551-fad9-f65c29f6abb3",
+      "host": "nid010649"
+    },
+    {
+      "rank": 120,
+      "parameters": {
+        "gain": 16.0,
+        "tau": 50,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.233436166017782,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 242,
+      "stable": 48772,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 112,
+      "gpu_uuid": "d6efe3af-13d0-6f35-4238-f6c57cad84b2",
+      "host": "nid010654"
+    },
+    {
+      "rank": 121,
+      "parameters": {
+        "gain": 16.0,
+        "tau": 50,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.985909109993372,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 242,
+      "stable": 48772,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 112,
+      "gpu_uuid": "821e121f-cf8f-e086-b23a-94fba2ac3109",
+      "host": "nid010654"
+    },
+    {
+      "rank": 122,
+      "parameters": {
+        "gain": 16.0,
+        "tau": 50,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.455334883008618,
+      "peak_allocated_bytes": 5009577472,
+      "escaped": 242,
+      "stable": 48767,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 117,
+      "gpu_uuid": "31d50149-8371-a969-b619-6d9d3a50a277",
+      "host": "nid010654"
+    },
+    {
+      "rank": 123,
+      "parameters": {
+        "gain": 16.0,
+        "tau": 50,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.129258395987563,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 48766,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 118,
+      "gpu_uuid": "82e1fea2-bb42-827a-0fd2-1618cf3021bb",
+      "host": "nid010654"
+    },
+    {
+      "rank": 124,
+      "parameters": {
+        "gain": 16.0,
+        "tau": 100,
+        "delta": 1
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.62137784998049,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 48504,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "a976751c-348b-6cc5-d936-49c22ef4cbe3",
+      "host": "nid010657"
+    },
+    {
+      "rank": 125,
+      "parameters": {
+        "gain": 16.0,
+        "tau": 100,
+        "delta": 10
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 25.57432290300494,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 48956,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "c8650dfb-29ff-9a72-7917-4fd88dddc556",
+      "host": "nid010657"
+    },
+    {
+      "rank": 126,
+      "parameters": {
+        "gain": 16.0,
+        "tau": 100,
+        "delta": 50
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.59375859098509,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 49005,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "e313cd65-e56b-53b4-b3e0-db1b94a91eeb",
+      "host": "nid010657"
+    },
+    {
+      "rank": 127,
+      "parameters": {
+        "gain": 16.0,
+        "tau": 100,
+        "delta": 100
+      },
+      "stop": 65536,
+      "receipt_count": 1,
+      "elapsed_seconds": 26.185773108998546,
+      "peak_allocated_bytes": 5047326208,
+      "escaped": 242,
+      "stable": 49005,
+      "beta1_stable": 121,
+      "beta1_tested": 121,
+      "bounded_without_valid_lyapunov": 0,
+      "gpu_uuid": "efecda72-38eb-8883-d8fd-73dd097db132",
+      "host": "nid010657"
+    }
+  ],
+  "scope": "Artifact/identity/chain/grid and physical-device audit; no independent checkpoint semantic recomputation or scientific proof."
+}

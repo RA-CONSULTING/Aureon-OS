@@ -1,0 +1,105 @@
+{
+  "benchmark": "detector-redesign",
+  "claim_class": "computational_simulation",
+  "dgp_statement": "The synthetic data-generating process is the pre-registered Stage 1 harness imported read-only; the run_batch body is a verbatim copy up to the original return dict; no RNG is consumed by the appended detector statistics.",
+  "inputs": {
+    "implementation_sha256": "6ce8483dbda2d696b383de79a1bead0e17cc859e53c132181f971cc615233696",
+    "paper_sha256": "7c16f5bdf7a08169b231c23928bcbc61d8851c47edfec743361bd0e02f32e43c",
+    "protocol_sha256": "5ec9d9dc993b8ef7e513f37d3f0c9b2364792f45af46489be0592a52ada260fb",
+    "redesign_harness_sha256": "5c217ec01f66cba0507994f9104ddc7aabae8fd95919704f986462a9bb499dd1",
+    "registered_harness_sha256": "5ff9000846bdeaf65a2c93f14463200442fe9cdadced1e4db3c6b6f7709567d2"
+  },
+  "interpretation_boundary": "Synthetic detector-benchmark identifiability only: detector statistics are computed on the pre-registered synthetic data-generating process. This is not a physical observation, not independent replication, and cannot prove branching of physical reality.",
+  "output": {
+    "npz": "/projects/u6vs/hnc-organism/kimi-validation/tandem-detector-redesign/runs/shard-031.npz",
+    "npz_sha256": "bc61728b125f7a09e3d9d2eabe50c1caacebec2ad4a252973bf1b73a5b976f6b"
+  },
+  "parameters": {
+    "alpha": 0.85,
+    "beta": 0.9,
+    "branch_samples": 16,
+    "d2_lag_sweep_halfwidth_steps": 317,
+    "d3_cepstral_body_quefrency_range": [
+      8,
+      256
+    ],
+    "d4_feature_names": [
+      "corr_true",
+      "corr_shift_abs",
+      "discriminant",
+      "eta_hat",
+      "d1_glrt_t",
+      "d2_xcf_max",
+      "d2_argmax_lag_norm",
+      "d2_xcf_prominence",
+      "d3_cepstral_z_tau",
+      "residual_std",
+      "residual_log_std",
+      "residual_lag1_autocorr",
+      "residual_skew",
+      "residual_kurtosis",
+      "spectral_centroid_norm",
+      "bandpower_low_ratio",
+      "bandpower_mid_ratio",
+      "bandpower_high_ratio"
+    ],
+    "delta_steps": 100,
+    "eta_levels": [
+      0.0,
+      0.002,
+      0.005,
+      0.01,
+      0.02,
+      0.05,
+      0.1,
+      0.2
+    ],
+    "gain": 1.5,
+    "noise_models": [
+      "white",
+      "ar1_0p9",
+      "two_timescale"
+    ],
+    "operators": [
+      "source_lock",
+      "echo_coherence",
+      "minimum_action"
+    ],
+    "precision": "float64",
+    "sample_rate_hz": 1000.0,
+    "snr_levels_db": [
+      -10.0,
+      0.0,
+      10.0,
+      20.0
+    ],
+    "steps": 2048,
+    "tau_steps": 100,
+    "trials": 10368,
+    "truth_models": [
+      "h0_delay",
+      "h0_phase_mix",
+      "h1_echo"
+    ]
+  },
+  "registered_gates": {
+    "correct_template_win_rate_min": 0.5,
+    "held_out_null_fpr_max": 0.015,
+    "power_min_eta_ge_0p05_snr_ge_0db": 0.8
+  },
+  "registry_entry": "Detector redesign or larger-eta regime before any Stage 2",
+  "runtime": {
+    "array_job_id": null,
+    "array_task_id": null,
+    "cuda": "12.9",
+    "device": "cuda",
+    "device_name": "NVIDIA GH200 120GB",
+    "elapsed_seconds": 93.4440676276572,
+    "python": "3.12.3",
+    "slurm_job_id": null,
+    "torch": "2.8.0a0+5228986c39.nv25.05"
+  },
+  "schema": "tandem-detector-redesign-shard/v1",
+  "shard": 31,
+  "source_commit": "f5fb1916c07ac26eb7fc38c34ff2dc9bd029e21d"
+}

@@ -1,0 +1,14 @@
+PROTOCOL.md: OK
+controls.sbatch: OK
+observations.pending.json: OK
+originals/759f5501fe42901b0250b5f02b600a6d3fcd44d0.py: OK
+originals/c2d6a2910d9fb95b151c920021fbaf2591522e58.py: OK
+run_controls.py: OK
+test_twig_reader.py: OK
+twig_reader.py: OK
+{"status": "COMPLETED", "job_id": "6501577", "reader_tests_passed": 12, "elapsed_s": 0.6185230950068217}
+{"gamma_ge_baseline": {"count": 18480, "denominator": 120960, "fraction": 0.1527777777777778}, "phi_hits_ge_baseline": {"count": 70320, "denominator": 120960, "fraction": 0.5813492063492064}, "schumann_delta_le_baseline": {"count": 30240, "denominator": 120960, "fraction": 0.25}, "original_wall_map_gamma_ge": {"count": 2100, "denominator": 5040, "fraction": 0.4166666666666667}, "original_wall_map_phi_hits_ge": {"count": 2400, "denominator": 5040, "fraction": 0.47619047619047616}}
+conditional-controls.csv.gz: OK
+configuration-index.json: OK
+reader-tests.txt: OK
+summary.json: OK

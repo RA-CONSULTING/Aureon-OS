@@ -1,0 +1,73 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "device": "cpu",
+      "tau": 10,
+      "delta": 1,
+      "baseline_bitwise": true,
+      "interrupted_resume_bitwise": true
+    },
+    {
+      "device": "cpu",
+      "tau": 10,
+      "delta": 50,
+      "baseline_bitwise": true,
+      "interrupted_resume_bitwise": true
+    },
+    {
+      "device": "cpu",
+      "tau": 50,
+      "delta": 10,
+      "baseline_bitwise": true,
+      "interrupted_resume_bitwise": true
+    },
+    {
+      "device": "cuda",
+      "tau": 10,
+      "delta": 1,
+      "baseline_bitwise": true,
+      "interrupted_resume_bitwise": true
+    },
+    {
+      "device": "cuda",
+      "tau": 10,
+      "delta": 50,
+      "baseline_bitwise": true,
+      "interrupted_resume_bitwise": true
+    },
+    {
+      "device": "cuda",
+      "tau": 50,
+      "delta": 10,
+      "baseline_bitwise": true,
+      "interrupted_resume_bitwise": true
+    },
+    {
+      "actual_signal": 10,
+      "exit_code": 75,
+      "resume_bitwise": true,
+      "config_mismatch_rejected": true,
+      "checkpoint_corruption_rejected": true
+    },
+    {
+      "actual_signal": 15,
+      "exit_code": 75,
+      "resume_bitwise": true,
+      "config_mismatch_rejected": true,
+      "checkpoint_corruption_rejected": true
+    },
+    {
+      "actual_signal": 9,
+      "exit_code": -9,
+      "resume_bitwise": true,
+      "config_mismatch_rejected": true,
+      "checkpoint_corruption_rejected": true
+    }
+  ],
+  "torch": "2.8.0a0+5228986c39.nv25.05",
+  "kernel_sha256": "1eac7d95222b480e3e54d02c0e92d939a2b6ac39d5b2e33c1d196f0dec96014c",
+  "runner_sha256": "e3051dbcddbf81094a322ea295214138e0f917a91b12d7dd1921c72b38750254",
+  "test_sha256": "ed500002f98d55f4985d95b0c68b6b702e4a62c1338c27a6d52f9beae546eb91",
+  "job": "6498076"
+}

@@ -1,0 +1,7 @@
+{
+  "archive": "/projects/u6vs/hnc-organism/expansion-20260912/stage1-v2-forensic-v1/original-evidence-analysis-6503602.tar.gz",
+  "bytes": 193647524,
+  "sha256": "8acf289adf05a241270d4744ed8337bf9b1f4c2e7024c8c3d049ef8200152e8e",
+  "source_input_manifest_sha256": "cafd48d0c4abeedfc2c832c5aefa56c4aaba45a6252f47dad3b5c3dec0885504",
+  "model_weights_exported": false
+}

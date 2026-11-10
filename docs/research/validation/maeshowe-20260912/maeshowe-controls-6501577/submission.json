@@ -1,0 +1,8 @@
+{
+  "job_id": "6501577",
+  "submitted_utc": "2026-09-12T11:26:11.695334+00:00",
+  "target": "/projects/u6vs/hnc-organism/expansion-20260912/maeshowe-repair-v1",
+  "input_manifest_sha256": "6b8f8d85fbdfbbeec4bc8b3abc3be8aaac1de64c9f2e435d2b22c5676dbb1755",
+  "protocol_sha256": "e9a534d737a9a53dcbb495c3dfa7b8f43a27394cfb499e211f9b42514ef2e46f",
+  "reused_submission": false
+}

@@ -1,0 +1,111 @@
+{
+  "schema": "tandem-repair/v1",
+  "alpha": 0.85,
+  "branch_samples": 16,
+  "trials": 10368,
+  "batch_size": 512,
+  "base_seed": 2912092600,
+  "stages": [
+    {
+      "name": "legacy_control",
+      "beta": 0.9,
+      "fs": 1000.0,
+      "steps": 2048,
+      "noise": "record_normalised",
+      "exclude_selected": false
+    },
+    {
+      "name": "population_noise",
+      "beta": 0.9,
+      "fs": 1000.0,
+      "steps": 2048,
+      "noise": "stationary_gaussian",
+      "exclude_selected": false
+    },
+    {
+      "name": "beta_one",
+      "beta": 1.0,
+      "fs": 1000.0,
+      "steps": 2048,
+      "noise": "stationary_gaussian",
+      "exclude_selected": false
+    },
+    {
+      "name": "nonselected_echo",
+      "beta": 1.0,
+      "fs": 1000.0,
+      "steps": 2048,
+      "noise": "stationary_gaussian",
+      "exclude_selected": true
+    },
+    {
+      "name": "sampling_2000",
+      "beta": 1.0,
+      "fs": 2000.0,
+      "steps": 4096,
+      "noise": "stationary_gaussian",
+      "exclude_selected": true
+    },
+    {
+      "name": "duration_8192ms",
+      "beta": 1.0,
+      "fs": 2000.0,
+      "steps": 16384,
+      "noise": "stationary_gaussian",
+      "exclude_selected": true
+    },
+    {
+      "name": "duration_32768ms",
+      "beta": 1.0,
+      "fs": 2000.0,
+      "steps": 65536,
+      "noise": "stationary_gaussian",
+      "exclude_selected": true
+    }
+  ],
+  "delay_units": "physical delays/windows preserved by scaling original steps by fs/1000",
+  "inference_seed": 49120926,
+  "bootstrap_repetitions": 20000,
+  "reference_beta_authority": "User correction to 1.0; old repository beta .90 retained as a control, not relabelled a transcription error.",
+  "pilot_shards": [
+    0,
+    15,
+    16,
+    31
+  ],
+  "pilot_batch": 512,
+  "full_shards": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31
+  ]
+}

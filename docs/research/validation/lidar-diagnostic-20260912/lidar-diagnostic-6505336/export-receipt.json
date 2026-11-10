@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "archive": "/projects/u6vs/hnc-organism/expansion-20260912/lidar-audit-v1/evidence-6505336.tar.gz",
+  "archive_sha256": "b357480b54e4ba14def1835809d07839b03daf6395d2725943434162ea02869f",
+  "bytes": 591862567,
+  "members": 274,
+  "analysis_sha256": "7890876dcfd67185bdd2c0aeec5a744cafcba05618b8bbed78061a8529036f7d",
+  "verification_sha256": "f4da0c8c97290f6fe82e319f285e0acc492d9d3677a0845337b968bf5f469153"
+}

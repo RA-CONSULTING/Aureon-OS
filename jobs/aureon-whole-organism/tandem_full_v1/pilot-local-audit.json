@@ -1,0 +1,254 @@
+{
+  "passed": true,
+  "verified_utc": "2026-09-12T16:53:54.358467+00:00",
+  "arrays": 28,
+  "trials": 14336,
+  "fields": [
+    "conditional_glrt",
+    "corr_shift",
+    "corr_true",
+    "delay_only_oracle_power",
+    "discriminant",
+    "distance_from_delay",
+    "distance_from_nearest_phase",
+    "effective_branches",
+    "eta",
+    "eta_hat",
+    "glrt_eta_hat",
+    "glrt_phase_eta_hat",
+    "noise_mean",
+    "noise_model",
+    "noise_rms",
+    "noise_sigma",
+    "null_split",
+    "operator",
+    "phase_template_norm",
+    "sample_echo",
+    "sample_phase",
+    "sample_residual",
+    "sample_sigma",
+    "selected_branch",
+    "selected_weight_after",
+    "selected_weight_before",
+    "snr_db",
+    "sphere_h1_error",
+    "sphere_null_error",
+    "sphere_score",
+    "template_correlation",
+    "template_inner_product",
+    "trial_id",
+    "truth_model",
+    "uniform_null_oracle_power_bound",
+    "white_template_norm"
+  ],
+  "saved_channel_records": 56,
+  "checks": [
+    {
+      "stage": 0,
+      "shard": 0,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 0,
+      "shard": 15,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 0,
+      "shard": 16,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 0,
+      "shard": 31,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 1,
+      "shard": 0,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 1,
+      "shard": 15,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 1,
+      "shard": 16,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 1,
+      "shard": 31,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 2,
+      "shard": 0,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 2,
+      "shard": 15,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 2,
+      "shard": 16,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 2,
+      "shard": 31,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 3,
+      "shard": 0,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 3,
+      "shard": 15,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 3,
+      "shard": 16,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 3,
+      "shard": 31,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 4,
+      "shard": 0,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 4,
+      "shard": 15,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 4,
+      "shard": 16,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 4,
+      "shard": 31,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 5,
+      "shard": 0,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 5,
+      "shard": 15,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 5,
+      "shard": 16,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 5,
+      "shard": 31,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 6,
+      "shard": 0,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 6,
+      "shard": 15,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 6,
+      "shard": 16,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    },
+    {
+      "stage": 6,
+      "shard": 31,
+      "trials": 512,
+      "saved_channels_recomputed": 2,
+      "passed": true
+    }
+  ],
+  "max_absolute_errors": {
+    "legacy_record_rms": 2.220446049250313e-16,
+    "conditional_glrt": 5.329070518200751e-15,
+    "white_template_norm": 5.4569682106375694e-12,
+    "phase_template_norm": 3.637978807091713e-12,
+    "template_inner_product": 2.2737367544323206e-12,
+    "D0": 4.163336342344337e-17,
+    "gaussian_bound": 2.220446049250313e-16
+  },
+  "archive_sha256": "a28adcac2bed9a3cff7f8972f6288446b5c1dce0591f14d616e19960e1e4d7a2",
+  "boundary": "All saved trial fields and source identities checked; independent scalar Kalman and score recalculation on 56 saved channels. This does not regenerate all latent trajectories."
+}

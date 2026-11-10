@@ -1,0 +1,4 @@
+JobID|State|ExitCode|ElapsedRaw|AllocNodes|AllocTRES
+6503592|COMPLETED|0:0|2742|1|billing=288,cpu=288,gres/gpu=4,mem=460000M,node=1
+6503592.batch|COMPLETED|0:0|2742|1|cpu=288,gres/gpu=4,mem=460000M,node=1
+6503592.0|CANCELLED by 1483807800|0:9|2709|1|cpu=72,gres/gpu=4,mem=460000M,node=1

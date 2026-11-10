@@ -1,0 +1,78 @@
+[
+  {
+    "blob": "d3f92d2d8e107e0400271273ac86dba33fdb7301",
+    "sha256": "84b7d5765788fced946d280c6992121a9b28241afd6167862ceb92ecff5ea6d7",
+    "versions": [
+      {
+        "path": "HNC_Harmonic_LIDAR_v2_AluminiumFluid_Lec.docx",
+        "blob": "d3f92d2d8e107e0400271273ac86dba33fdb7301",
+        "commit": "7787e45c832ccb216c55dc965df51a16db45a895",
+        "authored": "2026-03-24T11:20:41Z",
+        "committed": "2026-03-24T11:20:41Z",
+        "change": "A"
+      },
+      {
+        "path": "docs/HNC_Harmonic_LIDAR_v2_AluminiumFluid_Lec.docx",
+        "blob": "d3f92d2d8e107e0400271273ac86dba33fdb7301",
+        "commit": "6fd1d9d870b2bded83e6b4d9785a572d2e3094ac",
+        "authored": "2026-03-24T23:43:21Z",
+        "committed": "2026-03-24T23:43:21Z",
+        "change": "A"
+      },
+      {
+        "path": "docs/research/whitepapers/HNC_Harmonic_LIDAR_v2_AluminiumFluid_Leckey.docx",
+        "blob": "d3f92d2d8e107e0400271273ac86dba33fdb7301",
+        "commit": "5f3f3ca9ffb5117003ef5364b805bd815d752a7c",
+        "authored": "2026-04-05T08:01:40Z",
+        "committed": "2026-04-05T08:01:40Z",
+        "change": "A"
+      },
+      {
+        "path": "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/HNC_Harmonic_LIDAR_v2_AluminiumFluid_Leckey_84b7d57657.docx",
+        "blob": "d3f92d2d8e107e0400271273ac86dba33fdb7301",
+        "commit": "b4bfe63756791c427cdbdd64fe56301aced1e7ef",
+        "authored": "2026-07-12T20:53:38+01:00",
+        "committed": "2026-07-12T20:53:38+01:00",
+        "change": "A"
+      }
+    ]
+  },
+  {
+    "blob": "d4662f447ac00ba405510a28491e71bbf8e70dec",
+    "sha256": "5dbeec043b82a5514c554715d69b15a72b86e0867ab261f6fab52abc1f4d29d6",
+    "versions": [
+      {
+        "path": "HNC_Harmonic_LIDAR_WhitePaper_Leckey_202.docx",
+        "blob": "d4662f447ac00ba405510a28491e71bbf8e70dec",
+        "commit": "7787e45c832ccb216c55dc965df51a16db45a895",
+        "authored": "2026-03-24T11:20:41Z",
+        "committed": "2026-03-24T11:20:41Z",
+        "change": "A"
+      },
+      {
+        "path": "docs/HNC_Harmonic_LIDAR_WhitePaper_Leckey_202.docx",
+        "blob": "d4662f447ac00ba405510a28491e71bbf8e70dec",
+        "commit": "6fd1d9d870b2bded83e6b4d9785a572d2e3094ac",
+        "authored": "2026-03-24T23:43:21Z",
+        "committed": "2026-03-24T23:43:21Z",
+        "change": "A"
+      },
+      {
+        "path": "docs/research/whitepapers/HNC_Harmonic_LIDAR_WhitePaper_Leckey_2026.docx",
+        "blob": "d4662f447ac00ba405510a28491e71bbf8e70dec",
+        "commit": "5f3f3ca9ffb5117003ef5364b805bd815d752a7c",
+        "authored": "2026-04-05T08:01:40Z",
+        "committed": "2026-04-05T08:01:40Z",
+        "change": "A"
+      },
+      {
+        "path": "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/HNC_Harmonic_LIDAR_WhitePaper_Leckey_2026_5dbeec043b.docx",
+        "blob": "d4662f447ac00ba405510a28491e71bbf8e70dec",
+        "commit": "b4bfe63756791c427cdbdd64fe56301aced1e7ef",
+        "authored": "2026-07-12T20:53:38+01:00",
+        "committed": "2026-07-12T20:53:38+01:00",
+        "change": "A"
+      }
+    ]
+  }
+]

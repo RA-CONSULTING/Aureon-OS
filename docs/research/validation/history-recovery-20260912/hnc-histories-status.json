@@ -1,0 +1,95 @@
+{
+  "observed_utc": "2026-09-12T14:55:19.467265+00:00",
+  "accounting": "JobID|State|ExitCode|ElapsedRaw|AllocNodes\n6504281|COMPLETED|0:0|33|1\n6504281.batch|COMPLETED|0:0|33|1\n6504297|COMPLETED|0:0|45|32\n6504297.batch|COMPLETED|0:0|45|1\n6504297.0|COMPLETED|0:0|45|32\n6504298|FAILED|1:0|10|1\n6504298.batch|FAILED|1:0|10|1\n6504409|FAILED|1:0|4|1\n6504409.batch|FAILED|1:0|4|1\n6504601|FAILED|1:0|7|1\n6504601.batch|FAILED|1:0|7|1\n6504609|COMPLETED|0:0|35|1\n6504609.batch|COMPLETED|0:0|35|1\n6504653|RUNNING|0:0|281|32\n6504653.batch|RUNNING|0:0|281|1\n6504653.0|RUNNING|0:0|281|32\n6504684|PENDING|0:0|0|0\n",
+  "queue": "6504684|PENDING|0:00|1|(Dependency)\n6504653|RUNNING|4:41|32|nid[010990-010992,010995,011003-011006,011011-011012,011016,011021,011023,011026,011031,011037,011039,011044,011049-011052,011055-011056,011060-011061,011063-011064,011067-011070]\n",
+  "progress": {
+    "ranks": 128,
+    "receipts": 128,
+    "min_stop": 65536,
+    "max_stop": 65536,
+    "stops_histogram": {
+      "65536": 128
+    }
+  },
+  "logs": {
+    "audit-6504298.out": [
+      "audit_hnc_histories.py: OK",
+      "audit.sbatch: OK"
+    ],
+    "audit-6504298.err": [
+      "Traceback (most recent call last):",
+      "  File \"/lus/lfs1aip2/projects/u6vs/hnc-organism/expansion-20260912/hnc-history-audit-v1/audit_hnc_histories.py\", line 73, in <module>",
+      "    gpu_uuid=r['gpu_uuid'], checkpoint_bytes=cp.stat().st_size()))",
+      "                                             ^^^^^^^^^^^^^^^^^^^",
+      "TypeError: 'int' object is not callable"
+    ],
+    "audit-6504409.out": [
+      "AMENDMENT.md: OK",
+      "audit.sbatch: OK",
+      "audit_hnc_histories.py: OK"
+    ],
+    "audit-6504409.err": [
+      "Traceback (most recent call last):",
+      "  File \"/lus/lfs1aip2/projects/u6vs/hnc-organism/expansion-20260912/hnc-history-audit-v2/audit_hnc_histories.py\", line 66, in <module>",
+      "    assert np.array_equal(z['rolling_mean'], (tensors['rolling_base'] / task['delta']).numpy().reshape(shape))",
+      "           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+      "AssertionError"
+    ],
+    "audit-6504601.out": [
+      "AMENDMENT.md: OK",
+      "audit.sbatch: OK",
+      "audit_hnc_histories.py: OK"
+    ],
+    "audit-6504601.err": [
+      "Traceback (most recent call last):",
+      "  File \"/projects/u6vs/hnc-organism/expansion-20260912/hnc-history-audit-v3/audit_hnc_histories.py\", line 26, in <module>",
+      "    accounting = subprocess.check_output(['sacct', '-j', a.job, '--format=JobID,State,ExitCode,ElapsedRaw,AllocNodes,AllocTRES', '-P'], text=True)",
+      "                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+      "  File \"/usr/lib/python3.12/subprocess.py\", line 466, in check_output",
+      "    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,",
+      "           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+      "  File \"/usr/lib/python3.12/subprocess.py\", line 548, in run",
+      "    with Popen(*popenargs, **kwargs) as process:",
+      "         ^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+      "  File \"/usr/lib/python3.12/subprocess.py\", line 1026, in __init__",
+      "    self._execute_child(args, executable, preexec_fn, close_fds,",
+      "  File \"/usr/lib/python3.12/subprocess.py\", line 1955, in _execute_child",
+      "    raise child_exception_type(errno_num, err_msg, err_filename)",
+      "FileNotFoundError: [Errno 2] No such file or directory: 'sacct'"
+    ],
+    "audit-6504609.out": [
+      "  \"ranks_verified\": 128,",
+      "  \"distinct_gpus\": 128,",
+      "  \"allocated_node_hours\": 0.4,",
+      "  \"resource_decision\": {",
+      "    \"status\": \"READY_TO_STAGE\",",
+      "    \"projected_remaining_seconds\": 14494.697765281046,",
+      "    \"walltime_seconds\": 19800,",
+      "    \"ceiling_node_hours\": 176.0,",
+      "    \"nodes\": 32,",
+      "    \"gpus\": 128,",
+      "    \"rate_rule\": \"Slowest pilot elapsed/step; 25 percent margin plus 15 minutes; half-hour ceiling; maximum eight hours\",",
+      "    \"checkpoint_wave_bytes\": 27157151104,",
+      "    \"projected_checkpoint_storage_bytes\": 923343137536,",
+      "    \"filesystem_free_bytes\": 219521516560384",
+      "  }",
+      "}"
+    ],
+    "audit-6504609.err": [],
+    "production-6504653.out": [
+      "AMENDMENT.json: OK",
+      "config.json: OK",
+      "hnc_histories.py: OK",
+      "hnc_original.py: OK",
+      "pilot.sbatch: OK",
+      "preflight.sbatch: OK",
+      "production.sbatch: OK",
+      "PROTOCOL.md: OK",
+      "run_histories.py: OK",
+      "test_histories.py: OK",
+      "trend.py: OK",
+      "worker.sh: OK"
+    ],
+    "production-6504653.err": []
+  }
+}

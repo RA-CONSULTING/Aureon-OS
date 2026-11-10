@@ -1,0 +1,197 @@
+{
+  "pilot": {
+    "job_id": "6504297",
+    "submitted_utc": "2026-09-12T14:41:10.660539+00:00",
+    "command": [
+      "/projects/u6vs/hnc-organism/expansion-20260912/hnc-histories-v1/pilot.sbatch"
+    ]
+  },
+  "audit": {
+    "job_id": "6504298",
+    "submitted_utc": "2026-09-12T14:41:10.677886+00:00",
+    "command": [
+      "--dependency=afterany:6504297",
+      "--export=ALL,PILOT_JOB=6504297",
+      "/projects/u6vs/hnc-organism/expansion-20260912/hnc-history-audit-v1/audit.sbatch"
+    ]
+  },
+  "preflight": {
+    "status": "PASS",
+    "checks": [
+      {
+        "device": "cpu",
+        "tau": 10,
+        "delta": 1,
+        "original_zero_bitwise": true,
+        "interrupted_resume_bitwise": true,
+        "history_identity_rejected": true
+      },
+      {
+        "device": "cpu",
+        "tau": 10,
+        "delta": 50,
+        "original_zero_bitwise": true,
+        "interrupted_resume_bitwise": true,
+        "history_identity_rejected": true
+      },
+      {
+        "device": "cpu",
+        "tau": 50,
+        "delta": 10,
+        "original_zero_bitwise": true,
+        "interrupted_resume_bitwise": true,
+        "history_identity_rejected": true
+      },
+      {
+        "device": "cpu",
+        "batched_vs_separate_histories_bitwise": true
+      },
+      {
+        "device": "cpu",
+        "scalar_direct_history_oracle": true,
+        "tau": 1,
+        "delta": 1,
+        "maximum_absolute_error": 3.552713678800501e-15,
+        "tolerance": 1e-11
+      },
+      {
+        "device": "cpu",
+        "scalar_direct_history_oracle": true,
+        "tau": 10,
+        "delta": 50,
+        "maximum_absolute_error": 1.7763568394002505e-15,
+        "tolerance": 1e-11
+      },
+      {
+        "device": "cpu",
+        "scalar_direct_history_oracle": true,
+        "tau": 50,
+        "delta": 10,
+        "maximum_absolute_error": 2.220446049250313e-15,
+        "tolerance": 1e-11
+      },
+      {
+        "device": "cpu",
+        "scalar_direct_history_oracle": true,
+        "tau": 100,
+        "delta": 100,
+        "maximum_absolute_error": 5.551115123125783e-16,
+        "tolerance": 1e-11
+      },
+      {
+        "device": "cuda",
+        "tau": 10,
+        "delta": 1,
+        "original_zero_bitwise": true,
+        "interrupted_resume_bitwise": true,
+        "history_identity_rejected": true
+      },
+      {
+        "device": "cuda",
+        "tau": 10,
+        "delta": 50,
+        "original_zero_bitwise": true,
+        "interrupted_resume_bitwise": true,
+        "history_identity_rejected": true
+      },
+      {
+        "device": "cuda",
+        "tau": 50,
+        "delta": 10,
+        "original_zero_bitwise": true,
+        "interrupted_resume_bitwise": true,
+        "history_identity_rejected": true
+      },
+      {
+        "device": "cuda",
+        "batched_vs_separate_histories_bitwise": true
+      },
+      {
+        "device": "cuda",
+        "scalar_direct_history_oracle": true,
+        "tau": 1,
+        "delta": 1,
+        "maximum_absolute_error": 7.105427357601002e-15,
+        "tolerance": 1e-11
+      },
+      {
+        "device": "cuda",
+        "scalar_direct_history_oracle": true,
+        "tau": 10,
+        "delta": 50,
+        "maximum_absolute_error": 4.440892098500626e-15,
+        "tolerance": 1e-11
+      },
+      {
+        "device": "cuda",
+        "scalar_direct_history_oracle": true,
+        "tau": 50,
+        "delta": 10,
+        "maximum_absolute_error": 2.4424906541753444e-15,
+        "tolerance": 1e-11
+      },
+      {
+        "device": "cuda",
+        "scalar_direct_history_oracle": true,
+        "tau": 100,
+        "delta": 100,
+        "maximum_absolute_error": 5.551115123125783e-16,
+        "tolerance": 1e-11
+      },
+      {
+        "actual_signal": 10,
+        "exit_code": 75,
+        "resumed_output_bitwise": true,
+        "configuration_mismatch_rejected": true,
+        "corruption_rejected": true,
+        "fork_rejected": true
+      },
+      {
+        "actual_signal": 15,
+        "exit_code": 75,
+        "resumed_output_bitwise": true,
+        "configuration_mismatch_rejected": true,
+        "corruption_rejected": true,
+        "fork_rejected": true
+      },
+      {
+        "actual_signal": 9,
+        "exit_code": -9,
+        "resumed_output_bitwise": true,
+        "configuration_mismatch_rejected": true,
+        "corruption_rejected": true,
+        "fork_rejected": true
+      },
+      {
+        "descriptive_trend_constant_linear_signs_oscillation_short_series": true
+      }
+    ],
+    "torch": "2.8.0a0+5228986c39.nv25.05",
+    "kernel_sha256": "82ca58ce2251a3262a08f79100f000b575bb61537448c28a590695db0370c540",
+    "runner_sha256": "05acf6a8061cfbfdc03f964d418ef2d906d495aae52687842f69d796aef57069",
+    "original_sha256": "1eac7d95222b480e3e54d02c0e92d939a2b6ac39d5b2e33c1d196f0dec96014c",
+    "test_sha256": "187cb0fd05ad581747db22f2756460e999bdfabe38cd4fb81a28770f20de2ba7",
+    "job": "6504281"
+  },
+  "preflight_accounting": {
+    "6504281": {
+      "JobID": "6504281",
+      "State": "COMPLETED",
+      "ExitCode": "0:0",
+      "ElapsedRaw": "33"
+    },
+    "6504281.batch": {
+      "JobID": "6504281.batch",
+      "State": "COMPLETED",
+      "ExitCode": "0:0",
+      "ElapsedRaw": "33"
+    }
+  },
+  "storage": {
+    "filesystem": "Filesystem                                          1B-blocks         Used       Available Use% Mounted on\n2206@kfi,2271@kfi:2270@kfi,2889@kfi:/lfs1aip2 219902325555200 352598155264 219549727399936   1% /lus/lfs1aip2\n",
+    "user_quota": "Disk quotas for usr garyleckey.u6vs (uid 1483807800):\n     Filesystem  kbytes   quota   limit   grace   files   quota   limit   grace\n/projects/u6vs/hnc-organism/expansion-20260912/hnc-histories-v1\n                344334132       0       0       - 2200865       0       0       -\nuid 1483807800 is using default block quota setting\nuid 1483807800 is using default file quota setting\n",
+    "group_quota": "Disk quotas for grp brics.u6vs (gid 1483807752):\n     Filesystem  kbytes   quota   limit   grace   files   quota   limit   grace\n/projects/u6vs/hnc-organism/expansion-20260912/hnc-histories-v1\n                344329956       0       0       - 2200591       0       0       -\ngid 1483807752 is using default block quota setting\ngid 1483807752 is using default file quota setting\n"
+  },
+  "input_manifest_sha256": "54dc5fc6e61448a3d9b71681f5c60ccae1e23a70f0d99b9f5a25e5afb4993dc9",
+  "audit_source_sha256": "fee8a19de837bf768969fb71948ac51f37485f3634352266826217c222acdb65"
+}

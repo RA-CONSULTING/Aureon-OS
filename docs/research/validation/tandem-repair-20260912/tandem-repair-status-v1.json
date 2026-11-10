@@ -1,0 +1,7 @@
+{
+  "observed_utc": "2026-09-12T17:04:56.749751+00:00",
+  "accounting": "6506231|COMPLETED|0:0|18|1\n6506231.batch|COMPLETED|0:0|18|1\n6506293|COMPLETED|0:0|51|1\n6506293.batch|COMPLETED|0:0|51|1\n6506509|PENDING|0:0|0|0\n6506656|PENDING|0:0|0|0\n",
+  "queue": "6506656|PENDING|0:00|1|(Dependency)\n6506509|PENDING|0:00|8|(Resources)\n",
+  "records": [],
+  "completed_receipt_count": 0
+}

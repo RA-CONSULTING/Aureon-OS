@@ -1,0 +1,15 @@
+{
+  "frozen_utc": "2026-09-12T12:11:54.460002+00:00",
+  "revision": "stage1-v2-initial",
+  "model_outcomes_observed": false,
+  "evidence_class": "prospective_synthetic_prompt_context_ablation",
+  "task_templates": 80,
+  "evaluation_templates": 60,
+  "planned_evaluation_responses": 184320,
+  "planned_pilot_responses": 7680,
+  "source_commit": "f5fb1916c07ac26eb7fc38c34ff2dc9bd029e21d",
+  "archive": "C:\\Users\\samle\\Documents\\Codex\\2026-09-05\\k\\outputs\\stage1-v2-frozen-inputs.tar.gz",
+  "archive_sha256": "3a3db41e8d728de3af72ccef89c46798c815ded8d76d7ced66934d189fb64763",
+  "input_manifest_sha256": "cafd48d0c4abeedfc2c832c5aefa56c4aaba45a6252f47dad3b5c3dec0885504",
+  "payload_files": 20
+}

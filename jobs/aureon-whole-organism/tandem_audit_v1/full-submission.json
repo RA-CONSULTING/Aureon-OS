@@ -1,0 +1,12 @@
+{
+  "job_id": "6506509",
+  "remote": "/projects/u6vs/hnc-organism/expansion-20260912/tandem-full-v1",
+  "archive_sha256": "bf06024278d92791093f5ba7bab2492fbbc31e099816bf125dac7b8c4d10fe39",
+  "manifest_sha256": "6287bf2b722dd793220e747b3a39682faa88b86faf27abef701cc2bb39f936c4",
+  "command": [
+    "sbatch",
+    "--parsable",
+    "/projects/u6vs/hnc-organism/expansion-20260912/tandem-full-v1/full.sbatch"
+  ],
+  "submitted_utc": "2026-09-12T16:55:47.952228+00:00"
+}

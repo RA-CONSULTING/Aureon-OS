@@ -1,0 +1,2272 @@
+{
+  "schema": "qgita-private-ucr-cache/v1",
+  "status": "PASS",
+  "verified_utc": "2026-09-12T15:05:19.572078+00:00",
+  "source_url": "https://www.cs.ucr.edu/~eamonn/time_series_data_2018/UCR_TimeSeriesAnomalyDatasets2021.zip",
+  "source_archive_sha256": "ac4b991c701e620ae9cc5ebd57ae45593a36cc9c0b6ed5e3c4b7e466cf4783d4",
+  "source_archive_bytes": 184066400,
+  "source_headers": {
+    "Content-Length": "184066400",
+    "ETag": "\"af8a160-5ceb8e0c71100\"",
+    "Last-Modified": "Tue, 19 Oct 2021 18:32:04 GMT"
+  },
+  "canonical_sha256": "924411087c598c3f86632b6272ca3caf3673cff1f5ac277db5888e0f93b27ddb",
+  "preparation_source_sha256": "510d4ae897c499b97b78567a258b3e7aa9f7a93083e1a0a4ad250a6c343c86be",
+  "numpy": "2.3.5",
+  "job": "6504865",
+  "source_zip_retained_on_disk": false,
+  "private_numeric_arrays_retained": true,
+  "redistributed": false,
+  "series": [
+    {
+      "dataset_id": "001",
+      "family_key": "sddb",
+      "row_count": 79795,
+      "array_file": "001.npy",
+      "array_sha256": "dc21fc9072d237a710c025c229da0476e10f6aff64eaadbc1cef96a264919eb8",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/001_UCR_Anomaly_DISTORTED1sddb40_35000_52000_52620.txt",
+      "member_sha256": "E064E98E0B41D117F666945459671D3EEC014FF9AC2457401BEFD8A244B9B93F"
+    },
+    {
+      "dataset_id": "002",
+      "family_key": "sddb",
+      "row_count": 80001,
+      "array_file": "002.npy",
+      "array_sha256": "1633217810ca25ab960ac35c231a920a8939bf800a7b76d76a4152a45a3b9c36",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/002_UCR_Anomaly_DISTORTED2sddb40_35000_56600_56900.txt",
+      "member_sha256": "1C730E485F186AA39859AC0FCA707A7977860B8DB49112489270990B7F240E84"
+    },
+    {
+      "dataset_id": "003",
+      "family_key": "sddb",
+      "row_count": 80000,
+      "array_file": "003.npy",
+      "array_sha256": "5e4f219064ce71b8ffdbb82e5d97b7e2d39d78e63c42f11f31d49dd2a018f546",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/003_UCR_Anomaly_DISTORTED3sddb40_35000_46600_46900.txt",
+      "member_sha256": "557CBF5463EA3FC9CC1D17BE60157C737DE7A01810BC4907AB252E746EB6A7AE"
+    },
+    {
+      "dataset_id": "004",
+      "family_key": "bidmc",
+      "row_count": 11000,
+      "array_file": "004.npy",
+      "array_sha256": "4f134d0f9381b8bc5cd753e889c104e9b4885dc2e9c1a063b1e1230546e9a0c6",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/004_UCR_Anomaly_DISTORTEDBIDMC1_2500_5400_5600.txt",
+      "member_sha256": "F76D4CBC56328179183F3CE69A92F5A22389135A786D8F0BB1662BCFC748EDE6"
+    },
+    {
+      "dataset_id": "005",
+      "family_key": "cimis44airtemperature",
+      "row_count": 8184,
+      "array_file": "005.npy",
+      "array_sha256": "3d3c1cee3189be26f0f0e2791b237aac291ad07ee58716b5bd7aa8ae931b7d83",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/005_UCR_Anomaly_DISTORTEDCIMIS44AirTemperature1_4000_5391_5392.txt",
+      "member_sha256": "076A847FCEFAF023942DB0324186AA976407C43A8D699BEAEE8B77527BB5CEAE"
+    },
+    {
+      "dataset_id": "006",
+      "family_key": "cimis44airtemperature",
+      "row_count": 8184,
+      "array_file": "006.npy",
+      "array_sha256": "e70278ece5e266c7ab489340e7cc117fdd06643b3d260028736dc6b8ba3afacd",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/006_UCR_Anomaly_DISTORTEDCIMIS44AirTemperature2_4000_5703_5727.txt",
+      "member_sha256": "7A3689EFACF6003DBAADA4BE6C2423D83F008409DA4F1E3E4388705E6117F98A"
+    },
+    {
+      "dataset_id": "007",
+      "family_key": "cimis44airtemperature",
+      "row_count": 8184,
+      "array_file": "007.npy",
+      "array_sha256": "356cf415e5ade684fb34f8481401b92a5317d5519d70a529999cbb58a1bacb34",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/007_UCR_Anomaly_DISTORTEDCIMIS44AirTemperature3_4000_6520_6544.txt",
+      "member_sha256": "D63280AD6BAFFBE055EDAA756AA43FEFF093ED517E0FA5017C312D6CAC4C4792"
+    },
+    {
+      "dataset_id": "008",
+      "family_key": "cimis44airtemperature",
+      "row_count": 8184,
+      "array_file": "008.npy",
+      "array_sha256": "92415c6040e245a705381706d0078369395b1e660376a7a148930662c101f0a8",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/008_UCR_Anomaly_DISTORTEDCIMIS44AirTemperature4_4000_5549_5597.txt",
+      "member_sha256": "564E885F1910B19E2D762F369A669CE0097B6CE1706DA337A3315333F27EC9F7"
+    },
+    {
+      "dataset_id": "009",
+      "family_key": "cimis44airtemperature",
+      "row_count": 8184,
+      "array_file": "009.npy",
+      "array_sha256": "590859b673d0619ebc976fbe5862817e8fe4dca414e9ede0998ae5b659dd5acc",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/009_UCR_Anomaly_DISTORTEDCIMIS44AirTemperature5_4000_4852_4900.txt",
+      "member_sha256": "5450CAE11E0B3A7C9F536F24C943DB5E3BAC3223E30CFE0288497AD0294A4C52"
+    },
+    {
+      "dataset_id": "010",
+      "family_key": "cimis44airtemperature",
+      "row_count": 8184,
+      "array_file": "010.npy",
+      "array_sha256": "7c21dd3dac949eaef06e9a86c75d48ef65e4eae23a155e75f02a05a4779a6f1e",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/010_UCR_Anomaly_DISTORTEDCIMIS44AirTemperature6_4000_6006_6054.txt",
+      "member_sha256": "76A00B51E39993CB325CA7A933A1895ADD9C774CD1B17D819D1B5CB99CF74423"
+    },
+    {
+      "dataset_id": "011",
+      "family_key": "ecg",
+      "row_count": 30000,
+      "array_file": "011.npy",
+      "array_sha256": "4e7dde9f32c59afd40d97f2e3a8f16aa9a6d3d28006cf6f9fb0554fa9999964f",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/011_UCR_Anomaly_DISTORTEDECG1_10000_11800_12100.txt",
+      "member_sha256": "9F0CCCECD43376F0347D5C2DF6648F3BE3F33A5BE955D4AF66FB670C02E39AFD"
+    },
+    {
+      "dataset_id": "012",
+      "family_key": "ecg",
+      "row_count": 30000,
+      "array_file": "012.npy",
+      "array_sha256": "6fcc1cdba096786a3b1353e1f550cd010b80797d6d0e2a3a130151429b420ecb",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/012_UCR_Anomaly_DISTORTEDECG2_15000_16000_16100.txt",
+      "member_sha256": "918236C9ECD8E65F0E61DF7209C5874B811657177DE2EA982EF98C6F3AC6172F"
+    },
+    {
+      "dataset_id": "013",
+      "family_key": "ecg",
+      "row_count": 30000,
+      "array_file": "013.npy",
+      "array_sha256": "4463066aaa60d1dde9b45bdad529aa2b2bc68c73fe2a149a96abd744d6fdbc44",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/013_UCR_Anomaly_DISTORTEDECG3_15000_16000_16100.txt",
+      "member_sha256": "D34AEECF64127212A6A7290C02D675DE48C05AD83E783BA4E0A52B571AD71128"
+    },
+    {
+      "dataset_id": "014",
+      "family_key": "ecg",
+      "row_count": 30000,
+      "array_file": "014.npy",
+      "array_sha256": "81bf04501443768970673feb99f519c6b495d8880443ae4e13c51b431a91f942",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/014_UCR_Anomaly_DISTORTEDECG3_8000_17000_17100.txt",
+      "member_sha256": "CF49EE0039979E7526988FCF2ABC9DB20BCC96B9DD3F3EE311881640FE989E94"
+    },
+    {
+      "dataset_id": "015",
+      "family_key": "ecg",
+      "row_count": 200000,
+      "array_file": "015.npy",
+      "array_sha256": "ed1959f10a2ac200e3699ccbc2d5e0b00d8e6c5e66d212d0248a92afe8f0d440",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/015_UCR_Anomaly_DISTORTEDECG4_5000_16800_17100.txt",
+      "member_sha256": "F8338392DB031531633A1B636A948199CFA710A093A6191EABBE56E5A793370C"
+    },
+    {
+      "dataset_id": "016",
+      "family_key": "ecg",
+      "row_count": 30000,
+      "array_file": "016.npy",
+      "array_sha256": "44df7c280a6adf2eca156a991a44d4ba0c67ed11aa979d930ac66e0c42f372ea",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/016_UCR_Anomaly_DISTORTEDECG4_5000_16900_17100.txt",
+      "member_sha256": "DE679B477E6CA1DB24972AD3B3E66BFA2812EA7F41BCA4B29D663E639763D253"
+    },
+    {
+      "dataset_id": "017",
+      "family_key": "ecg",
+      "row_count": 30000,
+      "array_file": "017.npy",
+      "array_sha256": "4a34a156468b39a8a186d8a939797dd8b4640108a4f5fb6a00723c192d5aeb72",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/017_UCR_Anomaly_DISTORTEDECG4_5000_17000_17100.txt",
+      "member_sha256": "4CDEF36A92A9F3F7D5C94DE3E31F8FBDD49FD671C8EA4F3F8E53CE5B6C209A82"
+    },
+    {
+      "dataset_id": "018",
+      "family_key": "ecg",
+      "row_count": 30000,
+      "array_file": "018.npy",
+      "array_sha256": "2fc86b832679e741576aaeca1255f5b92158d4689b312a9bc4611e5faf9bfb2e",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/018_UCR_Anomaly_DISTORTEDECG4_8000_17000_17100.txt",
+      "member_sha256": "EE6E4B0D7D6CCD355614825C7480836DBED05943BA60E5FB0F768D60E9337CD7"
+    },
+    {
+      "dataset_id": "019",
+      "family_key": "gp711markerlfm5z",
+      "row_count": 12000,
+      "array_file": "019.npy",
+      "array_sha256": "49b459eb77845ceb8b5340b2da08dc5f401c6c8584c938bce986d3e081818089",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/019_UCR_Anomaly_DISTORTEDGP711MarkerLFM5z1_5000_6168_6212.txt",
+      "member_sha256": "D5EF58EDD75915CD1CFB88368905186281E25EB7587E2C5CD28A44F4A3E2FB8F"
+    },
+    {
+      "dataset_id": "020",
+      "family_key": "gp711markerlfm5z",
+      "row_count": 12000,
+      "array_file": "020.npy",
+      "array_sha256": "81a31ffe9b4740ba668b27fcfdeeb1445a54f7089b5f2257e8418c21d848a0e2",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/020_UCR_Anomaly_DISTORTEDGP711MarkerLFM5z2_5000_7175_7388.txt",
+      "member_sha256": "8A1E8225A1F6251425782A1BCE150DB1CB4D2C55431278F73465538166C7A6DB"
+    },
+    {
+      "dataset_id": "021",
+      "family_key": "gp711markerlfm5z",
+      "row_count": 12000,
+      "array_file": "021.npy",
+      "array_sha256": "491512137f4c477bc565937e68eea665eed3864088e3c4e3768547fad1dfa5a0",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/021_UCR_Anomaly_DISTORTEDGP711MarkerLFM5z3_5000_5948_5993.txt",
+      "member_sha256": "F777776C072630C3B7970E684392ED0D5121FB9D2BB0277934F1440AE6C973AC"
+    },
+    {
+      "dataset_id": "022",
+      "family_key": "gp711markerlfm5z",
+      "row_count": 12000,
+      "array_file": "022.npy",
+      "array_sha256": "30eda2a06f3cbe5a6fcf23f10d74895fe03b45b3792ff7bf654e354a296cb351",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/022_UCR_Anomaly_DISTORTEDGP711MarkerLFM5z4_4000_6527_6645.txt",
+      "member_sha256": "E8C3474887D6E892B6872B105658424D50BEFBBF0B4F5255670A39094E901AD7"
+    },
+    {
+      "dataset_id": "023",
+      "family_key": "gp711markerlfm5z",
+      "row_count": 12000,
+      "array_file": "023.npy",
+      "array_sha256": "f587c319e3005d0d33b43df873ae2faeefe59c06ef21d9158477939454b6d159",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/023_UCR_Anomaly_DISTORTEDGP711MarkerLFM5z5_5000_8612_8716.txt",
+      "member_sha256": "61ADE6BE0922F071980B97ADCE4A31A50260562303FA9012FD03C9A9D06DB00D"
+    },
+    {
+      "dataset_id": "024",
+      "family_key": "internalbleeding",
+      "row_count": 7501,
+      "array_file": "024.npy",
+      "array_sha256": "5fecd792ef164e896c7cde8ac6887cb59d764f68f7077222ffcb28e584e89987",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/024_UCR_Anomaly_DISTORTEDInternalBleeding10_3200_4526_4556.txt",
+      "member_sha256": "C9DD6E2D6F05791F47A1D7798E33FD48861561D7E1BF3EAA592F8B7A5F5685A7"
+    },
+    {
+      "dataset_id": "025",
+      "family_key": "internalbleeding",
+      "row_count": 7501,
+      "array_file": "025.npy",
+      "array_sha256": "7f5d74def54ff974869b97aacc900ff2bddd2073431a7c8855d5839dbd2b5d4b",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/025_UCR_Anomaly_DISTORTEDInternalBleeding14_2800_5607_5634.txt",
+      "member_sha256": "8E0DC61A006BC5917166D69DBC84E6A5B575FDAA490D7FED79F62138ADF6F644"
+    },
+    {
+      "dataset_id": "026",
+      "family_key": "internalbleeding",
+      "row_count": 7601,
+      "array_file": "026.npy",
+      "array_sha256": "ed5d9cff54b6bdf10c430676eda9953c6eb4556be73cb63226ba85f5e5abb464",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/026_UCR_Anomaly_DISTORTEDInternalBleeding15_1700_5684_5854.txt",
+      "member_sha256": "4D1CF1A9307630613E8DA2ADEF8D91FE0AD4D2A8C23469ECC49D6BF97BAEA9EE"
+    },
+    {
+      "dataset_id": "027",
+      "family_key": "internalbleeding",
+      "row_count": 7501,
+      "array_file": "027.npy",
+      "array_sha256": "45378b6395514f7bdd3199a2edb80b3fab1ad37776f6675bdd7d34c18cc5f984",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/027_UCR_Anomaly_DISTORTEDInternalBleeding16_1200_4187_4199.txt",
+      "member_sha256": "8245646EFD247A8A6A938DE02DF5067F546CC06573897C20EAAA9710D8DC8D13"
+    },
+    {
+      "dataset_id": "028",
+      "family_key": "internalbleeding",
+      "row_count": 7500,
+      "array_file": "028.npy",
+      "array_sha256": "02c9713f7fa8a65f879060ca91694ed7d9b7cfe3938e8262c42bd66d53fe3a2f",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/028_UCR_Anomaly_DISTORTEDInternalBleeding17_1600_3198_3309.txt",
+      "member_sha256": "9857E5486D03E7F5A70153473682CD005F80AC7AF155ED58190B75431860533B"
+    },
+    {
+      "dataset_id": "029",
+      "family_key": "internalbleeding",
+      "row_count": 7500,
+      "array_file": "029.npy",
+      "array_sha256": "d1538ab9745ab6d9cbfa95cb72668adcfb5d04ee26dd33517464f2cf52de7d63",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/029_UCR_Anomaly_DISTORTEDInternalBleeding18_2300_4485_4587.txt",
+      "member_sha256": "99B6A580CFEA028D6405BC775F581EE6CB097A1AF2EC13B254F5EFFD62F7FD28"
+    },
+    {
+      "dataset_id": "030",
+      "family_key": "internalbleeding",
+      "row_count": 7500,
+      "array_file": "030.npy",
+      "array_sha256": "0a4f9be20d9e9a8954079903db610fe946cb15032a47edc33e2d0dac636379d9",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/030_UCR_Anomaly_DISTORTEDInternalBleeding19_3000_4187_4197.txt",
+      "member_sha256": "3F034620D2C0B4089B6825E38609ACAD71FB8EA1C6E8635E53B8F5EB993E11AD"
+    },
+    {
+      "dataset_id": "031",
+      "family_key": "internalbleeding",
+      "row_count": 7500,
+      "array_file": "031.npy",
+      "array_sha256": "50885107f151c08de318ea3a219c050035359204fd2fe605a2f8ba72f52a5a0a",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/031_UCR_Anomaly_DISTORTEDInternalBleeding20_2700_5759_5919.txt",
+      "member_sha256": "EAF66FA6FD05CD9F0CC8060ECC1AEB4896304675EDC71A9194241E915604A609"
+    },
+    {
+      "dataset_id": "032",
+      "family_key": "internalbleeding",
+      "row_count": 7321,
+      "array_file": "032.npy",
+      "array_sha256": "2b0743225ef7a0948745b771b37ce9a1306b3f1090fa334bd7edf47b4abcd582",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/032_UCR_Anomaly_DISTORTEDInternalBleeding4_1000_4675_5033.txt",
+      "member_sha256": "90BB58ED2D8C100486D6AB744EB385960583F882A0C185CDD86BA81A588A278E"
+    },
+    {
+      "dataset_id": "033",
+      "family_key": "internalbleeding",
+      "row_count": 7415,
+      "array_file": "033.npy",
+      "array_sha256": "1c7e48edb4e0b1cb460097b134b9a45bf6e923f17dc1db673461ea5df8164d9f",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/033_UCR_Anomaly_DISTORTEDInternalBleeding5_4000_6200_6370.txt",
+      "member_sha256": "C36EF2B78F91E35BB5101B7E853D35BED473F06B4D37C06DB28CAD4AA3D279F9"
+    },
+    {
+      "dataset_id": "034",
+      "family_key": "internalbleeding",
+      "row_count": 7654,
+      "array_file": "034.npy",
+      "array_sha256": "7f8fe92fa7a63773fd56b1d833e3732a6957fbd81f305a4aac1f463c6cf47282",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/034_UCR_Anomaly_DISTORTEDInternalBleeding6_1500_3474_3629.txt",
+      "member_sha256": "08E75EDD22F5DDE2288F62D9905FCA368158CA30365B812673756C91062615B8"
+    },
+    {
+      "dataset_id": "035",
+      "family_key": "internalbleeding",
+      "row_count": 7501,
+      "array_file": "035.npy",
+      "array_sha256": "cfdef17e28f9d141d22d8221f2ca13885ae8beed290f1b3b2a9a05a2c6c2bd8f",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/035_UCR_Anomaly_DISTORTEDInternalBleeding8_2500_5865_5974.txt",
+      "member_sha256": "16CCD3D315BEFE99A2719B617BD7CBFB21DD63001F1B42F4A0F457CA8DF88360"
+    },
+    {
+      "dataset_id": "036",
+      "family_key": "internalbleeding",
+      "row_count": 7501,
+      "array_file": "036.npy",
+      "array_sha256": "559cc34ad012a2c89e8674f75093881a2316c53e44b5a68c56b1445bdc23606b",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/036_UCR_Anomaly_DISTORTEDInternalBleeding9_4200_6599_6681.txt",
+      "member_sha256": "A73D21AFAFBF10FD8EA0CCDCD2F150947BB7B253EED282AFF43566869889854F"
+    },
+    {
+      "dataset_id": "037",
+      "family_key": "lab2cmac011215epg",
+      "row_count": 30001,
+      "array_file": "037.npy",
+      "array_sha256": "62d6f31d14140f7671e85171dc6dcab68aff511df66a9651a489295e7a20a43a",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/037_UCR_Anomaly_DISTORTEDLab2Cmac011215EPG1_5000_17210_17260.txt",
+      "member_sha256": "331E6897552DDEF61E222DC1805462D0EEE8408EB22C496E8F88FEF0A3894F70"
+    },
+    {
+      "dataset_id": "038",
+      "family_key": "lab2cmac011215epg",
+      "row_count": 29950,
+      "array_file": "038.npy",
+      "array_sha256": "2fa85eb0d43d9d940753cd35246adc94eb2b6da5661d6d4c9a331184e11286de",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/038_UCR_Anomaly_DISTORTEDLab2Cmac011215EPG2_5000_27862_27932.txt",
+      "member_sha256": "FCE7B5C43F1DDF676397A7E23C5EC6EDB0E90DEB0BD34BB4BE12EB531354FDF9"
+    },
+    {
+      "dataset_id": "039",
+      "family_key": "lab2cmac011215epg",
+      "row_count": 29950,
+      "array_file": "039.npy",
+      "array_sha256": "10f3ec854f81fb9afe265e755a641e4ad315f52dca599043db4c7f95994ce230",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/039_UCR_Anomaly_DISTORTEDLab2Cmac011215EPG3_5000_16390_16420.txt",
+      "member_sha256": "BF8A6BB5243EEC8CC4712030872A156337F61094DC70F3F0FCDF30425292318C"
+    },
+    {
+      "dataset_id": "040",
+      "family_key": "lab2cmac011215epg",
+      "row_count": 30066,
+      "array_file": "040.npy",
+      "array_sha256": "a81e5f0a3d754b28b4617cd73790fffe50fa41ce8493fa4ce96e927f182c2547",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/040_UCR_Anomaly_DISTORTEDLab2Cmac011215EPG4_6000_17390_17520.txt",
+      "member_sha256": "B8473D208CAA69F2F2EE5865B8B8AF2CEC54517D63C01E9D451E470D32108521"
+    },
+    {
+      "dataset_id": "041",
+      "family_key": "lab2cmac011215epg",
+      "row_count": 29826,
+      "array_file": "041.npy",
+      "array_sha256": "e5b969660c24c5b65fdfe00b50a55ad342d504f5f9e4faa5b39d93a5a7eba764",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/041_UCR_Anomaly_DISTORTEDLab2Cmac011215EPG5_7000_17390_17520.txt",
+      "member_sha256": "727B4CA43EA0C7562B03592738B10830E819B2567CC92BCABDE8D1B5B70F33DE"
+    },
+    {
+      "dataset_id": "042",
+      "family_key": "lab2cmac011215epg",
+      "row_count": 29859,
+      "array_file": "042.npy",
+      "array_sha256": "406906946916d9a33bf6ee43bfd53b9f4342bf5ee8cbcb383b6c322c83d61b77",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/042_UCR_Anomaly_DISTORTEDLab2Cmac011215EPG6_7000_12190_12420.txt",
+      "member_sha256": "3EB98C85F8E2B3063900ECEC683FCC63E3F2B66529F9CC768C423D8EA45B2886"
+    },
+    {
+      "dataset_id": "043",
+      "family_key": "mesoplodondensirostris",
+      "row_count": 24667,
+      "array_file": "043.npy",
+      "array_sha256": "fa63b9ca0e72087a7638195b738c05d5f5912aecbac74f1a807b2042409e8db6",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/043_UCR_Anomaly_DISTORTEDMesoplodonDensirostris_10000_19280_19440.txt",
+      "member_sha256": "241271E6B255D97184928478470632DEAA4525A0BD005F4F4F2B87ED4860B103"
+    },
+    {
+      "dataset_id": "044",
+      "family_key": "powerdemand",
+      "row_count": 29931,
+      "array_file": "044.npy",
+      "array_sha256": "4e6d78c5eefa5f7b1297c3a478e6619a663822a31d0b6c3562d48bbf69aa9d87",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/044_UCR_Anomaly_DISTORTEDPowerDemand1_9000_18485_18821.txt",
+      "member_sha256": "A7CA3D07AD8D56E274197C5F617DA49FB0176C438ADD92D58A1A97AAF0D8280D"
+    },
+    {
+      "dataset_id": "045",
+      "family_key": "powerdemand",
+      "row_count": 29931,
+      "array_file": "045.npy",
+      "array_sha256": "7f17dd0f8d1bfb679bc67f673133b53b94f473f3bbdaf2b92b0e50bc56c8b950",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/045_UCR_Anomaly_DISTORTEDPowerDemand2_14000_23357_23717.txt",
+      "member_sha256": "39E72CDCD0C18022F06012B49020BDC01BB0424A12A78F6FB1EEEE7C4FF65E9E"
+    },
+    {
+      "dataset_id": "046",
+      "family_key": "powerdemand",
+      "row_count": 29931,
+      "array_file": "046.npy",
+      "array_sha256": "41eceae05c52282656c257ac97658ba3f280366319fd57b7b7e6904076bb3109",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/046_UCR_Anomaly_DISTORTEDPowerDemand3_16000_23405_23477.txt",
+      "member_sha256": "9810BA6B50D7D589B6D4C170BDF4B4D53F18EF8A1ECB41BD5F5CF4B0C00C0962"
+    },
+    {
+      "dataset_id": "047",
+      "family_key": "powerdemand",
+      "row_count": 29931,
+      "array_file": "047.npy",
+      "array_sha256": "3571d455f27b501e249c29d1082578648229596aed968a35afa64b287c972f91",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/047_UCR_Anomaly_DISTORTEDPowerDemand4_18000_24005_24077.txt",
+      "member_sha256": "39394BDF1B84658899F86F6062838ECDBA404C63C612B9D807FC573752E1AFF6"
+    },
+    {
+      "dataset_id": "048",
+      "family_key": "tkeepfifthmars",
+      "row_count": 11334,
+      "array_file": "048.npy",
+      "array_sha256": "41ccaf3480f7d6528fd9bb480ce7988b28bc1c8c9341d94ef78df7d066c22204",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/048_UCR_Anomaly_DISTORTEDTkeepFifthMARS_3500_5988_6085.txt",
+      "member_sha256": "A93A5FA9A5C95F1A3E975F1BBC7CF8F6ADAC879B6D95D7605337B8E38798AE7E"
+    },
+    {
+      "dataset_id": "049",
+      "family_key": "tkeepfirstmars",
+      "row_count": 11406,
+      "array_file": "049.npy",
+      "array_sha256": "bc259d4e80495f83a5d95060eb4d371f87808dadd5eb5879acac64f724f4ea59",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/049_UCR_Anomaly_DISTORTEDTkeepFirstMARS_3500_5365_5380.txt",
+      "member_sha256": "B8C044C35A05BB686BD6062C4B36DF2E866026D3AE549A5C7869BB980ADA0B5F"
+    },
+    {
+      "dataset_id": "050",
+      "family_key": "tkeepforthmars",
+      "row_count": 11308,
+      "array_file": "050.npy",
+      "array_sha256": "5b25379e3e7ea14b33ea81253669f576de070f6f291d27826fc08423ffe2ffc9",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/050_UCR_Anomaly_DISTORTEDTkeepForthMARS_3500_5988_6085.txt",
+      "member_sha256": "B1013E448307799D8973B4E9596398332E3B85215CAFB13CC8A1711B7CEDD583"
+    },
+    {
+      "dataset_id": "051",
+      "family_key": "tkeepsecondmars",
+      "row_count": 11388,
+      "array_file": "051.npy",
+      "array_sha256": "f9f875217247b94060a794b7297d2719207c2f30cca2249dda079c13e8fc3713",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/051_UCR_Anomaly_DISTORTEDTkeepSecondMARS_3500_9330_9340.txt",
+      "member_sha256": "58196DCCC482E44CE36DDDC5CC59F04C63BB4B8EFFAD8CE9F85681E8BD8B8B1F"
+    },
+    {
+      "dataset_id": "052",
+      "family_key": "tkeepthirdmars",
+      "row_count": 11308,
+      "array_file": "052.npy",
+      "array_sha256": "1bc74dc578ccf2d1d4f5bcfdeb3b57ddbb85c508941d6d8d02caedf4ccf31fc0",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/052_UCR_Anomaly_DISTORTEDTkeepThirdMARS_3500_4711_4809.txt",
+      "member_sha256": "CF4119F581310A6AFADD01EF53DADA8BBE197D56A8ED8FDECE19EAE106E1648D"
+    },
+    {
+      "dataset_id": "053",
+      "family_key": "walkingaceleration",
+      "row_count": 6684,
+      "array_file": "053.npy",
+      "array_sha256": "38b6ee1104ea8cd2c2f314c700a6f72008d0153e2cf9b686b05b73ff3e33878b",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/053_UCR_Anomaly_DISTORTEDWalkingAceleration1_1500_2764_2995.txt",
+      "member_sha256": "FB9D208282AC882717053F3865EBF0E721964F61A63E9E7D0CA45990BFFC8F64"
+    },
+    {
+      "dataset_id": "054",
+      "family_key": "walkingaceleration",
+      "row_count": 6684,
+      "array_file": "054.npy",
+      "array_sha256": "314e1576e21d26c17a8605845edd87df07bcb5b7694ab802167ed060aa100a3b",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/054_UCR_Anomaly_DISTORTEDWalkingAceleration5_2700_5920_5979.txt",
+      "member_sha256": "552C90F7228D92B7C3D6B86BCD1B754617131DF814E24D88E5F8F5FDFB4F58A7"
+    },
+    {
+      "dataset_id": "055",
+      "family_key": "apneaecg",
+      "row_count": 38501,
+      "array_file": "055.npy",
+      "array_sha256": "1bf4f1d38668d844d3a5960ae4816046207f6526f1b46fc536c0d26a237f14d0",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/055_UCR_Anomaly_DISTORTEDapneaecg2_10000_20950_21100.txt",
+      "member_sha256": "9056FF4E0AE2F5C721F2ED861164063EB8F01FE805355B94183FDAEC9353426E"
+    },
+    {
+      "dataset_id": "056",
+      "family_key": "apneaecg",
+      "row_count": 38379,
+      "array_file": "056.npy",
+      "array_sha256": "3ee2155cfb90c9274a1e2a14fd222b4c1803ff9699b208ad2806059e4666c2ce",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/056_UCR_Anomaly_DISTORTEDapneaecg3_5000_11111_11211.txt",
+      "member_sha256": "034D2DA9CE10BDC96915D7B6CFF81966BEAA4ACB93F7530564F18B28B68D7B0A"
+    },
+    {
+      "dataset_id": "057",
+      "family_key": "apneaecg",
+      "row_count": 38269,
+      "array_file": "057.npy",
+      "array_sha256": "48974c413b2067593764780b354c2bfe34074f9378458ea16c581bd1e9ae666f",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/057_UCR_Anomaly_DISTORTEDapneaecg4_6000_16000_16100.txt",
+      "member_sha256": "B619FBD2C69A2DAD77FEABD80AE75058B614D655E5B78D0A929C42E8CE3371DD"
+    },
+    {
+      "dataset_id": "058",
+      "family_key": "apneaecg",
+      "row_count": 38501,
+      "array_file": "058.npy",
+      "array_sha256": "84737be71119384cada7d57d1e3963aced2260c7d92f364cb321f8166ea06105",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/058_UCR_Anomaly_DISTORTEDapneaecg_10000_12240_12308.txt",
+      "member_sha256": "56D2AFE698783ADC102E742623206DBAFF27DCFE8570AD0DCDE06E1DE51734B6"
+    },
+    {
+      "dataset_id": "059",
+      "family_key": "gait",
+      "row_count": 65000,
+      "array_file": "059.npy",
+      "array_sha256": "bd28abbf644d687f2f3ad60bc2db96567094c9516e4671dad9ac2387f2f9548b",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/059_UCR_Anomaly_DISTORTEDgait1_20000_38500_38800.txt",
+      "member_sha256": "E4D5B4E84913B24F193A6B90D2982C0A26971FB8CFC4F3E58205106106AF1852"
+    },
+    {
+      "dataset_id": "060",
+      "family_key": "gait",
+      "row_count": 65000,
+      "array_file": "060.npy",
+      "array_sha256": "0e4785d429d2ba780ccc4d4273e72ccc24c60e5a5cffa2c2650feafbd7607230",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/060_UCR_Anomaly_DISTORTEDgait2_22000_46500_46800.txt",
+      "member_sha256": "17FEDF5E1159899F9333A6EB74326D28E7231689740359FB1C03185408AFF4DA"
+    },
+    {
+      "dataset_id": "061",
+      "family_key": "gait",
+      "row_count": 65000,
+      "array_file": "061.npy",
+      "array_sha256": "3e3d173418aebf52eb83688bb114dff5e85fd59c7abf35a91664a6d132059b7e",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/061_UCR_Anomaly_DISTORTEDgait3_24500_59900_60500.txt",
+      "member_sha256": "E0529205646FFF9CD6A0690617C7052771143774937DFFBBAB1C9207E3FD805A"
+    },
+    {
+      "dataset_id": "062",
+      "family_key": "gaithunt",
+      "row_count": 64000,
+      "array_file": "062.npy",
+      "array_sha256": "6fb210bb01b243b556a18e7caeb8e081c3898651690c695f0380ec1f613c7771",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/062_UCR_Anomaly_DISTORTEDgaitHunt1_18500_33070_33180.txt",
+      "member_sha256": "969C1876508D1C0926944E31DCBFAD4EB19B1AD3B44DC35D1A430A508903187E"
+    },
+    {
+      "dataset_id": "063",
+      "family_key": "gaithunt",
+      "row_count": 64000,
+      "array_file": "063.npy",
+      "array_sha256": "705ff67dffc245366329aa2087aae540826e8b1b4da85a699150e307b9441e40",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/063_UCR_Anomaly_DISTORTEDgaitHunt2_18500_31200_31850.txt",
+      "member_sha256": "2414C00FDF139963E748C9474617829CDBE813C9EC73B59BD8B4C69994828251"
+    },
+    {
+      "dataset_id": "064",
+      "family_key": "gaithunt",
+      "row_count": 64000,
+      "array_file": "064.npy",
+      "array_sha256": "a201fc57c4daa2da4b867136f441766e6806f5233aa2173095750776b9119271",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/064_UCR_Anomaly_DISTORTEDgaitHunt3_23400_38400_39200.txt",
+      "member_sha256": "A78E2C7D6F11F16703B6E6FFA00E8F85AE87914B3A3EB8652CAE09A542FD4982"
+    },
+    {
+      "dataset_id": "065",
+      "family_key": "insectepg",
+      "row_count": 10001,
+      "array_file": "065.npy",
+      "array_sha256": "e8754d5af3eb9ad8a444b976ac60f8bbb327a38ef5783761332e39933f25eac8",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/065_UCR_Anomaly_DISTORTEDinsectEPG1_3000_7000_7030.txt",
+      "member_sha256": "8A7441FDE208EC79FA41FB5C0C05DF3B531792FEE8AB359440C4404B4C5FC8FC"
+    },
+    {
+      "dataset_id": "066",
+      "family_key": "insectepg",
+      "row_count": 9998,
+      "array_file": "066.npy",
+      "array_sha256": "e32f86da999f6348fc2538d1f1c9b9b5fa34e7bbf2b95aeea55e7bd54541ef18",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/066_UCR_Anomaly_DISTORTEDinsectEPG2_3700_8000_8025.txt",
+      "member_sha256": "AD103A4F8A0F30F07DD022DC8753A71A60A0AC9609A6523EDB6468043A8E2605"
+    },
+    {
+      "dataset_id": "067",
+      "family_key": "insectepg",
+      "row_count": 9998,
+      "array_file": "067.npy",
+      "array_sha256": "8f04c3bfecc11eb4f53f4f344db7b5123a5797a6e3f3976d90e44e36cb2706da",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/067_UCR_Anomaly_DISTORTEDinsectEPG3_5200_7000_7050.txt",
+      "member_sha256": "523F307C81AAD1E40A91A0D7F2569F381DDBA412F2B397226B44905D1078AA86"
+    },
+    {
+      "dataset_id": "068",
+      "family_key": "insectepg",
+      "row_count": 9998,
+      "array_file": "068.npy",
+      "array_sha256": "9323395c10b435664d3c8a81ad461579ddf68d34efec5dc7e87cb4b0b1e96926",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/068_UCR_Anomaly_DISTORTEDinsectEPG4_1300_6508_6558.txt",
+      "member_sha256": "7CD52F1AB6AF8AEEF1FDAF208607D36350DDF4CCC065CF3C9874D61629FFE62C"
+    },
+    {
+      "dataset_id": "069",
+      "family_key": "insectepg",
+      "row_count": 10028,
+      "array_file": "069.npy",
+      "array_sha256": "b2122653ae49308caf14ce1353c1d1ceb948ad070dcb2ea7bd1d60c0578bafb8",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/069_UCR_Anomaly_DISTORTEDinsectEPG5_3200_8500_8501.txt",
+      "member_sha256": "F987BBE39E02265C3BBF6EBC0EED2B4E9CD39E7EB4A1BF9340313715580EFDAF"
+    },
+    {
+      "dataset_id": "070",
+      "family_key": "ltstdbs30791ai",
+      "row_count": 56123,
+      "array_file": "070.npy",
+      "array_sha256": "03af00d87ea036287df75ba6b21d192e56132b0a170a3a561e50833132fa2089",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/070_UCR_Anomaly_DISTORTEDltstdbs30791AI_17555_52600_52800.txt",
+      "member_sha256": "E58040B17F807CDF8660574C7D20F8CCECF405CE848CA936CB47C3F545D5868A"
+    },
+    {
+      "dataset_id": "071",
+      "family_key": "ltstdbs30791as",
+      "row_count": 55000,
+      "array_file": "071.npy",
+      "array_sha256": "98766744fa359852aa41090d6c09211bc1c849c94c00664608d156a605deac0f",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/071_UCR_Anomaly_DISTORTEDltstdbs30791AS_23000_52600_52800.txt",
+      "member_sha256": "0B99F53B29CBE01706F5F0389554C8C876F87D3F47F7FB0773672595DD1336FA"
+    },
+    {
+      "dataset_id": "072",
+      "family_key": "ltstdbs30791es",
+      "row_count": 55000,
+      "array_file": "072.npy",
+      "array_sha256": "478b065ecd9a6375890632a656009817ce5fdd0a82eba11f09b57786ab085ea9",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/072_UCR_Anomaly_DISTORTEDltstdbs30791ES_20000_52600_52800.txt",
+      "member_sha256": "DA6888F980D4ECD9F90FCEBE4C5F5D15CA4B6F071284ED0164CC9F6B15AED761"
+    },
+    {
+      "dataset_id": "073",
+      "family_key": "park3m",
+      "row_count": 90000,
+      "array_file": "073.npy",
+      "array_sha256": "325648378a5ae77d9d5c0854a77b0df3328397126715f731ddffe65fdd2a9db0",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/073_UCR_Anomaly_DISTORTEDpark3m_60000_72150_72495.txt",
+      "member_sha256": "A9A749B18F4B69FA17371A44C54DE64518DE76199926E238919046970BD72111"
+    },
+    {
+      "dataset_id": "074",
+      "family_key": "qtdbsel1005v",
+      "row_count": 36001,
+      "array_file": "074.npy",
+      "array_sha256": "ad9ed479c71be1663382f0d0579303d3ffe54359ad9e5254a7abd443a9db876e",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/074_UCR_Anomaly_DISTORTEDqtdbSel1005V_4000_12400_12800.txt",
+      "member_sha256": "30B4CA1B33219240FB8125E1EB3B1F3D3C6DAB54505794AED71F77AB0658CD88"
+    },
+    {
+      "dataset_id": "075",
+      "family_key": "qtdbsel100mlii",
+      "row_count": 30000,
+      "array_file": "075.npy",
+      "array_sha256": "67f8434561ccaeac4070cf8668f24d9cf34aa5f8b6d478e9c493d3ebe21ede94",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/075_UCR_Anomaly_DISTORTEDqtdbSel100MLII_4000_13400_13800.txt",
+      "member_sha256": "8B963D85F6B0C1216905E96D786C8CF88574EE65E03493383A5CFBBF5B478BA8"
+    },
+    {
+      "dataset_id": "076",
+      "family_key": "resperation",
+      "row_count": 195000,
+      "array_file": "076.npy",
+      "array_sha256": "fe9be32391c6304540dcf3ed134003e478512a48fc92468dfd7db20252468411",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/076_UCR_Anomaly_DISTORTEDresperation10_48000_130700_131880.txt",
+      "member_sha256": "928E07F4ED9EBAA9172442D83163D2910EC67566784668B3326A461EBDAB5AEE"
+    },
+    {
+      "dataset_id": "077",
+      "family_key": "resperation",
+      "row_count": 195000,
+      "array_file": "077.npy",
+      "array_sha256": "a8ea17e6865b4bb5a4d90eec7b07e0a821355cb4ef4167fc79ccbe3cf59ec0f9",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/077_UCR_Anomaly_DISTORTEDresperation11_58000_110800_110801.txt",
+      "member_sha256": "1A4579A125C16AE2BEE77E374C904B79D4B70ED274C64FC15F0A509EE8831E5F"
+    },
+    {
+      "dataset_id": "078",
+      "family_key": "resperation",
+      "row_count": 200000,
+      "array_file": "078.npy",
+      "array_sha256": "6276421065045ae73b430a1e6a2cdf37542390ef9170f426583f4044096bd74b",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/078_UCR_Anomaly_DISTORTEDresperation1_100000_110260_110412.txt",
+      "member_sha256": "B2C72CF631268A469E90106A63EFB911B499ACEB7EC7149D48B692BB7F1E7A41"
+    },
+    {
+      "dataset_id": "079",
+      "family_key": "resperation",
+      "row_count": 200051,
+      "array_file": "079.npy",
+      "array_sha256": "99b385331812b6e43f91609a86797608981a341ad817b26adf84eaf16c92e5a7",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/079_UCR_Anomaly_DISTORTEDresperation2_30000_168250_168250.txt",
+      "member_sha256": "9B1C5B263BD3488C63D2E9CEA88F82A98C08CCE326631A117D7E957710BEB620"
+    },
+    {
+      "dataset_id": "080",
+      "family_key": "resperation",
+      "row_count": 190050,
+      "array_file": "080.npy",
+      "array_sha256": "f0c381cfb25d2f0358eaf708fe0c13b686ef55413e78cf3ba45a87fe39c8eb84",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/080_UCR_Anomaly_DISTORTEDresperation2_30000_168250_168251.txt",
+      "member_sha256": "7C274CB483F86C92A508A75E42A1824E811DE17ADCCFD932D653A8F61145CE9D"
+    },
+    {
+      "dataset_id": "081",
+      "family_key": "resperation",
+      "row_count": 190100,
+      "array_file": "081.npy",
+      "array_sha256": "8161ed8b5bfe0614243132013742b44705b5ad9ff434d5f577d5c872b0a7eba4",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/081_UCR_Anomaly_DISTORTEDresperation3_45000_158250_158251.txt",
+      "member_sha256": "30AB10F0387706BE945AADC400A30B5CBF8EDC0A21D52BC21C9E57A111AA6EBE"
+    },
+    {
+      "dataset_id": "082",
+      "family_key": "resperation",
+      "row_count": 195250,
+      "array_file": "082.npy",
+      "array_sha256": "8e9a93dae5e6c3bccc79ed149bb8162151b68e0075054bd88f7e5859ad8a59c6",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/082_UCR_Anomaly_DISTORTEDresperation4_70000_128430_128431.txt",
+      "member_sha256": "2E114686688E0415C22D48F109540F4C282D3BE97A41A4E9CE41C162B1AFDD0F"
+    },
+    {
+      "dataset_id": "083",
+      "family_key": "resperation",
+      "row_count": 195000,
+      "array_file": "083.npy",
+      "array_sha256": "4207df8b2adc9d11b5afa5ae9c4b7f7183c38a0313b16a8cda77e0149b34c3f3",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/083_UCR_Anomaly_DISTORTEDresperation9_38000_143411_143511.txt",
+      "member_sha256": "B9432D2B2DC707348AC701AD6EF3DE4194F00CF83E5188CD0591DA289A4EB222"
+    },
+    {
+      "dataset_id": "084",
+      "family_key": "s20101mml",
+      "row_count": 40000,
+      "array_file": "084.npy",
+      "array_sha256": "4afc8378c26c43abdaf674c7307505bdd571fd4287b74c4c9f64432aff61df9b",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/084_UCR_Anomaly_DISTORTEDs20101mML2_12000_35774_35874.txt",
+      "member_sha256": "CD871EEC0F583D2F41FA673532730B9965BFA98968FC8675B960C21912B76BB8"
+    },
+    {
+      "dataset_id": "085",
+      "family_key": "s20101m",
+      "row_count": 40000,
+      "array_file": "085.npy",
+      "array_sha256": "560cd6d96e1063d0fd1763114d6ddfc2fadeae4ebf0c93c6c980f8e5a01610ce",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/085_UCR_Anomaly_DISTORTEDs20101m_10000_35774_35874.txt",
+      "member_sha256": "7B6EC96EE3F38E759D14F3914C5B0F86EFE89EB420666F436EAA902EA03CB6BE"
+    },
+    {
+      "dataset_id": "086",
+      "family_key": "sddb",
+      "row_count": 80000,
+      "array_file": "086.npy",
+      "array_sha256": "843b74c1003db242de50b70ef2c3448f9d180d865ffb7f40d9f4cba288590103",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/086_UCR_Anomaly_DISTORTEDsddb49_20000_67950_68200.txt",
+      "member_sha256": "9484A1BAEB8E61873BC1A7AF94F21FBCBA409DD3990889D7379E4ADC5CA5C034"
+    },
+    {
+      "dataset_id": "087",
+      "family_key": "sel840mecg",
+      "row_count": 60000,
+      "array_file": "087.npy",
+      "array_sha256": "d47b1907e96e7a2537e6621cab8888556926b73ea7f29792b2113fe8ec235d99",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/087_UCR_Anomaly_DISTORTEDsel840mECG1_17000_51370_51740.txt",
+      "member_sha256": "ACA05D00079158F999D02EAB7EF3D3E4D6212414111551C3FF7FF0C92EDF150F"
+    },
+    {
+      "dataset_id": "088",
+      "family_key": "sel840mecg",
+      "row_count": 57001,
+      "array_file": "088.npy",
+      "array_sha256": "982715e3626066ea3177fe406c3fa4f6b8274061468df3a035940d0f9dffefb3",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/088_UCR_Anomaly_DISTORTEDsel840mECG2_20000_49370_49740.txt",
+      "member_sha256": "B9F8A964773F1BE81DCE39BAE7E9CD6F459E28E5B5D9E01336AB4932A8F28704"
+    },
+    {
+      "dataset_id": "089",
+      "family_key": "tiltapb",
+      "row_count": 130001,
+      "array_file": "089.npy",
+      "array_sha256": "afa7c8b6d0b5ee118939976c133fb0b08617c9b30d9ddb90d44ff64629a5d44a",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/089_UCR_Anomaly_DISTORTEDtiltAPB1_100000_114283_114350.txt",
+      "member_sha256": "4F4984E84ED00E12C9A6C4AD3561CE0EEBAA864266FD9BAAB666745E1CDAE71C"
+    },
+    {
+      "dataset_id": "090",
+      "family_key": "tiltapb",
+      "row_count": 128767,
+      "array_file": "090.npy",
+      "array_sha256": "4e9119a0c97f6e69282c663782c74fb084a58305bc320298529dc75cb4b14cfb",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/090_UCR_Anomaly_DISTORTEDtiltAPB2_50000_124159_124985.txt",
+      "member_sha256": "535574833FEB1F3AF8B834EA5675DD132B146705D2A3EDD3FCA92F5710637EC7"
+    },
+    {
+      "dataset_id": "091",
+      "family_key": "tiltapb",
+      "row_count": 129489,
+      "array_file": "091.npy",
+      "array_sha256": "9d9bc724997fd193f8ea48861a60d62b096b64e0742807afdacf78be290f107d",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/091_UCR_Anomaly_DISTORTEDtiltAPB3_40000_114000_114370.txt",
+      "member_sha256": "AD3CA29DCCA3024F277815291C26C9DF2C49B07CBEF545E67DB583DED7331DA6"
+    },
+    {
+      "dataset_id": "092",
+      "family_key": "tiltapb",
+      "row_count": 128001,
+      "array_file": "092.npy",
+      "array_sha256": "cb8cbaf9fad79b32d0233cd751f4dc22913c70fd45c27900c997a5a2cee2827d",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/092_UCR_Anomaly_DISTORTEDtiltAPB4_20000_67995_67996.txt",
+      "member_sha256": "2653BA05EAF57ED53271E45B561DE5EEC3D981702AF40459AE7330879159A8AD"
+    },
+    {
+      "dataset_id": "093",
+      "family_key": "sddb",
+      "row_count": 79795,
+      "array_file": "093.npy",
+      "array_sha256": "260a360a7e800d3880ab605eb23d0c76e1d8251311e7c1b2b128e90bfb0a110b",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/093_UCR_Anomaly_NOISE1sddb40_35000_52000_52620.txt",
+      "member_sha256": "35347097C5C7AF99A25302C3AB335F51C8159F4968514DD67382C07D19269892"
+    },
+    {
+      "dataset_id": "094",
+      "family_key": "bidmc",
+      "row_count": 11000,
+      "array_file": "094.npy",
+      "array_sha256": "5d8f10af131f5826635d725794752e63e9858d69584e76b825382d088983706c",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/094_UCR_Anomaly_NOISEBIDMC1_2500_5400_5600.txt",
+      "member_sha256": "4C304300BB128007891D08CB0777CD0D863F2284AA6347E78BE3F88D028732FC"
+    },
+    {
+      "dataset_id": "095",
+      "family_key": "cimis44airtemperature",
+      "row_count": 8184,
+      "array_file": "095.npy",
+      "array_sha256": "ff32405fd76aab8a137a1ed2113a7b6b2418a38e241d62c7ef73da025d0072fd",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/095_UCR_Anomaly_NOISECIMIS44AirTemperature4_4000_5549_5597.txt",
+      "member_sha256": "01F3D58B115C0B55361D99C1456F402A379DA3D4B09D7A8996A2C011ED1B5312"
+    },
+    {
+      "dataset_id": "096",
+      "family_key": "ecg",
+      "row_count": 30000,
+      "array_file": "096.npy",
+      "array_sha256": "cf47ba5ae09aa0c640cc3595744d45f5e8fff31d67faf38d444a46e530ae0de4",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/096_UCR_Anomaly_NOISEECG4_5000_16900_17100.txt",
+      "member_sha256": "5B723C125D9E1D1C01C0ED1847E6B1E12D3CABEB934EA57DB41B93A795A1314D"
+    },
+    {
+      "dataset_id": "097",
+      "family_key": "gp711markerlfm5z",
+      "row_count": 12000,
+      "array_file": "097.npy",
+      "array_sha256": "2b9d9f77b88f6008beef4fa0f60c3bd9c422da3e01a382ca9c89a000fe85f75d",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/097_UCR_Anomaly_NOISEGP711MarkerLFM5z3_5000_5948_5993.txt",
+      "member_sha256": "2ADB060A70F5C070439392B00BD310342EC09B8F41DEF9913994C2BC1EECE163"
+    },
+    {
+      "dataset_id": "098",
+      "family_key": "internalbleeding",
+      "row_count": 7501,
+      "array_file": "098.npy",
+      "array_sha256": "d03e23c474a665a03c4e938528b4cabafb12ec9457539396ba40132ba9b6fa1a",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/098_UCR_Anomaly_NOISEInternalBleeding16_1200_4187_4199.txt",
+      "member_sha256": "06F923BA22247E602BA40B2B4E616D39B02F37BEEA50A3A94E4081C814734C75"
+    },
+    {
+      "dataset_id": "099",
+      "family_key": "internalbleeding",
+      "row_count": 7654,
+      "array_file": "099.npy",
+      "array_sha256": "558758a3c20386e3599876a57ac15432246294ea3295f858f7c8fc3a1c48367a",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/099_UCR_Anomaly_NOISEInternalBleeding6_1500_3474_3629.txt",
+      "member_sha256": "996063DD0FD67C79CCE0B49F80A61E3F67BBB50E00EC437E2FFDB23114F956EA"
+    },
+    {
+      "dataset_id": "100",
+      "family_key": "lab2cmac011215epg",
+      "row_count": 30001,
+      "array_file": "100.npy",
+      "array_sha256": "8b0b9ab52c2652efe5c1d9a07f5a046aa20a8d562c2c75fc549c3af8002d32ff",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/100_UCR_Anomaly_NOISELab2Cmac011215EPG1_5000_17210_17260.txt",
+      "member_sha256": "8A9D4725FC1B4663EB02907B31E25A664EF0C652646FC1438A7C30E04B7F0488"
+    },
+    {
+      "dataset_id": "101",
+      "family_key": "lab2cmac011215epg",
+      "row_count": 30066,
+      "array_file": "101.npy",
+      "array_sha256": "249f50411a908ddd8a2a6562c35b1cefed1c734d2a15ef3270cca674a86ca06d",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/101_UCR_Anomaly_NOISELab2Cmac011215EPG4_6000_17390_17520.txt",
+      "member_sha256": "9E5418D0004D2F41C6E1F285DEE53DD5C77765F0CE4BE8B070D29D1CBE7FA852"
+    },
+    {
+      "dataset_id": "102",
+      "family_key": "mesoplodondensirostris",
+      "row_count": 24667,
+      "array_file": "102.npy",
+      "array_sha256": "468f7e2cb16612cd2cade2010d730d243e2e36e4b3ac715f5ae8f19b66afba7a",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/102_UCR_Anomaly_NOISEMesoplodonDensirostris_10000_19280_19440.txt",
+      "member_sha256": "72C78E33F07DFA6F9C83096FCC3C4D2D7002BDB50293FC57F371841DCCB50C93"
+    },
+    {
+      "dataset_id": "103",
+      "family_key": "tkeepthirdmars",
+      "row_count": 11308,
+      "array_file": "103.npy",
+      "array_sha256": "870461ba8a0275e026d71b818afd7bcc4d3bb784c8297ce8fc9da4fac5e94b12",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/103_UCR_Anomaly_NOISETkeepThirdMARS_3500_4711_4809.txt",
+      "member_sha256": "DE1205FB960A0126F9450661E6CF91B708D5E5C24B3F6C91282D2ACC49EB8A75"
+    },
+    {
+      "dataset_id": "104",
+      "family_key": "apneaecg",
+      "row_count": 38269,
+      "array_file": "104.npy",
+      "array_sha256": "90cec202ff32e02525fbab94202374745f9e52fc83a8610f05f81db40f31e387",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/104_UCR_Anomaly_NOISEapneaecg4_6000_16000_16100.txt",
+      "member_sha256": "781D3517D0CA30F77500449C9782B59999D338E2C24A50BF32F36DBF7579CCB2"
+    },
+    {
+      "dataset_id": "105",
+      "family_key": "gait",
+      "row_count": 65000,
+      "array_file": "105.npy",
+      "array_sha256": "082d8bca4b7167b13ccb305a90095da07833d976296aa1f1a60ca635b296f109",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/105_UCR_Anomaly_NOISEgait3_24500_59900_60500.txt",
+      "member_sha256": "1423D3C337BD9E99F96562F9CDABB51CC84FBEE65A063A5A7B79214745761BDF"
+    },
+    {
+      "dataset_id": "106",
+      "family_key": "gaithunt",
+      "row_count": 64000,
+      "array_file": "106.npy",
+      "array_sha256": "891497121de3d2571c6bf8e0f17ba567161cf3405ba643c6b0c5fb4873ece5bd",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/106_UCR_Anomaly_NOISEgaitHunt2_18500_31200_31850.txt",
+      "member_sha256": "3D1006255185D645CC6D9A2F50AE8A30677C0169D3A647433D9AF4D3FD4B4974"
+    },
+    {
+      "dataset_id": "107",
+      "family_key": "insectepg",
+      "row_count": 9998,
+      "array_file": "107.npy",
+      "array_sha256": "1fd2b36229749107476f9454d3939396fab63ba0ed3bca9e1dc38e3fb2b328e4",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/107_UCR_Anomaly_NOISEinsectEPG3_5200_7000_7050.txt",
+      "member_sha256": "8D36127E154D71D9738E61432F3AE54DD571563DCDED23798AB71276AB1756F7"
+    },
+    {
+      "dataset_id": "108",
+      "family_key": "resperation",
+      "row_count": 200051,
+      "array_file": "108.npy",
+      "array_sha256": "11456b48b44c6e1cc0f5519f72cb89095b504ab731c30522c1a61736c71d8124",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/108_UCR_Anomaly_NOISEresperation2_30000_168250_168250.txt",
+      "member_sha256": "A11D3200EB13303976A709DBF5FC68FE343D2C062274861065E32FC7ECF4180C"
+    },
+    {
+      "dataset_id": "109",
+      "family_key": "1sddb",
+      "row_count": 79795,
+      "array_file": "109.npy",
+      "array_sha256": "cf278357c3be113a01ddd1554febe1c37d9c68dbd57cb7bca62d17776eb3ccf9",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/109_UCR_Anomaly_1sddb40_35000_52000_52620.txt",
+      "member_sha256": "C053D8BD208C0714FC4DDECBB69F401ED3E3AA5748F965C7B824F2A9209E723E"
+    },
+    {
+      "dataset_id": "110",
+      "family_key": "2sddb",
+      "row_count": 80001,
+      "array_file": "110.npy",
+      "array_sha256": "5037be5e1d317aa418e3ac19c992e91827a4c76b0df65afc7195aa94bf67d0d5",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/110_UCR_Anomaly_2sddb40_35000_56600_56900.txt",
+      "member_sha256": "CF909CB2238C9851CC164A23BBBFD50B09226427C61A74D022C4E210064B8F29"
+    },
+    {
+      "dataset_id": "111",
+      "family_key": "3sddb",
+      "row_count": 80000,
+      "array_file": "111.npy",
+      "array_sha256": "a69752920263a60638c804432f1774478f8f9d823fd750048d9377ec2e6a78fa",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/111_UCR_Anomaly_3sddb40_35000_46600_46900.txt",
+      "member_sha256": "413275B1B4B7B1F671ED8D7FAAE433F2F0891A7B373B1B97D5364903C75B142F"
+    },
+    {
+      "dataset_id": "112",
+      "family_key": "bidmc",
+      "row_count": 11000,
+      "array_file": "112.npy",
+      "array_sha256": "c9c762b20d57f2b03bbb477e8aa350b49156711673d6454923a0773e67748e39",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/112_UCR_Anomaly_BIDMC1_2500_5400_5600.txt",
+      "member_sha256": "E96E3B8C49967EADAE8336BA2969982C9FA6B6467324CF2B9D51E100D9E1603F"
+    },
+    {
+      "dataset_id": "113",
+      "family_key": "cimis44airtemperature",
+      "row_count": 8184,
+      "array_file": "113.npy",
+      "array_sha256": "8021973890fef06356c0bd959a64f1b2fa2d2e6401ba2662a4132fc779190f16",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/113_UCR_Anomaly_CIMIS44AirTemperature1_4000_5391_5392.txt",
+      "member_sha256": "E1DD9E26E6E7156AA3616AA44123061064E9EF3A8EA32B05E7D328FCE1CAA0ED"
+    },
+    {
+      "dataset_id": "114",
+      "family_key": "cimis44airtemperature",
+      "row_count": 8184,
+      "array_file": "114.npy",
+      "array_sha256": "9d166d95c651401cb3b2f0b480fe166a265903a8e82ef2651e4c298160046c0b",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/114_UCR_Anomaly_CIMIS44AirTemperature2_4000_5703_5727.txt",
+      "member_sha256": "5918C56C99EBC6A7F13B99A7AF2C5257F1B72E306738C1B91A98838612A11E84"
+    },
+    {
+      "dataset_id": "115",
+      "family_key": "cimis44airtemperature",
+      "row_count": 8184,
+      "array_file": "115.npy",
+      "array_sha256": "9c9d76d99496af85b2b924167634a9582c068dc199dd39e56652aab8c7964db7",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/115_UCR_Anomaly_CIMIS44AirTemperature3_4000_6520_6544.txt",
+      "member_sha256": "2DC0F651CB8ECFE269153B096F56F1861040F4C4B9C8A2B81A7B91090EEDFB1B"
+    },
+    {
+      "dataset_id": "116",
+      "family_key": "cimis44airtemperature",
+      "row_count": 8184,
+      "array_file": "116.npy",
+      "array_sha256": "56314ebf8c666e1a37321bb0dfd3bf32f2c35bbec3853f8b8f94df8e6b3c69db",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/116_UCR_Anomaly_CIMIS44AirTemperature4_4000_5549_5597.txt",
+      "member_sha256": "FFA32034A6D7C84B96F9C140D0FA78AB467802B3C1595FA60C654B685B41F3C3"
+    },
+    {
+      "dataset_id": "117",
+      "family_key": "cimis44airtemperature",
+      "row_count": 8184,
+      "array_file": "117.npy",
+      "array_sha256": "7afee69362379c27900e2daba75d26fe6183f348c53426602921a3bdbed1c539",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/117_UCR_Anomaly_CIMIS44AirTemperature5_4000_4852_4900.txt",
+      "member_sha256": "0A093996E7AAEDDEBDE1E84C33282FE27473BF702B403A83615CBF7A178B1A45"
+    },
+    {
+      "dataset_id": "118",
+      "family_key": "cimis44airtemperature",
+      "row_count": 8184,
+      "array_file": "118.npy",
+      "array_sha256": "cb1878acc7846b3f3325d52757ba717a5435419c365470e35b4aef12011528da",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/118_UCR_Anomaly_CIMIS44AirTemperature6_4000_6006_6054.txt",
+      "member_sha256": "8915825B8B9AA0B58D745AA6846CAEADE733B6681B72B8C165735A744152E8CF"
+    },
+    {
+      "dataset_id": "119",
+      "family_key": "ecg",
+      "row_count": 30000,
+      "array_file": "119.npy",
+      "array_sha256": "700b3b58f32dcd1258b2b37568aa5221f6cda92de3e8db811f853acaecb359aa",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/119_UCR_Anomaly_ECG1_10000_11800_12100.txt",
+      "member_sha256": "F490AB448E710FE3E3796CA87AE00D41EB0CCC8FD3E01782C7D68CB2F09F9192"
+    },
+    {
+      "dataset_id": "120",
+      "family_key": "ecg",
+      "row_count": 30000,
+      "array_file": "120.npy",
+      "array_sha256": "261eeba35289d460a2087fd0a1769d0be0c67b33492f4398ac9b047f767ce581",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/120_UCR_Anomaly_ECG2_15000_16000_16100.txt",
+      "member_sha256": "C58E4E6BE1C53F3072EC1811BAEB4C3B5B21D110B99F04C5077713B2B48799C9"
+    },
+    {
+      "dataset_id": "121",
+      "family_key": "ecg",
+      "row_count": 30000,
+      "array_file": "121.npy",
+      "array_sha256": "711afb6f71162c74f7b8dc568c98bf8c3ca5aec78ef967404ba51ccba251253e",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/121_UCR_Anomaly_ECG3_15000_16000_16100.txt",
+      "member_sha256": "130C63881719993C18D634F8401464CF3DC636406D62A44104E0A36683C02EC4"
+    },
+    {
+      "dataset_id": "122",
+      "family_key": "ecg",
+      "row_count": 30000,
+      "array_file": "122.npy",
+      "array_sha256": "e119359aecc5f29291480032a822f4b0f90dd1497913ad9db9b5c8083b6a8c38",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/122_UCR_Anomaly_ECG3_8000_17000_17100.txt",
+      "member_sha256": "254DD4D8EA4F3837449046D3CC5E7DA58456225C5EC981727770820985A593FD"
+    },
+    {
+      "dataset_id": "123",
+      "family_key": "ecg",
+      "row_count": 200000,
+      "array_file": "123.npy",
+      "array_sha256": "447466f99ccf3c9acc60dd571e7c9410e983b26557f684425013d40ece86fb73",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/123_UCR_Anomaly_ECG4_5000_16800_17100.txt",
+      "member_sha256": "05DDD244923B2F59A0546809243C9A1D24A163000873C7C52679BD36191DDFFF"
+    },
+    {
+      "dataset_id": "124",
+      "family_key": "ecg",
+      "row_count": 30000,
+      "array_file": "124.npy",
+      "array_sha256": "7637991a7e57f34397bb2f351419d5f393f403dbac1f85d1d5ebeb68987d7c49",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/124_UCR_Anomaly_ECG4_5000_16900_17100.txt",
+      "member_sha256": "0E80E85E94CB39BC27A689E4DB6F353935398BB4233BAA2F945B88BA8322D03E"
+    },
+    {
+      "dataset_id": "125",
+      "family_key": "ecg",
+      "row_count": 30000,
+      "array_file": "125.npy",
+      "array_sha256": "6734bbdc1bf7d840c530773e73b8b5214e4213332be756f140af898662eeb45b",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/125_UCR_Anomaly_ECG4_5000_17000_17100.txt",
+      "member_sha256": "60C49DF33044840B033E3CFD48B14C6B5A6A2D764450417D52AA49B175EF48BE"
+    },
+    {
+      "dataset_id": "126",
+      "family_key": "ecg",
+      "row_count": 30000,
+      "array_file": "126.npy",
+      "array_sha256": "a13ea1b4a9974185819b48ec5227de4080622a4c1372bf75199d40240e48ec73",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/126_UCR_Anomaly_ECG4_8000_17000_17100.txt",
+      "member_sha256": "C7B33E4A3886A0720AEBE4D80DA83E3A862F586B2E051F76B832EDDBD2BFE901"
+    },
+    {
+      "dataset_id": "127",
+      "family_key": "gp711markerlfm5z",
+      "row_count": 12000,
+      "array_file": "127.npy",
+      "array_sha256": "2305280e5e117a56bcb710aeafd16a35d06728b387ce309bf2508bc6b4422d3f",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/127_UCR_Anomaly_GP711MarkerLFM5z1_5000_6168_6212.txt",
+      "member_sha256": "B72821C19070D8905EA300DCBBD972B126C1E5CCB67C0FD572AEBBEBD74FCFAA"
+    },
+    {
+      "dataset_id": "128",
+      "family_key": "gp711markerlfm5z",
+      "row_count": 12000,
+      "array_file": "128.npy",
+      "array_sha256": "81b4c1bb9b7fb50326862aa32ca3f54367f04ddb7d8d1a24f1b650088807202d",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/128_UCR_Anomaly_GP711MarkerLFM5z2_5000_7175_7388.txt",
+      "member_sha256": "F4E4BC3A6FFC14F7F7F7B0760F7735908C47CABEABFECF384C801F28C4E33E68"
+    },
+    {
+      "dataset_id": "129",
+      "family_key": "gp711markerlfm5z",
+      "row_count": 12000,
+      "array_file": "129.npy",
+      "array_sha256": "85193eaf5248ff0809a50d6ee889b46ab83d5c055c650a8631fdaa629fc8685a",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/129_UCR_Anomaly_GP711MarkerLFM5z3_5000_5948_5993.txt",
+      "member_sha256": "A9ECE40CAB425B928F15EC31DD970DC8D2DB99AF2F96BB1AFA9D3DCC914EAB12"
+    },
+    {
+      "dataset_id": "130",
+      "family_key": "gp711markerlfm5z",
+      "row_count": 12000,
+      "array_file": "130.npy",
+      "array_sha256": "62cab4916ed59f721ed4ae1161ca5ff1133e57b4a9b6ec18eda3e11a521efcba",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/130_UCR_Anomaly_GP711MarkerLFM5z4_4000_6527_6645.txt",
+      "member_sha256": "399B78A896B64181064AA563ED9583A16A4428FE0A03888AEF05C7FB71805176"
+    },
+    {
+      "dataset_id": "131",
+      "family_key": "gp711markerlfm5z",
+      "row_count": 12000,
+      "array_file": "131.npy",
+      "array_sha256": "32949ce119ed6ad70a57cc15c658bab958784e7adf1808ed967fe0ac3d8ba2fa",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/131_UCR_Anomaly_GP711MarkerLFM5z5_5000_8612_8716.txt",
+      "member_sha256": "0B9753F44049EE7073ACF486724E39E5947377D6B1D01556E8050E40904D1BF5"
+    },
+    {
+      "dataset_id": "132",
+      "family_key": "internalbleeding",
+      "row_count": 7501,
+      "array_file": "132.npy",
+      "array_sha256": "ef404631f17d624f819446ee01b31864808dbb0799bff4d86726f11c54978790",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/132_UCR_Anomaly_InternalBleeding10_3200_4526_4556.txt",
+      "member_sha256": "4DDA2D54F5F38336AB098E4C9D98B8F3614931E5BA3AA99A6EE2B0E7EC873433"
+    },
+    {
+      "dataset_id": "133",
+      "family_key": "internalbleeding",
+      "row_count": 7501,
+      "array_file": "133.npy",
+      "array_sha256": "671fe93ba79291d9dffca3031cfeb416696a7766c39542363ab24f8e39862977",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/133_UCR_Anomaly_InternalBleeding14_2800_5607_5634.txt",
+      "member_sha256": "6100CF79A775F092DBE718C27A07A1DF1BDF0A5F228721916C1B10FE64242EBA"
+    },
+    {
+      "dataset_id": "134",
+      "family_key": "internalbleeding",
+      "row_count": 7601,
+      "array_file": "134.npy",
+      "array_sha256": "fa2ffa4bfa1d6ed84a1d99e4bd3f35775631ab6c3fa48e6e7c5666944a8761f7",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/134_UCR_Anomaly_InternalBleeding15_1700_5684_5854.txt",
+      "member_sha256": "07614E59288D807708B315AA7AE063A9D7E377676367198F207C71045EA51908"
+    },
+    {
+      "dataset_id": "135",
+      "family_key": "internalbleeding",
+      "row_count": 7501,
+      "array_file": "135.npy",
+      "array_sha256": "eb54e5382bcbdcfabecb88e77121aed2c439b380ccd8fcec5a5e3cc9c7f8d484",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/135_UCR_Anomaly_InternalBleeding16_1200_4187_4199.txt",
+      "member_sha256": "A965019D130B1B8F2E49974F3ED7F20675BF7014B4952240ED4C8E338A2FA86F"
+    },
+    {
+      "dataset_id": "136",
+      "family_key": "internalbleeding",
+      "row_count": 7500,
+      "array_file": "136.npy",
+      "array_sha256": "f1bb10758d6be8e559cd2aa846346b76e89a02b9576ef6c1c71d05347dee79ff",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/136_UCR_Anomaly_InternalBleeding17_1600_3198_3309.txt",
+      "member_sha256": "B0AF30D69DE8C369ED7DD1DA3D57959901251C5F39E4ABF6860D7834A5FC41DD"
+    },
+    {
+      "dataset_id": "137",
+      "family_key": "internalbleeding",
+      "row_count": 7500,
+      "array_file": "137.npy",
+      "array_sha256": "a038fc15fc511775f6fc8dfed0d0fa6fbf36c37ca59b374d67176f0a81ddc1f5",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/137_UCR_Anomaly_InternalBleeding18_2300_4485_4587.txt",
+      "member_sha256": "CBE2733F80167B37AFBE610B87C241098CA1EB0C5EFD774D83250A1CBC5C5EE7"
+    },
+    {
+      "dataset_id": "138",
+      "family_key": "internalbleeding",
+      "row_count": 7500,
+      "array_file": "138.npy",
+      "array_sha256": "5f50a28db63f86548c8c7099587655ba9ae8ca741d8178a9ee73369d0bf504e8",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/138_UCR_Anomaly_InternalBleeding19_3000_4187_4197.txt",
+      "member_sha256": "FD9A98968E4AF7AC2749AC77B135C2D1EBD17038DF68A0E6D033A37A95B59E94"
+    },
+    {
+      "dataset_id": "139",
+      "family_key": "internalbleeding",
+      "row_count": 7500,
+      "array_file": "139.npy",
+      "array_sha256": "de10670533096edcb02e11b487fce855c362d6469e9bac234cee7fc9b6315939",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/139_UCR_Anomaly_InternalBleeding20_2700_5759_5919.txt",
+      "member_sha256": "A77DF211BB3A73433978E29C9D40B692D7C172C9EADE994A8BEDF8EBBDBA0B88"
+    },
+    {
+      "dataset_id": "140",
+      "family_key": "internalbleeding",
+      "row_count": 7321,
+      "array_file": "140.npy",
+      "array_sha256": "c4bc89c2ae8677d8c0740c171ca56a02ae30e8082d074fcb38ef20e9d7bfd13a",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/140_UCR_Anomaly_InternalBleeding4_1000_4675_5033.txt",
+      "member_sha256": "2488ACEB2CC7F00A4A634039306267D39C8B7BF502E814B644A851B6599C9A68"
+    },
+    {
+      "dataset_id": "141",
+      "family_key": "internalbleeding",
+      "row_count": 7415,
+      "array_file": "141.npy",
+      "array_sha256": "1e2ec31c2314ec1ab2a2e98f190894238fcdb09bb10ab8e0f08eb36283ee594c",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/141_UCR_Anomaly_InternalBleeding5_4000_6200_6370.txt",
+      "member_sha256": "341033B8542076E650E1D37F7E1D3A96E030BE340195FACAF7EECA97E683B0BC"
+    },
+    {
+      "dataset_id": "142",
+      "family_key": "internalbleeding",
+      "row_count": 7654,
+      "array_file": "142.npy",
+      "array_sha256": "1614698b9a236294bdf90a080ca2588e960c987ac135db3522463ef7947feb6b",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/142_UCR_Anomaly_InternalBleeding6_1500_3474_3629.txt",
+      "member_sha256": "06FBF75C467AD5F56AC35908A1157AF79945DCAC194CA28EFCF15FB7A9B33236"
+    },
+    {
+      "dataset_id": "143",
+      "family_key": "internalbleeding",
+      "row_count": 7501,
+      "array_file": "143.npy",
+      "array_sha256": "77cbd892695ff0c2580227da09bfc5e168092e43f17b8f78d304dc922eba288b",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/143_UCR_Anomaly_InternalBleeding8_2500_5865_5974.txt",
+      "member_sha256": "0C4B50769EB2AF3D63435EDF2B20D6103D6B5180688460B2AB9F5F7FF1659F4B"
+    },
+    {
+      "dataset_id": "144",
+      "family_key": "internalbleeding",
+      "row_count": 7501,
+      "array_file": "144.npy",
+      "array_sha256": "de5fe0852fe9f35172d139181cec4d175cca17f150366f275373185b7473447e",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/144_UCR_Anomaly_InternalBleeding9_4200_6599_6681.txt",
+      "member_sha256": "DA7B1FE0AC60C63FD665C81633EEBEEAC244FEE8E82B3C48C90C0274CED84037"
+    },
+    {
+      "dataset_id": "145",
+      "family_key": "lab2cmac011215epg",
+      "row_count": 30001,
+      "array_file": "145.npy",
+      "array_sha256": "7e4dd8c951a568c6cdb98570040b675814f34a37d88babefd18860024ae886b4",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/145_UCR_Anomaly_Lab2Cmac011215EPG1_5000_17210_17260.txt",
+      "member_sha256": "95E1A6F220F3C015CE8001E992EB3410A46D7207E58111F9F5DB03FA507225B0"
+    },
+    {
+      "dataset_id": "146",
+      "family_key": "lab2cmac011215epg",
+      "row_count": 29950,
+      "array_file": "146.npy",
+      "array_sha256": "5452c40ea5e5977d5a09edb7c29b18c031c21a2ee07eb48378fb4f7a231d0acb",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/146_UCR_Anomaly_Lab2Cmac011215EPG2_5000_27862_27932.txt",
+      "member_sha256": "2D82BA93AF17E87E9E77D639AF4A3A91075C080C1AE7030813820B50B874C55F"
+    },
+    {
+      "dataset_id": "147",
+      "family_key": "lab2cmac011215epg",
+      "row_count": 29950,
+      "array_file": "147.npy",
+      "array_sha256": "e91cacb55c2aff63a8559441730a1fd956918e5d2e757e47f04a4b16047cce5b",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/147_UCR_Anomaly_Lab2Cmac011215EPG3_5000_16390_16420.txt",
+      "member_sha256": "B5133350A99CA74B8C2BA4245F621F8DA4139A1D7CC3D9FC0CD0A9EFBBB7784E"
+    },
+    {
+      "dataset_id": "148",
+      "family_key": "lab2cmac011215epg",
+      "row_count": 30066,
+      "array_file": "148.npy",
+      "array_sha256": "a3455f888f8bc625f580eabecce6d1a4a6be115d6c5f14ada421c5fe6c8e23b7",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/148_UCR_Anomaly_Lab2Cmac011215EPG4_6000_17390_17520.txt",
+      "member_sha256": "EA4CB0FDC4697FDC8E455AB8B8669C8BB17A6B3FE0971C8AED9BF91A7EF55E3E"
+    },
+    {
+      "dataset_id": "149",
+      "family_key": "lab2cmac011215epg",
+      "row_count": 29826,
+      "array_file": "149.npy",
+      "array_sha256": "7c2b501f794cb39b21aa40ef29c726446ef440511e3a5f021b8ee8809791e8fc",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/149_UCR_Anomaly_Lab2Cmac011215EPG5_7000_17390_17520.txt",
+      "member_sha256": "9B5415D396B1534D8B080282580A10553750954EF8AF490C77B4B86468047ED9"
+    },
+    {
+      "dataset_id": "150",
+      "family_key": "lab2cmac011215epg",
+      "row_count": 29859,
+      "array_file": "150.npy",
+      "array_sha256": "9c1761df8a4bdcca998ac782aeab5120d228336a477a7131353adef1f3819fc0",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/150_UCR_Anomaly_Lab2Cmac011215EPG6_7000_12190_12420.txt",
+      "member_sha256": "AAF79611584F869AD7350F13B28AE9A9F837937C4F98E8BFB3314C33E4C171C5"
+    },
+    {
+      "dataset_id": "151",
+      "family_key": "mesoplodondensirostris",
+      "row_count": 24667,
+      "array_file": "151.npy",
+      "array_sha256": "311ad7e7426e5cd7aae599a0150fe85222a54cdda55fe2181e4768df71df9233",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/151_UCR_Anomaly_MesoplodonDensirostris_10000_19280_19440.txt",
+      "member_sha256": "B01D433CB5A4DF9720C34BBE592576A7EA0B4442931DAD8B92B0F2AE544A8982"
+    },
+    {
+      "dataset_id": "152",
+      "family_key": "powerdemand",
+      "row_count": 29931,
+      "array_file": "152.npy",
+      "array_sha256": "ffa427ff0afef357abb87fe88a027060b82df2407f6883ace1c67c0504de22d9",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/152_UCR_Anomaly_PowerDemand1_9000_18485_18821.txt",
+      "member_sha256": "8BCCB2DD96D7DE11D812C1FEF381BE4C59803ADCE17AD74109EFE8984637970B"
+    },
+    {
+      "dataset_id": "153",
+      "family_key": "powerdemand",
+      "row_count": 29931,
+      "array_file": "153.npy",
+      "array_sha256": "d1cb26884a55061298674f6bf2ceccdb7bc17956ef8c125afb216a1a7185dd9d",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/153_UCR_Anomaly_PowerDemand2_14000_23357_23717.txt",
+      "member_sha256": "AE014D0182B94A7426FAE1CBB0581665756F25ADCC59442F30C38A9EE3815318"
+    },
+    {
+      "dataset_id": "154",
+      "family_key": "powerdemand",
+      "row_count": 29931,
+      "array_file": "154.npy",
+      "array_sha256": "034edc315f4daacf86a75693d8413295256bdcca3f10a0fb84eaf9da7173dab0",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/154_UCR_Anomaly_PowerDemand3_16000_23405_23477.txt",
+      "member_sha256": "399E9A69791DA05BF25897EAB188C89515038E71910245D5F93553FAD37A1DCF"
+    },
+    {
+      "dataset_id": "155",
+      "family_key": "powerdemand",
+      "row_count": 29931,
+      "array_file": "155.npy",
+      "array_sha256": "b1e9b2a5dd7301db1d91dedde39a15916bf5049f96ace58dca9d86715ff260e7",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/155_UCR_Anomaly_PowerDemand4_18000_24005_24077.txt",
+      "member_sha256": "C911278ECBEE9423785ABF89740BDCCE4FF4718A529B050973AE56F91C72C7FF"
+    },
+    {
+      "dataset_id": "156",
+      "family_key": "tkeepfifthmars",
+      "row_count": 11334,
+      "array_file": "156.npy",
+      "array_sha256": "7c9bd7b537a96f080a5c18bf3b89145e83ef6ea7791b40d73daa69ddacb1b229",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/156_UCR_Anomaly_TkeepFifthMARS_3500_5988_6085.txt",
+      "member_sha256": "A036AC6F9B3CF66D2956D281B1CEE552D7E79F4CF25B86AB1836BD81353E9AD3"
+    },
+    {
+      "dataset_id": "157",
+      "family_key": "tkeepfirstmars",
+      "row_count": 11406,
+      "array_file": "157.npy",
+      "array_sha256": "922cab339e5ab77d18bb184d5fbd48e48f79f8e2fd6c4fb6a4907dc0ebd6137b",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/157_UCR_Anomaly_TkeepFirstMARS_3500_5365_5380.txt",
+      "member_sha256": "72ED2AE63FA2E33FEAC4FA5B150799CD258F1026BB731D8045564ABDDFD818F5"
+    },
+    {
+      "dataset_id": "158",
+      "family_key": "tkeepforthmars",
+      "row_count": 11308,
+      "array_file": "158.npy",
+      "array_sha256": "b6364f09de410a26e6b2769eb190b6d46535713486841596383043f92fbd5b7f",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/158_UCR_Anomaly_TkeepForthMARS_3500_5988_6085.txt",
+      "member_sha256": "4BEA14D1A9CF9507E0C0D886A42023A3BF0EFAAB6375625AD54BCD879E99E4FE"
+    },
+    {
+      "dataset_id": "159",
+      "family_key": "tkeepsecondmars",
+      "row_count": 11388,
+      "array_file": "159.npy",
+      "array_sha256": "54f30f2994f846b38faf0fc01bcc47ff7436f07e95eff14a4db487c8e6144051",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/159_UCR_Anomaly_TkeepSecondMARS_3500_9330_9340.txt",
+      "member_sha256": "1BB0C773CFEB00C58157D95B711BDBC8C362ADD3D5F591356EB24F6AE5511F22"
+    },
+    {
+      "dataset_id": "160",
+      "family_key": "tkeepthirdmars",
+      "row_count": 11308,
+      "array_file": "160.npy",
+      "array_sha256": "3520cf535a35db9e3538ce5af02f94808f4e4d8c1b51f2be5270f10551ff7993",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/160_UCR_Anomaly_TkeepThirdMARS_3500_4711_4809.txt",
+      "member_sha256": "8494BF541E25BF75EB251BB0F0F5A19F830E583F1E292417D2A489234AD162B8"
+    },
+    {
+      "dataset_id": "161",
+      "family_key": "walkingaceleration",
+      "row_count": 6684,
+      "array_file": "161.npy",
+      "array_sha256": "64a45ece18b99df60fa2817efa01b5d4702adad32bf3869ca7223efb159c3710",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/161_UCR_Anomaly_WalkingAceleration1_1500_2764_2995.txt",
+      "member_sha256": "14D0FAF99BC7E415408FD961A30B7F50A66546E78D4CB4C823DAE1026E59E126"
+    },
+    {
+      "dataset_id": "162",
+      "family_key": "walkingaceleration",
+      "row_count": 6684,
+      "array_file": "162.npy",
+      "array_sha256": "f7af01a33789cea6979f1315b0dba3931f0b92d23e3da829ca9c7a540fb6e4c2",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/162_UCR_Anomaly_WalkingAceleration5_2700_5920_5979.txt",
+      "member_sha256": "0B87854C390183094D8DD547E9517647BB285939066304AD3D133F8234CBE2CB"
+    },
+    {
+      "dataset_id": "163",
+      "family_key": "apneaecg",
+      "row_count": 38501,
+      "array_file": "163.npy",
+      "array_sha256": "23847c1f3f9e5b205c81d44f7f2bf883f617b3dfec7bcf176a5d10d4e0a2a094",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/163_UCR_Anomaly_apneaecg2_10000_20950_21100.txt",
+      "member_sha256": "FD8BD6D5C60BAC06A9A77906F4C5DF27D8B12EB317410FC801BE729A69E39CBB"
+    },
+    {
+      "dataset_id": "164",
+      "family_key": "apneaecg",
+      "row_count": 38379,
+      "array_file": "164.npy",
+      "array_sha256": "1cec19bd61d286ea7f40d6c62e25a16808a48762c04a1ea2bf16ec7676a8942a",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/164_UCR_Anomaly_apneaecg3_5000_11111_11211.txt",
+      "member_sha256": "449683935F60AAC15CB478C6FE79D07E4A53A1C76D5D9A75B36789631C143FDA"
+    },
+    {
+      "dataset_id": "165",
+      "family_key": "apneaecg",
+      "row_count": 38269,
+      "array_file": "165.npy",
+      "array_sha256": "d19effefd55e8de7f0edcb00b64bd6b42be8921392da9585998add315b429bed",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/165_UCR_Anomaly_apneaecg4_6000_16000_16100.txt",
+      "member_sha256": "DDAB11007A37789F963175F04979016F8D97805BAAD4D873E6DAC4A30FFAFF1E"
+    },
+    {
+      "dataset_id": "166",
+      "family_key": "apneaecg",
+      "row_count": 38501,
+      "array_file": "166.npy",
+      "array_sha256": "854e276fa99a40fe66d488ed7aa70d2ec9c7538d8d0ead894ded65ec15a87461",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/166_UCR_Anomaly_apneaecg_10000_12240_12308.txt",
+      "member_sha256": "6A340DF79C2832EB0653D619D34481931EF00B241A34A786A2F54DC5D1F49D14"
+    },
+    {
+      "dataset_id": "167",
+      "family_key": "gait",
+      "row_count": 65000,
+      "array_file": "167.npy",
+      "array_sha256": "af50c21eacf0fa0461278781ddc3d1b13670f7904b2d16b5f287d4943ca36245",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/167_UCR_Anomaly_gait1_20000_38500_38800.txt",
+      "member_sha256": "8A98DF950E36E1179BF58A81FD1DFCC40451EFCF867578EB5F1D245E50DCCAF1"
+    },
+    {
+      "dataset_id": "168",
+      "family_key": "gait",
+      "row_count": 65000,
+      "array_file": "168.npy",
+      "array_sha256": "ac1ee7cde9704b22dfd47545c2d4fc9752c2d35f296ebef5990d847495cc2e04",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/168_UCR_Anomaly_gait2_22000_46500_46800.txt",
+      "member_sha256": "90EEE85D1C4B5FC69836E27D3DFF722BB28FC9480A81E3ADF731F67705C60FB9"
+    },
+    {
+      "dataset_id": "169",
+      "family_key": "gait",
+      "row_count": 65000,
+      "array_file": "169.npy",
+      "array_sha256": "f344e4a6dd03d79536b9b99eda8978b5251530b646372810a050f1b46044b914",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/169_UCR_Anomaly_gait3_24500_59900_60500.txt",
+      "member_sha256": "78ADF72127A7C90E99D1F3362BF3F01065F511862A8F152E527FC616B8667CF6"
+    },
+    {
+      "dataset_id": "170",
+      "family_key": "gaithunt",
+      "row_count": 64000,
+      "array_file": "170.npy",
+      "array_sha256": "f7725ed8cce77e8abc9b3e72ef9ebbd6872b13a4f45b17466ad15bf7023d0d0e",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/170_UCR_Anomaly_gaitHunt1_18500_33070_33180.txt",
+      "member_sha256": "62C989E8C8A536656C3654178D48C159FEE658FE756BD0CCC3BA33314BAD6186"
+    },
+    {
+      "dataset_id": "171",
+      "family_key": "gaithunt",
+      "row_count": 64000,
+      "array_file": "171.npy",
+      "array_sha256": "dace465a879e1a55dac90aa92ead7f1c75e2aac62c803d29e6b9916fb4a859a5",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/171_UCR_Anomaly_gaitHunt2_18500_31200_31850.txt",
+      "member_sha256": "604CAA2283EF1A307060287017611D94A909021D88F676913A45CEEAB24F1036"
+    },
+    {
+      "dataset_id": "172",
+      "family_key": "gaithunt",
+      "row_count": 64000,
+      "array_file": "172.npy",
+      "array_sha256": "ee423a36a385856e7688d6c38ef9c2f1e82a05084c06b3a8365f9e612b0babf5",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/172_UCR_Anomaly_gaitHunt3_23400_38400_39200.txt",
+      "member_sha256": "08BD8D96770138D3E2016983A02E120F319AB5445B38CEFA3679AB992A3AAC62"
+    },
+    {
+      "dataset_id": "173",
+      "family_key": "insectepg",
+      "row_count": 10001,
+      "array_file": "173.npy",
+      "array_sha256": "5f1975225370e62fcfa0a6c73f4e4b1cac23baeb0676c1d8be02aa45d40db8cc",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/173_UCR_Anomaly_insectEPG1_3000_7000_7030.txt",
+      "member_sha256": "B0C2FC8BE3187B53C45C3A1B77317E8435100651ECD82EA17FF61960363D9037"
+    },
+    {
+      "dataset_id": "174",
+      "family_key": "insectepg",
+      "row_count": 9998,
+      "array_file": "174.npy",
+      "array_sha256": "958ce2465d54d3c435191a7763605982327876df6b99794b52098cfe9b6cd7cd",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/174_UCR_Anomaly_insectEPG2_3700_8000_8025.txt",
+      "member_sha256": "8912A014412D3B952D557484D674152D8B402B5611B198BC606C82CE888E47B4"
+    },
+    {
+      "dataset_id": "175",
+      "family_key": "insectepg",
+      "row_count": 9998,
+      "array_file": "175.npy",
+      "array_sha256": "40671806f95502f75ab60f8009dc580d3d0a723411d5a60395bc6ee82038ec92",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/175_UCR_Anomaly_insectEPG3_5200_7000_7050.txt",
+      "member_sha256": "F8DB1683D72B01E444910415D2303824283A7E6D13492623319494328E00C609"
+    },
+    {
+      "dataset_id": "176",
+      "family_key": "insectepg",
+      "row_count": 9998,
+      "array_file": "176.npy",
+      "array_sha256": "524bcb38aa7f5d388683e651166cc114853ab36682237e39b3142d4d4764a2e8",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/176_UCR_Anomaly_insectEPG4_1300_6508_6558.txt",
+      "member_sha256": "0A4ACA4863C4E2EDCD8E9BF25B4DC7CE2AB1C8389AD1CB598D356860865A49B2"
+    },
+    {
+      "dataset_id": "177",
+      "family_key": "insectepg",
+      "row_count": 10028,
+      "array_file": "177.npy",
+      "array_sha256": "fc4fc95d97da3e6dc67c2741879348d3f23f57fbe182f974aa6c0f90686d81e8",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/177_UCR_Anomaly_insectEPG5_3200_8500_8501.txt",
+      "member_sha256": "E5C27F26E117599DE841911BE219ABAFF01B301FC94F1E0FC7D4D098D0713445"
+    },
+    {
+      "dataset_id": "178",
+      "family_key": "ltstdbs30791ai",
+      "row_count": 56123,
+      "array_file": "178.npy",
+      "array_sha256": "6d7ee81d44db3848bdc8d52274b93e573d54c4f59ab7f2c3d2fc8f1a1e7542a9",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/178_UCR_Anomaly_ltstdbs30791AI_17555_52600_52800.txt",
+      "member_sha256": "4740FC8297A41EC63274231C091C5BC7D8AD04B0D47EF11B633614D8DC339636"
+    },
+    {
+      "dataset_id": "179",
+      "family_key": "ltstdbs30791as",
+      "row_count": 55000,
+      "array_file": "179.npy",
+      "array_sha256": "2ade29b14f01e2f9a28644d5fe59889dd94edd6b679ff537a6885ad6d436ff37",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/179_UCR_Anomaly_ltstdbs30791AS_23000_52600_52800.txt",
+      "member_sha256": "02141F8574CAD4CBDB68CC197226FE7C21FCDED59217C2CE4D49804B79E89F9D"
+    },
+    {
+      "dataset_id": "180",
+      "family_key": "ltstdbs30791es",
+      "row_count": 55000,
+      "array_file": "180.npy",
+      "array_sha256": "e1f5455c3a96c788f96e2bd0e8b8cc681c47383030b98d2b5c79895c97db6129",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/180_UCR_Anomaly_ltstdbs30791ES_20000_52600_52800.txt",
+      "member_sha256": "28309D71CDCE7FD67A1FD135CFA2B4A42D6C3F5E1D3BEBE15FF759F2C305EB2A"
+    },
+    {
+      "dataset_id": "181",
+      "family_key": "park3m",
+      "row_count": 90000,
+      "array_file": "181.npy",
+      "array_sha256": "487fe51fa3d6ce500d7409c7a3e7c3ed75b246d0a15a86a68b47ba685f38d8f2",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/181_UCR_Anomaly_park3m_60000_72150_72495.txt",
+      "member_sha256": "79CCB0D029697DC6F0BF5546058903FD8CD036050B72EBB074E1DC023CD968EC"
+    },
+    {
+      "dataset_id": "182",
+      "family_key": "qtdbsel1005v",
+      "row_count": 36001,
+      "array_file": "182.npy",
+      "array_sha256": "96a913f38b30161a635164f156c6344f8c2778496ca9d9c72404ddaba7c02b60",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/182_UCR_Anomaly_qtdbSel1005V_4000_12400_12800.txt",
+      "member_sha256": "00C9A9DE8701A2AD776478DDE7F1DABD3D80342DF1864CC29314218EB32CAEC4"
+    },
+    {
+      "dataset_id": "183",
+      "family_key": "qtdbsel100mlii",
+      "row_count": 30000,
+      "array_file": "183.npy",
+      "array_sha256": "9bbd401cc1bb7c1592f8b97be978b5ce7fdbcb187228bf05ec36e4c8a1d4ada5",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/183_UCR_Anomaly_qtdbSel100MLII_4000_13400_13800.txt",
+      "member_sha256": "3433BE1E988158EBC3FBC6AEB7032CAA128477F1FD78436730012FFF29D9DC96"
+    },
+    {
+      "dataset_id": "184",
+      "family_key": "resperation",
+      "row_count": 195000,
+      "array_file": "184.npy",
+      "array_sha256": "872cfe245f6eb0bd486631aca2916d085cf6edf207634ecfa07cea50a7b34bed",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/184_UCR_Anomaly_resperation10_48000_130700_131880.txt",
+      "member_sha256": "ECE7BCB8A2E5DF09FE165EE49AA678C8329F0B313E3454D05F888A2E29C515E2"
+    },
+    {
+      "dataset_id": "185",
+      "family_key": "resperation",
+      "row_count": 195000,
+      "array_file": "185.npy",
+      "array_sha256": "c47e95addea26c629122c3a102d26da69e08f49dfe581dfa9eacac0ab246ffc3",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/185_UCR_Anomaly_resperation11_58000_110800_110801.txt",
+      "member_sha256": "9B668372616C84DBB1A635353E3A9D618CD9A5FA2D47418BB58359DD407B98BC"
+    },
+    {
+      "dataset_id": "186",
+      "family_key": "resperation",
+      "row_count": 200000,
+      "array_file": "186.npy",
+      "array_sha256": "210aa9370f2c2af17d32a8978702c7186fae57f3bc8d7d0fc04562d59406d317",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/186_UCR_Anomaly_resperation1_100000_110260_110412.txt",
+      "member_sha256": "19735B016DD31F02EBB6F3886354E3B2AB0C2FBBB0BA9C3DBE31E87ABDE36172"
+    },
+    {
+      "dataset_id": "187",
+      "family_key": "resperation",
+      "row_count": 200051,
+      "array_file": "187.npy",
+      "array_sha256": "1ec8873eb08bd32ee1aaeb7cc3602d66b87322fe9ddcf66d05b5ba63bd32fd38",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/187_UCR_Anomaly_resperation2_30000_168250_168250.txt",
+      "member_sha256": "93B972C66F7C1B1C2ABAE020FADE496D675FB776AE4169E5A5EED8E43CCE41B1"
+    },
+    {
+      "dataset_id": "188",
+      "family_key": "resperation",
+      "row_count": 190050,
+      "array_file": "188.npy",
+      "array_sha256": "8ba60f07927a624ab2ec429dcf984f309f4ce0fd43e331e2c6e772f236a6b09d",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/188_UCR_Anomaly_resperation2_30000_168250_168251.txt",
+      "member_sha256": "EE5783C388B63302398B2DAEA6C49C86EEABB0117C82B0DA3606F61593093BC1"
+    },
+    {
+      "dataset_id": "189",
+      "family_key": "resperation",
+      "row_count": 190100,
+      "array_file": "189.npy",
+      "array_sha256": "6d6845875489d14a410d848110d05e451d03b64c2463cd34cfc6e454b5436103",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/189_UCR_Anomaly_resperation3_45000_158250_158251.txt",
+      "member_sha256": "6F4BFCDE3CABAFB9A23E13574E5611B3CEB099BE9C1E4AB8B9570852EF8191C8"
+    },
+    {
+      "dataset_id": "190",
+      "family_key": "resperation",
+      "row_count": 195250,
+      "array_file": "190.npy",
+      "array_sha256": "2979832d99c240a8588ba754e821aecc25c991e2e8afaced3d0443041da3d011",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/190_UCR_Anomaly_resperation4_70000_128430_128431.txt",
+      "member_sha256": "FDF28DD2CF0653ACB89A9B29F9F1F9BF5AD7581C04152ACDDCA8F2CB8FF9F4C8"
+    },
+    {
+      "dataset_id": "191",
+      "family_key": "resperation",
+      "row_count": 195000,
+      "array_file": "191.npy",
+      "array_sha256": "09ec2e4a6e9eff1f3281d4386c110db656b6a7f351d5b5d1e5ec3292c7c2bad7",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/191_UCR_Anomaly_resperation9_38000_143411_143511.txt",
+      "member_sha256": "0C60E763B53D1A8FFBB43DFD2B26970AEFDB9DE2043DF2BFDBBD37409746AE9F"
+    },
+    {
+      "dataset_id": "192",
+      "family_key": "s20101mml",
+      "row_count": 40000,
+      "array_file": "192.npy",
+      "array_sha256": "01f16b90c8f253000a41c1f81c329218a9a03f80e37d67576cca04c54273b6dc",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/192_UCR_Anomaly_s20101mML2_12000_35774_35874.txt",
+      "member_sha256": "6CDBCDBBD16F63F636E4148B7DC0FF02748F465CD8BA249116E39D77C94CCF0D"
+    },
+    {
+      "dataset_id": "193",
+      "family_key": "s20101m",
+      "row_count": 40000,
+      "array_file": "193.npy",
+      "array_sha256": "2586df42cbd6d244f808b953403e8570e7ca6b66283d53c7cf31a7dc3d018c81",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/193_UCR_Anomaly_s20101m_10000_35774_35874.txt",
+      "member_sha256": "7158D829F0B1C44F031CF3BC9F265CC34C8730B6AA10F68524385CED165879ED"
+    },
+    {
+      "dataset_id": "194",
+      "family_key": "sddb",
+      "row_count": 80000,
+      "array_file": "194.npy",
+      "array_sha256": "c90ddd9c8caeb33978db4d95e74b6dd5dde162d1fb51f6190690a647f511438d",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/194_UCR_Anomaly_sddb49_20000_67950_68200.txt",
+      "member_sha256": "2C614D98611CDDC9AAA0E2CF114F197A7BFF53DADFAFB49AAD6431D2C435633E"
+    },
+    {
+      "dataset_id": "195",
+      "family_key": "sel840mecg",
+      "row_count": 60000,
+      "array_file": "195.npy",
+      "array_sha256": "4263336badcb47b6b2a954d4ef98545c8623bd871ee7acbdee04cbe2c2da2560",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/195_UCR_Anomaly_sel840mECG1_17000_51370_51740.txt",
+      "member_sha256": "7C085CA51BE5201A0D9F263E5D4A22B3330CFC24C4BB8F69BEEDBFA4461CF397"
+    },
+    {
+      "dataset_id": "196",
+      "family_key": "sel840mecg",
+      "row_count": 57001,
+      "array_file": "196.npy",
+      "array_sha256": "c8cfa3ebf23b6abc1200c34586001d4731ed04006758c6f86b69a01f09b7baf3",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/196_UCR_Anomaly_sel840mECG2_20000_49370_49740.txt",
+      "member_sha256": "D466402571684860660427B58D1C8234F030FAD29C0D97CE14D2DD4389EA533C"
+    },
+    {
+      "dataset_id": "197",
+      "family_key": "tiltapb",
+      "row_count": 130001,
+      "array_file": "197.npy",
+      "array_sha256": "2e944c5a444209008b9774e64b50417bd8a1ee2074cd70453bbb9ed9a3358c87",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/197_UCR_Anomaly_tiltAPB1_100000_114283_114350.txt",
+      "member_sha256": "5375582AE9269B4E1A65652C38B88EC89B2E91749F4F053EF5F89B8CC829D551"
+    },
+    {
+      "dataset_id": "198",
+      "family_key": "tiltapb",
+      "row_count": 128767,
+      "array_file": "198.npy",
+      "array_sha256": "cbec5b64c9c519a14e9746048c769ecf367ca69be7fa10f58360948c440d8fb9",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/198_UCR_Anomaly_tiltAPB2_50000_124159_124985.txt",
+      "member_sha256": "785831C0832145BDDEBCB774B0857E54F2A469A2377F82E2155740EF378C904B"
+    },
+    {
+      "dataset_id": "199",
+      "family_key": "tiltapb",
+      "row_count": 129489,
+      "array_file": "199.npy",
+      "array_sha256": "c27ac7a366d669c6fb33dcc451c2f6c5a404b60b1dd2340a29bcedc6c511bb45",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/199_UCR_Anomaly_tiltAPB3_40000_114000_114370.txt",
+      "member_sha256": "F24E6B28C762049C5E9A9293C167CFBF21CB72A2F7CF496ED517B554EBC35561"
+    },
+    {
+      "dataset_id": "200",
+      "family_key": "tiltapb",
+      "row_count": 128001,
+      "array_file": "200.npy",
+      "array_sha256": "607eb464a98ed6c8eab19920615c6462e5452e6b785badc0ef1b3a566939661d",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/200_UCR_Anomaly_tiltAPB4_20000_67995_67996.txt",
+      "member_sha256": "420707D4F46DFB4483C0DF43909AFE76FAAC8A31CF4380202CD90F81D55FBAC7"
+    },
+    {
+      "dataset_id": "201",
+      "family_key": "charisfive",
+      "row_count": 41347,
+      "array_file": "201.npy",
+      "array_sha256": "b71b6b6df392be1f96f2017756ea8ebe23a4aa9ffd229d99d0c2afbaead8bbf7",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/201_UCR_Anomaly_CHARISfive_10000_17001_17016.txt",
+      "member_sha256": "08AC7BBA1DC454D30C400B00499159F3DB22CD7E006CC4E2597D1798DC5E3E4F"
+    },
+    {
+      "dataset_id": "202",
+      "family_key": "charisfive",
+      "row_count": 41790,
+      "array_file": "202.npy",
+      "array_sha256": "bfedfa06b645d68baaa7827633d623e52cbba9421308ddd9b52367a515e376c5",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/202_UCR_Anomaly_CHARISfive_10411_10998_11028.txt",
+      "member_sha256": "8F651F604BC58A98AC92BA184A166CD5277D99749B50D61E0B7929D7A33E7602"
+    },
+    {
+      "dataset_id": "203",
+      "family_key": "charisfive",
+      "row_count": 41612,
+      "array_file": "203.npy",
+      "array_sha256": "904f9b489722f1527c1f9026c0dc11b9b803bdbb0b44ff0d9c765a98b508cbae",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/203_UCR_Anomaly_CHARISfive_10500_10995_11028.txt",
+      "member_sha256": "A3A7A414AEA98B2EE68B75C53AED9F935C86D1DE91BC5FD291C263FE9C303A40"
+    },
+    {
+      "dataset_id": "204",
+      "family_key": "charisfive",
+      "row_count": 41999,
+      "array_file": "204.npy",
+      "array_sha256": "7e1360dd1ae67c6f36d25aeb1e04c6d5115e66e797d8198bf827bce773023218",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/204_UCR_Anomaly_CHARISfive_12412_15000_15070.txt",
+      "member_sha256": "F38DF4C97064E9DFE8568508675EB187FBED3A434C2CE9DB2F4DA936C60D57DA"
+    },
+    {
+      "dataset_id": "205",
+      "family_key": "charisfive",
+      "row_count": 39870,
+      "array_file": "205.npy",
+      "array_sha256": "2f17fbb3d03425614761f4d6ef5edc751de4cbd635836c9a1a0253715fb1b162",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/205_UCR_Anomaly_CHARISfive_9812_28995_29085.txt",
+      "member_sha256": "DF325B7504576665CC97A16E1E0032FF22E78C45E914CCA9E03C9E1331761935"
+    },
+    {
+      "dataset_id": "206",
+      "family_key": "charisten",
+      "row_count": 42000,
+      "array_file": "206.npy",
+      "array_sha256": "30fa266a9ec36685836743aa6078ab29ce0588769e0e157e1dd06257b1f060a7",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/206_UCR_Anomaly_CHARISten_25130_29080_29140.txt",
+      "member_sha256": "1EA67ED12370575E3D5030FE8EBDBF725339C40341D9F4E1E4CEF24C06D3C85D"
+    },
+    {
+      "dataset_id": "207",
+      "family_key": "charisten",
+      "row_count": 39870,
+      "array_file": "207.npy",
+      "array_sha256": "dbcd48ccf8eaeb3d4b7038b1a4cd53b4222b5ba3226eb62af4f809972f2a4cb0",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/207_UCR_Anomaly_CHARISten_3165_26929_26989.txt",
+      "member_sha256": "EFA80EEDB8424A0E14095DFEEF2679F83F056688DE9B7B9A2CD996B91DD4C7D9"
+    },
+    {
+      "dataset_id": "208",
+      "family_key": "charisten",
+      "row_count": 40870,
+      "array_file": "208.npy",
+      "array_sha256": "cc10f387a05475e898930ffa4e9788a601aab265bac223d3138de33336f49ae8",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/208_UCR_Anomaly_CHARISten_5130_27929_27989.txt",
+      "member_sha256": "03D78B09E84CCD10539499345EBF5DC9D11D0BBAFA77AEE0CE97AEC5A857B5BD"
+    },
+    {
+      "dataset_id": "209",
+      "family_key": "fantasia",
+      "row_count": 92000,
+      "array_file": "209.npy",
+      "array_sha256": "197bfb6f38a12d024e4e859835ef8c500861a23e8e128af8cee17e26134c6dbb",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/209_UCR_Anomaly_Fantasia_19000_26970_27270.txt",
+      "member_sha256": "750FBBBCAE34AE70E3335C2368270B7F6490FCCBF2E38002873F2DB092F30B7C"
+    },
+    {
+      "dataset_id": "210",
+      "family_key": "italianpowerdemand",
+      "row_count": 119819,
+      "array_file": "210.npy",
+      "array_sha256": "b0822d3f59a4a2f92b00ea58dd13e03d24f9613d713d13a6f16725335ca556a5",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/210_UCR_Anomaly_Italianpowerdemand_36123_74900_74996.txt",
+      "member_sha256": "06D3DA36DEA95EC434F08C42FC98398946542D138CB61D42914618EC2220F6A9"
+    },
+    {
+      "dataset_id": "211",
+      "family_key": "italianpowerdemand",
+      "row_count": 119580,
+      "array_file": "211.npy",
+      "array_sha256": "58a14880dd5e27be840b0a095b443ecfcbfc912f5d2fd598d6668aa5bfca5051",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/211_UCR_Anomaly_Italianpowerdemand_38113_39240_39336.txt",
+      "member_sha256": "141774A87AFCC20F77440E08B42FE06AF999B067279E45C65ECB5F6AC76C2AF0"
+    },
+    {
+      "dataset_id": "212",
+      "family_key": "italianpowerdemand",
+      "row_count": 29931,
+      "array_file": "212.npy",
+      "array_sha256": "dbf1f5f085780697800495ff8dcdfacd34c6b5970df48553607d25ad593e9335",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/212_UCR_Anomaly_Italianpowerdemand_8913_29480_29504.txt",
+      "member_sha256": "CFF930B7A3A44C06044E4EFC7E5461427B145EDE8FFBB5CF100B97C577EA71B5"
+    },
+    {
+      "dataset_id": "213",
+      "family_key": "staffiiidatabase",
+      "row_count": 300000,
+      "array_file": "213.npy",
+      "array_sha256": "685d408fcc505180071b4e3ae3f64446837ad47517999d8ff527b75378970d35",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/213_UCR_Anomaly_STAFFIIIDatabase_33211_126920_127370.txt",
+      "member_sha256": "C7C870F309DA6514FBA61E6AAC31112785CB3A9DD99F67F4ED60E472CF0215C0"
+    },
+    {
+      "dataset_id": "214",
+      "family_key": "staffiiidatabase",
+      "row_count": 299690,
+      "array_file": "214.npy",
+      "array_sha256": "c9b76fb6235b2b74e823f7857297b145fe67290b62f829f4d342f0fa7686a9c1",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/214_UCR_Anomaly_STAFFIIIDatabase_34211_125720_126370.txt",
+      "member_sha256": "D672522FA5A07C546CA767AE3B5D4F5C470A3B582802A7C0583E7B3EC8833A40"
+    },
+    {
+      "dataset_id": "215",
+      "family_key": "staffiiidatabase",
+      "row_count": 299990,
+      "array_file": "215.npy",
+      "array_sha256": "b9596bbe9f488b97b5b5e2985df1634764fb28be07059f09a7add86be65b182b",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/215_UCR_Anomaly_STAFFIIIDatabase_36276_106720_107370.txt",
+      "member_sha256": "E8E7A4AB442BD762F3D84F01E9426F4CD14AB985C56DC627FAE2E857FE5EB00A"
+    },
+    {
+      "dataset_id": "216",
+      "family_key": "staffiiidatabase",
+      "row_count": 299890,
+      "array_file": "216.npy",
+      "array_sha256": "d16621a7c1e278d86501be71caa8676079859c622c2ec4c7848bc2b19f437500",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/216_UCR_Anomaly_STAFFIIIDatabase_37216_160720_161370.txt",
+      "member_sha256": "1E698C62F235F4140F6D9D89479CE2A48C49002FAECC878D6DD85E15A700CE2C"
+    },
+    {
+      "dataset_id": "217",
+      "family_key": "staffiiidatabase",
+      "row_count": 299690,
+      "array_file": "217.npy",
+      "array_sha256": "bfd3961cca8a295aaaaeaecf1785cf1e1580df3442fa982871b72b42d547a941",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/217_UCR_Anomaly_STAFFIIIDatabase_38211_150720_151370.txt",
+      "member_sha256": "7F904E73FDE17D2B43FEE28532971AD846AF268ECD285366558ABE00520E8E8B"
+    },
+    {
+      "dataset_id": "218",
+      "family_key": "staffiiidatabase",
+      "row_count": 299940,
+      "array_file": "218.npy",
+      "array_sha256": "cc6f57477f412a8dc630cb66a9015ca459599274df93a217ff39d84c386358ee",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/218_UCR_Anomaly_STAFFIIIDatabase_41117_210720_211370.txt",
+      "member_sha256": "B87EB512C766B0C96C13DE2016FBE5A3873EDFEFD64579849368D40629F8C537"
+    },
+    {
+      "dataset_id": "219",
+      "family_key": "staffiiidatabase",
+      "row_count": 299840,
+      "array_file": "219.npy",
+      "array_sha256": "68e712b6ceab095117ac6c8e674e543647612dbcfb4dc17d04e69e4c63045976",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/219_UCR_Anomaly_STAFFIIIDatabase_41612_64632_64852.txt",
+      "member_sha256": "EB02C05120166D28F652EB5A64244E5C3928C9A13FEFCF28B1A039A314272B0B"
+    },
+    {
+      "dataset_id": "220",
+      "family_key": "staffiiidatabase",
+      "row_count": 299790,
+      "array_file": "220.npy",
+      "array_sha256": "9a2b29715624bfcb72246538509f796c9a38387dd1896d9a79df4c274a17d42c",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/220_UCR_Anomaly_STAFFIIIDatabase_43217_250720_251370.txt",
+      "member_sha256": "FE5D948F3DC086978C038D4ADB40711E0B9963790C6D0AAFE677839E31F26F15"
+    },
+    {
+      "dataset_id": "221",
+      "family_key": "staffiiidatabase",
+      "row_count": 298340,
+      "array_file": "221.npy",
+      "array_sha256": "ea72b876a865b705799d50cf5cb8325d81f47f14e6a072c61461f0f56e2fa7e7",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/221_UCR_Anomaly_STAFFIIIDatabase_45616_163632_164852.txt",
+      "member_sha256": "298979FEB740381573E30662A0815E674E377FE37BB09556133E4BD459D3BA11"
+    },
+    {
+      "dataset_id": "222",
+      "family_key": "mit14046longtermecg",
+      "row_count": 211502,
+      "array_file": "222.npy",
+      "array_sha256": "70cb01e03358bb37d4a90661674b32e193003d96f6051daa3112f761194840ff",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/222_UCR_Anomaly_mit14046longtermecg_56123_91200_91700.txt",
+      "member_sha256": "B932882C8890790F61D26E63387A804A112B84F6CFEF044E3362C1FFDE182B2F"
+    },
+    {
+      "dataset_id": "223",
+      "family_key": "mit14046longtermecg",
+      "row_count": 180386,
+      "array_file": "223.npy",
+      "array_sha256": "f9888059725e644d6a176e0eade04a12fd45e417638fbe2e4cdfbc1d894fc1d4",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/223_UCR_Anomaly_mit14046longtermecg_74123_131200_131700.txt",
+      "member_sha256": "4DC3CCA757FA738ED0EBD311BCA7F2F6AF9BFA0E825FE574D72EFBC78027D20D"
+    },
+    {
+      "dataset_id": "224",
+      "family_key": "mit14046longtermecg",
+      "row_count": 199753,
+      "array_file": "224.npy",
+      "array_sha256": "537e8504c852a7a5d832806320d6e869844bc4fa4bbd2f409a3a0e311dda8ad8",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/224_UCR_Anomaly_mit14046longtermecg_76123_191200_191700.txt",
+      "member_sha256": "3BFCD7BA5CDFD9C0B97F712798EAB7D80B81B35AC108365248A105F8700048A4"
+    },
+    {
+      "dataset_id": "225",
+      "family_key": "mit14046longtermecg",
+      "row_count": 199999,
+      "array_file": "225.npy",
+      "array_sha256": "f8d7bfd7ba68389cd499e536a068190b3007dd2c183a8d4e4f85492d204d434b",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/225_UCR_Anomaly_mit14046longtermecg_81214_143000_143300.txt",
+      "member_sha256": "07F34504BE131ABFBDC4006916F13158640C8057A767F19BE131AAE1136D0A3E"
+    },
+    {
+      "dataset_id": "226",
+      "family_key": "mit14046longtermecg",
+      "row_count": 190001,
+      "array_file": "226.npy",
+      "array_sha256": "fd4053c40bdb551e0bcebf60c46713826a1110b21c03febc9c97c143252e1d57",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/226_UCR_Anomaly_mit14046longtermecg_96123_123000_123300.txt",
+      "member_sha256": "AF855B900C8A52E22B960013F595CC4DE255C07A7F1BCA7A275E18C05EA93B0F"
+    },
+    {
+      "dataset_id": "227",
+      "family_key": "mit14134longtermecg",
+      "row_count": 59302,
+      "array_file": "227.npy",
+      "array_sha256": "9faca31a65aa59e06fc0afd6e276c261f54e49bd39f1d3fd2020ab38759b5a19",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/227_UCR_Anomaly_mit14134longtermecg_11231_29000_29100.txt",
+      "member_sha256": "361E93F6A6F2020D4F956343D342101A64A79B721978B539A445FD81195CC4E6"
+    },
+    {
+      "dataset_id": "228",
+      "family_key": "mit14134longtermecg",
+      "row_count": 59000,
+      "array_file": "228.npy",
+      "array_sha256": "ffaba079faf38aa9eb4b1d025b48977df0bcbdc38eb93920be7d22fd2a5625d5",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/228_UCR_Anomaly_mit14134longtermecg_11361_47830_47850.txt",
+      "member_sha256": "E69A25C4733622563CF8858858B7191654171C4DA5F24641D828D7782905755A"
+    },
+    {
+      "dataset_id": "229",
+      "family_key": "mit14134longtermecg",
+      "row_count": 59000,
+      "array_file": "229.npy",
+      "array_sha256": "e7dd3abe5eb586d16b91573c9d060e317fcc80f5e8e12977d1482cb3dee96dda",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/229_UCR_Anomaly_mit14134longtermecg_16363_57960_57970.txt",
+      "member_sha256": "2C2AB561865CE33C75EF28A644D615EBE359335BFCF1A1517D59109395F4A4AB"
+    },
+    {
+      "dataset_id": "230",
+      "family_key": "mit14134longtermecg",
+      "row_count": 59000,
+      "array_file": "230.npy",
+      "array_sha256": "20684b60ecef51ef85c4811c1a8a5c662769a2e4eb8b7258254b8a3e6c3da22a",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/230_UCR_Anomaly_mit14134longtermecg_19363_19510_19610.txt",
+      "member_sha256": "675CE4006788E7934A58E0E6697A7D9F221D17037EF81F8001B1A63212AE4759"
+    },
+    {
+      "dataset_id": "231",
+      "family_key": "mit14134longtermecg",
+      "row_count": 59000,
+      "array_file": "231.npy",
+      "array_sha256": "c94c40c3414568a9c3a796583316db093fe7dbe2756da15037b354bcb71fee7b",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/231_UCR_Anomaly_mit14134longtermecg_8763_47530_47790.txt",
+      "member_sha256": "FC0580E962820811DF674566024AC79C7EEFD4EFBD6452A8078CDDAFD54A4C6D"
+    },
+    {
+      "dataset_id": "232",
+      "family_key": "mit14134longtermecg",
+      "row_count": 59000,
+      "array_file": "232.npy",
+      "array_sha256": "c99146d44c888a617f0dc2410eb803a23b45167d54c0df7d36c7b60cc07298b7",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/232_UCR_Anomaly_mit14134longtermecg_8763_57530_57790.txt",
+      "member_sha256": "AF77BFBE436371A6D2084FE582E2A35F82C6C2141C23AC8F4FD3DF19190999EA"
+    },
+    {
+      "dataset_id": "233",
+      "family_key": "mit14157longtermecg",
+      "row_count": 92710,
+      "array_file": "233.npy",
+      "array_sha256": "17d6e210f9b0407bb55f16a7ca2b8a83d73c214ea65c484b2e0d71ecbb907f4d",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/233_UCR_Anomaly_mit14157longtermecg_18913_24500_24501.txt",
+      "member_sha256": "1C02FEFC687F91ED9484FABFE9B55BE87F9928343680504220FCDEF0EE20CCDC"
+    },
+    {
+      "dataset_id": "234",
+      "family_key": "mit14157longtermecg",
+      "row_count": 98710,
+      "array_file": "234.npy",
+      "array_sha256": "aaa35abc3b5d2fdfa2bbf9904420c36eb2d9f5d0495a22067b7f73b2290cf369",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/234_UCR_Anomaly_mit14157longtermecg_18913_24600_24601.txt",
+      "member_sha256": "009DCB152142160C9559D70866D250105B7311BCA7DB838BBE6958D97D0E8912"
+    },
+    {
+      "dataset_id": "235",
+      "family_key": "mit14157longtermecg",
+      "row_count": 97300,
+      "array_file": "235.npy",
+      "array_sha256": "73a31d521b19cb4c1c2ada4586de18600eebac665a89bb749d41c4e8fde66c5f",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/235_UCR_Anomaly_mit14157longtermecg_18913_75450_75451.txt",
+      "member_sha256": "07FDCB7D30412CBFA3FB4051BBBA4AA5EC0F21B2F56111759C04E7CEEF490D7D"
+    },
+    {
+      "dataset_id": "236",
+      "family_key": "mit14157longtermecg",
+      "row_count": 97000,
+      "array_file": "236.npy",
+      "array_sha256": "9f97c3a673128170658302b1b2cc4eb0e749675e57b6347edcaa396d75b8e123",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/236_UCR_Anomaly_mit14157longtermecg_19313_46350_46390.txt",
+      "member_sha256": "93969BDAE75553539EB6AAC91A2DFFD5AB5571ADAD8FEC89FB62E4C4B3F910A5"
+    },
+    {
+      "dataset_id": "237",
+      "family_key": "mit14157longtermecg",
+      "row_count": 97000,
+      "array_file": "237.npy",
+      "array_sha256": "2804015931b171d194bdca0c97c0fc516bedc559b78db2847b6b3755fe23c99a",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/237_UCR_Anomaly_mit14157longtermecg_19313_89560_90370.txt",
+      "member_sha256": "057934922CA244A69EC467CE8969763943CB0CA8AE8B40E871529A24590094F5"
+    },
+    {
+      "dataset_id": "238",
+      "family_key": "mit14157longtermecg",
+      "row_count": 99000,
+      "array_file": "238.npy",
+      "array_sha256": "2ab8f5a02f035c87896ebfccf2d8ac6d12fc855a44a1100a4eac05788e1bcab4",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/238_UCR_Anomaly_mit14157longtermecg_21311_72600_72780.txt",
+      "member_sha256": "7D72172A6D0C4C873E08B8B7ECBCDBD76414FD203170EB42382FD9B8E28B4048"
+    },
+    {
+      "dataset_id": "239",
+      "family_key": "taichidbs0715master",
+      "row_count": 897667,
+      "array_file": "239.npy",
+      "array_sha256": "1fe77e0863cf4ee91133e4a1cbffa941f0c2dab2971cc4a74ba30ebe8d4ddf10",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/239_UCR_Anomaly_taichidbS0715Master_190037_593450_593514.txt",
+      "member_sha256": "6CA0690DFC7C7B2A5AC3D69C20051C4C1BCCA1EC8361DDA6ECC2CD5EF7F9C706"
+    },
+    {
+      "dataset_id": "240",
+      "family_key": "taichidbs0715master",
+      "row_count": 900000,
+      "array_file": "240.npy",
+      "array_sha256": "e40bdfd80e08b4c3c881fbc50f01a3b3e1d4e2b69279451653cecfd422b925ba",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/240_UCR_Anomaly_taichidbS0715Master_240030_884100_884200.txt",
+      "member_sha256": "233366A758D68E4E95BEE248D99C1FB2A2DC9E0E8EE6F2CADADF483745E429E9"
+    },
+    {
+      "dataset_id": "241",
+      "family_key": "taichidbs0715master",
+      "row_count": 900000,
+      "array_file": "241.npy",
+      "array_sha256": "1807ba35203e9e3ba52f120f1842e45e07696cd06ed9d35ea226cfd623bc388b",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/241_UCR_Anomaly_taichidbS0715Master_250000_837400_839100.txt",
+      "member_sha256": "69C6EA9F8AA6A1A6EB0A9806D94224826D30256DA50D51217F4F27FB8522C137"
+    },
+    {
+      "dataset_id": "242",
+      "family_key": "tilt12744mtable",
+      "row_count": 286667,
+      "array_file": "242.npy",
+      "array_sha256": "6747f620fada930adac6e9ea29aa176f0c60a98a84f596ac11ee3ff516091804",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/242_UCR_Anomaly_tilt12744mtable_100000_104630_104890.txt",
+      "member_sha256": "BDCF1E4D1E1A27D87C2D6BDE19B50853A380745679114C5863CDB8348F60E5B4"
+    },
+    {
+      "dataset_id": "243",
+      "family_key": "tilt12744mtable",
+      "row_count": 250001,
+      "array_file": "243.npy",
+      "array_sha256": "d39a380b08496901ee12e9cb6c93bf154057da246c8b7170d527f1e138c85085",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/243_UCR_Anomaly_tilt12744mtable_100000_203355_203400.txt",
+      "member_sha256": "262CC3A6E8150AC228F749E45B302A24C7FE2CA8FC6309C1148F9B3659F402A3"
+    },
+    {
+      "dataset_id": "244",
+      "family_key": "tilt12754table",
+      "row_count": 300262,
+      "array_file": "244.npy",
+      "array_sha256": "f76d7d920156b3efd4e5fb20855ef412095357aa7f9b0ba625e5a0e4064f9394",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/244_UCR_Anomaly_tilt12754table_100013_104630_104890.txt",
+      "member_sha256": "171A94BEF9498DDE70635B6082D7ACD777AB6B57477327C03B41A1B430B00BFD"
+    },
+    {
+      "dataset_id": "245",
+      "family_key": "tilt12754table",
+      "row_count": 298747,
+      "array_file": "245.npy",
+      "array_sha256": "6ecca6aff14ef8d4a5563614c6e1f2a876ec26a2323e1750f9436a5dd08b883c",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/245_UCR_Anomaly_tilt12754table_100211_270800_271070.txt",
+      "member_sha256": "456C15FA5EF99DF2C2FEB6CB9120C802CB8CD167D54DE32FCD18D901EEC21A56"
+    },
+    {
+      "dataset_id": "246",
+      "family_key": "tilt12755mtable",
+      "row_count": 299867,
+      "array_file": "246.npy",
+      "array_sha256": "9dda3221758dd8f9adac95a8f929a4a90a5a9a9cebf8f9683adfb6bef117cdc0",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/246_UCR_Anomaly_tilt12755mtable_100211_270800_271070.txt",
+      "member_sha256": "C1CDDC07D5191415D947D81115F7F64B6AF54B5F451C49B816E001F4D8E8F4BC"
+    },
+    {
+      "dataset_id": "247",
+      "family_key": "tilt12755mtable",
+      "row_count": 200000,
+      "array_file": "247.npy",
+      "array_sha256": "ed419488a3a3c10fad80270ef6300f51660803cd4aac7bc29e3749abb4128466",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/247_UCR_Anomaly_tilt12755mtable_50211_121900_121980.txt",
+      "member_sha256": "C5C409FBF5B7E85AACC29661121947E862528AC6110B4A830FF5DC3A0F006F5C"
+    },
+    {
+      "dataset_id": "248",
+      "family_key": "weallwalk",
+      "row_count": 8432,
+      "array_file": "248.npy",
+      "array_sha256": "1dd0f6afa55e4426fbdf80d0a395de8de1bece7d36279d94d96961d050cf04fd",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/248_UCR_Anomaly_weallwalk_2000_4702_4707.txt",
+      "member_sha256": "3B382C5A4E6208FB7932BE05AD1F2E97498ED44B2F7AE7573FDA20B18ABA42BB"
+    },
+    {
+      "dataset_id": "249",
+      "family_key": "weallwalk",
+      "row_count": 10524,
+      "array_file": "249.npy",
+      "array_sha256": "1911be2bad9d81c95c2d88c8a1afe608e7ceae28cb8cccf71893aaf48d5993f2",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/249_UCR_Anomaly_weallwalk_2753_8285_8315.txt",
+      "member_sha256": "F029366AFAE2DC7909680B2FF6CBBE4B75988F9AC8AB64293C2BC3AF06A6B3F1"
+    },
+    {
+      "dataset_id": "250",
+      "family_key": "weallwalk",
+      "row_count": 10468,
+      "array_file": "250.npy",
+      "array_sha256": "2943f0aabd71578528cafb62b7e80bd781e16fdf61b1da122ed8711c6c1f23fd",
+      "member_path": "AnomalyDatasets_2021/UCR_TimeSeriesAnomalyDatasets2021/FilesAreInHere/UCR_Anomaly_FullData/250_UCR_Anomaly_weallwalk_2951_7290_7296.txt",
+      "member_sha256": "8F307774391BE1F540541C31A4B7BBE1FBADF5F5E6015BE1009FB64D12B480CA"
+    }
+  ]
+}

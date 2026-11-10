@@ -1,0 +1,304 @@
+{
+  "schema": "lidar-source-coverage/v1",
+  "sources": [
+    {
+      "blob": "d3f92d2d8e107e0400271273ac86dba33fdb7301",
+      "sha256": "84b7d5765788fced946d280c6992121a9b28241afd6167862ceb92ecff5ea6d7",
+      "versions": [
+        {
+          "path": "HNC_Harmonic_LIDAR_v2_AluminiumFluid_Lec.docx",
+          "blob": "d3f92d2d8e107e0400271273ac86dba33fdb7301",
+          "commit": "7787e45c832ccb216c55dc965df51a16db45a895",
+          "authored": "2026-03-24T11:20:41Z",
+          "committed": "2026-03-24T11:20:41Z",
+          "change": "A"
+        },
+        {
+          "path": "docs/HNC_Harmonic_LIDAR_v2_AluminiumFluid_Lec.docx",
+          "blob": "d3f92d2d8e107e0400271273ac86dba33fdb7301",
+          "commit": "6fd1d9d870b2bded83e6b4d9785a572d2e3094ac",
+          "authored": "2026-03-24T23:43:21Z",
+          "committed": "2026-03-24T23:43:21Z",
+          "change": "A"
+        },
+        {
+          "path": "docs/research/whitepapers/HNC_Harmonic_LIDAR_v2_AluminiumFluid_Leckey.docx",
+          "blob": "d3f92d2d8e107e0400271273ac86dba33fdb7301",
+          "commit": "5f3f3ca9ffb5117003ef5364b805bd815d752a7c",
+          "authored": "2026-04-05T08:01:40Z",
+          "committed": "2026-04-05T08:01:40Z",
+          "change": "A"
+        },
+        {
+          "path": "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/HNC_Harmonic_LIDAR_v2_AluminiumFluid_Leckey_84b7d57657.docx",
+          "blob": "d3f92d2d8e107e0400271273ac86dba33fdb7301",
+          "commit": "b4bfe63756791c427cdbdd64fe56301aced1e7ef",
+          "authored": "2026-07-12T20:53:38+01:00",
+          "committed": "2026-07-12T20:53:38+01:00",
+          "change": "A"
+        }
+      ],
+      "document_metadata": {
+        "creator": "Un-named",
+        "lastModifiedBy": "Un-named",
+        "revision": "1",
+        "created": "2026-03-22T22:06:16.639Z",
+        "modified": "2026-03-22T22:06:16.639Z"
+      },
+      "earliest_known_git_addition": "2026-03-24T11:20:41Z"
+    },
+    {
+      "blob": "d4662f447ac00ba405510a28491e71bbf8e70dec",
+      "sha256": "5dbeec043b82a5514c554715d69b15a72b86e0867ab261f6fab52abc1f4d29d6",
+      "versions": [
+        {
+          "path": "HNC_Harmonic_LIDAR_WhitePaper_Leckey_202.docx",
+          "blob": "d4662f447ac00ba405510a28491e71bbf8e70dec",
+          "commit": "7787e45c832ccb216c55dc965df51a16db45a895",
+          "authored": "2026-03-24T11:20:41Z",
+          "committed": "2026-03-24T11:20:41Z",
+          "change": "A"
+        },
+        {
+          "path": "docs/HNC_Harmonic_LIDAR_WhitePaper_Leckey_202.docx",
+          "blob": "d4662f447ac00ba405510a28491e71bbf8e70dec",
+          "commit": "6fd1d9d870b2bded83e6b4d9785a572d2e3094ac",
+          "authored": "2026-03-24T23:43:21Z",
+          "committed": "2026-03-24T23:43:21Z",
+          "change": "A"
+        },
+        {
+          "path": "docs/research/whitepapers/HNC_Harmonic_LIDAR_WhitePaper_Leckey_2026.docx",
+          "blob": "d4662f447ac00ba405510a28491e71bbf8e70dec",
+          "commit": "5f3f3ca9ffb5117003ef5364b805bd815d752a7c",
+          "authored": "2026-04-05T08:01:40Z",
+          "committed": "2026-04-05T08:01:40Z",
+          "change": "A"
+        },
+        {
+          "path": "data/research/grants/applications/gary_aureon_metadata_research_evidence_20260712_20260712_203741/HNC_Harmonic_LIDAR_WhitePaper_Leckey_2026_5dbeec043b.docx",
+          "blob": "d4662f447ac00ba405510a28491e71bbf8e70dec",
+          "commit": "b4bfe63756791c427cdbdd64fe56301aced1e7ef",
+          "authored": "2026-07-12T20:53:38+01:00",
+          "committed": "2026-07-12T20:53:38+01:00",
+          "change": "A"
+        }
+      ],
+      "document_metadata": null,
+      "earliest_known_git_addition": "2026-03-24T11:20:41Z"
+    }
+  ],
+  "resolution": [
+    {
+      "grid": {
+        "rows": 80,
+        "cols": 80,
+        "dy_m": 79.74683544303798,
+        "dx_m": 84.81012658227849
+      },
+      "minimum_nonzero_axis_frequency": 0.00014738805970149253,
+      "full_annulus_nyquist": 0.005895522388059701,
+      "conservative_minimum_full_annulus_wavelength_m": 169.62025316455697,
+      "shells": [
+        {
+          "index": 0,
+          "radius_m": 15000.0,
+          "wavelength_m": 94247.7796076938,
+          "frequency": 1.0610329539459689e-05,
+          "within_full_annulus_sampling_band": false
+        },
+        {
+          "index": 1,
+          "radius_m": 5729.490168751578,
+          "wavelength_m": 35999.448445929804,
+          "frequency": 2.7778203366142483e-05,
+          "within_full_annulus_sampling_band": false
+        },
+        {
+          "index": 2,
+          "radius_m": 2188.4705062547314,
+          "wavelength_m": 13750.565730095599,
+          "frequency": 7.272428055896779e-05,
+          "within_full_annulus_sampling_band": false
+        },
+        {
+          "index": 3,
+          "radius_m": 835.9213500126181,
+          "wavelength_m": 5252.248744357006,
+          "frequency": 0.00019039463831076084,
+          "within_full_annulus_sampling_band": true
+        },
+        {
+          "index": 4,
+          "radius_m": 319.29354378312274,
+          "wavelength_m": 2006.1805029754187,
+          "frequency": 0.0004984596343733148,
+          "within_full_annulus_sampling_band": true
+        },
+        {
+          "index": 5,
+          "radius_m": 121.9592813367502,
+          "wavelength_m": 766.2927645692504,
+          "frequency": 0.0013049842648091836,
+          "within_full_annulus_sampling_band": true
+        },
+        {
+          "index": 6,
+          "radius_m": 46.584300227127855,
+          "wavelength_m": 292.6977907323324,
+          "frequency": 0.0034164931600542364,
+          "within_full_annulus_sampling_band": true
+        },
+        {
+          "index": 7,
+          "radius_m": 17.793619344633395,
+          "wavelength_m": 111.80060762774701,
+          "frequency": 0.008944495215353525,
+          "within_full_annulus_sampling_band": false
+        },
+        {
+          "index": 8,
+          "radius_m": 6.796557806772327,
+          "wavelength_m": 42.704032150908596,
+          "frequency": 0.023416992486006347,
+          "within_full_annulus_sampling_band": false
+        },
+        {
+          "index": 9,
+          "radius_m": 2.5960540756835884,
+          "wavelength_m": 16.311488824978802,
+          "frequency": 0.06130648224266552,
+          "within_full_annulus_sampling_band": false
+        }
+      ],
+      "resolvable_shell_centres": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "target_core_sigma_ns_m": [
+        159.49367088607596,
+        438.6075949367089
+      ],
+      "target_core_sigma_ew_m": [
+        169.62025316455697,
+        466.45569620253167
+      ]
+    },
+    {
+      "grid": {
+        "rows": 40,
+        "cols": 40,
+        "dy_m": 269.2307692307692,
+        "dx_m": 282.05128205128204
+      },
+      "minimum_nonzero_axis_frequency": 8.863636363636364e-05,
+      "full_annulus_nyquist": 0.0017727272727272728,
+      "conservative_minimum_full_annulus_wavelength_m": 564.1025641025641,
+      "shells": [
+        {
+          "index": 0,
+          "radius_m": 15000.0,
+          "wavelength_m": 94247.7796076938,
+          "frequency": 1.0610329539459689e-05,
+          "within_full_annulus_sampling_band": false
+        },
+        {
+          "index": 1,
+          "radius_m": 5729.490168751578,
+          "wavelength_m": 35999.448445929804,
+          "frequency": 2.7778203366142483e-05,
+          "within_full_annulus_sampling_band": false
+        },
+        {
+          "index": 2,
+          "radius_m": 2188.4705062547314,
+          "wavelength_m": 13750.565730095599,
+          "frequency": 7.272428055896779e-05,
+          "within_full_annulus_sampling_band": false
+        },
+        {
+          "index": 3,
+          "radius_m": 835.9213500126181,
+          "wavelength_m": 5252.248744357006,
+          "frequency": 0.00019039463831076084,
+          "within_full_annulus_sampling_band": true
+        },
+        {
+          "index": 4,
+          "radius_m": 319.29354378312274,
+          "wavelength_m": 2006.1805029754187,
+          "frequency": 0.0004984596343733148,
+          "within_full_annulus_sampling_band": true
+        },
+        {
+          "index": 5,
+          "radius_m": 121.9592813367502,
+          "wavelength_m": 766.2927645692504,
+          "frequency": 0.0013049842648091836,
+          "within_full_annulus_sampling_band": true
+        },
+        {
+          "index": 6,
+          "radius_m": 46.584300227127855,
+          "wavelength_m": 292.6977907323324,
+          "frequency": 0.0034164931600542364,
+          "within_full_annulus_sampling_band": false
+        },
+        {
+          "index": 7,
+          "radius_m": 17.793619344633395,
+          "wavelength_m": 111.80060762774701,
+          "frequency": 0.008944495215353525,
+          "within_full_annulus_sampling_band": false
+        },
+        {
+          "index": 8,
+          "radius_m": 6.796557806772327,
+          "wavelength_m": 42.704032150908596,
+          "frequency": 0.023416992486006347,
+          "within_full_annulus_sampling_band": false
+        },
+        {
+          "index": 9,
+          "radius_m": 2.5960540756835884,
+          "wavelength_m": 16.311488824978802,
+          "frequency": 0.06130648224266552,
+          "within_full_annulus_sampling_band": false
+        }
+      ],
+      "resolvable_shell_centres": [
+        3,
+        4,
+        5
+      ],
+      "target_core_sigma_ns_m": [
+        538.4615384615385,
+        1480.7692307692307
+      ],
+      "target_core_sigma_ew_m": [
+        564.1025641025641,
+        1551.2820512820513
+      ]
+    }
+  ],
+  "coverage": {
+    "paper_amplitude_fourier_filter": "implemented; eleven original filters tested and retained",
+    "coherence_phase_to_spatial_core_boundary": "not implemented or validated by this amplitude benchmark; Fourier-plane phase versus spatial-location mapping must be specified",
+    "v2_acoustic_material_specific_filters": "not implemented by this benchmark; reported 5.30–12.15 m seed wavelengths lie below both grids sampling capability",
+    "physical_subsurface_material_ground_truth": "absent in benchmark",
+    "integrated_legacy_calendar_twig_timed_reading": "retained in overall research scope; this image-amplitude experiment cannot test that story"
+  },
+  "corrections": [
+    "Nuisance indices 0,1,2 all include fractal terrain, planar slope and directional ridge; they are not isolated nuisance mechanisms.",
+    "Original masked patches replace pixels with zero before final centering, not a newly computed whole-image mean.",
+    "Original AUROC and average-precision code is order-dependent for ties; new metrics group ties.",
+    "Original aggregate file glob includes stdout JSON sidecars and its duplicate-ID guard can fail; new analysis enumerates exact expected filenames.",
+    "Original aggregate names Bonferroni multiplication Holm conservative; new analysis implements monotone Holm adjustment explicitly.",
+    "Old protocol timestamp 19:30 UTC follows submission receipt 19:13:43 UTC on 2026-08-26; do not assert verified prior registration from these documents.",
+    "Targets are sampled in pixels, so the two grid arms also change physical target dimensions. Resolution alone cannot explain cross-grid differences."
+  ],
+  "phase_fact": "The paper amplitude transfer is real and nonnegative. Where its transfer is positive it preserves each Fourier coefficient phase; a frequency-plane coefficient is not by itself a local spatial phase measurement.",
+  "chronology_limit": "Git additions and editable document metadata bound located versions, not definitive first authorship dates."
+}

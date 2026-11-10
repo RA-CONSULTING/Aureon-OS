@@ -1,0 +1,9 @@
+{
+  "timestamp_utc": "2026-09-12T10:35:50.538947+00:00",
+  "scheduler": "JobID|State|ExitCode|Elapsed|NNodes|AllocTRES\n6500155|COMPLETED|0:0|00:00:22|1|billing=72,cpu=72,mem=4G,node=1\n6500368_99|FAILED|1:0|00:04:18|1|billing=288,cpu=288,gres/gpu=4,mem=460000M,node=1\n6500947|COMPLETED|0:0|00:00:12|1|billing=72,cpu=72,mem=4G,node=1\n",
+  "files": {
+    "stage1-retrospective-audit-6500947.json": "91e5281235f954c62a4fffb98d15bfecf0d36450dd5f6bea9eb69e2bf22b1395",
+    "stage1-recovery-6500368-summary.json": "78a5016bf7ada8097404558d7503d50b235d7bddd6b11e7113ff983b63c1f4ef",
+    "stage1-recovery-6500368-output-sha256.txt": "b6e5d4aef1f8b228941d312ca159fcde9a9672a32657cf31d1d4292f5e4d5b36"
+  }
+}

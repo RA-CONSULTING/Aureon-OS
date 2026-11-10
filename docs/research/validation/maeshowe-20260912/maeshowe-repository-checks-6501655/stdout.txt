@@ -1,0 +1,6 @@
+/projects/u6vs/hnc-organism/worktrees/aureon-expansion-20260912/aureon/wisdom/maeshowe_epigraphy.py: OK
+/projects/u6vs/hnc-organism/worktrees/aureon-expansion-20260912/aureon/wisdom/maeshowe_seer_decode.py: OK
+/projects/u6vs/hnc-organism/worktrees/aureon-expansion-20260912/tests/research/test_maeshowe_epigraphy.py: OK
+/projects/u6vs/hnc-organism/worktrees/aureon-expansion-20260912/aureon/wisdom/maeshowe_epigraphy.py: OK
+/projects/u6vs/hnc-organism/worktrees/aureon-expansion-20260912/aureon/wisdom/maeshowe_seer_decode.py: OK
+/projects/u6vs/hnc-organism/worktrees/aureon-expansion-20260912/tests/research/test_maeshowe_epigraphy.py: OK

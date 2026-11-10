@@ -1,0 +1,16 @@
+{
+  "schema": "stage1-recovery-plan/v1",
+  "prepared_utc": "2026-09-12T13:55:54.083235+00:00",
+  "original_array": "6502171",
+  "failed_shard": 0,
+  "original_input_manifest_sha256": "cafd48d0c4abeedfc2c832c5aefa56c4aaba45a6252f47dad3b5c3dec0885504",
+  "pilot_calls": 7680,
+  "replication_calls": 46080,
+  "nodes": 1,
+  "gpus": 4,
+  "concurrency": 128,
+  "ceiling_node_hours": 1.5,
+  "primary_original_results_preserved": true,
+  "recovery_outcomes_observed": false,
+  "selection": "Whole failed shard; operational replication sensitivity; no outcome-based choice"
+}

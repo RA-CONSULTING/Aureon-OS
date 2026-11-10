@@ -1,0 +1,8 @@
+{
+  "archive_path": "/projects/u6vs/hnc-organism/expansion-20260912/tandem-audit-v1/verified-tandem-6506509.tar.gz",
+  "archive_sha256": "0cd7385e58799e65dd1f10a5c5ab675748861ee5749fcec6a43980cf344a8de5",
+  "archive_bytes": 486760874,
+  "analysis_sha256": "2bf8f74703ce27d0c05167ff4348f4a4aea5d10591a6e0268194439c4426ccbd",
+  "audit_sha256": "7dfc325e552ac53e8ae6993cb1662144b3b1106d34745264e19b17293040d044",
+  "members": 451
+}

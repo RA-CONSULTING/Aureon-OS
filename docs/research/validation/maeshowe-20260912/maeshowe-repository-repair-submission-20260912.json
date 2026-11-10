@@ -1,0 +1,13 @@
+{
+  "job_id": "6501655",
+  "target": "/projects/u6vs/hnc-organism/expansion-20260912/maeshowe-repository-repair-v1",
+  "worktree": "/projects/u6vs/hnc-organism/worktrees/aureon-expansion-20260912",
+  "source_hashes": {
+    "aureon/wisdom/maeshowe_epigraphy.py": "a482fc01e60b96d422a45749de1216e2e0982a3905bbba724004324d0fa42334",
+    "aureon/wisdom/maeshowe_seer_decode.py": "44ff3182a7d4f4bfdfe80305b3bf5a1060c9430cc184a4a6066000296fe034e3",
+    "tests/research/test_maeshowe_epigraphy.py": "421fdb145ea234e15645512bd9ad15a81ab4f265031108249cae3009e61d497a"
+  },
+  "submitted_utc": "2026-09-12T11:38:04.422864+00:00",
+  "published": false,
+  "committed": false
+}

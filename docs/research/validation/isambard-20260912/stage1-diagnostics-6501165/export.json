@@ -1,0 +1,7 @@
+{
+  "archive": "/projects/u6vs/hnc-organism/expansion-20260912/stage1-diagnostics-v1/stage1-verified-responses.tar.gz",
+  "bytes": 7541765,
+  "sha256": "2f18e2f57f11a41d91aef58fb6a07aed4a87bff9f85c3ad9c9b003baa41d97fa",
+  "files": 769,
+  "scope": "Six verified receipt/response/scenario/runtime files per shard plus the full retrospective audit. Model weights and other logs are not included."
+}

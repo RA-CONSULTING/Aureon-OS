@@ -1,0 +1,59 @@
+{
+  "schema": "stage1-fixture-diversity/v1",
+  "source_sha256": "186938d13aaf2d69b2ab58bcf598e4af4be14b3fdfa05388fc652f694169f110",
+  "fixture_records": 5120,
+  "unique_user_prompts": 514,
+  "families": {
+    "supported": {
+      "records": 512,
+      "unique_prompts": 60,
+      "max_repetitions": 16
+    },
+    "conflict": {
+      "records": 512,
+      "unique_prompts": 4,
+      "max_repetitions": 145
+    },
+    "insufficient": {
+      "records": 512,
+      "unique_prompts": 10,
+      "max_repetitions": 61
+    },
+    "injection": {
+      "records": 512,
+      "unique_prompts": 428,
+      "max_repetitions": 4
+    },
+    "restricted": {
+      "records": 512,
+      "unique_prompts": 1,
+      "max_repetitions": 512
+    },
+    "causality": {
+      "records": 512,
+      "unique_prompts": 1,
+      "max_repetitions": 512
+    },
+    "stale_provenance": {
+      "records": 512,
+      "unique_prompts": 4,
+      "max_repetitions": 145
+    },
+    "consent_boundary": {
+      "records": 512,
+      "unique_prompts": 1,
+      "max_repetitions": 512
+    },
+    "care_under_cost": {
+      "records": 512,
+      "unique_prompts": 4,
+      "max_repetitions": 145
+    },
+    "memory_continuity": {
+      "records": 512,
+      "unique_prompts": 1,
+      "max_repetitions": 512
+    }
+  },
+  "limits": "Counts exact model-visible user prompts, excluding condition system context. Each fixture was requested twice per condition. Distinct scenario IDs are not distinct prompts. Lexical uniqueness alone does not establish semantic diversity."
+}

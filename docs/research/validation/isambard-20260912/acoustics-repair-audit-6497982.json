@@ -1,0 +1,134 @@
+{
+  "schema": "acoustics-repair-audit/v1",
+  "integrity_status": "PASS",
+  "array": "6497982",
+  "source_manifest_files_verified": 7,
+  "result_files": [
+    {
+      "file": "galerkin-6497989.json",
+      "sha256": "6c8bd627731378362c6a938f006bab0a9313415a29724cd13edc88b272dfe956",
+      "job": "6497989",
+      "task": "galerkin"
+    },
+    {
+      "file": "random-6497985.json",
+      "sha256": "7fcd6434d12296b8593740ed171dcff350865730525b5b463516d1cb8553f303",
+      "job": "6497985",
+      "task": "random"
+    },
+    {
+      "file": "galerkin-6497988.json",
+      "sha256": "f6e698ceddd3175042238686c0d08a64c192f74b48f4b9a860bc9ad62505f91e",
+      "job": "6497988",
+      "task": "galerkin"
+    },
+    {
+      "file": "controls-6497982.json",
+      "sha256": "8eed4413d09b1d8617ed23e984bad04a7c6a105452fca942c649fe6f68de8f94",
+      "job": "6497982",
+      "task": "controls"
+    },
+    {
+      "file": "random-6497986.json",
+      "sha256": "bc34e974562b6eb21886e6b59870718a7d25d665acabda7a48deaafaeb89cdc3",
+      "job": "6497986",
+      "task": "random"
+    },
+    {
+      "file": "selftest-6497961.json",
+      "sha256": "3be43ce32b2646139d124ff379446748648d9703eb0524c13455723634e4035b",
+      "job": "6497961",
+      "task": "selftest"
+    },
+    {
+      "file": "galerkin-6497987.json",
+      "sha256": "80feb2ddf61fd9820a6b13d708b6e195b17052dbddbb605f0f5900477c9d240b",
+      "job": "6497987",
+      "task": "galerkin"
+    },
+    {
+      "file": "random-6497984.json",
+      "sha256": "78dbc75a36b2d8f1a59f1a2a782d88026c6dc26ee065436ac2681b1bc01b1738",
+      "job": "6497984",
+      "task": "random"
+    }
+  ],
+  "random_solver": {
+    "seeds": [
+      1,
+      2,
+      3
+    ],
+    "modes_per_seed": 26,
+    "max_relative_eigenvalue_error": 1.1856796456442554e-13,
+    "max_relative_residual": 1.1937014833654236e-12
+  },
+  "corrected_galerkin": {
+    "cutoffs": [
+      200,
+      300,
+      380
+    ],
+    "basis_sizes": [
+      355,
+      1100,
+      2166
+    ],
+    "fundamental_hz": 16.441915028382137,
+    "max_relative_change_300_to_380_first8": 0.0004959992809604015,
+    "max_relative_change_300_to_380_all26": 0.003617361388687862,
+    "historical_fd_comparisons": {
+      "0.15": {
+        "first_8_max_relative_difference": 0.0037480693783973076,
+        "historical_max_relative_residual": 0.9000772161881756,
+        "first_8_max_relative_residual": 0.2009373221442622
+      },
+      "0.10": {
+        "first_8_max_relative_difference": 0.0010977461196553671,
+        "historical_max_relative_residual": 1.4094361700918563,
+        "first_8_max_relative_residual": 0.29885025967771944
+      }
+    }
+  },
+  "all26_bare_revalidation": {
+    "0.15": {
+      "modes": 26,
+      "max_relative_error": 9.522341105429171e-14,
+      "max_relative_residual": 2.3612064285647123e-11,
+      "strict_pass": true
+    },
+    "0.10": {
+      "modes": 26,
+      "max_relative_error": 1.561677888343882e-14,
+      "max_relative_residual": 2.3625420239303494e-10,
+      "strict_pass": true
+    },
+    "0.05": {
+      "modes": 26,
+      "max_relative_error": 7.829860366399039e-14,
+      "max_relative_residual": 6.480960285945513e-09,
+      "strict_pass": true
+    },
+    "0.025": {
+      "modes": 26,
+      "max_relative_error": 5.127112930416018e-12,
+      "max_relative_residual": 1.079170878367729e-07,
+      "strict_pass": false
+    }
+  },
+  "historical_coffer_fd_validation": "FAIL: reported residuals exceed the 1e-3 acceptance bound; small frequency differences alone do not validate these historical FD solves. Replacement geometry jobs are required.",
+  "corrected_schumann_comparison": {
+    "statistic": "minimum relative distance from any 0.1<f<=60 Hz mode to the fixed Schumann set, once per room",
+    "chamber_value": 0.021632264872435046,
+    "null_at_least_as_close": 6402,
+    "null_rooms": 10000,
+    "empirical_fraction": 0.6402,
+    "plus_one_rank_p": 0.6402359764023597,
+    "interpretation": "Calibration against the specified synthetic room generator; not a test of design intent. Replaces the invalid comparison of chamber modes with room-level minima."
+  },
+  "null_hit_both_2pct": 0.0628,
+  "null_hit_both_1pct": 0.0315,
+  "frozen_historical_verdict": "INCONCLUSIVE",
+  "interpretation": "New random-start and basis/control checks passed. Historical coffer FD solves failed residual acceptance and require replacement. The finest historical bare grid misses the 1e-8 residual target but meets its 1e-3 acceptance bound; all 26 frequencies match the discrete oracle. Original protocol verdict preserved; no distinctive chamber tuning established.",
+  "archive_sha256": "8cf756dbdf59e6d66a51816226e59d2b08585b05c96c904f5539f6709a927679"
+}

@@ -1,0 +1,41 @@
+{
+  "archive": "C:\\Users\\samle\\Documents\\Codex\\2026-09-05\\k\\outputs\\stage1-v2-evaluation-campaign-v1.tar.gz",
+  "sha256": "0096059f0fbb9839654ab2acd0fc02efcb0015f09c4dc329256bb5d80bf3e864",
+  "remote": "/projects/u6vs/hnc-organism/expansion-20260912/stage1-v2-evaluation-v1",
+  "plan": {
+    "ceiling_node_hours": 6.0,
+    "chosen_concurrency": 128,
+    "gpus": 16,
+    "logical_evaluation_responses": 184320,
+    "nodes": 4,
+    "pooled": {
+      "128": {
+        "blocks": 2,
+        "new_responses": 3840,
+        "responses_per_second": 19.312006299715023,
+        "seconds": 198.84003455698257,
+        "transport_failures": 0
+      },
+      "32": {
+        "blocks": 2,
+        "new_responses": 3840,
+        "responses_per_second": 10.232570815121973,
+        "seconds": 375.2722624040034,
+        "transport_failures": 0
+      }
+    },
+    "preemption_or_oom_log_lines": [],
+    "projected_service_seconds_per_node": 2386.080414683791,
+    "projected_total_service_seconds": 9544.321658735164,
+    "rule_source": "frozen PROTOCOL.md",
+    "status": "READY_TO_STAGE",
+    "walltime_seconds_per_node": 5400,
+    "prepared_utc": "2026-09-12T12:30:21.135317+00:00",
+    "pilot_job_id": "6502006",
+    "pilot_audit_sha256": "c68001600ba6488b4451db516fc510ef2cd0debd13b7063d352df823f9ffbb09",
+    "frozen_input_manifest_sha256": "cafd48d0c4abeedfc2c832c5aefa56c4aaba45a6252f47dad3b5c3dec0885504",
+    "evaluation_model_outcomes_observed": false,
+    "protocol_changes": "None. Node count, walltime and concurrency follow the frozen pilot resource rule."
+  },
+  "campaign_manifest_sha256": "761c6e0385230dc40f79ddca3ce319fc85123907d79d60a3ec69118bdc0cbea6"
+}

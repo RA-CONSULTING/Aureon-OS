@@ -1,0 +1,59 @@
+{
+  "schema": "hnc-harmonic-lidar-protocol/v1",
+  "registered_utc": "2026-08-26T19:30:00Z",
+  "research_question": "Does the exact tabled HNC phi-squared Fourier cascade outperform non-phi controls for detecting and localising circular terrain anomalies on blinded synthetic holdouts at a calibrated 5 percent false-positive rate?",
+  "reference": {
+    "outer_radius_m": 15000.0,
+    "ratio": 2.618033988749895,
+    "table_shell_indices": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "prose_shell_count": 9,
+    "implemented_shell_count": 10,
+    "bandwidth_fraction": 0.25,
+    "weight": "1/(n+1)",
+    "formula": "sum_n weight_n * exp(-0.5*((f_r-f_n)/(0.25*f_n))^2)"
+  },
+  "controls": {
+    "fixed_ratios": {
+      "sqrt2": 1.4142135623730951,
+      "phi": 1.618033988749895,
+      "octave": 2.0,
+      "three": 3.0
+    },
+    "additional": ["linear_frequency", "laplacian_of_gaussian", "deterministic_jitter_nulls"]
+  },
+  "synthetic_design": {
+    "positive_fraction": 0.5,
+    "backgrounds": ["spectral_terrain", "planar_slope", "directional_ridge", "missing_patch", "resampling_blur"],
+    "target": "generic raised pipe with one annular rim; target scales are sampled independently of phi",
+    "train_tune_holdout": "independent calibration and test generators; no test-labelled tuning",
+    "primary_metrics": ["AUROC", "AUPRC", "realised_FPR", "TPR", "balanced_accuracy", "localisation_error_pixels"],
+    "paired_inference": "shard-level paired sign-flip tests with familywise adjustment"
+  },
+  "real_data": {
+    "dataset": "OpenTopoData SRTM30m",
+    "paper_centre": {"lat": -18.300, "lon": 124.867},
+    "comparison_centre": {"lat": -18.309, "lon": 124.867},
+    "grids": [
+      {"rows": 80, "cols": 80, "north_south_km": 6.3, "east_west_km": 6.7},
+      {"rows": 40, "cols": 40, "north_south_km": 10.5, "east_west_km": 11.0}
+    ],
+    "claim_class": "descriptive_real_data",
+    "ground_truth": "none supplied"
+  },
+  "pass_rule": {
+    "phi2_min_auroc": 0.80,
+    "realised_fpr_interval": [0.04, 0.06],
+    "minimum_auroc_margin_over_every_fixed_control": 0.02,
+    "familywise_alpha": 0.05,
+    "localisation": "no worse than best fixed control",
+    "required_stability": ["all nuisance strata", "both grid geometries"]
+  },
+  "resource_cap": {
+    "array_tasks": 64,
+    "gpus_per_task": 1,
+    "time_minutes_per_task": 30,
+    "max_concurrent_tasks": 4,
+    "maximum_gpu_hours": 32.0
+  },
+  "boundary": "Synthetic or SRTM results are not physical measurements, independent validation, proof of a subsurface deposit, an excavation recommendation, or evidence of extractable energy."
+}

@@ -1,0 +1,6 @@
+{
+  "status": "PASS",
+  "tests_run": 2,
+  "audit_source_sha256": "bbfa0cffc1bcd9fc5755b001aa60057a07cdf751e420324305375c4fbf21645a",
+  "numpy": "2.3.5"
+}

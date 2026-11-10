@@ -1,0 +1,34 @@
+{
+  "job_id": "6504653",
+  "submitted_utc": "2026-09-12T14:50:37.618962+00:00",
+  "command": [
+    "sbatch",
+    "--parsable",
+    "--time=05:30:00",
+    "/projects/u6vs/hnc-organism/expansion-20260912/hnc-histories-v1/production.sbatch"
+  ],
+  "resource_decision": {
+    "decision": {
+      "status": "READY_TO_STAGE",
+      "projected_remaining_seconds": 14494.697765281046,
+      "walltime_seconds": 19800,
+      "ceiling_node_hours": 176.0,
+      "nodes": 32,
+      "gpus": 128,
+      "rate_rule": "Slowest pilot elapsed/step; 25 percent margin plus 15 minutes; half-hour ceiling; maximum eight hours",
+      "checkpoint_wave_bytes": 27157151104,
+      "projected_checkpoint_storage_bytes": 923343137536,
+      "filesystem_free_bytes": 219521516560384
+    },
+    "pilot_audit_sha256": "569a77b5cc3967ce9994712f2ce8d85beb37810865a92ff00f3f467f922b5615",
+    "pilot_audit_job": "6504609",
+    "pilot_job": "6504297",
+    "input_manifest_sha256": "54dc5fc6e61448a3d9b71681f5c60ccae1e23a70f0d99b9f5a25e5afb4993dc9",
+    "decision_utc": "2026-09-12T14:50:37.596463+00:00"
+  },
+  "nodes": 32,
+  "gpus": 128,
+  "trajectory_count": 25214464,
+  "horizon": 33554432,
+  "ceiling_node_hours": 176.0
+}

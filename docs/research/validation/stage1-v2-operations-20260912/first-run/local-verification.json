@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "verified_utc": "2026-09-12T14:09:03.365326+00:00",
+  "verified_archive_sha256": "8acf289adf05a241270d4744ed8337bf9b1f4c2e7024c8c3d049ef8200152e8e",
+  "archive_members_verified": 135,
+  "final_request_records": 184320,
+  "transport_failures": 39484,
+  "successful_transport_responses": 144836,
+  "collection_operational_status": "DEGRADED_SERVICE_FAILURE",
+  "actual_requests_rechecked": true,
+  "raw_outputs_reparsed_and_rescored": true,
+  "paired_template_statistics_recomputed": true,
+  "per_shard": [
+    {
+      "shard": 0,
+      "records": 46080,
+      "transport_failures": 39484
+    },
+    {
+      "shard": 1,
+      "records": 46080,
+      "transport_failures": 0
+    },
+    {
+      "shard": 2,
+      "records": 46080,
+      "transport_failures": 0
+    },
+    {
+      "shard": 3,
+      "records": 46080,
+      "transport_failures": 0
+    }
+  ],
+  "script_sha256": "0df510651c4d0b001fd503a52ea39d593e231bac1d7a3bedecd7055674d92751",
+  "original_failed_job_preserved": true
+}

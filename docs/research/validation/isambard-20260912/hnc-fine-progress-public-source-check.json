@@ -1,0 +1,14 @@
+{
+  "timestamp_utc": "2026-09-12T08:45:44.050466+00:00",
+  "production_job": "6498143",
+  "ranks_with_receipts": 128,
+  "latest_stop_counts": {
+    "10485760": 60,
+    "9437184": 68
+  },
+  "latest_job_counts": {
+    "6498143": 128
+  },
+  "scheduler": "             JOBID      STATE       TIME  NODES NODELIST(REASON)\n           6498144    PENDING       0:00      1 (Dependency)\n           6498143    RUNNING    1:07:24     32 nid[010007-010008,010013-010014,010016-010018,010035,010038-010039,010043,010049-010050,010052,010067-010069,010071,010073-010074,010076,010081-010082,010089-010097]\n",
+  "scope": "Progress from completed receipt records only; result/checkpoint hashes were not re-audited in this progress snapshot."
+}

@@ -1,0 +1,17 @@
+{
+  "status": "COMPLETED",
+  "job": {
+    "JobIDRaw": "6502006",
+    "JobName": "stage1-v2-pilot",
+    "State": "COMPLETED",
+    "ExitCode": "0:0",
+    "Start": "2026-09-12T12:13:47",
+    "End": "2026-09-12T12:27:00",
+    "ElapsedRaw": "793",
+    "AllocNodes": "1",
+    "AllocTRES": "billing=288,cpu=288,gres/gpu=4,mem=460000M,node=1"
+  },
+  "archive": "/projects/u6vs/hnc-organism/expansion-20260912/stage1-v2/pilot-6502006-evidence.tar.gz",
+  "sha256": "697a0db7d756463a3dc727d358e2f19d67203d0fd8329454c84c2c447a9ebc9a",
+  "bytes": 6410212
+}
