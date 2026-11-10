@@ -258,6 +258,15 @@ def relay_state(module_name: str, kind: str, payload: Optional[dict] = None) -> 
         return
 
 
+def _outer_repair_timeout():
+    # Follows the suite safety net: none by default, else the suite limit plus room for the retest.
+    try:
+        value = float(os.environ.get("AUREON_SELF_REPAIR_SUITE_TIMEOUT_S", "0") or 0)
+    except ValueError:
+        value = 0.0
+    return value * 3 + 300 if value > 0 else None
+
+
 def _start_queen_repair_loop(module_name: str) -> None:
     """Let the Queen run Aureon's own self-repair on a separate checkout.
 
@@ -288,7 +297,8 @@ def _start_queen_repair_loop(module_name: str) -> None:
             try:
                 env = dict(os.environ, AUREON_SELF_REPAIR_ENABLE="1")  # operator opted in via REPAIR_ROOT
                 done = subprocess.run([sys.executable, "-m", "aureon_fusion.repair", "--root", root],
-                                      cwd=root, env=env, capture_output=True, text=True, timeout=3600)
+                                      cwd=root, env=env, capture_output=True, text=True,
+                                      timeout=_outer_repair_timeout())
                 try:
                     report = json.loads(done.stdout[done.stdout.rindex("\n{") + 1:]
                                         if "\n{" in done.stdout else done.stdout[done.stdout.index("{"):])

@@ -67,20 +67,37 @@ _OPS: dict[type, tuple[str, Callable[[Any, Any], Any]]] = {
 _OP_TOKENS = {token: (node, func) for node, (token, func) in _OPS.items()}
 
 
+class SuiteTimedOut(Exception):
+    """The full suite ran past the operator's safety-net limit."""
+
+
+def _suite_timeout() -> float | None:
+    # No fixed cap by default: the suite runs until it finishes. AUREON_SELF_REPAIR_SUITE_TIMEOUT_S > 0 sets a safety net.
+    try:
+        value = float(os.environ.get("AUREON_SELF_REPAIR_SUITE_TIMEOUT_S", "0") or 0)
+    except ValueError:
+        value = 0.0
+    return value if value > 0 else None
+
+
 def _pytest(root: Path) -> subprocess.CompletedProcess[str]:
     for cache in root.rglob("__pycache__"):
         if cache.is_dir():
             shutil.rmtree(cache, ignore_errors=True)
     env = dict(os.environ)
     env["PYTHONDONTWRITEBYTECODE"] = "1"
-    return subprocess.run(
-        [sys.executable, "-m", "pytest", "-q", "--tb=short", "-p", "no:cacheprovider"],
-        cwd=root,
-        text=True,
-        capture_output=True,
-        timeout=120,
-        env=env,
-    )
+    limit = _suite_timeout()
+    try:
+        return subprocess.run(
+            [sys.executable, "-m", "pytest", "-q", "--tb=short", "-p", "no:cacheprovider"],
+            cwd=root,
+            text=True,
+            capture_output=True,
+            timeout=limit,
+            env=env,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise SuiteTimedOut(limit) from exc
 
 
 def _git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
@@ -428,7 +445,7 @@ def _attempt(root: Path, output: str, architect: Any) -> dict[str, Any] | None:
     by_function: dict[str, list[dict[str, Any]]] = {}
     for item in assertions:
         by_function.setdefault(item["function"], []).append(item)
-    candidates: list[tuple[str, str, str]] = []
+    candidates: list[tuple[str, str, str, str]] = []
     for function_name, group in by_function.items():
         located = _function(root, function_name)
         if located is None:
@@ -444,11 +461,11 @@ def _attempt(root: Path, output: str, architect: Any) -> dict[str, Any] | None:
         if edit is None:
             continue
         old, new = edit
-        candidates.append((relative, old, new))
-    order = _rank_repair_paths([relative for relative, _old, _new in candidates])
+        candidates.append((relative, old, new, function_name))
+    order = _rank_repair_paths([item[0] for item in candidates])
     rank = {path: index for index, path in enumerate(order)}
     candidates.sort(key=lambda item: rank.get(item[0], len(order)))
-    for relative, old, new in candidates:
+    for relative, old, new, function_name in candidates:
         refused = _refuse_edit(root, relative, old, new)
         if refused:
             return {
@@ -461,11 +478,25 @@ def _attempt(root: Path, output: str, architect: Any) -> dict[str, Any] | None:
         applied = architect.apply_edit(relative, old, new, backup=True)
         if not applied:
             continue
-        return {"path": relative, "kind": "implementation", "change": f"{old} -> {new}"}
+        proof = by_function.get(function_name, [])  # the assertions that proved it; authors her regression test
+        return {"path": relative, "kind": "implementation", "change": f"{old} -> {new}", "proof": proof}
     return None
 
 
 def repair_sandbox(root: Path) -> dict[str, Any]:
+    """Repair a project in place; a suite timeout becomes a held report, never a crash."""
+    try:
+        return _repair_sandbox(root)
+    except SuiteTimedOut as exc:
+        root = root.resolve()
+        branch = (_git(root, "rev-parse", "--abbrev-ref", "HEAD").stdout or "").strip()
+        append_review(root, "repair_held", reason="suite_timed_out", branch=branch, timeout_s=exc.args[0])
+        return {"schema": SCHEMA, "root": str(root), "live_trading": False, "may_act": False,
+                "edited_test": False, "status": "held", "reason": "suite_timed_out",
+                "timeout_s": exc.args[0], "branch": branch, "repairs": []}
+
+
+def _repair_sandbox(root: Path) -> dict[str, Any]:
     """Repair a project in place. Edits implementations only, then retests."""
 
     root = root.resolve()
@@ -495,6 +526,10 @@ def repair_sandbox(root: Path) -> dict[str, Any]:
         append_review(root, "repair_skipped", reason="tests_already_passed", branch=branch)
         return report
     output = (before.stdout or "") + "\n" + (before.stderr or "")
+    from aureon.autonomous import queen_benchmark_gate as gate
+
+    census_before = gate.census_tests(root)
+    red_before = gate.failed_nodeids(before.stdout or "")
     for _ in range(MAX_REPAIRS):
         try:
             attempt = _attempt(root, output, architect)
@@ -536,7 +571,21 @@ def repair_sandbox(root: Path) -> dict[str, Any]:
         before = after
         if after.returncode == 0:
             paths = sorted({item["path"] for item in report["repairs"] if item.get("path")})
-            _git(root, "add", *paths)
+            verdict = gate.verify_repair(root, census_before=census_before, red_before=red_before,
+                                         repairs=report["repairs"], architect=architect)
+            report["gate"] = verdict
+            if not verdict["verified"]:
+                # A pass the gate cannot prove does not count: revert, no commit.
+                _git(root, "checkout", "--", *paths)
+                if verdict.get("authored_test"):
+                    (root / verdict["authored_test"]).unlink(missing_ok=True)
+                report.update({"status": "unverified", "reason": ",".join(verdict["reasons"]), "paths": paths})
+                append_review(root, "repair_unverified", reason=report["reason"], branch=branch,
+                              path=",".join(paths), gate=verdict)
+                return report
+            if verdict.get("authored_test"):
+                report["authored_test"] = verdict["authored_test"]
+            _git(root, "add", *paths, *([verdict["authored_test"]] if verdict.get("authored_test") else []))
             commit = _git(root, "commit", "-m", "self-repair: tests pass after " + ", ".join(paths))
             head = _git(root, "rev-parse", "--short", "HEAD")
             report.update(
@@ -567,6 +616,9 @@ def repair_sandbox(root: Path) -> dict[str, Any]:
                 path=",".join(paths),
                 commit=report["commit"],
                 tests_passed=True,
+                verified=True,
+                authored_test=report.get("authored_test"),
+                seed_benchmarks=verdict["seed_benchmarks"],
             )
             return report
     report["reason"] = "repair_limit_reached"
