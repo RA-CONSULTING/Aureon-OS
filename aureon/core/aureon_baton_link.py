@@ -414,6 +414,10 @@ def _start_queen_repair_loop(module_name: str) -> None:
                 except Exception:
                     report = {"status": "unparsed", "returncode": done.returncode}
                 gate = report.get("gate") or {}
+                if report.get("diagnosis") is not None:  # what she sees failing; full record in state/queen_repair_diagnosis.json
+                    relay_state("queen.self_repair", "seeing", {
+                        "failures": report.get("failures"), "diagnosis": report.get("diagnosis"),
+                        "research": report.get("research"), "hints": report.get("hints")})
                 relay_state("queen.self_repair", "building", {
                     "status": report.get("status"), "branch": report.get("branch"),
                     "reason": str(report.get("reason", ""))[:300],

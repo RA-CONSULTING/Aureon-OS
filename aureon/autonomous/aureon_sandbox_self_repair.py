@@ -371,7 +371,7 @@ def _rank_repair_paths(paths: list[str]) -> list[str]:
     return ranked
 
 
-def _name_error_edit(root: Path, output: str) -> tuple[str, str, str] | None:
+def _name_error_edit(root: Path, output: str, hints: list[str] | None = None) -> tuple[str, str, str] | None:
     match = re.search(r"NameError: name '([A-Za-z_][A-Za-z0-9_]*)' is not defined", output)
     if not match:
         return None
@@ -402,7 +402,10 @@ def _name_error_edit(root: Path, output: str) -> tuple[str, str, str] | None:
             continue
         if not re.search(rf"\b{re.escape(missing)}\b", source):
             continue
-        candidates = [name for name in _names_in_file(tree) if _distance_one(missing, name)]
+        names = _names_in_file(tree)
+        candidates = [name for name in names if _distance_one(missing, name)]
+        if len(candidates) != 1:  # Python's own "Did you mean" or her research may name it; still gate-proven
+            candidates = [name for name in (hints or []) if name in names and name != missing][:1]
         if len(candidates) != 1:
             continue
         if len(re.findall(rf"\b{re.escape(missing)}\b", source)) != 1:
@@ -423,8 +426,8 @@ def _refuse_edit(root: Path, relative: str, old: str, new: str) -> str | None:
     return block_reason_for_write(relative, updated, previous, root)
 
 
-def _attempt(root: Path, output: str, architect: Any) -> dict[str, Any] | None:
-    name_edit = _name_error_edit(root, output)
+def _attempt(root: Path, output: str, architect: Any, hints: list[str] | None = None) -> dict[str, Any] | None:
+    name_edit = _name_error_edit(root, output, hints)
     if name_edit:
         relative, missing, replacement = name_edit
         refused = _refuse_edit(root, relative, missing, replacement)
@@ -530,9 +533,22 @@ def _repair_sandbox(root: Path) -> dict[str, Any]:
 
     census_before = gate.census_tests(root)
     red_before = gate.failed_nodeids(before.stdout or "")
+    hints: list[str] = []
+    try:  # diagnosis per failing test, plus opt-in read-only research (AUREON_QUEEN_REPAIR_WEB=1)
+        from aureon.autonomous import queen_repair_research as research
+
+        diagnosis = research.diagnose(root, output)
+        findings = research.research(root, diagnosis)
+        research.write_diagnosis(root, diagnosis, findings)
+        hints = [name for record in diagnosis for name in research.hinted_names(record, findings)]
+        report.update({"failures": len(diagnosis), "diagnosis": research.compact(diagnosis),
+                       "research": [{"test": f["test_id"], "sources": len(f["sources"])} for f in findings],
+                       "hints": hints[:10]})
+    except Exception as exc:  # diagnosis must never stop the repair
+        report["diagnosis_error"] = f"{type(exc).__name__}: {exc}"[:300]
     for _ in range(MAX_REPAIRS):
         try:
-            attempt = _attempt(root, output, architect)
+            attempt = _attempt(root, output, architect, hints)
         except SelfRepairBlocked as exc:
             report["reason"] = exc.reason
             append_review(root, "repair_refused", reason=exc.reason, branch=branch)
