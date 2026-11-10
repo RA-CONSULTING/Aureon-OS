@@ -202,7 +202,14 @@ def _probe_exchange_balances() -> dict[str, Any]:
 
             client = CapitalClient()
             observation = client.get_account_balance()
-            raw = getattr(observation, "balances", None) or {}
+            # CapitalClient.get_account_balance() returns a BalanceObservation,
+            # which IS the currency map (a dict subclass). It has no
+            # ``.balances`` attribute, so reading that attribute always gave {}
+            # and reported "capital balance had no currency".
+            if isinstance(observation, dict):
+                raw = dict(observation)
+            else:
+                raw = getattr(observation, "balances", None) or {}
             reason = "" if getattr(observation, "truth_status", "") in {"real_derived", "real_observed"} else str(
                 getattr(observation, "reason", "") or getattr(client, "init_error", "") or ""
             )

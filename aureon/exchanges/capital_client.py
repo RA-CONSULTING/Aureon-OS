@@ -1002,10 +1002,16 @@ class CapitalClient:
                 balance_data.get("balance") if isinstance(balance_data, dict) else None,
                 nonnegative=True,
             )
-            available = _finite_number(
+            # Capital reports a negative ``available`` when open positions use
+            # more margin than the account has free. That is a real provider
+            # reading, not a broken row: keep the account (its ``balance`` is
+            # still the equity), record the reported figure and the deficit,
+            # and expose zero free margin so nothing downstream sizes off it.
+            available_reported = _finite_number(
                 balance_data.get("available") if isinstance(balance_data, dict) else None,
-                nonnegative=True,
             )
+            available = None if available_reported is None else max(0.0, available_reported)
+            margin_deficit = 0.0 if available_reported is None else max(0.0, -available_reported)
             if not account_id or not currency or not status or balance is None or available is None:
                 incomplete_rows += 1
                 continue
@@ -1017,6 +1023,8 @@ class CapitalClient:
                 "preferred": raw.get("preferred") is True,
                 "balance": balance,
                 "available": available,
+                "available_reported": available_reported,
+                "margin_deficit": margin_deficit,
                 "currency": currency,
                 "truth_status": "real_observed",
                 "reason": "fresh_provider_account_receipt",
@@ -1028,7 +1036,11 @@ class CapitalClient:
                 "eligible_for_learning": False,
                 "field_provenance": {
                     "balance": {"source": "capital.accounts.balance.balance", "source_timestamp": fresh_source_timestamp},
-                    "available": {"source": "capital.accounts.balance.available", "source_timestamp": fresh_source_timestamp},
+                    "available": {
+                        "source": "capital.accounts.balance.available",
+                        "source_timestamp": fresh_source_timestamp,
+                        "floored_at_zero": bool(margin_deficit > 0),
+                    },
                     "currency": {"source": "capital.accounts.currency", "source_timestamp": fresh_source_timestamp},
                 },
             })

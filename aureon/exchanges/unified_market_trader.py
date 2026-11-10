@@ -2153,7 +2153,14 @@ class UnifiedMarketTrader:
             return
         try:
             observation = client.get_account_balance()
-            raw = getattr(observation, "balances", None) or {}
+            # CapitalClient.get_account_balance() returns a BalanceObservation,
+            # which IS the currency map (a dict subclass). It has no
+            # ``.balances`` attribute, so reading that attribute always gave {}
+            # and reported "capital balance had no currency".
+            if isinstance(observation, dict):
+                raw = dict(observation)
+            else:
+                raw = getattr(observation, "balances", None) or {}
             reason = "" if getattr(observation, "truth_status", "") in {"real_derived", "real_observed"} else str(getattr(observation, "reason", "") or "")
             equity = None
             if not reason:
@@ -6038,6 +6045,15 @@ class UnifiedMarketTrader:
                     "reason": "kraken_spot_client_or_balance_unavailable",
                 }
             )
+            self._kraken_spot_portfolio_posture_cache = posture
+            self._kraken_spot_portfolio_posture_at = now
+            return dict(posture)
+
+        if getattr(client, "dry_run", False) is True:
+            # KRAKEN_DRY_RUN=true: the client synthesises balances from
+            # DRY_RUN_BALANCE_* env vars and never calls Kraken, so its cache
+            # clock stays at 0. Say that plainly instead of "cache stale".
+            posture["reason"] = "kraken_client_dry_run_no_live_balance"
             self._kraken_spot_portfolio_posture_cache = posture
             self._kraken_spot_portfolio_posture_at = now
             return dict(posture)
