@@ -290,9 +290,23 @@ def _start_queen_repair_loop(module_name: str) -> None:
     except Exception:
         return  # another process already runs the loop
     interval = float(os.getenv("AUREON_QUEEN_REPAIR_INTERVAL_S", "1800") or 1800)
+    # Mutation + benchmark-drift check (queen_benchmark_gate); slower, so throttled.
+    silent_every = float(os.getenv("AUREON_QUEEN_SILENT_CHECK_INTERVAL_S", "1800") or 1800)
+    silent_due = [0.0]
 
     def _loop() -> None:
         while True:
+            if time.time() >= silent_due[0]:
+                silent_due[0] = time.time() + silent_every
+                try:  # summary -> queen.self_repair (seeing); the gate also writes the review log
+                    check = subprocess.run([sys.executable, "-m", "aureon.autonomous.queen_benchmark_gate",
+                                            "--root", root, "--no-relay"],
+                                           cwd=root, env=dict(os.environ), capture_output=True, text=True, timeout=1800)
+                    out = check.stdout
+                    summary = json.loads(out[out.rindex("\n{") + 1:] if "\n{" in out else out[out.index("{"):])["summary"]
+                    relay_state("queen.self_repair", "seeing", {"silent_wrong": summary})
+                except Exception as exc:
+                    relay_state("queen.self_repair", "not_doing", {"silent_wrong": f"{type(exc).__name__}: {exc}"[:300]})
             relay_state("queen.self_repair", "trying", {"root": root})
             try:
                 env = dict(os.environ, AUREON_SELF_REPAIR_ENABLE="1")  # operator opted in via REPAIR_ROOT
@@ -304,10 +318,13 @@ def _start_queen_repair_loop(module_name: str) -> None:
                                         if "\n{" in done.stdout else done.stdout[done.stdout.index("{"):])
                 except Exception:
                     report = {"status": "unparsed", "returncode": done.returncode}
+                gate = report.get("gate") or {}
                 relay_state("queen.self_repair", "building", {
                     "status": report.get("status"), "branch": report.get("branch"),
                     "reason": str(report.get("reason", ""))[:300],
-                    "repairs": len(report.get("repairs") or [])})
+                    "repairs": len(report.get("repairs") or []),
+                    "verified": gate.get("verified"), "authored_test": gate.get("authored_test"),
+                    "seed_ok": (gate.get("seed_benchmarks") or {}).get("ok")})
             except Exception as exc:
                 relay_state("queen.self_repair", "not_doing", {"error": f"{type(exc).__name__}: {exc}"[:300]})
             time.sleep(interval)
