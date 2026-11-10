@@ -61,14 +61,23 @@ _SKIP_NAMES = {"skip", "skipif", "xfail", "importorskip"}
 # ── pytest helpers ──────────────────────────────────────────────────────────
 
 
+def _limit() -> float | None:
+    """Same rule as the repair suite: no fixed cap unless AUREON_SELF_REPAIR_SUITE_TIMEOUT_S > 0."""
+    try:
+        value = float(os.environ.get("AUREON_SELF_REPAIR_SUITE_TIMEOUT_S", "0") or 0)
+    except ValueError:
+        value = 0.0
+    return value if value > 0 else None
+
+
 def _pytest_paths(root: Path, paths: list[str], env_extra: dict[str, str] | None = None,
-                  timeout: int = 300) -> subprocess.CompletedProcess[str]:
+                  timeout: float | None = None) -> subprocess.CompletedProcess[str]:
     env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1",
                AUREON_LLM_OFFLINE="1", AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS="1")
     env.update(env_extra or {})
     return subprocess.run(
         [sys.executable, "-m", "pytest", "-q", "--tb=line", "-p", "no:cacheprovider", *paths],
-        cwd=root, text=True, capture_output=True, timeout=timeout, env=env,
+        cwd=root, text=True, capture_output=True, timeout=timeout if timeout is not None else _limit(), env=env,
     )
 
 
@@ -218,11 +227,11 @@ def red_then_green(root: Path, test_path: str, repaired_paths: list[str]) -> dic
                 return {"red_before": False, "green_after": False, "reason": f"no HEAD source for {relative}"}
             fixed[relative] = (root / relative).read_bytes()
             (root / relative).write_bytes(original)
-        red = _pytest_paths(root, [test_path], timeout=120).returncode != 0
+        red = _pytest_paths(root, [test_path]).returncode != 0
     finally:
         for relative, content in fixed.items():
             (root / relative).write_bytes(content)
-    green = _pytest_paths(root, [test_path], timeout=120).returncode == 0
+    green = _pytest_paths(root, [test_path]).returncode == 0
     return {"red_before": red, "green_after": green}
 
 
@@ -236,7 +245,10 @@ def verify_repair(root: Path, *, census_before: dict[str, dict[str, int]], red_b
     authored = author_regression_test(root, repairs, architect)
     gate["authored_test"] = authored
     if authored:
-        gate["authored_red_green"] = red_then_green(root, authored, paths)
+        try:
+            gate["authored_red_green"] = red_then_green(root, authored, paths)
+        except subprocess.TimeoutExpired:
+            gate["authored_red_green"] = {"red_before": False, "green_after": False, "reason": "timed_out"}
     else:
         gate["authored_reason"] = "no value proof to author from (name_error repair)" if repairs else "no repairs"
     gate["weakened"] = weakened(census_before, census_tests(root))
@@ -345,6 +357,7 @@ def mutation_check(root: Path, targets: tuple[tuple[str, str], ...] = PRICING_TA
 
     def _run(spec: dict[str, Any]) -> dict[str, Any]:
         try:
+            # A mutant can loop forever, so each one keeps its own bound; a hang counts as caught.
             done = _pytest_paths(root, [PRICING_TESTS, "-x"], {MUTANT_ENV: json.dumps(spec)}, timeout=180)
             return {**spec, "killed": done.returncode != 0, "returncode": done.returncode}
         except subprocess.TimeoutExpired:
