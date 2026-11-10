@@ -1456,11 +1456,16 @@ class KrakenClient:
 
     def get_account_balance(self) -> Dict[str, float]:
         """Return balances as a simple asset -> amount map (free+locked)."""
+        # last_balance_source tells callers whether an empty map means
+        # "the account is empty" (live), "this was synthetic" (dry_run), or
+        # "the read failed" (error). An empty map alone cannot say which.
         try:
             acct = self.account()
         except Exception as exc:
             self.last_error = str(exc)
+            self.last_balance_source = "error"
             return {}
+        self.last_balance_source = "dry_run_synthetic" if self.dry_run else "live"
 
         out: Dict[str, float] = {}
         for bal in acct.get("balances", []):

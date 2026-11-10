@@ -74,6 +74,22 @@ def log_queen(msg):
     time.sleep(0.3)
 
 
+def kraken_balance_not_live(client) -> str:
+    """'' when the last Kraken balance read was live, else a status word.
+
+    KRAKEN_DRY_RUN=true makes the client return synthetic balances (0 unless
+    DRY_RUN_BALANCE_* is set), and a failed read returns {}. Neither is
+    evidence the account is empty, so neither may be reported as NO_FUNDS.
+    """
+    if client is None:
+        return 'BALANCE_UNREADABLE'
+    if getattr(client, 'dry_run', False) is True:
+        return 'BALANCE_DRY_RUN'
+    if getattr(client, 'last_balance_source', 'live') == 'error':
+        return 'BALANCE_UNREADABLE'
+    return ''
+
+
 def queen_answer(question, queen_approves):
     """Answer a y/N prompt. Interactive runs still ask the operator; headless
     runs (no TTY, e.g. under the master launcher) take the Queen's verdict."""
@@ -703,6 +719,10 @@ class UnifiedKillChain:
                     available_usd = float(balances.get('ZUSD', 0)) + float(balances.get('USD', 0))
                 except:
                     available_usd = 0
+                unread = kraken_balance_not_live(self.kraken)
+                if unread:
+                    log_sniper(f"⚠️ Kraken balance not read live ({unread}) - not a funds verdict")
+                    return {'status': unread, 'exchange': 'kraken', 'balance': None}
                 
                 if available_usd < 1:
                     log_sniper(f"⚠️ Insufficient USD on Kraken: ${available_usd:.2f}")
@@ -784,8 +804,12 @@ class UnifiedKillChain:
                         # Get available USD on Kraken for buying
                         kraken_balances = self.kraken.get_balance()
                         available_usd = float(kraken_balances.get('USD', 0))
+                        unread = kraken_balance_not_live(self.kraken)
                         
-                        if available_usd < 10:
+                        if unread:
+                            log_sniper(f"⚠️ Kraken balance not read live ({unread}) - not a funds verdict")
+                            result = {'status': unread, 'exchange': 'kraken', 'balance': None}
+                        elif available_usd < 10:
                             log_sniper(f"⚠️ Insufficient USD on Kraken: ${available_usd:.2f}")
                             result = {'status': 'NO_FUNDS', 'exchange': 'kraken', 'balance': available_usd}
                         else:
