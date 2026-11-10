@@ -158,3 +158,17 @@ def test_diagnose_captures_variable_width_headers_and_deep_exception(tmp_path):
     assert rec["error"], "error text must not be empty"
     assert "differs from pin" in rec["error"]
     assert rec["exception"] == "ImportError"
+
+
+def test_diagnose_labels_a_file_not_found_for_an_existing_file_as_a_cwd_read(tmp_path):
+    (tmp_path / "data").mkdir()
+    (tmp_path / "data" / "info.txt").write_text("ok\n", encoding="utf-8")
+    output = (
+        "FAILED tests/test_b.py::test_present - FileNotFoundError: [Errno 2] "
+        "No such file or directory: 'data/info.txt'\n"
+        "FAILED tests/test_b.py::test_absent - FileNotFoundError: [Errno 2] "
+        "No such file or directory: 'data/gone.txt'\n"
+    )
+    records = {r["test_id"].split("::")[-1]: r for r in qr.diagnose(tmp_path, output)}
+    assert records["test_present"]["cause"] == "cwd_relative_read"
+    assert "cause" not in records["test_absent"]

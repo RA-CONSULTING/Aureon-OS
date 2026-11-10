@@ -616,6 +616,116 @@ def _attribute_close_match_edit(root: Path, output: str, blocked: set[str] | Non
     return None
 
 
+_MISSING_FILE = re.compile(r"FileNotFoundError: \[Errno 2\] No such file or directory: '([^']+)'")
+
+
+def _cwd_relative_missing(root: Path, output: str) -> list[str]:
+    """Relative paths a FileNotFoundError names that DO exist under the repo root.
+
+    Such a failure is not a missing file: the test read a cwd-relative path after
+    something earlier in the same process changed the working directory. The file
+    is there; only the reader depends on the process cwd.
+    """
+
+    found: list[str] = []
+    root_resolved = root.resolve()
+    for raw in _MISSING_FILE.findall(output or ""):
+        if not raw or Path(raw).is_absolute() or ".." in Path(raw).parts:
+            continue
+        try:
+            candidate = (root_resolved / raw).resolve()
+        except OSError:
+            continue
+        if root_resolved not in candidate.parents or not candidate.exists():
+            continue
+        if raw not in found:
+            found.append(raw)
+    return found
+
+
+def _offset(lines: list[str], lineno: int, col: int) -> int:
+    """Character offset of an AST (1-based line, UTF-8 byte column) position."""
+
+    before = sum(len(line) for line in lines[: lineno - 1])
+    return before + len(lines[lineno - 1].encode("utf-8")[:col].decode("utf-8", errors="ignore"))
+
+
+def _cwd_anchor_edit(root: Path, output: str, blocked: set[str] | None = None):
+    """Anchor a test's cwd-relative ``Path("<rel>")`` read at the repo root.
+
+    Shape: ``FileNotFoundError: ... '<rel>'`` where ``<rel>`` is a relative path
+    that exists under the repo root, raised by a failing test whose own function
+    builds it as ``Path("<rel>")``. The minimal honest fix is to make that read
+    independent of the process cwd: ``(Path(__file__).resolve().parents[k] /
+    "<rel>")`` where ``parents[k]`` is the repo root. Every sibling
+    ``Path("<literal>")`` in the same test function that is also a relative path
+    existing under the root is anchored the same way (one test, one reason).
+    Nothing else changes: the same file is read and every assertion stays.
+    Returns (relative_test_file, old_function_text, new_function_text, change).
+    """
+
+    missing = _cwd_relative_missing(root, output)
+    if not missing:
+        return None
+    blocked = blocked or set()
+    root_resolved = root.resolve()
+    nodeids = re.findall(r"(?m)^(?:FAILED|ERROR)\s+(\S+?\.py)::(\S+)", output or "")
+    for test_file, rest in nodeids:
+        func_name = re.sub(r"\[.*$", "", rest.split("::")[-1])
+        path = (root_resolved / test_file).resolve()
+        if root_resolved not in path.parents or not path.is_file():
+            continue
+        relative = path.relative_to(root_resolved).as_posix()
+        try:
+            source = path.read_text(encoding="utf-8")
+            tree = ast.parse(source)
+        except (OSError, SyntaxError, UnicodeDecodeError):
+            continue
+        funcs = [node for node in ast.walk(tree)
+                 if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == func_name]
+        if len(funcs) != 1:
+            continue
+        func = funcs[0]
+        calls = []
+        for node in ast.walk(func):
+            if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "Path"):
+                continue
+            if len(node.args) != 1 or node.keywords:
+                continue
+            arg = node.args[0]
+            if not (isinstance(arg, ast.Constant) and isinstance(arg.value, str)):
+                continue
+            value = arg.value
+            if not value or Path(value).is_absolute() or ".." in Path(value).parts:
+                continue
+            if not (root_resolved / value).exists():
+                continue
+            calls.append((node, value))
+        if not calls or not any(value in missing for _node, value in calls):
+            continue
+        depth = len(Path(relative).parts) - 1
+        if depth < 0 or path.parents[depth] != root_resolved:
+            continue
+        lines = source.splitlines(keepends=True)
+        start = _offset(lines, func.lineno, func.col_offset)
+        end = _offset(lines, func.end_lineno, func.end_col_offset)
+        old = source[start:end]
+        if not old or source.count(old) != 1:
+            continue
+        new = old
+        for node, value in sorted(calls, key=lambda item: (item[0].lineno, item[0].col_offset), reverse=True):
+            a = _offset(lines, node.lineno, node.col_offset) - start
+            b = _offset(lines, node.end_lineno, node.end_col_offset) - start
+            new = new[:a] + f"(Path(__file__).resolve().parents[{depth}] / {json.dumps(value)})" + new[b:]
+        if new == old:
+            continue
+        change = "anchor cwd-relative Path(" + ", ".join(sorted({value for _n, value in calls})) + ")"
+        if f"{relative}::{change}" in blocked:
+            continue
+        return relative, old, new, change
+    return None
+
+
 def _refuse_edit(root: Path, relative: str, old: str, new: str) -> str | None:
     path = root / relative
     try:
@@ -664,6 +774,13 @@ def _attempt(root: Path, output: str, architect: Any, hints: list[str] | None = 
     if attr_edit:
         relative, old, new, change = attr_edit
         result = _apply_or_refuse(root, architect, relative, old, new, "attribute_rename", change)
+        if result is not None:
+            return result
+    # A FileNotFoundError for a file that exists: the test's read depends on the process cwd.
+    cwd_edit = _cwd_anchor_edit(root, output, blocked)
+    if cwd_edit:
+        relative, old, new, change = cwd_edit
+        result = _apply_or_refuse(root, architect, relative, old, new, "cwd_anchor", change)
         if result is not None:
             return result
     failing = _failing_tests(output)
@@ -1125,6 +1242,8 @@ def _repair_sandbox(root: Path) -> dict[str, Any]:
                       for t in sorted(red_before & full_failed)
                       if progress.is_narrower(base_exc.get(t, ""), final_exc.get(t, ""))]
     report["full_suite_regressions"] = []
+    # Say so when a banked fix touched a test file (a cwd anchor); assertions are never changed.
+    report["edited_test"] = any(item.get("kind") == "cwd_anchor" for item in report["repairs"])
     return _finalize_and_log(full)
 
 def main(argv: list[str] | None = None) -> int:

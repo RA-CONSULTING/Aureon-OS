@@ -522,3 +522,105 @@ def test_full_suite_bisect_keeps_the_innocent_patch(
     assert "return 2" not in (root / "core.py").read_text(encoding="utf-8")
     assert [item["path"] for item in report["repairs"]] == ["indep.py"], report
     assert report["after_returncode"] != 0  # test_core is red again, but that was red before too
+
+
+# ── owner 16:05: cwd-relative reads. A FileNotFoundError for a file that exists is a cwd leak. ──
+
+
+def _cwd_leak_sandbox(tmp_path: Path, reader: str) -> Path:
+    root = tmp_path / "sandbox"
+    (root / "tests").mkdir(parents=True)
+    (root / "data").mkdir()
+    (root / "elsewhere").mkdir()
+    (root / "data" / "info.txt").write_text("ok\n", encoding="utf-8")
+    # Fixed file order (a random-order plugin would hide the leak half the time).
+    (root / "pytest.ini").write_text("[pytest]\naddopts = -p no:randomly\n", encoding="utf-8")
+    # An earlier test changes the process cwd and never restores it (the real bug lives here).
+    (root / "tests" / "test_a_leaks_cwd.py").write_text(
+        "import os\nfrom pathlib import Path\n\n\ndef test_leaks():\n"
+        "    os.chdir(Path(__file__).resolve().parents[1] / 'elsewhere')\n    assert True\n",
+        encoding="utf-8",
+    )
+    (root / "tests" / "test_b_reads.py").write_text(reader, encoding="utf-8")
+    return root
+
+
+def test_cwd_anchor_shape_anchors_a_relative_read_that_exists(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    reader = (
+        "from pathlib import Path\n\n\ndef test_reads_info():\n"
+        "    text = Path(\n        \"data/info.txt\"\n    ).read_text(encoding=\"utf-8\")\n"
+        "    assert text == \"ok\\n\"\n"
+    )
+    root = _cwd_leak_sandbox(tmp_path, reader)
+    _enable(root, monkeypatch)
+    report = repair_sandbox(root)
+    assert report["status"] == "repaired", report
+    assert report["edited_test"] is True
+    assert [item["kind"] for item in report["repairs"]] == ["cwd_anchor"], report
+    body = (root / "tests" / "test_b_reads.py").read_text(encoding="utf-8")
+    assert '(Path(__file__).resolve().parents[1] / "data/info.txt")' in body
+    # The assertion is untouched: same file read, same expectation.
+    assert 'assert text == "ok\\n"' in body
+    assert report["gate"]["weakened"] == []
+
+
+def test_cwd_anchor_shape_declines_a_file_that_is_really_missing(tmp_path: Path) -> None:
+    from aureon.autonomous.aureon_sandbox_self_repair import _cwd_anchor_edit
+
+    root = tmp_path / "sandbox"
+    (root / "tests").mkdir(parents=True)
+    (root / "tests" / "test_b_reads.py").write_text(
+        "from pathlib import Path\n\n\ndef test_reads_info():\n"
+        "    assert Path(\"data/gone.txt\").read_text() == \"ok\"\n",
+        encoding="utf-8",
+    )
+    output = (
+        "FAILED tests/test_b_reads.py::test_reads_info - FileNotFoundError: [Errno 2] "
+        "No such file or directory: 'data/gone.txt'\n"
+    )
+    assert _cwd_anchor_edit(root, output) is None  # never invents the file or skips the read
+
+
+def test_cwd_anchor_shape_ignores_absolute_and_parent_paths(tmp_path: Path) -> None:
+    from aureon.autonomous.aureon_sandbox_self_repair import _cwd_anchor_edit
+
+    root = tmp_path / "sandbox"
+    (root / "tests").mkdir(parents=True)
+    (root / "data").mkdir()
+    (root / "data" / "info.txt").write_text("ok\n", encoding="utf-8")
+    (root / "tests" / "test_b_reads.py").write_text(
+        "from pathlib import Path\n\n\ndef test_reads_info():\n"
+        f"    assert Path({str(root / 'data' / 'info.txt')!r}).read_text() == 'ok'\n",
+        encoding="utf-8",
+    )
+    absolute = (
+        "FAILED tests/test_b_reads.py::test_reads_info - FileNotFoundError: [Errno 2] "
+        f"No such file or directory: '{root / 'data' / 'info.txt'}'\n"
+    )
+    parent = (
+        "FAILED tests/test_b_reads.py::test_reads_info - FileNotFoundError: [Errno 2] "
+        "No such file or directory: '../sandbox/data/info.txt'\n"
+    )
+    assert _cwd_anchor_edit(root, absolute) is None
+    assert _cwd_anchor_edit(root, parent) is None
+
+
+def test_cwd_anchor_shape_respects_the_ledger(tmp_path: Path) -> None:
+    from aureon.autonomous.aureon_sandbox_self_repair import _cwd_anchor_edit
+
+    root = _cwd_leak_sandbox(
+        tmp_path,
+        "from pathlib import Path\n\n\ndef test_reads_info():\n"
+        "    assert Path(\"data/info.txt\").read_text() == \"ok\\n\"\n",
+    )
+    output = (
+        "FAILED tests/test_b_reads.py::test_reads_info - FileNotFoundError: [Errno 2] "
+        "No such file or directory: 'data/info.txt'\n"
+    )
+    edit = _cwd_anchor_edit(root, output)
+    assert edit is not None
+    relative, _old, _new, change = edit
+    assert relative == "tests/test_b_reads.py"
+    assert _cwd_anchor_edit(root, output, {f"{relative}::{change}"}) is None

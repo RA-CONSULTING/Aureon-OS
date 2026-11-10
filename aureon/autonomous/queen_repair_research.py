@@ -122,7 +122,31 @@ def diagnose(root: Path, output: str) -> list[dict[str, Any]]:
             "traceback_tail": [ln[:300] for ln in lines[-15:]],
             "suspected_file": _suspect(root, lines),
         })
+        cause = _cause(root, error, lines)
+        if cause:
+            records[-1]["cause"] = cause
     return records
+
+
+def _cause(root: Path, error: str, lines: list[str]) -> str:
+    """A cheap, honest label for a failure whose message alone misleads.
+
+    ``cwd_relative_read``: a FileNotFoundError names a relative path that exists
+    under the repo root, so the file is not missing; the test read it relative to
+    a working directory something earlier in the process changed.
+    """
+
+    text = "\n".join([error, *lines])
+    root = root.resolve()
+    for raw in re.findall(r"FileNotFoundError: \[Errno 2\] No such file or directory: '([^']+)'", text):
+        if not raw or Path(raw).is_absolute() or ".." in Path(raw).parts:
+            continue
+        try:
+            if (root / raw).exists():
+                return "cwd_relative_read"
+        except OSError:
+            continue
+    return ""
 
 
 def write_diagnosis(root: Path, records: list[dict[str, Any]], research: list[dict[str, Any]] | None = None) -> Path:
