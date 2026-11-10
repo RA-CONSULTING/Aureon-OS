@@ -94,3 +94,31 @@ or `attached`. It does not mean go-live is clear. `go_live_clear` stays false.
 Exit 3 is a HOLD-type verdict: `stale`, `hold`, `absent`, or `skip`. This
 matches `publish`. Exit 1 is `fail` or `refused`. Exit 2 means the worktree
 was dirty and nothing was measured.
+
+## HOLD note — published-pin move to 0646146c (box/65-of-65, 2026-11-10)
+
+The published require-pin was moved from `bb04503119681adcf832f3c3e9b0cbf09fc7a938`
+to `0646146c53e59dbcab41363a613d5651c9c9d50f` on the box/65-of-65 line so the
+pinned finder accepts the tree the trader and repair loop actually run. This is
+a require-pin retarget only. It is not a badge flip, a release, or a publish.
+`go_live_clear` stays false and the orange HOLD badge is unchanged.
+
+Receipt 1 (containment) was remeasured on this line and passes; its committed
+record stays frozen at its measurement-time head `c68a89d2`.
+
+Receipts 2, 3, 4, and 5 stay HOLD and are **not** moved to the new pin on this
+line:
+
+- Receipts 2 and 4 (release provenance, source census / call sweep) are frozen
+  to the main head `b2b0310362597dc520114de86d8700c0c50758d5`. The go_live_stage6
+  measure refuses any tip that is not an ancestor of that frozen head, and
+  box/65-of-65 (`0646146c`) is on a divergent line, so these cannot be remeasured
+  here. They will catch up when the move lands on main.
+- Receipt 3 (HNC head anchor, DigiCert sequence 2) needs the timestamp notes
+  re-attached, which requires the external DigiCert timestamp service. Left HOLD.
+- Receipt 5 (deployment) stays bound to its prior measurement head.
+
+No receipt values were fabricated. The three receipt tests tied to the above
+(stage6 receipt 2/4 provenance, the receipt 5 schema-pin check, and the HNC-head
+sequence-2 check) are left red and honest until the main-line move and DigiCert
+re-attach complete.

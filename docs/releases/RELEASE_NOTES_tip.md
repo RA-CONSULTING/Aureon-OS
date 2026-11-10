@@ -2,6 +2,8 @@
 
 Lineage tip: `08f04936088689e29b7995d89530b21b425c35f9`. That commit keeps the four safety lines and go-live HOLD. Its ancestor `29fab7f21fc93da40224566dd8f34faacb3d74d4` pins the public require-pin to `bb04503119681adcf832f3c3e9b0cbf09fc7a938` and remeasures go-live receipts 2 and 4. Go-live stays HOLD.
 
+Published require-pin retarget (box/65-of-65, 2026-11-10): the finder require-pin PINNED_COMMIT in mcp/aureon_public/guard_loader.py now reads `0646146c53e59dbcab41363a613d5651c9c9d50f` so the pinned finder accepts the tree the trader and repair loop run. This is a require-pin retarget only, not a release, publish, tag, or badge flip. Go-live stays HOLD; go_live_clear is false; the orange release-boundary badge stays HOLD. Receipts 2, 3, 4, and 5 stay HOLD and keep their prior-pin measurements until the move lands on main and the DigiCert head anchor is re-attached. Receipt 1 was remeasured on this line and passes; its committed record stays frozen at c68a89d2.
+
 These notes describe that tip. The source-archive manifest records the commit that was archived. After this pull request lands on main, that commit still has `08f04936088689e29b7995d89530b21b425c35f9` as an ancestor. License: MIT (`LICENSE`).
 
 The release boundary stays HOLD. The orange release-boundary badge stays HOLD. Go-live stays HOLD. production go-live is not cleared. Receipts 1-5 are not verified on this commit. The system is not claimed alive. No order is placed.

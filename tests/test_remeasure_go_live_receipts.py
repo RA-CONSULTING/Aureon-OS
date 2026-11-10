@@ -10,7 +10,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = ROOT / "scripts" / "validation" / "remeasure_go_live_receipts.py"
-PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
+PIN = "0646146c53e59dbcab41363a613d5651c9c9d50f"
 
 
 def _load():

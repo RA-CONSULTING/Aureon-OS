@@ -20,11 +20,11 @@ from pathlib import Path
 from aureon_public.paths import repo_root, space_guard
 
 _DONE = False
-PINNED_COMMIT = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
+PINNED_COMMIT = "0646146c53e59dbcab41363a613d5651c9c9d50f"
 # git blob of the committed huggingface/hnc-field/guard.py.
 # The check is these bytes. It is not a path lookup inside PINNED_COMMIT.
-GUARD_BLOB = "629c2d78f2114ba0225be3763b5a9f98d3280272"
-GUARD_MISMATCH = "checkout guard.py differs from pin bb045031"
+GUARD_BLOB = "141173b05e3031ad2666571e9422fe5dced4601b"
+GUARD_MISMATCH = "checkout guard.py differs from pin 0646146c"
 
 
 def _same(path: str, root: Path) -> bool:

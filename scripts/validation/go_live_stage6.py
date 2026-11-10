@@ -2,7 +2,7 @@
 """Stage 6 go-live receipts 2 and 4.
 
 Receipt 2 is an exact content measurement of the pinned release tree, bound
-to pin bb045031 and tip b2b03103. Receipt 4 compares the public inventory
+to pin 0646146c and tip b2b03103. Receipt 4 compares the public inventory
 with an AST scan of the paths in that pin tree. Symbols in the pin tree that
 are absent from the inventory stay unlisted. Neither receipt calls Aureon,
 places an order, or publishes a new reachable count.
@@ -23,7 +23,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
+PIN = "0646146c53e59dbcab41363a613d5651c9c9d50f"
 TIP = "b2b0310362597dc520114de86d8700c0c50758d5"
 # Not part of the provenance digest. The tip value and the measured fields stay.
 TIP_NOTE = (
@@ -40,13 +40,13 @@ CENSUS_PATH = Path("measured/go_live_stage6_source_census.json")
 CENSUS_MARKDOWN = Path("docs/runbooks/GO_LIVE_STAGE6_SOURCE_CENSUS.md")
 SWEEP_PATH = Path("measured/aureon_public_call_sweep.json")
 COMPARE_FIELDS = ("package", "server", "form", "safety", "stage", "required", "async")
-# Checkout paths that are not in the pin tree. At pin bb045031 the previous
+# Checkout paths that are not in the pin tree. At pin 0646146c the previous
 # exclusions (market_series, hnc_anchor, containment, qgita_series_rates) are
 # inside the pin. They are scanned and left out of the inventory. Listing
 # market_series.http_get would mark evaluation as a live public fetch and move
 # that package from plan stage 2 to plan stage 4, which changes the reachable
 # count. This stage does not do that.
-# Files added after pin bb045031. They stay out of the inventory.
+# Files added after pin 0646146c. They stay out of the inventory.
 POST_PIN_CHECKOUT_PATHS = (
     "aureon/containment/_multi_user_child.py",
     "aureon/containment/multi_user_smoke.py",
@@ -289,7 +289,7 @@ def build_provenance() -> dict[str, object]:
             "strings onto that pin. The commit that adds this digest is not "
             "the pin and is not that tip. The digest binds the pin and tip "
             "git objects, not the working tree. The previous receipt named pin "
-            "34864ff0547d2cff03e707414743a3b0cc8770b5 and tip "
+            "bb04503119681adcf832f3c3e9b0cbf09fc7a938 and tip "
             "c68a89d2a184d99582bb24310b91e024323a212c."
         ),
         "receipt_1_measured": True,

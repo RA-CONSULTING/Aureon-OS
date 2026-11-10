@@ -10,7 +10,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "tests" / "fixtures" / "market_series"
-PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
+PIN = "0646146c53e59dbcab41363a613d5651c9c9d50f"
 _PUBLIC_PREFIXES = (
     "https://api.binance.com/api/v3/",
     "https://api.kraken.com/0/public/",
