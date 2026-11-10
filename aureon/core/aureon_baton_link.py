@@ -286,10 +286,12 @@ def _start_queen_repair_loop(module_name: str) -> None:
         while True:
             relay_state("queen.self_repair", "trying", {"root": root})
             try:
+                env = dict(os.environ, AUREON_SELF_REPAIR_ENABLE="1")  # operator opted in via REPAIR_ROOT
                 done = subprocess.run([sys.executable, "-m", "aureon_fusion.repair", "--root", root],
-                                      cwd=root, capture_output=True, text=True, timeout=3600)
+                                      cwd=root, env=env, capture_output=True, text=True, timeout=3600)
                 try:
-                    report = json.loads(done.stdout[done.stdout.index("{"):])
+                    report = json.loads(done.stdout[done.stdout.rindex("\n{") + 1:]
+                                        if "\n{" in done.stdout else done.stdout[done.stdout.index("{"):])
                 except Exception:
                     report = {"status": "unparsed", "returncode": done.returncode}
                 relay_state("queen.self_repair", "building", {
