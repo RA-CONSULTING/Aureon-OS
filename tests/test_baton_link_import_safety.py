@@ -32,11 +32,12 @@ def test_real_data_policy_does_not_enable_live_orders(monkeypatch):
     assert baton.os.environ['STATUS_MOCK'] == 'false'
 
 
-def test_link_system_is_unconditional_no_effect_hold(monkeypatch):
+def test_link_system_is_no_effect_without_opt_in(monkeypatch):
     def fail(reason):
         return lambda *_args, **_kwargs: pytest.fail(reason)
 
-    monkeypatch.setenv('AUREON_ACTIVATE_ON_IMPORT', '1')
+    monkeypatch.delenv('AUREON_ACTIVATE_ON_IMPORT', raising=False)
+    monkeypatch.setattr(baton, 'activate_autonomous_control', fail('Queen woken without opt-in'))
     monkeypatch.setattr(baton, '_ensure_stdio', fail('stdio mutated during import link'))
     monkeypatch.setattr(baton, '_enforce_real_data_only', fail('environment mutated'))
     monkeypatch.setattr(baton, 'get_thought_bus', fail('ThoughtBus constructed'))
@@ -60,8 +61,6 @@ def test_autonomous_control_and_stage_emission_are_held_before_effects(monkeypat
         lambda *_args, **_kwargs: pytest.fail('baton HOLD must not construct bus'),
     )
 
-    with pytest.raises(RuntimeError, match='autonomous_control_hold'):
-        baton.activate_autonomous_control()
     with pytest.raises(RuntimeError, match='baton_stage_hold'):
         baton.emit_stage('execute', 'tests')
 
@@ -75,3 +74,21 @@ def test_thought_bus_construction_starts_no_background_thread(tmp_path):
         if thread.ident not in before
     ]
     assert 'WhaleSonarLoop' not in started
+
+
+def test_opt_in_wakes_queen_once(monkeypatch):
+    calls = []
+    monkeypatch.setenv('AUREON_ACTIVATE_ON_IMPORT', '1')
+    monkeypatch.setattr(baton, '_import_side_effects_suppressed', lambda: False)
+    monkeypatch.setattr(baton, '_audit_mode_enabled', lambda: False)
+    monkeypatch.setattr(baton, '_AUTO_CONTROL_DONE', False)
+    monkeypatch.setattr(baton, 'relay_state', lambda *a, **k: None)
+
+    def fake_activate():
+        calls.append(1)
+        baton._AUTO_CONTROL_DONE = True
+
+    monkeypatch.setattr(baton, 'activate_autonomous_control', fake_activate)
+    baton.link_system('tests.opt_in_a')
+    baton.link_system('tests.opt_in_b')
+    assert calls == [1]

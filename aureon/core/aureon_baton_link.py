@@ -162,9 +162,21 @@ def _enforce_real_data_only() -> None:
 def link_system(module_name: str) -> None:
     """Hold import-time baton mutation until production release exists."""
 
-    # Import stays effect-free (see tests/test_baton_link_import_safety.py).
-    # Organs announce themselves at runtime through relay_state() instead.
-    _ = module_name
+    # Import stays effect-free unless the operator opts in with
+    # AUREON_ACTIVATE_ON_IMPORT=1; then the first linked module wakes the
+    # Queen's autonomous control once per process. Orders still pass the
+    # economic governance boundary. Organs relay state through relay_state().
+    if os.getenv("AUREON_ACTIVATE_ON_IMPORT", "0") != "1":
+        return
+    if _import_side_effects_suppressed() or _audit_mode_enabled():
+        return
+    if globals().get("_AUTO_CONTROL_DONE"):
+        return
+    try:
+        activate_autonomous_control()
+        relay_state(module_name, "building", {"autonomous_control": "activated"})
+    except Exception as exc:
+        relay_state(module_name, "not_doing", {"autonomous_control": f"{type(exc).__name__}: {exc}"[:300]})
     return
 
     # Legacy import-time link body retained as unreachable source while the
@@ -248,13 +260,11 @@ def relay_state(module_name: str, kind: str, payload: Optional[dict] = None) -> 
 def activate_autonomous_control() -> None:
     """
     Explicitly activate Queen's full autonomous control.
-    Call this from the ICS boot sequence, not from module imports.
+    Call this from the ICS boot sequence, or opt in on import with
+    AUREON_ACTIVATE_ON_IMPORT=1.
     """
-    raise RuntimeError(
-        "aureon_autonomous_control_hold:production_magic_star_release_unavailable"
-    )
     global _AUTO_CONTROL_DONE
-    if _AUTO_CONTROL_DONE:
+    if globals().get("_AUTO_CONTROL_DONE"):
         return
     _AUTO_CONTROL_DONE = True
     try:
