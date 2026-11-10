@@ -108,6 +108,11 @@ _DEFAULT_CONNECTORS = {
     "deterministic_systems": True,
     "algorithmic_nodes": True,
     "self_code": True,
+    # Hunting organs share the Queen's brain; each can be switched off live
+    # with switch_connector(name, False), which also tells the thought bus.
+    "orca_kill_chain": True,
+    "ira_sniper": True,
+    "momentum_hunter": True,
 }
 
 _SECRET_PATH_MARKERS = (".env", "secret", "credential", "id_rsa", "password")

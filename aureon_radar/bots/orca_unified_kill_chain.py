@@ -911,6 +911,15 @@ class UnifiedKillChain:
                 print(f"      Target: ${op.get('target', 0):.6f} | R:R: {op.get('risk_reward', 0):.1f}:1")
             print()
 
+def _organ_switch_on(name: str) -> bool:
+    """Read the organism's live switch for this organ. Missing switch means on."""
+    try:
+        from aureon.core.organism_circulation import connector_state
+        return bool(connector_state().get(name, True))
+    except Exception:
+        return True
+
+
 def main():
     import argparse
     
@@ -931,6 +940,10 @@ def main():
     
     cycle = 0
     while True:
+        if not _organ_switch_on("orca_kill_chain"):
+            log_system("⏸️ orca_kill_chain is switched off in the organism; idling this cycle")
+            time.sleep(30)
+            continue
         cycle += 1
         log_system(f"\n{'='*70}")
         log_system(f"   KILL CYCLE {cycle} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
