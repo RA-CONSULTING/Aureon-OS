@@ -258,6 +258,39 @@ def relay_state(module_name: str, kind: str, payload: Optional[dict] = None) -> 
         return
 
 
+def _adopt_repair_and_reboot(report):
+    """Stage 4: bring a proven, gate-verified repair into this running checkout and restart this process on it.
+
+    Opt-in with AUREON_QUEEN_SELF_REBOOT=1. Never pushes: the commit is queued in state/queen_pending_push.jsonl
+    for the owner's named yes (stage 5).
+    """
+    import subprocess
+
+    commit = str(report.get("commit") or "")
+    gate = report.get("gate") or {}
+    if gate and gate.get("verified") is False:
+        relay_state("queen.self_repair", "not_doing", {"reboot": "held_unverified", "commit": commit})
+        return
+    queue = os.path.join("state", "queen_pending_push.jsonl")
+    os.makedirs("state", exist_ok=True)
+    with open(queue, "a", encoding="utf-8") as fh:
+        fh.write(json.dumps({"ts": time.time(), "commit": commit, "branch": report.get("branch"),
+                             "path": report.get("path"), "push": "awaiting_owner_yes"}) + "\n")
+    if os.environ.get("AUREON_QUEEN_SELF_REBOOT") != "1":
+        relay_state("queen.self_repair", "not_doing", {"reboot": "off", "commit": commit})
+        return
+    pick = subprocess.run(["git", "cherry-pick", commit], capture_output=True, text=True, timeout=120)
+    if pick.returncode != 0:
+        subprocess.run(["git", "cherry-pick", "--abort"], capture_output=True, text=True, timeout=60)
+        relay_state("queen.self_repair", "not_doing", {"reboot": "held_cherry_pick_conflict", "commit": commit,
+                                                       "detail": (pick.stderr or pick.stdout)[-300:]})
+        return
+    relay_state("queen.self_repair", "building", {"reboot": "restarting_on_repair", "commit": commit})
+    time.sleep(2)  # let the relay flush
+    argv = list(getattr(sys, "orig_argv", None) or [sys.executable] + sys.argv)
+    os.execv(sys.executable, [sys.executable] + argv[1:])
+
+
 def _outer_repair_timeout():
     # Follows the suite safety net: none by default, else the suite limit plus room for the retest.
     try:
@@ -325,6 +358,8 @@ def _start_queen_repair_loop(module_name: str) -> None:
                     "repairs": len(report.get("repairs") or []),
                     "verified": gate.get("verified"), "authored_test": gate.get("authored_test"),
                     "seed_ok": (gate.get("seed_benchmarks") or {}).get("ok")})
+                if report.get("status") == "repaired" and report.get("commit"):
+                    _adopt_repair_and_reboot(report)
             except Exception as exc:
                 relay_state("queen.self_repair", "not_doing", {"error": f"{type(exc).__name__}: {exc}"[:300]})
             time.sleep(interval)
