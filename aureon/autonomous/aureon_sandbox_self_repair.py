@@ -87,9 +87,14 @@ def _pytest(root: Path) -> subprocess.CompletedProcess[str]:
     env = dict(os.environ)
     env["PYTHONDONTWRITEBYTECODE"] = "1"
     limit = _suite_timeout()
+    # Private pytest temp root: the shared /tmp/pytest-of-<user> keeps only the newest three runs,
+    # so another pytest on the host could delete this suite's tmp_path mid-run (FileNotFoundError storms).
+    import tempfile
+    basetemp = Path(tempfile.mkdtemp(prefix="aureon_self_repair_pytest_"))
     try:
         return subprocess.run(
-            [sys.executable, "-m", "pytest", "-q", "--tb=short", "-p", "no:cacheprovider"],
+            [sys.executable, "-m", "pytest", "-q", "--tb=short", "-p", "no:cacheprovider",
+             f"--basetemp={basetemp / 'run'}"],
             cwd=root,
             text=True,
             capture_output=True,
@@ -98,6 +103,8 @@ def _pytest(root: Path) -> subprocess.CompletedProcess[str]:
         )
     except subprocess.TimeoutExpired as exc:
         raise SuiteTimedOut(limit) from exc
+    finally:
+        shutil.rmtree(basetemp, ignore_errors=True)
 
 
 def _git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
