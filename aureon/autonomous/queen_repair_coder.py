@@ -102,6 +102,14 @@ def _organ_author(root: Path, record: dict[str, Any], goal: str, source: str) ->
     test_file = str(record.get("test_id", "")).split("::", 1)[0]
     commands = ((_py(), "-m", "pytest", "-q", "-p", "no:cacheprovider", test_file),) if test_file else ()
     suffix = f"{os.getpid()}_{int(time.time()*1000)}"
+    # Load her HNC packet master key the repo's own way (generates state/hnc_packet_master_key
+    # locally if absent; no spend, no external service, never printed). This clears
+    # hnc_proposal_master_key_unavailable so her own organ can author.
+    try:
+        from aureon.autonomous.self_coder_preflight import ensure_hnc_master_key_preflight
+        ensure_hnc_master_key_preflight(root)
+    except Exception:
+        pass
     try:
         from aureon.autonomous.aureon_internal_self_coder import (
             InternalSelfCoderHold,

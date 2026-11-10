@@ -164,3 +164,16 @@ def test_end_to_end_model_fix_through_repair_sandbox(tmp_path, monkeypatch):
     assert "base = w * h" in (root / "calc.py").read_text()
     log = review_log_path(root).read_text(encoding="utf-8")
     assert "queen_repair_coder" in log
+
+
+def test_organ_author_generates_hnc_key_then_skips_gracefully(tmp_path):
+    # _organ_author loads the HNC master key the repo's own way (generating it locally if absent),
+    # then skips gracefully because the local model / truth-authority bundle is not available here.
+    root = _repo(tmp_path, "def price(n):\n    return n * 1\n")
+    rec = {"test_id": "test_widget.py::test_price", "error": "assert 10 == 20",
+           "exception": "AssertionError", "traceback_tail": [], "suspected_file": "widget.py"}
+    result = qc._organ_author(root, rec, "fix price", "def price(n):\n    return n * 1\n")
+    assert "skipped" in result, result  # no local model / truth bundle on this box
+    assert (root / "state" / "hnc_packet_master_key").is_file()
+    # The key file must never be world-readable and never contain the env var name alone.
+    assert oct((root / "state" / "hnc_packet_master_key").stat().st_mode & 0o777) == "0o600"
