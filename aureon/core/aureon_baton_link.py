@@ -162,6 +162,8 @@ def _enforce_real_data_only() -> None:
 def link_system(module_name: str) -> None:
     """Hold import-time baton mutation until production release exists."""
 
+    # Import stays effect-free (see tests/test_baton_link_import_safety.py).
+    # Organs announce themselves at runtime through relay_state() instead.
     _ = module_name
     return
 
@@ -210,6 +212,34 @@ def link_system(module_name: str) -> None:
                 "pid": os.getpid(),
                 "ts": now,
             },
+        ))
+    except Exception:
+        return
+
+
+_RELAY_LINKED: set = set()
+_RELAY_KINDS = {"linked", "trying", "seeing", "not_doing", "building"}
+
+
+def relay_state(module_name: str, kind: str, payload: Optional[dict] = None) -> None:
+    """Publish what an organ is trying, seeing, not doing or building.
+
+    Read-only telemetry on topic organ.state.<kind>; never raises, never acts.
+    """
+    if kind not in _RELAY_KINDS or not THOUGHT_BUS_AVAILABLE or not get_thought_bus:
+        return
+    try:
+        bus = get_thought_bus()
+        if kind != "linked" and module_name not in _RELAY_LINKED:
+            _RELAY_LINKED.add(module_name)
+            bus.publish(Thought(source=str(module_name), topic="organ.state.linked",
+                                payload={"module": str(module_name), "kind": "linked",
+                                         "pid": os.getpid(), "ts": time.time()}))
+        bus.publish(Thought(
+            source=str(module_name),
+            topic=f"organ.state.{kind}",
+            payload={"module": str(module_name), "kind": kind, "pid": os.getpid(),
+                     "ts": time.time(), **(payload or {})},
         ))
     except Exception:
         return

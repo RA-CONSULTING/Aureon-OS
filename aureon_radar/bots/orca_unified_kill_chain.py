@@ -544,6 +544,7 @@ class UnifiedKillChain:
             self.governance_holds = {}
         reason = str(exc) or type(exc).__name__
         self.governance_holds[self._target_key(target)] = (time.time(), reason)
+        _relay("not_doing", {"target": self._target_key(target), "reason": reason[:300]})
         log_sniper(f"🛑 GOVERNANCE HOLD: {target.get('exchange', '?').upper()}::"
                    f"{target.get('symbol')} refused by economic boundary: {reason}")
 
@@ -911,6 +912,14 @@ class UnifiedKillChain:
                 print(f"      Target: ${op.get('target', 0):.6f} | R:R: {op.get('risk_reward', 0):.1f}:1")
             print()
 
+def _relay(kind: str, payload: dict) -> None:
+    try:
+        from aureon.core.aureon_baton_link import relay_state
+        relay_state("orca_unified_kill_chain", kind, payload)
+    except Exception:
+        pass
+
+
 def _organ_switch_on(name: str) -> bool:
     """Read the organism's live switch for this organ. Missing switch means on."""
     try:
@@ -942,6 +951,7 @@ def main():
     while True:
         if not _organ_switch_on("orca_kill_chain"):
             log_system("⏸️ orca_kill_chain is switched off in the organism; idling this cycle")
+            _relay("not_doing", {"reason": "organ switch off"})
             time.sleep(30)
             continue
         cycle += 1
@@ -969,7 +979,10 @@ def main():
                 log_queen("No existing positions to harvest.")
             else:
                 log_queen(f"Found {len(targets)} existing positions.")
+                _relay("seeing", {"cycle": cycle, "positions": [
+                    f"{t.get('exchange', '?')}:{t.get('symbol')}" for t in targets][:50]})
                 for t in targets:
+                    _relay("trying", {"target": f"{t.get('exchange', '?')}:{t.get('symbol')}"})
                     chain.execute_kill_chain_safe(t)
         
         # ═══════════════════════════════════════════════════════════════════════

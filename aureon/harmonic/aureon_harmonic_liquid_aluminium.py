@@ -1033,6 +1033,11 @@ class HarmonicKillChainAdapter:
         """Scan all exchanges and update the harmonic field."""
         if not self.kill_chain:
             return
+        try:
+            from aureon.core.aureon_baton_link import relay_state
+            relay_state("harmonic_field.kill_chain", "trying", {"action": "scan_and_harmonize"})
+        except Exception:
+            pass
         
         # Scan Alpaca
         self._harmonize_alpaca()

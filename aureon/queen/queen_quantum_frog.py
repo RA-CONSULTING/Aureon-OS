@@ -6924,6 +6924,12 @@ class OrcaKillCycle:
                 # Binance
                 if self.clients.get('binance'):
                     b_hunts = self.unified_kill_chain.win_killer.hunt_binance()
+                    try:
+                        from aureon.core.aureon_baton_link import relay_state
+                        relay_state("queen_quantum_frog.kill_chain", "seeing",
+                                    {"exchange": "binance", "hunts": [h.get('symbol') for h in b_hunts][:50]})
+                    except Exception:
+                        pass
                     for h in b_hunts:
                         # Deduplicate
                         if any(o.symbol == h['symbol'] for o in opportunities):
