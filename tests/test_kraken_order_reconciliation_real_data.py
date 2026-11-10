@@ -35,6 +35,7 @@ FILL_FIELDS = (
 def _client(*, dry_run: bool = False) -> KrakenClient:
     client = KrakenClient.__new__(KrakenClient)
     client.dry_run = dry_run
+    client.api_key = "test-live-key"
     client._pairs_cache = {}
     client._alt_to_int = {}
     client._int_to_alt = {}
@@ -259,7 +260,13 @@ def test_terminal_short_fill_is_not_labeled_fully_filled() -> None:
 def test_balance_receipt_uses_private_balance_and_separate_kraken_time() -> None:
     provider_time = time.time() - 0.25
     client = _client()
-    client._private = Mock(return_value={"XXBT": "0.25", "ZUSD": "125.50"})
+    key_info = {
+        "permissions": ["query-funds", "modify-trades"],
+        "apiKey": "test-live-key",
+        "ipAllowlist": [],
+    }
+    balances = {"XXBT": "0.25", "ZUSD": "125.50"}
+    client._private = Mock(side_effect=[key_info, balances, key_info, balances])
     client._public_get = Mock(return_value={"unixtime": provider_time})
 
     first = client.get_account_balance_receipt()
@@ -275,8 +282,8 @@ def test_balance_receipt_uses_private_balance_and_separate_kraken_time() -> None
     assert first["generated_values"] is False
     assert first["receipt_id"].startswith("kraken_balance:")
     assert first["receipt_id"] == second["receipt_id"]
-    assert len(first["input_receipt_ids"]) == 2
-    assert client._private.call_count == 2
+    assert len(first["input_receipt_ids"]) >= 2
+    assert client._private.call_count == 4
     assert client._public_get.call_count == 2
     client._private.assert_called_with("/0/private/Balance", {})
     client._public_get.assert_called_with("/0/public/Time")

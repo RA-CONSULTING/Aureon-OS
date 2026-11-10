@@ -43,7 +43,9 @@ def isolated_cognition_bus(tmp_path, monkeypatch):
     root_fingerprint = _file_fingerprint(root_journal)
     trace_dir = tmp_path / "bus-traces"
     trace_dir.mkdir()
+    monkeypatch.chdir(tmp_path)
     monkeypatch.setenv("AUREON_BUS_TRACE_DIR", str(trace_dir))
+    monkeypatch.setenv("AUREON_THOUGHT_BUS_PATH", str(tmp_path / "thoughts.jsonl"))
     monkeypatch.delenv("AUREON_REDIS_URL", raising=False)
 
     bus = ThoughtBus(persist_path=str(tmp_path / "thoughts.jsonl"))

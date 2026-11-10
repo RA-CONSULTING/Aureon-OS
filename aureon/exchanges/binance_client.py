@@ -218,6 +218,21 @@ class BinanceClient:
     def _order_key(cls, symbol: str, side: str, margin: bool) -> tuple[str, str, bool]:
         return (cls._norm(symbol).upper(), str(side).strip().upper(), bool(margin))
 
+    def _pending_order_store(self) -> Dict[tuple[str, str, bool], Dict[str, Any]]:
+        """Return the durable in-process idempotency store.
+
+        Normal construction creates this mapping.  A few narrow integration
+        callers construct a client with ``__new__`` to avoid credentials and
+        network setup; they must still fail closed rather than raise before a
+        sell-side balance check can deny the request.
+        """
+
+        pending = getattr(self, "_pending_orders", None)
+        if not isinstance(pending, dict):
+            pending = {}
+            self._pending_orders = pending
+        return pending
+
     def _order_receipt_shell(
         self,
         *,
@@ -1549,9 +1564,10 @@ class BinanceClient:
                 requested_quote_quantity=quote_qty,
             )
 
+        pending_orders = self._pending_order_store()
         key = self._order_key(symbol, normalized_side, False)
-        if key in self._pending_orders:
-            pending = self._pending_orders[key]
+        if key in pending_orders:
+            pending = pending_orders[key]
             pending_client_order_id = (
                 self._valid_client_order_id(pending.get("client_order_id"))
                 if isinstance(pending, dict) else None
@@ -1626,7 +1642,15 @@ class BinanceClient:
                     side=normalized_side,
                     requested_quantity=quantity_value,
                 )
-            balance_receipt = self.get_asset_balance(base_asset)
+            try:
+                balance_receipt = self.get_asset_balance(base_asset)
+            except Exception:
+                return self._not_submitted_order_receipt(
+                    "balance_check_unavailable",
+                    symbol=symbol,
+                    side=normalized_side,
+                    requested_quantity=quantity_value,
+                )
             actual_balance = self._finite_number(
                 balance_receipt.get("free") if isinstance(balance_receipt, dict) else None
             )
@@ -1739,7 +1763,7 @@ class BinanceClient:
         except EconomicGovernanceBlocked:
             raise
         except Exception:
-            self._pending_orders[key] = {
+            pending_orders[key] = {
                 "order_id": None,
                 "client_order_id": normalized_client_order_id,
                 "order": {},
@@ -1770,7 +1794,7 @@ class BinanceClient:
         )
         if normalized.get("reconciliation_required") is False:
             return normalized
-        self._pending_orders[key] = {
+        pending_orders[key] = {
             "order_id": order_id,
             "client_order_id": normalized_client_order_id,
             "order": dict(response) if isinstance(response, dict) else {},

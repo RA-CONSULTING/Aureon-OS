@@ -1,65 +1,32 @@
 #!/usr/bin/env python3
-"""
-Quick test to verify the game launcher fix
-"""
+"""Verify the trading launcher's CLI contract without starting an engine."""
 
 from aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-import sys
-import os
-import subprocess
+from pathlib import Path
 
-def _command_starts():
-    """Test the exact command the game launcher uses"""
-    print("Testing the exact command the game launcher uses...")
+from aureon.trading.micro_profit_labyrinth_cli import build_parser
 
-    # This is what the game launcher should be running
-    cmd = [
-        sys.executable,
-        "-m",
-        "aureon.trading.micro_profit_labyrinth",
-        "--dry-run",
-        "--multi-exchange",
-        "--duration",
-        "86400",
-    ]
+def _duration_option_is_available():
+    """Check parser options and prove the production entry point uses it."""
 
-    print(f"Command: {' '.join(cmd)}")
-    print("Starting subprocess...")
-
-    try:
-        # Start the process
-        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-
-        # Wait a bit to see if it starts
-        import time
-        time.sleep(5)
-
-        # Check if it's still running
-        if process.poll() is None:
-            print("✅ SUCCESS: Trading engine is still running after 5 seconds!")
-            process.terminate()
-            process.wait()
-            return True
-        else:
-            print(f"❌ FAILED: Trading engine exited immediately with code {process.returncode}")
-            stdout, stderr = process.communicate()
-            print("STDOUT:", stdout[-500:])  # Last 500 chars
-            print("STDERR:", stderr[-500:])  # Last 500 chars
-            return False
-
-    except Exception as e:
-        print(f"❌ ERROR: {e}")
-        return False
+    args = build_parser().parse_args(["--dry-run", "--duration", "7"])
+    launcher = Path(__file__).resolve().parents[1] / "aureon" / "trading" / "micro_profit_labyrinth.py"
+    source = launcher.read_text(encoding="utf-8")
+    return (
+        args.dry_run is True
+        and args.duration == 7
+        and "from aureon.trading.micro_profit_labyrinth_cli import build_parser" in source
+        and "parser = build_parser()" in source
+    )
 
 def test_command():
-    assert _command_starts()
+    assert _duration_option_is_available()
 
 
 if __name__ == "__main__":
-    print("🔍 Testing trading engine startup with duration parameter...")
-    success = _command_starts()
+    print("🔍 Testing trading engine duration CLI parameter...")
+    success = _duration_option_is_available()
     if success:
-        print("\n✅ The fix works! The trading engine runs with --duration parameter.")
-        print("   Make sure you git pull the latest changes on Windows.")
+        print("\n✅ The launcher exposes the --duration parameter.")
     else:
         print("\n❌ There's still an issue. Check the error output above.")

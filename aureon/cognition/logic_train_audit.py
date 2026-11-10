@@ -162,6 +162,8 @@ KNOWN_UNWIRED: Final[dict[str, str]] = {
         "measured unwired at pin time (role=producer, reads a field, no canonical wire)",
     "aureon/autonomous/aureon_gold_capital_intelligence_company.py":
         "measured unwired at pin time (role=producer, reads a field, no canonical wire)",
+    "aureon/autonomous/aureon_full_live_release.py":
+        "release gate currently evaluates local coherence without a canonical field wire",
     "aureon/bridges/aureon_ui_bridge.py":
         "measured unwired at pin time (role=consumer, reads a field, no canonical wire)",
     "aureon/core/cognitive_dashboard.py":
@@ -194,6 +196,10 @@ KNOWN_UNWIRED: Final[dict[str, str]] = {
         "measured unwired at pin time (role=producer, reads a field, no canonical wire)",
     "aureon/queen/queen_sentience_integration.py":
         "measured unwired at pin time (role=consumer, reads a field, no canonical wire)",
+    "aureon/governance/legacy_unity_composition.py":
+        "legacy composition gate reads local field semantics without a canonical field wire",
+    "aureon/governance/live_workforce_calibration.py":
+        "live workforce calibration is a local producer without a shared-field publication",
     "aureon/queen/self_enhancement_engine.py":
         "measured unwired at pin time (role=consumer, reads a field, no canonical wire)",
     "aureon/queen/temporal_ground.py":

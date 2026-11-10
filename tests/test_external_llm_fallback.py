@@ -191,6 +191,8 @@ def test_cloudflare_console_is_an_exact_authenticated_same_origin_worker_proxy()
 
     inventory = static_inventory()
     assert relative in inventory["trusted_same_origin_worker_proxies"]
-    assert "flameborn/dist-workers/app.js" in inventory["trusted_same_origin_worker_proxies"]
+    # The current deployment has one reviewed worker proxy.  Do not retain a
+    # stale path as evidence for a surface that is no longer shipped.
+    assert inventory["trusted_same_origin_worker_proxies"] == [relative]
     assert inventory["unexpected_direct_llm_surfaces"] == []
     assert inventory["all_discovered_calls_centralized"] is True

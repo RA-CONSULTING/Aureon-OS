@@ -107,6 +107,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, Dict, List, Optional, Set, Tuple, TYPE_CHECKING
 from aureon.core.aureon_runtime_safety import live_block_reason, real_orders_disabled
+from aureon.trading.micro_profit_labyrinth_cli import build_parser
 # Import Adaptive Prime Profit Gate
 from aureon.utils.adaptive_prime_profit_gate import AdaptivePrimeProfitGate
 from aureon.portfolio.cost_basis_tracker import CostBasisTracker
@@ -20626,21 +20627,7 @@ async def main():
             safe_print("[DEBUG] Entered main()")
         except Exception:
             print("[DEBUG] Entered main()")
-    parser = argparse.ArgumentParser(description="🦙 Micro Profit Labyrinth - ALPACA-FOCUSED Trading System")
-    parser.add_argument("--live", action="store_true", help="Run in LIVE mode")
-    parser.add_argument("--dry-run", action="store_true", help="Explicit simulation mode (legacy flag)")
-    parser.add_argument("--duration", type=int, default=0, help="Duration in seconds (0 = forever)")
-    parser.add_argument("--yes", "-y", action="store_true", help="Auto-confirm live mode (skip MICRO prompt)")
-    parser.add_argument("--turn-based", action="store_true", help="🐢 Turn-Based Mode: Scan exchanges sequentially (Safety First)")
-    parser.add_argument("--fptp", action="store_true", help="[Deprecated] Alias for default mode")
-    parser.add_argument("--winners-only", "-w", action="store_true", help="🏆 WINNERS ONLY: Show ONLY successful trades (quiet mode)")
-    parser.add_argument("--no-chain-sniper", action="store_true", help="Disable multi-hop chain sniper")
-    parser.add_argument("--max-hops", type=int, default=25, help="Max hops for chain sniper (default: 25)")
-    parser.add_argument("--snowball", action="store_true", help="🎿 SNOWBALL MODE: One trade at a time, strict profit tracking")
-    parser.add_argument("--multi-exchange", action="store_true", help="🌐 Enable multi-exchange mode (Alpaca + Kraken + Binance)")
-    parser.add_argument("--sync-cia", action="store_true", help="👑🧠 Sync CIA declassified intelligence")
-    parser.add_argument("--cia-report", action="store_true", help="👑🧠 Show CIA intelligence report")
-    parser.add_argument("--cia-wisdom", action="store_true", help="👑🧠 Show Queen's trading wisdom from CIA intel")
+    parser = build_parser()
     args = parser.parse_args()
     if os.getenv("AUREON_DEBUG_STARTUP") == "1":
         try:

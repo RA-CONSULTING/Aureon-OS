@@ -12,6 +12,8 @@ ROOT = Path(__file__).resolve().parents[1]
 DOCKERFILE = ROOT / "Dockerfile"
 COMPOSE_FILE = ROOT / "docker-compose.yml"
 SUPERVISOR_FILE = ROOT / "deploy" / "supervisord.conf"
+RUNTIME_SECRET_ENV_EXAMPLES = {".env": ".env.example"}
+RUNTIME_VOLUME_DIRECTORIES = {"./state", "./logs"}
 
 
 def _module_path(module: str) -> Path:
@@ -108,6 +110,19 @@ def test_compose_local_paths_healthcheck_images_and_credentials_are_safe() -> No
         if isinstance(env_files, str):
             env_files = [env_files]
         for env_file in env_files:
+            example = RUNTIME_SECRET_ENV_EXAMPLES.get(env_file)
+            if example is not None:
+                # Deployment credentials are intentionally not source assets.
+                # Require a checked-in, value-free template instead of a real
+                # `.env`, which would turn secret handling into a test fixture.
+                example_path = ROOT / example
+                assert example_path.is_file(), (
+                    f"{service_name}.env_file requires the documented template {example}"
+                )
+                assert "=" in example_path.read_text(encoding="utf-8"), (
+                    f"{example} must describe runtime variables"
+                )
+                continue
             _assert_local_source_exists(env_file, owner=f"{service_name}.env_file")
 
         for volume in service.get("volumes", []):
@@ -115,6 +130,10 @@ def test_compose_local_paths_healthcheck_images_and_credentials_are_safe() -> No
                 continue
             source = volume.split(":", 1)[0]
             if source.startswith(("./", "../")):
+                if source in RUNTIME_VOLUME_DIRECTORIES:
+                    # Docker creates these mutable host directories at deploy
+                    # time.  They are not immutable repository assets.
+                    continue
                 _assert_local_source_exists(source, owner=f"{service_name}.volumes")
 
     trading_health = services["trading-engine"]["healthcheck"]["test"]

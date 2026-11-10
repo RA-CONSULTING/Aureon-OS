@@ -41,6 +41,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
+import pytest
+
 # Ensure repo root on path
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if REPO_ROOT not in sys.path:
@@ -157,6 +159,13 @@ class StressTestRunner:
         )
         print("=" * 100)
         return passed == total
+
+
+@pytest.fixture
+def runner() -> StressTestRunner:
+    """Keep the pytest lane bounded; the CLI retains its explicit scale flags."""
+
+    return StressTestRunner(quick=True)
 
 
 # ─────────────────────────────────────────────────────────────────────────────

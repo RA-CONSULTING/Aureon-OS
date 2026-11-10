@@ -111,9 +111,14 @@ def conscience(monkeypatch, tmp_path):
     bus = _StubBus()
     # Patch the module-level get_thought_bus the constructor would use.
     import aureon.queen.queen_conscience as qc_mod
+    import aureon.core.aureon_thought_bus as thought_bus_module
     monkeypatch.setattr(qc_mod, "_HAS_THOUGHT_BUS", True, raising=False)
     monkeypatch.setattr(qc_mod, "_get_thought_bus", lambda: bus, raising=False)
     monkeypatch.setattr(qc_mod, "_Thought", _Thought, raising=False)
+    # ``blend_field`` imports the global thought-bus getter at call time.  Pin
+    # that seam too, otherwise an unrelated in-process subfield can turn this
+    # unit test into a divided-field integration test.
+    monkeypatch.setattr(thought_bus_module, "get_thought_bus", lambda *_args, **_kwargs: bus)
     # Also bypass the on-disk state file so tests don't read prior state.
     monkeypatch.setattr(QueenConscience, "_load_state", lambda self: None)
     monkeypatch.setattr(QueenConscience, "_save_state", lambda self: None)
