@@ -7,8 +7,11 @@ text copy of the paper used to write this module).
 Claim state: HOLD. This is a research model that writes down the paper's
 frequency-sweep simulation in code. It is not measured or validated physics.
 The paper's landmarks (lines 80-95, 676-680) can be matched by a
-phenomenological gain-plus-loss function; standard silicon coefficients give
-only limited parametric transfer from external pumps. Nothing here claims more.
+phenomenological gain-plus-loss function. The paper itself calls the gain
+"physically plausible" (lines 168-170); the caution that standard silicon
+coefficients give only limited parametric transfer from external pumps comes
+from Gary Leckey's own summary of the research, not from the cited paper
+lines. Nothing here claims more.
 
 What the paper fixes, and what it does not:
 
