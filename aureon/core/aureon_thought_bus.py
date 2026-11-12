@@ -31,6 +31,16 @@ else:
 Json = Dict[str, Any]
 
 
+def _env_int(name: str, default: int) -> int:
+    raw = os.getenv(name, "").strip()
+    if not raw:
+        return default
+    try:
+        return int(raw)
+    except ValueError:
+        return default
+
+
 def _now() -> float:
     return time.time()
 
@@ -527,22 +537,74 @@ class ThoughtBus:
         return count
 
     def _persist(self, thought: Thought) -> None:
-        """Persist thought to JSONL with file locking for crash safety."""
+        """Persist thought to JSONL with file locking for crash safety.
+
+        When ``AUREON_THOUGHT_BUS_MAX_BYTES`` is set to a positive integer the
+        log is rotated before a write that finds it at or over that size: the
+        file moves to ``<path>.1`` (older copies shift up, up to
+        ``AUREON_THOUGHT_BUS_BACKUPS``, default 1) and a fresh file is started.
+        Unset or 0 keeps the old behaviour of appending without limit.
+        A failed rotation never skips the write.  Caveat: with one backup, two
+        rotations in quick succession can replace the ``.1`` a waiting writer
+        still holds open, so a line can be lost in that narrow case; use a
+        limit large enough that rotations are far apart.
+        """
         if not self._persist_path:
             return
+        line = json.dumps(thought.to_json(), ensure_ascii=False) + "\n"
+        try:
+            self._rotate_if_needed()
+        except (OSError, IOError):
+            # A failed rotation (e.g. Windows refusing to rename a file another
+            # process holds open) must never cost the write; append instead.
+            pass
         try:
             with open(self._persist_path, "a", encoding="utf-8") as f:
                 # Acquire exclusive lock to prevent concurrent writes (cross-platform)
                 _lock_file(f)
                 try:
-                    f.write(json.dumps(thought.to_json(), ensure_ascii=False) + "\n")
+                    f.write(line)
                     f.flush()
                     os.fsync(f.fileno())  # Ensure data hits disk
                 finally:
                     _unlock_file(f)
-        except (OSError, IOError) as e:
+        except (OSError, IOError):
             # Log but don't crash on persistence failure
             pass
+
+    def _rotate_if_needed(self) -> None:
+        limit = _env_int("AUREON_THOUGHT_BUS_MAX_BYTES", 0)
+        if limit <= 0 or not self._persist_path:
+            return
+        path = self._persist_path
+        try:
+            if os.path.getsize(path) < limit:
+                return
+        except OSError:
+            return
+        backups = max(1, _env_int("AUREON_THOUGHT_BUS_BACKUPS", 1))
+        with open(path, "a", encoding="utf-8") as f:
+            _lock_file(f)
+            try:
+                # Another process may have rotated while we waited for the
+                # lock; only rotate if the path still names the file we hold
+                # and it is still over the limit.
+                held = os.fstat(f.fileno())
+                try:
+                    current = os.stat(path)
+                except OSError:
+                    return
+                if (current.st_ino, current.st_dev) != (held.st_ino, held.st_dev):
+                    return
+                if held.st_size < limit:
+                    return
+                for n in range(backups - 1, 0, -1):
+                    src = f"{path}.{n}"
+                    if os.path.exists(src):
+                        os.replace(src, f"{path}.{n + 1}")
+                os.replace(path, f"{path}.1")
+            finally:
+                _unlock_file(f)
 
     def _match_handlers(self, topic: str) -> List[Subscriber]:
         with self._lock:
