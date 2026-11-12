@@ -16,8 +16,9 @@ does not read either note from HEAD and fails closed when the notes ref was
 not fetched. It requires the
 committed bytes to match. A working-tree edit does not move either note or
 either committed blob. The timestamp records historical pin
-``34864ff0547d2cff03e707414743a3b0cc8770b5``. The published require-pin is
-``bb04503119681adcf832f3c3e9b0cbf09fc7a938``. This module does not move it.
+``34864ff0547d2cff03e707414743a3b0cc8770b5``. The require-pin recorded on
+this head is ``bb04503119681adcf832f3c3e9b0cbf09fc7a938`` (historical; not
+the live published pin). This module does not move it.
 A series-hash change is refused rather than recorded as a new HNC identity.
 
 A later head is sequence 2 only: ``prev_anchor_id`` is the sequence 1 anchor
@@ -43,6 +44,8 @@ from aureon.evidence.serialize import dump
 
 # Pin inside the receipt 3 RFC 3161 commitment. Historical. Not the published pin.
 PUBLIC_PIN = "34864ff0547d2cff03e707414743a3b0cc8770b5"
+# Require-pin recorded on this head. Historical. Not the live published pin.
+# _identity_note wording is frozen so it still matches the committed head records.
 PUBLISHED_PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
 # Series sha256 of the formula path in evidence/output/hnc.json at PUBLIC_PIN.
 

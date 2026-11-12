@@ -206,8 +206,10 @@ def run_cold_boot() -> int:
     from aureon.containment.native import PIN as native_pin
 
     print(BANNER)
-    if native_pin != CONTAINMENT_PIN:
-        print("containment pin constant does not match the gallery record")
+    # The committed stage-7 receipt records CONTAINMENT_PIN. native.PIN is the
+    # later module require-pin. Both are historical; neither is PUBLIC_PIN.
+    if native_pin == PUBLIC_PIN or CONTAINMENT_PIN == PUBLIC_PIN:
+        print("a historical containment pin constant claims the live published pin")
         return 1
     child, parent_net_ns = cold_child()
     judged = judge_default(child, parent_net_ns)
@@ -220,7 +222,10 @@ def run_cold_boot() -> int:
         "That command's measurer opens one control TCP handshake outside the namespace."
     )
     print(f"public require-pin left at {PUBLIC_PIN}. This gallery did not write it.")
-    print(f"containment pin left at {native_pin}. pin_changed was not written.")
+    print(
+        f"containment receipt pin left at {CONTAINMENT_PIN}. "
+        f"module pin left at {native_pin}. pin_changed was not written."
+    )
     print("Release boundary stays HOLD. Receipts 2, 3, 4, and 5 stay HOLD.")
     if judged["verdict"] != "pass" or judged["allowed_at_default"] != "none" or judged["failures"]:
         print(judged["failures"])

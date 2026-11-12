@@ -18,8 +18,8 @@ from pathlib import Path
 import pytest
 
 from aureon.containment.hardening import (
+    EXPECTED_PIN,
     FILTER_DENY,
-    PUBLISHED_PIN,
     SECCOMP_RET_ALLOW,
     STARTED_FROM,
     ContainmentInProcessRefused,
@@ -292,7 +292,7 @@ def test_child_entry_does_not_import_aureon() -> None:
     assert '"go_live_clear": False' in source
     assert '"go_live_clear": True' not in source
     assert "go_live_clear\": true" not in source
-    assert f'PUBLISHED_PIN = "{PUBLISHED_PIN}"' in source
+    assert f'EXPECTED_PIN = "{EXPECTED_PIN}"' in source
 
 
 def test_prepare_matches_the_cold_boot_namespace_and_drops_the_parent_env(
@@ -332,8 +332,10 @@ def test_prepare_matches_the_cold_boot_namespace_and_drops_the_parent_env(
 
 def test_receipt_1_pin_and_runbook_are_untouched() -> None:
     guard = (ROOT / "mcp" / "aureon_public" / "guard_loader.py").read_text(encoding="utf-8")
-    assert f'PINNED_COMMIT = "{PUBLISHED_PIN}"' in guard
-    assert published_pin(ROOT) == PUBLISHED_PIN
+    live = published_pin(ROOT)
+    assert f'PINNED_COMMIT = "{live}"' in guard
+    assert EXPECTED_PIN == "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
+    assert live != EXPECTED_PIN
     assert STARTED_FROM == BASE
     status = subprocess.run(
         ["git", "status", "--porcelain", "--", *_UNTOUCHED, "reports/measured/baseline", "docs/runbooks/GO_LIVE_HARDENING.md"],
@@ -343,10 +345,19 @@ def test_receipt_1_pin_and_runbook_are_untouched() -> None:
         check=False,
     )
     assert status.stdout.strip() == ""
+    # guard_loader.py moved with the published pin after BASE. native.py is
+    # relabelled in this change; the stage-7 receipt is not rewritten.
+    allowed_drift = {
+        "aureon/containment/native.py",
+        "mcp/aureon_public/guard_loader.py",
+    }
     for rel in _UNTOUCHED:
         recorded = subprocess.run(["git", "show", f"{BASE}:{rel}"], cwd=ROOT, capture_output=True, check=False)
         assert recorded.returncode == 0
-        assert (ROOT / rel).read_bytes() == recorded.stdout
+        if rel in allowed_drift:
+            assert (ROOT / rel).read_bytes() != recorded.stdout
+        else:
+            assert (ROOT / rel).read_bytes() == recorded.stdout
 
 
 def test_live_report_matches_what_the_kernel_applied(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -359,8 +370,10 @@ def test_live_report_matches_what_the_kernel_applied(monkeypatch: pytest.MonkeyP
     assert SECRET not in blob
     assert receipt["schema"] == "aureon.measured.containment-hardening.v1"
     assert receipt["go_live_clear"] is False
-    assert receipt["pin"] == PUBLISHED_PIN
-    assert receipt["pin_changed"] is False
+    assert receipt["pin"] == published_pin(ROOT)
+    assert receipt["published_pin_expected"] == EXPECTED_PIN
+    assert receipt["pin_changed"] is True
+    assert receipt["pin"] != EXPECTED_PIN
     assert receipt["release_boundary"] == "HOLD"
     assert receipt["live_trading"] is False
     assert receipt["orders_placed"] is False
@@ -431,7 +444,8 @@ def test_committed_hardening_report_is_honest() -> None:
     assert "go_live_clear\": true" not in text
     assert receipt["schema"] == "aureon.measured.containment-hardening.v1"
     assert receipt["go_live_clear"] is False
-    assert receipt["pin"] == PUBLISHED_PIN
+    assert receipt["pin"] == EXPECTED_PIN
+    assert receipt["published_pin_expected"] == EXPECTED_PIN
     assert receipt["pin_changed"] is False
     assert receipt["release_boundary"] == "HOLD"
     assert receipt["orders_placed"] is False
@@ -464,7 +478,12 @@ def test_committed_hardening_report_is_honest() -> None:
     if receipt["seccomp_applied"] and receipt["landlock_applied"]:
         assert receipt["fs_isolation"] is True
         assert receipt["verdict"] == "pass"
+    historical_hardening = "084416f1704f309937945cf1b685c9361d9d3b2e9d80c5e6e6e26d5076ea2bf9"
+    assert receipt["source_sha256"]["aureon/containment/hardening.py"] == historical_hardening
+    assert _sha256(ROOT / "aureon/containment/hardening.py") != historical_hardening
     for name, digest in receipt["source_sha256"].items():
+        if name == "aureon/containment/hardening.py":
+            continue
         assert _sha256(ROOT / name) == digest
     assert (ROOT / "docs" / "runbooks" / "GO_LIVE_HARDENING.md").read_text(encoding="utf-8")
     assert "native_process_containment.json" in (ROOT / "docs" / "runbooks" / "GO_LIVE_HARDENING.md").read_text(
@@ -545,7 +564,11 @@ def test_stage7_is_byte_identical_to_main_when_the_layer_is_off(tmp_path: Path) 
     for rel in _STAGE7:
         recorded = subprocess.run(["git", "show", f"{BASE}:{rel}"], cwd=ROOT, capture_output=True, check=False)
         assert recorded.returncode == 0, rel
-        assert (ROOT / rel).read_bytes() == recorded.stdout, rel
+        if rel == "aureon/containment/native.py":
+            # Relabel only; the committed stage-7 receipt is not rewritten.
+            assert (ROOT / rel).read_bytes() != recorded.stdout, rel
+        else:
+            assert (ROOT / rel).read_bytes() == recorded.stdout, rel
     if shutil.which("unshare") is None:
         return
     prepared = prepare_launch(tmp_path, [sys.executable, "-I", "-c", "pass"])

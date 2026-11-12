@@ -22,7 +22,7 @@ applied. That is a gap, not a pass. ``fs_isolation`` is true only when
 landlock applied and the probes showed the boundary.
 
 No third-party package is imported. ``libseccomp`` is not required.
-``go_live_clear`` stays false. The published pin is not written.
+``go_live_clear`` stays false. The live published pin is not written.
 """
 
 from __future__ import annotations
@@ -45,7 +45,9 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 STARTED_FROM = "821c8f83123d25ab5b0fbb395d4c76c6a5000e54"
-PUBLISHED_PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
+# Pin expected at this module's last measurement. Historical. Not the live
+# published pin. pin_changed is true when the live guard-loader pin differs.
+EXPECTED_PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
 
 _CHILD = Path(__file__).with_name("_harden_child.py")
 _PIN_RE = re.compile(r'^PINNED_COMMIT = "([0-9a-f]{40})"', re.MULTILINE)
@@ -1354,8 +1356,8 @@ def _envelope(root: Path, started: str) -> dict[str, Any]:
         "kernel_release": os.uname().release if hasattr(os, "uname") else None,
         "go_live_clear": False,
         "pin": pin,
-        "pin_changed": pin != PUBLISHED_PIN,
-        "published_pin_expected": PUBLISHED_PIN,
+        "pin_changed": pin != EXPECTED_PIN,
+        "published_pin_expected": EXPECTED_PIN,
         "release_boundary": "HOLD",
         "orange_badge": "unchanged",
         "live_trading": False,
