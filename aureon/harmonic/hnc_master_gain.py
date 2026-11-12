@@ -30,11 +30,30 @@ What the paper does not give, and how this module handles it:
     linearly in log10(f) between the three landmarks.  That is a modelling
     choice, not the paper's curve, and the result says so.  Outside
     [1.45e14, 1e16] Hz it raises instead of extrapolating.
+  * Where net gain turns into net loss.  The paper's loss phase spans about
+    1e14 to 9e15 Hz with output below the ideal baseline (lines 86-89), but
+    it gives no crossover frequency.  Interpolating from the +30 % peak to
+    the -1.79 % trough keeps g above 1 for most of that band, which conflicts
+    with lines 86-89.  Values strictly between 1.45e14 and 9.12e15 Hz are
+    therefore a placeholder, not the paper's curve.
+  * Phase names.  ``GainReading.phase`` uses the paper's names ("gain",
+    "loss", "recovery") only at a landmark.  An interpolated reading is
+    labelled by the landmarks it sits between, e.g.
+    "between peak_gain and max_loss (interpolated)".
+  * The rising half of the gain phase (about 1e13 Hz up to the peak,
+    line 81) has no landmark below the peak, so it is refused, not modelled.
+    Within this module g can only fall from 1.30, never rise to it.
+  * Recovery starts above about 9e15 Hz (line 93); the first recovery
+    landmark used here is ~1e16 Hz.
   * Path dependence (lines 100-104).  The landmark interpolation has none.
     For a history-dependent g, compute a profile with
     ``hnc_photon_feedback_loop.modulated_energy`` (caller-supplied
     parameters, path-dependent restoring term) and convert it with
     :func:`gain_from_deviation_pct`.
+
+Elsewhere in the paper (lines 240-245) the same +30 % and -1.79 % figures
+are built into the modulation energy tensor Delta T^mod(f), not into g.
+Using them for g rests on Gary's direction above.
 
 Not wired in.  The Master Formula paper (zenodo.17527831 eq. 5) prints
 g = 1.5, and several modules read a fixed g.  None of them is changed here;
@@ -109,7 +128,7 @@ def gain_range() -> Tuple[float, float]:
 class GainReading:
     frequency_hz: float
     g: float
-    phase: str          # "gain", "loss" or "recovery" (the paper's names)
+    phase: str          # paper name at a landmark, else "between X and Y (interpolated)"
     source: str         # "paper landmark" or the interpolation note
     claim_state: str = CLAIM_STATE
 
@@ -135,7 +154,10 @@ def gain_at_frequency(frequency_hz: float) -> GainReading:
         if f == lm["frequency_hz"]:
             phase = {"peak_gain": "gain", "max_loss": "loss", "recovery": "recovery"}[key]
             return GainReading(f, lm["g"], phase, f"paper landmark, line {lm['lines']}")
-    for a, b, phase in ((lms[0], lms[1], "loss"), (lms[1], lms[2], "recovery")):
+    for (a, b), (ka, kb) in zip(
+        ((lms[0], lms[1]), (lms[1], lms[2])), ((_ORDER[0], _ORDER[1]), (_ORDER[1], _ORDER[2])), strict=True
+    ):
+        phase = f"between {ka} and {kb} (interpolated)"
         fa, fb = a["frequency_hz"], b["frequency_hz"]
         if fa <= f <= fb:
             t = (math.log10(f) - math.log10(fa)) / (math.log10(fb) - math.log10(fa))

@@ -87,3 +87,24 @@ def test_import_has_no_side_effects_and_no_randomness():
     with open(mg.__file__, encoding="utf-8") as fh:
         src = fh.read().lower()
     assert "import random" not in src and "np.random" not in src
+
+
+@pytest.mark.parametrize(
+    "f, label",
+    [
+        (2e14, "between peak_gain and max_loss (interpolated)"),
+        (1e15, "between peak_gain and max_loss (interpolated)"),
+        (6e15, "between peak_gain and max_loss (interpolated)"),
+        (9.5e15, "between max_loss and recovery (interpolated)"),
+    ],
+)
+def test_interpolated_readings_never_carry_a_paper_phase_name(f, label):
+    r = mg.gain_at_frequency(f)
+    assert r.phase == label
+    assert r.phase not in {"gain", "loss", "recovery"}
+    assert r.source == mg.INTERPOLATION_SOURCE
+
+
+def test_docstring_flags_the_loss_band_conflict():
+    doc = mg.__doc__
+    assert "placeholder" in doc and "86-89" in doc and "240-245" in doc
