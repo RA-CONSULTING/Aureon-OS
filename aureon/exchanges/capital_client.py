@@ -432,9 +432,12 @@ class CapitalClient:
                 _SHARED_SESSION["rate_limit_until"] = self._rate_limit_until
                 self.init_error = "rate_limited"
                 logger.warning(
-                    "Capital.com rate limited (HTTP 429) on POST /session - backing off for %d seconds%s",
+                    "Capital.com rate limited (HTTP 429) on POST /session - backing off for %d seconds%s; "
+                    "shared backoff until %s UTC (%d s remaining)",
                     int(round(wait_s)),
                     " (Retry-After)" if retry_after is not None else "",
+                    datetime.fromtimestamp(self._rate_limit_until, timezone.utc).strftime("%H:%M:%S"),
+                    int(round(max(0.0, self._rate_limit_until - time.time()))),
                 )
                 self._session_error_logged = True
             else:
@@ -513,9 +516,11 @@ class CapitalClient:
     def _acquire_capital_request_slot(self, is_mutation: bool) -> bool:
         """Pace requests across processes; False while a shared 429 backoff runs."""
         key = self._shared_key_name()
-        if _cap_shared.acquire_request_slot(key, is_order=is_mutation):
+        refused = _cap_shared.acquire_request_slot(key, is_order=is_mutation)
+        if refused is None:
             self._last_used_at = time.time()
             return True
+        self._last_slot_refusal = refused
         try:
             self._rate_limit_until = max(
                 float(getattr(self, "_rate_limit_until", 0.0) or 0.0),
@@ -691,8 +696,11 @@ class CapitalClient:
             self._discard_economic_dispatch(dispatch)
             return self._error_response(503, "session_unavailable", self.init_error or "session_unavailable")
         if not self._acquire_capital_request_slot(is_mutation):
-            # A shared 429 backoff is running: do not send anything.
+            # A shared 429 backoff is running, or (orders only) no working
+            # cross-process lock exists: do not send anything.
             self._discard_economic_dispatch(dispatch)
+            if getattr(self, "_last_slot_refusal", "") == "shared_state_unavailable":
+                return self._error_response(503, "shared_state_unavailable", _cap_shared.ORDERS_REFUSED_LOG)
             return self._error_response(429, "rate_limited", "capital_shared_backoff_active")
         try:
             resp = self._capital_http_request(
@@ -720,11 +728,14 @@ class CapitalClient:
             # Shared so every process backs off, not just this instance.
             self._rate_limit_until = _cap_shared.record_backoff(self._shared_key_name(), wait_s)
             logger.warning(
-                "Capital.com rate limited (HTTP 429) on %s %s - backing off for %d seconds%s",
+                "Capital.com rate limited (HTTP 429) on %s %s - backing off for %d seconds%s; "
+                "shared backoff until %s UTC (%d s remaining)",
                 normalized_method,
                 path,
                 int(round(wait_s)),
                 " (Retry-After)" if retry_after is not None else "",
+                datetime.fromtimestamp(self._rate_limit_until, timezone.utc).strftime("%H:%M:%S"),
+                int(round(max(0.0, self._rate_limit_until - time.time()))),
             )
             self._rate_limit_logged = True
             return resp
@@ -843,8 +854,10 @@ class CapitalClient:
         ):
             return self.market_cache
 
-        # Don't download while rate-limited.
+        # Don't download while rate-limited, or soon after an incomplete walk.
         if time.time() < self._rate_limit_until:
+            return self.market_cache or []
+        if not force_refresh and time.time() < float(getattr(self, "_market_walk_retry_at", 0.0) or 0.0):
             return self.market_cache or []
 
         # Try disk cache — avoids re-downloading 6799 markets on every process restart.
@@ -875,6 +888,7 @@ class CapitalClient:
         visited: set = set()
         bfs_started = time.time()
         max_bfs_sec = 30.0  # Hard cap on catalogue traversal time
+        walk_complete = True  # any error, 429 or timeout makes the result partial
 
         while queue and (time.time() - bfs_started) < max_bfs_sec:
             node_id = queue.pop(0)
@@ -886,6 +900,7 @@ class CapitalClient:
                 response = self._request('GET', path)
                 if response.status_code != 200:
                     logger.warning(f"Capital.com marketnavigation failed for {node_id}: {response.text}")
+                    walk_complete = False
                     if response.status_code == 429:
                         break  # backing off: stop the walk rather than keep asking
                     continue
@@ -905,12 +920,20 @@ class CapitalClient:
                     queue.append(nid)
             except Exception as e:
                 logger.error(f"Capital.com navigation error at node {node_id}: {e}")
+                walk_complete = False
                 continue
+        if queue:
+            walk_complete = False  # stopped by the time cap
 
-        if not markets:
-            # Never cache or persist an empty catalogue; keep whatever we had.
-            logger.warning("Capital.com market catalogue walk returned 0 markets; not caching")
-            return self.market_cache or []
+        if not walk_complete or not markets:
+            # Only a fully completed, non-empty walk is cached or saved; a
+            # partial or empty one never replaces a good cache or the disk file.
+            logger.warning(
+                "Capital.com market catalogue walk incomplete or empty (%d markets); not caching",
+                len(markets),
+            )
+            self._market_walk_retry_at = time.time() + 60.0
+            return self.market_cache or markets
 
         self.market_cache = markets
         self.market_cache_time = time.time()

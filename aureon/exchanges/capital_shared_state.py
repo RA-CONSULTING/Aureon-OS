@@ -2,7 +2,8 @@
 
 Every launcher organ runs in its own process, so a per-process dict cannot stop
 nine processes each logging in to Capital.com. This module keeps one small JSON
-state file guarded by ``fcntl.flock`` so all processes on the box share:
+state file guarded by a lock file (``fcntl.flock`` on POSIX, ``msvcrt.locking``
+on Windows) so all processes on the box share:
 
 * one session (CST / X-SECURITY-TOKEN) per account key and environment,
 * the time of the last ``POST /session`` (Capital allows 1 per second per key),
@@ -12,8 +13,9 @@ state file guarded by ``fcntl.flock`` so all processes on the box share:
 
 Capital's published limits: https://open-api.capital.com/ ("Rate limits").
 
-If the lock or file is unavailable (no ``fcntl``, read-only disk), the module
-falls back to an in-process dict, which is the behaviour before this module.
+If no lock works or the file cannot be written, backoff, login/order times and
+the request window are still enforced from memory in this process; reads carry
+on, and ORDER requests are refused (fail closed) with a distinctive log line.
 Token values are never logged. The file is created with mode 0600.
 """
 
@@ -31,10 +33,14 @@ import time
 from email.utils import parsedate_to_datetime
 from typing import Any, Dict, Iterator, Optional
 
-try:  # POSIX only; Windows falls back to the in-process state.
+try:  # POSIX
     import fcntl  # type: ignore
 except Exception:  # pragma: no cover - platform dependent
     fcntl = None  # type: ignore
+try:  # Windows
+    import msvcrt  # type: ignore
+except Exception:  # pragma: no cover - platform dependent
+    msvcrt = None  # type: ignore
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +61,11 @@ SESSION_MAX_AGE_S = 50 * 60
 DEFAULT_RATE_LIMIT_BACKOFF_S = 600.0
 
 _LOCAL_STATE: Dict[str, Any] = {}
+# Fields that must survive a failed file write: kept in memory and merged
+# (max / union) into every read, so a write failure never drops a backoff.
+_ENFORCED_MAX_FIELDS = ("rate_limit_until", "last_login_at", "last_order_at")
+_TLS = threading.local()
+ORDERS_REFUSED_LOG = "capital orders refused: shared lock unavailable"
 _LOCAL_LOCK = threading.RLock()
 _LOCAL_LOGIN_LOCK = threading.RLock()
 _FALLBACK_WARNED = False
@@ -131,7 +142,8 @@ def _write_file(path: str, data: Dict[str, Any]) -> None:
     directory = os.path.dirname(path) or "."
     fd, tmp = tempfile.mkstemp(prefix=".capital_session.", dir=directory)
     try:
-        os.fchmod(fd, 0o600)
+        if hasattr(os, "fchmod"):
+            os.fchmod(fd, 0o600)
         with os.fdopen(fd, "w", encoding="utf-8") as handle:
             json.dump(data, handle, separators=(",", ":"))
         os.replace(tmp, path)
@@ -141,30 +153,96 @@ def _write_file(path: str, data: Dict[str, Any]) -> None:
         raise
 
 
+def _lock_fd(fd: int) -> bool:
+    """Exclusive cross-process lock on ``fd``: flock (POSIX) or msvcrt (Windows)."""
+    if fcntl is not None:
+        fcntl.flock(fd, fcntl.LOCK_EX)
+        return True
+    if msvcrt is not None:
+        os.lseek(fd, 0, os.SEEK_SET)
+        while True:
+            try:
+                msvcrt.locking(fd, msvcrt.LK_LOCK, 1)  # one byte of the lock file
+                return True
+            except OSError:
+                time.sleep(0.05)  # LK_LOCK gave up after its own retries; keep waiting
+    return False
+
+
+def _unlock_fd(fd: int) -> None:
+    with contextlib.suppress(OSError):
+        if fcntl is not None:
+            fcntl.flock(fd, fcntl.LOCK_UN)
+        elif msvcrt is not None:
+            os.lseek(fd, 0, os.SEEK_SET)
+            msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
+
+
+def _open_lock(path: str) -> Optional[int]:
+    """Open and lock ``path``; None if no lock mechanism works here."""
+    if fcntl is None and msvcrt is None:
+        _warn_fallback(RuntimeError("no fcntl or msvcrt"))
+        return None
+    fd = None
+    try:
+        os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+        fd = os.open(path, os.O_RDWR | os.O_CREAT, 0o600)
+        if _lock_fd(fd):
+            return fd
+    except OSError as exc:
+        _warn_fallback(exc)
+    if fd is not None:
+        with contextlib.suppress(OSError):
+            os.close(fd)
+    return None
+
+
+def _merge_enforced(key: str, bucket: Dict[str, Any], now: float) -> None:
+    local = _LOCAL_STATE.get(key) or {}
+    for field in _ENFORCED_MAX_FIELDS:
+        value = max(float(bucket.get(field) or 0.0), float(local.get(field) or 0.0))
+        if value:
+            bucket[field] = value
+    times = {
+        round(float(t), 6)
+        for t in list(bucket.get("request_times") or []) + list(local.get("request_times") or [])
+        if isinstance(t, (int, float)) and now - t < 1.0
+    }
+    bucket["request_times"] = sorted(times)
+
+
+def _remember_enforced(key: str, bucket: Dict[str, Any]) -> None:
+    local = _LOCAL_STATE.setdefault(key, {})
+    for field in _ENFORCED_MAX_FIELDS:
+        if bucket.get(field):
+            local[field] = max(float(local.get(field) or 0.0), float(bucket[field]))
+    local["request_times"] = list(bucket.get("request_times") or [])
+
+
+def shared_state_ok() -> bool:
+    """Whether this thread's last locked_state used a working lock and file write."""
+    return bool(getattr(_TLS, "shared_ok", False))
+
+
 @contextlib.contextmanager
 def locked_state(key: str) -> Iterator[Dict[str, Any]]:
     """Yield the mutable state bucket for ``key`` under an exclusive lock.
 
     Changes made to the yielded dict are persisted when the block exits.
+    Backoff, login and order times and the request window are also kept in
+    memory, so a failed lock or write still enforces them in this process.
+    ``shared_state_ok()`` reports afterwards whether the shared file was used.
     """
 
     path = cache_path()
-    lock_fd = None
-    if fcntl is not None:
-        try:
-            os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-            lock_fd = os.open(path + ".lock", os.O_RDWR | os.O_CREAT, 0o600)
-            fcntl.flock(lock_fd, fcntl.LOCK_EX)
-        except OSError as exc:
-            if lock_fd is not None:
-                with contextlib.suppress(OSError):
-                    os.close(lock_fd)
-            lock_fd = None
-            _warn_fallback(exc)
+    local_key = f"{path}|{key}"  # memory mirrors one state file
+    lock_fd = _open_lock(path + ".lock")
     if lock_fd is None:
+        _TLS.shared_ok = False
         with _LOCAL_LOCK:
-            yield _LOCAL_STATE.setdefault(key, {})
+            yield _LOCAL_STATE.setdefault(local_key, {})
         return
+    _TLS.shared_ok = True
     try:
         try:
             data_fd = os.open(path, os.O_RDONLY | os.O_CREAT, 0o600)
@@ -178,16 +256,20 @@ def locked_state(key: str) -> Iterator[Dict[str, Any]]:
         if not isinstance(bucket, dict):
             bucket = {}
         before = json.dumps(bucket, sort_keys=True)
+        with _LOCAL_LOCK:
+            _merge_enforced(local_key, bucket, time.time())
         yield bucket
+        with _LOCAL_LOCK:
+            _remember_enforced(local_key, bucket)
         if json.dumps(bucket, sort_keys=True) != before:
             data[key] = bucket
             try:
                 _write_file(path, data)
             except OSError as exc:
+                _TLS.shared_ok = False
                 _warn_fallback(exc)
     finally:
-        with contextlib.suppress(OSError):
-            fcntl.flock(lock_fd, fcntl.LOCK_UN)
+        _unlock_fd(lock_fd)
         with contextlib.suppress(OSError):
             os.close(lock_fd)
 
@@ -196,19 +278,7 @@ def locked_state(key: str) -> Iterator[Dict[str, Any]]:
 def login_lock() -> Iterator[None]:
     """Serialise logins across processes so only one POST /session is in flight."""
 
-    path = cache_path()
-    fd = None
-    if fcntl is not None:
-        try:
-            os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-            fd = os.open(path + ".login.lock", os.O_RDWR | os.O_CREAT, 0o600)
-            fcntl.flock(fd, fcntl.LOCK_EX)
-        except OSError as exc:
-            if fd is not None:
-                with contextlib.suppress(OSError):
-                    os.close(fd)
-            fd = None
-            _warn_fallback(exc)
+    fd = _open_lock(cache_path() + ".login.lock")
     if fd is None:
         with _LOCAL_LOGIN_LOCK:
             yield
@@ -216,8 +286,7 @@ def login_lock() -> Iterator[None]:
     try:
         yield
     finally:
-        with contextlib.suppress(OSError):
-            fcntl.flock(fd, fcntl.LOCK_UN)
+        _unlock_fd(fd)
         with contextlib.suppress(OSError):
             os.close(fd)
 
@@ -309,32 +378,47 @@ def parse_retry_after(headers: Any) -> Optional[float]:
         return None
 
 
-def acquire_request_slot(key: str, *, is_order: bool = False) -> bool:
+def acquire_request_slot(key: str, *, is_order: bool = False) -> Optional[str]:
     """Block until a request may be sent without exceeding Capital's limits.
 
-    Returns False if a shared 429 backoff is active (caller must not send).
+    Returns None when the caller may send. Otherwise returns why not:
+    ``"backoff"`` while a 429 backoff runs, or ``"shared_state_unavailable"``
+    for an order when no working cross-process lock or file write exists
+    (orders fail closed; reads continue with in-memory pacing).
     Also marks the shared session as used, which keeps the idle clock honest.
     """
 
     while True:
+        wait = 0.0
+        refused: Optional[str] = None
+        granted = False
         with locked_state(key) as bucket:
             now = time.time()
             if now < float(bucket.get("rate_limit_until") or 0.0):
-                return False
-            window = [t for t in (bucket.get("request_times") or []) if isinstance(t, (int, float)) and now - t < 1.0]
-            limit = max(1, int(max_requests_per_sec()))
-            wait = 0.0
-            if len(window) >= limit:
-                wait = max(wait, 1.0 - (now - min(window)))
-            if is_order:
-                last_order = float(bucket.get("last_order_at") or 0.0)
-                wait = max(wait, min_order_interval_s() - (now - last_order))
-            if wait <= 0.0:
-                window.append(now)
-                bucket["request_times"] = window
+                refused = "backoff"
+            elif is_order and not shared_state_ok():
+                refused = "shared_state_unavailable"
+            else:
+                window = [t for t in (bucket.get("request_times") or []) if isinstance(t, (int, float)) and now - t < 1.0]
+                limit = max(1, int(max_requests_per_sec()))
+                if len(window) >= limit:
+                    wait = max(wait, 1.0 - (now - min(window)))
                 if is_order:
-                    bucket["last_order_at"] = now
-                if bucket.get("cst"):
-                    bucket["last_used_at"] = now
-                return True
+                    last_order = float(bucket.get("last_order_at") or 0.0)
+                    wait = max(wait, min_order_interval_s() - (now - last_order))
+                if wait <= 0.0:
+                    window.append(now)
+                    bucket["request_times"] = window
+                    if is_order:
+                        bucket["last_order_at"] = now
+                    if bucket.get("cst"):
+                        bucket["last_used_at"] = now
+                    granted = True
+        if granted and is_order and not shared_state_ok():
+            refused = "shared_state_unavailable"  # the write that recorded it failed
+        if refused == "shared_state_unavailable":
+            logger.error("%s; not sending this order", ORDERS_REFUSED_LOG)
+            return refused
+        if refused or granted:
+            return refused
         time.sleep(min(max(wait, 0.005), 1.0))

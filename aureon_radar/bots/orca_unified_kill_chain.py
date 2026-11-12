@@ -437,12 +437,15 @@ class UnifiedKillChain:
             log_system(f"Truth update failed: {e}")
             return None
         
-    def _refresh_portfolio_after_trade(self) -> bool:
-        # Reuse this cycle's refresh_truth() read instead of a second account
-        # read against the exchanges (rate limits). True if a fresh read was made.
+    def _refresh_portfolio_after_trade(self, order_sent: bool = True) -> bool:
+        # After any order send (filled, partial, failed, error, unknown) always
+        # read fresh. Only when nothing was sent is this cycle's refresh_truth()
+        # read reused, to spare the exchanges (rate limits). True if read.
         if not self.real_portfolio:
             return False
-        if (time.time() - float(getattr(self, "_truth_refreshed_at", 0.0) or 0.0)) < TRUTH_REUSE_WINDOW_S:
+        if not order_sent and (
+            time.time() - float(getattr(self, "_truth_refreshed_at", 0.0) or 0.0)
+        ) < TRUTH_REUSE_WINDOW_S:
             return False
         try:
             self.real_portfolio.get_real_portfolio()
@@ -727,6 +730,7 @@ class UnifiedKillChain:
         op_type = opportunity.get('type', 'UNKNOWN')
         
         log_sniper(f"🔥 EXECUTING BY ORCA RULES: {symbol} on {exchange}")
+        order_sent = False  # set before every send, so an error mid-send still counts
         
         try:
             # Get available balance for position sizing
@@ -763,6 +767,7 @@ class UnifiedKillChain:
                     log_sniper(f"   Entry: ${price:.6f}")
                     
                     # EXECUTE THE TRADE
+                    order_sent = True
                     order_result = self.kraken.place_market_order(kraken_pair, 'buy', volume)
                     
                     if order_result and not order_result.get('error'):
@@ -798,6 +803,7 @@ class UnifiedKillChain:
                     log_sniper(f"   Entry: ${price:.6f}")
                     
                     # EXECUTE THE TRADE
+                    order_sent = True
                     order_result = self.binance.place_market_order(symbol, 'BUY', volume)
                     
                     if order_result and order_result.get('status') == 'FILLED':
@@ -844,6 +850,7 @@ class UnifiedKillChain:
                             kraken_pair = symbol.replace('/', '')
                             
                             log_sniper(f"   Step 1: BUY {volume:.6f} {coin} on Kraken")
+                            order_sent = True
                             buy_order = self.kraken.place_market_order(kraken_pair, 'buy', volume)
                             
                             if buy_order and buy_order.get('status') == 'FILLED':
@@ -892,12 +899,14 @@ class UnifiedKillChain:
             except:
                 pass
 
-            self._refresh_portfolio_after_trade()
+            self._refresh_portfolio_after_trade(order_sent=order_sent)
             
             return result
             
         except Exception as e:
             log_killer(f"❌ Execution error: {e}")
+            if order_sent:
+                self._refresh_portfolio_after_trade(order_sent=True)
             return {'status': 'ERROR', 'error': str(e)}
     
     def display_win_opportunities(self, opportunities: List[Dict], limit: int = 10):
