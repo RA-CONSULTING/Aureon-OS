@@ -143,6 +143,9 @@ _NEVER_CALL = frozenset({
     # or submits orders inside the hub process.
     'monitor_and_trade', 'run_all_test_orders', 'run_test_order',
     'run_balance_price_check', 'submit_exit_order', 'get_all_positions',
+    # Kill-chain y/N prompt helper: probing it with (symbol, price) logs a
+    # fake "Headless decision: BTCUSD -> Y" line (and blocks on input() under a TTY).
+    'queen_answer',
 })
 
 _INIT_RISK_TOKENS = ('place_order', 'create_order', 'execute_order',

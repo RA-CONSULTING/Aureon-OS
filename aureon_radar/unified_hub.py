@@ -440,6 +440,9 @@ class SignalFusionEngine:
         # or submits orders inside the hub process.
         'monitor_and_trade', 'run_all_test_orders', 'run_test_order',
         'run_balance_price_check', 'submit_exit_order', 'get_all_positions',
+        # Kill-chain y/N prompt helper: probing it with (symbol, price) logs a
+        # fake "Headless decision: BTCUSD -> Y" line (and blocks on input() under a TTY).
+        'queen_answer',
     })
         
     def scan_all(self, symbol: str, price: float) -> UnifiedSignal:
