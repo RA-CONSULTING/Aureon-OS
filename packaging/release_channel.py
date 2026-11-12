@@ -21,7 +21,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-PUBLISHED_PIN = "0646146c53e59dbcab41363a613d5651c9c9d50f"
+PUBLISHED_PIN = "050891385291fb77c321996f25e307c794789d89"
 LINEAGE_TIP = "08f04936088689e29b7995d89530b21b425c35f9"
 SCHEMA = "aureon.public-release-channel.v1"
 NOTES = Path("docs/releases/RELEASE_NOTES_tip.md")
