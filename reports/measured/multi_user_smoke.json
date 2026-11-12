@@ -4,16 +4,16 @@
     "admin_pulse_status": 200,
     "boot": "create_app",
     "canary_sha256": {
-      "canary_control_sha256": "1cc20cbf74880fb539ff1a57a59063617480a1ba50a848e08583439ef380969b",
-      "canary_operator_sha256": "fb03c4bdbd2eb330eddf599af24f8378d2199e66fbe3349d6e66c9f7d398d919",
-      "canary_prompt_a_revoked_sha256": "9ee302319727d0c71729d06510e724acdca954741a2248e71491cad5654f456e",
-      "canary_prompt_a_sha256": "373a9942e8dff5bce124d0e1ff10e14538ca1702ec3aa5b031fe8830c6556a26",
-      "canary_prompt_b_absent_sha256": "da8be9d120c8275c1aa7dcb503bbc87c2e23bb96b43c5dcb637d32b57639096d",
-      "canary_prompt_b_sha256": "38f66abed1b59a6db4c5227f727ff69a42ee0bf03ec743053ec7f7300b48ceac",
-      "canary_prompt_b_still_sha256": "21088204e309196bb26ea02199f92c6fee9938e09c4a87f48606c993d1f2fa2c",
-      "canary_signer_sha256": "30fc3bce78f37cba80f82f7d588ab41180ef36a1c1ddc01c005852b981f20dc3",
-      "canary_tenant_a_sha256": "d7789b22b70a0a9f2a1220089a5ca6aef449dd6c1764715490e6b92a40de8a10",
-      "canary_tenant_b_sha256": "8231fdb60e7467311b5a59783e6998d5477d9545d3e9d97aade779f844be7d38"
+      "canary_control_sha256": "4afd408b46bfd331440956e97fa2c2b8ca540de4dc41c6ed49c36edb26a18aa4",
+      "canary_operator_sha256": "421bd1907ee797664909abb55ce78fc80534b95a2e6c53e98900702b350e2a22",
+      "canary_prompt_a_revoked_sha256": "961df7da823a670b0a511cf4b3ea346f4fe167d61cf9f697bce50434816cffa5",
+      "canary_prompt_a_sha256": "fd77d6f920888b521464f9ecf7b2823ac51fb8500997ae8cf7e7eb6e2d58f49a",
+      "canary_prompt_b_absent_sha256": "393acef4cf6213deca638632eb838415cecb43211ebc3faba3613ab1981c2176",
+      "canary_prompt_b_sha256": "29292b24834e69a8df7430aa6b650c612a65a053c4decede03666d18d0bb2b93",
+      "canary_prompt_b_still_sha256": "fa506e0f8b8a99d15ac52055c155d39ce998e02e0ce5406cd626e4538eeacc22",
+      "canary_signer_sha256": "f408fade2e63def45f3ba0e86c4d74a43e7c422576d5002677dcd28279fba74b",
+      "canary_tenant_a_sha256": "2bf3660e7d934fe46f5fea69ab155ae92d37638d477bde6d3f44eca7c043d510",
+      "canary_tenant_b_sha256": "e10c35462652cc470dc61fde620541431e4af6819eabc02aa8c18a43ae9023d0"
     },
     "caps": {
       "CapAmb": "0000000000000000",
@@ -96,7 +96,7 @@
     "live_trading": false,
     "magic_star_release": false,
     "market_data_fetched": false,
-    "net_ns": "net:[4026532946]",
+    "net_ns": "net:[4026532951]",
     "ok": true,
     "orders_placed": false,
     "plaintext_key_in_store": false,
@@ -147,7 +147,7 @@
     "serving_entrypoint": false,
     "store_a_bytes": 100,
     "store_b_bytes": 268,
-    "subscriber_count_after": 2,
+    "subscriber_count_after": 4,
     "subscriber_count_before": 1,
     "subscriptions_after": [
       {
@@ -168,6 +168,20 @@
         "count": 0,
         "handlers": [],
         "topic": "symbolic.life.pulse"
+      },
+      {
+        "count": 1,
+        "handlers": [
+          "_on_predicted"
+        ],
+        "topic": "whale.behavior.predicted"
+      },
+      {
+        "count": 1,
+        "handlers": [
+          "_on_shape"
+        ],
+        "topic": "whale.shape.detected"
       }
     ],
     "subscriptions_before": [
@@ -193,9 +207,11 @@
           "canary_tenant_a": false,
           "canary_tenant_b": false
         },
-        "new_bytes_scanned": 0,
-        "new_names": [],
-        "preexisting_count": 1,
+        "new_bytes_scanned": 4116,
+        "new_names": [
+          "aureon_chirp_bus"
+        ],
+        "preexisting_count": 0,
         "preexisting_read": false,
         "read_errors": 0,
         "readable": true,
@@ -203,8 +219,8 @@
         "truncated_segments": []
       },
       "home_files": {
-        "bytes": 1951,
-        "files": 7,
+        "bytes": 7604126,
+        "files": 576,
         "paths": {
           "canary_control": [
             "thoughts.jsonl"
@@ -255,7 +271,7 @@
         "truncated": false
       },
       "thoughts_jsonl": {
-        "bytes": 342,
+        "bytes": 343,
         "found": {
           "canary_control": true,
           "canary_operator": false,
@@ -315,15 +331,15 @@
     "PYTHONPATH",
     "PYTHONUNBUFFERED"
   ],
-  "child_net_ns": "net:[4026532946]",
+  "child_net_ns": "net:[4026532951]",
   "cold_boot_argv_has_net": true,
   "cold_boot_command": "python -m aureon.containment.multi_user_smoke",
   "containment_pin": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
   "containment_pin_is_public_pin": false,
   "failures": [],
-  "finished_at": "2026-11-12T19:25:25Z",
+  "finished_at": "2026-11-12T21:21:40Z",
   "gaps": [],
-  "git_head_at_measurement": "0c01aa88c823e09f92c58deb8a2c9359efacead5",
+  "git_head_at_measurement": "9d254c9ed8b0b9fdd3b3d15e455f067a8189fc29",
   "go_live_clear": false,
   "go_live_receipt": null,
   "holds": [],
@@ -357,7 +373,7 @@
   "orange_badge": "unchanged",
   "orders_placed": false,
   "parent_env_copied": false,
-  "parent_net_ns": "net:[4026532516]",
+  "parent_net_ns": "net:[4026532600]",
   "pin": "ac9fa3151b63bd4143dc1aa434ec79b382406b7e",
   "pin_changed": false,
   "python": "3.13.5",
@@ -366,7 +382,7 @@
   "schema": "aureon.measured.multi-user-smoke.v1",
   "shared_memory": {
     "claim": "No universal shared-memory-leak claim. Each surface below was read or is named as unread. A canary is found or absent only on a surface whose found map is present.",
-    "dev_shm_preexisting_count": 1,
+    "dev_shm_preexisting_count": 0,
     "dev_shm_preexisting_read": false,
     "process_address_space": "Not scored. The child handled the prompts, so those bytes exist in that process. That is not the shared thought bus.",
     "scanned_surfaces": [
@@ -375,7 +391,7 @@
       "os_environ_values",
       "dev_shm_new"
     ],
-    "subscriber_count_after": 2,
+    "subscriber_count_after": 4,
     "subscriber_count_before": 1,
     "subscriptions_after": [
       {
@@ -396,6 +412,20 @@
         "count": 0,
         "handlers": [],
         "topic": "symbolic.life.pulse"
+      },
+      {
+        "count": 1,
+        "handlers": [
+          "_on_predicted"
+        ],
+        "topic": "whale.behavior.predicted"
+      },
+      {
+        "count": 1,
+        "handlers": [
+          "_on_shape"
+        ],
+        "topic": "whale.shape.detected"
       }
     ],
     "subscriptions_before": [
@@ -414,7 +444,7 @@
     "tests/test_multi_user_smoke.py": "4ab79983909fe8a2070307dc01595107c01f32b67edd59bdb5e0a78456960081"
   },
   "stage": 9,
-  "started_at": "2026-11-12T19:25:24Z",
+  "started_at": "2026-11-12T21:21:31Z",
   "started_from": "c68a89d2a184d99582bb24310b91e024323a212c",
   "title": "contained multi-user tenant boundary",
   "unchanged_sha256": {
@@ -422,13 +452,13 @@
     "aureon/operator/identity.py": "2df2e31eb48825541a1471c0cdfe6a80c48b37935dd60644a887e9924298ce23",
     "aureon/operator/operator_server.py": "759d713526ee728cecfc987e9133ddcfe83f2c76352f4dc39f909ec40d1bddc2",
     "docs/runbooks/GO_LIVE_HARDENING.md": "30f2cc49442a334e848d183e5dd86eb53b302b0e274625d17b2b872d338a2b10",
-    "mcp/aureon_public/guard_loader.py": "b8fe1866823a6425d673010effa2b1cd686a6c3fc1a902215d9ada055b2aed94",
-    "mcp/aureon_public/pin_blob.py": "65fa686b170b510e8bc715bc8d105a86f0154a3c8ab89d6ae2aeb7fb74eb7319",
-    "mcp/aureon_public/sweep_guard.py": "bab6b24325c0e4ef2a4c3b90abb6d007f88e2019df31c6dc0f71188307cb1473",
+    "mcp/aureon_public/guard_loader.py": "bddd73ecf17c79106752a4204479601ce4061f5dc2e38f63829b612eab69930b",
+    "mcp/aureon_public/pin_blob.py": "1e9e4772911e0c0e909628138a0b9997ad878c51a193909c51a7b101d536431e",
+    "mcp/aureon_public/sweep_guard.py": "7b4a6540344ea60c930b37d3538b1c812b62324139cd09f2a61e6c0cb180d61a",
     "scripts/linux/install-linux.sh": "8ef7f0e60fbc78e97161a0ce3b585c43893fdcf9508c1aa217ec9963710ad505"
   },
   "verdict": "pass",
-  "worktree_dirty_at_measurement": false,
+  "worktree_dirty_at_measurement": null,
   "wrapper": {
     "cap_drop": {
       "dropped": 41,
@@ -465,9 +495,9 @@
       "docker0",
       "enp0s3",
       "lo",
-      "veth0298e73",
-      "veth47f8ff2",
-      "veth865a92f",
+      "veth383a288",
+      "vethd96f4a3",
+      "vethdbf3dfb",
       "vethdc106ac",
       "vethfd7083a"
     ],
