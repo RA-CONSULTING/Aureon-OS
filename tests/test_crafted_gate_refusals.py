@@ -79,8 +79,10 @@ def test_conscience_hook_does_not_crash_and_vetoes_theft(tmp_path: Path, monkeyp
     assert override["verdict"] == "VETO"
 
 
-def test_cloud_hold_overlay_is_scoped_to_the_deployment_module() -> None:
-    from conftest import _cloud_hold_env_overlay
+def test_cloud_hold_overlay_is_scoped_to_the_deployment_module(pytestconfig: pytest.Config) -> None:
+    from tests.support.root_conftest import root_conftest
+
+    _cloud_hold_env_overlay = root_conftest(pytestconfig)._cloud_hold_env_overlay
 
     hold = _cloud_hold_env_overlay("/repo/deployment/google-cloud/test_deployment_hold.py")
     assert hold == {"AUREON_DEPLOYMENT_HOLD": "1"}

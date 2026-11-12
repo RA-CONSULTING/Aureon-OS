@@ -68,7 +68,23 @@ def test_trade_view_keeps_orders_placed_for_the_smoke_gate() -> None:
     assert module._cognition_trade_failure(module._trade_view(placed)) == "cognition auris trade_readiness"
 
 
+def _is_editable_install_finder(finder: object) -> bool:
+    """True for the meta-path finder setuptools writes for ``pip install -e``."""
+    owner = finder if isinstance(finder, type) else type(finder)
+    return str(getattr(owner, "__module__", "")).startswith("__editable__")
+
+
+def test_editable_install_finder_is_recognised() -> None:
+    editable = type("_EditableFinder", (), {"__module__": "__editable___aureon_2_1_0_finder"})
+    assert _is_editable_install_finder(editable)
+    assert _is_editable_install_finder(editable())
+    import importlib.machinery
+
+    assert not _is_editable_install_finder(importlib.machinery.PathFinder)
+
+
 def test_supervisor_imports_the_checkout_when_started_as_a_script() -> None:
+    import importlib
     import importlib.util
     import sys
 
@@ -84,10 +100,18 @@ def test_supervisor_imports_the_checkout_when_started_as_a_script() -> None:
         if name == "aureon" or name.startswith("aureon.")
     }
     checkout = {str(module.ROOT), str(module.ROOT / "mcp"), ""}
+    # An editable install (pip install -e .) adds a meta-path finder that maps
+    # ``aureon`` to the checkout no matter what sys.path holds. Set it aside so
+    # this still checks what a plain script start sees.
+    saved_meta_path = list(sys.meta_path)
     try:
+        sys.meta_path[:] = [
+            finder for finder in saved_meta_path if not _is_editable_install_finder(finder)
+        ]
         sys.path[:] = [str(module.ROOT / "scripts")] + [
             entry for entry in saved_path if entry not in checkout
         ]
+        importlib.invalidate_caches()
         try:
             import aureon  # noqa: F401
         except ModuleNotFoundError:
@@ -101,7 +125,9 @@ def test_supervisor_imports_the_checkout_when_started_as_a_script() -> None:
 
         assert Path(aureon.__file__).resolve().parent == module.ROOT / "aureon"
     finally:
+        sys.meta_path[:] = saved_meta_path
         sys.path[:] = saved_path
+        importlib.invalidate_caches()
         for name in list(sys.modules):
             if name == "aureon" or name.startswith("aureon."):
                 sys.modules.pop(name, None)

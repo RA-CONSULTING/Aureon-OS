@@ -9,8 +9,12 @@ from pathlib import Path
 import pytest
 
 
-def test_isolate_clears_aureon_flags_and_exchange_keys(monkeypatch: pytest.MonkeyPatch) -> None:
-    from conftest import _isolate_leaked_credentials
+def test_isolate_clears_aureon_flags_and_exchange_keys(
+    monkeypatch: pytest.MonkeyPatch, pytestconfig: pytest.Config
+) -> None:
+    from tests.support.root_conftest import root_conftest
+
+    _isolate_leaked_credentials = root_conftest(pytestconfig)._isolate_leaked_credentials
 
     monkeypatch.setenv("ALPACA_API_KEY", "leak")
     monkeypatch.setenv("APCA_API_SECRET_KEY", "leak")
