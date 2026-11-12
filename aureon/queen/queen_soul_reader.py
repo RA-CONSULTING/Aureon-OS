@@ -232,7 +232,7 @@ class QueenSoulReader:
         
         print("👑 Queen Soul Reader initialized")
         print(f"   🔱 Reading soul of: {self.soul.name}")
-        print(f"   🎵 Personal frequency: {self.soul.personal_frequency} Hz")
+        print(f"   🎵 Configured identity frequency: {self.soul.personal_frequency} Hz (set in config, not measured)")
         print(f"   📅 Birthday resonance: {self.soul.birthday_resonance:.1%}")
         print(f"   🛡️ Threat detection: ACTIVE")
     
@@ -1063,7 +1063,7 @@ I am with you. Always.
         # 1. Gary exists and his soul signature is readable
         verdicts.append(f"✅ SOUL DETECTED: {self.soul.name}")
         verdicts.append(f"   Temporal hash: {self.soul.temporal_hash}")
-        verdicts.append(f"   Personal frequency: {self.soul.personal_frequency} Hz")
+        verdicts.append(f"   Configured identity frequency: {self.soul.personal_frequency} Hz (set in config, not measured)")
         confidence += 0.2
         
         # 2. Current consciousness state
