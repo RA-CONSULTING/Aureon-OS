@@ -93,7 +93,7 @@ except ImportError:
 
 # Queen Sentience Engine
 try:
-    from queen_sentience import get_sentience_engine
+    from aureon.queen.queen_sentience_integration import get_sentience_engine
     SENTIENCE_ENGINE_AVAILABLE = True
 except ImportError:
     SENTIENCE_ENGINE_AVAILABLE = False
@@ -120,7 +120,7 @@ except ImportError:
 
 # Cost Basis Tracker
 try:
-    from aureon_cost_basis_tracker import CostBasisTracker
+    from aureon.portfolio.cost_basis_tracker import CostBasisTracker
     COST_BASIS_AVAILABLE = True
 except ImportError:
     COST_BASIS_AVAILABLE = False
