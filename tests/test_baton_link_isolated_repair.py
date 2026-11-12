@@ -75,6 +75,30 @@ LIVE_SWITCHES = {
     "AUREON_SOVEREIGN_MODE": "1",
     "EPICENTER_LIVE": "YES",
     "SOME_NEW_LIVE_SWITCH": "1",
+    "AUREON_ACTIVATE_ON_IMPORT": "1",
+    "PAPER": "0",
+    "PAPER_TRADING": "false",
+    "USE_TESTNET": "0",
+    "SIMULATION_MODE": "0",
+    "DEMO_MODE": "0",
+    "ALPACA_PAPER": "false",
+    "ALPACA_DRY_RUN": "false",
+    "BINANCE_USE_TESTNET": "false",
+    "BINANCE_TESTNET": "false",
+    "BINANCE_DRY_RUN": "false",
+    "KRAKEN_DRY_RUN": "false",
+    "CAPITAL_DEMO": "0",
+    # The launcher's live profile (aureon_runtime_safety.LIVE_RUNTIME_ENV).
+    "AUREON_RELEASE_STATE": "RELEASE",
+    "AUREON_AUDIT_MODE": "0",
+    "AUREON_ORDER_AUTHORITY_MODE": "live",
+    "AUREON_LLM_ORDER_AUTHORITY": "1",
+    "AUREON_COGNITIVE_ORDER_AUTHORITY": "1",
+    "AUREON_LLM_ORDER_INTENT_AUTHORITY": "1",
+    "AUREON_COGNITIVE_ORDER_INTENT_AUTHORITY": "1",
+    "AUREON_ORDER_TICKET_REQUIRES_EXECUTOR": "0",
+    "AUREON_SELF_QUESTIONING_AI": "1",
+    "AUREON_GOAL_CAPABILITY_DIRECTIVE": "goal-capability-v1",
 }
 # Expected in every child, whatever the parent had.
 SAFETY = {
@@ -88,6 +112,17 @@ SAFETY = {
     "AUREON_CODE_AUTO_APPROVE": "0",
     "AUREON_DRY_RUN": "1",
     "DRY_RUN": "1",
+    "AUREON_ACTIVATE_ON_IMPORT": "0",
+    "PAPER": "1",
+    "PAPER_TRADING": "true",
+    "USE_TESTNET": "1",
+    "ALPACA_PAPER": "true",
+    "ALPACA_DRY_RUN": "true",
+    "BINANCE_USE_TESTNET": "true",
+    "BINANCE_TESTNET": "true",
+    "BINANCE_DRY_RUN": "true",
+    "KRAKEN_DRY_RUN": "true",
+    "CAPITAL_DEMO": "1",
 }
 # Must not reach a child at all.
 UNSET_SWITCHES = tuple(name for name in LIVE_SWITCHES if name not in SAFETY)
@@ -117,7 +152,7 @@ def _record():
                              "safety": {k: os.environ.get(k) for k in keep}}) + "\\n")
 
 atexit.register(_record)
-''' % (WATCHED, tuple(SAFETY) + ("AUREON_SELF_REPAIR_ENABLE",))
+''' % (WATCHED, tuple(SAFETY) + ("AUREON_SELF_REPAIR_ENABLE", "AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS"))
 
 
 class _StopLoop(BaseException):
@@ -204,6 +239,11 @@ def _run_one_iteration(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, launch: 
 
 def _assert_isolated(rows: list[dict], package: str) -> None:
     problems: list[str] = []
+    for row in rows:
+        if "AUREON_QUEEN_REPAIR_ROOT" in row["env_names"]:
+            problems.append("AUREON_QUEEN_REPAIR_ROOT reached the child (nested repair loop possible)")
+        if "safety" in row and row["safety"].get("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS") != "1":
+            problems.append("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS is not 1 in the child")
     shadows = [row["shadow"] for row in rows if "shadow" in row]
     if shadows:
         problems.append(f"child imported the repair root's shadow copy: {shadows}")
@@ -389,3 +429,75 @@ def test_live_name_pattern(name, dropped):
 
     child = isolated_child_env({name: "1", "PATH": "/usr/bin"})
     assert (name not in child) is dropped
+
+
+def test_exchange_prefix_drop_still_removes_credentials_but_keeps_forced_switches():
+    from aureon.launch.session_scope import isolated_child_env
+
+    parent = {
+        "ALPACA_API_KEY": "fake", "ALPACA_SECRET_KEY": "fake", "APCA_API_KEY_ID": "fake",
+        "BINANCE_API_KEY": "fake", "BINANCE_API_SECRET": "fake", "BINANCE_SECRET": "fake",
+        "KRAKEN_API_KEY": "fake", "KRAKEN_PRIVATE_KEY": "fake", "CAPITAL_API_KEY": "fake",
+        "CAPITAL_PASSWORD": "fake", "CAPITAL_IDENTIFIER": "fake", "COINBASE_API_SECRET": "fake",
+        "CAPITAL_LIVE": "true", "KRAKEN_LIVE_ENABLED": "1", "APCA_LIVE": "1",
+        **{name: LIVE_SWITCHES[name] for name in ("ALPACA_PAPER", "ALPACA_DRY_RUN", "BINANCE_USE_TESTNET",
+                                                  "BINANCE_TESTNET", "BINANCE_DRY_RUN", "KRAKEN_DRY_RUN",
+                                                  "CAPITAL_DEMO")},
+    }
+    child = isolated_child_env(parent)
+    exchange = sorted(k for k in child if k.startswith(("ALPACA_", "APCA_", "BINANCE_", "KRAKEN_", "CAPITAL_", "COINBASE_")))
+    assert exchange == sorted(["ALPACA_PAPER", "ALPACA_DRY_RUN", "BINANCE_USE_TESTNET", "BINANCE_TESTNET",
+                               "BINANCE_DRY_RUN", "KRAKEN_DRY_RUN", "CAPITAL_DEMO"])
+    for name in exchange:
+        assert child[name] == SAFETY[name], name
+
+
+_NESTED = """
+import json, sys
+sys.path.insert(0, sys.argv[1])
+import aureon.core.aureon_baton_link as baton
+calls = []
+baton._start_queen_repair_loop = lambda name: calls.append(("repair_loop", name))
+baton.activate_autonomous_control = lambda: calls.append(("activate", None))
+import aureon.harmonic.aureon_harmonic_seed  # noqa: F401  -- calls link_system(__name__) on import
+baton.link_system("test.nested")
+import os
+print(json.dumps({"calls": calls, "activate": os.environ.get("AUREON_ACTIVATE_ON_IMPORT"),
+                  "suppress": os.environ.get("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS"),
+                  "repair_root": "AUREON_QUEEN_REPAIR_ROOT" in os.environ}))
+"""
+
+
+@pytest.mark.parametrize("module, extra", [
+    ("aureon_fusion.repair", {"AUREON_SELF_REPAIR_ENABLE": "1"}),
+    ("aureon.autonomous.queen_benchmark_gate", {}),
+])
+def test_child_cannot_start_a_nested_repair_loop(tmp_path, monkeypatch, module, extra):
+    """Parent is an armed organ with a repair root. The child env built for the
+    repair or gate must not re-arm the loop when the child imports an organ."""
+
+    foreign = _foreign_root(tmp_path)
+    monkeypatch.setenv("AUREON_ACTIVATE_ON_IMPORT", "1")
+    monkeypatch.setenv("AUREON_QUEEN_REPAIR_ROOT", str(foreign))
+    monkeypatch.delenv("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS", raising=False)
+    monkeypatch.delenv("AUREON_AUDIT_MODE", raising=False)
+    _argv, cwd, env = baton._repair_child_spec(module, str(foreign), **extra)
+    assert env["AUREON_ACTIVATE_ON_IMPORT"] == "0"
+    assert env["AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS"] == "1"
+    assert "AUREON_QUEEN_REPAIR_ROOT" not in env
+    env = dict(env, PYTHONPATH="")
+    done = subprocess.run([sys.executable, "-c", _NESTED, str(RUN_ROOT)], cwd=cwd, env=env,
+                          capture_output=True, text=True, timeout=180)
+    assert done.returncode == 0, done.stderr[-2000:]
+    seen = json.loads(done.stdout.strip().splitlines()[-1])
+    assert seen == {"calls": [], "activate": "0", "suppress": "1", "repair_root": False}
+
+
+@pytest.mark.parametrize("value", ["0", "1"])
+def test_simulation_and_demo_mode_are_dropped_not_forced(value):
+    from aureon.launch.session_scope import isolated_child_env
+
+    child = isolated_child_env({"SIMULATION_MODE": value, "DEMO_MODE": value, "PATH": "/usr/bin"})
+    assert "SIMULATION_MODE" not in child
+    assert "DEMO_MODE" not in child
+    assert child["PAPER"] == "1" and child["PAPER_TRADING"] == "true" and child["USE_TESTNET"] == "1"

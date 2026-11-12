@@ -130,6 +130,8 @@ ARMING_ENV_DROP = (
     "EPICENTER_LIVE",                   # must equal "YES"
     "PAPER_MODE",
     "QGITA_PAPER_TRADING",              # unset means paper
+    "SIMULATION_MODE",                  # no Python reader; dropped, not forced (real-data-only rule)
+    "DEMO_MODE",                        # no Python reader; dropped, not forced (real-data-only rule)
 )
 
 # Forced into every test or repair child, after the drops. These are the ones
@@ -152,16 +154,72 @@ FORCED_OFF = {
     "AUREON_CODE_AUTO_APPROVE": "0",
     "AUREON_DRY_RUN": "1",
     "DRY_RUN": "1",
+    # A child that imports an organ must not wake the Queen or start another
+    # repair loop (aureon_baton_link.py:169 arms only at "1"; the HF guards and
+    # mcp/aureon_public force "0").
+    "AUREON_ACTIVATE_ON_IMPORT": "0",
+    # Generic paper/testnet switches inherited from the live run, set to the
+    # safe side. No Python reader parses these today; USE_TESTNET is read as
+    # === '1' in scripts/traders/realMoneyTrade.ts:33. SIMULATION_MODE and
+    # DEMO_MODE are dropped instead (ARMING_ENV_DROP): forcing them on would
+    # run against the real-data-only rule (aureon_baton_link._REAL_DATA_ENV_DEFAULTS).
+    "PAPER": "1",
+    "PAPER_TRADING": "true",
+    "USE_TESTNET": "1",
+    # Exchange switches. The credential prefix rule drops them, and each one
+    # defaults to the live endpoint when unset, so they are forced back here
+    # (after the drop) to the value every reader parses as paper/testnet/dry:
+    # .lower() == "true" (alpaca_client.py:161-162, binance_client.py:69-70,
+    # kraken_client.py:441, kraken_adapter.py:205) and CAPITAL_DEMO == "1"
+    # (capital_client.py:231, aureon_radar/capital_client.py:89).
+    "ALPACA_PAPER": "true",
+    "ALPACA_DRY_RUN": "true",
+    "BINANCE_USE_TESTNET": "true",
+    "BINANCE_TESTNET": "true",
+    "BINANCE_DRY_RUN": "true",
+    "KRAKEN_DRY_RUN": "true",
+    "CAPITAL_DEMO": "1",
 }
+
+
+# The launcher's live profile (aureon_runtime_safety.LIVE_RUNTIME_ENV). Its keys
+# are read at call time so the list cannot drift; these names are kept here as
+# well in case that module cannot be imported. Unset is the safe side for each:
+# AUREON_ORDER_AUTHORITY_MODE defaults to "runtime_only" (unified_market_trader),
+# the *_ORDER_*AUTHORITY, AUREON_ORDER_TICKET_REQUIRES_EXECUTOR and
+# AUREON_RELEASE_STATE names have no env reader outside release checks, and an
+# unset AUREON_AUDIT_MODE reads the same as the live profile's "0".
+LIVE_PROFILE_DROP = (
+    "AUREON_RELEASE_STATE",
+    "AUREON_AUDIT_MODE",
+    "AUREON_ORDER_AUTHORITY_MODE",
+    "AUREON_LLM_ORDER_AUTHORITY",
+    "AUREON_COGNITIVE_ORDER_AUTHORITY",
+    "AUREON_LLM_ORDER_INTENT_AUTHORITY",
+    "AUREON_COGNITIVE_ORDER_INTENT_AUTHORITY",
+    "AUREON_ORDER_TICKET_REQUIRES_EXECUTOR",
+)
+
+
+def _live_profile_names() -> frozenset[str]:
+    names = set(LIVE_PROFILE_DROP)
+    try:  # aureon.core.__init__ is empty and aureon_runtime_safety imports only os/typing
+        from aureon.core.aureon_runtime_safety import LIVE_RUNTIME_ENV
+
+        names.update(LIVE_RUNTIME_ENV)
+    except Exception:
+        pass
+    return frozenset(names)
 
 
 def disarm(env: dict[str, str]) -> dict[str, str]:
     """Copy of env with every arming switch dropped and the off values forced."""
 
+    profile = _live_profile_names()
     cleaned = {
         key: value
         for key, value in env.items()
-        if key not in ARMING_ENV_DROP and not _LIVE_WORD.search(key.upper())
+        if key not in ARMING_ENV_DROP and key not in profile and not _LIVE_WORD.search(key.upper())
     }
     cleaned.update(FORCED_OFF)
     return cleaned

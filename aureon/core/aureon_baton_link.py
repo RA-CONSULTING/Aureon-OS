@@ -383,7 +383,14 @@ def _isolated_repair_env(**extra: str) -> dict[str, str]:
     env = isolated_child_env(dict(os.environ))
     env.update(extra)
     # Re-run the drop and the forced off values, so an `extra` cannot arm the child.
-    return disarm(env)
+    env = disarm(env)
+    # A child that imports an organ must not start its own repair loop:
+    # link_system (above) returns early when side effects are suppressed, and
+    # _start_queen_repair_loop needs AUREON_QUEEN_REPAIR_ROOT. The repair and the
+    # gate get their root as --root, never from this variable.
+    env["AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS"] = "1"
+    env.pop("AUREON_QUEEN_REPAIR_ROOT", None)
+    return env
 
 
 def _repair_child_spec(module: str, root: str, *extra_args: str, **extra_env: str):
