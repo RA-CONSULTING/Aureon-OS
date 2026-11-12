@@ -33,10 +33,30 @@ RUNTIME = ROOT / "deploy" / "plug" / "runtime"
 PIDFILE = RUNTIME / "supervisor.pid"
 PIDS = RUNTIME / "pids.json"
 
-OPERATOR_PORT = 8790
-MCP_PORT = 8077
-FRONTEND_PORT = 5173
-STACK_PORT = 8787
+
+
+def _port(name: str, default: int) -> int:
+    """Port from AUREON_PLUG_*_PORT, else the default. Bad values stop the run."""
+
+    raw = os.environ.get(name, "").strip()
+    if not raw:
+        return default
+    try:
+        value = int(raw)
+    except ValueError:
+        raise SystemExit(f"{name} must be a port number, got {raw!r}") from None
+    if not 1 <= value <= 65535:
+        raise SystemExit(f"{name} must be between 1 and 65535, got {value}")
+    return value
+
+
+# Defaults are unchanged. A machine that already uses one of these ports can
+# move the stack with AUREON_PLUG_OPERATOR_PORT, AUREON_PLUG_MCP_PORT,
+# AUREON_PLUG_FRONTEND_PORT and AUREON_PLUG_STACK_PORT.
+OPERATOR_PORT = _port("AUREON_PLUG_OPERATOR_PORT", 8790)
+MCP_PORT = _port("AUREON_PLUG_MCP_PORT", 8077)
+FRONTEND_PORT = _port("AUREON_PLUG_FRONTEND_PORT", 5173)
+STACK_PORT = _port("AUREON_PLUG_STACK_PORT", 8787)
 
 OPERATOR_URL = f"http://127.0.0.1:{OPERATOR_PORT}"
 MCP_URL = f"http://127.0.0.1:{MCP_PORT}/mcp"
@@ -87,6 +107,9 @@ def process_env(extra: dict[str, str] | None = None) -> dict[str, str]:
             "AUREON_OPERATOR_ENV": "development",
             "AUREON_OPERATOR_HOST": "127.0.0.1",
             "AUREON_OPERATOR_PORT": str(OPERATOR_PORT),
+            "AUREON_OPERATOR_URL": OPERATOR_URL,
+            "VITE_OPERATOR_URL": OPERATOR_URL,
+            "VITE_OPERATOR_PORT": str(OPERATOR_PORT),
             "AUREON_PUBLIC_OPEN": "1",
             "PYTHONUNBUFFERED": "1",
             "PYTHONPATH": os.pathsep.join(
