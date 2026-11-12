@@ -56,11 +56,39 @@ class _SameBytesLoader(Loader):
         exec(code, module.__dict__)
 
 
+def pin_history_unavailable_message(commit: str) -> str:
+    """Refusal when the pin commit cannot be read from this tree."""
+
+    return (
+        f"pin commit {commit[:12]} is not available in this tree; "
+        "the MCP pin check needs a git clone that contains that history "
+        "(a ZIP download has no .git)"
+    )
+
+
+def pin_commit_is_available(root: Path, commit: str) -> bool:
+    """True when git can read the pin commit in this tree."""
+
+    import subprocess
+
+    try:
+        subprocess.check_output(
+            ["git", "cat-file", "-e", f"{commit}^{{commit}}"],
+            cwd=root,
+            stderr=subprocess.DEVNULL,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return False
+    return True
+
+
 def expected_pin_blob(path: Path, root: Path, commit: str) -> tuple[str | None, str | None]:
     """Return the blob hash recorded at ``commit`` for ``path``.
 
     This reads git, not the working-tree file. ``(None, None)`` means the
-    path is outside the checkout.
+    path is outside the checkout. If the pin commit is not in this tree,
+    the error names that missing history. It does not load the working-tree
+    file in that case.
     """
 
     try:
@@ -77,6 +105,8 @@ def expected_pin_blob(path: Path, root: Path, commit: str) -> tuple[str | None, 
             stderr=subprocess.DEVNULL,
         ).strip()
     except (OSError, subprocess.CalledProcessError):
+        if not pin_commit_is_available(root, commit):
+            return None, pin_history_unavailable_message(commit)
         return None, f"{relative} is not in pin {commit[:12]}"
     if not pin_blob:
         return None, "expected blob is required"
@@ -115,9 +145,11 @@ class PinnedAureonFinder:
         py_file = Path(*parts).with_suffix(".py")
         init_file = Path(*parts) / "__init__.py"
         for relative in (py_file, init_file):
-            expected, _error = expected_pin_blob(self.root / relative, self.root, self.commit)
+            expected, error = expected_pin_blob(self.root / relative, self.root, self.commit)
             if expected:
                 return relative.as_posix()
+            if error == pin_history_unavailable_message(self.commit):
+                raise ImportError(error)
         return None
 
     def _files(self, fullname: str, relative: str) -> list[Path]:
