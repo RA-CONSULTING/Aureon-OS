@@ -87,3 +87,55 @@ def test_ollama_shared_budget_works_without_filelock(tmp_path, monkeypatch):
     assert mod.FileLock.__module__ == "aureon.ollama_config"
     monkeypatch.setattr(builtins, "__import__", real_import)
     monkeypatch.delitem(sys.modules, "aureon.ollama_config", raising=False)
+
+
+class _BrokenLimiter:
+    def wait_for_slot(self, priority, is_trading):
+        raise RuntimeError("limiter internals broken (test)")
+
+    def on_429_error(self, priority):
+        pass
+
+
+class _ThrottledLimiter:
+    def wait_for_slot(self, priority, is_trading):
+        return False
+
+    def on_429_error(self, priority):
+        pass
+
+
+def test_wait_for_slot_deferred_fails_closed_for_trading_on_limiter_error():
+    from aureon.core.global_rate_budget import RequestPriority, wait_for_slot_deferred
+
+    broken = _BrokenLimiter()
+    assert wait_for_slot_deferred(broken, RequestPriority.EXECUTION, is_trading=True) is False
+    assert wait_for_slot_deferred(broken, RequestPriority.QUOTES, is_trading=False) is True
+
+
+def _bare_capital_client(limiter):
+    """CapitalClient with no credentials, no session and no network: only the
+    rate-budget fields are set, so _budget_acquire can be exercised alone."""
+    import importlib.util
+    from pathlib import Path
+
+    from aureon.core.global_rate_budget import RequestPriority, wait_for_slot_deferred
+
+    path = Path(__file__).resolve().parents[1] / "aureon_radar" / "capital_client.py"
+    if not path.exists():
+        pytest.skip("aureon_radar/capital_client.py not present")
+    spec = importlib.util.spec_from_file_location("_test_capital_client", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    client = mod.CapitalClient.__new__(mod.CapitalClient)
+    client._rate_budget = limiter
+    client._RequestPriority = RequestPriority
+    client._budget_wait = wait_for_slot_deferred
+    return client
+
+
+@pytest.mark.parametrize("limiter", [_ThrottledLimiter(), _BrokenLimiter()], ids=["throttled", "limiter_error"])
+def test_capital_close_refused_cleanly_when_budget_denies(limiter):
+    client = _bare_capital_client(limiter)
+    with pytest.raises(RuntimeError, match=r"NOT sent \(fail-closed\)"):
+        client._budget_acquire("DELETE", "/positions/TEST-DEAL", write=True, max_wait_s=0.1)

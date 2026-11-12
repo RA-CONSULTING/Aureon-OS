@@ -332,6 +332,10 @@ def wait_for_slot_deferred(
     the slot is granted or max_wait_s elapses. Read paths use this so a
     throttled caller is deferred, never crashed; write paths treat a False
     return as fail-closed and refuse to send.
+
+    If the limiter itself raises, trading requests (is_trading=True) get
+    False so order writes fail closed; read requests still get True so a
+    broken limiter never crashes a read path.
     """
     deadline = time.time() + max(0.0, float(max_wait_s))
     while True:
@@ -340,7 +344,9 @@ def wait_for_slot_deferred(
                 return True
         except Exception as exc:  # limiter internals must never crash a caller
             logger.warning("wait_for_slot_deferred error (%s): %s", priority.name, exc)
-            return True  # one uncounted call beats a crashed read path
+            if is_trading:
+                return False  # fail closed: never send an order on a broken limiter
+            return True  # one uncounted read beats a crashed read path
         if time.time() >= deadline:
             return False
         time.sleep(max(0.05, float(poll_s)))
