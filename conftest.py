@@ -502,6 +502,35 @@ _fixture_commits_skip_operator_signing()
 _OS_ENVIRON_BEFORE_COLLECTION.update(os.environ)
 
 
+def pytest_collection_modifyitems(config: pytest.Config, items: list) -> None:
+    """Deselect ``@pytest.mark.windows`` contract tests off Windows.
+
+    pyproject's addopts already passes ``-m "not live and not windows"``, but a
+    gate run with ``-o addopts=`` (the private-/dev/shm gate command) drops that
+    filter, and every Windows-only contract then fails on Linux. The 22 tests in
+    test_design_candidate_test_policy_compiler.py and
+    test_design_candidate_test_evidence.py fail with "No reviewed Node toolchain
+    binding exists for platform 'linux'": the reviewed Node binding in
+    aureon/operator/design_candidate_test_evidence.py is a source-pinned trust
+    anchor for C:/Program Files/nodejs/node.exe only, and by design Linux must
+    not fall back to PATH. Those contracts run on the windows-latest CI job.
+
+    This is a platform deselection, not a skip: it never fires on win32, it
+    touches only items that carry the ``windows`` marker, and it is reported via
+    ``pytest_deselected`` exactly like ``-m "not windows"``, so the no-skip shard
+    harness sees no new skips.
+    """
+    if sys.platform == "win32":
+        return
+    kept = []
+    deselected = []
+    for item in items:
+        (deselected if item.get_closest_marker("windows") else kept).append(item)
+    if deselected:
+        config.hook.pytest_deselected(items=deselected)
+        items[:] = kept
+
+
 def pytest_report_header(config: pytest.Config) -> str | None:
     """A copied venv is required. A symlinked interpreter fails the evidence tests."""
 
