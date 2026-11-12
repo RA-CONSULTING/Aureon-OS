@@ -689,6 +689,7 @@ def test_space_entry_points_call_enforce_public_pin() -> None:
             break
     call = body[start : end + 1]
     assert "share=False" in call
+    assert "share=True" not in call
     for name in ("hnc-field", "auris-coherence", "qgita-snr", "organism-replay"):
         copy = (ROOT / "huggingface" / name / "space_bind.py").read_text(encoding="utf-8")
         assert copy == bind, f"{name}/space_bind.py differs from huggingface/space_bind.py"
