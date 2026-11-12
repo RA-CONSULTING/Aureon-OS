@@ -73,7 +73,7 @@ def test_peace_decays_by_exp_minus_period_over_T_line_709():
     tq = 1 / (4 * 8.88)
     a, b = cg.peace_waveform([tq, tq + period], 1.0, 0.5, 0.0)
     assert b / a == pytest.approx(math.exp(-period / 0.5), rel=1e-12)
-    assert b / a == pytest.approx(0.798334, rel=1e-5)
+    assert b / a == pytest.approx(0.798336, rel=1e-5)
 
 
 def test_seal_locks_phase_lines_604_605():

@@ -1,4 +1,4 @@
-"""Auris Codex glyphs as defined in the HNC paper: Crown, Anchor, Peace, Seal.
+"""Auris Codex glyphs as described in the HNC paper: Crown, Anchor, Peace, Seal.
 
 Source: G. Leckey, "The Harmonic Nexus Core: A Unified Framework for Emergent
 Spacetime and Coherent Information Dynamics" (line numbers refer to the plain
@@ -6,7 +6,9 @@ text copy of the paper used to write this module).
 
 Claim state: HOLD.  These are research models of the paper's glyph-to-field
 mappings, not measured or validated physics, and they emit no hardware output
-(no watts, volts or device commands).  The paper's glyph text (lines 597-605):
+(no watts, volts or device commands).  The paper's glyph text (lines 597-605).  Only Peace is stated as defined in
+the Auris Codex (line 708); Crown ("might correspond"), Anchor ("could map")
+and Seal ("might correspond") are the paper's examples:
 
 * Crown: take the Laplacian ``nabla**2`` of a potential field (lines 597-598).
 * Anchor: fix a node in phase, ``Phi = 0`` at that node, a stabilising
