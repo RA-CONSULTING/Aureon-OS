@@ -41,42 +41,70 @@ def fetch():
         log(f"FETCH ERROR: {e}")
         return None
 
+def _number(value):
+    """A real finite number from the provider, or None. Never a stand-in 0."""
+    if value is None or isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    value = float(value)
+    return value if value == value and value not in (float("inf"), float("-inf")) else None
+
+
+def build_state(data):
+    """The state to write for one provider response, or None (fail-closed).
+
+    ResonanceOne keeps sending schumann_frequency_hz = 7.83 while it flags the
+    Tomsk feed as paused (schumann_unavailable = true, data_quality = "stale").
+    That 7.83 is the provider's placeholder, not a measurement, so it must not
+    be written as real_data. Missing activity / Kp / flare stay None, never 0.
+    """
+    if not isinstance(data, dict):
+        return None, "response is not a JSON object"
+    freq = data.get('schumann_frequency_hz')
+    if not isinstance(freq, (int, float)) or isinstance(freq, bool) or freq <= 0:
+        return None, "response missing measured frequency_hz"
+    if data.get('schumann_unavailable') is True:
+        return None, f"provider marks Schumann unavailable (last reading {data.get('last_schumann_at')})"
+    quality = data.get('data_quality')
+    if isinstance(quality, str) and quality.strip().lower() in ('stale', 'unavailable', 'offline', 'missing'):
+        return None, f"provider data_quality is {quality!r}"
+    state = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "observed_at": data.get('last_schumann_at'),
+        "source": "resonanceone_tomsk",
+        "frequency_hz": freq,
+        "activity_index": _number(data.get('activity_index')),
+        "activity_label": data.get('activity_index_label') or 'unknown',
+        "kp_index": _number(data.get('kp_index')),
+        "solar_flare_class": data.get('solar_flare_class'),
+        "geomagnetic_status": data.get('geomagnetic_status') or 'unknown',
+        "data_quality": quality,
+        "summary": data.get('summary', ''),
+        "real_data": True,
+        "simulation": False
+    }
+    return state, None
+
+
 def main():
     PID_FILE.write_text(str(os.getpid()))
     log(f"SCHUMANN SENSOR STARTED — PID {os.getpid()} — REAL DATA MODE")
-    
+
     while running:
         data = fetch()
         if data:
-            # FAIL-CLOSED: the resonanceone response must carry a measured
-            # frequency. A missing/non-numeric frequency_hz means the fetch
-            # did not return real telemetry (bad URL, missing/invalid API
-            # key, error page) — never default to 7.83 Hz as if measured.
-            freq = data.get('schumann_frequency_hz')
-            if not isinstance(freq, (int, float)) or isinstance(freq, bool) or freq <= 0:
-                log("UNAVAILABLE — response missing measured frequency_hz "
-                    "(check API key/endpoint). Skipping write (fail-closed); "
-                    "no fabricated 7.83 Hz default.")
+            # FAIL-CLOSED: write only a measured, provider-live Schumann
+            # reading. No fabricated 7.83 Hz default, and no provider
+            # placeholder written as if measured.
+            state, why = build_state(data)
+            if state is None:
+                log(f"UNAVAILABLE — {why}. Skipping write (fail-closed).")
             else:
-                state = {
-                    "timestamp": datetime.now(timezone.utc).isoformat(),
-                    "source": "resonanceone_tomsk",
-                    "frequency_hz": freq,
-                    "activity_index": data.get('activity_index', 0),
-                    "activity_label": data.get('activity_index_label', 'unknown'),
-                    "kp_index": data.get('kp_index', 0),
-                    "solar_flare_class": data.get('solar_flare_class', 'A0'),
-                    "geomagnetic_status": data.get('geomagnetic_status', 'unknown'),
-                    "summary": data.get('summary', ''),
-                    "real_data": True,
-                    "simulation": False
-                }
                 with open(STATE_FILE, 'w') as f:
                     json.dump(state, f, indent=2)
                 log(f"Schumann: {state['frequency_hz']} Hz | Activity: {state['activity_index']}/100 | Kp: {state['kp_index']} | {state['geomagnetic_status']}")
 
         time.sleep(POLL_INTERVAL)
-    
+
     PID_FILE.unlink(missing_ok=True)
     log("SCHUMANN SENSOR STOPPED")
 
