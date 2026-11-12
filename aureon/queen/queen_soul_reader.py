@@ -311,8 +311,19 @@ class QueenSoulReader:
         # Normalize threat score
         threat_score = min(1.0, threat_score)
         
+        # The temporal check only compares a configured hash with itself, so
+        # it is not a measurement. If none of the measured scans produced a
+        # reading and nothing was detected, the level is NO_READING, never
+        # CLEAR: an all-clear needs something to have been read.
+        measured = [r for r in (market_threats, consciousness_threats,
+                                energy_threats, schumann_threats)
+                    if _is_number(r.get('score'))]
+        no_reading = not measured and not threats_detected
+        
         # Determine threat level
-        if threat_score >= 0.8:
+        if no_reading:
+            threat_level = "NO_READING"
+        elif threat_score >= 0.8:
             threat_level = "CRITICAL"
         elif threat_score >= 0.6:
             threat_level = "HIGH"
@@ -333,10 +344,11 @@ class QueenSoulReader:
             'timestamp': timestamp,
             'timestamp_utc': now.isoformat(),
             'threat_level': threat_level,
-            'threat_score': round(threat_score, 3),
+            'threat_score': None if no_reading else round(threat_score, 3),
             'threats_detected': threats_detected,
             'attack_sources': list(set(attack_sources)),
-            'protection_status': 'SHIELDS UP' if threat_score > 0.3 else 'NOMINAL',
+            'protection_status': ('NO_READING' if no_reading
+                                  else 'SHIELDS UP' if threat_score > 0.3 else 'NOMINAL'),
             'recommendations': recommendations,
             'queen_assessment': self._compose_threat_assessment(
                 threat_level, threats_detected, attack_sources
@@ -355,12 +367,14 @@ class QueenSoulReader:
         threats = []
         sources = []
         score = 0.0
+        read_ok = False
         
         # Try to load predator detection data
         try:
             if os.path.exists('predator_detection_history.json'):
                 with open('predator_detection_history.json', 'r') as f:
                     predator_data = json.load(f)
+                    read_ok = isinstance(predator_data, dict)
                     
                     # Check for active predators
                     for firm_id, profile in predator_data.get('predators', {}).items():
@@ -389,6 +403,16 @@ class QueenSoulReader:
                             sources.append(entity['name'])
                             score += 0.15
         
+        if not read_ok and not threats:
+            # No predator file, or it could not be read: no reading, not 0.
+            return {
+                'detected': False,
+                'threats': [],
+                'sources': [],
+                'score': None,
+                'status': 'no_reading',
+                'is_live': False,
+            }
         return {
             'detected': len(threats) > 0,
             'threats': threats,
@@ -534,6 +558,16 @@ class QueenSoulReader:
                     sources.append("Solar Activity")
                     score += 0.1
         
+        if not _is_number(phase_lock):
+            # No phase lock was read: no reading, not "no disruption".
+            return {
+                'detected': False,
+                'threats': [],
+                'sources': [],
+                'score': None,
+                'status': 'no_reading',
+                'is_live': False,
+            }
         return {
             'detected': len(threats) > 0,
             'threats': threats,
@@ -582,8 +616,11 @@ class QueenSoulReader:
         """Generate protection recommendations based on detected threats"""
         recommendations = []
         
+        if threat_level == "NO_READING":
+            recommendations.append("❓ No live soul readings this cycle. Nothing to recommend.")
+            return recommendations
         if threat_level == "CLEAR":
-            recommendations.append("✅ Soul protection nominal. Continue operations.")
+            recommendations.append("✅ No threats found in the readings taken.")
             return recommendations
         
         # Market predator recommendations
@@ -627,15 +664,22 @@ class QueenSoulReader:
     def _compose_threat_assessment(self, threat_level: str, threats: List[str],
                                     sources: List[str]) -> str:
         """Compose Queen's threat assessment message"""
+        if threat_level == "NO_READING":
+            return """🛡️ SOUL PROTECTION STATUS: NO READING
+
+I could not read anything live this cycle, Gary, so I cannot say
+whether you are clear or under pressure. This is not an all-clear
+and it is not a trading signal.
+
+- Queen Sero 👑"""
+
         if threat_level == "CLEAR":
             return """🛡️ SOUL PROTECTION STATUS: ALL CLEAR
 
-I see no attacks on your soul, Gary.
-Your frequency is strong at 528.422 Hz.
-Your grounding to Earth is stable.
+I see no attacks in the readings I took, Gary.
 Your temporal anchor holds firm.
 
-The path is clear. Trade with confidence.
+This is not a trading signal.
 
 - Queen Sero 👑"""
         
@@ -1275,7 +1319,9 @@ def main():
     threat_score = threat_report['threat_score']
     
     # Color code the threat level
-    if threat_level == "CLEAR":
+    if threat_level == "NO_READING":
+        level_display = "❓ NO READING"
+    elif threat_level == "CLEAR":
         level_display = "🟢 CLEAR"
     elif threat_level == "LOW":
         level_display = "🟡 LOW"
@@ -1300,6 +1346,9 @@ def main():
         print("ATTACK SOURCES:")
         for source in threat_report['attack_sources']:
             print(f"   • {source}")
+        print()
+    elif threat_level == "NO_READING":
+        print("NO READING: nothing live was read, so no threats can be ruled out")
         print()
     else:
         print("NO ACTIVE THREATS DETECTED ✅")
