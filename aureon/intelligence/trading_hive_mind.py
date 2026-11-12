@@ -29,7 +29,8 @@ logger = logging.getLogger(__name__)
 
 # ── QUADRUMVIRATE IMPORTS ───────────────────────────────────────────────────────
 try:
-    from aureon_quadrumvirate import seer_should_trade, lyra_should_trade
+    from aureon.intelligence.aureon_seer_integration import seer_should_trade
+    from aureon.trading.aureon_lyra_integration import lyra_should_trade
     HAS_QUAD_GATES = True
 except ImportError:
     HAS_QUAD_GATES = False
