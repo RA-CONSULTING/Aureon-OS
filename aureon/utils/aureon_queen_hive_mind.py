@@ -2356,7 +2356,7 @@ class QueenHiveMind:
             status = "💛 HIGH COHERENCE - Good alignment"
         elif coherence >= 0.60:
             status = "🟠 MODERATE COHERENCE - Proceed with caution"
-        elif coherence > 0.934:
+        elif coherence >= 0.40:
             status = "🔴 LOW COHERENCE - Consider waiting"
         else:
             status = "⛔ COHERENCE BREAK - Do not trade"
