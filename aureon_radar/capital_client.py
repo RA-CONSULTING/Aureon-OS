@@ -120,6 +120,8 @@ class CapitalClient:
         self.market_index: Dict[str, Dict[str, Any]] = dict(_SHARED_MARKET_CACHE.get("market_index", {}))
         self.market_cache_time = float(_SHARED_MARKET_CACHE.get("market_cache_time", 0.0) or 0.0)
         self.market_cache_ttl = int(os.getenv('CAPITAL_MARKET_CACHE_TTL', '3600'))  # 60 minutes (was 15)
+        # False when get_all_markets() last returned a partial walk (no cache to fall back on).
+        self.market_catalogue_complete = bool(self.market_cache)
         self._rate_limit_until = 0  # Timestamp when rate limit expires
         self._rate_limit_logged = False  # Only log rate limits once
         self._session_error_logged = False  # Only log session errors once
@@ -218,6 +220,58 @@ class CapitalClient:
             self._rate_budget.on_429_error(priority)
         except Exception:
             pass
+
+    def _record_shared_429(self, method: str, path: str, resp: Any) -> float:
+        """Record a 429 as the shared backoff (Retry-After honoured, with jitter)."""
+        global _SHARED_SESSION
+        retry_after = _cap_shared.parse_retry_after(getattr(resp, "headers", None))
+        wait_s = _cap_shared.with_jitter(
+            retry_after if retry_after is not None else _cap_shared.DEFAULT_RATE_LIMIT_BACKOFF_S
+        )
+        self._rate_limit_until = _cap_shared.record_backoff(self._shared_key_name(), wait_s)
+        _SHARED_SESSION["rate_limit_until"] = self._rate_limit_until
+        self._budget_on_429(method, path)
+        logger.warning(
+            "Capital.com rate limited (HTTP 429) on %s %s - backing off for %d seconds%s; "
+            "shared backoff until %s UTC (%d s remaining)",
+            method,
+            path,
+            int(round(wait_s)),
+            " (Retry-After)" if retry_after is not None else "",
+            datetime.fromtimestamp(self._rate_limit_until, timezone.utc).strftime("%H:%M:%S"),
+            int(round(max(0.0, self._rate_limit_until - time.time()))),
+        )
+        return wait_s
+
+    def _drop_shared_session(self) -> None:
+        """Forget a session Capital rejected, here and in the shared cache.
+
+        The next call re-logs in through _create_session (login lock, 1/s spacing).
+        """
+        global _SHARED_SESSION
+        try:
+            _cap_shared.invalidate_session(self._shared_key_name(), self.cst)
+        except Exception:
+            pass
+        self.cst = None
+        self.x_security_token = None
+        self.session_start_time = 0.0
+        _SHARED_SESSION["cst"] = None
+        _SHARED_SESSION["x_security_token"] = None
+        _SHARED_SESSION["session_start_time"] = 0.0
+
+    @staticmethod
+    def _safe_error_code(response: Any) -> str:
+        """Capital's errorCode only (never the body, which can echo identifiers)."""
+        try:
+            payload = response.json()
+        except Exception:
+            return "unknown"
+        code = payload.get("errorCode") if isinstance(payload, dict) else None
+        if not isinstance(code, str) or not code:
+            return "unknown"
+        cleaned = "".join(ch for ch in code if ch.isalnum() or ch in "._-")[:80]
+        return cleaned or "unknown"
 
     @staticmethod
     def _error_response(status_code: int, error_code: str, detail: str = ""):
@@ -382,7 +436,12 @@ class CapitalClient:
             else:
                 self.init_error = f"http_{response.status_code}"
                 if not self._session_error_logged:
-                    logger.error(f"Failed to create Capital.com session: {response.text}")
+                    # Status and errorCode only: the body can echo identifiers.
+                    logger.error(
+                        "Failed to create Capital.com session: HTTP %s (errorCode %s)",
+                        response.status_code,
+                        self._safe_error_code(response),
+                    )
                     self._session_error_logged = True
                 if response.status_code in (400, 401, 403):
                     self.enabled = False
@@ -433,7 +492,10 @@ class CapitalClient:
         except Exception as e:
             logger.warning(f"Capital.com keep-alive ping failed: {type(e).__name__}")
             return True
-        if resp.status_code in (401, 403):
+        if resp.status_code == 429 or 'too-many.requests' in (getattr(resp, "text", "") or "").lower():
+            # Same shared backoff as any other 429, so no process keeps calling.
+            self._record_shared_429("GET", "/ping", resp)
+        elif resp.status_code in (401, 403):
             _cap_shared.invalidate_session(key, tokens["cst"])
         logger.info("Capital.com keep-alive ping sent (HTTP %s)", resp.status_code)
         return True
@@ -536,23 +598,7 @@ class CapitalClient:
         # Rate limit handling — shared so the main client backs off too.
         rate_limit_hit = resp.status_code == 429 or ('too-many.requests' in (resp.text or '').lower())
         if rate_limit_hit:
-            retry_after = _cap_shared.parse_retry_after(getattr(resp, "headers", None))
-            wait_s = _cap_shared.with_jitter(
-                retry_after if retry_after is not None else _cap_shared.DEFAULT_RATE_LIMIT_BACKOFF_S
-            )
-            self._rate_limit_until = _cap_shared.record_backoff(self._shared_key_name(), wait_s)
-            _SHARED_SESSION["rate_limit_until"] = self._rate_limit_until
-            self._budget_on_429(normalized_method, path)
-            logger.warning(
-                "Capital.com rate limited (HTTP 429) on %s %s - backing off for %d seconds%s; "
-                "shared backoff until %s UTC (%d s remaining)",
-                normalized_method,
-                path,
-                int(round(wait_s)),
-                " (Retry-After)" if retry_after is not None else "",
-                datetime.fromtimestamp(self._rate_limit_until, timezone.utc).strftime("%H:%M:%S"),
-                int(round(max(0.0, self._rate_limit_until - time.time()))),
-            )
+            self._record_shared_429(normalized_method, path, resp)
             self._rate_limit_logged = True
             return resp
 
@@ -562,24 +608,21 @@ class CapitalClient:
 
         # Mutations are not retried (the slot has already been spent).
         if is_order:
+            if resp.status_code == 401 or ('error.invalid.session.token' in (resp.text or '').lower()):
+                # Do not leave the dead token shared: the next call re-logs in
+                # through the paced POST /session path. The order is not resent.
+                logger.warning("Capital.com session invalid on %s %s; shared session cleared, not retried",
+                               normalized_method, path)
+                self._drop_shared_session()
             return resp
 
         # Handle invalid session
         if resp.status_code in (401, 403) or ('error.invalid.session.token' in (resp.text or '').lower()):
             logger.warning("Capital.com session invalid; attempting re-login and retry")
-            try:
-                _cap_shared.invalidate_session(self._shared_key_name(), self.cst)
-            except Exception:
-                pass
             # Clear stale tokens and re-enable so _create_session does a real POST
-            self.cst = None
-            self.x_security_token = None
-            self.session_start_time = 0.0
+            self._drop_shared_session()
             self.enabled = True
             self._session_error_logged = False
-            _SHARED_SESSION["cst"] = None
-            _SHARED_SESSION["x_security_token"] = None
-            _SHARED_SESSION["session_start_time"] = 0.0
             self._create_session()
             headers = self._get_headers()
             if not headers:
@@ -658,6 +701,7 @@ class CapitalClient:
             self.market_cache = list(_SHARED_MARKET_CACHE["markets"])
             self.market_index = dict(_SHARED_MARKET_CACHE.get("market_index", {}))
             self.market_cache_time = float(_SHARED_MARKET_CACHE.get("market_cache_time", 0.0) or 0.0)
+            self.market_catalogue_complete = True
             return self.market_cache
 
         # Return instance in-memory cache if still fresh.
@@ -666,6 +710,7 @@ class CapitalClient:
             and self.market_cache
             and (time.time() - self.market_cache_time) < self.market_cache_ttl
         ):
+            self.market_catalogue_complete = True
             return self.market_cache
 
         # Don't download while rate-limited, or soon after an incomplete walk.
@@ -693,6 +738,7 @@ class CapitalClient:
                             _SHARED_MARKET_CACHE["market_index"] = dict(self.market_index)
                             _SHARED_MARKET_CACHE["market_cache_time"] = self.market_cache_time
                             logger.info(f"Capital.com market catalogue loaded from disk cache ({len(markets)} markets, age={age:.0f}s)")
+                            self.market_catalogue_complete = True
                             return self.market_cache
             except Exception as _disk_err:
                 logger.debug(f"Disk market cache load failed: {_disk_err}")
@@ -749,7 +795,18 @@ class CapitalClient:
                 len(markets),
             )
             self._market_walk_retry_at = time.time() + 60.0
-            return self.market_cache or markets
+            if self.market_cache:
+                self.market_catalogue_complete = True  # last full walk, unchanged
+                return self.market_cache
+            # No full catalogue to fall back on: hand back what we got, but
+            # flagged so callers do not treat it as the full market list.
+            self.market_catalogue_complete = False
+            logger.warning(
+                "Capital.com market catalogue is PARTIAL (%d markets, no cache); "
+                "market_catalogue_complete=False",
+                len(markets),
+            )
+            return markets
 
         self.market_cache = markets
         self.market_cache_time = time.time()
@@ -757,6 +814,7 @@ class CapitalClient:
         _SHARED_MARKET_CACHE["markets"] = list(markets)
         _SHARED_MARKET_CACHE["market_index"] = dict(self.market_index)
         _SHARED_MARKET_CACHE["market_cache_time"] = self.market_cache_time
+        self.market_catalogue_complete = True
         logger.info(f"Capital.com market catalogue loaded ({len(markets)} markets)")
 
         # Persist to disk so the next process start can skip this BFS download.
