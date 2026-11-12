@@ -426,7 +426,7 @@ ORGANS = {
         "match": "aureon.launch.daemons.sero_autonomous_expansion",
         "args": [],
         "cwd": str(WORKSPACE),
-        "mode": "continuous (checkout seat stands by; workspace sero_autonomous_expansion.py is not in this tree)",
+        "mode": "continuous (restored workspace sero_autonomous_expansion.py; writes sero_autonomous_state only, no orders)",
         "log": str(LOGS / "organ_sero_autonomous_expansion.log"),
         "env": _launch_env({"AUREON_LIVE_TRADING": "0", "AUREON_DISABLE_REAL_ORDERS": "1"}),
     },

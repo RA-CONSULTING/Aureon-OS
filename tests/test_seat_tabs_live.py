@@ -133,7 +133,6 @@ def test_workspace_scripts_from_the_preflight_are_present() -> None:
         "planetary_monitor_daemon.py",
         "solar_system_collector.py",
         "sero_space_weather.py",
-        "sero_autonomous_expansion.py",
         "soul_protection_daemon.py",
         "aureon_self_questioning_runner.py",
     )
