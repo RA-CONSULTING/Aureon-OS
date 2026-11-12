@@ -105,6 +105,7 @@ SAFE_NAME = re.compile(r"^[A-Za-z][A-Za-z0-9-]{0,62}$")
 SAFE_REGION = re.compile(r"^[a-z]+-[a-z0-9]+[0-9]$")
 SAFE_PROJECT = re.compile(r"^[a-z][a-z0-9-]{4,28}[a-z0-9]$")
 SAFE_IMAGE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}$")
+SHA40 = re.compile(r"^[0-9a-f]{40}$")
 SECRET_FILENAMES = {
     ".env",
     ".env.local",
@@ -1186,8 +1187,37 @@ def produce(
     )
 
 
-def validate_receipt(receipt: dict[str, Any]) -> list[str]:
-    """Structural gate shared by the writer and --check. Independent of a local test pass."""
+def guard_pin_at(root: Path, commit: str) -> str | None:
+    """PINNED_COMMIT in the public guard loader at ``commit``. None when git cannot read it.
+
+    ``commit`` must be a 40-hex SHA. Anything else returns None without calling git,
+    so a value starting with ``-`` cannot be read as a git option.
+    """
+
+    if not isinstance(commit, str) or SHA40.fullmatch(commit) is None:
+        return None
+    try:
+        text = subprocess.check_output(
+            ["git", "show", f"{commit}:mcp/aureon_public/guard_loader.py"],
+            cwd=root,
+            text=True,
+            stderr=subprocess.DEVNULL,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    match = re.search(r'^PINNED_COMMIT = "([0-9a-f]{40})"', text, re.MULTILINE)
+    return match.group(1) if match else None
+
+
+def validate_receipt(receipt: dict[str, Any], *, expected_pin: str = PIN) -> list[str]:
+    """Structural gate shared by the writer and --check. Independent of a local test pass.
+
+    ``expected_pin`` is the pin in force when the receipt was measured. A new
+    receipt is measured now, so it defaults to ``PIN``. A committed receipt is
+    checked against the guard pin at ``STARTED_FROM``. If ``pin_measured_at``
+    is present, it must equal that same constant; the receipt cannot choose
+    another past pin.
+    """
 
     errors: list[str] = []
 
@@ -1204,9 +1234,13 @@ def validate_receipt(receipt: dict[str, Any]) -> list[str]:
     need("release_boundary", "HOLD")
     need("orange_badge", "unchanged")
     need("badge_flip", BADGE_FLIP)
-    need("pin", PIN)
+    need("pin", expected_pin)
     need("pin_changed", False)
     need("started_from", STARTED_FROM)
+    if "pin_measured_at" in receipt and receipt.get("pin_measured_at") != STARTED_FROM:
+        errors.append(
+            f"pin_measured_at={receipt.get('pin_measured_at')!r} expected {STARTED_FROM!r}"
+        )
     need("live_trading", False)
     need("orders_placed", False)
     need("tunnels_opened", False)
@@ -1360,9 +1394,11 @@ def load_receipt(root: Path) -> dict[str, Any]:
 def check(root: Path, *, environ: Mapping[str, str] | None = None, home: Path | None = None, which: Which | None = None) -> list[str]:
     """Re-probe auth and require the committed file to agree. Do not deploy."""
 
-    errors = validate_receipt(load_receipt(root))
-    markdown = (root / MARKDOWN_PATH).read_text(encoding="utf-8")
     receipt = load_receipt(root)
+    # Look up the pin at STARTED_FROM, not at a commit the receipt names.
+    recorded_pin = guard_pin_at(root, STARTED_FROM)
+    errors = validate_receipt(receipt, expected_pin=recorded_pin or PIN)
+    markdown = (root / MARKDOWN_PATH).read_text(encoding="utf-8")
     if markdown != render_markdown(receipt):
         errors.append("markdown does not match the json")
     if f"`{receipt.get('provider_readback_digest')}`" not in markdown:
@@ -1379,7 +1415,7 @@ def check(root: Path, *, environ: Mapping[str, str] | None = None, home: Path | 
             errors.append("missing_provider_auth does not match a fresh probe")
         if receipt.get("unused_provider_auth") != probe["unused_provider_auth"]:
             errors.append("unused_provider_auth does not match a fresh probe")
-    if receipt.get("pin") != PIN or receipt.get("pin_changed") is not False:
+    if receipt.get("pin") != (recorded_pin or PIN) or receipt.get("pin_changed") is not False:
         errors.append("pin field moved")
     return errors
 

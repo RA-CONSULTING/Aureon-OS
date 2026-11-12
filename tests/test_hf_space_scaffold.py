@@ -10,9 +10,10 @@ from pathlib import Path
 
 import pytest
 
+from tests.support.receipt_provenance import is_ancestor, last_commit_writing, module_pin_at
+
 ROOT = Path(__file__).resolve().parents[1]
 PIN = "0646146c53e59dbcab41363a613d5651c9c9d50f"
-TIP = "0646146c53e59dbcab41363a613d5651c9c9d50f"
 SPACES = ("hnc-field", "auris-coherence", "qgita-snr", "organism-replay")
 TOKEN = "hf_test_token_value_not_real"
 BANNED = ("production ready", "production-ready", "validated", "Space is live")
@@ -316,13 +317,17 @@ def test_committed_receipt_is_hold_skip() -> None:
     assert receipt["pro_status"] == "not_queried"
     assert receipt["pro_required"] is False
     assert "PRO" in receipt["reason"]
-    assert receipt["public_require_pin"] == PIN
+    # The committed HOLD-skip records the PIN constant of the distribution
+    # script in the commit that wrote it, not today's pin.
+    recorded_in = last_commit_writing("measured/hf_space_distribution.json")
+    assert receipt["public_require_pin"] == module_pin_at(recorded_in, "huggingface/distribution.py")
     assert receipt["pin_moved"] is False
     assert receipt["orange_badge"] == "unchanged"
     assert receipt["go_live"] == "HOLD"
     assert receipt["go_live_clear"] is False
     assert receipt["orders_placed"] is False
-    assert receipt["git_head_at_measurement"] == TIP
+    # The HEAD it was measured on must be history of the commit that recorded it.
+    assert is_ancestor(receipt["git_head_at_measurement"], recorded_in)
     assert "The Space is not live." in md
     assert "Go-live: **HOLD**" in md
     docs = [

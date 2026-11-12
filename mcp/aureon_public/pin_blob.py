@@ -126,6 +126,9 @@ class PinnedAureonFinder:
             return None
         relative = self._relative(fullname)
         if relative is None:
+            absent = self._checkout_only(fullname)
+            if absent is not None:
+                raise ImportError(absent)
             raise ImportError(f"{fullname} is not an aureon module path")
         expected, error = expected_pin_blob(self.root / relative, self.root, self.commit)
         if error or not expected:
@@ -150,6 +153,19 @@ class PinnedAureonFinder:
                 return relative.as_posix()
             if error == pin_history_unavailable_message(self.commit):
                 raise ImportError(error)
+        return None
+
+    def _checkout_only(self, fullname: str) -> str | None:
+        """Refusal text for a module file in this checkout that the pin does not have.
+
+        The file is a real aureon module path; it was added after the pin.
+        It is still refused. Only the reason is named.
+        """
+
+        parts = fullname.split(".")
+        for relative in (Path(*parts).with_suffix(".py"), Path(*parts) / "__init__.py"):
+            if (self.root / relative).is_file():
+                return f"{relative.as_posix()} is not in pin {self.commit[:12]}"
         return None
 
     def _files(self, fullname: str, relative: str) -> list[Path]:
