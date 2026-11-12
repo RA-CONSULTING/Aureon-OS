@@ -370,6 +370,11 @@ class EarthResonanceEngine:
         self.schumann_state = state
         self._schumann_state_initialized = True
         self._accepted_schumann_receipt_id = receipt["receipt_id"]
+        self._receipt_field_values = {
+            "coherence": receipt["coherence"],
+            "stability": stability,
+            "source_timestamp": receipt["source_timestamp"],
+        }
         self.last_update = receipt["received_at"]
         return state
     
@@ -519,17 +524,46 @@ class EarthResonanceEngine:
             if mode3_power is None:
                 mode3_power = 0.5 + 0.2 * math.sin(now / 800)
         
-        # Field coherence affected by market volatility
-        base_coherence = 0.7 + 0.2 * math.cos(now / 1500)
+        # Field coherence, phase lock and stability.
+        #
+        # These used to be worked out from the wall clock (cos/sin of
+        # time.time()) on every call, even when the mode powers above were
+        # real, and the engine then marked itself initialised, so the
+        # trading gate could treat clock values as a real reading. Rule:
+        # nothing in measurement may be synthetic. They now come only from
+        # the last accepted Schumann receipt (update_from_schumann_receipt)
+        # while it is fresh; otherwise they report no data (0.0) and the gate
+        # stays closed with "no_live_schumann_data". The clock maths survives
+        # only behind the AUREON_ALLOW_SIM_FALLBACK dev gate.
         volatility_impact = max(0, 1.0 - market_volatility * 0.5)
-        field_coherence = base_coherence * volatility_impact
-        
-        # Phase lock strength
-        phase_lock = 0.75 + 0.15 * math.sin(now / 600) + 0.1 * field_coherence
-        
-        # Resonance stability
-        resonance_stability = 0.85 + 0.1 * math.cos(now / 900)
-        
+        receipt_fields = getattr(self, "_receipt_field_values", None)
+        receipt_fresh = (
+            receipt_fields is not None
+            and (now - receipt_fields["source_timestamp"]) <= EARTH_GATE_RECEIPT_MAX_AGE_SECONDS
+        )
+        if receipt_fresh:
+            field_coherence = receipt_fields["coherence"] * volatility_impact
+            # A receipt carries no separate phase-lock measurement; phase lock
+            # is the receipt's stability (1 - earth disturbance), as in
+            # update_from_schumann_receipt.
+            phase_lock = receipt_fields["stability"]
+            resonance_stability = receipt_fields["stability"]
+            fields_are_live = True
+        else:
+            from aureon.observer.live_data_policy import simulation_fallback_allowed
+            if simulation_fallback_allowed():
+                # DEV-ONLY synthetic field values (gated)
+                base_coherence = 0.7 + 0.2 * math.cos(now / 1500)
+                field_coherence = base_coherence * volatility_impact
+                phase_lock = 0.75 + 0.15 * math.sin(now / 600) + 0.1 * field_coherence
+                resonance_stability = 0.85 + 0.1 * math.cos(now / 900)
+                fields_are_live = False  # clock values never count as a live reading, even in dev
+            else:
+                field_coherence = 0.0
+                phase_lock = 0.0
+                resonance_stability = 0.0
+                fields_are_live = False
+
         self.schumann_state = SchumannState(
             mode1_power=max(0, min(1, mode1_power)),
             mode2_power=max(0, min(1, mode2_power)),
@@ -546,7 +580,8 @@ class EarthResonanceEngine:
 
         # Mark state as initialized — get_trading_gate_status() will now
         # return real gate decisions instead of (False, "no_live_data").
-        self._schumann_state_initialized = True
+        # Initialised only when the field values are live (or dev sim opt-in).
+        self._schumann_state_initialized = fields_are_live
 
         self.last_update = now
         return self.schumann_state
