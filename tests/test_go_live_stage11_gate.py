@@ -248,7 +248,6 @@ def test_this_tip_stays_hold_and_does_not_flip_the_badge(monkeypatch: pytest.Mon
     assert by_id[1]["verified_on_tip"] is False
     assert by_id[1]["detail"]["recorded_head"] == "c68a89d2a184d99582bb24310b91e024323a212c"
     assert by_id[1]["detail"]["recorded_head"] != head
-    assert by_id[1]["detail"]["tip_diff"] == "outside_allowlist"
     assert "pin_mismatch" in by_id[1]["reasons"]
     assert "tip_is_not_head" in by_id[1]["reasons"]
     assert "worktree_dirty_at_measurement" in by_id[1]["reasons"]
@@ -262,9 +261,19 @@ def test_this_tip_stays_hold_and_does_not_flip_the_badge(monkeypatch: pytest.Mon
     assert "tip_is_not_head" in by_id[2]["reasons"]
     assert by_id[3]["verified_on_tip"] is False
     assert "pin_mismatch" in by_id[3]["reasons"]
-    assert gate.NOTE_REATTACH not in by_id[3]["reasons"]
-    assert by_id[3]["detail"]["note_commit_is_ancestor"] is True
-    assert by_id[3]["detail"]["notes_match"] is True
+    if by_id[1]["detail"]["tip_diff"] == "unavailable":
+        # Recorded tips and the HNC recording commit are not in this clone
+        # (for example a --depth 1 checkout). The gate fails closed.
+        assert by_id[2]["detail"]["tip_diff"] == "unavailable"
+        assert by_id[4]["detail"]["tip_diff"] == "unavailable"
+        assert by_id[5]["detail"]["tip_diff"] == "unavailable"
+        assert gate.NOTE_REATTACH in by_id[3]["reasons"]
+        assert by_id[3]["detail"]["notes_match"] is False
+    else:
+        assert by_id[1]["detail"]["tip_diff"] == "outside_allowlist"
+        assert gate.NOTE_REATTACH not in by_id[3]["reasons"]
+        assert by_id[3]["detail"]["note_commit_is_ancestor"] is True
+        assert by_id[3]["detail"]["notes_match"] is True
     assert by_id[2]["detail"]["tip_note"] == gate.PRE_SQUASH_NOTE
     assert by_id[4]["detail"]["tip_note"] == gate.PRE_SQUASH_NOTE
     assert by_id[4]["verified_on_tip"] is False
