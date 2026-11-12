@@ -9,12 +9,16 @@ remain supported.
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 import threading
+import time
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple
 from urllib.parse import urlparse
+
+from filelock import FileLock
 
 
 DEFAULT_OLLAMA_NATIVE_BASE_URL = "http://localhost:11434"
@@ -33,8 +37,287 @@ EXTERNAL_LLM_FALLBACK_ENV = "AUREON_EXTERNAL_LLM_FALLBACK"
 DEFAULT_EXTERNAL_LLM_FALLBACK = "ollama"
 OLLAMA_REASONING_EFFORT_ENV = "AUREON_OLLAMA_REASONING_EFFORT"
 DEFAULT_OLLAMA_REASONING_EFFORT = "none"
+
+# Daily Ollama call/token accounting
+OLLAMA_DAILY_CAP_ENV = "AUREON_OLLAMA_DAILY_CAP"
+DEFAULT_OLLAMA_DAILY_CAP = 200
+OLLAMA_USAGE_PATH_ENV = "AUREON_OLLAMA_USAGE_PATH"
+
+# Cross-organism shared atomic Ollama budget (coordinated across all consumers)
+AUREON_OLLAMA_DAILY_SHARED_CAP_ENV = "AUREON_OLLAMA_DAILY_SHARED_CAP"
+DEFAULT_OLLAMA_DAILY_SHARED_CAP = 50
+AUREON_OLLAMA_SHARED_BUDGET_PATH_ENV = "AUREON_OLLAMA_SHARED_BUDGET_PATH"
+
 _RUNTIME_BOOTSTRAP_LOCK = threading.Lock()
 _RUNTIME_BOOTSTRAP_ATTEMPTED = False
+
+
+class OllamaDailyBudgetExceeded(RuntimeError):
+    """Raised when a call would exceed the soft daily Ollama cap.
+
+    Callers (e.g. ollama_switchboard) can catch this and degrade to disk
+    cache / stale data.
+    """
+
+
+def _today() -> str:
+    return time.strftime("%Y-%m-%d", time.gmtime())
+
+
+def _usage_path() -> Path:
+    explicit = os.getenv(OLLAMA_USAGE_PATH_ENV)
+    if explicit:
+        return Path(explicit)
+    # Default: workspace/aureon_fusion/state/ollama_usage.json
+    # __file__ = aureon-os-upstream/aureon/ollama_config.py
+    return Path(__file__).resolve().parents[2] / "aureon_fusion" / "state" / "ollama_usage.json"
+
+
+def _load_usage() -> Dict[str, Any]:
+    path = _usage_path()
+    try:
+        if path.exists():
+            with open(path, "r", encoding="utf-8") as f:
+                rec = json.load(f)
+            if isinstance(rec, dict) and rec.get("day") == _today():
+                return rec
+    except Exception as exc:
+        logger.warning("Failed to load ollama_usage.json: %s", exc)
+    return {
+        "day": _today(),
+        "calls": 0,
+        "est_tokens": 0,
+        "by_host": {},
+    }
+
+
+def _save_usage(rec: Dict[str, Any]) -> None:
+    path = _usage_path()
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(".tmp")
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(rec, f, indent=2, ensure_ascii=False)
+        os.replace(tmp, path)
+    except Exception as exc:
+        logger.warning("Failed to persist ollama_usage.json: %s", exc)
+
+
+_USAGE_LOCK = threading.Lock()
+_USAGE_CACHE: Dict[str, Dict[str, Any]] = {}
+
+
+def _get_usage() -> Dict[str, Any]:
+    """In-memory singleton per process plus disk persistence."""
+    today = _today()
+    cached = _USAGE_CACHE.get("record")
+    if cached is not None and cached.get("day") == today:
+        return cached
+    rec = _load_usage()
+    _USAGE_CACHE["record"] = rec
+    return rec
+
+
+def _estimate_tokens(text: Any) -> int:
+    text = str(text or "")
+    if not text:
+        return 0
+    # Rough estimate: ~4 characters per token; ensure non-zero for any text.
+    return max(1, len(text) // 4)
+
+
+def resolve_ollama_daily_cap() -> int:
+    """Soft daily call cap. <=0 means unlimited."""
+    raw = os.getenv(OLLAMA_DAILY_CAP_ENV)
+    if raw is None:
+        return DEFAULT_OLLAMA_DAILY_CAP
+    try:
+        value = int(raw.strip())
+        return value
+    except ValueError:
+        return DEFAULT_OLLAMA_DAILY_CAP
+
+
+def resolve_ollama_shared_cap() -> int:
+    """Shared, cross-process daily Ollama call cap. <=0 means unlimited."""
+    raw = os.getenv(AUREON_OLLAMA_DAILY_SHARED_CAP_ENV)
+    if raw is None:
+        return DEFAULT_OLLAMA_DAILY_SHARED_CAP
+    try:
+        return int(raw.strip())
+    except ValueError:
+        return DEFAULT_OLLAMA_DAILY_SHARED_CAP
+
+
+def _shared_budget_path() -> Path:
+    explicit = os.getenv(AUREON_OLLAMA_SHARED_BUDGET_PATH_ENV)
+    if explicit:
+        return Path(explicit)
+    return Path(__file__).resolve().parents[2] / "aureon_fusion" / "state" / "ollama_budget.json"
+
+
+def _load_shared_budget(path: Path) -> Dict[str, Any]:
+    try:
+        if path.exists():
+            with open(path, "r", encoding="utf-8") as f:
+                rec = json.load(f)
+            if (
+                isinstance(rec, dict)
+                and rec.get("day") == _today()
+                and isinstance(rec.get("remaining_calls"), int)
+                and isinstance(rec.get("cap"), int)
+            ):
+                return rec
+    except Exception:
+        pass
+    cap = resolve_ollama_shared_cap()
+    return {"day": _today(), "remaining_calls": cap, "cap": cap}
+
+
+def _save_shared_budget(path: Path, rec: Dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(rec, f, indent=2, ensure_ascii=False)
+    os.replace(tmp, path)
+
+
+def ensure_ollama_shared_budget() -> Dict[str, Any]:
+    """Load/reset the shared budget file at day start.
+
+    Returns the current budget record without consuming a call.
+    """
+    path = _shared_budget_path()
+    lock_path = path.with_suffix(path.suffix + ".lock")
+    with FileLock(str(lock_path)):
+        existed = path.exists()
+        rec = _load_shared_budget(path)
+        if not existed or rec["day"] != _today():
+            cap = resolve_ollama_shared_cap()
+            rec = {"day": _today(), "remaining_calls": cap, "cap": cap}
+            _save_shared_budget(path, rec)
+    return dict(rec)
+
+
+def _atomic_decrement_shared_budget(path: Path) -> Dict[str, Any]:
+    lock_path = path.with_suffix(path.suffix + ".lock")
+    with FileLock(str(lock_path)):
+        rec = _load_shared_budget(path)
+        if rec["remaining_calls"] <= 0:
+            raise OllamaDailyBudgetExceeded("shared_budget_exhausted")
+        rec["remaining_calls"] -= 1
+        _save_shared_budget(path, rec)
+    return dict(rec)
+
+
+def get_ollama_usage() -> Dict[str, Any]:
+    """Return current usage counters (calls, est_tokens, by_host)."""
+    with _USAGE_LOCK:
+        return dict(_get_usage())
+
+
+def check_ollama_daily_budget(base_url: Optional[str] = None, *,
+                              est_tokens: int = 0) -> None:
+    """Fail-closed gate: enforce the daily Ollama budget.
+
+    First checks the legacy per-process call ceiling (``AUREON_OLLAMA_DAILY_CAP``),
+    then atomically decrements the shared cross-consumer budget file
+    (``AUREON_OLLAMA_DAILY_SHARED_CAP``).  Raises
+    ``OllamaDailyBudgetExceeded`` with reason ``shared_budget_exhausted`` when
+    the shared pool is empty.  ``est_tokens`` is recorded by
+    ``record_ollama_call``; this gate counts calls.
+    """
+    # Legacy per-process cap (kept for existing callers/selftests).
+    legacy_cap = resolve_ollama_daily_cap()
+    if legacy_cap > 0:
+        with _USAGE_LOCK:
+            rec = _get_usage()
+            if rec["day"] != _today():
+                rec = _load_usage()
+                _USAGE_CACHE["record"] = rec
+            if rec["calls"] >= legacy_cap:
+                raise OllamaDailyBudgetExceeded("shared_budget_exhausted")
+
+    # Shared cross-consumer atomic budget.
+    shared_cap = resolve_ollama_shared_cap()
+    if shared_cap <= 0:
+        return
+    _atomic_decrement_shared_budget(_shared_budget_path())
+
+
+def record_ollama_call(
+    base_url: Optional[str] = None,
+    *,
+    prompt_text: Any = None,
+    response_text: Any = None,
+    prompt_tokens: Optional[int] = None,
+    completion_tokens: Optional[int] = None,
+) -> Dict[str, Any]:
+    """Increment Ollama usage counters and persist to disk.
+
+    Token estimation: if explicit token counts are not supplied, they are
+    estimated from prompt/response text length. The file shape is
+    ``{day, calls, est_tokens, by_host}`` as required.
+    """
+    host = _hostname(base_url) if base_url else "unknown"
+    est = 0
+    if prompt_tokens is not None:
+        est += max(0, int(prompt_tokens))
+    else:
+        est += _estimate_tokens(prompt_text)
+    if completion_tokens is not None:
+        est += max(0, int(completion_tokens))
+    else:
+        est += _estimate_tokens(response_text)
+
+    with _USAGE_LOCK:
+        rec = _get_usage()
+        if rec["day"] != _today():
+            rec = _load_usage()
+            _USAGE_CACHE["record"] = rec
+        rec["calls"] = int(rec.get("calls", 0)) + 1
+        rec["est_tokens"] = int(rec.get("est_tokens", 0)) + est
+        by_host = rec.setdefault("by_host", {})
+        host_rec = by_host.setdefault(host, {"calls": 0, "est_tokens": 0})
+        host_rec["calls"] = int(host_rec.get("calls", 0)) + 1
+        host_rec["est_tokens"] = int(host_rec.get("est_tokens", 0)) + est
+        _save_usage(rec)
+        return dict(rec)
+
+
+def tracked_ollama_call(
+    base_url: Optional[str],
+    fn: Callable[[], Any],
+    *,
+    prompt_text: Any = None,
+    prompt_tokens: Optional[int] = None,
+    response_token_extractor: Optional[Callable[[Any], int]] = None,
+) -> Any:
+    """Choke-point wrapper: check cap, call ``fn()``, record usage.
+
+    ``response_token_extractor`` may convert the returned object into a token
+    count or string for estimation. Exceptions from ``fn`` propagate without
+    recording usage so failed calls are not charged.
+    """
+    est_prompt = prompt_tokens if prompt_tokens is not None else _estimate_tokens(prompt_text)
+    check_ollama_daily_budget(base_url, est_tokens=est_prompt)
+    result = fn()
+    completion = None
+    if response_token_extractor is not None:
+        try:
+            completion = response_token_extractor(result)
+            if not isinstance(completion, int):
+                completion = str(completion)
+        except Exception:
+            completion = None
+    record_ollama_call(
+        base_url=base_url,
+        prompt_text=prompt_text,
+        prompt_tokens=prompt_tokens,
+        response_text=completion if isinstance(completion, str) else None,
+        completion_tokens=completion if isinstance(completion, int) else None,
+    )
+    return result
 
 
 def _first_nonempty(*values: Optional[str]) -> str:
@@ -75,6 +358,18 @@ def is_ollama_cloud_url(base_url: str) -> bool:
 
     host = _hostname(base_url)
     return host == "ollama.com" or host.endswith(".ollama.com")
+
+
+def is_ollama_cloud_model(model: Any) -> bool:
+    """Return whether a model id is an Ollama cloud-backed model.
+
+    Ollama serves cloud models (e.g. ``glm-5.3:cloud``) through the local
+    proxy under the ``:cloud`` suffix.  These are thinking models: without
+    reasoning control they spend bounded token budgets on hidden
+    reasoning and return no visible answer.
+    """
+
+    return str(model or "").strip().lower().endswith(":cloud")
 
 
 def is_loopback_url(base_url: str) -> bool:
@@ -266,15 +561,22 @@ __all__ = [
     "DEFAULT_OLLAMA_REASONING_EFFORT",
     "DEFAULT_OLLAMA_NATIVE_BASE_URL",
     "DEFAULT_OLLAMA_OPENAI_BASE_URL",
+    "DEFAULT_OLLAMA_DAILY_CAP",
+    "DEFAULT_OLLAMA_DAILY_SHARED_CAP",
     "EXTERNAL_LLM_FALLBACK_ENV",
     "OLLAMA_API_KEY_ENVS",
+    "OLLAMA_DAILY_CAP_ENV",
     "OLLAMA_REASONING_EFFORT_ENV",
+    "AUREON_OLLAMA_DAILY_SHARED_CAP_ENV",
+    "AUREON_OLLAMA_SHARED_BUDGET_PATH_ENV",
     "OLLAMA_CLOUD_NATIVE_BASE_URL",
     "OLLAMA_CLOUD_OPENAI_BASE_URL",
+    "OllamaDailyBudgetExceeded",
     "is_loopback_url",
     "is_ollama_cloud_url",
     "looks_like_ollama_url",
     "ensure_ollama_runtime_config",
+    "ensure_ollama_shared_budget",
     "ollama_authorization_headers",
     "ollama_config_snapshot",
     "resolve_external_llm_fallback",
@@ -282,4 +584,10 @@ __all__ = [
     "resolve_ollama_api_key",
     "resolve_ollama_native_base_url",
     "resolve_ollama_openai_base_url",
+    "resolve_ollama_daily_cap",
+    "resolve_ollama_shared_cap",
+    "get_ollama_usage",
+    "check_ollama_daily_budget",
+    "record_ollama_call",
+    "tracked_ollama_call",
 ]

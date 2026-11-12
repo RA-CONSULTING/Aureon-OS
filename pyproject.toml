@@ -45,6 +45,7 @@ classifiers = [
 dependencies = [
   "requests>=2.32.0",
   "python-dotenv>=1.0.0",
+  "filelock>=3.12",
   "rich>=13.7.0",
 ]
 

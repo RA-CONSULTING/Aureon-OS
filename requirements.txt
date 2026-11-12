@@ -1,5 +1,6 @@
 requests>=2.32.0
 python-dotenv>=1.0.0
+filelock>=3.12
 click<8.2
 python-binance>=1.0.19
 krakenex>=2.1.0
