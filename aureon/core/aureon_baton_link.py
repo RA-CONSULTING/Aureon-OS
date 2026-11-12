@@ -378,13 +378,12 @@ _RUN_FROM_CHECKOUT = (
 def _isolated_repair_env(**extra: str) -> dict[str, str]:
     """Child env for repair, gate and proof runs: no credentials, no dotenv, no live switches."""
 
-    from aureon.launch.session_scope import isolated_child_env
+    from aureon.launch.session_scope import disarm, isolated_child_env
 
     env = isolated_child_env(dict(os.environ))
     env.update(extra)
-    # isolated_child_env forces these; keep them forced even if `extra` names one.
-    env.update(PYTHON_DOTENV_DISABLED="1", AUREON_LIVE_TRADING="0", AUREON_DISABLE_REAL_ORDERS="1", DRY_RUN="1")
-    return env
+    # Re-run the drop and the forced off values, so an `extra` cannot arm the child.
+    return disarm(env)
 
 
 def _repair_child_spec(module: str, root: str, *extra_args: str, **extra_env: str):

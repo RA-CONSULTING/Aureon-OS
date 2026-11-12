@@ -34,13 +34,63 @@ FAKE_SECRETS = {
     "ALPACA_SECRET_KEY": "fake-alpaca-secret",
     "UKDI_GRANT_PASSWORD": "fake-ukdi-password",
     "AUREON_MASTER_ENCRYPTION_KEY": "fake-master-key",
+    "FOO_PASSWORD": "fake-foo-password",
+    "BAR_TOKEN": "fake-bar-token",
+    "FOO_PASSWORD_FILE": "fake-foo-password-file",
+    "BAR_TOKEN_RW": "fake-bar-token-rw",
 }
+# How the live kill chain runs: every arming and autonomy switch on.
+LIVE_SWITCHES = {
+    "AUREON_LIVE_TRADING": "1",
+    "AUREON_FUSION_ARM_LIVE": "1",
+    "AUREON_DISABLE_REAL_ORDERS": "0",
+    "AUREON_DISABLE_EXCHANGE_MUTATIONS": "0",
+    "AUREON_DISABLE_LIVE_BACKGROUND_STARTUP": "0",
+    "AUREON_AUTONOMY_MODE": "full",
+    "AUREON_CODE_AUTO_APPROVE": "1",
+    "AUREON_DRY_RUN": "0",
+    "DRY_RUN": "0",
+    "AUREON_MAY_ACT": "1",
+    "AUREON_ORDER_INTENT_PUBLISH": "1",
+    "AUREON_UNIFIED_ORDER_EXECUTOR": "1",
+    "LIVE": "1",
+    "AUREON_LIVE": "1",
+    "LIVE_TRADING": "1",
+    "REAL_MONEY": "1",
+    "CONFIRM_LIVE": "yes",
+    "CONFIRM_LIVE_TRADING": "yes",
+    "AUREON_ACCEPT_LIVE_RISK": "1",
+    "AUREON_OPERATOR_ALLOW_LIVE": "1",
+    "AUREON_GO_LIVE_CLEAR": "1",
+    "AUREON_AZYRA_EXECUTE_LIVE": "1",
+    "AUREON_AUTOSTART_LIVE_RUNNER": "1",
+    "AUREON_DESKTOP_LIVE": "1",
+    "AUREON_DESKTOP_AUTO_ARM": "1",
+    "AUREON_LOCAL_ACTIONS_ARMED": "1",
+    "AUREON_SOUL_ACT": "1",
+    "AUREON_QUEEN_AUTO_PUSH": "1",
+    "AUREON_QUEEN_SELF_REBOOT": "1",
+    "AUREON_FORCE_ARM": "1",
+    "AUREON_BILLING_CHARGE_ENABLED": "1",
+    "AUREON_SOVEREIGN_MODE": "1",
+    "EPICENTER_LIVE": "YES",
+    "SOME_NEW_LIVE_SWITCH": "1",
+}
+# Expected in every child, whatever the parent had.
 SAFETY = {
     "PYTHON_DOTENV_DISABLED": "1",
-    "DRY_RUN": "1",
     "AUREON_LIVE_TRADING": "0",
+    "AUREON_FUSION_ARM_LIVE": "",
     "AUREON_DISABLE_REAL_ORDERS": "1",
+    "AUREON_DISABLE_EXCHANGE_MUTATIONS": "1",
+    "AUREON_DISABLE_LIVE_BACKGROUND_STARTUP": "1",
+    "AUREON_AUTONOMY_MODE": "guarded",
+    "AUREON_CODE_AUTO_APPROVE": "0",
+    "AUREON_DRY_RUN": "1",
+    "DRY_RUN": "1",
 }
+# Must not reach a child at all.
+UNSET_SWITCHES = tuple(name for name in LIVE_SWITCHES if name not in SAFETY)
 # A module run with -m / runpy is __main__, so the probe records the packages it
 # was imported from (both runs import them) and the repair engine itself.
 WATCHED = ("aureon_fusion", "aureon", "aureon.autonomous", "aureon.autonomous.aureon_sandbox_self_repair")
@@ -109,9 +159,8 @@ def _run_one_iteration(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, launch: 
     for name, value in FAKE_SECRETS.items():
         monkeypatch.setenv(name, value)
     # The parent looks like a live organ: live switches on, dotenv allowed.
-    monkeypatch.setenv("AUREON_LIVE_TRADING", "1")
-    monkeypatch.setenv("AUREON_DISABLE_REAL_ORDERS", "0")
-    monkeypatch.setenv("DRY_RUN", "0")
+    for name, value in LIVE_SWITCHES.items():
+        monkeypatch.setenv(name, value)
     monkeypatch.delenv("PYTHON_DOTENV_DISABLED", raising=False)
     monkeypatch.setenv("BATON_TEST_RECORD", str(record))
     monkeypatch.setenv("PYTHONPATH", str(probe))
@@ -169,6 +218,9 @@ def _assert_isolated(rows: list[dict], package: str) -> None:
         leaked = sorted(set(FAKE_SECRETS) & set(row["env_names"]))
         if leaked:
             problems.append(f"credential names reached the child: {leaked}")
+        armed = sorted(set(UNSET_SWITCHES) & set(row["env_names"]))
+        if armed:
+            problems.append(f"arming switches reached the child: {armed}")
         for key, value in SAFETY.items():
             if "safety" in row and row["safety"].get(key) != value:
                 problems.append(f"{key}={row['safety'].get(key)!r} in the child, expected {value!r}")
@@ -192,9 +244,8 @@ def test_gate_pytest_children_get_isolated_env(tmp_path, monkeypatch):
 
     for name, value in FAKE_SECRETS.items():
         monkeypatch.setenv(name, value)
-    monkeypatch.setenv("AUREON_LIVE_TRADING", "1")
-    monkeypatch.setenv("AUREON_DISABLE_REAL_ORDERS", "0")
-    monkeypatch.setenv("DRY_RUN", "0")
+    for name, value in LIVE_SWITCHES.items():
+        monkeypatch.setenv(name, value)
     monkeypatch.delenv("PYTHON_DOTENV_DISABLED", raising=False)
     seen: dict = {}
 
@@ -206,8 +257,9 @@ def test_gate_pytest_children_get_isolated_env(tmp_path, monkeypatch):
     gate._pytest_paths(tmp_path, ["tests"])
     assert seen, "gate pytest got no explicit env"
     assert not set(FAKE_SECRETS) & set(seen)
+    assert not set(UNSET_SWITCHES) & set(seen)
     for key, value in SAFETY.items():
-        assert seen.get(key) == value
+        assert seen.get(key) == value, key
 
 
 def test_gate_mutant_sites_come_from_the_root_under_test(tmp_path):
@@ -278,8 +330,8 @@ def test_organ_import_spawns_isolated_children(tmp_path):
     env = {key: value for key, value in os.environ.items()
            if key not in ("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS", "AUREON_AUDIT_MODE", "PYTHONSAFEPATH")}
     env.update(FAKE_SECRETS)
-    env.update(AUREON_LIVE_TRADING="1", AUREON_DISABLE_REAL_ORDERS="0", DRY_RUN="0",
-               AUREON_ACTIVATE_ON_IMPORT="1", AUREON_QUEEN_REPAIR_ROOT=str(foreign),
+    env.update(LIVE_SWITCHES)
+    env.update(AUREON_ACTIVATE_ON_IMPORT="1", AUREON_QUEEN_REPAIR_ROOT=str(foreign),
                AUREON_QUEEN_REPAIR_INTERVAL_S="3600", AUREON_SELF_REPAIR_SUITE_TIMEOUT_S="60",
                BATON_TEST_RECORD=str(record), PYTHONPATH=str(probe))
     env.pop("PYTHON_DOTENV_DISABLED", None)
@@ -291,3 +343,49 @@ def test_organ_import_spawns_isolated_children(tmp_path):
     _assert_isolated(rows, "aureon.autonomous")
     assert any("--no-relay" in row.get("argv", []) for row in rows), "gate child never recorded"
     assert all("safety" in row for row in rows)
+
+
+def test_isolated_child_env_disarms_fusion_and_drops_password_token_names():
+    from aureon.launch.session_scope import isolated_child_env
+
+    parent = {**FAKE_SECRETS, **LIVE_SWITCHES, "PATH": "/usr/bin",
+              "GIT_CONFIG_KEY_0": "safe.directory", "AUREON_PHI_CHAT_MAX_TOKENS": "512",
+              "AUREON_LLM_KEEP_ALIVE": "5m", "DELIVERY_WINDOW": "x", "OLIVER_PATH": "y",
+              "AUREON_SELF_REPAIR_SUITE_TIMEOUT_S": "60", "lower_password_hint": "x", "my_token_path": "y"}
+    child = isolated_child_env(parent)
+    assert child["AUREON_FUSION_ARM_LIVE"] == ""
+    for key, value in SAFETY.items():
+        assert child[key] == value, key
+    for name in (*FAKE_SECRETS, *UNSET_SWITCHES, "lower_password_hint", "my_token_path"):
+        assert name not in child, name
+    for name in ("PATH", "GIT_CONFIG_KEY_0", "AUREON_PHI_CHAT_MAX_TOKENS", "AUREON_SELF_REPAIR_SUITE_TIMEOUT_S",
+                 "AUREON_LLM_KEEP_ALIVE", "DELIVERY_WINDOW", "OLIVER_PATH"):
+        assert child[name] == parent[name], name
+    assert parent["AUREON_FUSION_ARM_LIVE"] == "1"  # input not mutated
+
+
+def test_repair_child_spec_keeps_fusion_disarmed_even_if_extra_tries(monkeypatch):
+    for name, value in LIVE_SWITCHES.items():
+        monkeypatch.setenv(name, value)
+    _argv, _cwd, env = baton._repair_child_spec("aureon_fusion.repair", "/nonexistent",
+                                                AUREON_FUSION_ARM_LIVE="1", AUREON_LIVE_TRADING="1")
+    assert env["AUREON_FUSION_ARM_LIVE"] == ""
+    assert env["AUREON_LIVE_TRADING"] == "0"
+
+
+@pytest.mark.parametrize("name, dropped", [
+    ("LIVE", True),
+    ("live_mode", True),
+    ("SOME_NEW_LIVE_SWITCH", True),
+    ("AUREON_SELF_CODER_LIVECODE_URL", True),
+    ("AUREON_LIVE_WAVEFORM_MAX_SYMBOLS", True),
+    ("AUREON_LLM_KEEP_ALIVE", False),
+    ("DELIVERY_WINDOW", False),
+    ("OLIVER_PATH", False),
+    ("AUREON_GROUND_LOCAL_ACTIONS", False),
+])
+def test_live_name_pattern(name, dropped):
+    from aureon.launch.session_scope import isolated_child_env
+
+    child = isolated_child_env({name: "1", "PATH": "/usr/bin"})
+    assert (name not in child) is dropped
