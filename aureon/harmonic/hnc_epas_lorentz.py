@@ -41,7 +41,8 @@ Cited constants from Gary's EPAS whitepapers in this repository
   * seed 528 Hz and f_counter = 528/phi = 326.3 Hz
     (EPAS_Unified_Architecture_v2.md:349);
   * the 326-854 Hz band.  Both whitepapers state it inside a "Hypothesis" for
-    a bench test that has not been run (EPAS_Unified_Architecture_v2.md:349,
+    a proposed bench test and report no result for it
+    (EPAS_Unified_Architecture_v2.md:349,
     HNC_Project_Druid_EPAS_Technical_Framework.md:237).  It is recorded here
     only as the paper's stated hypothesis.  It is not a measurement and no
     function here uses it.
