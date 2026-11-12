@@ -224,6 +224,10 @@ class QueenSoulShield:
             if not isinstance(stats, dict) or "total_blocks" not in stats:
                 self._stats_load_failed = True
                 return None
+            if stats["total_blocks"] is None:
+                # A saved null is a successful "no reading yet" load (a first
+                # session with no blocks), not a failure, so later saves go ahead.
+                return None
             return int(stats["total_blocks"])
         except Exception:
             self._stats_load_failed = True

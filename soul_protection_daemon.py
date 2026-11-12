@@ -74,6 +74,10 @@ def _load_shield_total_blocks(self) -> Optional[int]:
             if self is not None:
                 self._stats_load_failed = True
             return None
+        if stats["total_blocks"] is None:
+            # A saved null is a successful "no reading yet" load (a first
+            # session with no blocks), not a failure, so later saves go ahead.
+            return None
         return int(stats["total_blocks"])
     except Exception:
         if self is not None:

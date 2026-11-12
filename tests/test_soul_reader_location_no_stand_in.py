@@ -28,6 +28,15 @@ def _reader(monkeypatch):
     return QueenSoulReader()
 
 
+def _fresh_shield_class():
+    # soul_protection_daemon patches QueenSoulShield's load/save onto its own
+    # absolute stats path when imported (other test files import it), so
+    # reload the module to test the shield's own cwd-relative methods.
+    import importlib
+    import aureon.queen.queen_soul_shield as shield_mod
+    return importlib.reload(shield_mod).QueenSoulShield
+
+
 def test_location_is_none_with_no_signal(monkeypatch):
     location = _reader(monkeypatch)._read_location_from_signals()
     assert location["city"] is None
@@ -68,7 +77,7 @@ def test_shield_skips_save_after_failed_load(tmp_path, monkeypatch):
     stats.write_text(original, encoding="utf-8")
 
     sys.path.insert(0, str(REPO))
-    from aureon.queen.queen_soul_shield import QueenSoulShield
+    QueenSoulShield = _fresh_shield_class()
 
     shield = QueenSoulShield()
     assert shield.attacks_blocked_total is None
@@ -99,3 +108,42 @@ def test_demo_exits_zero_offline(tmp_path, monkeypatch):
     loc_start = result.stdout.index("LOCATION READING:")
     loc_end = result.stdout.index("SOUL COHERENCE:", loc_start)
     assert "Belfast" not in result.stdout[loc_start:loc_end]
+
+
+def test_saved_null_total_loads_and_later_blocks_are_counted(tmp_path, monkeypatch):
+    # A first session with no blocks saves "total_blocks": null. Loading
+    # that back is a good "no reading yet" load, not a failure, so the
+    # next block is counted and saved instead of every save being skipped.
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("AUREON_ALLOW_SIM_FALLBACK", raising=False)
+    stats = tmp_path / "queen_shield_stats.json"
+    stats.write_text(json.dumps({"total_blocks": None}), encoding="utf-8")
+
+    sys.path.insert(0, str(REPO))
+    QueenSoulShield = _fresh_shield_class()
+
+    shield = QueenSoulShield()
+    assert shield.attacks_blocked_total is None
+    assert shield._stats_load_failed is False
+
+    shield._handle_attack_detected(7.83, 0.01, "test", "test")
+    assert shield.attacks_blocked_session == 1
+    assert shield.attacks_blocked_total == 1
+    shield._save_stats()
+    assert json.loads(stats.read_text(encoding="utf-8"))["total_blocks"] == 1
+
+
+def test_daemon_patched_load_treats_saved_null_as_ok(tmp_path, monkeypatch):
+    sys.path.insert(0, str(REPO))
+    import soul_protection_daemon as daemon
+
+    stats = tmp_path / "queen_shield_stats.json"
+    stats.write_text(json.dumps({"total_blocks": None}), encoding="utf-8")
+    monkeypatch.setattr(daemon, "SHIELD_STATS_FILE", stats)
+
+    class Holder:
+        pass
+
+    holder = Holder()
+    assert daemon._load_shield_total_blocks(holder) is None
+    assert holder._stats_load_failed is False
