@@ -180,13 +180,44 @@ FORCED_OFF = {
 }
 
 
+# The launcher's live profile (aureon_runtime_safety.LIVE_RUNTIME_ENV). Its keys
+# are read at call time so the list cannot drift; these names are kept here as
+# well in case that module cannot be imported. Unset is the safe side for each:
+# AUREON_ORDER_AUTHORITY_MODE defaults to "runtime_only" (unified_market_trader),
+# the *_ORDER_*AUTHORITY, AUREON_ORDER_TICKET_REQUIRES_EXECUTOR and
+# AUREON_RELEASE_STATE names have no env reader outside release checks, and an
+# unset AUREON_AUDIT_MODE reads the same as the live profile's "0".
+LIVE_PROFILE_DROP = (
+    "AUREON_RELEASE_STATE",
+    "AUREON_AUDIT_MODE",
+    "AUREON_ORDER_AUTHORITY_MODE",
+    "AUREON_LLM_ORDER_AUTHORITY",
+    "AUREON_COGNITIVE_ORDER_AUTHORITY",
+    "AUREON_LLM_ORDER_INTENT_AUTHORITY",
+    "AUREON_COGNITIVE_ORDER_INTENT_AUTHORITY",
+    "AUREON_ORDER_TICKET_REQUIRES_EXECUTOR",
+)
+
+
+def _live_profile_names() -> frozenset[str]:
+    names = set(LIVE_PROFILE_DROP)
+    try:  # aureon.core.__init__ is empty and aureon_runtime_safety imports only os/typing
+        from aureon.core.aureon_runtime_safety import LIVE_RUNTIME_ENV
+
+        names.update(LIVE_RUNTIME_ENV)
+    except Exception:
+        pass
+    return frozenset(names)
+
+
 def disarm(env: dict[str, str]) -> dict[str, str]:
     """Copy of env with every arming switch dropped and the off values forced."""
 
+    profile = _live_profile_names()
     cleaned = {
         key: value
         for key, value in env.items()
-        if key not in ARMING_ENV_DROP and not _LIVE_WORD.search(key.upper())
+        if key not in ARMING_ENV_DROP and key not in profile and not _LIVE_WORD.search(key.upper())
     }
     cleaned.update(FORCED_OFF)
     return cleaned
