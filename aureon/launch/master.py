@@ -1796,7 +1796,20 @@ def status_rows(repo: Path, runner: Runner, components: list[Component]) -> list
     return rows
 
 
+def _unlink_idle_chirp_bus() -> None:
+    """Drop an unmapped chirp bus leftover. No-op if a process still maps it."""
+    try:
+        from aureon.core.aureon_chirp_bus import unlink_chirp_bus
+    except Exception:
+        return
+    try:
+        unlink_chirp_bus()
+    except Exception:
+        return
+
+
 def start_rows(repo: Path, runner: Runner, components: list[Component]) -> list[Row]:
+    _unlink_idle_chirp_bus()
     parent_before = os.environ.get("AUREON_LIVE_TRADING")
     state = load_state(repo)
     _organs, organ_specs, _error = _organ_table()
@@ -1885,6 +1898,7 @@ def stop_rows(repo: Path, runner: Runner) -> list[Row]:
         runner.stop_pid(pid, pgid)
         rows.append(Row(name, "blocked", "down", "stopped"))
     save_state(repo, {"pids": {}, "compose_started": False, "compose_services": []})
+    _unlink_idle_chirp_bus()
     if not rows:
         rows.append(Row("launcher", "blocked", "down", "nothing recorded by this launcher was running"))
     return rows

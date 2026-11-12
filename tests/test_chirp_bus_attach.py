@@ -23,6 +23,7 @@ from aureon.core.aureon_chirp_bus import (
     ChirpPacket,
     ChirpRingBuffer,
     ChirpType,
+    unlink_chirp_bus,
 )
 
 _LIVE_BUS_NAME = "aureon_chirp_bus"
@@ -223,22 +224,29 @@ def test_non_owner_close_or_delete_does_not_unlink() -> None:
         _unlink_test_segment(name)
 
 
-def test_owner_close_unlinks() -> None:
+def test_close_leaves_segment_for_owner_and_non_owner() -> None:
     name = _unique_test_name()
-    owner = ChirpRingBuffer(name=name, create=True)
+    owner = non_owner = None
     try:
+        owner = ChirpRingBuffer(name=name, create=True)
         assert owner._initialized
-        if _owner_flag(owner) is not None:
-            assert _owner_flag(owner) is True
+        inode = _fd_inode(owner)
+        non_owner = ChirpRingBuffer(name=name, create=True)
+        if _owner_flag(non_owner) is not None:
+            assert _owner_flag(non_owner) is False
+        non_owner.close()
+        assert os.stat(f"/dev/shm/{name}").st_ino == inode
         owner.close()
+        leftover = _attach_test_segment(name)
         try:
-            leftover = _attach_test_segment(name)
-        except FileNotFoundError:
-            leftover = None
-        if leftover is not None:
+            assert os.fstat(leftover._fd).st_ino == inode
+        finally:
             leftover.close()
-            raise AssertionError("owner close left the segment in place")
     finally:
+        if non_owner is not None:
+            non_owner.close()
+        if owner is not None:
+            owner.close()
         _unlink_test_segment(name)
 
 
@@ -355,4 +363,100 @@ def test_publish_on_wrong_version_leftover_is_not_delivered(caplog) -> None:
             leftover.close()
     finally:
         _unlink_test_segment(name)
+
+
+def test_spawned_owner_exit_leaves_segment() -> None:
+    name = _unique_test_name()
+    ctx = mp.get_context("spawn")
+    ready = ctx.Event()
+    hold = ctx.Event()
+    report = ctx.Queue()
+    proc = ctx.Process(target=_process_hold_bus, args=(name, ready, hold, report))
+    try:
+        proc.start()
+        assert ready.wait(timeout=30), "owner process did not attach"
+        info = report.get(timeout=5)
+        assert info["ok"], info
+        if info["owner"] is not None:
+            assert info["owner"] is True
+        inode = os.stat(f"/dev/shm/{name}").st_ino
+        hold.set()
+        proc.join(timeout=30)
+        assert proc.exitcode == 0
+        leftover = _attach_test_segment(name)
+        try:
+            assert os.fstat(leftover._fd).st_ino == inode
+        finally:
+            leftover.close()
+    finally:
+        hold.set()
+        if proc.is_alive():
+            proc.terminate()
+            proc.join(timeout=10)
+        _unlink_test_segment(name)
+
+
+def test_unlink_chirp_bus_removes_unmapped_segment() -> None:
+    name = _unique_test_name()
+    owner = ChirpRingBuffer(name=name, create=True)
+    try:
+        assert owner._initialized
+        owner.close()
+        assert unlink_chirp_bus(name) is True
+        try:
+            leftover = _attach_test_segment(name)
+        except FileNotFoundError:
+            leftover = None
+        if leftover is not None:
+            leftover.close()
+            raise AssertionError("explicit unlink left the segment in place")
+        assert unlink_chirp_bus(name) is True
+    finally:
+        _unlink_test_segment(name)
+
+
+def test_unlink_chirp_bus_refuses_while_another_process_maps_it(caplog) -> None:
+    name = _unique_test_name()
+    ctx = mp.get_context("spawn")
+    ready = ctx.Event()
+    hold = ctx.Event()
+    report = ctx.Queue()
+    proc = ctx.Process(target=_process_hold_bus, args=(name, ready, hold, report))
+    try:
+        proc.start()
+        assert ready.wait(timeout=30), "process did not attach"
+        info = report.get(timeout=5)
+        assert info["ok"], info
+        inode = os.stat(f"/dev/shm/{name}").st_ino
+        with caplog.at_level(logging.WARNING, logger="aureon.core.aureon_chirp_bus"):
+            assert unlink_chirp_bus(name) is False
+        messages = [rec.getMessage() for rec in caplog.records]
+        assert any("still mapped" in msg for msg in messages)
+        leftover = _attach_test_segment(name)
+        try:
+            assert os.fstat(leftover._fd).st_ino == inode
+        finally:
+            leftover.close()
+    finally:
+        hold.set()
+        proc.join(timeout=30)
+        if proc.is_alive():
+            proc.terminate()
+            proc.join(timeout=10)
+        _unlink_test_segment(name)
+
+
+def test_master_launcher_calls_unlink_before_start_and_after_stop() -> None:
+    import inspect
+
+    from aureon.launch import master
+
+    start_src = inspect.getsource(master.start_rows)
+    stop_src = inspect.getsource(master.stop_rows)
+    start_call = start_src.find("_unlink_idle_chirp_bus()")
+    start_loop = start_src.find("for component in components:")
+    assert 0 <= start_call < start_loop
+    stop_kill = stop_src.find("kill_session")
+    stop_call = stop_src.find("_unlink_idle_chirp_bus()")
+    assert 0 <= stop_kill < stop_call
 

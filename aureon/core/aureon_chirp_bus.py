@@ -11,14 +11,13 @@ from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_lin
 
 import logging
 import os
+import struct
 import sys
 import time
 import zlib
-import struct
 from dataclasses import dataclass, field
 from enum import IntEnum
 from multiprocessing import shared_memory
-from typing import Optional
 
 # Windows UTF-8 Fix
 if sys.platform == 'win32' and sys.stdout.isatty():
@@ -81,7 +80,7 @@ class ChirpPacket:
         return CHIRP_STRUCT.pack(CHIRP_MAGIC, type_dir, coh_conf, self.symbol_id & 0xFF, freq, amp, tsb)
 
     @classmethod
-    def from_bytes(cls, data: bytes) -> "ChirpPacket":
+    def from_bytes(cls, data: bytes) -> ChirpPacket:
         if len(data) != CHIRP_SIZE:
             raise ValueError("Invalid chirp size")
         magic, type_dir, coh_conf, symbol_id, freq, amp, tsb = CHIRP_STRUCT.unpack(data)
@@ -111,7 +110,7 @@ def _open_shared_memory(
     size: int = 0,
     track: bool,
 ) -> shared_memory.SharedMemory:
-    """Open a segment; `track=False` keeps the resource tracker from unlinking it."""
+    """Open a segment. Always leave the resource tracker unregistered when track is False."""
     try:
         return shared_memory.SharedMemory(name=name, create=create, size=size, track=track)
     except TypeError:
@@ -131,8 +130,8 @@ class ChirpRingBuffer:
     name: str
     slots: int = 512
     create: bool = False
-    shm: Optional[shared_memory.SharedMemory] = field(init=False, default=None)
-    buf: Optional[memoryview] = field(init=False, default=None)
+    shm: shared_memory.SharedMemory | None = field(init=False, default=None)
+    buf: memoryview | None = field(init=False, default=None)
     _initialized: bool = field(init=False, default=False)
     _owner: bool = field(init=False, default=False)
     _refused: bool = field(init=False, default=False)
@@ -150,7 +149,7 @@ class ChirpRingBuffer:
                 self._initialized = False
                 return
             try:
-                self.shm = _open_shared_memory(self.name, create=True, size=size, track=True)
+                self.shm = _open_shared_memory(self.name, create=True, size=size, track=False)
                 self._owner = True
             except FileExistsError:
                 # Lost the create race; attach to the winner's segment.
@@ -204,16 +203,10 @@ class ChirpRingBuffer:
         self._refuse_reason = reason
 
     def close(self) -> None:
-        """Close the mapping; unlink only if this instance created the segment."""
+        """Close the mapping. Never unlinks the segment."""
         if self.shm:
             try:
                 self.shm.close()
-                if self._owner:
-                    try:
-                        self.shm.unlink()
-                    except FileNotFoundError:
-                        pass
-                    self._owner = False
             except Exception:
                 pass
             self.shm = None
@@ -252,7 +245,7 @@ class ChirpRingBuffer:
         self._set_write_idx(next_write)
         return True
 
-    def read(self) -> Optional[bytes]:
+    def read(self) -> bytes | None:
         if not self._initialized or self.buf is None:
             return None
         write_idx = self._write_idx()
@@ -319,10 +312,10 @@ class ChirpBus:
         direction: ChirpDirection = ChirpDirection.DOWN,
         coherence: float = 1.0,
         confidence: float = 1.0,
-        symbol: Optional[str] = None,
+        symbol: str | None = None,
         frequency: int = 528,
         amplitude: int = 128,
-        message_type: Optional[ChirpType] = None,
+        message_type: ChirpType | None = None,
     ) -> bool:
         packet = ChirpPacket(
             message_type=message_type or classify_message(message),
@@ -343,7 +336,7 @@ class ChirpBus:
         direction: ChirpDirection,
         coherence: float,
         confidence: float,
-        symbol: Optional[str],
+        symbol: str | None,
         frequency: int,
         amplitude: int = 128,
     ) -> bool:
@@ -358,10 +351,10 @@ class ChirpBus:
         )
 
 
-_chirp_bus: Optional[ChirpBus] = None
+_chirp_bus: ChirpBus | None = None
 
 
-def get_chirp_bus(create_if_missing: bool = True) -> Optional[ChirpBus]:
+def get_chirp_bus(create_if_missing: bool = True) -> ChirpBus | None:
     global _chirp_bus
     if _chirp_bus is not None:
         return _chirp_bus
@@ -370,6 +363,70 @@ def get_chirp_bus(create_if_missing: bool = True) -> Optional[ChirpBus]:
         return _chirp_bus
     except Exception:
         return None
+
+
+def _mapping_pids(name: str) -> list[int]:
+    """Return pids whose /proc/<pid>/maps mention /dev/shm/<name>.
+
+    Unreadable pids are skipped. The current process is included if it maps the name.
+    """
+    target = f"/dev/shm/{name}"
+    pids: list[int] = []
+    try:
+        entries = os.listdir("/proc")
+    except OSError:
+        return pids
+    for entry in entries:
+        if not entry.isdigit():
+            continue
+        try:
+            with open(f"/proc/{entry}/maps", encoding="utf-8", errors="replace") as fh:
+                for line in fh:
+                    if target in line:
+                        pids.append(int(entry))
+                        break
+        except (FileNotFoundError, PermissionError, OSError):
+            continue
+    return pids
+
+
+def unlink_chirp_bus(name: str = "aureon_chirp_bus") -> bool:
+    """Unlink a chirp bus segment. This is the only unlink path.
+
+    Returns False and logs a warning if any live process still maps
+    /dev/shm/<name>, including this process. A missing segment is
+    treated as already gone (returns True).
+    """
+    if not name or "/" in name or name in {".", ".."}:
+        logger.warning("unlink_chirp_bus refused an invalid name")
+        return False
+    if not os.path.isdir("/proc"):
+        logger.warning("unlink_chirp_bus refused %r: cannot scan process mappings", name)
+        return False
+    mapped = _mapping_pids(name)
+    if mapped:
+        logger.warning(
+            "unlink_chirp_bus refused %r: still mapped by pids %s",
+            name,
+            mapped,
+        )
+        return False
+    try:
+        shm = _open_shared_memory(name, create=False, track=False)
+    except FileNotFoundError:
+        return True
+    except Exception:
+        logger.warning("unlink_chirp_bus could not attach to %r", name)
+        return False
+    try:
+        shm.close()
+        shm.unlink()
+        return True
+    except FileNotFoundError:
+        return True
+    except Exception:
+        logger.warning("unlink_chirp_bus failed to unlink %r", name)
+        return False
 
 
 def _timestamp_bucket() -> int:
