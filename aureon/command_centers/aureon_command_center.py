@@ -217,7 +217,6 @@ if sys.platform == 'win32':
     atexit.register(_cleanup_stderr)
 
 import asyncio
-import json
 import time
 import threading
 import logging
@@ -6095,9 +6094,11 @@ async def thought_bus_listener_task():
     loop = asyncio.get_running_loop()
     queue: asyncio.Queue = asyncio.Queue()
     thoughts_path = Path(os.getenv("AUREON_THOUGHTS_FILE", "thoughts.jsonl"))
-    file_pos = thoughts_path.stat().st_size if thoughts_path.exists() else 0
+    from aureon.command_centers.thought_tail import ThoughtTail
+    tail = ThoughtTail.at_end(thoughts_path)
 
     def _enqueue(thought) -> None:
+        tail.mark_seen(getattr(thought, "id", None))
         try:
             loop.call_soon_threadsafe(queue.put_nowait, thought)
         except Exception:
@@ -6215,29 +6216,22 @@ async def thought_bus_listener_task():
 
             await _process_thought(topic, payload, source)
 
-            # Cross-process fallback: tail thoughts.jsonl if it exists
-            if thoughts_path.exists():
-                if not LIVE_FEED_ENABLED:
-                    await asyncio.sleep(1)
-                    continue
-                try:
-                    with thoughts_path.open("r", encoding="utf-8") as f:
-                        f.seek(file_pos)
-                        for line in f:
-                            file_pos = f.tell()
-                            line = line.strip()
-                            if not line:
-                                continue
-                            try:
-                                data = json.loads(line)
-                            except Exception:
-                                continue
-                            t_topic = data.get("topic", "")
-                            t_payload = data.get("payload", {}) if isinstance(data, dict) else {}
-                            t_source = data.get("source", "unknown") if isinstance(data, dict) else "unknown"
-                            await _process_thought(t_topic, t_payload, t_source)
-                except Exception:
-                    pass
+            # Cross-process fallback: tail thoughts.jsonl for other processes'
+            # thoughts, skipping ones this process already handled above.
+            if not LIVE_FEED_ENABLED:
+                await asyncio.sleep(1)
+                continue
+            try:
+                for data in tail.read_new():
+                    payload_in = data.get("payload")
+                    t_payload = payload_in if isinstance(payload_in, dict) else {}
+                    await _process_thought(
+                        data.get("topic", "") or "",
+                        t_payload,
+                        data.get("source", "unknown") or "unknown",
+                    )
+            except Exception as e:
+                safe_print(f"ThoughtBus tail error: {e}")
 
         except Exception as e:
             safe_print(f"ThoughtBus listener error: {e}")
