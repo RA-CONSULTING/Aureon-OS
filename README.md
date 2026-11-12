@@ -29,6 +29,8 @@ cd Aureon-OS
 ./install.sh --smoke
 ```
 
+A measured walkthrough of this path, including the order-safety defaults and the ports that must be free, is in [`INSTALL.md`](INSTALL.md).
+
 `./install.sh --smoke` creates `.venv`, installs the pinned `requirements-plug.lock`, and installs the dashboard with `npm ci --ignore-scripts --prefix frontend` when `frontend/node_modules` is absent. It starts the local stack, requests the endpoints, and stops. If a stack record is already present, `./install.sh --stop` clears that record before the smoke. Installer logs from pip, and from `npm ci` on a fresh tree, scroll before the banner. Go-live stays **HOLD**.
 
 During the smoke the stack binds, then the smoke stops it:
@@ -38,7 +40,7 @@ During the smoke the stack binds, then the smoke stops it:
 - dashboard on `http://127.0.0.1:5173/`
 - stack health and the in-process HNC / Auris / QGITA report on `http://127.0.0.1:8787/`
 
-The smoke sets `AUREON_AUTONOMY_MODE=guarded`, `AUREON_LIVE_TRADING=0`, `AUREON_DISABLE_REAL_ORDERS=1`, and `AUREON_LLM_OFFLINE=1`. Exchange keys stay unset. The provider line is the offline adapter. No order is placed. HNC, Auris, and QGITA run from this repository. The first run installs from `requirements-plug.lock` and, on a fresh tree, from `frontend/package-lock.json`. Those installs fetch packages. External model HTTP stays off. Go-live stays **HOLD**.
+The smoke sets `AUREON_AUTONOMY_MODE=guarded`, `AUREON_LIVE_TRADING=0`, `AUREON_DISABLE_REAL_ORDERS=1`, `AUREON_DISABLE_EXCHANGE_MUTATIONS=1`, and `AUREON_LLM_OFFLINE=1`. Exchange keys stay unset. The provider line is the offline adapter. No order is placed. HNC, Auris, and QGITA run from this repository. The first run installs from `requirements-plug.lock` and, on a fresh tree, from `frontend/package-lock.json`. Those installs fetch packages. External model HTTP stays off. Go-live stays **HOLD**.
 
 ### Linux path
 

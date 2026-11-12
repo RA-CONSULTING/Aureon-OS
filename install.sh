@@ -39,6 +39,12 @@ if [[ ! -d .venv ]]; then
   fi
 fi
 
+# Order safety defaults. An evaluator who later adds exchange keys
+# still gets no orders unless they deliberately flip these switches.
+export AUREON_LIVE_TRADING=0
+export AUREON_DISABLE_REAL_ORDERS=1
+export AUREON_DISABLE_EXCHANGE_MUTATIONS=1
+
 # shellcheck disable=SC1091
 . .venv/bin/activate
 python -m pip install -U pip
