@@ -97,6 +97,17 @@ STATE_FILE = DATA_DIR / "solar_system_state.json"
 TIMESERIES_FILE = DATA_DIR / "solar_system_timeseries.jsonl"
 
 
+def _reading(value):
+    """A real finite number from the feed, or None. Never a stand-in 0."""
+    if isinstance(value, bool):
+        return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    return number if math.isfinite(number) else None
+
+
 class SolarSystemCollector:
     """Heliospheric and solar system metrics collector"""
     
@@ -127,18 +138,30 @@ class SolarSystemCollector:
         if not isinstance(latest, dict):
             return None
         
-        ssn = latest.get('ssn', 0)
-        f107 = latest.get('f10.7', latest.get('f107', 0))
-        smoothed_ssn = latest.get('smoothed_ssn', ssn)
+        # Missing fields stay missing: no F10.7 means no reading at all,
+        # and a missing sunspot number is reported as None, not 0.
+        ssn = _reading(latest.get('ssn'))
+        f107 = _reading(latest.get('f10.7', latest.get('f107')))
+        if f107 is None or f107 < 0:
+            return None
+        smoothed_ssn = _reading(latest.get('smoothed_ssn'))
+        if smoothed_ssn is None:
+            smoothed_ssn = ssn
         time_tag = latest.get('time_tag', 'unknown')
         
         # Solar cycle phase classification
         if f107 < 70:
             cycle_phase = 'solar_minimum'
         elif f107 < 120:
-            cycle_phase = 'ascending' if smoothed_ssn > ssn else 'descending'
+            if smoothed_ssn is None or ssn is None:
+                cycle_phase = 'unknown'
+            else:
+                cycle_phase = 'ascending' if smoothed_ssn > ssn else 'descending'
         elif f107 < 200:
-            cycle_phase = 'solar_maximum' if smoothed_ssn > 100 else 'approaching_max'
+            if smoothed_ssn is None:
+                cycle_phase = 'unknown'
+            else:
+                cycle_phase = 'solar_maximum' if smoothed_ssn > 100 else 'approaching_max'
         else:
             cycle_phase = 'solar_maximum'
         
@@ -177,9 +200,13 @@ class SolarSystemCollector:
         if not isinstance(latest, dict):
             return None
 
-        density = latest.get('proton_density') or 0
-        speed = latest.get('proton_speed') or 0
-        temp = latest.get('proton_temperature') or 0
+        # Speed and density are needed for the regime and pressure; without
+        # both there is no reading. Temperature is reported as None if absent.
+        density = _reading(latest.get('proton_density'))
+        speed = _reading(latest.get('proton_speed'))
+        temp = _reading(latest.get('proton_temperature'))
+        if density is None or speed is None or density < 0 or speed <= 0:
+            return None
         
         # Classify solar wind regime
         if speed < 350:
@@ -223,13 +250,17 @@ class SolarSystemCollector:
         if not isinstance(latest, dict):
             return None
 
-        bx = float(latest.get('bx_gsm') or 0)
-        by = float(latest.get('by_gsm') or 0)
-        bz = float(latest.get('bz_gsm') or 0)
-        bt = float(latest.get('bt') or 0)
+        # Bz and Bt are needed for the storm read; without both there is no
+        # reading. Bx and By are reported as None if absent.
+        bx = _reading(latest.get('bx_gsm'))
+        by = _reading(latest.get('by_gsm'))
+        bz = _reading(latest.get('bz_gsm'))
+        bt = _reading(latest.get('bt'))
+        if bz is None or bt is None or bt < 0:
+            return None
         
         # Clock angle
-        if bt > 0:
+        if bt > 0 and by is not None:
             clock_angle = math.degrees(math.atan2(by, bz))
         else:
             clock_angle = None
