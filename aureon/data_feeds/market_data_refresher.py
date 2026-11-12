@@ -104,6 +104,7 @@ def _run_alpaca(conn, start_dt: datetime, end_dt: datetime) -> None:
             symbols=ALPACA_SYMBOLS,
             timeframe=ALPACA_TIMEFRAME,
             feed=ALPACA_FEED,
+            no_resume=False,
         )
     except Exception as e:
         logger.error("market_data_refresher: Alpaca ingest error: %s", e)
