@@ -20,6 +20,7 @@ else falls back to "is the package importable".
 from __future__ import annotations
 
 import importlib.machinery
+import importlib.util
 import sys
 from typing import Any, Dict, List, Tuple
 
@@ -135,7 +136,9 @@ def _module_importable(module: str) -> bool:
     status probe would run package ``__init__`` code and whatever those import.
     This walks the package search locations with ``PathFinder`` instead, which
     only looks at the filesystem. A module already in ``sys.modules`` counts as
-    present.
+    present. Below the top level this skips import hooks such as the pin
+    finder, so "present" means the file is on disk, not that the pin would
+    allow importing it.
     """
     if not module or module.startswith("."):
         return False
@@ -147,7 +150,9 @@ def _module_importable(module: str) -> bool:
         if head is not None:
             spec = getattr(head, "__spec__", None)
         else:
-            spec = importlib.machinery.PathFinder.find_spec(parts[0])
+            # Top-level lookup through the normal finders (editable installs
+            # included); find_spec on a top-level name imports nothing.
+            spec = importlib.util.find_spec(parts[0])
         for index in range(1, len(parts)):
             if spec is None or not spec.submodule_search_locations:
                 return False
