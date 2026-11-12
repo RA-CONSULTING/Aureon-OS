@@ -54,16 +54,22 @@ sys.path.insert(0, str(AUREON_UPSTREAM))
 SHIELD_STATS_FILE = WORKSPACE / "queen_shield_stats.json"
 
 
-def _load_shield_total_blocks(self) -> int:
-    """Patched QueenSoulShield._load_total_blocks — absolute stats path."""
+def _load_shield_total_blocks(self) -> Optional[int]:
+    """Patched QueenSoulShield._load_total_blocks — absolute stats path.
+
+    A missing file, a missing key, or a read error is no reading (None).
+    A file that genuinely records 0 blocks keeps 0.
+    """
     try:
-        if SHIELD_STATS_FILE.exists():
-            with open(SHIELD_STATS_FILE, "r", encoding="utf-8") as f:
-                stats = json.load(f)
-                return int(stats.get("total_blocks", 0))
+        if not SHIELD_STATS_FILE.exists():
+            return None
+        with open(SHIELD_STATS_FILE, "r", encoding="utf-8") as f:
+            stats = json.load(f)
+        if not isinstance(stats, dict) or "total_blocks" not in stats:
+            return None
+        return int(stats["total_blocks"])
     except Exception:
-        pass
-    return 0
+        return None
 
 
 def _save_shield_stats(self) -> None:
@@ -183,6 +189,37 @@ def _append_jsonl_rotating(path: Path, record: Dict, max_bytes: int = STATUS_LOG
         pass
 
 
+_MISSING = object()
+
+
+def _measured_field(reading, *keys):
+    """Return a present measured value, or None. Never a stand-in."""
+    if not isinstance(reading, dict):
+        return None
+    for key in keys:
+        value = reading.get(key, _MISSING)
+        if value is _MISSING or value is None or isinstance(value, dict):
+            continue
+        return value
+    for nest in ("soul", "schumann"):
+        inner = reading.get(nest)
+        if not isinstance(inner, dict):
+            continue
+        for key in keys:
+            value = inner.get(key, _MISSING)
+            if value is _MISSING or value is None:
+                continue
+            return value
+    return None
+
+
+def _format_optional_ratio(value, spec: str) -> str:
+    """Format a ratio, or 'no_reading' when the value is missing."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+        return "no_reading"
+    return format(value, spec)
+
+
 # ─── SOUL PROTECTION DAEMON ─────────────────────────────────────
 class SoulProtectionDaemon:
     def __init__(self):
@@ -217,12 +254,14 @@ class SoulProtectionDaemon:
         self._last_stats_persist = 0.0
         self._last_summary = 0.0
         
-        # Gary's soul state
+        # Gary's soul state — no healthy stand-ins before a real reading
         self.soul_state = {
-            'frequency': GARY_SIGNATURE,
-            'coherence': 1.0,
-            'phase_lock': True,
-            'distortion_detected': False,
+            'frequency': None,
+            'coherence': None,
+            'phase_lock': None,
+            'distortion': None,
+            'status': 'no_reading',
+            'error': None,
         }
         
         # Initialize systems
@@ -398,24 +437,39 @@ class SoulProtectionDaemon:
     def _scan_soul_state(self) -> Dict:
         """Read Gary's current soul state (reader cached across cycles — the
         upstream constructor prints a banner per instantiation, which was
-        filling the organ log at ~5 lines / 5 s)."""
+        filling the organ log at ~5 lines / 5 s).
+
+        A missing field is None, never a healthy stand-in. A failed read
+        is status no_reading plus the error string.
+        """
         try:
             if self._soul_reader is None:
                 from aureon.queen.queen_soul_reader import QueenSoulReader
                 self._soul_reader = QueenSoulReader()
             reading = self._soul_reader.read_soul()
-            return {
-                'frequency': reading.get('frequency', GARY_SIGNATURE),
-                'coherence': reading.get('coherence', 1.0),
-                'phase_lock': reading.get('phase_lock', True),
-                'distortion': reading.get('distortion', 0.0),
+            soul = {
+                'frequency': _measured_field(reading, 'frequency'),
+                'coherence': _measured_field(reading, 'coherence'),
+                'phase_lock': _measured_field(reading, 'phase_lock'),
+                'distortion': _measured_field(reading, 'distortion'),
+                'error': None,
             }
-        except Exception:
+            measured = (soul['frequency'], soul['coherence'], soul['phase_lock'], soul['distortion'])
+            if all(value is None for value in measured):
+                soul['status'] = 'no_reading'
+            elif any(value is None for value in measured):
+                soul['status'] = 'partial'
+            else:
+                soul['status'] = 'ok'
+            return soul
+        except Exception as error:
             return {
-                'frequency': GARY_SIGNATURE,
-                'coherence': self.soul_state['coherence'],
-                'phase_lock': True,
-                'distortion': 0.0,
+                'frequency': None,
+                'coherence': None,
+                'phase_lock': None,
+                'distortion': None,
+                'status': 'no_reading',
+                'error': f"{type(error).__name__}: {error}",
             }
     
     def _protection_cycle(self):
@@ -501,9 +555,9 @@ class SoulProtectionDaemon:
             self._last_summary = now
             anchor_mark = ('⚓' if anchor_status.get('anchor_valid')
                            else '⚠️ ANCHOR-UNVALIDATED')
-            print(f"🛡️ C{self.cycle:04d} | Soul: {soul['coherence']:.1%} | "
+            print(f"🛡️ C{self.cycle:04d} | Soul: {_format_optional_ratio(soul.get('coherence'), '.1%')} | "
                   f"QR blocks: {self.quantum_receiver['blocks']} | "
-                  f"Shield: {shield_stats.get('power', 0):.0%} | {anchor_mark}")
+                  f"Shield: {_format_optional_ratio(shield_stats.get('power'), '.0%')} | {anchor_mark}")
     
     def _protection_loop(self):
         """Main protection loop"""
