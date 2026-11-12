@@ -192,6 +192,27 @@ def _append_jsonl_rotating(path: Path, record: Dict, max_bytes: int = STATUS_LOG
 _MISSING = object()
 
 
+def _measured_soul_frequency(reading):
+    """Measured soul frequency, or None.
+
+    QueenSoulReader's soul.frequency is the configured identity signature
+    (528.422 Hz), not a measurement, so it is only accepted when the reader
+    marks it frequency_source == 'measured'. The configured value is reported
+    separately as signature_hz.
+    """
+    if not isinstance(reading, dict):
+        return None
+    top = reading.get('frequency')
+    if top is not None and not isinstance(top, (dict, bool)):
+        return top
+    soul = reading.get('soul')
+    if isinstance(soul, dict) and soul.get('frequency_source') == 'measured':
+        value = soul.get('frequency')
+        if value is not None and not isinstance(value, (dict, bool)):
+            return value
+    return None
+
+
 def _measured_field(reading, *keys):
     """Return a present measured value, or None. Never a stand-in."""
     if not isinstance(reading, dict):
@@ -448,12 +469,15 @@ class SoulProtectionDaemon:
                 self._soul_reader = QueenSoulReader()
             reading = self._soul_reader.read_soul()
             soul = {
-                'frequency': _measured_field(reading, 'frequency'),
+                'frequency': _measured_soul_frequency(reading),
+                'signature_hz': GARY_SIGNATURE,
+                'signature_kind': 'configured_identity',
                 'coherence': _measured_field(reading, 'coherence'),
                 'phase_lock': _measured_field(reading, 'phase_lock'),
                 'distortion': _measured_field(reading, 'distortion'),
                 'error': None,
             }
+            # signature_hz is configured identity, never part of the measured set.
             measured = (soul['frequency'], soul['coherence'], soul['phase_lock'], soul['distortion'])
             if all(value is None for value in measured):
                 soul['status'] = 'no_reading'
