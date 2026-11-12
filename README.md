@@ -17,6 +17,8 @@ Trading research · autonomous operator · planetary/HNC research · a coding or
 
 </div>
 
+How this project is reviewed, tested, and kept safe is described in [`docs/TRUST.md`](docs/TRUST.md).
+
 ## Quick start in five minutes
 
 Start here. Clone `main`, leave exchange keys unset, and run the guarded smoke. That smoke keeps live trading off for that run. There is a live route: an `.env` with exchange keys boots live. The orange release-boundary badge above stays **HOLD**. Go-live stays **HOLD**.
