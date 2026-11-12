@@ -47,6 +47,8 @@ dependencies = [
   "python-dotenv>=1.0.0",
   "filelock>=3.12",
   "rich>=13.7.0",
+  # aureon.evaluation.brain_proof (the README brain-proof path) imports numpy.
+  "numpy>=1.26.0",
 ]
 
 [project.optional-dependencies]
@@ -88,6 +90,9 @@ dev = [
   "matplotlib>=3.8",
   "scipy>=1.11",
   "imageio>=2.34",
+  # tests/test_aureon_public_mcp.py and the public Space import the MCP SDK.
+  # Same version as requirements-plug.lock.
+  "mcp==1.30.0",
 ]
 
 [project.urls]
