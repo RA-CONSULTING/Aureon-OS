@@ -14,6 +14,7 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
+from aureon.exchanges import capital_shared_state as _cap_shared
 from aureon.governance.economic_boundary import (
     EconomicGovernanceBlocked,
     _capital_economic_transport_body_digest,
@@ -59,6 +60,8 @@ _SHARED_SESSION: Dict[str, Any] = {
 
 # Module-level shared market cache so multiple CapitalClient instances
 # don't each re-download the full market catalogue.
+_KEEPALIVE_THREAD: Optional[threading.Thread] = None
+
 _SHARED_MARKET_CACHE: Dict[str, Any] = {
     "markets": [],
     "market_index": {},
@@ -73,6 +76,7 @@ CAPITAL_MONITOR_CACHE_PATH = os.getenv("CAPITAL_MONITOR_CACHE_PATH", os.path.joi
 CAPITAL_MONITOR_CACHE_MAX_AGE_S = float(os.getenv("CAPITAL_MONITOR_CACHE_MAX_AGE_S", "20"))
 CAPITAL_QUOTE_MAX_AGE_S = float(os.getenv("CAPITAL_QUOTE_MAX_AGE_S", "120"))
 CAPITAL_ACCOUNT_RECEIPT_MAX_AGE_S = float(os.getenv("CAPITAL_ACCOUNT_RECEIPT_MAX_AGE_S", "300"))
+CAPITAL_ACCOUNT_FAILURE_CACHE_S = float(os.getenv("CAPITAL_ACCOUNT_FAILURE_CACHE_S", "30"))
 CAPITAL_FUTURE_SKEW_S = float(os.getenv("CAPITAL_FUTURE_SKEW_S", "5"))
 CAPITAL_LIVE_BASE = "https://api-capital.backend-capital.com/api/v1"
 CAPITAL_DEMO_BASE = "https://demo-api-capital.backend-capital.com/api/v1"
@@ -256,6 +260,8 @@ class CapitalClient:
         self._rate_limit_logged = False  # Only log rate limits once
         self._session_error_logged = False  # Only log session errors once
         self._next_session_retry_at = 0.0
+        self._shared_key = _cap_shared.account_key(self.api_key, self.demo_mode)
+        self._last_used_at = float(self.session_start_time or 0.0)
         self._ticker_mem_cache: Dict[str, Dict[str, Any]] = {}  # In-memory per-symbol ticker cache
         self._ticker_mem_cache_times: Dict[str, float] = {}    # Fetch timestamps for TTL
         self._accounts_cache: ObservationList = ObservationList()  # In-memory accounts cache
@@ -321,24 +327,61 @@ class CapitalClient:
         if now < self._next_session_retry_at:
             return
 
-        # Check shared session cache first (avoid duplicate auth across instances)
-        if (_SHARED_SESSION.get("demo_mode") == self.demo_mode
-                and _SHARED_SESSION.get("cst")
-                and _SHARED_SESSION.get("x_security_token")
-                and (now - float(_SHARED_SESSION.get("session_start_time", 0.0) or 0.0)) < (50 * 60)):
-            self.cst = _SHARED_SESSION.get("cst")
-            self.x_security_token = _SHARED_SESSION.get("x_security_token")
-            self.session_start_time = float(_SHARED_SESSION.get("session_start_time", 0.0) or 0.0)
-            self.init_error = str(_SHARED_SESSION.get("init_error", "") or "")
-            logger.debug("Capital.com session reused from shared cache.")
-            return
-
         # Check if this instance already has a valid session
         if (self.cst and self.x_security_token and
-            (now - self.session_start_time) < (50 * 60)):  # 50 min buffer
+                (now - self.session_start_time) < (50 * 60)):  # 50 min buffer
             logger.debug("Capital.com session still valid (within 50 min), skipping re-auth")
             return
 
+        key = self._shared_key_name()
+        # One login in flight across all processes; the others wait and then
+        # reuse the session it stored instead of posting their own.
+        with _cap_shared.login_lock():
+            with _cap_shared.locked_state(key) as bucket:
+                now = time.time()
+                shared_until = float(bucket.get("rate_limit_until") or 0.0)
+                if now < shared_until:
+                    self._rate_limit_until = shared_until
+                    _SHARED_SESSION["rate_limit_until"] = max(
+                        float(_SHARED_SESSION.get("rate_limit_until", 0.0) or 0.0), shared_until
+                    )
+                    self.init_error = "rate_limited"
+                    return
+                if _cap_shared.session_is_fresh(bucket, now):
+                    self.cst = bucket.get("cst")
+                    self.x_security_token = bucket.get("x_security_token")
+                    self.session_start_time = float(bucket.get("session_start_time") or now)
+                    self._last_used_at = float(bucket.get("last_used_at") or self.session_start_time)
+                    self.init_error = ""
+                    _SHARED_SESSION["cst"] = self.cst
+                    _SHARED_SESSION["x_security_token"] = self.x_security_token
+                    _SHARED_SESSION["session_start_time"] = self.session_start_time
+                    _SHARED_SESSION["demo_mode"] = self.demo_mode
+                    _SHARED_SESSION["init_error"] = ""
+                    logger.debug("Capital.com session reused from shared cache.")
+                    self._start_keepalive_thread()
+                    return
+                login_wait = (
+                    float(bucket.get("last_login_at") or 0.0)
+                    + _cap_shared.min_login_interval_s()
+                    - now
+                )
+            if login_wait > 0:
+                time.sleep(login_wait)
+            with _cap_shared.locked_state(key) as bucket:
+                bucket["last_login_at"] = time.time()
+            self._post_session(key)
+
+    def _shared_key_name(self) -> str:
+        key = getattr(self, "_shared_key", None)
+        if not key:
+            key = _cap_shared.account_key(getattr(self, "api_key", None), bool(getattr(self, "demo_mode", False)))
+            self._shared_key = key
+        return key
+
+    def _post_session(self, key: str) -> None:
+        """Send one real POST /session (caller holds the cross-process login lock)."""
+        global _SHARED_SESSION
         url = f"{self.base_url}/session"
         payload = {
             "identifier": self.identifier,
@@ -349,30 +392,54 @@ class CapitalClient:
             "Content-Type": "application/json"
         }
 
+        # Counted on purpose: every real login attempt is logged (no secrets).
+        logger.warning(
+            "Capital.com login attempt: POST /session (%s, pid %s)",
+            "demo" if self.demo_mode else "live",
+            os.getpid(),
+        )
         try:
             response = requests.post(url, json=payload, headers=headers, timeout=CAPITAL_HTTP_TIMEOUT)
             if response.status_code == 200:
                 self.cst = response.headers.get('CST')
                 self.x_security_token = response.headers.get('X-SECURITY-TOKEN')
                 self.session_start_time = time.time()
+                self._last_used_at = self.session_start_time
                 self._next_session_retry_at = 0.0
                 self.init_error = ""
                 self._session_error_logged = False  # Reset on success
-                # Update shared cache so other instances can reuse
+                # Update shared caches so other instances and processes reuse it
+                if isinstance(self.cst, str) and isinstance(self.x_security_token, str):
+                    with _cap_shared.locked_state(key) as bucket:
+                        bucket["cst"] = self.cst
+                        bucket["x_security_token"] = self.x_security_token
+                        bucket["session_start_time"] = self.session_start_time
+                        bucket["last_used_at"] = self.session_start_time
                 _SHARED_SESSION["cst"] = self.cst
                 _SHARED_SESSION["x_security_token"] = self.x_security_token
                 _SHARED_SESSION["session_start_time"] = self.session_start_time
                 _SHARED_SESSION["demo_mode"] = self.demo_mode
                 _SHARED_SESSION["init_error"] = self.init_error
                 logger.info("Capital.com session established.")
+                self._start_keepalive_thread()
             elif response.status_code == 429 or 'too-many.requests' in response.text.lower():
-                # Rate limited - back off for 10 minutes (Capital.com has aggressive limits)
-                self._rate_limit_until = time.time() + 600
+                # Rate limited: honour Retry-After, otherwise back off for 10 minutes
+                retry_after = _cap_shared.parse_retry_after(getattr(response, "headers", None))
+                wait_s = _cap_shared.with_jitter(
+                    retry_after if retry_after is not None else _cap_shared.DEFAULT_RATE_LIMIT_BACKOFF_S
+                )
+                self._rate_limit_until = _cap_shared.record_backoff(key, wait_s)
                 _SHARED_SESSION["rate_limit_until"] = self._rate_limit_until
                 self.init_error = "rate_limited"
-                if not self._session_error_logged:
-                    logger.warning("Capital.com rate limited - backing off for 5 minutes")
-                    self._session_error_logged = True
+                logger.warning(
+                    "Capital.com rate limited (HTTP 429) on POST /session - backing off for %d seconds%s; "
+                    "shared backoff until %s UTC (%d s remaining)",
+                    int(round(wait_s)),
+                    " (Retry-After)" if retry_after is not None else "",
+                    datetime.fromtimestamp(self._rate_limit_until, timezone.utc).strftime("%H:%M:%S"),
+                    int(round(max(0.0, self._rate_limit_until - time.time()))),
+                )
+                self._session_error_logged = True
             else:
                 self.init_error = f"http_{response.status_code}"
                 if not self._session_error_logged:
@@ -395,6 +462,73 @@ class CapitalClient:
             return True
         # Refresh after ~55 minutes proactively
         return (time.time() - self.session_start_time) > (55 * 60)
+
+    def keep_alive_if_idle(self) -> bool:
+        """Send one shared GET /ping if the account has been quiet ~9 minutes.
+
+        Capital.com drops a session after 10 idle minutes. The claim is made
+        under the cross-process lock, so only one process pings; nobody logs
+        in for this. Returns True if this call sent the ping.
+        """
+        if not getattr(self, "enabled", False):
+            return False
+        key = self._shared_key_name()
+        tokens = _cap_shared.claim_keepalive(key)
+        if not tokens:
+            return False
+        if not self._acquire_capital_request_slot(False):
+            return False
+        headers = {
+            "X-CAP-API-KEY": self.api_key,
+            "CST": tokens["cst"],
+            "X-SECURITY-TOKEN": tokens["x_security_token"],
+            "Content-Type": "application/json",
+        }
+        try:
+            resp = self._capital_http_request("GET", "/ping", headers=headers, params=None, json_body={})
+        except Exception as e:
+            logger.warning(f"Capital.com keep-alive ping failed: {type(e).__name__}")
+            return True
+        if resp.status_code in (401, 403):
+            _cap_shared.invalidate_session(key, tokens["cst"])
+        logger.info("Capital.com keep-alive ping sent (HTTP %s)", resp.status_code)
+        return True
+
+    def _start_keepalive_thread(self) -> None:
+        """One daemon per process that pings a quiet shared session (see keep_alive_if_idle)."""
+        global _KEEPALIVE_THREAD
+        if os.getenv("CAPITAL_SESSION_KEEPALIVE", "1") == "0":
+            return
+        if _KEEPALIVE_THREAD is not None and _KEEPALIVE_THREAD.is_alive():
+            return
+
+        def _loop(client=self):
+            while True:
+                time.sleep(30.0)
+                try:
+                    client.keep_alive_if_idle()
+                except Exception:
+                    pass
+
+        _KEEPALIVE_THREAD = threading.Thread(target=_loop, name="capital-keepalive", daemon=True)
+        _KEEPALIVE_THREAD.start()
+
+    def _acquire_capital_request_slot(self, is_mutation: bool) -> bool:
+        """Pace requests across processes; False while a shared 429 backoff runs."""
+        key = self._shared_key_name()
+        refused = _cap_shared.acquire_request_slot(key, is_order=is_mutation)
+        if refused is None:
+            self._last_used_at = time.time()
+            return True
+        self._last_slot_refusal = refused
+        try:
+            self._rate_limit_until = max(
+                float(getattr(self, "_rate_limit_until", 0.0) or 0.0),
+                time.time() + _cap_shared.backoff_remaining(key),
+            )
+        except Exception:
+            pass
+        return False
 
     def _ensure_economic_dispatch_store(self) -> None:
         """Lazily provide the private store for hermetic legacy constructions."""
@@ -561,6 +695,13 @@ class CapitalClient:
         if not headers:
             self._discard_economic_dispatch(dispatch)
             return self._error_response(503, "session_unavailable", self.init_error or "session_unavailable")
+        if not self._acquire_capital_request_slot(is_mutation):
+            # A shared 429 backoff is running, or (orders only) no working
+            # cross-process lock exists: do not send anything.
+            self._discard_economic_dispatch(dispatch)
+            if getattr(self, "_last_slot_refusal", "") == "shared_state_unavailable":
+                return self._error_response(503, "shared_state_unavailable", _cap_shared.ORDERS_REFUSED_LOG)
+            return self._error_response(429, "rate_limited", "capital_shared_backoff_active")
         try:
             resp = self._capital_http_request(
                 normalized_method,
@@ -580,10 +721,23 @@ class CapitalClient:
         # Rate limit handling
         rate_limit_hit = resp.status_code == 429 or ('too-many.requests' in (resp.text or '').lower())
         if rate_limit_hit:
-            self._rate_limit_until = time.time() + 600
-            if not self._rate_limit_logged:
-                logger.warning("Capital.com rate limited - backing off for 5 minutes")
-                self._rate_limit_logged = True
+            retry_after = _cap_shared.parse_retry_after(getattr(resp, "headers", None))
+            wait_s = _cap_shared.with_jitter(
+                retry_after if retry_after is not None else _cap_shared.DEFAULT_RATE_LIMIT_BACKOFF_S
+            )
+            # Shared so every process backs off, not just this instance.
+            self._rate_limit_until = _cap_shared.record_backoff(self._shared_key_name(), wait_s)
+            logger.warning(
+                "Capital.com rate limited (HTTP 429) on %s %s - backing off for %d seconds%s; "
+                "shared backoff until %s UTC (%d s remaining)",
+                normalized_method,
+                path,
+                int(round(wait_s)),
+                " (Retry-After)" if retry_after is not None else "",
+                datetime.fromtimestamp(self._rate_limit_until, timezone.utc).strftime("%H:%M:%S"),
+                int(round(max(0.0, self._rate_limit_until - time.time()))),
+            )
+            self._rate_limit_logged = True
             return resp
 
         # Reset rate limit log flag on success
@@ -599,6 +753,13 @@ class CapitalClient:
         # Handle invalid session
         if resp.status_code in (401, 403) or ('error.invalid.session.token' in (resp.text or '').lower()):
             logger.warning("Capital.com session invalid; attempting re-login and retry")
+            # Drop the dead tokens from the shared cache so no process reuses them
+            # (the re-login below goes through the shared login lock, 1/s spacing
+            # and shared backoff, so concurrent 401s produce one POST /session)
+            try:
+                _cap_shared.invalidate_session(self._shared_key_name(), self.cst)
+            except Exception:
+                pass
             # Clear stale tokens and re-enable so _create_session does a real POST
             self.cst = None
             self.x_security_token = None
@@ -609,6 +770,8 @@ class CapitalClient:
             headers = self._get_headers()
             if not headers:
                 return self._error_response(503, "session_unavailable", self.init_error or "session_unavailable")
+            if not self._acquire_capital_request_slot(False):
+                return self._error_response(429, "rate_limited", "capital_shared_backoff_active")
             try:
                 resp = self._capital_http_request(
                     normalized_method,
@@ -691,8 +854,10 @@ class CapitalClient:
         ):
             return self.market_cache
 
-        # Don't download while rate-limited.
+        # Don't download while rate-limited, or soon after an incomplete walk.
         if time.time() < self._rate_limit_until:
+            return self.market_cache or []
+        if not force_refresh and time.time() < float(getattr(self, "_market_walk_retry_at", 0.0) or 0.0):
             return self.market_cache or []
 
         # Try disk cache — avoids re-downloading 6799 markets on every process restart.
@@ -723,6 +888,7 @@ class CapitalClient:
         visited: set = set()
         bfs_started = time.time()
         max_bfs_sec = 30.0  # Hard cap on catalogue traversal time
+        walk_complete = True  # any error, 429 or timeout makes the result partial
 
         while queue and (time.time() - bfs_started) < max_bfs_sec:
             node_id = queue.pop(0)
@@ -734,6 +900,9 @@ class CapitalClient:
                 response = self._request('GET', path)
                 if response.status_code != 200:
                     logger.warning(f"Capital.com marketnavigation failed for {node_id}: {response.text}")
+                    walk_complete = False
+                    if response.status_code == 429:
+                        break  # backing off: stop the walk rather than keep asking
                     continue
 
                 data = response.json() or {}
@@ -751,11 +920,27 @@ class CapitalClient:
                     queue.append(nid)
             except Exception as e:
                 logger.error(f"Capital.com navigation error at node {node_id}: {e}")
+                walk_complete = False
                 continue
+        if queue:
+            walk_complete = False  # stopped by the time cap
+
+        if not walk_complete or not markets:
+            # Only a fully completed, non-empty walk is cached or saved; a
+            # partial or empty one never replaces a good cache or the disk file.
+            logger.warning(
+                "Capital.com market catalogue walk incomplete or empty (%d markets); not caching",
+                len(markets),
+            )
+            self._market_walk_retry_at = time.time() + 60.0
+            return self.market_cache or markets
 
         self.market_cache = markets
         self.market_cache_time = time.time()
         self._update_market_index(markets)
+        _SHARED_MARKET_CACHE["markets"] = list(markets)
+        _SHARED_MARKET_CACHE["market_index"] = dict(self.market_index)
+        _SHARED_MARKET_CACHE["market_cache_time"] = self.market_cache_time
         logger.info(f"Capital.com market catalogue loaded ({len(markets)} markets)")
 
         # Persist to disk so the next process start can skip this BFS download.
@@ -1126,6 +1311,11 @@ class CapitalClient:
             and cached_source_timestamp is not None
         ):
             return self._accounts_cache
+        # A recent failed read is returned as-is (still no_data) instead of
+        # re-hitting the API every loop, even when cache_ttl is 0.
+        failed = getattr(self, "_accounts_failure", None)
+        if failed is not None and (now - failed[0]) < CAPITAL_ACCOUNT_FAILURE_CACHE_S:
+            return self._no_data_accounts(failed[1])
 
         try:
             response = self._request('GET', '/accounts')
@@ -1139,11 +1329,14 @@ class CapitalClient:
                 if accounts:
                     self._accounts_cache = accounts
                     self._accounts_cache_time = received_at
+                self._accounts_failure = None
                 return accounts
             logger.error(f"Failed to get Capital.com accounts: {response.text}")
+            self._accounts_failure = (time.time(), f"accounts_http_{response.status_code}")
             return self._no_data_accounts(f"accounts_http_{response.status_code}")
         except Exception as e:
             logger.error(f"Error fetching Capital.com accounts: {e}")
+            self._accounts_failure = (time.time(), "accounts_request_failed")
             return self._no_data_accounts("accounts_request_failed")
 
     def get_ticker(self, symbol: str) -> Dict[str, Any]:
