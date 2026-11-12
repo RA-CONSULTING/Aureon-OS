@@ -18,7 +18,7 @@ What the paper fixes (lines 213-316):
   interaction of the field with itself over a time delay tau (lines 252-259).
 * The paper adds a non-local memory term to the action, built from a
   symmetric memory field Phi_mu_nu and a memory kernel K:
-  ``int d^4x' K(x, x') Phi_mu_nu(x) Phi^mu_nu(x')`` inside the Lagrangian
+  ``int d^4x' K(x, x') Phi_mu_nu(x) Phi_mu_nu(x')`` inside the Lagrangian
   (lines 286-298).  Theta is what varying that action with respect to the
   metric gives.
 * It averages out high-frequency jitter by destructive interference and
@@ -80,8 +80,10 @@ def _as_symmetric_field(phi, name: str = "phi") -> np.ndarray:
 def memory_feedback_tensor(history, kernel_weights) -> np.ndarray:
     """Discrete memory convolution ``Theta_n = sum_k w_k Phi_{n-k}``.
 
-    This is the time-delay part of ``int K(x, x') Phi_mu_nu(x')`` (lines
-    294-298) on a uniform time grid, with ``w_k = K(k dt) dt``.
+    This is the module's own linear time-delay sum on a uniform time grid,
+    with ``w_k = K(k dt) dt``.  It is a modelling choice: the paper puts
+    ``int K(x, x') Phi_mu_nu(x) Phi_mu_nu(x')`` inside the Lagrangian (lines
+    294-298) and this function does not derive Theta from that action.
 
     history:
         Array of shape (N, n, n), oldest first, newest last; each slice is a
