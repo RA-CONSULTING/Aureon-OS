@@ -466,17 +466,19 @@ ORGANS = {
         "port": 13002,
     },
     "self_questioning_ai": {
-        # Launched via the workspace-owned runner (aureon-os-upstream is
-        # strictly read-only): the runner drives the upstream
-        # SelfQuestioningAI engine with a REAL sleep between cycles and
-        # per-cycle exception isolation. 600 s interval halves the benchmark-
-        # flagged CPU cost of the per-cycle whole-repo scan.
-        "script": str(WORKSPACE / "aureon_self_questioning_runner.py"),
+        # Launched via the launcher seat, which loads the restored
+        # workspace-owned runner (aureon-os-upstream is strictly
+        # read-only). The runner drives SelfQuestioningAI with a REAL
+        # sleep between cycles and per-cycle exception isolation. 600 s
+        # interval halves the benchmark-flagged CPU cost of the
+        # per-cycle whole-repo scan.
+        "module": "aureon.launch.daemons.aureon_self_questioning_runner",
+        "match": "aureon.launch.daemons.aureon_self_questioning_runner",
         "args": ["--interval", "600"],
         "cwd": str(WORKSPACE),
-        "mode": "continuous (600s questioning cycle)",
+        "mode": "continuous (restored workspace aureon_self_questioning_runner.py; 600s SelfQuestioningAI cycle with real sleep, no orders)",
         "log": str(LOGS / "organ_self_questioning_ai.log"),
-        "env": _launch_env(),
+        "env": _launch_env({"AUREON_LIVE_TRADING": "0", "AUREON_DISABLE_REAL_ORDERS": "1"}),
         "requires_ollama": True,
     },
     "hnc_core": {
