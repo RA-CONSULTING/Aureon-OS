@@ -535,6 +535,16 @@ def test_report_table_has_the_health_columns() -> None:
     assert "started=1 blocked=0 total=1" in text
 
 
+def _kill_group(pgid: int) -> None:
+    import signal
+
+    for sig in (signal.SIGTERM, signal.SIGKILL):
+        try:
+            os.killpg(pgid, sig)
+        except (ProcessLookupError, PermissionError, OSError):
+            return
+
+
 @pytest.mark.timeout(1600)
 def test_fresh_clone_smoke_prints_the_health_table(tmp_path: Path) -> None:
     clone = tmp_path / "clone"
@@ -547,23 +557,33 @@ def test_fresh_clone_smoke_prints_the_health_table(tmp_path: Path) -> None:
     )
     if cloned.returncode != 0:
         pytest.fail(cloned.stderr)
-    env = os.environ.copy()
+    from aureon.launch.session_scope import strip_inherited_session
+
+    # Never inherit a running launcher's session or workspace: under self-repair
+    # this test is spawned by a live organ, and an inherited SERO_WORKSPACE or
+    # scope made the smoke boot organs from the live folder and leave them behind.
+    env = strip_inherited_session(os.environ.copy())
     env["PYTHONPATH"] = str(clone)
     env["AUREON_LIVE_TRADING"] = "0"
     env.pop("AUREON_AUTONOMY_MODE", None)
-    env.pop("AUREON_LAUNCHER_STATE", None)
     env.pop("AUREON_FUSION_ARM_LIVE", None)
     for key in _EXCHANGE_KEYS:
         env.pop(key, None)
-    proc = subprocess.run(
+    launcher = subprocess.Popen(
         [sys.executable, "-m", "aureon.launch.master"],
         cwd=clone,
         env=env,
-        capture_output=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
         text=True,
-        timeout=1500,
-        check=False,
+        start_new_session=True,
     )
+    try:
+        stdout, stderr = launcher.communicate(timeout=1500)
+    except subprocess.TimeoutExpired:
+        _kill_group(launcher.pid)
+        stdout, stderr = launcher.communicate()
+    proc = subprocess.CompletedProcess(launcher.args, launcher.returncode, stdout, stderr)
     try:
         assert proc.returncode == 0, proc.stderr
         assert "live_trading_armed_by_launcher=false" in proc.stdout
@@ -592,3 +612,5 @@ def test_fresh_clone_smoke_prints_the_health_table(tmp_path: Path) -> None:
             timeout=60,
             check=False,
         )
+        # Backstop: nothing the smoke started may outlive the test.
+        _kill_group(launcher.pid)

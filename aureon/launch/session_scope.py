@@ -31,6 +31,28 @@ PROBE_ENV = "AUREON_LAUNCHER_SETSID_PROBE"
 PROBE_PID_ENV = "AUREON_LAUNCHER_SETSID_PIDFILE"
 PROBE_STARTED_ENV = "AUREON_LAUNCHER_PROBE_STARTED"
 
+# A launcher started from inside another launcher's session (for example a
+# self-repair pytest spawned by a running organ) must not inherit that
+# session's scope, cgroup, root pid or workspace. If it did, it would think it
+# is already inside the parent's scope, resolve organ scripts from the parent's
+# folder, and its --stop could not find what it started.
+INHERITED_SESSION_VARS = (
+    SCOPE_ENV,
+    CGROUP_ENV,
+    ROOT_ENV,
+    INSIDE_ENV,
+    PROBE_STARTED_ENV,
+    "AUREON_LAUNCHER_STATE",
+    "SERO_WORKSPACE",
+)
+
+
+def strip_inherited_session(env: dict[str, str]) -> dict[str, str]:
+    """Return a copy of env without a parent launcher's session variables."""
+
+    return {key: value for key, value in env.items() if key not in INHERITED_SESSION_VARS}
+
+
 _UNIT_SAFE = re.compile(r"[^A-Za-z0-9_.-]")
 _PROBE_SOURCE = """
 import os
