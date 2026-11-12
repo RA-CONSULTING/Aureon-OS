@@ -390,7 +390,7 @@ ORGANS = {
         "match": "aureon.launch.daemons.schumann_real_daemon",
         "args": [],
         "cwd": str(WORKSPACE),
-        "mode": "continuous (checkout sensor; workspace schumann_real_daemon.py is not in this tree)",
+        "mode": "continuous (restored workspace schumann_real_daemon.py; public ResonanceOne reads every 60s, writes schumann_state.json only when the provider marks Schumann live, no orders)",
         "log": str(LOGS / "organ_schumann_real_daemon.log"),
         "env": _launch_env({"AUREON_LIVE_TRADING": "0", "AUREON_DISABLE_REAL_ORDERS": "1"}),
     },
