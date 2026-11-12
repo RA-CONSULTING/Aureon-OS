@@ -38,6 +38,7 @@ from aureon.containment.hardening import (
     run_filter,
 )
 from aureon.containment.native import prepare_launch
+from tests.support.receipt_provenance import is_ancestor
 
 ROOT = Path(__file__).resolve().parents[1]
 MEASURED = ROOT / "reports" / "measured" / "containment_hardening.json"
@@ -351,6 +352,9 @@ def test_receipt_1_pin_and_runbook_are_untouched() -> None:
         "aureon/containment/native.py",
         "mcp/aureon_public/guard_loader.py",
     }
+    head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+    # Skip when BASE is not in this clone (for example a --depth 1 checkout).
+    assert is_ancestor(BASE, head)
     for rel in _UNTOUCHED:
         recorded = subprocess.run(["git", "show", f"{BASE}:{rel}"], cwd=ROOT, capture_output=True, check=False)
         assert recorded.returncode == 0
@@ -561,6 +565,20 @@ def test_opted_in_run_refuses_when_the_kernel_lacks_a_layer(tmp_path: Path) -> N
 
 
 def test_stage7_is_byte_identical_to_main_when_the_layer_is_off(tmp_path: Path) -> None:
+    if shutil.which("unshare") is not None:
+        prepared = prepare_launch(tmp_path, [sys.executable, "-I", "-c", "pass"])
+        joined = " ".join(prepared.argv)
+        assert "_harden_child.py" not in joined
+        assert "hardening.py" not in joined
+        assert "--net" in prepared.argv
+        sidecar = json.loads(prepared.sidecar.read_text(encoding="utf-8"))
+        assert sidecar["schema"] == "aureon.containment.launch.v1"
+        assert "filter" not in sidecar
+        assert "landlock" not in sidecar
+        assert "seccomp" not in sidecar
+    head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+    # Skip when BASE is not in this clone (for example a --depth 1 checkout).
+    assert is_ancestor(BASE, head)
     for rel in _STAGE7:
         recorded = subprocess.run(["git", "show", f"{BASE}:{rel}"], cwd=ROOT, capture_output=True, check=False)
         assert recorded.returncode == 0, rel
@@ -569,18 +587,6 @@ def test_stage7_is_byte_identical_to_main_when_the_layer_is_off(tmp_path: Path) 
             assert (ROOT / rel).read_bytes() != recorded.stdout, rel
         else:
             assert (ROOT / rel).read_bytes() == recorded.stdout, rel
-    if shutil.which("unshare") is None:
-        return
-    prepared = prepare_launch(tmp_path, [sys.executable, "-I", "-c", "pass"])
-    joined = " ".join(prepared.argv)
-    assert "_harden_child.py" not in joined
-    assert "hardening.py" not in joined
-    assert "--net" in prepared.argv
-    sidecar = json.loads(prepared.sidecar.read_text(encoding="utf-8"))
-    assert sidecar["schema"] == "aureon.containment.launch.v1"
-    assert "filter" not in sidecar
-    assert "landlock" not in sidecar
-    assert "seccomp" not in sidecar
 
 
 def test_denied_syscall_returns_eperm_at_runtime(monkeypatch: pytest.MonkeyPatch) -> None:

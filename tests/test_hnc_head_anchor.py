@@ -40,6 +40,7 @@ from aureon.evidence.hnc_anchor import (
     validate_chain,
     verify_timestamp,
 )
+from tests.support.receipt_provenance import last_commit_writing
 
 ROOT = Path(__file__).resolve().parents[1]
 RECORD = ROOT / "evidence" / "output" / "hnc_head_anchor.json"
@@ -420,8 +421,10 @@ def test_different_note_bytes_on_the_recording_commit_do_not_fall_back_to_head(t
 
 def test_this_history_names_both_recording_commits() -> None:
     head = _rev(ROOT)
-    sequence_one = recording_commit(ROOT, RECORD_REL)
-    sequence_two = recording_commit(ROOT, NEXT_RECORD_REL)
+    # last_commit_writing skips on a shallow clone, or when the commit is
+    # only a graft or shallow boundary.
+    sequence_one = last_commit_writing(RECORD_REL)
+    sequence_two = last_commit_writing(NEXT_RECORD_REL)
     assert sequence_one == "9b666838f88f80a3eab5be11856d9b0a12c886e2"
     assert sequence_two == "9b666838f88f80a3eab5be11856d9b0a12c886e2"
     assert sequence_one != head
