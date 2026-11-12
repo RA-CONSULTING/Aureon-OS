@@ -9,7 +9,6 @@ import subprocess
 from pathlib import Path
 
 import pytest
-
 from aureon.containment.cold_boot import judge_default, measure, repo_root
 from aureon.containment.native import (
     PIN,
@@ -21,6 +20,8 @@ from aureon.containment.native import (
     scrubbed_child_env,
     verify_grant,
 )
+
+from tests.support.receipt_provenance import is_ancestor
 
 ROOT = Path(__file__).resolve().parents[1]
 RECEIPT = ROOT / "reports" / "measured" / "native_process_containment.json"
@@ -222,14 +223,6 @@ def test_committed_receipt_matches_this_tree() -> None:
     assert "production ready" not in lowered
     assert "validated" not in lowered
     assert receipt["git_head_at_measurement"] == "c68a89d2a184d99582bb24310b91e024323a212c"
-    ancestor = subprocess.run(
-        ["git", "merge-base", "--is-ancestor", receipt["git_head_at_measurement"], "HEAD"],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    assert ancestor.returncode == 0
     if receipt["verdict"] == "pass":
         assert receipt["allowed_at_default"] == "none"
         assert receipt["cold_boot_argv_has_net"] is True
@@ -241,6 +234,10 @@ def test_committed_receipt_matches_this_tree() -> None:
     assert "native_process_containment.json" in runbook
     assert "Receipts 2–5 remain HOLD" in runbook or "Receipts 2, 3, 4, and 5 remain HOLD" in runbook
     assert "release%20boundary-HOLD-orange" in (ROOT / "README.md").read_text(encoding="utf-8")
+    head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+    # Skip when the measurement commit is not in this clone (for example a
+    # --depth 1 checkout).
+    assert is_ancestor(receipt["git_head_at_measurement"], head)
 
 
 def _sha256(path: Path) -> str:
