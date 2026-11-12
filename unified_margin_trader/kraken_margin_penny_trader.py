@@ -473,7 +473,7 @@ except Exception:
     HarmonicNexusBridge = None
 
 try:
-    from aureon.data_feeds.earth_resonance_engine import EarthResonanceEngine, get_earth_engine
+    from aureon.harmonic.earth_resonance_engine import EarthResonanceEngine, get_earth_engine
     HAS_EARTH_RESONANCE = True
 except Exception:
     HAS_EARTH_RESONANCE = False

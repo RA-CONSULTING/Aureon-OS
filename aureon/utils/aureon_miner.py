@@ -6956,7 +6956,7 @@ class HarmonicMiningOptimizer:
             logger.debug("Probability Matrix not available for mining")
         
         try:
-            from hnc_earth_resonance import EarthResonanceEngine  # type: ignore[import-not-found]
+            from aureon.harmonic.earth_resonance_engine import EarthResonanceEngine
             self._earth_engine = EarthResonanceEngine()
             logger.info("🌍 Earth Resonance Engine: CONNECTED to miner")
         except ImportError:
