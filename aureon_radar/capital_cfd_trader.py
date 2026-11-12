@@ -6745,7 +6745,9 @@ class CapitalCFDTrader:
         l = int(self.stats["losing_trades"])
         c = int(self.stats["trades_closed"])
         pnl = self.stats["total_pnl_gbp"]
-        gate = "ARMED" if HAS_QUAD_GATES else "open"
+        # Seer/Lyra sizing modifier is computed by _quad_gate() but not yet
+        # applied to order size, so report it as advisory, not ARMED.
+        gate = "advisory" if HAS_QUAD_GATES else "open"
         capital = self.get_capital_snapshot()
         risk_envelope = self._build_capital_risk_envelope()
         eq_delta = capital["equity_gbp"] - self.starting_equity_gbp if self.starting_equity_gbp > 0 else 0.0
