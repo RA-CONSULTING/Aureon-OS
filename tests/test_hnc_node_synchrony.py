@@ -140,6 +140,24 @@ def test_tolerance_is_required():
             ns.anchor_phase_lock([0.0], 0, tolerance=bad)
 
 
+def test_held_over_time_validates_tolerance_first(monkeypatch):
+    # Valid phases that would otherwise compute fine: a bad tolerance still raises.
+    good = [0.0, 0.01, -0.015]
+    for bad in (0.0, -0.1, 4.0, float("nan"), float("inf")):
+        with pytest.raises(ValueError, match="tolerance"):
+            ns.anchor_held_over_time(good, tolerance=bad)
+    # Tolerance is checked before any phase is read or wrapped.
+    calls = []
+    monkeypatch.setattr(ns, "wrap_phase", lambda p: calls.append(p) or 0.0)
+    monkeypatch.setattr(ns, "_phases_1d", lambda *a: calls.append(a) or np.asarray([0.0]))
+    with pytest.raises(ValueError, match="tolerance"):
+        ns.anchor_held_over_time(good, tolerance=0.0)
+    assert calls == []
+    # With both phases and tolerance bad, the tolerance error is the one raised.
+    monkeypatch.undo()
+    with pytest.raises(ValueError, match="tolerance"):
+        ns.anchor_held_over_time([], tolerance=-1.0)
+
 def test_bad_inputs_rejected():
     with pytest.raises(ValueError):
         ns.kuramoto_order_parameter([])

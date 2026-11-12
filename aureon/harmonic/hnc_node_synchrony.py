@@ -163,12 +163,16 @@ def anchor_phase_lock(phases: Sequence[float], node: int, *, tolerance: float) -
 def anchor_held_over_time(
     phase_series: Sequence[float], *, tolerance: float
 ) -> Tuple[bool, float]:
-    """For one node's phase over time, return (every sample within tolerance of 0, worst deviation)."""
-    arr = _phases_1d("phase_series", phase_series)
-    worst = max(abs(wrap_phase(float(p))) for p in arr)
+    """For one node's phase over time, return (every sample within tolerance of 0, worst deviation).
+
+    ``tolerance`` (radians, 0 < tolerance <= π) is required and is validated
+    before any phase is read or wrapped, as in ``anchor_phase_lock``.
+    """
     tol = float(tolerance)
     if not math.isfinite(tol) or not 0.0 < tol <= math.pi:
         raise ValueError("tolerance must be in (0, π] radians")
+    arr = _phases_1d("phase_series", phase_series)
+    worst = max(abs(wrap_phase(float(p))) for p in arr)
     return worst <= tol, worst
 
 
