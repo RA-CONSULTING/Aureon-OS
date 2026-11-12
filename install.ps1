@@ -90,6 +90,12 @@ $EnvFile = Join-Path $Root ".env"
 if (Test-Path -LiteralPath $EnvFile) {
     Write-Output ".env is present and is not read. Live trading stays off."
 }
+# Order safety defaults. Exchange keys in the environment still do not
+# place orders unless these switches are deliberately flipped.
+$env:AUREON_LIVE_TRADING = "0"
+$env:AUREON_DISABLE_REAL_ORDERS = "1"
+$env:AUREON_DISABLE_EXCHANGE_MUTATIONS = "1"
+
 Write-Output "release boundary: HOLD. Guarded smoke only. Live trading stays off. Supported go-live remains HOLD."
 & $VenvPy $Plug @args
 exit $LASTEXITCODE
