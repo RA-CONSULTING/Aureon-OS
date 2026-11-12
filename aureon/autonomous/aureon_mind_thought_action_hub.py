@@ -588,6 +588,16 @@ MIND_THOUGHT_ACTION_HTML = """
 # HUB CLASS
 # ════════════════════════════════════════════════════════════════════════════
 
+def _bind_host() -> str:
+    """Interface the hub listens on.
+
+    Defaults to loopback so the dashboard and its action endpoints are not
+    reachable from other machines. Set AUREON_MIND_HUB_HOST (for example
+    0.0.0.0) only when you deliberately want it open on the network.
+    """
+    return os.environ.get("AUREON_MIND_HUB_HOST", "").strip() or "127.0.0.1"
+
+
 class MindThoughtActionHub:
     """Unified cognitive pipeline hub."""
     
@@ -2714,7 +2724,7 @@ class MindThoughtActionHub:
         # Start web server
         runner = web.AppRunner(self.app)
         await runner.setup()
-        site = web.TCPSite(runner, '0.0.0.0', self.port)
+        site = web.TCPSite(runner, _bind_host(), self.port)
         await site.start()
         self._goal_pursuit_task = asyncio.create_task(self.goal_pursuit_loop())
         self._init_task = asyncio.create_task(self._init_systems_async())
