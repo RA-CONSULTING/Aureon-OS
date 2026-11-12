@@ -27,6 +27,7 @@ def _mcp_public_imports(request: pytest.FixtureRequest) -> None:
             # can still import aureon_public and install PinnedAureonFinder on
             # sys.meta_path. Drop it at module end so later in-process aureon
             # imports are not blob-checked against the pin.
+            # Also drops the _BlockTrading finder at module end, for test isolation only; not a guard removal outside tests.
             mcp_isolation.teardown_guard_leaks()
         return
     env_before = dict(os.environ)
