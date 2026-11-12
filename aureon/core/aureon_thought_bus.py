@@ -544,12 +544,21 @@ class ThoughtBus:
         file moves to ``<path>.1`` (older copies shift up, up to
         ``AUREON_THOUGHT_BUS_BACKUPS``, default 1) and a fresh file is started.
         Unset or 0 keeps the old behaviour of appending without limit.
+        A failed rotation never skips the write.  Caveat: with one backup, two
+        rotations in quick succession can replace the ``.1`` a waiting writer
+        still holds open, so a line can be lost in that narrow case; use a
+        limit large enough that rotations are far apart.
         """
         if not self._persist_path:
             return
         line = json.dumps(thought.to_json(), ensure_ascii=False) + "\n"
         try:
             self._rotate_if_needed()
+        except (OSError, IOError):
+            # A failed rotation (e.g. Windows refusing to rename a file another
+            # process holds open) must never cost the write; append instead.
+            pass
+        try:
             with open(self._persist_path, "a", encoding="utf-8") as f:
                 # Acquire exclusive lock to prevent concurrent writes (cross-platform)
                 _lock_file(f)

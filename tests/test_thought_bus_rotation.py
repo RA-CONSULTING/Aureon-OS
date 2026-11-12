@@ -62,3 +62,19 @@ def test_bad_limit_value_is_ignored(tmp_path, monkeypatch):
     for i in range(5):
         bus._persist(_thought(i))
     assert _lines(path) == list(range(5))
+
+
+def test_failed_rotation_still_writes(tmp_path, monkeypatch):
+    import os
+    path = tmp_path / "thoughts.jsonl"
+    bus = ThoughtBus(persist_path=str(path))
+    bus._persist(_thought(0))
+    monkeypatch.setenv("AUREON_THOUGHT_BUS_MAX_BYTES", "1")
+
+    def refuse(src, dst):
+        raise PermissionError("file in use")
+
+    monkeypatch.setattr(os, "replace", refuse)
+    for i in range(1, 4):
+        bus._persist(_thought(i))
+    assert _lines(path) == [0, 1, 2, 3]
