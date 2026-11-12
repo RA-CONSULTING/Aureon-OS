@@ -262,9 +262,15 @@ class UnifiedMarketCache:
             if view.get("state") != "fresh":
                 continue
             for symbol, q in (view.get("quotes") or {}).items():
+                # Newest-wins needs the venue's own quote time. Our poll time
+                # (fetched_at) is not a market timestamp and must never outrank
+                # a real exchange timestamp, so quotes without provider_ts stay
+                # readable through read_snapshot() only and are not merged.
+                if q.get("provider_ts") in (None, "", 0):
+                    continue
                 try:
                     price = float(q.get("price") or 0)
-                    ts = float(q.get("provider_ts") or view.get("fetched_at") or 0)
+                    ts = float(q.get("provider_ts"))
                 except (TypeError, ValueError):
                     continue
                 if price <= 0 or ts <= 0:

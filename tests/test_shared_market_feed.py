@@ -465,3 +465,42 @@ def test_metacognition_monitor_sees_feed_freshness(rec, tmp_path, monkeypatch):
     assert sig["truth_status"] == "live" and sig["value"] == 0.5
     assert sig["venues"] == {"capital": "missing", "binance": "fresh", "kraken": "fresh", "alpaca": "missing"}
     assert rec.per_exchange() == {"binance": 1, "kraken": 1, "alpaca": 0, "capital": 0}
+
+
+def test_quote_without_provider_ts_never_outranks_a_real_exchange_timestamp(rec, tmp_path, monkeypatch):
+    """Our poll time is not a market timestamp: a quote with no provider_ts
+    must not be merged into the newest-wins cache, where fetched_at would let
+    it beat a newer real price from another venue."""
+    from aureon.data_feeds import shared_market_feed as feed_mod
+    from aureon.data_feeds import unified_market_cache as cache_mod
+
+    for name in ("WS_PRICE_CACHE_PATH", "BINANCE_CACHE_PATH", "UNIFIED_CACHE_PATH", "KRAKEN_CACHE_PATH"):
+        monkeypatch.setattr(cache_mod, name, str(tmp_path / f"{name}.json"))
+    monkeypatch.setattr(cache_mod, "BINANCE_CACHE_PATHS", [str(tmp_path / "WS_PRICE_CACHE_PATH.json")])
+    monkeypatch.setattr(cache_mod, "CACHE_DIR", str(tmp_path))
+    monkeypatch.setattr(cache_mod.UnifiedMarketCache, "_instance", None)
+    monkeypatch.setattr(cache_mod, "_cache_instance", None)
+
+    now = time.time()
+    quote = {"price": 111.0, "bid": 110.5, "ask": 111.5, "change_24h_pct": 0.5,
+             "volume_24h_quote": 1000.0, "base": "BTC", "pair": "BTCUSD"}
+
+    def snap(provider_ts):
+        q = dict(quote, provider_ts=provider_ts)
+        return {"path": "x", "venues": {"alpaca": {"state": "fresh", "source": "alpaca",
+                                                    "fetched_at": now, "quotes": {"BTC": q}}}}
+
+    cache = cache_mod.get_market_cache()
+    real = cache_mod.CachedTicker(symbol="BTC", price=65000.0, bid=64999.0, ask=65001.0,
+                                  change_24h=-1.0, volume_24h=5e6, source="binance_ws",
+                                  timestamp=now - 5, pair="BTCUSDT")
+    cache._tickers["BTC"] = real
+
+    monkeypatch.setattr(feed_mod, "read_snapshot", lambda *a, **k: snap(None))
+    cache._merge_shared_feed()
+    assert cache._tickers["BTC"].price == 65000.0          # poll time did not win
+
+    monkeypatch.setattr(feed_mod, "read_snapshot", lambda *a, **k: snap(now - 1))
+    cache._merge_shared_feed()
+    assert cache._tickers["BTC"].price == 111.0            # a real newer venue time does
+    assert rec.per_exchange() == {"binance": 0, "kraken": 0, "alpaca": 0, "capital": 0}
