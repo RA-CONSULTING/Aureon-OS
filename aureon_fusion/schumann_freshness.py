@@ -20,6 +20,7 @@ stdlib-only so radar and fusion readers can import it without cycles.
 """
 from __future__ import annotations
 
+import math
 import os
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -38,7 +39,8 @@ def schumann_observed_max_age_sec() -> float:
         value = float(raw)
     except ValueError:
         return SCHUMANN_OBSERVED_MAX_AGE_SEC
-    if value <= 0:
+    # nan/inf would make every "age > cap" test False and accept any age.
+    if not math.isfinite(value) or value <= 0:
         return SCHUMANN_OBSERVED_MAX_AGE_SEC
     return value
 
@@ -116,6 +118,15 @@ def evaluate_schumann_freshness(
             write_age=write_age,
             observed_age=observed_age,
         )
+
+    # A non-finite or non-positive write window cannot prove the daemon is
+    # alive (nan makes "age > window" always False), so fail closed.
+    try:
+        window_ok = math.isfinite(float(write_window_sec)) and float(write_window_sec) > 0
+    except (TypeError, ValueError):
+        window_ok = False
+    if not window_ok:
+        return reject(f"invalid write window ({write_window_sec!r})")
 
     if has_observed:
         if observed_ts is None:

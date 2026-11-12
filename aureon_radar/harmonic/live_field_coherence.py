@@ -14,8 +14,9 @@ of scanners/live_market_momentum_scanner.py:
   * REAL values only, never fabricated. Stale or malformed state -> None.
 
 Inputs (all real, file-backed):
-  * workspace/schumann_state.json          (observed_at, else timestamp,
-                                            younger than 300s; real_data == true)
+  * workspace/schumann_state.json          (write timestamp younger than 300s;
+                                            observed_at, when present, within the
+                                            shared 7200s cap; real_data == true)
       - frequency_hz: Schumann fundamental
       - activity_index: 0..100-ish scalar from the field source
   * aureon_fusion/state/hnc_core_state.json (HNC core coherence)
