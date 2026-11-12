@@ -5,6 +5,8 @@ bootstrap measures its own boundary, emits a causal `HOLD` receipt, and does
 not import or call the selected target, start a process, write a file, invoke
 Git, access the network, or execute an order.
 
+For evaluation, the one supported route is the guarded `./install.sh --smoke`
+in [`EVALUATE.md`](EVALUATE.md); it is not a production start.
 Historical direct runner commands are withdrawn. Test and benchmark commands
 may check source contracts offline, but their success does not authorize a
 runtime and is not a validation of the release. Production operation requires
