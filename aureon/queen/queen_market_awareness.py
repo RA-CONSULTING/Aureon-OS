@@ -765,8 +765,29 @@ class QueenMarketAwareness:
     
     def _fetch_btc_data(self) -> Dict:
         """Fetch current BTC data from multiple sources"""
+        # Shared market feed first: one locked snapshot written by the feed
+        # pollers, read here with no exchange call. Only a fresh venue with a
+        # reported 24h change is used; anything else falls through.
         try:
-            # Try Binance first
+            from aureon.data_feeds.shared_market_feed import read_venue_quote
+
+            for venue in ("binance", "capital"):
+                quote = read_venue_quote(venue, "BTC")
+                if quote and quote.get("price") and quote.get("change_24h_pct") is not None:
+                    btc_price = float(quote["price"])
+                    jan_high = self.btc_reference_prices['jan_2026_high']
+                    return {
+                        'price': btc_price,
+                        'change_24h': float(quote["change_24h_pct"]),
+                        'change_from_jan_high': ((btc_price - jan_high) / jan_high) * 100,
+                        'source': f"shared_feed:{venue}",
+                        'fetched_at': quote.get("fetched_at"),
+                    }
+        except Exception as e:
+            logger.debug(f"Shared market feed read failed: {e}")
+        try:
+            # Direct Binance call: only reached when the shared feed has no
+            # fresh BTC quote (feed process not running, or venue stale).
             resp = requests.get('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT', timeout=5)
             data = resp.json()
             
