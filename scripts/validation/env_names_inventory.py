@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""List every environment variable name the Python code reads, names only.
+"""List every literally named environment variable the Python code reads, names only.
 
 It scans the repository for ``os.environ.get("NAME")``, ``os.getenv("NAME")``
 and ``os.environ["NAME"]`` with a literal upper-case name, and compares the
 result with the names written in ``.env.example`` (set or commented out).
+Names built at runtime (for example ``f"{EXCHANGE}_API_KEY"``) are not found.
 
   --check   exit 1 if the code reads a name that .env.example never mentions
   --write   rewrite the generated block at the end of .env.example
@@ -90,7 +91,8 @@ def missing(found: dict[str, list[str]], hand_text: str) -> dict[str, list[str]]
 def render_block(miss: dict[str, list[str]]) -> str:
     lines = [
         BEGIN,
-        "# Names the code reads that the sections above do not document.",
+        "# Literally named variables the code reads that the sections above do",
+        "# not document. Names built at runtime (e.g. f\"{EXCHANGE}_API_KEY\") are not found.",
         "# Names only. Every line is commented out, so copying this file to .env",
         "# sets nothing and each program keeps its own built-in default.",
         "# Uncomment a line only if you know what that setting does.",
@@ -137,7 +139,7 @@ def main(argv: list[str] | None = None) -> int:
             for name in undocumented:
                 print(f"  {name}  ({found[name][0]})")
             return 1
-        print(f"OK: all {len(found)} names read by code appear in {EXAMPLE}")
+        print(f"OK: all {len(found)} literally named variables read by code appear in {EXAMPLE}")
         return 0
 
     for name in sorted(found):
