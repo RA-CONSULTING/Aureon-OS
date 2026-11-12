@@ -267,13 +267,24 @@ def test_this_tip_stays_hold_and_does_not_flip_the_badge(monkeypatch: pytest.Mon
         assert by_id[2]["detail"]["tip_diff"] == "unavailable"
         assert by_id[4]["detail"]["tip_diff"] == "unavailable"
         assert by_id[5]["detail"]["tip_diff"] == "unavailable"
-        assert gate.NOTE_REATTACH in by_id[3]["reasons"]
-        assert by_id[3]["detail"]["notes_match"] is False
     else:
         assert by_id[1]["detail"]["tip_diff"] == "outside_allowlist"
+    # Notes presence is independent of tip_diff: a plain `git clone` has
+    # history but does not fetch refs/notes/aureon-hnc-head.
+    notes_present = (
+        subprocess.run(
+            ["git", "show-ref", "--verify", "--quiet", gate.NOTE_REF],
+            cwd=ROOT,
+        ).returncode
+        == 0
+    )
+    if notes_present:
         assert gate.NOTE_REATTACH not in by_id[3]["reasons"]
         assert by_id[3]["detail"]["note_commit_is_ancestor"] is True
         assert by_id[3]["detail"]["notes_match"] is True
+    else:
+        assert gate.NOTE_REATTACH in by_id[3]["reasons"]
+        assert by_id[3]["detail"]["notes_match"] is False
     assert by_id[2]["detail"]["tip_note"] == gate.PRE_SQUASH_NOTE
     assert by_id[4]["detail"]["tip_note"] == gate.PRE_SQUASH_NOTE
     assert by_id[4]["verified_on_tip"] is False
