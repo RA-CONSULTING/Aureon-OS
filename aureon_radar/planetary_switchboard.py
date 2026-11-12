@@ -26,6 +26,8 @@ from datetime import datetime, timezone, timedelta
 from dataclasses import dataclass, asdict
 from typing import Optional, Dict, List
 
+from aureon_fusion.schumann_freshness import evaluate_schumann_freshness
+
 # Load environment variables from .env
 try:
     from dotenv import load_dotenv
@@ -179,14 +181,17 @@ class NOAAFeed:
 # ─── SCHUMANN RESONANCE FEED ──────────────────────────────────────────────────
 # Live Schumann state is written by the workspace schumann_real_daemon
 # (resonanceone_tomsk API) into schumann_state.json. FAIL-CLOSED (SIM-SEVER-B):
-# if the state file is missing, unreadable, unparseable, stale
-# (> AUREON_SCHUMANN_MAX_AGE_SEC, default 600 s), or flagged simulation while
-# AUREON_ALLOW_SIM_FALLBACK is not set, get_schumann() returns None and the
-# switchboard SKIPS Schumann-based signals. Freshness is judged by
-# observed_at (when Tomsk measured the field) when that key is present;
-# a present but unparseable observed_at fails closed. If it is absent,
-# the write timestamp is used. No estimated/fallback constants are ever
-# emitted.
+# if the state file is missing, unreadable, unparseable, stale, or flagged
+# simulation while AUREON_ALLOW_SIM_FALLBACK is not set, get_schumann()
+# returns None and the switchboard SKIPS Schumann-based signals.
+# Two clocks are checked (see aureon_fusion.schumann_freshness): the write
+# timestamp must be inside AUREON_SCHUMANN_MAX_AGE_SEC (default 600 s) so
+# the daemon is alive, and if observed_at is present it must parse and be
+# at most AUREON_SCHUMANN_OBSERVED_MAX_AGE_SEC (default 7200 s) old, because
+# Tomsk publishes hourly. A present observed_at with no write timestamp
+# is refused. Ages more than 60 s in the future are refused. If
+# observed_at is absent, the write timestamp and 600 s window are used as
+# before. No estimated/fallback constants are ever emitted.
 _SCHUMANN_STATE_CANDIDATES = [
     RADAR_DIR.parent / "aureon_fusion" / "state" / "schumann_state.json",
     RADAR_DIR.parent / "schumann_state.json",
@@ -254,24 +259,13 @@ class SchumannFeed:
                   "is not set — skipping Schumann signals [fail-closed]")
             return None
 
-        # Age by when Tomsk measured the field, not when we wrote the file.
-        observed = data.get("observed_at")
-        if observed not in (None, ""):
-            ts = self._parse_timestamp(observed)
-            if ts is None:
-                print("[SCHUMANN] state has unparseable observed_at — skipping [fail-closed]")
-                return None
-        else:
-            ts = self._parse_timestamp(data.get("timestamp"))
-            if ts is None:
-                print("[SCHUMANN] state has no valid timestamp — skipping [fail-closed]")
-                return None
-        max_age = _schumann_max_age_sec()
-        age = (datetime.now(timezone.utc) - ts).total_seconds()
-        if age > max_age:
-            print(f"[SCHUMANN] state stale ({age:.0f}s > {max_age:.0f}s) "
-                  "— skipping Schumann signals [fail-closed]")
+        fresh = evaluate_schumann_freshness(
+            data, _schumann_max_age_sec(), datetime.now(timezone.utc),
+        )
+        if not fresh.accepted:
+            print(f"[SCHUMANN] {fresh.reason} — skipping Schumann signals [fail-closed]")
             return None
+        ts = fresh.observed_ts or fresh.write_ts
 
         try:
             fundamental = float(data["frequency_hz"])

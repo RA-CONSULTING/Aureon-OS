@@ -53,6 +53,8 @@ import time
 from datetime import datetime, timezone
 from typing import Optional
 
+from aureon_fusion.schumann_freshness import evaluate_schumann_freshness
+
 # ── symbol mapping (same hub-symbol convention as the reference scanner) ────
 SYMBOL_MAP = {
     "BTCUSD": "BTCUSD", "BTCUSDT": "BTCUSD", "BTC": "BTCUSD", "XBTUSD": "BTCUSD",
@@ -68,17 +70,6 @@ _HNC_MAX_AGE = 300.0
 _FLOOR = 0.35
 
 
-def _parse_iso(value):
-    """Parse an ISO clock to aware UTC, or None. Naive values are UTC."""
-    if value in (None, ""):
-        return None
-    try:
-        ts = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
-    except ValueError:
-        return None
-    if ts.tzinfo is None:
-        ts = ts.replace(tzinfo=timezone.utc)
-    return ts
 
 
 def _read_json(path: str, max_age: float) -> Optional[dict]:
@@ -93,29 +84,22 @@ def _read_json(path: str, max_age: float) -> Optional[dict]:
 
 
 def _read_schumann_state(path: str, max_age: float) -> Optional[dict]:
-    """Load schumann_state.json if the measurement is fresh.
-
-    Freshness is judged by observed_at (when Tomsk measured the field)
-    when that key is present; a present but unparseable observed_at is
-    refused. If it is absent, the write timestamp is used. File mtime
-    is not a freshness clock.
+    """Load schumann_state.json if the write timestamp is inside max_age
+    (daemon alive) and, when present, observed_at is within the shared
+    7200 s cap. A present but unparseable observed_at, or an observed_at
+    with no write timestamp, is refused. Future clocks beyond 60 s are
+    refused. If observed_at is absent, the write-timestamp window is used
+    as before. File mtime is not a freshness clock.
     """
     try:
         with open(path, encoding="utf-8") as f:
             d = json.load(f)
         if not isinstance(d, dict):
             return None
-        observed = d.get("observed_at")
-        if observed not in (None, ""):
-            ts = _parse_iso(observed)
-            if ts is None:
-                return None
-        else:
-            ts = _parse_iso(d.get("timestamp"))
-            if ts is None:
-                return None
-        age = (datetime.now(timezone.utc) - ts).total_seconds()
-        if age > max_age:
+        fresh = evaluate_schumann_freshness(
+            d, max_age, datetime.now(timezone.utc),
+        )
+        if not fresh.accepted:
             return None
         return d
     except Exception:
