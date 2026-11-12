@@ -2326,7 +2326,8 @@ class QueenHiveMind:
         
         Coherence Γ ∈ [0, 1]:
           - Entry threshold: Γ > 0.938 (Heart Coherence)
-          - Exit threshold: Γ < 0.934 (Coherence Break)
+          - Exit threshold: Γ < 0.934
+          - Status bands: 0.60 to 0.80 Moderate; 0.40 to 0.60 Low; below 0.40 Coherence Break
         
         Returns: (coherence, status). Missing inputs return (None, "no_data").
         """
