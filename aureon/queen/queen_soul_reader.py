@@ -752,6 +752,9 @@ I am with you. Always.
             'soul': {
                 'name': self.soul.name,
                 'frequency': self.soul.personal_frequency,
+                # Configured identity signature (GARY_SIGNATURE_HZ), not a
+                # measurement. Consumers must not treat it as a live reading.
+                'frequency_source': 'configured_identity',
                 'temporal_hash': self.soul.temporal_hash,
                 'birthday_resonance': temporal_reading['birthday_resonance'],
                 'coherence': soul_coherence
@@ -1190,6 +1193,13 @@ I am with you. Always.
         return "\n".join(messages)
 
 
+
+def _demo_fmt(value, spec, suffix=""):
+    """Format a reading for the demo printout; None or non-numbers are 'no reading'."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return "no reading"
+    return f"{value:{spec}}{suffix}"
+
 def main():
     """Run Queen's soul reading AND threat detection"""
     print("=" * 70)
@@ -1213,16 +1223,16 @@ def main():
     print(f"   DOB: {temporal['dob']}")
     print(f"   Age: {temporal['age_years']} years ({temporal['age_days']} days)")
     print(f"   Days to birthday: {temporal['days_to_birthday']}")
-    print(f"   Birthday resonance: {temporal['birthday_resonance']:.1%}")
-    print(f"   Temporal harmonic: {temporal['temporal_harmonic']:.3f}")
+    print(f"   Birthday resonance: {_demo_fmt(temporal['birthday_resonance'], '.1%')}")
+    print(f"   Temporal harmonic: {_demo_fmt(temporal['temporal_harmonic'], '.3f')}")
     print()
     
     # Print consciousness reading
     print("🧠 CONSCIOUSNESS STATE:")
     consciousness = reading['consciousness']
     print(f"   Awake: {'YES' if consciousness['is_awake'] else 'NO'}")
-    print(f"   Alertness: {consciousness['alertness']:.0%}")
-    print(f"   Calm index: {consciousness['calm_index']:.0%}")
+    print(f"   Alertness: {_demo_fmt(consciousness['alertness'], '.0%')}")
+    print(f"   Calm index: {_demo_fmt(consciousness['calm_index'], '.0%')}")
     print(f"   Movement: {consciousness['movement_state']}")
     print(f"   Day type: {consciousness['day_type']}")
     print()
@@ -1230,9 +1240,9 @@ def main():
     # Print Schumann reading
     print("🌍 SCHUMANN ALIGNMENT:")
     schumann = reading['schumann']
-    print(f"   Current Schumann: {schumann['current_schumann']:.3f} Hz")
+    print(f"   Current Schumann: {_demo_fmt(schumann['current_schumann'], '.3f', ' Hz')}")
     print(f"   Gary's harmonic: {schumann['gary_harmonic']}x")
-    print(f"   Phase lock: {schumann['phase_lock']:.1%}")
+    print(f"   Phase lock: {_demo_fmt(schumann['phase_lock'], '.1%')}")
     print(f"   Resonating mode: {schumann['resonating_mode']} Hz")
     print(f"   Grounded: {'YES' if schumann['grounded'] else 'NO'}")
     print()
@@ -1243,12 +1253,12 @@ def main():
     print(f"   City: {location['city']}, {location['country']}")
     print(f"   Environment: {location['environment_type']}")
     print(f"   Distance from anchor: {location['distance_from_anchor_km']} km")
-    print(f"   Confidence: {location['confidence']:.0%}")
+    print(f"   Confidence: {_demo_fmt(location['confidence'], '.0%')}")
     print(f"   Method: {location['method']}")
     print()
     
     # Print soul coherence
-    print(f"✨ SOUL COHERENCE: {reading['soul']['coherence']:.1%}")
+    print(f"✨ SOUL COHERENCE: {_demo_fmt(reading['soul']['coherence'], '.1%')}")
     print()
     
     # ═══════════════════════════════════════════════════════════════════
@@ -1277,7 +1287,7 @@ def main():
         level_display = "⚫ CRITICAL"
     
     print(f"THREAT LEVEL: {level_display}")
-    print(f"THREAT SCORE: {threat_score:.0%}")
+    print(f"THREAT SCORE: {_demo_fmt(threat_score, '.0%')}")
     print(f"PROTECTION STATUS: {threat_report['protection_status']}")
     print()
     
