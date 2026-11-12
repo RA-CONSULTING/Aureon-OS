@@ -19,6 +19,7 @@
 
 requests>=2.32.0
 python-dotenv>=1.0.0
+filelock>=3.12
 click<8.2
 python-binance>=1.0.19
 krakenex>=2.1.0
@@ -50,6 +51,8 @@ pyttsx3>=2.90
 redis>=4.5.0
 websocket-client>=1.9.0
 prometheus_client>=0.24.0
+# MCP SDK for mcp/aureon_public and its tests. Same version as requirements-plug.lock.
+mcp==1.30.0
 anthropic>=0.40.0
 yfinance>=0.2.36,<0.2.59
 fredapi>=0.5.2
