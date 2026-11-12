@@ -46,7 +46,7 @@ def test_tip_channel_refuses_production_publish() -> None:
     assert report["published"] is False
     assert report["pin_moved"] is False
     assert report["pin"] == channel.PUBLISHED_PIN
-    assert report["pin"] == "050891385291fb77c321996f25e307c794789d89"
+    assert report["pin"] == "ac9fa3151b63bd4143dc1aa434ec79b382406b7e"
     assert report["lineage_tip"] == "08f04936088689e29b7995d89530b21b425c35f9"
     assert report["lineage_tip_is_ancestor"] is True
     assert report["orange_badge"] == "HOLD"

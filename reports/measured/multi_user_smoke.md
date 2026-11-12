@@ -4,7 +4,7 @@ This boots the tenant boundary that already lives in `aureon.operator` inside th
 
 Verdict: **pass**.
 Release boundary: **HOLD**. Orange badge: unchanged. `go_live_clear`: False.
-Public pin: `050891385291fb77c321996f25e307c794789d89` (changed by this stage: False). Containment module pin: `bb04503119681adcf832f3c3e9b0cbf09fc7a938` (same as public pin: False).
+Public pin: `ac9fa3151b63bd4143dc1aa434ec79b382406b7e` (changed by this stage: False). Containment module pin: `bb04503119681adcf832f3c3e9b0cbf09fc7a938` (same as public pin: False).
 Live trading: false. Orders placed: false. Market data fetched: false. Listener bound: false.
 
 ## Cold boot
