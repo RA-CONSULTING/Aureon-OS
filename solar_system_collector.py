@@ -117,6 +117,21 @@ class SolarSystemCollector:
             return None
     
     # ─── Parsers ────────────────────────────────────────────────────────
+
+    @staticmethod
+    def _reading(value) -> Optional[float]:
+        """A provider number, or None when it is absent or not a real number.
+
+        A missing field is never turned into 0: 0 km/s, 0 nT or 0 sfu would be
+        an invented calm reading.
+        """
+        if value is None or isinstance(value, bool):
+            return None
+        try:
+            number = float(value)
+        except (TypeError, ValueError):
+            return None
+        return number if math.isfinite(number) else None
     
     def _parse_sunspot_cycle(self, data: dict) -> dict:
         """Parse solar cycle indices (sunspot number, F10.7)"""
@@ -127,18 +142,24 @@ class SolarSystemCollector:
         if not isinstance(latest, dict):
             return None
         
-        ssn = latest.get('ssn', 0)
-        f107 = latest.get('f10.7', latest.get('f107', 0))
-        smoothed_ssn = latest.get('smoothed_ssn', ssn)
+        ssn = self._reading(latest.get('ssn'))
+        f107 = self._reading(latest.get('f10.7', latest.get('f107')))
+        smoothed_ssn = self._reading(latest.get('smoothed_ssn'))
         time_tag = latest.get('time_tag', 'unknown')
-        
-        # Solar cycle phase classification
-        if f107 < 70:
+        if ssn is None and f107 is None:
+            return None
+
+        # Solar cycle phase classification (needs a real F10.7 reading)
+        if f107 is None:
+            cycle_phase = None
+        elif f107 < 70:
             cycle_phase = 'solar_minimum'
         elif f107 < 120:
-            cycle_phase = 'ascending' if smoothed_ssn > ssn else 'descending'
+            cycle_phase = (('ascending' if smoothed_ssn > ssn else 'descending')
+                           if smoothed_ssn is not None and ssn is not None else None)
         elif f107 < 200:
-            cycle_phase = 'solar_maximum' if smoothed_ssn > 100 else 'approaching_max'
+            cycle_phase = (('solar_maximum' if smoothed_ssn > 100 else 'approaching_max')
+                           if smoothed_ssn is not None else None)
         else:
             cycle_phase = 'solar_maximum'
         
@@ -149,7 +170,7 @@ class SolarSystemCollector:
             'smoothed_ssn': smoothed_ssn,
             'f10.7_flux': f107,
             'cycle_phase': cycle_phase,
-            'activity_level': self._classify_solar_activity(f107),
+            'activity_level': self._classify_solar_activity(f107) if f107 is not None else None,
             'confidence': 0.90
         }
     
@@ -177,10 +198,12 @@ class SolarSystemCollector:
         if not isinstance(latest, dict):
             return None
 
-        density = latest.get('proton_density') or 0
-        speed = latest.get('proton_speed') or 0
-        temp = latest.get('proton_temperature') or 0
-        
+        density = self._reading(latest.get('proton_density'))
+        speed = self._reading(latest.get('proton_speed'))
+        temp = self._reading(latest.get('proton_temperature'))
+        if speed is None:
+            return None
+
         # Classify solar wind regime
         if speed < 350:
             regime = 'slow_wind'
@@ -194,7 +217,8 @@ class SolarSystemCollector:
             regime = 'extreme'
         
         # Dynamic pressure (nPa) ≈ n * v² * 1.67e-6
-        dynamic_pressure = density * (speed ** 2) * 1.67e-6
+        dynamic_pressure = (density * (speed ** 2) * 1.67e-6
+                            if density is not None else None)
         
         return {
             'source': 'solar_wind_l1',
@@ -223,20 +247,22 @@ class SolarSystemCollector:
         if not isinstance(latest, dict):
             return None
 
-        bx = float(latest.get('bx_gsm') or 0)
-        by = float(latest.get('by_gsm') or 0)
-        bz = float(latest.get('bz_gsm') or 0)
-        bt = float(latest.get('bt') or 0)
-        
+        bx = self._reading(latest.get('bx_gsm'))
+        by = self._reading(latest.get('by_gsm'))
+        bz = self._reading(latest.get('bz_gsm'))
+        bt = self._reading(latest.get('bt'))
+        if bz is None and bt is None:
+            return None
+
         # Clock angle
-        if bt > 0:
+        if bt is not None and bt > 0 and by is not None and bz is not None:
             clock_angle = math.degrees(math.atan2(by, bz))
         else:
             clock_angle = None
         
         # Geomagnetic coupling (simplified): southward Bz couples most efficiently
         coupling = (max(0, -bz * solar_wind_speed * 1e-3)
-                    if solar_wind_speed is not None else None)
+                    if solar_wind_speed is not None and bz is not None else None)
         
         return {
             'source': 'mag_field_l1',
@@ -584,16 +610,16 @@ class SolarSystemCollector:
         
         # Check solar wind
         sw = state.get('solar_wind', {})
-        if sw.get('speed', 0) > 600:
+        if (sw.get('speed') or 0) > 600:  # missing speed raises no concern and adds no reading
             health['score'] -= 0.2
             health['concerns'].append(f"High-speed solar wind: {sw.get('speed'):.0f} km/s")
-        if sw.get('dynamic_pressure', 0) > 10:
+        if (sw.get('dynamic_pressure') or 0) > 10:
             health['score'] -= 0.2
             health['concerns'].append(f"High dynamic pressure: {sw.get('dynamic_pressure'):.1f} nPa")
         
         # Check magnetic field
         mag = state.get('magnetic_field', {})
-        if mag.get('bz', 0) < -10:
+        if mag.get('bz') is not None and mag['bz'] < -10:
             health['score'] -= 0.3
             health['concerns'].append(f"Strong southward Bz: {mag.get('bz'):.1f} nT")
         
@@ -721,15 +747,17 @@ if __name__ == '__main__':
             sw = result.get('solar_wind', {})
             if sw:
                 print(f"\n   🌬️ Solar Wind (L1):")
-                print(f"      Speed: {sw.get('speed', 'N/A'):.1f} km/s")
-                print(f"      Density: {sw.get('density', 'N/A'):.2f} cm⁻³")
-                print(f"      Pressure: {sw.get('dynamic_pressure', 'N/A'):.2f} nPa")
+                _f = lambda v, n: 'N/A' if v is None else f"{v:.{n}f}"
+                print(f"      Speed: {_f(sw.get('speed'), 1)} km/s")
+                print(f"      Density: {_f(sw.get('density'), 2)} cm⁻³")
+                print(f"      Pressure: {_f(sw.get('dynamic_pressure'), 2)} nPa")
             
             mag = result.get('magnetic_field', {})
             if mag:
                 print(f"\n   🧲 IMF (L1):")
-                print(f"      Bz: {mag.get('bz', 'N/A'):.2f} nT")
-                print(f"      Bt: {mag.get('bt', 'N/A'):.2f} nT")
+                _f = lambda v, n: 'N/A' if v is None else f"{v:.{n}f}"
+                print(f"      Bz: {_f(mag.get('bz'), 2)} nT")
+                print(f"      Bt: {_f(mag.get('bt'), 2)} nT")
             
             alerts = result.get('alerts', {})
             if alerts:
