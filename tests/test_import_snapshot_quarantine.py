@@ -168,6 +168,42 @@ def _compose_files() -> list[Path]:
     )
 
 
+# Build contexts produced by a stage script rather than committed. Each maps to
+# the script that writes it.
+STAGED_CONTEXTS = {
+    (ROOT / "deploy" / "plug" / "image").resolve(): ROOT / "scripts" / "stage_plug_image.py",
+}
+
+
+def _assert_staged_context_is_quarantine_safe(context: Path) -> None:
+    import ast
+
+    script = STAGED_CONTEXTS[context]
+    assert script.is_file(), f"{context} has no stage script at {script}"
+    tree = ast.parse(script.read_text(encoding="utf-8"))
+    assigned = {
+        target.id: node.value
+        for node in tree.body
+        if isinstance(node, ast.Assign)
+        for target in node.targets
+        if isinstance(target, ast.Name)
+    }
+    trees = ast.literal_eval(assigned["TREES"])
+    assert trees and not {"imports", "archive"} & set(trees), (
+        f"{script} stages a quarantined tree: {trees!r}"
+    )
+    image = ast.unparse(assigned["IMAGE"])
+    relative = context.relative_to(ROOT.resolve())
+    assert image == "ROOT / " + " / ".join(repr(part) for part in relative.parts), (
+        f"{script} does not write {relative}"
+    )
+    ignored = {
+        line.strip().strip("/")
+        for line in (ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()
+    }
+    assert relative.as_posix() in ignored, f"{relative} must stay gitignored"
+
+
 def test_root_docker_contexts_exclude_historical_trees() -> None:
     rules = {
         line.strip().replace("\\", "/").strip("/")
@@ -185,6 +221,13 @@ def test_root_docker_contexts_exclude_historical_trees() -> None:
                 continue
             raw_context = build if isinstance(build, str) else build.get("context", ".")
             context = (compose_path.parent / str(raw_context)).resolve()
+            if context in STAGED_CONTEXTS and not context.is_dir():
+                # Generated, gitignored context (e.g. deploy/plug/image from
+                # #231). It is absent in a clean clone by design, so prove the
+                # stage script that builds it instead: it must write exactly this
+                # path, stay gitignored, and never copy a quarantined tree.
+                _assert_staged_context_is_quarantine_safe(context)
+                continue
             contexts.append((compose_path, context))
             assert context.is_dir(), f"{compose_path}:{service_name} has a missing build context"
 
