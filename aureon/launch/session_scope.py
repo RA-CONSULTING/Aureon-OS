@@ -130,6 +130,8 @@ ARMING_ENV_DROP = (
     "EPICENTER_LIVE",                   # must equal "YES"
     "PAPER_MODE",
     "QGITA_PAPER_TRADING",              # unset means paper
+    "SIMULATION_MODE",                  # no Python reader; dropped, not forced (real-data-only rule)
+    "DEMO_MODE",                        # no Python reader; dropped, not forced (real-data-only rule)
 )
 
 # Forced into every test or repair child, after the drops. These are the ones
@@ -156,14 +158,14 @@ FORCED_OFF = {
     # repair loop (aureon_baton_link.py:169 arms only at "1"; the HF guards and
     # mcp/aureon_public force "0").
     "AUREON_ACTIVATE_ON_IMPORT": "0",
-    # Generic paper/testnet/simulation switches inherited from the live run,
-    # set to the safe side. No Python reader parses these today; USE_TESTNET
-    # is read as === '1' in scripts/traders/realMoneyTrade.ts:33.
+    # Generic paper/testnet switches inherited from the live run, set to the
+    # safe side. No Python reader parses these today; USE_TESTNET is read as
+    # === '1' in scripts/traders/realMoneyTrade.ts:33. SIMULATION_MODE and
+    # DEMO_MODE are dropped instead (ARMING_ENV_DROP): forcing them on would
+    # run against the real-data-only rule (aureon_baton_link._REAL_DATA_ENV_DEFAULTS).
     "PAPER": "1",
     "PAPER_TRADING": "true",
     "USE_TESTNET": "1",
-    "SIMULATION_MODE": "1",
-    "DEMO_MODE": "1",
     # Exchange switches. The credential prefix rule drops them, and each one
     # defaults to the live endpoint when unset, so they are forced back here
     # (after the drop) to the value every reader parses as paper/testnet/dry:

@@ -116,8 +116,6 @@ SAFETY = {
     "PAPER": "1",
     "PAPER_TRADING": "true",
     "USE_TESTNET": "1",
-    "SIMULATION_MODE": "1",
-    "DEMO_MODE": "1",
     "ALPACA_PAPER": "true",
     "ALPACA_DRY_RUN": "true",
     "BINANCE_USE_TESTNET": "true",
@@ -493,3 +491,13 @@ def test_child_cannot_start_a_nested_repair_loop(tmp_path, monkeypatch, module, 
     assert done.returncode == 0, done.stderr[-2000:]
     seen = json.loads(done.stdout.strip().splitlines()[-1])
     assert seen == {"calls": [], "activate": "0", "suppress": "1", "repair_root": False}
+
+
+@pytest.mark.parametrize("value", ["0", "1"])
+def test_simulation_and_demo_mode_are_dropped_not_forced(value):
+    from aureon.launch.session_scope import isolated_child_env
+
+    child = isolated_child_env({"SIMULATION_MODE": value, "DEMO_MODE": value, "PATH": "/usr/bin"})
+    assert "SIMULATION_MODE" not in child
+    assert "DEMO_MODE" not in child
+    assert child["PAPER"] == "1" and child["PAPER_TRADING"] == "true" and child["USE_TESTNET"] == "1"
