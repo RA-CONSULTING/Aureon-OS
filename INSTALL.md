@@ -31,10 +31,22 @@ these by default:
 - `AUREON_DISABLE_REAL_ORDERS=1`
 - `AUREON_DISABLE_EXCHANGE_MUTATIONS=1`
 
-If you add your own exchange keys, this install path still places no
-orders and makes no exchange mutations until you deliberately flip those
-switches. The plug-and-play supervisor also drops credential-shaped
-variables from the child environment and does not read `.env`.
+`install.sh` and `install.ps1` export these values every time they run, so
+setting them differently in your shell does not change them. To flip them on
+this path you would have to edit the installer. The plug-and-play supervisor
+also drops credential-shaped variables from the child environment and does
+not read `.env`. The test
+`tests/test_install_boot_dummy_keys_no_orders.py` checks that the order
+guards stay closed with dummy keys present. It is a check of the guard
+functions, not a full boot.
+
+> **Warning: do not use the master launcher with exchange keys for
+> evaluation.** `python -m aureon.launch.master` (and
+> `scripts/launch/aureon-master.sh`, `.ps1`, `.bat`) is a different entry
+> point. It writes `.env` from `.env.example` when `.env` is absent and turns
+> live trading on once a complete exchange key group is present in `.env`,
+> the inherited shell, or `aureon_radar/.env`. For evaluation, stay on
+> `./install.sh --smoke` and leave exchange keys unset.
 
 ## Linux and macOS
 
