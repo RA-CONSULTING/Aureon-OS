@@ -292,6 +292,21 @@ class DustConverter:
 # 🧪 QUICK TEST
 # ════════════════════════════════════════════════════════════════════════════
 
+_dust_converter_instance: Optional["DustConverter"] = None
+
+
+def get_dust_converter() -> "DustConverter":
+    """Shared DustConverter instance.
+
+    The converter only finds and reports dust candidates; it never places
+    orders. Any sweep is executed (and governed) by its caller.
+    """
+    global _dust_converter_instance
+    if _dust_converter_instance is None:
+        _dust_converter_instance = DustConverter()
+    return _dust_converter_instance
+
+
 if __name__ == "__main__":
     # Test the dust converter with sample data
     converter = DustConverter()

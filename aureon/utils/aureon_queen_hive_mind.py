@@ -11088,7 +11088,7 @@ Feeling: {thought['emotion']}
             
             # 🌫️💰 DUST CONVERTER - Small Balance Aggregator
             try:
-                from aureon_dust_converter import DustConverter, get_dust_converter
+                from aureon.conversion.dust_converter import DustConverter, get_dust_converter
                 self.dust_converter = get_dust_converter() if hasattr(get_dust_converter, '__call__') else None
                 if self.dust_converter:
                     self.controlled_systems['dust_converter']['status'] = 'ONLINE'
