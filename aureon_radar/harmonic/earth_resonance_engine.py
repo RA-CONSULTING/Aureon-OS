@@ -331,16 +331,21 @@ class EarthResonanceEngine:
             if mode3_power is None:
                 mode3_power = 0.5 + 0.2 * math.sin(now / 800)
         
-        # Field coherence affected by market volatility
-        base_coherence = 0.7 + 0.2 * math.cos(now / 1500)
+        # This copy has no measured source for coherence, phase lock or
+        # stability, so it never reports them as live. Clock maths only runs
+        # under the dev switch, and even then the gate stays closed.
         volatility_impact = max(0, 1.0 - market_volatility * 0.5)
-        field_coherence = base_coherence * volatility_impact
-        
-        # Phase lock strength
-        phase_lock = 0.75 + 0.15 * math.sin(now / 600) + 0.1 * field_coherence
-        
-        # Resonance stability
-        resonance_stability = 0.85 + 0.1 * math.cos(now / 900)
+        fields_are_live = False
+        from aureon.observer.live_data_policy import simulation_fallback_allowed
+        if simulation_fallback_allowed():
+            base_coherence = 0.7 + 0.2 * math.cos(now / 1500)
+            field_coherence = base_coherence * volatility_impact
+            phase_lock = 0.75 + 0.15 * math.sin(now / 600) + 0.1 * field_coherence
+            resonance_stability = 0.85 + 0.1 * math.cos(now / 900)
+        else:
+            field_coherence = 0.0
+            phase_lock = 0.0
+            resonance_stability = 0.0
         
         self.schumann_state = SchumannState(
             mode1_power=max(0, min(1, mode1_power)),
@@ -358,7 +363,7 @@ class EarthResonanceEngine:
 
         # Mark state as initialized — get_trading_gate_status() will now
         # return real gate decisions instead of (False, "no_live_data").
-        self._schumann_state_initialized = True
+        self._schumann_state_initialized = fields_are_live
 
         self.last_update = now
         return self.schumann_state
