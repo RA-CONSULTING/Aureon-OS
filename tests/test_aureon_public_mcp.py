@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import asyncio
 import inspect
 import json
@@ -665,35 +666,76 @@ def test_import_checked_has_no_import_module_fallback(monkeypatch: pytest.Monkey
     assert hasattr(loaded, "solfeggio_ladder")
 
 
+def _call_name(node: ast.AST) -> str:
+    if isinstance(node, ast.Call):
+        node = node.func
+    parts: list[str] = []
+    while isinstance(node, ast.Attribute):
+        parts.append(node.attr)
+        node = node.value
+    if isinstance(node, ast.Name):
+        parts.append(node.id)
+    return ".".join(reversed(parts))
+
+
+def _is_launch_call(node: ast.AST) -> bool:
+    """Any call whose callee is an attribute named ``launch``, whatever the
+    receiver is, so chains such as ``demo.queue().launch()`` and
+    ``gr.Blocks().launch()`` count too.  Not covered: dynamic lookups such as
+    ``getattr(demo, "launch")()``."""
+    return (
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "launch"
+    )
+
+
+def _is_main_guard(node: ast.stmt) -> bool:
+    test = getattr(node, "test", None)
+    return (
+        isinstance(node, ast.If)
+        and isinstance(test, ast.Compare)
+        and isinstance(test.left, ast.Name)
+        and test.left.id == "__name__"
+        and len(test.comparators) == 1
+        and isinstance(test.comparators[0], ast.Constant)
+        and test.comparators[0].value == "__main__"
+    )
+
+
 def test_space_entry_points_call_enforce_public_pin() -> None:
+    """Each Space runs the pin check in __main__ before it is served, and is
+    served only through the guarded bind, which always passes share=False.
+    Checked on the parsed code, so comments, strings and spacing cannot fool it."""
     for name in ("hnc-field", "auris-coherence", "qgita-snr", "organism-replay"):
-        text = (ROOT / "huggingface" / name / "app.py").read_text(encoding="utf-8")
-        main_at = text.index('if __name__ == "__main__":')
-        call_at = text.index("enforce_public_pin()")
-        assert call_at > main_at
-        # The pin check must run before the app is served.  The Spaces serve
-        # through the shared guarded bind, space_bind.launch(demo), which
-        # scrubs secrets and forces share=False before calling demo.launch.
-        assert "space_bind.launch(demo)" in text[call_at:]
-        # app.py never calls demo.launch( itself; only the guarded bind does.
-        assert "demo.launch(" not in text
-        assert "share=True" not in text
-    bind = (ROOT / "huggingface" / "space_bind.py").read_text(encoding="utf-8")
-    body = bind[bind.index("def launch("):]
-    start = body.index("demo.launch(")
-    depth, end = 0, start
-    for i in range(start, len(body)):
-        depth += {"(": 1, ")": -1}.get(body[i], 0)
-        if body[i] == ")" and depth == 0:
-            end = i
-            break
-    call = body[start : end + 1]
-    assert "share=False" in call
-    assert "share=True" not in call
+        tree = ast.parse((ROOT / "huggingface" / name / "app.py").read_text(encoding="utf-8"))
+        launches = [_call_name(n) for n in ast.walk(tree) if _is_launch_call(n)]
+        assert launches == ["space_bind.launch"], (name, launches)
+        guards = [n for n in tree.body if _is_main_guard(n)]
+        assert len(guards) == 1, name
+        # Only plain top-level statements of the __main__ block count, so a
+        # call hidden under `if False:` or similar does not satisfy the order.
+        order = [
+            _call_name(stmt.value)
+            for stmt in guards[0].body
+            if isinstance(stmt, ast.Expr)
+            and isinstance(stmt.value, ast.Call)
+            and _call_name(stmt.value) in ("enforce_public_pin", "space_bind.launch")
+        ]
+        assert order == ["enforce_public_pin", "space_bind.launch"], (name, order)
+    bind_text = (ROOT / "huggingface" / "space_bind.py").read_text(encoding="utf-8")
+    bind = ast.parse(bind_text)
+    launch = next(n for n in bind.body if isinstance(n, ast.FunctionDef) and n.name == "launch")
+    launch_calls = [n for n in ast.walk(launch) if _is_launch_call(n)]
+    assert [_call_name(n) for n in launch_calls] == ["demo.launch"]
+    demo_calls = launch_calls
+    share = [k for k in demo_calls[0].keywords if k.arg == "share"]
+    assert len(share) == 1
+    assert isinstance(share[0].value, ast.Constant) and share[0].value.value is False
+    assert not any(k.arg is None for k in demo_calls[0].keywords)
     for name in ("hnc-field", "auris-coherence", "qgita-snr", "organism-replay"):
         copy = (ROOT / "huggingface" / name / "space_bind.py").read_text(encoding="utf-8")
-        assert copy == bind, f"{name}/space_bind.py differs from huggingface/space_bind.py"
-
+        assert copy == bind_text, f"{name}/space_bind.py differs from huggingface/space_bind.py"
 
 def test_pinned_finder_not_on_meta_path_after_teardown() -> None:
     from tests.support import mcp_isolation
