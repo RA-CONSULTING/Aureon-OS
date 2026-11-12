@@ -11,6 +11,7 @@ import logging
 import multiprocessing as mp
 import os
 import struct
+import time
 import uuid
 from multiprocessing import shared_memory
 from typing import Any
@@ -460,3 +461,228 @@ def test_master_launcher_calls_unlink_before_start_and_after_stop() -> None:
     stop_call = stop_src.find("_unlink_idle_chirp_bus()")
     assert 0 <= stop_kill < stop_call
 
+
+
+def _process_concurrent_attach(name: str, barrier: Any, report: Any) -> None:
+    """Wait on a barrier with siblings, then create-or-attach the same bus."""
+    if not name.startswith("aureon_test_"):
+        raise RuntimeError("refusing to use a non-test chirp segment name")
+    from aureon.core.aureon_chirp_bus import ChirpBus
+
+    barrier.wait(timeout=30)
+    try:
+        bus = ChirpBus(name=name, create=True)
+    except BaseException as exc:  # report any constructor crash to the parent
+        report.put({
+            "initialized": False,
+            "refused": False,
+            "reason": None,
+            "owner": False,
+            "exception": repr(exc),
+        })
+        return
+    report.put({
+        "initialized": bool(bus.ring._initialized),
+        "refused": bool(bus.refused),
+        "reason": bus.ring._refuse_reason,
+        "owner": bool(bus.ring._owner),
+        "exception": None,
+    })
+    bus.ring.close()
+
+
+def test_concurrent_start_on_fresh_name_never_refuses() -> None:
+    """Buzz's probe: N processes start at once on a fresh name, several rounds."""
+    ctx = mp.get_context("fork") if "fork" in mp.get_all_start_methods() else mp.get_context("spawn")
+    procs_per_round = 8
+    rounds = 10
+    failures: list[dict[str, Any]] = []
+    owners_per_round: list[int] = []
+    for _ in range(rounds):
+        name = _unique_test_name()
+        barrier = ctx.Barrier(procs_per_round)
+        report = ctx.Queue()
+        procs = [
+            ctx.Process(target=_process_concurrent_attach, args=(name, barrier, report))
+            for _ in range(procs_per_round)
+        ]
+        try:
+            for proc in procs:
+                proc.start()
+            results = [report.get(timeout=60) for _ in range(procs_per_round)]
+            for proc in procs:
+                proc.join(timeout=30)
+                assert proc.exitcode == 0
+            failures.extend(
+                r for r in results
+                if r["refused"] or not r["initialized"] or r["exception"]
+            )
+            owners_per_round.append(sum(1 for r in results if r["owner"]))
+        finally:
+            for proc in procs:
+                if proc.is_alive():
+                    proc.terminate()
+                    proc.join(timeout=5)
+            assert unlink_chirp_bus(name) is True
+            _unlink_test_segment(name)
+    assert failures == []
+    assert owners_per_round == [1] * rounds
+
+
+def test_attacher_waits_for_creator_to_write_version() -> None:
+    import threading
+
+    name = _unique_test_name()
+    size = _expected_ring_size()
+    _create_leftover(name, size)  # version word still 0, like a creator mid-init
+    writer = _attach_test_segment(name)
+    try:
+        def _finish_init() -> None:
+            time.sleep(0.2)
+            struct.pack_into(">I", writer.buf, size - 4, 1)
+
+        thread = threading.Thread(target=_finish_init)
+        thread.start()
+        bus = ChirpBus(name=name, create=True)
+        thread.join(timeout=5)
+        assert bus.refused is False
+        assert bus.ring._initialized is True
+        assert bus.ring._owner is False
+        assert bus.publish("hello") is True
+        bus.ring.close()
+    finally:
+        writer.close()
+        _unlink_test_segment(name)
+
+
+def test_version_zero_leftover_refuses_after_bounded_wait(caplog, monkeypatch) -> None:
+    import aureon.core.aureon_chirp_bus as chirp_bus
+
+    monkeypatch.setattr(chirp_bus, "CHIRP_ATTACH_READY_TIMEOUT_S", 0.2)
+    name = _unique_test_name()
+    _create_leftover(name, _expected_ring_size())
+    try:
+        started = time.monotonic()
+        with caplog.at_level(logging.ERROR, logger="aureon.core.aureon_chirp_bus"):
+            bus = ChirpBus(name=name, create=True)
+        elapsed = time.monotonic() - started
+        assert 0.15 <= elapsed < 5.0
+        messages = [rec.getMessage() for rec in caplog.records]
+        assert any("wrong-version leftover segment" in msg and "version 0" in msg for msg in messages)
+        assert bus.refused is True
+        assert bus.ring._initialized is False
+        assert bus.publish("hello") is False
+        assert bus.undelivered == 1
+    finally:
+        _unlink_test_segment(name)
+
+
+def test_wrong_nonzero_version_refuses_without_waiting(monkeypatch) -> None:
+    import aureon.core.aureon_chirp_bus as chirp_bus
+
+    monkeypatch.setattr(chirp_bus, "CHIRP_ATTACH_READY_TIMEOUT_S", 30.0)
+    name = _unique_test_name()
+    _create_leftover(name, _expected_ring_size(), version=7)
+    try:
+        started = time.monotonic()
+        bus = ChirpBus(name=name, create=True)
+        assert time.monotonic() - started < 1.0
+        assert bus.refused is True
+    finally:
+        _unlink_test_segment(name)
+
+
+def test_open_failure_is_logged(caplog, monkeypatch) -> None:
+    import aureon.core.aureon_chirp_bus as chirp_bus
+
+    def _boom(*_args: Any, **_kwargs: Any) -> Any:
+        raise OSError("simulated open failure")
+
+    monkeypatch.setattr(chirp_bus, "_open_shared_memory", _boom)
+    name = _unique_test_name()
+    with caplog.at_level(logging.ERROR, logger="aureon.core.aureon_chirp_bus"):
+        bus = ChirpBus(name=name, create=True)
+    assert bus.ring._initialized is False
+    assert bus.publish("hello") is False
+    errors = [rec for rec in caplog.records if rec.levelno >= logging.ERROR]
+    assert errors, "open failure must be logged"
+    assert any(rec.exc_info for rec in errors)
+
+
+def _process_attach_report(name: str, report: Any) -> None:
+    if not name.startswith("aureon_test_"):
+        raise RuntimeError("refusing to use a non-test chirp segment name")
+    from aureon.core.aureon_chirp_bus import ChirpBus
+
+    try:
+        bus = ChirpBus(name=name, create=True)
+    except BaseException as exc:
+        report.put({"exception": repr(exc), "initialized": False, "refused": False})
+        return
+    report.put({
+        "exception": None,
+        "initialized": bool(bus.ring._initialized),
+        "refused": bool(bus.refused),
+        "owner": bool(bus.ring._owner),
+        "delivered": bus.publish("hello"),
+    })
+    bus.ring.close()
+
+
+def test_attacher_waits_through_size_zero_window() -> None:
+    """Name exists at size 0 (creator before ftruncate); worker must wait, not crash."""
+    import _posixshmem  # type: ignore[import-not-found]
+
+    name = _unique_test_name()
+    size = _expected_ring_size()
+    fd = _posixshmem.shm_open("/" + name, os.O_CREAT | os.O_EXCL | os.O_RDWR, mode=0o600)
+    ctx = mp.get_context("fork") if "fork" in mp.get_all_start_methods() else mp.get_context("spawn")
+    report = ctx.Queue()
+    proc = ctx.Process(target=_process_attach_report, args=(name, report))
+    try:
+        proc.start()
+        time.sleep(0.3)  # worker is now inside the size-0 window
+        os.ftruncate(fd, size)
+        shm = _attach_test_segment(name)
+        try:
+            time.sleep(0.1)  # worker sees size but version still 0
+            struct.pack_into(">I", shm.buf, size - 4, 1)
+        finally:
+            shm.close()
+        result = report.get(timeout=30)
+        proc.join(timeout=30)
+        assert proc.exitcode == 0
+        assert result["exception"] is None, result
+        assert result["refused"] is False
+        assert result["initialized"] is True
+        assert result["owner"] is False
+        assert result["delivered"] is True
+    finally:
+        os.close(fd)
+        if proc.is_alive():
+            proc.terminate()
+            proc.join(timeout=5)
+        _unlink_test_segment(name)
+
+
+def test_retry_attach_on_empty_segment_does_not_raise(monkeypatch) -> None:
+    """FileExistsError retry path: an empty-file ValueError must not escape."""
+    import aureon.core.aureon_chirp_bus as chirp_bus
+
+    monkeypatch.setattr(chirp_bus, "CHIRP_ATTACH_READY_TIMEOUT_S", 0.2)
+    calls = {"n": 0}
+
+    def _fake_open(name: str, *, create: bool, size: int = 0, track: bool) -> Any:
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise FileNotFoundError(name)
+        if create:
+            raise FileExistsError(name)
+        raise ValueError("cannot mmap an empty file")
+
+    monkeypatch.setattr(chirp_bus, "_open_shared_memory", _fake_open)
+    bus = ChirpBus(name=_unique_test_name(), create=True)
+    assert bus.refused is True
+    assert bus.ring._initialized is False
+    assert bus.publish("hello") is False
+    assert calls["n"] > 3  # it re-read for the bound before refusing

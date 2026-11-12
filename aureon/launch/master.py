@@ -1797,7 +1797,13 @@ def status_rows(repo: Path, runner: Runner, components: list[Component]) -> list
 
 
 def _unlink_idle_chirp_bus() -> None:
-    """Drop an unmapped chirp bus leftover. No-op if a process still maps it."""
+    """Drop an unmapped chirp bus leftover. No-op if a process still maps it.
+
+    Restart runbook: stop the old run before starting a run on this code.
+    If an older run still maps its old-size segment, this unlink refuses
+    and every new child refuses the segment on size (logged, chirps
+    undelivered) until the old run is stopped.
+    """
     try:
         from aureon.core.aureon_chirp_bus import unlink_chirp_bus
     except Exception:

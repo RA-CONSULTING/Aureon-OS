@@ -4,6 +4,20 @@ Aureon Chirp Bus
 ----------------
 Ultra-compact kHz-rate signaling between running components using
 8-byte chirp packets and shared-memory ring buffer transport.
+
+Startup: the creator zeroes the header and writes the layout version
+word last, so a nonzero version means the segment is ready. Attachers
+that see a size of 0 or a version of 0 treat the segment as "not ready
+yet" and re-read for up to CHIRP_ATTACH_READY_TIMEOUT_S before refusing.
+A wrong nonzero size or version is refused at once.
+
+Restart runbook: stop the old run before starting a run on this code.
+While an older run still maps its old-size aureon_chirp_bus segment,
+the new launcher's unlink_chirp_bus refuses (the segment is still
+mapped) and every new child refuses the segment on size. That failure
+is loud (error log, publish/emit return False, undelivered counts up),
+but no chirps flow until the old run is stopped and the new run is
+started.
 """
 
 from __future__ import annotations
@@ -35,6 +49,10 @@ CHIRP_SIZE = 8
 HEADER_SIZE = 16  # write_idx (8) + read_idx (8)
 CHIRP_RING_VERSION = 1
 VERSION_SIZE = 4  # uint32 layout version stored after the ring payload
+# Longest time an attacher waits for a creator to finish a fresh segment
+# (size still 0 or version word still 0) before refusing it.
+CHIRP_ATTACH_READY_TIMEOUT_S = 2.0
+CHIRP_ATTACH_READY_POLL_S = 0.005
 
 CHIRP_STRUCT = struct.Struct(">BBBBHBB")
 logger = logging.getLogger(__name__)
@@ -153,39 +171,114 @@ class ChirpRingBuffer:
                 self._owner = True
             except FileExistsError:
                 # Lost the create race; attach to the winner's segment.
-                try:
-                    self.shm = _open_shared_memory(self.name, create=False, track=False)
-                except FileNotFoundError:
-                    self._initialized = False
+                if not self._attach_when_ready():
                     return
             except Exception:
+                logger.exception("chirp bus %r: could not create the segment", self.name)
                 self._initialized = False
                 return
+        except ValueError:
+            # A creator has opened the name but not sized it yet.
+            if not self._attach_when_ready():
+                return
         except Exception:
+            logger.exception("chirp bus %r: could not open the segment", self.name)
             self._initialized = False
             return
 
-        if self.shm.size != size:
-            self._refuse(
-                f"wrong-size leftover segment {self.name!r}: "
-                f"size {self.shm.size} != {size}"
-            )
-            return
-
-        self.buf = self.shm.buf
         version_offset = HEADER_SIZE + (self.slots * CHIRP_SIZE)
         if self._owner:
+            if self.shm.size != size:
+                self._refuse(
+                    f"wrong-size leftover segment {self.name!r}: "
+                    f"size {self.shm.size} != {size}"
+                )
+                return
+            self.buf = self.shm.buf
+            # Header first, version word last: a nonzero version means ready.
             self.buf[:HEADER_SIZE] = b"\x00" * HEADER_SIZE
             struct.pack_into(">I", self.buf, version_offset, CHIRP_RING_VERSION)
         else:
-            version = struct.unpack_from(">I", self.buf, version_offset)[0]
-            if version != CHIRP_RING_VERSION:
+            if not self._wait_until_ready(size, version_offset):
+                return
+        self._initialized = True
+
+    def _attach_when_ready(self) -> bool:
+        """Re-open a segment another process is still creating. Bounded wait."""
+        deadline = time.monotonic() + CHIRP_ATTACH_READY_TIMEOUT_S
+        while True:
+            try:
+                self.shm = _open_shared_memory(self.name, create=False, track=False)
+                return True
+            except FileNotFoundError:
+                self._initialized = False
+                return False
+            except ValueError:
+                # Still empty (not sized yet); keep waiting.
+                if time.monotonic() >= deadline:
+                    self._refuse(
+                        f"wrong-size leftover segment {self.name!r}: "
+                        f"still empty after {CHIRP_ATTACH_READY_TIMEOUT_S}s"
+                    )
+                    return False
+                time.sleep(CHIRP_ATTACH_READY_POLL_S)
+            except Exception:
+                logger.exception("chirp bus %r: could not attach to the segment", self.name)
+                self._initialized = False
+                return False
+
+    def _wait_until_ready(self, size: int, version_offset: int) -> bool:
+        """Attach path: wait (bounded) while size or version is still 0.
+
+        A wrong nonzero size or version is refused at once. Size 0 or
+        version 0 means the creator has not finished; re-read for up to
+        CHIRP_ATTACH_READY_TIMEOUT_S, then refuse.
+        """
+        deadline = time.monotonic() + CHIRP_ATTACH_READY_TIMEOUT_S
+        while True:
+            assert self.shm is not None
+            actual = self.shm.size
+            if actual == 0:
+                if time.monotonic() >= deadline:
+                    self._refuse(
+                        f"wrong-size leftover segment {self.name!r}: "
+                        f"size 0 != {size} after {CHIRP_ATTACH_READY_TIMEOUT_S}s"
+                    )
+                    return False
+                # Re-open to pick up the creator's ftruncate.
+                try:
+                    self.shm.close()
+                except Exception:
+                    pass
+                self.shm = None
+                time.sleep(CHIRP_ATTACH_READY_POLL_S)
+                if not self._attach_when_ready():
+                    return False
+                continue
+            if actual != size:
+                self._refuse(
+                    f"wrong-size leftover segment {self.name!r}: "
+                    f"size {actual} != {size}"
+                )
+                return False
+            version = struct.unpack_from(">I", self.shm.buf, version_offset)[0]
+            if version == CHIRP_RING_VERSION:
+                self.buf = self.shm.buf
+                return True
+            if version != 0:
                 self._refuse(
                     f"wrong-version leftover segment {self.name!r}: "
                     f"version {version} != {CHIRP_RING_VERSION}"
                 )
-                return
-        self._initialized = True
+                return False
+            if time.monotonic() >= deadline:
+                self._refuse(
+                    f"wrong-version leftover segment {self.name!r}: "
+                    f"version 0 != {CHIRP_RING_VERSION} after "
+                    f"{CHIRP_ATTACH_READY_TIMEOUT_S}s"
+                )
+                return False
+            time.sleep(CHIRP_ATTACH_READY_POLL_S)
 
     def _refuse(self, reason: str) -> None:
         # Leave a leftover segment in place; do not create another name.
@@ -368,7 +461,10 @@ def get_chirp_bus(create_if_missing: bool = True) -> ChirpBus | None:
 def _mapping_pids(name: str) -> list[int]:
     """Return pids whose /proc/<pid>/maps mention /dev/shm/<name>.
 
-    Unreadable pids are skipped. The current process is included if it maps the name.
+    /proc entries this process cannot read are skipped. That includes
+    processes run by another user (and ones that exit mid-scan), so a
+    mapper run by another user cannot be seen here and will not stop
+    unlink_chirp_bus. The current process is included if it maps the name.
     """
     target = f"/dev/shm/{name}"
     pids: list[int] = []
