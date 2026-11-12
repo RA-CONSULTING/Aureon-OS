@@ -56,6 +56,12 @@ cd Aureon-OS
 ./install.sh --smoke
 ```
 
+Use a full `git clone`. Do not use `git clone --depth 1`, and do not use
+GitHub's Download ZIP. The public MCP server checks Aureon files against a
+pinned git commit and will not start unless that commit is in the local
+history. On current main, the `auris_coherence` MCP tool also refuses with
+"differs from pin" until that pin is moved to a later commit.
+
 That command creates `.venv`, installs the pinned
 `requirements-plug.lock`, installs the dashboard with
 `npm ci --ignore-scripts --prefix frontend` when `frontend/node_modules`
