@@ -75,6 +75,19 @@ LIVE_SWITCHES = {
     "AUREON_SOVEREIGN_MODE": "1",
     "EPICENTER_LIVE": "YES",
     "SOME_NEW_LIVE_SWITCH": "1",
+    "AUREON_ACTIVATE_ON_IMPORT": "1",
+    "PAPER": "0",
+    "PAPER_TRADING": "false",
+    "USE_TESTNET": "0",
+    "SIMULATION_MODE": "0",
+    "DEMO_MODE": "0",
+    "ALPACA_PAPER": "false",
+    "ALPACA_DRY_RUN": "false",
+    "BINANCE_USE_TESTNET": "false",
+    "BINANCE_TESTNET": "false",
+    "BINANCE_DRY_RUN": "false",
+    "KRAKEN_DRY_RUN": "false",
+    "CAPITAL_DEMO": "0",
 }
 # Expected in every child, whatever the parent had.
 SAFETY = {
@@ -88,6 +101,19 @@ SAFETY = {
     "AUREON_CODE_AUTO_APPROVE": "0",
     "AUREON_DRY_RUN": "1",
     "DRY_RUN": "1",
+    "AUREON_ACTIVATE_ON_IMPORT": "0",
+    "PAPER": "1",
+    "PAPER_TRADING": "true",
+    "USE_TESTNET": "1",
+    "SIMULATION_MODE": "1",
+    "DEMO_MODE": "1",
+    "ALPACA_PAPER": "true",
+    "ALPACA_DRY_RUN": "true",
+    "BINANCE_USE_TESTNET": "true",
+    "BINANCE_TESTNET": "true",
+    "BINANCE_DRY_RUN": "true",
+    "KRAKEN_DRY_RUN": "true",
+    "CAPITAL_DEMO": "1",
 }
 # Must not reach a child at all.
 UNSET_SWITCHES = tuple(name for name in LIVE_SWITCHES if name not in SAFETY)
@@ -389,3 +415,24 @@ def test_live_name_pattern(name, dropped):
 
     child = isolated_child_env({name: "1", "PATH": "/usr/bin"})
     assert (name not in child) is dropped
+
+
+def test_exchange_prefix_drop_still_removes_credentials_but_keeps_forced_switches():
+    from aureon.launch.session_scope import isolated_child_env
+
+    parent = {
+        "ALPACA_API_KEY": "fake", "ALPACA_SECRET_KEY": "fake", "APCA_API_KEY_ID": "fake",
+        "BINANCE_API_KEY": "fake", "BINANCE_API_SECRET": "fake", "BINANCE_SECRET": "fake",
+        "KRAKEN_API_KEY": "fake", "KRAKEN_PRIVATE_KEY": "fake", "CAPITAL_API_KEY": "fake",
+        "CAPITAL_PASSWORD": "fake", "CAPITAL_IDENTIFIER": "fake", "COINBASE_API_SECRET": "fake",
+        "CAPITAL_LIVE": "true", "KRAKEN_LIVE_ENABLED": "1", "APCA_LIVE": "1",
+        **{name: LIVE_SWITCHES[name] for name in ("ALPACA_PAPER", "ALPACA_DRY_RUN", "BINANCE_USE_TESTNET",
+                                                  "BINANCE_TESTNET", "BINANCE_DRY_RUN", "KRAKEN_DRY_RUN",
+                                                  "CAPITAL_DEMO")},
+    }
+    child = isolated_child_env(parent)
+    exchange = sorted(k for k in child if k.startswith(("ALPACA_", "APCA_", "BINANCE_", "KRAKEN_", "CAPITAL_", "COINBASE_")))
+    assert exchange == sorted(["ALPACA_PAPER", "ALPACA_DRY_RUN", "BINANCE_USE_TESTNET", "BINANCE_TESTNET",
+                               "BINANCE_DRY_RUN", "KRAKEN_DRY_RUN", "CAPITAL_DEMO"])
+    for name in exchange:
+        assert child[name] == SAFETY[name], name

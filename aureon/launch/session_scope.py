@@ -152,6 +152,31 @@ FORCED_OFF = {
     "AUREON_CODE_AUTO_APPROVE": "0",
     "AUREON_DRY_RUN": "1",
     "DRY_RUN": "1",
+    # A child that imports an organ must not wake the Queen or start another
+    # repair loop (aureon_baton_link.py:169 arms only at "1"; the HF guards and
+    # mcp/aureon_public force "0").
+    "AUREON_ACTIVATE_ON_IMPORT": "0",
+    # Generic paper/testnet/simulation switches inherited from the live run,
+    # set to the safe side. No Python reader parses these today; USE_TESTNET
+    # is read as === '1' in scripts/traders/realMoneyTrade.ts:33.
+    "PAPER": "1",
+    "PAPER_TRADING": "true",
+    "USE_TESTNET": "1",
+    "SIMULATION_MODE": "1",
+    "DEMO_MODE": "1",
+    # Exchange switches. The credential prefix rule drops them, and each one
+    # defaults to the live endpoint when unset, so they are forced back here
+    # (after the drop) to the value every reader parses as paper/testnet/dry:
+    # .lower() == "true" (alpaca_client.py:161-162, binance_client.py:69-70,
+    # kraken_client.py:441, kraken_adapter.py:205) and CAPITAL_DEMO == "1"
+    # (capital_client.py:231, aureon_radar/capital_client.py:89).
+    "ALPACA_PAPER": "true",
+    "ALPACA_DRY_RUN": "true",
+    "BINANCE_USE_TESTNET": "true",
+    "BINANCE_TESTNET": "true",
+    "BINANCE_DRY_RUN": "true",
+    "KRAKEN_DRY_RUN": "true",
+    "CAPITAL_DEMO": "1",
 }
 
 
