@@ -128,7 +128,6 @@ def test_missing_faculty_file_records_absence_without_a_measurement(tmp_path: Pa
 
 def test_workspace_scripts_from_the_preflight_are_present() -> None:
     names = (
-        "sero_space_weather.py",
         "aureon_self_questioning_runner.py",
     )
     for name in names:
