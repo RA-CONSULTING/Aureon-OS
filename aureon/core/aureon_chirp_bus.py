@@ -95,6 +95,29 @@ class ChirpPacket:
         )
 
 
+
+def _open_shared_memory(
+    name: str,
+    *,
+    create: bool,
+    size: int = 0,
+    track: bool,
+) -> shared_memory.SharedMemory:
+    """Open a segment; `track=False` keeps the resource tracker from unlinking it."""
+    try:
+        return shared_memory.SharedMemory(name=name, create=create, size=size, track=track)
+    except TypeError:
+        # Python < 3.13 has no track=; unregister non-owners ourselves.
+        shm = shared_memory.SharedMemory(name=name, create=create, size=size)
+        if not track:
+            try:
+                from multiprocessing import resource_tracker
+                resource_tracker.unregister(shm._name, "shared_memory")
+            except Exception:
+                pass
+        return shm
+
+
 @dataclass
 class ChirpRingBuffer:
     name: str
@@ -103,44 +126,67 @@ class ChirpRingBuffer:
     shm: Optional[shared_memory.SharedMemory] = field(init=False, default=None)
     buf: Optional[memoryview] = field(init=False, default=None)
     _initialized: bool = field(init=False, default=False)
+    _owner: bool = field(init=False, default=False)
 
     def __post_init__(self) -> None:
         size = HEADER_SIZE + (self.slots * CHIRP_SIZE)
+        self._owner = False
         try:
-            self.shm = shared_memory.SharedMemory(name=self.name, create=self.create, size=size)
-            self.buf = self.shm.buf
-            if self.create:
-                self.buf[:HEADER_SIZE] = b"\x00" * HEADER_SIZE
-            self._initialized = True
-        except (FileExistsError, FileNotFoundError) as e:
-            # Shared memory segment doesn't exist or is corrupted
-            # Try to cleanup and recreate
-            try:
-                existing = shared_memory.SharedMemory(name=self.name)
-                existing.close()
-                existing.unlink()
-            except (FileNotFoundError, ValueError):
-                pass
-            # Try again with create=True
-            try:
-                self.shm = shared_memory.SharedMemory(name=self.name, create=True, size=size)
-                self.buf = self.shm.buf
-                self.buf[:HEADER_SIZE] = b"\x00" * HEADER_SIZE
-                self._initialized = True
-            except Exception:
-                # Give up - shared memory not available
+            self.shm = _open_shared_memory(self.name, create=False, track=False)
+        except FileNotFoundError:
+            if not self.create:
                 self._initialized = False
-    
+                return
+            try:
+                self.shm = _open_shared_memory(self.name, create=True, size=size, track=True)
+                self._owner = True
+            except FileExistsError:
+                # Lost the create race; attach to the winner's segment.
+                try:
+                    self.shm = _open_shared_memory(self.name, create=False, track=False)
+                except FileNotFoundError:
+                    self._initialized = False
+                    return
+            except Exception:
+                self._initialized = False
+                return
+        except Exception:
+            self._initialized = False
+            return
+
+        if self.shm.size < size:
+            # Existing segment is too small; leave it in place for its owner.
+            try:
+                self.shm.close()
+            except Exception:
+                pass
+            self.shm = None
+            self._owner = False
+            self._initialized = False
+            return
+
+        self.buf = self.shm.buf
+        if self._owner:
+            self.buf[:HEADER_SIZE] = b"\x00" * HEADER_SIZE
+        self._initialized = True
+
     def close(self) -> None:
-        """Close and cleanup shared memory."""
+        """Close the mapping; unlink only if this instance created the segment."""
         if self.shm:
             try:
                 self.shm.close()
-                if self.create:
-                    self.shm.unlink()
+                if self._owner:
+                    try:
+                        self.shm.unlink()
+                    except FileNotFoundError:
+                        pass
+                    self._owner = False
             except Exception:
                 pass
-    
+            self.shm = None
+            self.buf = None
+            self._initialized = False
+
     def __del__(self) -> None:
         """Cleanup on deletion - only if initialized."""
         if getattr(self, '_initialized', False):
@@ -181,10 +227,6 @@ class ChirpRingBuffer:
         next_read = (read_idx + CHIRP_SIZE) % (self.slots * CHIRP_SIZE)
         self._set_read_idx(next_read)
         return chirp_bytes
-
-    def close(self) -> None:
-        if self.shm:
-            self.shm.close()
 
 
 try:
