@@ -279,3 +279,5 @@ solar_system_data/
 soul_shield_logs/
 soul_protection.pid
 queen_shield_stats.json
+/schumann_sensor.pid
+/schumann_sensor.log
