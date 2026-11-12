@@ -108,12 +108,10 @@ _SURFACES: List[Dict[str, str]] = [
 
 
 def _module_importable(module: str) -> bool:
-    try:
-        import importlib.util
+    # Spec lookup only: find_spec would import every parent package for real.
+    from aureon.saas.spec_probe import module_spec_exists
 
-        return importlib.util.find_spec(module) is not None
-    except (ImportError, ModuleNotFoundError, ValueError):
-        return False
+    return module_spec_exists(module)
 
 
 def _probe(entry: Dict[str, str]) -> Dict[str, Any]:

@@ -11,16 +11,17 @@ aureon/ a product-domain home + a canonical entry point:
   • filesystem domains — every folder under aureon/ (docs/MODULES_AT_A_GLANCE.md)
   • capability categories — the 12 SystemRegistry semantic classes (in catalog.py)
 
-`domain_report()` probes each filesystem domain's entry point by import (cheap —
-``importlib.util.find_spec``, no heavy construction) so we can honestly say which
+`domain_report()` probes each filesystem domain's entry point by spec lookup (cheap —
+``spec_probe.module_spec_exists``, which runs no module code) so we can honestly say which
 domains are reachable. The known singletons come from the inventory; everything
 else falls back to "is the package importable".
 """
 
 from __future__ import annotations
 
-import importlib.util
 from typing import Any, Dict, List, Tuple
+
+from aureon.saas.spec_probe import module_spec_exists
 
 # The 6 product domains the frontend console presents.
 PRODUCT_DOMAINS: List[str] = [
@@ -128,10 +129,8 @@ def fs_domain_from_path(filepath: str) -> str:
 
 
 def _module_importable(module: str) -> bool:
-    try:
-        return importlib.util.find_spec(module) is not None
-    except (ImportError, ModuleNotFoundError, ValueError):
-        return False
+    # Spec lookup only: find_spec would import every parent package for real.
+    return module_spec_exists(module)
 
 
 def probe_domain(fs_domain: str) -> Dict[str, object]:
