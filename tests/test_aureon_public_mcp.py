@@ -674,9 +674,8 @@ def test_space_entry_points_call_enforce_public_pin() -> None:
         # The pin check must run before the app is served.  The Spaces serve
         # through the shared guarded bind, space_bind.launch(demo), which
         # scrubs secrets and forces share=False before calling demo.launch.
-        launch_at = text.index("space_bind.launch(demo)", call_at)
-        assert launch_at > call_at
-        assert "demo.launch(" not in text[main_at:call_at]
+        assert "space_bind.launch(demo)" in text[call_at:]
+        assert "demo.launch(" not in text[:call_at]
         assert "share=True" not in text
     bind = (ROOT / "huggingface" / "space_bind.py").read_text(encoding="utf-8")
     body = bind[bind.index("def launch("):]
