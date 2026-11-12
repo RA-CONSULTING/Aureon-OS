@@ -32,6 +32,8 @@ from pathlib import Path
 from .paths import WORKSPACE, AUREON_UPSTREAM, HEARTBEAT_STATE, FUSION_STATE, AUREON_RADAR
 from . import conscience_hook
 from . import events
+from .grand_wheel import STALE_SECONDS as SCHUMANN_CACHE_STALE_SECONDS
+from .schumann_freshness import evaluate_schumann_freshness
 
 LAST_RESULTS = FUSION_STATE / "heartbeat_last_results.json"
 SCHUMANN_STATE = WORKSPACE / "schumann_state.json"
@@ -264,16 +266,36 @@ def check_space_weather() -> dict:
     return {"source": None, "status": "unavailable"}
 
 
-def _load_schumann_cache() -> dict:
+def _load_schumann_cache() -> dict | None:
+    """Fresh schumann_state.json, or None — never serve a stale file as the current field.
+
+    The write timestamp must be inside grand_wheel.STALE_SECONDS (300 s)
+    so the daemon is alive. If observed_at is present it must parse and
+    be at most AUREON_SCHUMANN_OBSERVED_MAX_AGE_SEC (default 7200 s) old.
+    A present observed_at with no write timestamp is refused. Future
+    clocks beyond 60 s are refused. If observed_at is absent, the 300 s
+    write window is used as before. A file tagged simulation or
+    real_data=False is refused unless AUREON_ALLOW_SIM_FALLBACK=1,
+    matching planetary_switchboard.
+    """
     try:
-        if SCHUMANN_STATE.exists():
-            with open(SCHUMANN_STATE, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            if isinstance(data, dict):
-                return data
+        if not SCHUMANN_STATE.exists():
+            return None
+        with open(SCHUMANN_STATE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        if not isinstance(data, dict):
+            return None
+        sim_tagged = data.get("simulation") is True or data.get("real_data") is False
+        if sim_tagged and os.getenv("AUREON_ALLOW_SIM_FALLBACK") != "1":
+            return None
+        fresh = evaluate_schumann_freshness(
+            data, SCHUMANN_CACHE_STALE_SECONDS, datetime.now(timezone.utc),
+        )
+        if not fresh.accepted:
+            return None
+        return data
     except Exception:
-        pass
-    return {}
+        return None
 
 
 # ───────────────────────────── 4. upstream sync ────────────────────────────

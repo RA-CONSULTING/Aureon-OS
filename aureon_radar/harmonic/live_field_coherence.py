@@ -14,7 +14,8 @@ of scanners/live_market_momentum_scanner.py:
   * REAL values only, never fabricated. Stale or malformed state -> None.
 
 Inputs (all real, file-backed):
-  * workspace/schumann_state.json          (mtime < 300s, real_data == true)
+  * workspace/schumann_state.json          (observed_at, else timestamp,
+                                            younger than 300s; real_data == true)
       - frequency_hz: Schumann fundamental
       - activity_index: 0..100-ish scalar from the field source
   * aureon_fusion/state/hnc_core_state.json (HNC core coherence)
@@ -49,7 +50,10 @@ from __future__ import annotations
 import json
 import os
 import time
+from datetime import datetime, timezone
 from typing import Optional
+
+from aureon_fusion.schumann_freshness import evaluate_schumann_freshness
 
 # ── symbol mapping (same hub-symbol convention as the reference scanner) ────
 SYMBOL_MAP = {
@@ -66,6 +70,8 @@ _HNC_MAX_AGE = 300.0
 _FLOOR = 0.35
 
 
+
+
 def _read_json(path: str, max_age: float) -> Optional[dict]:
     try:
         if time.time() - os.path.getmtime(path) > max_age:
@@ -77,8 +83,31 @@ def _read_json(path: str, max_age: float) -> Optional[dict]:
         return None
 
 
+def _read_schumann_state(path: str, max_age: float) -> Optional[dict]:
+    """Load schumann_state.json if the write timestamp is inside max_age
+    (daemon alive) and, when present, observed_at is within the shared
+    7200 s cap. A present but unparseable observed_at, or an observed_at
+    with no write timestamp, is refused. Future clocks beyond 60 s are
+    refused. If observed_at is absent, the write-timestamp window is used
+    as before. File mtime is not a freshness clock.
+    """
+    try:
+        with open(path, encoding="utf-8") as f:
+            d = json.load(f)
+        if not isinstance(d, dict):
+            return None
+        fresh = evaluate_schumann_freshness(
+            d, max_age, datetime.now(timezone.utc),
+        )
+        if not fresh.accepted:
+            return None
+        return d
+    except Exception:
+        return None
+
+
 def _field_reading() -> Optional[dict]:
-    sch = _read_json(_SCHUMANN_PATH, _SCHUMANN_MAX_AGE)
+    sch = _read_schumann_state(_SCHUMANN_PATH, _SCHUMANN_MAX_AGE)
     if not sch or sch.get("real_data") is not True:
         return None
     hnc = _read_json(_HNC_PATH, _HNC_MAX_AGE)

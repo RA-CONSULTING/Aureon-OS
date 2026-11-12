@@ -433,7 +433,8 @@ def build_energy_digest(errors: list) -> dict:
     if sch_doc:
         schumann["frequency_hz"] = num(sch_doc.get("frequency_hz"))
         schumann["activity_label"] = sch_doc.get("activity_label")
-        schumann["ts"] = sch_doc.get("timestamp")
+        # Prefer the Tomsk measurement time when it is present.
+        schumann["ts"] = sch_doc.get("observed_at") or sch_doc.get("timestamp")
         schumann["error"] = None
     else:
         schumann["error"] = "schumann_state.json missing/unreadable"

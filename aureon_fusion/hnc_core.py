@@ -45,6 +45,7 @@ import math
 import os
 import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 # Script-or-module bootstrap: the registrar may launch this file directly
@@ -54,6 +55,10 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from aureon_fusion.paths import WORKSPACE, FUSION_STATE, AUREON_UPSTREAM
+from aureon_fusion.schumann_freshness import (
+    SCHUMANN_CLOCK_SKEW_SEC,
+    evaluate_schumann_freshness,
+)
 
 # ── SUPPRESSION ENV — must be set BEFORE any aureon import ──────────────
 # Upstream imports below are lazy (inside functions), but the flags are
@@ -279,11 +284,33 @@ def gather_readings():
     activity = _finite(schumann.get("activity_index"))
     if activity is not None:
         real = bool(schumann.get("real_data"))
-        sch_age = _age_of_timestamp(schumann.get("timestamp"))
-        sch_stale = (sch_age is None
-                     or sch_age > STALE_FACTOR * SCHUMANN_INTERVAL_S)
-        if sch_stale and not real:
-            pass  # stale non-real data is refused entirely (fail-closed)
+        # Daemon-alive window is STALE_FACTOR * SCHUMANN_INTERVAL_S (120 s).
+        # If observed_at is present both clocks must pass (shared helper);
+        # a missing write timestamp, future clock, or stale measurement
+        # is refused even for real data. Files with no observed_at keep
+        # the existing policy: stale non-real is refused, stale real is
+        # ingested degraded. Future write timestamps are refused.
+        write_window = STALE_FACTOR * SCHUMANN_INTERVAL_S
+        fresh = evaluate_schumann_freshness(
+            schumann, write_window, datetime.now(timezone.utc),
+        )
+        if fresh.has_observed_at:
+            sch_ok = fresh.accepted
+            sch_stale = False
+        else:
+            sch_stale = (
+                fresh.write_age is None
+                or fresh.write_age < -SCHUMANN_CLOCK_SKEW_SEC  # clock skew: treat as unusable
+                or fresh.write_age > write_window
+            )
+            # Future clocks are always refused; otherwise stale real stays degraded.
+            future_write = (
+                fresh.write_age is not None
+                and fresh.write_age < -SCHUMANN_CLOCK_SKEW_SEC
+            )
+            sch_ok = not future_write and not (sch_stale and not real)
+        if not sch_ok:
+            pass  # unparseable / missing / future / stale non-real: refuse
         else:
             confidence = 0.8 if real else 0.4
             if sch_stale:

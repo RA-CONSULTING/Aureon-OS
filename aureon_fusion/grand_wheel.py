@@ -69,6 +69,8 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+from aureon_fusion.schumann_freshness import evaluate_schumann_freshness
+
 try:  # canonical workspace root (import, never modify)
     from aureon_fusion.paths import WORKSPACE, FUSION_STATE
 except Exception:  # pragma: no cover - direct-file execution fallback
@@ -151,8 +153,9 @@ def _read_gaia(now: datetime) -> dict:
     data = _read_json(path)
     if data is None:
         return {"value": None, "fresh": False, "source": src}
-    ts = _parse_ts(data.get("timestamp"))
-    if ts is None or (now - ts).total_seconds() > STALE_SECONDS:
+    # Daemon-alive window is STALE_SECONDS (300 s). If observed_at is
+    # present it must parse and be within the shared 7200 s cap.
+    if not evaluate_schumann_freshness(data, STALE_SECONDS, now).accepted:
         return {"value": None, "fresh": False, "source": src}
     activity = data.get("activity_index")
     if not isinstance(activity, (int, float)):
