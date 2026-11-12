@@ -177,6 +177,10 @@ def _try_systemd_reexec(argv: list[str], unit: str) -> bool:
     env = dict(os.environ)
     env[SCOPE_ENV] = unit
     env[INSIDE_ENV] = "1"
+    # systemd-run --scope execs the command in place, so this pid stays the
+    # session root. Stamping it lets the re-exec'd launcher prove the scope is
+    # its own instead of trusting a flag inherited from another launcher.
+    env[ROOT_ENV] = str(os.getpid())
     cmd = [
         "systemd-run",
         "--user",
@@ -256,6 +260,39 @@ def _finish_inside() -> None:
     _start_setsid_probe()
 
 
+def _is_self_or_ancestor(pid: int) -> bool:
+    """True when ``pid`` is this process or one of its parents."""
+
+    if pid <= 1:
+        return False
+    current = os.getpid()
+    seen: set[int] = set()
+    while current > 1 and current not in seen:
+        if current == pid:
+            return True
+        seen.add(current)
+        current = _ppid(current)
+    return False
+
+
+def inherited_scope_is_ours() -> bool:
+    """An inherited INSIDE flag counts only if its root pid is self or an ancestor.
+
+    A launcher started by a process that merely copied another launcher's
+    environment (a self-repair pytest, a smoke test) is not inside that
+    launcher's scope. Trusting the flag there would publish the parent's
+    cgroup, and that nested launcher's --stop could then kill the parent session.
+    """
+
+    if os.environ.get(INSIDE_ENV) != "1":
+        return False
+    try:
+        root = int(os.environ.get(ROOT_ENV) or 0)
+    except ValueError:
+        return False
+    return _is_self_or_ancestor(root)
+
+
 def enter_session(argv: list[str]) -> None:
     """Move this process into the launcher scope. May re-exec."""
 
@@ -263,8 +300,13 @@ def enter_session(argv: list[str]) -> None:
         os.environ[ROOT_ENV] = str(os.getpid())
         return
     if os.environ.get(INSIDE_ENV) == "1":
-        _finish_inside()
-        return
+        if inherited_scope_is_ours():
+            _finish_inside()
+            return
+        # Someone else's session leaked in through the environment: drop it
+        # and set up a scope of our own.
+        for key in (SCOPE_ENV, CGROUP_ENV, ROOT_ENV, INSIDE_ENV, PROBE_STARTED_ENV):
+            os.environ.pop(key, None)
     unit = os.environ.get(SCOPE_ENV) or _unit_name()
     if _try_systemd_reexec(argv, unit):
         return
