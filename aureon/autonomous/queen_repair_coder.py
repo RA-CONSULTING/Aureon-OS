@@ -270,7 +270,12 @@ def _apply_and_prove(root, diff, targets, record, *, gate, architect, pytest_fn,
     def revert():
         _git(root, "checkout", "--", *targets)
 
-    after = pytest_fn(root)
+    try:
+        after = pytest_fn(root)
+    except Exception:
+        # A refused or crashed suite is not "zero failures". Revert and surface it.
+        revert()
+        raise
     failed_after = gate.failed_nodeids(after.stdout or "")
     regressions = sorted(failed_after - red_before)
     if regressions:
