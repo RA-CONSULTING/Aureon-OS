@@ -12,6 +12,8 @@ import socket
 import subprocess
 from pathlib import Path
 
+import pytest
+
 from tests.support.receipt_provenance import guard_pin_at
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -923,6 +925,43 @@ def test_committed_skip_matches_schema_pin_and_check() -> None:
     assert errors == []
     _schema_ok(receipt)
     assert set(schema["required"]) == set(receipt)
+
+
+def test_tampered_pin_measured_at_is_refused() -> None:
+    receipt = json.loads((ROOT / receipt5.JSON_PATH).read_text(encoding="utf-8"))
+    recorded_pin = receipt5.guard_pin_at(ROOT, receipt5.STARTED_FROM)
+    assert recorded_pin is not None
+    assert receipt5.validate_receipt(receipt, expected_pin=recorded_pin) == []
+
+    other_sha = "8c85c46750422c1dcef223a7f7a0042af086f280"
+    assert other_sha != receipt5.STARTED_FROM
+    assert receipt5.SHA40.fullmatch(other_sha)
+    swapped = dict(receipt)
+    swapped["pin_measured_at"] = other_sha
+    errors = receipt5.validate_receipt(swapped, expected_pin=recorded_pin)
+    assert any("pin_measured_at" in error for error in errors)
+    # The pin comparison still uses STARTED_FROM, so the pin field itself is unchanged.
+    assert not any(error.startswith("pin=") for error in errors)
+
+    dashed = dict(receipt)
+    dashed["pin_measured_at"] = "-" + ("a" * 39)
+    errors = receipt5.validate_receipt(dashed, expected_pin=recorded_pin)
+    assert any("pin_measured_at" in error for error in errors)
+    assert not any(error.startswith("pin=") for error in errors)
+
+
+def test_guard_pin_at_does_not_call_git_for_a_non_hex_commit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def forbidden(*_args, **_kwargs):
+        raise AssertionError("git must not be called")
+
+    monkeypatch.setattr(receipt5.subprocess, "check_output", forbidden)
+    assert receipt5.guard_pin_at(ROOT, "-evil") is None
+    assert receipt5.guard_pin_at(ROOT, "--pretty=format:pwned") is None
+    assert receipt5.guard_pin_at(ROOT, "not-a-commit") is None
+    assert receipt5.guard_pin_at(ROOT, receipt5.STARTED_FROM[:12]) is None
+    assert receipt5.guard_pin_at(ROOT, receipt5.STARTED_FROM.upper()) is None
 
 
 def test_readme_badge_is_still_hold() -> None:
