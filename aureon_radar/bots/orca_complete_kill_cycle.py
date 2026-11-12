@@ -31,6 +31,7 @@ Gary Leckey | The Math Works | January 2026
 # WINDOWS UTF-8 FIX - MUST BE AT VERY TOP BEFORE ALL OTHER IMPORTS
 # ═══════════════════════════════════════════════════════════════════════════
 import os
+from aureon.exchanges.orca_capital_ownership import split_owned_positions  # CN50 guard: skip Capital deals ORCA did not open
 import sys
 
 from aureon.utils.console_utf8 import ensure_utf8_stdout
@@ -8309,7 +8310,7 @@ class OrcaKillCycle:
                         
                         #   ADD POSITIONS VALUE - Include open CFD positions
                         try:
-                            positions = capital_client.get_positions()
+                            positions = split_owned_positions(capital_client.get_positions())[0]
                             self.capital_positions = []  # Store for tracking
                             for pos_data in positions:
                                 pos = pos_data.get('position', {})
@@ -8450,7 +8451,7 @@ class OrcaKillCycle:
             try:
                 capital_client = self._ensure_capital_client()
                 if capital_client:
-                    positions = capital_client.get_positions()
+                    positions = split_owned_positions(capital_client.get_positions())[0]
                     for pos_data in positions:
                         pos = pos_data.get('position', {})
                         market = pos_data.get('market', {})
@@ -8714,7 +8715,7 @@ class OrcaKillCycle:
         try:
             capital = self._ensure_capital_client()
             if capital:
-                positions = capital.get_positions()
+                positions = split_owned_positions(capital.get_positions())[0]
                 for pos_data in positions:
                     pos = pos_data.get('position', {})
                     size = float(pos.get('size', 0) or 0)
@@ -9252,7 +9253,7 @@ class OrcaKillCycle:
                     capital_client = self._ensure_capital_client()
                     if capital_client and getattr(capital_client, 'enabled', False):
                         try:
-                            positions = capital_client.get_positions()
+                            positions = split_owned_positions(capital_client.get_positions())[0]
                             for pos_data in (positions or []):
                                 pos = pos_data.get('position', {})
                                 market = pos_data.get('market', {})
