@@ -543,6 +543,9 @@ class EarthResonanceEngine:
         )
         if receipt_fresh:
             field_coherence = receipt_fields["coherence"] * volatility_impact
+            # A receipt carries no separate phase-lock measurement; phase lock
+            # is the receipt's stability (1 - earth disturbance), as in
+            # update_from_schumann_receipt.
             phase_lock = receipt_fields["stability"]
             resonance_stability = receipt_fields["stability"]
             fields_are_live = True
