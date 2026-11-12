@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import subprocess
 from pathlib import Path
 
@@ -61,6 +62,67 @@ def test_repair_pytest_runs_without_parent_session(tmp_path: Path, monkeypatch: 
 def test_fresh_clone_smoke_strips_session_and_kills_its_group() -> None:
     src = (Path(__file__).parent / "test_master_launcher.py").read_text(encoding="utf-8")
     body = src.split("def test_fresh_clone_smoke_prints_the_health_table", 1)[1]
-    assert "strip_inherited_session(os.environ.copy())" in body
+    assert "isolated_child_env(os.environ.copy())" in body
     assert "start_new_session=True" in body
     assert "_kill_group(launcher.pid)" in body.split("finally:", 1)[1]
+
+
+_FAKE_CREDS = {
+    "CAPITAL_API_PASSWORD": "fake-not-a-real-value",
+    "CAPITAL_USER": "fake",
+    "APCA_API_KEY_ID": "fake",
+    "APCA_API_SECRET_KEY": "fake",
+    "BINANCE_SECRET": "fake",
+    "ALPACA_KEY": "fake",
+    "KRAKEN_API_SECRET": "fake",
+    "SOME_FUTURE_EXCHANGE_PASSPHRASE": "fake",
+    "UNLISTED_ALIAS_SECRET": "fake",
+}
+
+
+def test_credentials_are_stripped_by_pattern() -> None:
+    env = {**_FAKE_CREDS, "PATH": "/usr/bin", "AUREON_LIVE_TRADING": "0"}
+    cleaned = session_scope.isolated_child_env(env)
+    for key in _FAKE_CREDS:
+        assert key not in cleaned, key
+    assert cleaned["PATH"] == "/usr/bin"
+    assert cleaned["AUREON_LIVE_TRADING"] == "0"
+    assert cleaned["PYTHON_DOTENV_DISABLED"] == "1"
+
+
+_PROBE = """
+import json, os
+from pathlib import Path
+
+root = Path(__file__).parent
+loaded = None
+try:
+    from dotenv import load_dotenv
+    load_dotenv(root / ".env", override=True)
+    loaded = "dotenv"
+except ImportError:
+    loaded = "no-dotenv"
+
+
+def test_probe():
+    names = sorted(os.environ)
+    (root / "seen.json").write_text(json.dumps({"names": names, "loader": loaded}))
+"""
+
+
+def test_real_repair_pytest_child_sees_no_credentials(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Run the real repair pytest on a tiny project with fake keys in env and .env."""
+
+    for key, value in {**_PARENT, **_FAKE_CREDS}.items():
+        monkeypatch.setenv(key, value)
+    project = tmp_path / "proj"
+    project.mkdir()
+    (project / "test_probe.py").write_text(_PROBE, encoding="utf-8")
+    (project / ".env").write_text("DOTENV_SEEDED_SECRET=fake\nCAPITAL_API_KEY=fake\n", encoding="utf-8")
+    result = repair._pytest(project)
+    assert result.returncode == 0, result.stdout + result.stderr
+    seen = json.loads((project / "seen.json").read_text(encoding="utf-8"))
+    names = set(seen["names"])
+    for key in list(_PARENT) + list(_FAKE_CREDS) + ["DOTENV_SEEDED_SECRET", "CAPITAL_API_KEY"]:
+        assert key not in names, key
+    assert "PYTHON_DOTENV_DISABLED" in names

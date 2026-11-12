@@ -557,12 +557,13 @@ def test_fresh_clone_smoke_prints_the_health_table(tmp_path: Path) -> None:
     )
     if cloned.returncode != 0:
         pytest.fail(cloned.stderr)
-    from aureon.launch.session_scope import strip_inherited_session
+    from aureon.launch.session_scope import isolated_child_env
 
-    # Never inherit a running launcher's session or workspace: under self-repair
-    # this test is spawned by a live organ, and an inherited SERO_WORKSPACE or
-    # scope made the smoke boot organs from the live folder and leave them behind.
-    env = strip_inherited_session(os.environ.copy())
+    # Never inherit a running launcher's session, workspace or credentials:
+    # under self-repair this test is spawned by a live organ, and an inherited
+    # SERO_WORKSPACE or scope made the smoke boot organs from the live folder
+    # and leave them behind. Dotenv loading is off for the same reason.
+    env = isolated_child_env(os.environ.copy())
     env["PYTHONPATH"] = str(clone)
     env["AUREON_LIVE_TRADING"] = "0"
     env.pop("AUREON_AUTONOMY_MODE", None)

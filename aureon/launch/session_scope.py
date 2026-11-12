@@ -53,6 +53,38 @@ def strip_inherited_session(env: dict[str, str]) -> dict[str, str]:
     return {key: value for key, value in env.items() if key not in INHERITED_SESSION_VARS}
 
 
+# Credentials must never reach a test or repair child. Match by pattern, not
+# a fixed list, so aliases nobody has listed yet (CAPITAL_API_PASSWORD,
+# APCA_API_KEY_ID, BINANCE_SECRET, ...) are caught too.
+CREDENTIAL_PREFIXES = ("CAPITAL_", "BINANCE_", "KRAKEN_", "ALPACA_", "APCA_", "COINBASE_")
+CREDENTIAL_SUFFIXES = ("_KEY", "_SECRET", "_PASSWORD", "_PASSPHRASE", "_TOKEN")
+
+
+def is_credential_name(name: str) -> bool:
+    upper = name.upper()
+    if upper.startswith(CREDENTIAL_PREFIXES):
+        return True
+    return upper.endswith(CREDENTIAL_SUFFIXES)
+
+
+def strip_credentials(env: dict[str, str]) -> dict[str, str]:
+    """Return a copy of env without anything that looks like a credential."""
+
+    return {key: value for key, value in env.items() if not is_credential_name(key)}
+
+
+def isolated_child_env(env: dict[str, str]) -> dict[str, str]:
+    """Env for a test or repair child spawned from a live process.
+
+    No parent launcher session, no workspace pointer, no credentials, and
+    dotenv loading switched off so a .env on disk cannot hand them back.
+    """
+
+    cleaned = strip_credentials(strip_inherited_session(env))
+    cleaned["PYTHON_DOTENV_DISABLED"] = "1"
+    return cleaned
+
+
 _UNIT_SAFE = re.compile(r"[^A-Za-z0-9_.-]")
 _PROBE_SOURCE = """
 import os
