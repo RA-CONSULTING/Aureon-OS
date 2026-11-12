@@ -209,22 +209,39 @@ class QueenSoulShield:
     def _load_total_blocks(self) -> Optional[int]:
         """Load total number of attacks blocked across all sessions.
 
-        A missing file, a missing key, or a read error is no reading (None).
+        A missing file is a first run (None, and a later save may create
+        the file). A missing key, a corrupt file, or a read error is a
+        failed load: return None and set _stats_load_failed so this
+        cycle must not save totals and overwrite history with 1.
         A file that genuinely records 0 blocks keeps 0.
         """
+        self._stats_load_failed = False
         try:
             if not os.path.exists('queen_shield_stats.json'):
                 return None
             with open('queen_shield_stats.json', 'r') as f:
                 stats = json.load(f)
             if not isinstance(stats, dict) or "total_blocks" not in stats:
+                self._stats_load_failed = True
                 return None
             return int(stats["total_blocks"])
         except Exception:
+            self._stats_load_failed = True
             return None
-    
+
     def _save_stats(self):
-        """Save shield statistics"""
+        """Save shield statistics.
+
+        If the totals file existed but could not be loaded this cycle,
+        skip the save and leave the file alone. A failed load must not
+        overwrite history with a session count that starts at 1.
+        """
+        if getattr(self, "_stats_load_failed", False):
+            print(
+                "⚠️ Skipping shield stats save: previous totals load failed; "
+                "refusing to overwrite history"
+            )
+            return
         try:
             stats = {
                 'total_blocks': self.attacks_blocked_total,
@@ -239,7 +256,7 @@ class QueenSoulShield:
                 json.dump(stats, f, indent=2)
         except Exception as e:
             print(f"⚠️ Could not save stats: {e}")
-    
+
     def start_monitoring(self):
         """Start continuous monitoring and protection"""
         if self.monitoring:
@@ -407,8 +424,9 @@ class QueenSoulShield:
         
         if blocked:
             self.attacks_blocked_session += 1
-            prior = self.attacks_blocked_total
-            self.attacks_blocked_total = (0 if prior is None else prior) + 1
+            if not getattr(self, "_stats_load_failed", False):
+                prior = self.attacks_blocked_total
+                self.attacks_blocked_total = (0 if prior is None else prior) + 1
 
         else:
             # Only print penetrations (rare/important)

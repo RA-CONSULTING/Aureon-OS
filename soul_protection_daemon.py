@@ -57,23 +57,43 @@ SHIELD_STATS_FILE = WORKSPACE / "queen_shield_stats.json"
 def _load_shield_total_blocks(self) -> Optional[int]:
     """Patched QueenSoulShield._load_total_blocks — absolute stats path.
 
-    A missing file, a missing key, or a read error is no reading (None).
+    A missing file is a first run (None, and a later save may create
+    the file). A missing key, a corrupt file, or a read error is a
+    failed load: return None and set _stats_load_failed so this cycle
+    must not save totals and overwrite history with 1.
     A file that genuinely records 0 blocks keeps 0.
     """
+    if self is not None:
+        self._stats_load_failed = False
     try:
         if not SHIELD_STATS_FILE.exists():
             return None
         with open(SHIELD_STATS_FILE, "r", encoding="utf-8") as f:
             stats = json.load(f)
         if not isinstance(stats, dict) or "total_blocks" not in stats:
+            if self is not None:
+                self._stats_load_failed = True
             return None
         return int(stats["total_blocks"])
     except Exception:
+        if self is not None:
+            self._stats_load_failed = True
         return None
 
 
 def _save_shield_stats(self) -> None:
-    """Patched QueenSoulShield._save_stats — absolute stats path."""
+    """Patched QueenSoulShield._save_stats — absolute stats path.
+
+    If the totals file existed but could not be loaded this cycle,
+    skip the save and leave the file alone. A failed load must not
+    overwrite history with a session count that starts at 1.
+    """
+    if getattr(self, "_stats_load_failed", False):
+        print(
+            "⚠️ Skipping shield stats save: previous totals load failed; "
+            "refusing to overwrite history"
+        )
+        return
     try:
         stats = {
             "total_blocks": self.attacks_blocked_total,
