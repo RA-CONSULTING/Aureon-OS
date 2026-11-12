@@ -34,6 +34,7 @@
 """
 
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
+import cmath
 import math
 import time
 import logging
@@ -552,6 +553,11 @@ class MultiversalEngine:
     
     Ontological Verification: Reality validates itself through cross-universal consensus.
     A state is "real" to the extent it's replicated and in-phase across many branches.
+
+    Research model, claim state HOLD.  The branch phases here are model
+    coordinates (an evenly spaced lattice plus a slow fixed drift), not
+    observations of anything.  The consensus score reports how far those
+    model branches agree in phase; it does not verify any external state.
     """
     
     def __init__(self, n_parallel_universes: int = 7, phase_lock_strength: float = 0.3):
@@ -663,18 +669,33 @@ class MultiversalEngine:
         constructive = sum(1 for e in echoes if e.echo_type == EchoType.CONSTRUCTIVE)
         destructive = sum(1 for e in echoes if e.echo_type == EchoType.DESTRUCTIVE)
         
-        # Consensus = average coherence score (how aligned echoes are)
-        consensus_score = sum(e.coherence_score for e in echoes) / len(echoes)
-        
-        # Dominant phase = weighted average of echo phases
+        # Consensus = phase agreement across the branches (HNC paper,
+        # sero_research.txt line 461: "replicated and in phase across many
+        # parallel realities"; line 465: "widespread phase agreement").
+        # Measured as the amplitude-weighted resultant length
+        #     R = |sum_k a_k e^{i dphi_k}| / sum_k a_k
+        # (a standard modelling choice; the paper gives no formula).  R = 1
+        # when every branch has the same phase and R = 0 when they cancel,
+        # e.g. the evenly spaced default lattice.  The earlier score, the mean
+        # of (1 + cos dphi)/2, was exactly 0.5 for any evenly spaced lattice
+        # and also 0.5 for branches all at pi/2 from the primary, so it could
+        # not tell coherent from incoherent branches.
         total_amplitude = sum(e.amplitude for e in echoes)
+        resultant = sum(e.amplitude * cmath.exp(1j * e.phase_offset) for e in echoes)
         if total_amplitude > 0:
-            weighted_phase = sum(e.phase_offset * e.amplitude for e in echoes) / total_amplitude
+            consensus_score = abs(resultant) / total_amplitude
+            # Dominant phase = circular mean offset (a linear mean of angles
+            # is not meaningful once they wrap).
+            weighted_phase = cmath.phase(resultant) if consensus_score > 0 else 0.0
         else:
+            consensus_score = 0.0
             weighted_phase = 0.0
         
-        # Verification status
-        if consensus_score >= 0.7:
+        # Verification status (0.7 / 0.4 cut-offs and the 0.5 alignment cut
+        # are the code's existing values, not the paper's).  A consensus the
+        # primary is out of phase with is "contested": the primary is the
+        # deviant branch (lines 453-454), so it is not verified.
+        if consensus_score >= 0.7 and math.cos(weighted_phase) > 0.5:
             status = "verified"
         elif consensus_score >= 0.4:
             status = "contested"
