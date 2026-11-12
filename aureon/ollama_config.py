@@ -18,7 +18,54 @@ from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Tuple
 from urllib.parse import urlparse
 
-from filelock import FileLock
+try:
+    from filelock import FileLock
+except ImportError:  # filelock not installed in this environment
+    # Fallback keeps the shared budget lock real across processes where the
+    # OS allows it (fcntl.flock on POSIX). Where it doesn't, it falls back to
+    # an in-process thread lock and says so in the log, because other
+    # processes are then NOT serialised against this one.
+    try:
+        import fcntl as _fcntl
+    except ImportError:
+        _fcntl = None
+
+    _FALLBACK_THREAD_LOCK = threading.Lock()
+
+    class FileLock:  # type: ignore[no-redef]
+        """Minimal stand-in for ``filelock.FileLock`` used as a context manager."""
+
+        def __init__(self, lock_file: str) -> None:
+            self.lock_file = str(lock_file)
+            self._fh = None
+
+        def __enter__(self) -> "FileLock":
+            if _fcntl is not None:
+                Path(self.lock_file).parent.mkdir(parents=True, exist_ok=True)
+                self._fh = open(self.lock_file, "a+")
+                _fcntl.flock(self._fh.fileno(), _fcntl.LOCK_EX)
+            else:
+                logging.getLogger("aureon.ollama_config").warning(
+                    "filelock not installed and fcntl unavailable: shared Ollama "
+                    "budget lock is in-process only (%s)", self.lock_file
+                )
+                _FALLBACK_THREAD_LOCK.acquire()
+            return self
+
+        def __exit__(self, *exc: Any) -> None:
+            if self._fh is not None:
+                try:
+                    _fcntl.flock(self._fh.fileno(), _fcntl.LOCK_UN)
+                finally:
+                    self._fh.close()
+                    self._fh = None
+            else:
+                _FALLBACK_THREAD_LOCK.release()
+
+    logging.getLogger("aureon.ollama_config").warning(
+        "filelock not installed; using %s fallback for the shared Ollama budget lock",
+        "fcntl.flock" if _fcntl is not None else "in-process thread",
+    )
 
 
 DEFAULT_OLLAMA_NATIVE_BASE_URL = "http://localhost:11434"

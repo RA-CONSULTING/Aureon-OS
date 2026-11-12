@@ -62,3 +62,28 @@ def test_timeline_oracle_emit_message_calls_bind_to_chirp_bus():
         args = [object()] + [object() for _ in call.args]  # self + positionals
         kwargs = {kw.arg: object() for kw in call.keywords if kw.arg}
         sig.bind(*args, **kwargs)  # raises TypeError on a mismatched call
+
+
+def test_ollama_shared_budget_works_without_filelock(tmp_path, monkeypatch):
+    """ollama_config must import and lock without the filelock package."""
+    import builtins
+    import importlib
+    import sys
+
+    real_import = builtins.__import__
+
+    def _no_filelock(name, *args, **kwargs):
+        if name == "filelock" or name.startswith("filelock."):
+            raise ImportError("filelock blocked for test")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", _no_filelock)
+    monkeypatch.delitem(sys.modules, "filelock", raising=False)
+    monkeypatch.delitem(sys.modules, "aureon.ollama_config", raising=False)
+    mod = importlib.import_module("aureon.ollama_config")
+    lock_path = tmp_path / "budget.json.lock"
+    with mod.FileLock(str(lock_path)):
+        pass
+    assert mod.FileLock.__module__ == "aureon.ollama_config"
+    monkeypatch.setattr(builtins, "__import__", real_import)
+    monkeypatch.delitem(sys.modules, "aureon.ollama_config", raising=False)
