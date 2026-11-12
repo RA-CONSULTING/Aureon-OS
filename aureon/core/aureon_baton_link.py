@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import time
 import sys
 from pathlib import Path
@@ -362,6 +363,78 @@ def _outer_repair_timeout():
     return value * 3 + 300 if value > 0 else None
 
 
+# Names that must never reach a Queen repair or benchmark-gate child. Broader
+# than isolated_child_env's prefix/suffix lists so grant "PASSWORD" / "*_KEY"
+# aliases cannot sneak through either. Values are never logged.
+_QUEEN_CHILD_CREDENTIAL_RE = re.compile(
+    r"(?:CAPITAL_|BINANCE_|KRAKEN_|ALPACA_|APCA_|_KEY|_SECRET|_TOKEN|PASSWORD)"
+)
+
+
+def running_code_root() -> Path:
+    """Repo root of the code that is actually running this module.
+
+    ``aureon/core/aureon_baton_link.py`` → parents[2] is the live checkout,
+    which contains both ``aureon`` and ``aureon_fusion``. A Queen repair
+    worktree must not be used for module resolution.
+    """
+
+    return Path(__file__).resolve().parents[2]
+
+
+def isolated_queen_child_env(*, enable_self_repair: bool = False) -> dict[str, str]:
+    """Env for a Queen repair / benchmark-gate subprocess.
+
+    Starts from ``isolated_child_env`` (#317/#320), drops any remaining
+    credential-pattern names, pins ``PYTHONPATH`` to the running checkout,
+    and sets ``PYTHONSAFEPATH`` so a worktree ``cwd`` is not on ``sys.path``.
+    """
+
+    from aureon.launch.session_scope import isolated_child_env
+
+    env = isolated_child_env(dict(os.environ))
+    env = {key: value for key, value in env.items() if not _QUEEN_CHILD_CREDENTIAL_RE.search(key)}
+    live = str(running_code_root())
+    previous = env.get("PYTHONPATH", "").strip()
+    env["PYTHONPATH"] = live if not previous else live + os.pathsep + previous
+    env["PYTHONSAFEPATH"] = "1"
+    env["PYTHON_DOTENV_DISABLED"] = "1"
+    if enable_self_repair:
+        # Operator opted in via AUREON_QUEEN_REPAIR_ROOT.
+        env["AUREON_SELF_REPAIR_ENABLE"] = "1"
+    return env
+
+
+def queen_python_module_cmd(*module_and_args: str) -> list[str]:
+    """``python -P -m <module> ...`` so cwd is not searched for packages."""
+
+    return [sys.executable, "-P", "-m", *module_and_args]
+
+
+def queen_benchmark_gate_spawn_spec(root: str | Path) -> dict:
+    """cmd/cwd/env for ``queen_benchmark_gate``. Edits target ``root`` via --root."""
+
+    root_s = str(Path(root))
+    return {
+        "cmd": queen_python_module_cmd(
+            "aureon.autonomous.queen_benchmark_gate", "--root", root_s, "--no-relay"
+        ),
+        "cwd": root_s,
+        "env": isolated_queen_child_env(enable_self_repair=False),
+    }
+
+
+def queen_repair_spawn_spec(root: str | Path) -> dict:
+    """cmd/cwd/env for ``aureon_fusion.repair``. Edits target ``root`` via --root."""
+
+    root_s = str(Path(root))
+    return {
+        "cmd": queen_python_module_cmd("aureon_fusion.repair", "--root", root_s),
+        "cwd": root_s,
+        "env": isolated_queen_child_env(enable_self_repair=True),
+    }
+
+
 def _start_queen_repair_loop(module_name: str) -> None:
     """Let the Queen run Aureon's own self-repair on a separate checkout.
 
@@ -394,9 +467,15 @@ def _start_queen_repair_loop(module_name: str) -> None:
             if time.time() >= silent_due[0]:
                 silent_due[0] = time.time() + silent_every
                 try:  # summary -> queen.self_repair (seeing); the gate also writes the review log
-                    check = subprocess.run([sys.executable, "-m", "aureon.autonomous.queen_benchmark_gate",
-                                            "--root", root, "--no-relay"],
-                                           cwd=root, env=dict(os.environ), capture_output=True, text=True, timeout=1800)
+                    gate_spec = queen_benchmark_gate_spawn_spec(root)
+                    check = subprocess.run(
+                        gate_spec["cmd"],
+                        cwd=gate_spec["cwd"],
+                        env=gate_spec["env"],
+                        capture_output=True,
+                        text=True,
+                        timeout=1800,
+                    )
                     out = check.stdout
                     summary = json.loads(out[out.rindex("\n{") + 1:] if "\n{" in out else out[out.index("{"):])["summary"]
                     relay_state("queen.self_repair", "seeing", {"silent_wrong": summary})
@@ -404,10 +483,15 @@ def _start_queen_repair_loop(module_name: str) -> None:
                     relay_state("queen.self_repair", "not_doing", {"silent_wrong": f"{type(exc).__name__}: {exc}"[:300]})
             relay_state("queen.self_repair", "trying", {"root": root})
             try:
-                env = dict(os.environ, AUREON_SELF_REPAIR_ENABLE="1")  # operator opted in via REPAIR_ROOT
-                done = subprocess.run([sys.executable, "-m", "aureon_fusion.repair", "--root", root],
-                                      cwd=root, env=env, capture_output=True, text=True,
-                                      timeout=_outer_repair_timeout())
+                repair_spec = queen_repair_spawn_spec(root)
+                done = subprocess.run(
+                    repair_spec["cmd"],
+                    cwd=repair_spec["cwd"],
+                    env=repair_spec["env"],
+                    capture_output=True,
+                    text=True,
+                    timeout=_outer_repair_timeout(),
+                )
                 try:
                     report = json.loads(done.stdout[done.stdout.rindex("\n{") + 1:]
                                         if "\n{" in done.stdout else done.stdout[done.stdout.index("{"):])
