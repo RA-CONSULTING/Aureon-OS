@@ -465,7 +465,6 @@
   "aureon/harmonic/aureon_harmonic_reality.py:LEVEvent.to_dict": "LEVEvent.to_dict reads a research or vault coherence figure and does not emit a live order intent.",
   "aureon/harmonic/aureon_harmonic_reality.py:MultiversalCoupling.get_state": "MultiversalCoupling.get_state reads a research or vault coherence figure and does not emit a live order intent.",
   "aureon/harmonic/aureon_harmonic_reality.py:MultiversalCoupling.get_total_coherence": "MultiversalCoupling.get_total_coherence reads a research or vault coherence figure and does not emit a live order intent.",
-  "aureon/harmonic/aureon_harmonic_reality.py:MultiversalEngine.compute_ontological_verification": "MultiversalEngine.compute_ontological_verification reads a research or vault coherence figure and does not emit a live order intent.",
   "aureon/harmonic/aureon_harmonic_reality.py:MultiversalEngine.generate_echoes": "MultiversalEngine.generate_echoes reads a research or vault coherence figure and does not emit a live order intent.",
   "aureon/harmonic/aureon_harmonic_reality.py:RealityBranch.to_dict": "RealityBranch.to_dict reads a research or vault coherence figure and does not emit a live order intent.",
   "aureon/harmonic/aureon_harmonic_seed.py:GlobalHarmonicState.from_dict": "GlobalHarmonicState.from_dict reads a research or vault coherence figure and does not emit a live order intent.",
