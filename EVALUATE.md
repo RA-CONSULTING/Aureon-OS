@@ -109,9 +109,11 @@ does not establish that every feature works or that the checkout is bug-free.
   `scripts/plug_and_play.py` process that `./install.sh` starts, with the same
   guarded settings, listeners on 8787, 8790, 8077 and 5173, and a `/healthz`
   healthcheck. Its build context, `deploy/plug/image`, is not in the repository;
-  it has to be staged first with `scripts/stage_plug_image.py`. This container
-  has not been built or smoke-tested as part of this guide, so it is not the
-  evaluation route. Use `./install.sh --smoke`.
+  it has to be staged first with `scripts/stage_plug_image.py`. In a test build
+  on 12 Nov 2026 (with Node copied in instead of installed by apt), the
+  container started but exited unhealthy: the staged image has no `.git`, so
+  the MCP pin check cannot run, and `phenolic_fingerprint.py` is not copied in.
+  It is not the evaluation route. Use `./install.sh --smoke`.
 
 See also [`INSTALL.md`](INSTALL.md) for a measured walkthrough,
 [`AUTONOMY.md`](AUTONOMY.md) for the live route and the absence of a kill
