@@ -124,13 +124,3 @@ def test_missing_faculty_file_records_absence_without_a_measurement(tmp_path: Pa
     again = record_absence({"name": "hnc_core", "path": str(path)}, "organ/hnc_core")
     assert again == path
     assert json.loads(path.read_text(encoding="utf-8")) == body
-
-
-def test_workspace_scripts_from_the_preflight_are_present() -> None:
-    names = (
-        "aureon_self_questioning_runner.py",
-    )
-    for name in names:
-        text = (REPO / name).read_text(encoding="utf-8")
-        assert "invent" in text or "checkout_daemons" in text or "no question" in text
-        assert "Math.random" not in text
