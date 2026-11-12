@@ -103,7 +103,32 @@ def _suite_timeout() -> float | None:
     return value if value > 0 else None
 
 
+def _dotenv_files(root: Path) -> list[Path]:
+    """`.env*` files under root, except the committed `.env.example` template."""
+
+    return sorted(
+        path
+        for path in root.glob(".env*")
+        if path.is_file() and path.name != ".env.example"
+    )
+
+
 def _pytest(root: Path) -> subprocess.CompletedProcess[str]:
+    # Do not start the suite if a dotenv file could reload live credentials.
+    # Name the files only; never read or print their contents.
+    blocked = _dotenv_files(root)
+    if blocked:
+        names = ", ".join(path.name for path in blocked)
+        message = (
+            f"refusing to run pytest: {names} present in the repair root; "
+            "a .env file other than .env.example could reload live credentials"
+        )
+        return subprocess.CompletedProcess(
+            [sys.executable, "-m", "pytest"],
+            1,
+            "",
+            message,
+        )
     for cache in root.rglob("__pycache__"):
         if cache.is_dir():
             shutil.rmtree(cache, ignore_errors=True)

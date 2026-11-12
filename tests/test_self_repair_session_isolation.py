@@ -111,18 +111,19 @@ def test_probe():
 
 
 def test_real_repair_pytest_child_sees_no_credentials(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Run the real repair pytest on a tiny project with fake keys in env and .env."""
+    """Run the real repair pytest on a tiny project with fake keys in the environment."""
 
     for key, value in {**_PARENT, **_FAKE_CREDS}.items():
         monkeypatch.setenv(key, value)
     project = tmp_path / "proj"
     project.mkdir()
     (project / "test_probe.py").write_text(_PROBE, encoding="utf-8")
-    (project / ".env").write_text("DOTENV_SEEDED_SECRET=fake\nCAPITAL_API_KEY=fake\n", encoding="utf-8")
+    # A root .env is now refused by _pytest (see test_isolated_child_env_hardening).
+    # This test only seeds credentials in the environment.
     result = repair._pytest(project)
     assert result.returncode == 0, result.stdout + result.stderr
     seen = json.loads((project / "seen.json").read_text(encoding="utf-8"))
     names = set(seen["names"])
-    for key in list(_PARENT) + list(_FAKE_CREDS) + ["DOTENV_SEEDED_SECRET", "CAPITAL_API_KEY"]:
+    for key in list(_PARENT) + list(_FAKE_CREDS):
         assert key not in names, key
     assert "PYTHON_DOTENV_DISABLED" in names
