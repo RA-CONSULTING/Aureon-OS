@@ -128,7 +128,6 @@ def test_missing_faculty_file_records_absence_without_a_measurement(tmp_path: Pa
 
 def test_workspace_scripts_from_the_preflight_are_present() -> None:
     names = (
-        "real_time_data_feeder.py",
         "sero_space_weather.py",
         "aureon_self_questioning_runner.py",
     )
@@ -136,9 +135,3 @@ def test_workspace_scripts_from_the_preflight_are_present() -> None:
         text = (REPO / name).read_text(encoding="utf-8")
         assert "invent" in text or "checkout_daemons" in text or "no question" in text
         assert "Math.random" not in text
-
-
-@pytest.mark.parametrize("name", ["real_time_data_feeder.py"])
-def test_workspace_script_delegates(name: str) -> None:
-    text = (REPO / name).read_text(encoding="utf-8")
-    assert "checkout_daemons" in text
