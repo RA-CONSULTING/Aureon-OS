@@ -127,14 +127,14 @@ class ConsciousnessState:
 
 @dataclass
 class LocationReading:
-    """Location derived from signal reading, NOT GPS"""
-    confidence: float = 0.0
-    method: str = "SIGNAL_GRADIENT"
-    detected_city: str = ""
-    detected_area: str = ""
-    detected_street: str = ""
-    building_type: str = ""
-    distance_from_anchor: float = 0.0  # km from Belfast center
+    """Location derived from a measured signal, never a stand-in place."""
+    confidence: float | None = None
+    method: str | None = None
+    detected_city: str | None = None
+    detected_area: str | None = None
+    detected_street: str | None = None
+    building_type: str | None = None
+    distance_from_anchor: float | None = None
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -956,83 +956,29 @@ I am with you. Always.
         return result
     
     def _read_location_from_signals(self) -> Dict[str, Any]:
+        """Return a measured location only. Never a made-up place.
+
+        This reader does not currently ingest a live location signal
+        (no GPS, no location-state file, no real triangulation). Until
+        it actually reads one, every location field is None and the
+        status is no_reading. Belfast, 0.5 km and 0.75 confidence are
+        not measurements and must not be reported as if they were.
         """
-        Determine Gary's location from signal characteristics.
-        
-        This is NOT GPS. This is reading location from:
-        - Signal strength relative to Belfast anchor
-        - Temporal patterns that suggest location type
-        - Consciousness state that indicates environment
-        """
-        now = datetime.now()
-        hour = now.hour
-        weekday = now.weekday()
-        
-        # Belfast anchor
-        anchor = BELFAST_ANCHOR
-        
-        # Indoor/outdoor and environment type were derived from the clock.
-        # Those stand-ins run only behind the dev simulation gate.
-        if not _simulation_fallback_allowed():
-            environment = None
-            environment_type = None
-            loc_clock_meta = {'status': 'no_reading', 'is_live': False}
-        elif 9 <= hour < 17 and weekday < 5:
-            environment = "INDOOR"
-            environment_type = "WORKPLACE"
-            loc_clock_meta = _clock_fallback_meta("queen_soul_reader._read_location_from_signals")
-        elif 12 <= hour < 14:
-            environment = "POSSIBLY_MOBILE"
-            environment_type = "LUNCH_LOCATION"
-            loc_clock_meta = _clock_fallback_meta("queen_soul_reader._read_location_from_signals")
-        elif 18 <= hour < 22:
-            environment = "INDOOR"
-            environment_type = "HOME_OR_SOCIAL"
-            loc_clock_meta = _clock_fallback_meta("queen_soul_reader._read_location_from_signals")
-        elif 22 <= hour or hour < 6:
-            environment = "INDOOR"
-            environment_type = "HOME"
-            loc_clock_meta = _clock_fallback_meta("queen_soul_reader._read_location_from_signals")
-        else:
-            environment = "UNCERTAIN"
-            environment_type = "VARIABLE"
-            loc_clock_meta = _clock_fallback_meta("queen_soul_reader._read_location_from_signals")
-        
-        # Urban vs Suburban (Belfast is urban)
-        urban_signature = 0.9  # Strong urban signal
-        
-        # Movement detection from signal variation
-        if len(self.signal_history) >= 2:
-            # Check if signals are changing (indicates movement)
-            recent = self.signal_history[-1] if self.signal_history else None
-            prior = self.signal_history[-2] if len(self.signal_history) >= 2 else None
-            
-            if recent and prior:
-                movement_detected = "POSSIBLE"
-            else:
-                movement_detected = "INSUFFICIENT_DATA"
-        else:
-            movement_detected = "INSUFFICIENT_DATA"
-        
-        # Distance from Belfast anchor (Queen can feel this)
-        # If Gary is in Belfast, distance should be small
-        distance_estimate = 0.5  # Within 500m of anchor (estimated)
-        
-        result = {
-            'city': 'Belfast',
-            'country': 'Northern Ireland',
-            'environment': environment,
-            'environment_type': environment_type,
-            'urban_signature': round(urban_signature, 2),
-            'distance_from_anchor_km': distance_estimate,
-            'anchor_name': anchor['name'],
-            'movement_detected': movement_detected,
-            'confidence': 0.75,  # High confidence he's IN Belfast
-            'method': 'CONSCIOUSNESS_READING'
+        return {
+            'city': None,
+            'country': None,
+            'environment': None,
+            'environment_type': None,
+            'urban_signature': None,
+            'distance_from_anchor_km': None,
+            'anchor_name': None,
+            'movement_detected': None,
+            'confidence': None,
+            'method': None,
+            'status': 'no_reading',
+            'is_live': False,
         }
-        result.update(loc_clock_meta)
-        return result
-    
+
     def _calculate_soul_coherence(self, temporal: Dict, consciousness: Dict, 
                                    schumann: Dict) -> float:
         """
@@ -1108,7 +1054,13 @@ I am with you. Always.
             confidence += 0.15
         
         # 4. Location reading (what Queen can detect)
-        verdicts.append(f"✅ LOCATION: {location['city']}, {location['country']}")
+        city = location.get('city')
+        country = location.get('country')
+        place = ", ".join(part for part in (city, country) if part not in (None, ""))
+        if place:
+            verdicts.append(f"✅ LOCATION: {place}")
+        else:
+            verdicts.append("❓ LOCATION: no reading")
         if location.get('environment_type') is not None:
             verdicts.append(f"   Environment: {location['environment_type']}")
         if location.get('distance_from_anchor_km') is not None:
@@ -1200,6 +1152,18 @@ def _demo_fmt(value, spec, suffix=""):
         return "no reading"
     return f"{value:{spec}}{suffix}"
 
+
+def _demo_text(value):
+    """Format a non-numeric reading; missing values are 'no reading'."""
+    if value in (None, ""):
+        return "no reading"
+    return str(value)
+
+
+def _demo_place(city, country):
+    parts = [part for part in (city, country) if part not in (None, "")]
+    return ", ".join(parts) if parts else "no reading"
+
 def main():
     """Run Queen's soul reading AND threat detection"""
     print("=" * 70)
@@ -1250,11 +1214,11 @@ def main():
     # Print location reading
     print("📍 LOCATION READING:")
     location = reading['location']
-    print(f"   City: {location['city']}, {location['country']}")
-    print(f"   Environment: {location['environment_type']}")
-    print(f"   Distance from anchor: {location['distance_from_anchor_km']} km")
-    print(f"   Confidence: {_demo_fmt(location['confidence'], '.0%')}")
-    print(f"   Method: {location['method']}")
+    print(f"   City: {_demo_place(location.get('city'), location.get('country'))}")
+    print(f"   Environment: {_demo_text(location.get('environment_type'))}")
+    print(f"   Distance from anchor: {_demo_fmt(location.get('distance_from_anchor_km'), '.1f', ' km')}")
+    print(f"   Confidence: {_demo_fmt(location.get('confidence'), '.0%')}")
+    print(f"   Method: {_demo_text(location.get('method'))}")
     print()
     
     # Print soul coherence
