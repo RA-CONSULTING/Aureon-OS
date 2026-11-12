@@ -2,7 +2,7 @@
 
 This page is for an outside evaluator who wants to download Aureon OS, run it,
 and inspect it. There is one supported evaluation route: a full `git clone`
-and `./install.sh`. The master launcher, the `scripts/launchers/` files, the Docker image and
+and `./install.sh`. The master launcher, the `scripts/launchers/` files, the Docker images and
 provider deployments are not this evaluation route. They are listed at the end so nobody
 mistakes one for this path.
 
@@ -105,6 +105,13 @@ does not establish that every feature works or that the checkout is bug-free.
   that returns a HOLD receipt. It has no listener and starts no Aureon runtime,
   so it is not a way to run the system. See
   [`docs/deployment/PUBLIC_CONTAINER.md`](docs/deployment/PUBLIC_CONTAINER.md).
+- **Plug container** (`deploy/plug/Dockerfile`). A container form of the same
+  `scripts/plug_and_play.py` process that `./install.sh` starts, with the same
+  guarded settings, listeners on 8787, 8790, 8077 and 5173, and a `/healthz`
+  healthcheck. Its build context, `deploy/plug/image`, is not in the repository;
+  it has to be staged first with `scripts/stage_plug_image.py`. This container
+  has not been built or smoke-tested as part of this guide, so it is not the
+  evaluation route. Use `./install.sh --smoke`.
 
 See also [`INSTALL.md`](INSTALL.md) for a measured walkthrough,
 [`AUTONOMY.md`](AUTONOMY.md) for the live route and the absence of a kill
