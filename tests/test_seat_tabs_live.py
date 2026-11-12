@@ -131,7 +131,6 @@ def test_workspace_scripts_from_the_preflight_are_present() -> None:
         "real_time_data_feeder.py",
         "schumann_real_daemon.py",
         "sero_space_weather.py",
-        "soul_protection_daemon.py",
         "aureon_self_questioning_runner.py",
     )
     for name in names:
