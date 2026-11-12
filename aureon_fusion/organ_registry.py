@@ -166,6 +166,14 @@ SEAT_MARKET_PORT = int(os.environ.get("AUREON_SEAT_MARKET_PORT") or 8791)
 OLLAMA_PROBE_TIMEOUT_S = 5.0
 
 
+def _without_inherited_suppression(base) -> dict:
+    """Copy of ``base`` without the activation-wave suppression flags."""
+    env = dict(base)
+    for key in SUPPRESSION_ENV:
+        env.pop(key, None)
+    return env
+
+
 def _launch_env(extra: dict = None) -> dict:
     """Child environment for activation-wave organs: suppression env vars
     pinned, plus PYTHONPATH pinned to the upstream repo root so upstream
@@ -184,8 +192,15 @@ def _radar_env(extra: dict = None) -> dict:
     """Child environment for aureon_radar scripts that import the upstream
     `aureon` package: PYTHONPATH pinned to the upstream repo root, but NO
     activation-wave suppression flags (radar loops run in their native
-    mode)."""
-    env = dict(os.environ)
+    mode).
+
+    The suppression flags are dropped from the inherited environment. The
+    supervisor runs under SUPPRESSION_ENV and re-imports this module, so
+    without the scrub a supervisor respawn would carry them into the child.
+    The launcher (aureon/launch/master.py child_env) builds these children
+    from its own environment plus the spec env, which carries neither. An
+    entry that needs a value sets it explicitly through ``extra``."""
+    env = _without_inherited_suppression(os.environ)
     existing = env.get("PYTHONPATH")
     upstream = str(AUREON_UPSTREAM)
     env["PYTHONPATH"] = upstream + (os.pathsep + existing if existing else "")
@@ -196,8 +211,11 @@ def _radar_env(extra: dict = None) -> dict:
 
 def _workspace_env(extra: dict = None) -> dict:
     """Child environment for aureon_fusion modules that need BOTH the workspace
-    package (aureon_fusion.*) and the upstream package (aureon.*)."""
-    env = dict(os.environ)
+    package (aureon_fusion.*) and the upstream package (aureon.*).
+
+    Like _radar_env, inherited suppression flags are dropped so a supervisor
+    respawn matches the launcher's child env; ``extra`` can set them."""
+    env = _without_inherited_suppression(os.environ)
     existing = env.get("PYTHONPATH")
     parts = [str(WORKSPACE), str(AUREON_UPSTREAM)]
     if existing:
