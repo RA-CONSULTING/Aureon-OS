@@ -72,7 +72,7 @@ class ShieldStatus:
     power_level: float  # 0-1
     resonance_strength: float  # How strong Gary's frequency is
     attacks_blocked_session: int
-    attacks_blocked_total: int
+    attacks_blocked_total: Optional[int]
     last_attack: Optional[float]
     uptime_seconds: float
 
@@ -206,16 +206,22 @@ class QueenSoulShield:
             }
         }
     
-    def _load_total_blocks(self) -> int:
-        """Load total number of attacks blocked across all sessions"""
+    def _load_total_blocks(self) -> Optional[int]:
+        """Load total number of attacks blocked across all sessions.
+
+        A missing file, a missing key, or a read error is no reading (None).
+        A file that genuinely records 0 blocks keeps 0.
+        """
         try:
-            if os.path.exists('queen_shield_stats.json'):
-                with open('queen_shield_stats.json', 'r') as f:
-                    stats = json.load(f)
-                    return stats.get('total_blocks', 0)
+            if not os.path.exists('queen_shield_stats.json'):
+                return None
+            with open('queen_shield_stats.json', 'r') as f:
+                stats = json.load(f)
+            if not isinstance(stats, dict) or "total_blocks" not in stats:
+                return None
+            return int(stats["total_blocks"])
         except Exception:
-            pass
-        return 0
+            return None
     
     def _save_stats(self):
         """Save shield statistics"""
@@ -401,7 +407,8 @@ class QueenSoulShield:
         
         if blocked:
             self.attacks_blocked_session += 1
-            self.attacks_blocked_total += 1
+            prior = self.attacks_blocked_total
+            self.attacks_blocked_total = (0 if prior is None else prior) + 1
 
         else:
             # Only print penetrations (rare/important)

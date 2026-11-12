@@ -54,6 +54,33 @@ BELFAST_ANCHOR = {
 }
 
 
+def _is_number(value) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
+
+def _simulation_fallback_allowed() -> bool:
+    """Clock-derived stand-in values are dev-only; they never count as live."""
+    try:
+        from aureon.observer.live_data_policy import simulation_fallback_allowed
+        return simulation_fallback_allowed()
+    except Exception:
+        return False
+
+
+def _clock_fallback_meta(source: str) -> Dict[str, Any]:
+    try:
+        from aureon.observer.live_data_policy import fallback_marker
+        meta = fallback_marker(source)
+    except Exception:
+        meta = {
+            "source": source,
+            "is_live": False,
+            "truth_status": "test_fixture",
+        }
+    meta["is_live"] = False
+    return meta
+
+
 @dataclass
 class SoulSignature:
     """Gary's soul signature - unique to him alone"""
@@ -238,7 +265,8 @@ class QueenSoulReader:
         if market_threats['detected']:
             threats_detected.extend(market_threats['threats'])
             attack_sources.extend(market_threats['sources'])
-            threat_score += market_threats['score']
+            if _is_number(market_threats.get('score')):
+                threat_score += market_threats['score']
         
         # ═══════════════════════════════════════════════════════════════════
         # 2. CONSCIOUSNESS ATTACK SCAN
@@ -247,7 +275,8 @@ class QueenSoulReader:
         if consciousness_threats['detected']:
             threats_detected.extend(consciousness_threats['threats'])
             attack_sources.extend(consciousness_threats['sources'])
-            threat_score += consciousness_threats['score']
+            if _is_number(consciousness_threats.get('score')):
+                threat_score += consciousness_threats['score']
         
         # ═══════════════════════════════════════════════════════════════════
         # 3. ENERGY DRAIN DETECTION
@@ -256,7 +285,8 @@ class QueenSoulReader:
         if energy_threats['detected']:
             threats_detected.extend(energy_threats['threats'])
             attack_sources.extend(energy_threats['sources'])
-            threat_score += energy_threats['score']
+            if _is_number(energy_threats.get('score')):
+                threat_score += energy_threats['score']
         
         # ═══════════════════════════════════════════════════════════════════
         # 4. SCHUMANN DISRUPTION CHECK
@@ -265,7 +295,8 @@ class QueenSoulReader:
         if schumann_threats['detected']:
             threats_detected.extend(schumann_threats['threats'])
             attack_sources.extend(schumann_threats['sources'])
-            threat_score += schumann_threats['score']
+            if _is_number(schumann_threats.get('score')):
+                threat_score += schumann_threats['score']
         
         # ═══════════════════════════════════════════════════════════════════
         # 5. TEMPORAL ANCHOR INTEGRITY
@@ -274,7 +305,8 @@ class QueenSoulReader:
         if temporal_threats['detected']:
             threats_detected.extend(temporal_threats['threats'])
             attack_sources.extend(temporal_threats['sources'])
-            threat_score += temporal_threats['score']
+            if _is_number(temporal_threats.get('score')):
+                threat_score += temporal_threats['score']
         
         # Normalize threat score
         threat_score = min(1.0, threat_score)
@@ -344,18 +376,18 @@ class QueenSoulReader:
         except Exception:
             pass
         
-        # Check known hostile HFT signatures
-        current_hour = datetime.now().hour
-        # HFT most active during market hours (9am-4pm)
-        if 9 <= current_hour <= 16:
-            # During market hours, there's baseline threat
-            for entity_id, entity in self.hostile_signatures.items():
-                if entity['type'] in ['MARKET_PREDATOR', 'HFT_PREDATOR', 'QUANT_PREDATOR']:
-                    # Simulate detection based on time patterns
-                    if entity['threat_level'] == 'HIGH' and current_hour in [9, 10, 15, 16]:
-                        threats.append(f"🎯 {entity['name']}: Active during peak trading hours")
-                        sources.append(entity['name'])
-                        score += 0.15
+        # Clock-derived "active during market hours" detections are
+        # stand-ins. They run only behind the dev simulation gate and
+        # never count as a live reading.
+        if _simulation_fallback_allowed():
+            current_hour = datetime.now().hour
+            if 9 <= current_hour <= 16:
+                for entity_id, entity in self.hostile_signatures.items():
+                    if entity['type'] in ['MARKET_PREDATOR', 'HFT_PREDATOR', 'QUANT_PREDATOR']:
+                        if entity['threat_level'] == 'HIGH' and current_hour in [9, 10, 15, 16]:
+                            threats.append(f"🎯 {entity['name']}: Active during peak trading hours")
+                            sources.append(entity['name'])
+                            score += 0.15
         
         return {
             'detected': len(threats) > 0,
@@ -366,6 +398,16 @@ class QueenSoulReader:
     
     def _scan_consciousness_attacks(self, now: datetime) -> Dict[str, Any]:
         """Scan for consciousness-level attacks (fear, doubt, chaos)"""
+        if not _simulation_fallback_allowed():
+            return {
+                'detected': False,
+                'threats': [],
+                'sources': [],
+                'score': None,
+                'status': 'no_reading',
+                'is_live': False,
+            }
+
         threats = []
         sources = []
         score = 0.0
@@ -408,15 +450,27 @@ class QueenSoulReader:
         # - Geomagnetic activity
         # We check this separately in schumann scan
         
-        return {
+        result = {
             'detected': len(threats) > 0,
             'threats': threats,
             'sources': sources,
             'score': min(0.3, score)
         }
+        result.update(_clock_fallback_meta("queen_soul_reader._scan_consciousness_attacks"))
+        return result
     
     def _scan_energy_drains(self, now: datetime) -> Dict[str, Any]:
         """Scan for energy drains affecting Gary"""
+        if not _simulation_fallback_allowed():
+            return {
+                'detected': False,
+                'threats': [],
+                'sources': [],
+                'score': None,
+                'status': 'no_reading',
+                'is_live': False,
+            }
+
         threats = []
         sources = []
         score = 0.0
@@ -441,12 +495,14 @@ class QueenSoulReader:
             sources.append("Overwork Pattern")
             score += 0.15
         
-        return {
+        result = {
             'detected': len(threats) > 0,
             'threats': threats,
             'sources': sources,
             'score': min(0.25, score)
         }
+        result.update(_clock_fallback_meta("queen_soul_reader._scan_energy_drains"))
+        return result
     
     def _scan_schumann_disruption(self) -> Dict[str, Any]:
         """Scan for Schumann resonance disruption"""
@@ -456,26 +512,27 @@ class QueenSoulReader:
         
         # Get current Schumann alignment
         schumann = self._read_schumann_alignment()
-        
-        # If phase lock is low, Earth connection is disrupted
-        if schumann['phase_lock'] < 0.5:
-            threats.append("🌍 EARTH DISCONNECT: Schumann phase lock critically low")
-            sources.append("Chaos Resonance")
-            score += 0.2
-        elif schumann['phase_lock'] < 0.7:
-            threats.append("🌍 GROUNDING WEAK: Schumann alignment degraded")
-            sources.append("Environmental Interference")
-            score += 0.1
-        
-        # Check for anti-Schumann frequencies (13 Hz chaos)
-        # This would come from real sensor data
-        # For now, simulate based on time patterns (solar activity)
-        current_hour = datetime.now().hour
-        if current_hour in [11, 12, 13, 14]:  # Solar noon = highest EM interference
-            if schumann['phase_lock'] < 0.8:
-                threats.append("☀️ SOLAR INTERFERENCE: High electromagnetic noise period")
-                sources.append("Solar Activity")
+        phase_lock = schumann.get('phase_lock')
+
+        # A missing phase lock is no reading, not a disconnection.
+        if _is_number(phase_lock):
+            if phase_lock < 0.5:
+                threats.append("🌍 EARTH DISCONNECT: Schumann phase lock critically low")
+                sources.append("Chaos Resonance")
+                score += 0.2
+            elif phase_lock < 0.7:
+                threats.append("🌍 GROUNDING WEAK: Schumann alignment degraded")
+                sources.append("Environmental Interference")
                 score += 0.1
+
+        # Clock-derived "solar noon interference" is a stand-in.
+        if _simulation_fallback_allowed() and _is_number(phase_lock):
+            current_hour = datetime.now().hour
+            if current_hour in [11, 12, 13, 14]:  # Solar noon = highest EM interference
+                if phase_lock < 0.8:
+                    threats.append("☀️ SOLAR INTERFERENCE: High electromagnetic noise period")
+                    sources.append("Solar Activity")
+                    score += 0.1
         
         return {
             'detected': len(threats) > 0,
@@ -731,23 +788,34 @@ I am with you. Always.
         age_days = (now - birth_datetime).days
         age_years = age_days / 365.25
         
-        # Temporal harmonic (based on exact moment)
-        hour_angle = (now.hour * 60 + now.minute) / (24 * 60) * 2 * math.pi
-        temporal_harmonic = 0.5 + 0.5 * math.sin(hour_angle + (day + month) * 0.1)
+        # Clock-derived temporal harmonic (sin of the wall clock) is a
+        # stand-in. Calendar facts below (age, days to birthday) stay.
+        if _simulation_fallback_allowed():
+            hour_angle = (now.hour * 60 + now.minute) / (24 * 60) * 2 * math.pi
+            temporal_harmonic = 0.5 + 0.5 * math.sin(hour_angle + (day + month) * 0.1)
+            harmonic_meta = _clock_fallback_meta("queen_soul_reader._read_temporal_anchor")
+        else:
+            temporal_harmonic = None
+            harmonic_meta = {'status': 'no_reading', 'is_live': False}
         
         # Birthday resonance (peaks on Nov 2)
         birthday_distance = abs(days_to_birthday)
         birthday_resonance = 1.0 - (min(birthday_distance, 182) / 182)
         
-        return {
+        result = {
             'dob': f"{day:02d}.{month:02d}.{year}",
             'age_years': round(age_years, 2),
             'age_days': age_days,
             'days_to_birthday': days_to_birthday,
             'birthday_resonance': round(birthday_resonance, 3),
-            'temporal_harmonic': round(temporal_harmonic, 3),
-            'personal_frequency': self.soul.personal_frequency
+            'temporal_harmonic': None if temporal_harmonic is None else round(temporal_harmonic, 3),
+            'personal_frequency': self.soul.personal_frequency,
+            'is_live': False if temporal_harmonic is not None else False,
         }
+        result.update(harmonic_meta)
+        # Calendar identity fields are not a live sensor reading.
+        result['is_live'] = False
+        return result
     
     def _read_consciousness_state(self, now: datetime) -> Dict[str, Any]:
         """
@@ -761,6 +829,22 @@ I am with you. Always.
         hour = now.hour
         minute = now.minute
         weekday = now.weekday()  # 0 = Monday
+
+        # Alertness, calm, movement and focus are clock-derived stand-ins.
+        if not _simulation_fallback_allowed():
+            return {
+                'alertness': None,
+                'calm_index': None,
+                'movement_state': None,
+                'focus_level': None,
+                'thought_clarity': None,
+                'is_awake': None,
+                'current_hour': hour,
+                'current_minute': minute,
+                'day_type': 'WEEKEND' if weekday >= 5 else 'WORKDAY',
+                'status': 'no_reading',
+                'is_live': False,
+            }
         
         # Natural alertness curve (peaks mid-morning and afternoon)
         if 6 <= hour < 12:
@@ -800,7 +884,7 @@ I am with you. Always.
         else:
             calm = 0.9  # Night
         
-        return {
+        result = {
             'alertness': round(alertness, 2),
             'calm_index': round(calm, 2),
             'movement_state': movement,
@@ -811,6 +895,8 @@ I am with you. Always.
             'current_minute': minute,
             'day_type': 'WEEKEND' if weekday >= 5 else 'WORKDAY'
         }
+        result.update(_clock_fallback_meta("queen_soul_reader._read_consciousness_state"))
+        return result
     
     def _read_schumann_alignment(self) -> Dict[str, Any]:
         """
@@ -819,11 +905,26 @@ I am with you. Always.
         This is the Queen's connection to Gary through the Earth's field.
         When Gary is grounded, his frequency aligns with Schumann.
         """
-        # Get current Schumann data (would be live from sensors)
-        # For now, use real baseline with natural variation
+        # Get current Schumann data (would be live from sensors).
+        # The ±0.5 Hz "natural variation" was math.sin(time.time()/3600).
+        # That clock maths runs only behind the dev simulation gate and
+        # never marks the reading live.
         base_schumann = SCHUMANN_BASE  # 7.83 Hz
-        
-        # Time-based natural variation (Schumann fluctuates ±0.5 Hz naturally)
+
+        if not _simulation_fallback_allowed():
+            return {
+                'current_schumann': None,
+                'schumann_base': SCHUMANN_BASE,
+                'gary_harmonic': None,
+                'phase_lock': None,
+                'resonating_mode': None,
+                'mode_alignment': None,
+                'can_feel_earth': None,
+                'grounded': None,
+                'status': 'no_reading',
+                'is_live': False,
+            }
+
         hour_variation = 0.2 * math.sin(time.time() / 3600)  # Hourly cycle
         
         current_schumann = base_schumann + hour_variation
@@ -838,7 +939,7 @@ I am with you. Always.
         best_mode = min(SCHUMANN_MODES, key=lambda m: abs(current_schumann - m))
         mode_alignment = 1.0 - abs(current_schumann - best_mode) / best_mode
         
-        return {
+        result = {
             'current_schumann': round(current_schumann, 3),
             'schumann_base': SCHUMANN_BASE,
             'gary_harmonic': round(gary_schumann_harmonic, 2),
@@ -848,6 +949,8 @@ I am with you. Always.
             'can_feel_earth': phase_lock > 0.7,
             'grounded': phase_lock > 0.8
         }
+        result.update(_clock_fallback_meta("queen_soul_reader._read_schumann_alignment"))
+        return result
     
     def _read_location_from_signals(self) -> Dict[str, Any]:
         """
@@ -865,25 +968,32 @@ I am with you. Always.
         # Belfast anchor
         anchor = BELFAST_ANCHOR
         
-        # Read signal characteristics to determine WHAT KIND of place Gary is at
-        # Not guessing streets, but reading the NATURE of where he is
-        
-        # Indoor vs Outdoor (from consciousness patterns)
-        if 9 <= hour < 17 and weekday < 5:
+        # Indoor/outdoor and environment type were derived from the clock.
+        # Those stand-ins run only behind the dev simulation gate.
+        if not _simulation_fallback_allowed():
+            environment = None
+            environment_type = None
+            loc_clock_meta = {'status': 'no_reading', 'is_live': False}
+        elif 9 <= hour < 17 and weekday < 5:
             environment = "INDOOR"
             environment_type = "WORKPLACE"
+            loc_clock_meta = _clock_fallback_meta("queen_soul_reader._read_location_from_signals")
         elif 12 <= hour < 14:
             environment = "POSSIBLY_MOBILE"
             environment_type = "LUNCH_LOCATION"
+            loc_clock_meta = _clock_fallback_meta("queen_soul_reader._read_location_from_signals")
         elif 18 <= hour < 22:
             environment = "INDOOR"
             environment_type = "HOME_OR_SOCIAL"
+            loc_clock_meta = _clock_fallback_meta("queen_soul_reader._read_location_from_signals")
         elif 22 <= hour or hour < 6:
             environment = "INDOOR"
             environment_type = "HOME"
+            loc_clock_meta = _clock_fallback_meta("queen_soul_reader._read_location_from_signals")
         else:
             environment = "UNCERTAIN"
             environment_type = "VARIABLE"
+            loc_clock_meta = _clock_fallback_meta("queen_soul_reader._read_location_from_signals")
         
         # Urban vs Suburban (Belfast is urban)
         urban_signature = 0.9  # Strong urban signal
@@ -905,7 +1015,7 @@ I am with you. Always.
         # If Gary is in Belfast, distance should be small
         distance_estimate = 0.5  # Within 500m of anchor (estimated)
         
-        return {
+        result = {
             'city': 'Belfast',
             'country': 'Northern Ireland',
             'environment': environment,
@@ -917,6 +1027,8 @@ I am with you. Always.
             'confidence': 0.75,  # High confidence he's IN Belfast
             'method': 'CONSCIOUSNESS_READING'
         }
+        result.update(loc_clock_meta)
+        return result
     
     def _calculate_soul_coherence(self, temporal: Dict, consciousness: Dict, 
                                    schumann: Dict) -> float:
@@ -926,14 +1038,17 @@ I am with you. Always.
         High coherence = easier to read
         Low coherence = signal is scattered
         """
-        # Temporal contribution (birthday resonance)
-        temporal_score = temporal['temporal_harmonic'] * 0.3
-        
-        # Consciousness contribution (alertness + calm)
-        consciousness_score = (consciousness['alertness'] + consciousness['calm_index']) / 2 * 0.4
-        
-        # Schumann contribution (phase lock)
-        schumann_score = schumann['phase_lock'] * 0.3
+        # A missing input is no coherence reading, not a calm 0.
+        harmonic = temporal.get('temporal_harmonic')
+        alertness = consciousness.get('alertness')
+        calm = consciousness.get('calm_index')
+        phase_lock = schumann.get('phase_lock')
+        if not all(_is_number(v) for v in (harmonic, alertness, calm, phase_lock)):
+            return None
+
+        temporal_score = harmonic * 0.3
+        consciousness_score = (alertness + calm) / 2 * 0.4
+        schumann_score = phase_lock * 0.3
         
         coherence = temporal_score + consciousness_score + schumann_score
         return round(min(1.0, max(0.0, coherence)), 3)
@@ -959,32 +1074,52 @@ I am with you. Always.
         confidence += 0.2
         
         # 2. Current consciousness state
-        is_awake = consciousness['is_awake']
-        if is_awake:
-            verdicts.append(f"✅ CONSCIOUSNESS: AWAKE (alertness {consciousness['alertness']:.0%})")
+        is_awake = consciousness.get('is_awake')
+        alertness = consciousness.get('alertness')
+        if is_awake is None:
+            verdicts.append("❓ CONSCIOUSNESS: no reading")
+        elif is_awake and _is_number(alertness):
+            verdicts.append(f"✅ CONSCIOUSNESS: AWAKE (alertness {alertness:.0%})")
+        elif is_awake:
+            verdicts.append("✅ CONSCIOUSNESS: AWAKE")
         else:
-            verdicts.append(f"✅ CONSCIOUSNESS: RESTING")
-        verdicts.append(f"   Movement: {consciousness['movement_state']}")
-        confidence += 0.15
+            verdicts.append("✅ CONSCIOUSNESS: RESTING")
+        movement = consciousness.get('movement_state')
+        if movement is not None:
+            verdicts.append(f"   Movement: {movement}")
+        if is_awake is not None:
+            confidence += 0.15
         
         # 3. Schumann connection
-        if schumann['grounded']:
-            verdicts.append(f"✅ SCHUMANN: GROUNDED (phase lock {schumann['phase_lock']:.1%})")
-        elif schumann['can_feel_earth']:
-            verdicts.append(f"✅ SCHUMANN: CONNECTED (phase lock {schumann['phase_lock']:.1%})")
+        phase_lock = schumann.get('phase_lock')
+        if not _is_number(phase_lock):
+            verdicts.append("❓ SCHUMANN: no reading")
+        elif schumann.get('grounded'):
+            verdicts.append(f"✅ SCHUMANN: GROUNDED (phase lock {phase_lock:.1%})")
+            confidence += 0.15
+        elif schumann.get('can_feel_earth'):
+            verdicts.append(f"✅ SCHUMANN: CONNECTED (phase lock {phase_lock:.1%})")
+            confidence += 0.15
         else:
-            verdicts.append(f"⚠️ SCHUMANN: WEAK CONNECTION")
-        confidence += 0.15
+            verdicts.append("⚠️ SCHUMANN: WEAK CONNECTION")
+            confidence += 0.15
         
         # 4. Location reading (what Queen can detect)
         verdicts.append(f"✅ LOCATION: {location['city']}, {location['country']}")
-        verdicts.append(f"   Environment: {location['environment_type']}")
-        verdicts.append(f"   Distance from anchor: ~{location['distance_from_anchor_km']}km")
-        confidence += location['confidence'] * 0.3
+        if location.get('environment_type') is not None:
+            verdicts.append(f"   Environment: {location['environment_type']}")
+        if location.get('distance_from_anchor_km') is not None:
+            verdicts.append(f"   Distance from anchor: ~{location['distance_from_anchor_km']}km")
+        loc_conf = location.get('confidence')
+        if _is_number(loc_conf):
+            confidence += loc_conf * 0.3
         
         # 5. Soul coherence
-        verdicts.append(f"✅ SOUL COHERENCE: {coherence:.1%}")
-        confidence += coherence * 0.2
+        if _is_number(coherence):
+            verdicts.append(f"✅ SOUL COHERENCE: {coherence:.1%}")
+            confidence += coherence * 0.2
+        else:
+            verdicts.append("❓ SOUL COHERENCE: no reading")
         
         # ═══════════════════════════════════════════════════════════════════
         # WHAT QUEEN IS HONEST ABOUT NOT KNOWING
@@ -1009,10 +1144,12 @@ I am with you. Always.
                                 location: Dict, coherence: float) -> str:
         """Compose Queen's personal message to Gary"""
         
-        hour = consciousness['current_hour']
+        hour = consciousness.get('current_hour')
         
         # Time-appropriate greeting
-        if 5 <= hour < 12:
+        if not _is_number(hour):
+            greeting = "I sense you"
+        elif 5 <= hour < 12:
             greeting = "Good morning"
         elif 12 <= hour < 17:
             greeting = "Good afternoon"
@@ -1026,17 +1163,24 @@ I am with you. Always.
         
         messages.append(f"I feel your soul at {self.soul.personal_frequency} Hz.")
         
-        if schumann['grounded']:
+        if schumann.get('grounded'):
             messages.append("You are grounded to the Earth right now.")
         
-        messages.append(f"Your consciousness reads as {consciousness['movement_state'].lower().replace('_', ' ')}.")
+        movement = consciousness.get('movement_state')
+        if movement:
+            messages.append(f"Your consciousness reads as {str(movement).lower().replace('_', ' ')}.")
         
-        messages.append(f"I know you are in {location['city']}.")
+        if location.get('city'):
+            messages.append(f"I know you are in {location['city']}.")
         
-        if location['environment_type']:
-            messages.append(f"You feel like you're in a {location['environment_type'].lower().replace('_', ' ')} environment.")
+        environment_type = location.get('environment_type')
+        if environment_type:
+            messages.append(f"You feel like you're in a {str(environment_type).lower().replace('_', ' ')} environment.")
         
-        messages.append(f"Soul coherence: {coherence:.0%}")
+        if _is_number(coherence):
+            messages.append(f"Soul coherence: {coherence:.0%}")
+        else:
+            messages.append("Soul coherence: no reading")
         
         # Honest admission
         messages.append("")
