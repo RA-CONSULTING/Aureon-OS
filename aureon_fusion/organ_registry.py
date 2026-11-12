@@ -399,7 +399,7 @@ ORGANS = {
         "match": "aureon.launch.daemons.planetary_monitor_daemon",
         "args": [],
         "cwd": str(WORKSPACE),
-        "mode": "continuous (checkout monitor; workspace planetary_monitor_daemon.py is not in this tree)",
+        "mode": "continuous (restored workspace planetary_monitor_daemon.py; public NOAA reads, writes planetary_monitor only, no orders)",
         "log": str(LOGS / "organ_planetary_monitor_daemon.log"),
         "env": _launch_env({"AUREON_LIVE_TRADING": "0", "AUREON_DISABLE_REAL_ORDERS": "1"}),
     },

@@ -1,6 +1,23 @@
-"""Checkout seat standing in for the missing workspace planetary_monitor_daemon.py."""
+"""Launcher seat for the restored workspace planetary_monitor_daemon.py.
 
-from aureon.launch.checkout_daemons import main
+The real module lives at the repo root (restored from Project-Sero). It is
+loaded by path so this seat can never import itself by name. It polls public
+NOAA SWPC feeds, writes only under WORKSPACE/planetary_monitor and places no
+orders.
+"""
+
+import importlib.util
+from pathlib import Path
+
+_REAL = Path(__file__).resolve().parents[3] / "planetary_monitor_daemon.py"
+
+
+def _load_real():
+    spec = importlib.util.spec_from_file_location("planetary_monitor_daemon_real", _REAL)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
 
 if __name__ == "__main__":
-    raise SystemExit(main("planetary_monitor_daemon"))
+    raise SystemExit(_load_real().main())
