@@ -95,34 +95,47 @@ import json, os
 from pathlib import Path
 
 root = Path(__file__).parent
+found_cwd = ""
+found_default = ""
 loaded = None
 try:
-    from dotenv import load_dotenv
-    load_dotenv(root / ".env", override=True)
-    loaded = "dotenv"
+    from dotenv import load_dotenv, find_dotenv
+    found_cwd = find_dotenv(usecwd=True)
+    found_default = find_dotenv()
+    loaded = load_dotenv(find_dotenv(usecwd=True), override=True)
 except ImportError:
     loaded = "no-dotenv"
 
 
 def test_probe():
     names = sorted(os.environ)
-    (root / "seen.json").write_text(json.dumps({"names": names, "loader": loaded}))
+    (root / "seen.json").write_text(json.dumps({
+        "names": names,
+        "loader": loaded,
+        "found_cwd": found_cwd,
+        "found_default": found_default,
+    }))
 """
 
 
 def test_real_repair_pytest_child_sees_no_credentials(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Run the real repair pytest on a tiny project with fake keys in env and .env."""
+    """Run the real repair pytest with fake keys in the environment and a parent .env."""
 
     for key, value in {**_PARENT, **_FAKE_CREDS}.items():
         monkeypatch.setenv(key, value)
     project = tmp_path / "proj"
     project.mkdir()
     (project / "test_probe.py").write_text(_PROBE, encoding="utf-8")
-    (project / ".env").write_text("DOTENV_SEEDED_SECRET=fake\nCAPITAL_API_KEY=fake\n", encoding="utf-8")
+    # Root itself has no .env, so _pytest is allowed to start. The fake key lives one
+    # directory above, where find_dotenv can walk to it.
+    (tmp_path / ".env").write_text("CAPITAL_API_KEY=fake-not-a-real-value\n", encoding="utf-8")
     result = repair._pytest(project)
     assert result.returncode == 0, result.stdout + result.stderr
     seen = json.loads((project / "seen.json").read_text(encoding="utf-8"))
     names = set(seen["names"])
-    for key in list(_PARENT) + list(_FAKE_CREDS) + ["DOTENV_SEEDED_SECRET", "CAPITAL_API_KEY"]:
+    for key in list(_PARENT) + list(_FAKE_CREDS) + ["CAPITAL_API_KEY"]:
         assert key not in names, key
     assert "PYTHON_DOTENV_DISABLED" in names
+    # find_dotenv may walk to the parent .env; load_dotenv must not import the name.
+    # Record the paths so a leak can be reported honestly if the assertion above fails.
+    assert seen.get("loader") in {False, "no-dotenv", 0}

@@ -94,6 +94,18 @@ class SuiteTimedOut(Exception):
     """The full suite ran past the operator's safety-net limit."""
 
 
+class PytestRefused(Exception):
+    """Pytest was not started because a dotenv file is in the repair root."""
+
+    def __init__(self, names: list[str] | tuple[str, ...]):
+        self.names = tuple(names)
+        message = (
+            f"refusing to run pytest: {', '.join(self.names)} present in the repair root; "
+            "a .env file other than .env.example could reload live credentials"
+        )
+        super().__init__(message)
+
+
 def _suite_timeout() -> float | None:
     # No fixed cap by default: the suite runs until it finishes. AUREON_SELF_REPAIR_SUITE_TIMEOUT_S > 0 sets a safety net.
     try:
@@ -103,7 +115,22 @@ def _suite_timeout() -> float | None:
     return value if value > 0 else None
 
 
+def _dotenv_files(root: Path) -> list[Path]:
+    """`.env*` files under root, except the committed `.env.example` template."""
+
+    return sorted(
+        path
+        for path in root.glob(".env*")
+        if path.is_file() and path.name != ".env.example"
+    )
+
+
 def _pytest(root: Path) -> subprocess.CompletedProcess[str]:
+    # Do not start the suite if a dotenv file could reload live credentials.
+    # Name the files only; never read or print their contents.
+    blocked = _dotenv_files(root)
+    if blocked:
+        raise PytestRefused([path.name for path in blocked])
     for cache in root.rglob("__pycache__"):
         if cache.is_dir():
             shutil.rmtree(cache, ignore_errors=True)
@@ -849,6 +876,14 @@ def repair_sandbox(root: Path) -> dict[str, Any]:
         return {"schema": SCHEMA, "root": str(root), "live_trading": False, "may_act": False,
                 "edited_test": False, "status": "held", "reason": "suite_timed_out",
                 "timeout_s": exc.args[0], "branch": branch, "repairs": []}
+    except PytestRefused as exc:
+        # Backstop: callers inside _repair_sandbox must already have reverted and held.
+        branch = (_git(root, "rev-parse", "--abbrev-ref", "HEAD").stdout or "").strip()
+        names = list(exc.names)
+        append_review(root, "repair_held", reason="dotenv_present", branch=branch, dotenv_files=names)
+        return {"schema": SCHEMA, "root": str(root), "live_trading": False, "may_act": False,
+                "edited_test": False, "status": "held", "reason": "dotenv_present",
+                "dotenv_files": names, "branch": branch, "repairs": []}
     finally:
         try:
             from aureon.autonomous import queen_repair_cleaner as cleaner
@@ -879,6 +914,8 @@ def _try_model_fix(root: Path, report: dict[str, Any], gate: Any, architect: Any
             census_before=census_before, red_before=red_before, branch=branch,
             findings_by_test=findings,
         )
+    except PytestRefused:
+        raise
     except Exception as exc:
         report["model_fix_error"] = f"{type(exc).__name__}: {exc}"[:300]
         return None
@@ -920,7 +957,35 @@ def _repair_sandbox(root: Path) -> dict[str, Any]:
         append_review(root, "repair_held", reason="low_disk", branch=branch,
                       free_bytes=space["free_bytes"])
         return report
-    before = _pytest(root)
+    present = _dotenv_files(root)
+    if present:
+        names = [path.name for path in present]
+        report.update({"status": "held", "reason": "dotenv_present", "dotenv_files": names})
+        append_review(root, "repair_held", reason="dotenv_present", branch=branch,
+                      dotenv_files=names)
+        return report
+
+    def _hold_dotenv(names: list[str] | tuple[str, ...], *, log=None) -> dict[str, Any]:
+        """Abort this cycle: revert banked edits, hold, and bank nothing."""
+
+        for item in list(report.get("repairs") or []):
+            path = item.get("path")
+            if path:
+                architect.restore_backup(path)
+        _git(root, "checkout", "--", ".")
+        report["repairs"] = []
+        listed = list(names)
+        report.update({"status": "held", "reason": "dotenv_present", "dotenv_files": listed})
+        append_review(root, "repair_held", reason="dotenv_present", branch=branch,
+                      dotenv_files=listed)
+        if log is not None:
+            log(False, "dotenv_present")
+        return report
+
+    try:
+        before = _pytest(root)
+    except PytestRefused as exc:
+        return _hold_dotenv(exc.names)
     report["before_returncode"] = before.returncode
     if before.returncode == 0:
         report["status"] = "already_passing"
@@ -1183,7 +1248,10 @@ def _repair_sandbox(root: Path) -> dict[str, Any]:
         return report
 
     if not report["repairs"]:
-        model = _try_model_fix(root, report, gate, architect, census_before, red_before, branch)
+        try:
+            model = _try_model_fix(root, report, gate, architect, census_before, red_before, branch)
+        except PytestRefused as exc:
+            return _hold_dotenv(exc.names, log=_log_cycle)
         if model is not None:
             _log_cycle(model.get("status") == "repaired", model.get("reason", ""))
             return model
@@ -1194,7 +1262,10 @@ def _repair_sandbox(root: Path) -> dict[str, Any]:
 
     # ── Phase 2: ONE full suite confirms no regression across all banked fixes. If one appears,
     # bisect by reverting the most-recently banked patch and retry, keeping the rest (owner 12:20). ──
-    full = _pytest(root)
+    try:
+        full = _pytest(root)
+    except PytestRefused as exc:
+        return _hold_dotenv(exc.names, log=_log_cycle)
     full_failed = gate.failed_nodeids(full.stdout or "")
     if sorted(full_failed - red_before) and report["repairs"]:
         # A regression spans the banked set. Isolate the offending patch by reverting one at a
@@ -1212,7 +1283,12 @@ def _repair_sandbox(root: Path) -> dict[str, Any]:
                 break
             path = report["repairs"][index]["path"]
             architect.restore_backup(path)
-            trial = _pytest(root)
+            try:
+                trial = _pytest(root)
+            except PytestRefused as exc:
+                # A refused trial must not look like "no regressions": that would
+                # pin the first reverted patch as the culprit and bank the rest.
+                return _hold_dotenv(exc.names, log=_log_cycle)
             trial_failed = gate.failed_nodeids(trial.stdout or "")
             if not sorted(trial_failed - red_before):
                 culprit, full, full_failed = index, trial, trial_failed

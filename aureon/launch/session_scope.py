@@ -57,7 +57,16 @@ def strip_inherited_session(env: dict[str, str]) -> dict[str, str]:
 # a fixed list, so aliases nobody has listed yet (CAPITAL_API_PASSWORD,
 # APCA_API_KEY_ID, BINANCE_SECRET, ...) are caught too.
 CREDENTIAL_PREFIXES = ("CAPITAL_", "BINANCE_", "KRAKEN_", "ALPACA_", "APCA_", "COINBASE_")
-CREDENTIAL_SUFFIXES = ("_KEY", "_SECRET", "_PASSWORD", "_PASSPHRASE", "_TOKEN")
+CREDENTIAL_SUFFIXES = (
+    "_KEY",
+    "_SECRET",
+    "_PASSWORD",
+    "_PASSPHRASE",
+    "_TOKEN",
+    "_KEY_ID",
+    "_ACCESS_KEY",
+    "_SECRET_KEY",
+)
 
 
 def is_credential_name(name: str) -> bool:
@@ -78,10 +87,14 @@ def isolated_child_env(env: dict[str, str]) -> dict[str, str]:
 
     No parent launcher session, no workspace pointer, no credentials, and
     dotenv loading switched off so a .env on disk cannot hand them back.
+    Live trading switches are forced off, even if the parent had them on.
     """
 
     cleaned = strip_credentials(strip_inherited_session(env))
     cleaned["PYTHON_DOTENV_DISABLED"] = "1"
+    cleaned["AUREON_LIVE_TRADING"] = "0"
+    cleaned["AUREON_DISABLE_REAL_ORDERS"] = "1"
+    cleaned["DRY_RUN"] = "1"
     return cleaned
 
 
