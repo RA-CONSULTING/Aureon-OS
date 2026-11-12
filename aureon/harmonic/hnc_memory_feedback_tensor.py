@@ -16,13 +16,20 @@ What the paper fixes (lines 213-316):
 
 * Theta is a rank-2 tensor carrying the history-dependent, non-local
   interaction of the field with itself over a time delay tau (lines 252-259).
-* It comes from a symmetric memory field Phi_mu_nu through convolution
-  integrals ``int d^4x' K(x, x') Phi_mu_nu(x')`` with a memory kernel K
-  (lines 286-298).
+* The paper adds a non-local memory term to the action, built from a
+  symmetric memory field Phi_mu_nu and a memory kernel K:
+  ``int d^4x' K(x, x') Phi_mu_nu(x) Phi^mu_nu(x')`` inside the Lagrangian
+  (lines 286-298).  Theta is what varying that action with respect to the
+  metric gives.
 * It averages out high-frequency jitter by destructive interference and
   reinforces coherent structure (lines 276-281).
 * In the Surge Window Theta counterbalances dT^mod so the net source
   approaches T^Planck (lines 307-316).
+
+Modelling choice, not from the paper: this module does not derive Theta
+from the action.  It uses its own simplification, a linear time-delay sum
+``Theta_n = sum_k w_k Phi_(n-k)`` (and the streaming form ``beta *
+Phi(t - tau)``), which is the simplest causal stand-in for the memory term.
 
 The paper does not give the kernel K, the delay tau, the gain, or the sign of
 the feedback.  Those are explicit caller inputs here, each documented as "not
