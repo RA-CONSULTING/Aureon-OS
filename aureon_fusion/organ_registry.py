@@ -408,7 +408,7 @@ ORGANS = {
         "match": "aureon.launch.daemons.solar_system_collector",
         "args": [],
         "cwd": str(WORKSPACE),
-        "mode": "continuous (checkout collector; workspace solar_system_collector.py is not in this tree)",
+        "mode": "continuous (restored workspace solar_system_collector.py; public NOAA reads, writes solar_system_data only, no orders)",
         "log": str(LOGS / "organ_solar_system_collector.log"),
         "env": _launch_env({"AUREON_LIVE_TRADING": "0", "AUREON_DISABLE_REAL_ORDERS": "1"}),
     },

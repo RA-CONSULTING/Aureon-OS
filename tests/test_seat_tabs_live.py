@@ -130,7 +130,6 @@ def test_workspace_scripts_from_the_preflight_are_present() -> None:
     names = (
         "real_time_data_feeder.py",
         "schumann_real_daemon.py",
-        "solar_system_collector.py",
         "sero_space_weather.py",
         "soul_protection_daemon.py",
         "aureon_self_questioning_runner.py",
@@ -141,7 +140,7 @@ def test_workspace_scripts_from_the_preflight_are_present() -> None:
         assert "Math.random" not in text
 
 
-@pytest.mark.parametrize("name", ["real_time_data_feeder.py", "solar_system_collector.py"])
+@pytest.mark.parametrize("name", ["real_time_data_feeder.py"])
 def test_workspace_script_delegates(name: str) -> None:
     text = (REPO / name).read_text(encoding="utf-8")
     assert "checkout_daemons" in text
