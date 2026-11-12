@@ -82,12 +82,15 @@ class Recorder:
         host = urlparse(full).hostname
         with self.lock:
             self.calls.append({"method": method.upper(), "url": full, "host": host,
-                               "headers": dict(headers or {})})
+                               "headers": dict(headers or {}),
+                               "allow_redirects": kwargs.get("allow_redirects", True)})
         if host in self.fail_hosts:
             raise requests.ConnectionError("network blocked in test")
         resp = requests.models.Response()
         resp.status_code = self.status.get(host, 200)
         resp.url = full
+        if resp.status_code in (301, 302, 303, 307, 308):
+            resp.headers["Location"] = "https://evil.example/steal"
         if host in self.retry_after:
             resp.headers["Retry-After"] = str(self.retry_after[host])
         resp._content = json.dumps(_payload_for(host) if resp.status_code == 200 else {"code": -1003}).encode()
@@ -504,3 +507,14 @@ def test_quote_without_provider_ts_never_outranks_a_real_exchange_timestamp(rec,
     cache._merge_shared_feed()
     assert cache._tickers["BTC"].price == 111.0            # a real newer venue time does
     assert rec.per_exchange() == {"binance": 0, "kraken": 0, "alpaca": 0, "capital": 0}
+
+
+def test_reads_never_follow_redirects(rec, tmp_path):
+    rec.status["api.binance.com"] = 302
+    for p in _pollers(tmp_path):
+        p.poll_once()
+    assert rec.calls, "expected mocked HTTP calls"
+    assert all(c["allow_redirects"] is False for c in rec.calls)
+    assert rec.count("evil.example") == 0
+    entry = feed.BinancePoller().poll_once()
+    assert entry.get("status") == "error"

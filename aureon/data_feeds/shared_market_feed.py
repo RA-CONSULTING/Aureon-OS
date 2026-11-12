@@ -358,7 +358,10 @@ class _HttpStatusError(RuntimeError):
 def _http_get_json(url: str, *, params: Optional[Dict[str, Any]] = None,
                    headers: Optional[Dict[str, str]] = None, timeout: float = 8.0) -> Any:
     _assert_read_only("GET", url)
-    resp = requests.get(url, params=params, headers=headers or {}, timeout=timeout)
+    # Never follow redirects: a 3xx could point the read at a host the
+    # read-only guard above never saw, so it is treated as a failed read.
+    resp = requests.get(url, params=params, headers=headers or {}, timeout=timeout,
+                        allow_redirects=False)
     status = int(getattr(resp, "status_code", 0) or 0)
     if status != 200:
         retry = _num((getattr(resp, "headers", None) or {}).get("Retry-After"))
