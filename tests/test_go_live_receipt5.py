@@ -12,6 +12,8 @@ import socket
 import subprocess
 from pathlib import Path
 
+from tests.support.receipt_provenance import guard_pin_at
+
 ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = ROOT / "scripts/validation/go_live_receipt5.py"
 PIN = "0646146c53e59dbcab41363a613d5651c9c9d50f"
@@ -901,7 +903,10 @@ def test_committed_skip_matches_schema_pin_and_check() -> None:
     assert f'PINNED_COMMIT = "{PIN}"' in guard
     assert anchor["public_require_pin"] == RECEIPT3_PIN
     assert anchor["go_live_clear"] is False
-    assert receipt["pin"] == PIN
+    # The committed skip is a record of one run. Its pin is the guard pin at
+    # the commit it was measured from, not today's pin.
+    assert receipt["pin"] == guard_pin_at(receipt["pin_measured_at"])
+    assert receipt["pin_measured_at"] == STARTED_FROM
     assert receipt["pin"] != anchor["public_require_pin"]
     assert receipt["pin_changed"] is False
     assert receipt["go_live_clear"] is False
@@ -910,7 +915,7 @@ def test_committed_skip_matches_schema_pin_and_check() -> None:
     assert receipt["outcome"] == "skip"
     assert receipt["receipt_5_complete"] is False
     assert receipt["provider_readback_digest"] is None
-    assert receipt5.validate_receipt(receipt) == []
+    assert receipt5.validate_receipt(receipt, expected_pin=receipt5.guard_pin_at(ROOT, STARTED_FROM)) == []
     assert markdown == receipt5.render_markdown(receipt)
     schema = json.loads((ROOT / receipt5.SCHEMA_PATH).read_text(encoding="utf-8"))
     assert set(schema["required"]) == set(receipt)

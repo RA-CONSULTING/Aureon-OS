@@ -94,3 +94,29 @@ def test_unknown_module_still_not_an_aureon_module_path(
         finder.find_spec("aureon.not_a_real_module", None)
 
     assert str(refused.value) == "aureon.not_a_real_module is not an aureon module path"
+
+
+def test_checkout_module_added_after_the_pin_is_named_as_not_in_pin(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A real aureon module file that the pin lacks is refused as 'not in pin', not as a bad path."""
+
+    added = tmp_path / "aureon" / "utils" / "added_after_pin.py"
+    added.parent.mkdir(parents=True)
+    added.write_text("VALUE = 1\n", encoding="utf-8")
+
+    def fake_check_output(argv, **kwargs):
+        del kwargs
+        if len(argv) >= 3 and argv[0] == "git" and argv[1] == "cat-file" and argv[2] == "-e":
+            return ""
+        raise subprocess.CalledProcessError(128, argv)
+
+    monkeypatch.setattr(subprocess, "check_output", fake_check_output)
+    finder = PinnedAureonFinder(tmp_path, PINNED_COMMIT)
+
+    with pytest.raises(ImportError) as refused:
+        finder.find_spec("aureon.utils.added_after_pin", None)
+
+    text = str(refused.value)
+    assert text == f"aureon/utils/added_after_pin.py is not in pin {PIN_SHORT}"
+    assert "is not an aureon module path" not in text

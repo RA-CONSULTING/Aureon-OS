@@ -1186,8 +1186,29 @@ def produce(
     )
 
 
-def validate_receipt(receipt: dict[str, Any]) -> list[str]:
-    """Structural gate shared by the writer and --check. Independent of a local test pass."""
+def guard_pin_at(root: Path, commit: str) -> str | None:
+    """PINNED_COMMIT in the public guard loader at ``commit``. None when git cannot read it."""
+
+    try:
+        text = subprocess.check_output(
+            ["git", "show", f"{commit}:mcp/aureon_public/guard_loader.py"],
+            cwd=root,
+            text=True,
+            stderr=subprocess.DEVNULL,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    match = re.search(r'^PINNED_COMMIT = "([0-9a-f]{40})"', text, re.MULTILINE)
+    return match.group(1) if match else None
+
+
+def validate_receipt(receipt: dict[str, Any], *, expected_pin: str = PIN) -> list[str]:
+    """Structural gate shared by the writer and --check. Independent of a local test pass.
+
+    ``expected_pin`` is the pin in force when the receipt was measured. A new
+    receipt is measured now, so it defaults to ``PIN``. A committed receipt is
+    checked against the guard pin at its own ``pin_measured_at`` commit.
+    """
 
     errors: list[str] = []
 
@@ -1204,7 +1225,7 @@ def validate_receipt(receipt: dict[str, Any]) -> list[str]:
     need("release_boundary", "HOLD")
     need("orange_badge", "unchanged")
     need("badge_flip", BADGE_FLIP)
-    need("pin", PIN)
+    need("pin", expected_pin)
     need("pin_changed", False)
     need("started_from", STARTED_FROM)
     need("live_trading", False)
@@ -1360,9 +1381,11 @@ def load_receipt(root: Path) -> dict[str, Any]:
 def check(root: Path, *, environ: Mapping[str, str] | None = None, home: Path | None = None, which: Which | None = None) -> list[str]:
     """Re-probe auth and require the committed file to agree. Do not deploy."""
 
-    errors = validate_receipt(load_receipt(root))
-    markdown = (root / MARKDOWN_PATH).read_text(encoding="utf-8")
     receipt = load_receipt(root)
+    measured_at = receipt.get("pin_measured_at")
+    recorded_pin = guard_pin_at(root, measured_at) if isinstance(measured_at, str) else None
+    errors = validate_receipt(receipt, expected_pin=recorded_pin or PIN)
+    markdown = (root / MARKDOWN_PATH).read_text(encoding="utf-8")
     if markdown != render_markdown(receipt):
         errors.append("markdown does not match the json")
     if f"`{receipt.get('provider_readback_digest')}`" not in markdown:
@@ -1379,7 +1402,7 @@ def check(root: Path, *, environ: Mapping[str, str] | None = None, home: Path | 
             errors.append("missing_provider_auth does not match a fresh probe")
         if receipt.get("unused_provider_auth") != probe["unused_provider_auth"]:
             errors.append("unused_provider_auth does not match a fresh probe")
-    if receipt.get("pin") != PIN or receipt.get("pin_changed") is not False:
+    if receipt.get("pin") != (recorded_pin or PIN) or receipt.get("pin_changed") is not False:
         errors.append("pin field moved")
     return errors
 
