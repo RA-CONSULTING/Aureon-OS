@@ -671,7 +671,28 @@ def test_space_entry_points_call_enforce_public_pin() -> None:
         main_at = text.index('if __name__ == "__main__":')
         call_at = text.index("enforce_public_pin()")
         assert call_at > main_at
-        assert "demo.launch(" in text[call_at:]
+        # The pin check must run before the app is served.  The Spaces serve
+        # through the shared guarded bind, space_bind.launch(demo), which
+        # scrubs secrets and forces share=False before calling demo.launch.
+        assert "space_bind.launch(demo)" in text[call_at:]
+        # app.py never calls demo.launch( itself; only the guarded bind does.
+        assert "demo.launch(" not in text
+        assert "share=True" not in text
+    bind = (ROOT / "huggingface" / "space_bind.py").read_text(encoding="utf-8")
+    body = bind[bind.index("def launch("):]
+    start = body.index("demo.launch(")
+    depth, end = 0, start
+    for i in range(start, len(body)):
+        depth += {"(": 1, ")": -1}.get(body[i], 0)
+        if body[i] == ")" and depth == 0:
+            end = i
+            break
+    call = body[start : end + 1]
+    assert "share=False" in call
+    assert "share=True" not in call
+    for name in ("hnc-field", "auris-coherence", "qgita-snr", "organism-replay"):
+        copy = (ROOT / "huggingface" / name / "space_bind.py").read_text(encoding="utf-8")
+        assert copy == bind, f"{name}/space_bind.py differs from huggingface/space_bind.py"
 
 
 def test_pinned_finder_not_on_meta_path_after_teardown() -> None:
