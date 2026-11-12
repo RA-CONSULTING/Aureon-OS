@@ -23,7 +23,7 @@ _DONE = False
 PINNED_COMMIT = "050891385291fb77c321996f25e307c794789d89"
 # git blob of the committed huggingface/hnc-field/guard.py.
 # The check is these bytes. It is not a path lookup inside PINNED_COMMIT.
-GUARD_BLOB = "141173b05e3031ad2666571e9422fe5dced4601b"
+GUARD_BLOB = "a1ddb1ee5a909e96fb0e4b357862569cbd0a068c"
 GUARD_MISMATCH = "checkout guard.py differs from pin 05089138"
 
 

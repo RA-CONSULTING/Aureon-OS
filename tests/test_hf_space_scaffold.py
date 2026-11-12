@@ -13,7 +13,7 @@ import pytest
 from tests.support.receipt_provenance import is_ancestor, last_commit_writing, module_pin_at
 
 ROOT = Path(__file__).resolve().parents[1]
-PIN = "0646146c53e59dbcab41363a613d5651c9c9d50f"
+PIN = "050891385291fb77c321996f25e307c794789d89"
 SPACES = ("hnc-field", "auris-coherence", "qgita-snr", "organism-replay")
 TOKEN = "hf_test_token_value_not_real"
 BANNED = ("production ready", "production-ready", "validated", "Space is live")

@@ -142,7 +142,7 @@ def test_public_pin_and_hold_are_unchanged() -> None:
     assert PUBLIC_PIN == "34864ff0547d2cff03e707414743a3b0cc8770b5"
     assert PUBLISHED_PIN == "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
     assert 'PINNED_COMMIT = "050891385291fb77c321996f25e307c794789d89"' in guard  # live published pin; PUBLISHED_PIN on this head is historical
-    assert 'COMMIT = "0646146c53e59dbcab41363a613d5651c9c9d50f"' in space  # live published pin; PUBLISHED_PIN on this head is historical
+    assert 'COMMIT = "050891385291fb77c321996f25e307c794789d89"' in space  # live published pin; PUBLISHED_PIN on this head is historical
     assert record["public_require_pin"] == PUBLIC_PIN
     assert record["measurement"]["public_require_pin"] == PUBLIC_PIN
     assert record["published_require_pin"] == PUBLISHED_PIN
