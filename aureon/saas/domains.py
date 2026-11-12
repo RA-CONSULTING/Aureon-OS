@@ -11,15 +11,17 @@ aureon/ a product-domain home + a canonical entry point:
   • filesystem domains — every folder under aureon/ (docs/MODULES_AT_A_GLANCE.md)
   • capability categories — the 12 SystemRegistry semantic classes (in catalog.py)
 
-`domain_report()` probes each filesystem domain's entry point by import (cheap —
-``importlib.util.find_spec``, no heavy construction) so we can honestly say which
+`domain_report()` probes each filesystem domain's entry point by locating it (cheap —
+a filesystem spec lookup that imports nothing, no heavy construction) so we can honestly say which
 domains are reachable. The known singletons come from the inventory; everything
 else falls back to "is the package importable".
 """
 
 from __future__ import annotations
 
+import importlib.machinery
 import importlib.util
+import sys
 from typing import Any, Dict, List, Tuple
 
 # The 6 product domains the frontend console presents.
@@ -128,9 +130,42 @@ def fs_domain_from_path(filepath: str) -> str:
 
 
 def _module_importable(module: str) -> bool:
+    """True when ``module`` can be located, without importing it or its parents.
+
+    ``importlib.util.find_spec("a.b.c")`` imports ``a`` and ``a.b`` first, so a
+    status probe would run package ``__init__`` code and whatever those import.
+    This walks the package search locations with ``PathFinder`` instead, which
+    only looks at the filesystem. A module already in ``sys.modules`` counts as
+    present. Below the top level this skips import hooks such as the pin
+    finder, so "present" means the file is on disk, not that the pin would
+    allow importing it.
+    """
+    if not module or module.startswith("."):
+        return False
+    if module in sys.modules:
+        return sys.modules[module] is not None
+    parts = module.split(".")
     try:
-        return importlib.util.find_spec(module) is not None
-    except (ImportError, ModuleNotFoundError, ValueError):
+        head = sys.modules.get(parts[0])
+        if head is not None:
+            spec = getattr(head, "__spec__", None)
+        else:
+            # Top-level lookup through the normal finders (editable installs
+            # included); find_spec on a top-level name imports nothing.
+            spec = importlib.util.find_spec(parts[0])
+        for index in range(1, len(parts)):
+            if spec is None or not spec.submodule_search_locations:
+                return False
+            name = ".".join(parts[: index + 1])
+            loaded = sys.modules.get(name)
+            if loaded is not None:
+                spec = getattr(loaded, "__spec__", None)
+                continue
+            spec = importlib.machinery.PathFinder.find_spec(
+                name, list(spec.submodule_search_locations)
+            )
+        return spec is not None
+    except (ImportError, ValueError, OSError):
         return False
 
 

@@ -108,12 +108,10 @@ _SURFACES: List[Dict[str, str]] = [
 
 
 def _module_importable(module: str) -> bool:
-    try:
-        import importlib.util
+    # Same filesystem-only lookup as the domain probe: no parent package import.
+    from aureon.saas.domains import _module_importable as _locate
 
-        return importlib.util.find_spec(module) is not None
-    except (ImportError, ModuleNotFoundError, ValueError):
-        return False
+    return _locate(module)
 
 
 def _probe(entry: Dict[str, str]) -> Dict[str, Any]:
