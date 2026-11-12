@@ -107,7 +107,13 @@ def _pytest(root: Path) -> subprocess.CompletedProcess[str]:
     for cache in root.rglob("__pycache__"):
         if cache.is_dir():
             shutil.rmtree(cache, ignore_errors=True)
-    env = dict(os.environ)
+    # The repair is often spawned by a live organ. Its pytest must not inherit
+    # that launcher's session, workspace or exchange credentials, and must not
+    # reload them from a .env: otherwise a launcher smoke test inside the suite
+    # boots organs from the live folder, with live keys, and cannot stop them.
+    from aureon.launch.session_scope import isolated_child_env
+
+    env = isolated_child_env(dict(os.environ))
     env["PYTHONDONTWRITEBYTECODE"] = "1"
     limit = _suite_timeout()
     # Private pytest temp root: the shared /tmp/pytest-of-<user> keeps only the newest three runs,
