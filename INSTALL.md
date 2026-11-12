@@ -1,5 +1,9 @@
 # Install from a fresh clone
 
+> **Superseded for evaluators.** The current single evaluation path, its known
+> state and its port overrides are in [`EVALUATE.md`](EVALUATE.md). The run
+> recorded below is an earlier measurement and is kept as history.
+
 This is the path that was measured on a clean checkout of `main`. It is a
 local, guarded boot. The orange release-boundary badge stays **HOLD**.
 Go-live stays **HOLD**.
