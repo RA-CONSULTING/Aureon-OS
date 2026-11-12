@@ -682,9 +682,10 @@ def test_space_entry_points_call_enforce_public_pin() -> None:
     body = bind[bind.index("def launch("):]
     start = body.index("demo.launch(")
     depth, end = 0, start
-    for end, ch in enumerate(body[start:], start):
-        depth += {"(": 1, ")": -1}.get(ch, 0)
-        if ch == ")" and depth == 0:
+    for i in range(start, len(body)):
+        depth += {"(": 1, ")": -1}.get(body[i], 0)
+        if body[i] == ")" and depth == 0:
+            end = i
             break
     call = body[start : end + 1]
     assert "share=False" in call
