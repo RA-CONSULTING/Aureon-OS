@@ -381,7 +381,7 @@ ORGANS = {
         "match": "aureon.launch.daemons.real_time_data_feeder",
         "args": [],
         "cwd": str(WORKSPACE),
-        "mode": "continuous (checkout feeder; workspace real_time_data_feeder.py is not in this tree)",
+        "mode": "continuous (restored workspace real_time_data_feeder.py; public NOAA SWPC + USGS reads every 60s via api_communion, writes real_time_data.json, no orders)",
         "log": str(LOGS / "organ_real_time_data_feeder.log"),
         "env": _launch_env({"AUREON_LIVE_TRADING": "0", "AUREON_DISABLE_REAL_ORDERS": "1"}),
     },
