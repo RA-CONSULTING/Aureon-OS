@@ -10,9 +10,9 @@
 
 We take security seriously. If you discover a vulnerability, please do NOT open a public issue.
 
-Instead, please report it responsibly:
-1. Email the maintainers (if a contact is listed in the repo profile).
-2. Or use GitHub's "Report a vulnerability" feature if enabled.
+Instead, please report it privately:
+1. Use GitHub's private [Security Advisories](https://github.com/RA-CONSULTING/Aureon-OS/security/advisories/new) for this repository.
+2. Or email [gary@aureonzorzatechnologies.com](mailto:gary@aureonzorzatechnologies.com).
 
 We will acknowledge your report within 48 hours and provide an estimated timeline for a fix.
 
