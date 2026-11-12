@@ -678,6 +678,18 @@ def _call_name(node: ast.AST) -> str:
     return ".".join(reversed(parts))
 
 
+def _is_launch_call(node: ast.AST) -> bool:
+    """Any call whose callee is an attribute named ``launch``, whatever the
+    receiver is, so chains such as ``demo.queue().launch()`` and
+    ``gr.Blocks().launch()`` count too.  Not covered: dynamic lookups such as
+    ``getattr(demo, "launch")()``."""
+    return (
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "launch"
+    )
+
+
 def _is_main_guard(node: ast.stmt) -> bool:
     test = getattr(node, "test", None)
     return (
@@ -697,25 +709,26 @@ def test_space_entry_points_call_enforce_public_pin() -> None:
     Checked on the parsed code, so comments, strings and spacing cannot fool it."""
     for name in ("hnc-field", "auris-coherence", "qgita-snr", "organism-replay"):
         tree = ast.parse((ROOT / "huggingface" / name / "app.py").read_text(encoding="utf-8"))
-        calls = [_call_name(n) for n in ast.walk(tree) if isinstance(n, ast.Call)]
-        assert not any(c.endswith(".launch") and c != "space_bind.launch" for c in calls), name
-        assert calls.count("space_bind.launch") == 1, name
+        launches = [_call_name(n) for n in ast.walk(tree) if _is_launch_call(n)]
+        assert launches == ["space_bind.launch"], (name, launches)
         guards = [n for n in tree.body if _is_main_guard(n)]
         assert len(guards) == 1, name
+        # Only plain top-level statements of the __main__ block count, so a
+        # call hidden under `if False:` or similar does not satisfy the order.
         order = [
-            _call_name(n)
+            _call_name(stmt.value)
             for stmt in guards[0].body
-            for n in ast.walk(stmt)
-            if isinstance(n, ast.Call) and _call_name(n) in ("enforce_public_pin", "space_bind.launch")
+            if isinstance(stmt, ast.Expr)
+            and isinstance(stmt.value, ast.Call)
+            and _call_name(stmt.value) in ("enforce_public_pin", "space_bind.launch")
         ]
         assert order == ["enforce_public_pin", "space_bind.launch"], (name, order)
     bind_text = (ROOT / "huggingface" / "space_bind.py").read_text(encoding="utf-8")
     bind = ast.parse(bind_text)
     launch = next(n for n in bind.body if isinstance(n, ast.FunctionDef) and n.name == "launch")
-    demo_calls = [
-        n for n in ast.walk(launch) if isinstance(n, ast.Call) and _call_name(n) == "demo.launch"
-    ]
-    assert len(demo_calls) == 1
+    launch_calls = [n for n in ast.walk(launch) if _is_launch_call(n)]
+    assert [_call_name(n) for n in launch_calls] == ["demo.launch"]
+    demo_calls = launch_calls
     share = [k for k in demo_calls[0].keywords if k.arg == "share"]
     assert len(share) == 1
     assert isinstance(share[0].value, ast.Constant) and share[0].value.value is False
