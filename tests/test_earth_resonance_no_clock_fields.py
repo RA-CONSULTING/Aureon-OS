@@ -57,9 +57,11 @@ def test_stale_receipt_is_not_used(monkeypatch):
     assert eng._schumann_state_initialized is False
 
 
-def test_dev_sim_fallback_still_needs_explicit_opt_in(monkeypatch):
+def test_dev_sim_values_never_open_the_gate(monkeypatch):
     eng = _engine(monkeypatch, 1_786_400_000.0)
     monkeypatch.setenv("AUREON_ALLOW_SIM_FALLBACK", "1")
     state = eng.update_schumann_state(**MODES)
-    assert state.field_coherence > 0.0
-    assert eng._schumann_state_initialized is True
+    assert state.field_coherence > 0.0  # dev-only clock values exist...
+    assert eng._schumann_state_initialized is False  # ...but never open the gate
+    ok, reason = eng.get_trading_gate_status()
+    assert ok is False and "no_live_schumann_data" in reason

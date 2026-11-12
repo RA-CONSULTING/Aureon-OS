@@ -554,7 +554,7 @@ class EarthResonanceEngine:
                 field_coherence = base_coherence * volatility_impact
                 phase_lock = 0.75 + 0.15 * math.sin(now / 600) + 0.1 * field_coherence
                 resonance_stability = 0.85 + 0.1 * math.cos(now / 900)
-                fields_are_live = True  # dev/test only, by explicit opt-in
+                fields_are_live = False  # clock values never count as a live reading, even in dev
             else:
                 field_coherence = 0.0
                 phase_lock = 0.0
