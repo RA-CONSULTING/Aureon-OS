@@ -57,7 +57,7 @@ CATEGORIES: Dict[str, str] = {
 #   live: "assess"  → accessor() → .assess() → to_dict()
 #         "status"  → accessor() → .status()  (already a dict)
 #         "summary" → accessor() → .summary() (already a dict)
-#         "reachable" → import-spec reachability only (no construction / cold boot)
+#         "reachable" → module-spec reachability only (nothing imported, no construction / cold boot)
 _SURFACES: List[Dict[str, str]] = [
     {"key": "metacognition", "label": "Metacognition", "category": "self_perception",
      "purpose": "the organism reads its own signals and scores its self-coherence, looping "

@@ -105,9 +105,9 @@ def product_domain_for(fs_domain: str) -> str:
 
 
 def cognitive_surface_report() -> List[Dict[str, object]]:
-    """Import-reachability of each cognitive surface's backing accessor — the
-    catalog view of the Cognitive SaaS surface (cheap ``find_spec``, no
-    construction)."""
+    """Reachability of each cognitive surface's backing accessor module — the
+    catalog view of the Cognitive SaaS surface (module spec found on disk via
+    ``module_spec_exists``; nothing imported, nothing constructed)."""
     report: List[Dict[str, object]] = []
     for surface, (module, accessor, note) in COGNITIVE_SURFACES.items():
         report.append({
@@ -172,7 +172,7 @@ def _module_importable(module: str) -> bool:
 
 
 def probe_domain(fs_domain: str) -> Dict[str, object]:
-    """Cheap reachability probe for one domain (import spec check, no construction)."""
+    """Cheap reachability probe for one domain (module spec on disk; nothing imported, no construction)."""
     adapter: Tuple[str, str, str] | None = _ADAPTERS.get(fs_domain)
     if adapter is not None:
         module, attr, kind = adapter
