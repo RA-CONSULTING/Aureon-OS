@@ -20,7 +20,14 @@ def _mcp_module(request: pytest.FixtureRequest) -> bool:
 @pytest.fixture(scope="module", autouse=True)
 def _mcp_public_imports(request: pytest.FixtureRequest) -> None:
     if not _mcp_module(request):
-        yield
+        try:
+            yield
+        finally:
+            # Non-MCP modules (e.g. test_aureon_public_stage2/stage34/queen_stage8)
+            # can still import aureon_public and install PinnedAureonFinder on
+            # sys.meta_path. Drop it at module end so later in-process aureon
+            # imports are not blob-checked against the pin.
+            mcp_isolation.teardown_guard_leaks()
         return
     env_before = dict(os.environ)
     mcp_isolation.load_public_test_bindings(request.module)
