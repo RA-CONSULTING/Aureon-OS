@@ -443,7 +443,10 @@ class UnifiedKillChain:
         if self.capital and self.capital.enabled:
             log_queen("Scanning Capital.com reality branches...")
             try:
-                positions = self.capital.get_positions()
+                from aureon.exchanges.orca_capital_ownership import split_owned_positions
+                positions, foreign = split_owned_positions(self.capital.get_positions())
+                if foreign:
+                    log_system(f"Capital: skipping {len(foreign)} position(s) ORCA did not open (not adopted)")
                 for p in positions:
                     market = p.get('market', {})
                     pos_data = p.get('position', {})

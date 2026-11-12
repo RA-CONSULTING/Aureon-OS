@@ -385,7 +385,9 @@ def get_all_positions() -> Dict[str, List[Dict[str, Any]]]:
         capital = get_capital_client()
         capital_positions = []
         if capital.enabled:
-            for pos in capital.get_positions():
+            from aureon.exchanges.orca_capital_ownership import split_owned_positions
+            owned_capital, _foreign_capital = split_owned_positions(capital.get_positions())
+            for pos in owned_capital:
                 pos_meta = pos.get("position", {})
                 market = pos.get("market", {})
                 capital_positions.append({
@@ -473,9 +475,14 @@ def submit_exit_order(
         elif venue == "capital":
             capital = get_capital_client()
             deal_id = position.get("deal_id")
+            from aureon.exchanges.orca_capital_ownership import adopted_deal_ids
             if not deal_id:
                 record["status"] = "error"
                 record["error"] = "missing deal_id for Capital close"
+            elif str(deal_id) not in adopted_deal_ids():
+                record["status"] = "refused"
+                record["error"] = "Capital deal not adopted by ORCA; not closing a position ORCA did not open"
+                record["deal_id"] = deal_id
             else:
                 result = capital.close_position(deal_id)
                 record["status"] = "closed" if result.get("success") else "error"
