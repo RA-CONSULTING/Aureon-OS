@@ -72,8 +72,12 @@ def _limit() -> float | None:
 
 def _pytest_paths(root: Path, paths: list[str], env_extra: dict[str, str] | None = None,
                   timeout: float | None = None) -> subprocess.CompletedProcess[str]:
-    env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1",
-               AUREON_LLM_OFFLINE="1", AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS="1")
+    # The gate is launched by a live organ: its pytest gets no credentials, no
+    # dotenv loading and no live trading switches (same rule as the repair suite).
+    from aureon.launch.session_scope import isolated_child_env
+
+    env = isolated_child_env(dict(os.environ))
+    env.update(PYTHONDONTWRITEBYTECODE="1", AUREON_LLM_OFFLINE="1", AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS="1")
     env.update(env_extra or {})
     return subprocess.run(
         [sys.executable, "-m", "pytest", "-q", "--tb=line", "-p", "no:cacheprovider", *paths],
@@ -280,7 +284,19 @@ def _resolve(module_name: str, qualname: str) -> tuple[Any, Any, str]:
 
 
 def _function_node(module: Any, qualname: str) -> ast.FunctionDef:
-    tree = ast.parse(Path(module.__file__).read_text(encoding="utf-8"))
+    return _function_node_at(Path(module.__file__), qualname)
+
+
+def _target_file(root: Path, module_name: str) -> Path | None:
+    base = root.joinpath(*module_name.split("."))
+    for path in (base.with_suffix(".py"), base / "__init__.py"):
+        if path.is_file():
+            return path
+    return None
+
+
+def _function_node_at(path: Path, qualname: str) -> ast.FunctionDef:
+    tree = ast.parse(path.read_text(encoding="utf-8"))
     body: list[ast.stmt] = tree.body
     node: Any = None
     for part in qualname.split("."):
@@ -311,9 +327,15 @@ def _perturb(value: int | float) -> int | float:
     return value * 1.5 if value else 1.0
 
 
-def mutants(module_name: str, qualname: str) -> list[dict[str, Any]]:
-    module, _owner, _name = _resolve(module_name, qualname)
-    fn = _function_node(module, qualname)
+def mutants(module_name: str, qualname: str, root: Path | None = None) -> list[dict[str, Any]]:
+    # Site indices must come from the same source the pytest child mutates, which
+    # is the root under test. The gate itself may run from another checkout.
+    source = _target_file(root, module_name) if root is not None else None
+    if source is not None:
+        fn = _function_node_at(source, qualname)
+    else:
+        module, _owner, _name = _resolve(module_name, qualname)
+        fn = _function_node(module, qualname)
     return [{"module": module_name, "qualname": qualname, "site": site, "line": line, "change": change}
             for site, change, line in _sites(fn)]
 
@@ -351,7 +373,7 @@ def mutation_check(root: Path, targets: tuple[tuple[str, str], ...] = PRICING_TA
     unreadable: list[str] = []
     for module_name, qualname in targets:
         try:
-            specs.extend(mutants(module_name, qualname))
+            specs.extend(mutants(module_name, qualname, root))
         except Exception as exc:  # a target that cannot be read is reported, not dropped silently
             unreadable.append(f"{module_name}:{qualname}: {type(exc).__name__}")
 

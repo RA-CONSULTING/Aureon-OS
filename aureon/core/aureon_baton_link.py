@@ -299,7 +299,8 @@ def _push_proven_repair(commit, gate):
             return
         proof = subprocess.run([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", *tests],
                                cwd=tree, capture_output=True, text=True,
-                               env=dict(os.environ, AUREON_LLM_OFFLINE="1", AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS="1"))
+                               env=_isolated_repair_env(AUREON_LLM_OFFLINE="1",
+                                                        AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS="1"))
         if proof.returncode != 0:
             relay_state("queen.self_repair", "not_doing", {"push": "held_proof_failed_on_main", "commit": commit,
                                                            "detail": proof.stdout[-300:]})
@@ -353,6 +354,70 @@ def _adopt_repair_and_reboot(report):
     os.execv(sys.executable, [sys.executable] + argv[1:])
 
 
+# The checkout this process runs from. The repair and the benchmark gate are
+# launched from here, never from the repair root they work on.
+_RUN_ROOT = Path(__file__).resolve().parents[2]
+
+# `python -m pkg.mod` with cwd=<repair root> puts the repair root first on
+# sys.path, so the child imports whatever stale copy of the repair code sits in
+# that worktree. This bootstrap drops the cwd from sys.path, puts the run
+# checkout first, then runs the module as __main__. It is passed with -c, so
+# it works on every Python version (-P is 3.11+) and, unlike PYTHONPATH or
+# PYTHONSAFEPATH, it does not leak into grandchildren: the repair's own pytest
+# still runs the repair root's code, which is what it is meant to test.
+_RUN_FROM_CHECKOUT = (
+    "import os, runpy, sys\n"
+    "here = os.path.realpath(os.getcwd())\n"
+    "sys.path[:] = [p for p in sys.path if p and os.path.realpath(p) != here]\n"
+    "sys.path.insert(0, sys.argv[1])\n"
+    "sys.argv = sys.argv[2:]\n"
+    "runpy.run_module(sys.argv[0], run_name='__main__', alter_sys=True)\n"
+)
+
+
+def _isolated_repair_env(**extra: str) -> dict[str, str]:
+    """Child env for repair, gate and proof runs: no credentials, no dotenv, no live switches."""
+
+    from aureon.launch.session_scope import isolated_child_env
+
+    env = isolated_child_env(dict(os.environ))
+    env.update(extra)
+    # isolated_child_env forces these; keep them forced even if `extra` names one.
+    env.update(PYTHON_DOTENV_DISABLED="1", AUREON_LIVE_TRADING="0", AUREON_DISABLE_REAL_ORDERS="1", DRY_RUN="1")
+    return env
+
+
+def _repair_child_spec(module: str, root: str, *extra_args: str, **extra_env: str):
+    """argv, cwd and env for a self-repair or benchmark-gate child.
+
+    Same contract as Sully's draft helper: the child runs this checkout's code,
+    the repair worktree is passed as --root, and the env goes through
+    isolated_child_env. Two differences: the run checkout is put first by the
+    -c bootstrap above instead of PYTHONPATH, and cwd stays the repair root.
+    PYTHONPATH would be inherited by the repair's own pytest, which must import
+    the repair root's code; and a cwd in the live run folder would let any
+    relative write from the child land in the live run.
+    """
+
+    argv = [sys.executable, "-c", _RUN_FROM_CHECKOUT, str(_RUN_ROOT), module, "--root", root, *extra_args]
+    return argv, root, _isolated_repair_env(**extra_env)
+
+
+def _launch_benchmark_gate(root: str, timeout: float = 1800):
+    import subprocess
+
+    argv, cwd, env = _repair_child_spec("aureon.autonomous.queen_benchmark_gate", root, "--no-relay")
+    return subprocess.run(argv, cwd=cwd, env=env, capture_output=True, text=True, timeout=timeout)
+
+
+def _launch_queen_repair(root: str):
+    import subprocess
+
+    # Operator opted in via AUREON_QUEEN_REPAIR_ROOT.
+    argv, cwd, env = _repair_child_spec("aureon_fusion.repair", root, AUREON_SELF_REPAIR_ENABLE="1")
+    return subprocess.run(argv, cwd=cwd, env=env, capture_output=True, text=True, timeout=_outer_repair_timeout())
+
+
 def _outer_repair_timeout():
     # Follows the suite safety net: none by default, else the suite limit plus room for the retest.
     try:
@@ -373,12 +438,11 @@ def _start_queen_repair_loop(module_name: str) -> None:
     if not root or not Path(root).is_dir():
         relay_state(module_name, "not_doing", {"self_repair": "AUREON_QUEEN_REPAIR_ROOT unset"})
         return
-    if Path(root).resolve() == Path.cwd().resolve():
+    if Path(root).resolve() in (Path.cwd().resolve(), _RUN_ROOT):
         relay_state(module_name, "not_doing", {"self_repair": "repair root is the running repo"})
         return
     try:
         import fcntl
-        import subprocess
         import threading
         lock = open(Path(root) / ".queen_repair.lock", "w")
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -394,9 +458,7 @@ def _start_queen_repair_loop(module_name: str) -> None:
             if time.time() >= silent_due[0]:
                 silent_due[0] = time.time() + silent_every
                 try:  # summary -> queen.self_repair (seeing); the gate also writes the review log
-                    check = subprocess.run([sys.executable, "-m", "aureon.autonomous.queen_benchmark_gate",
-                                            "--root", root, "--no-relay"],
-                                           cwd=root, env=dict(os.environ), capture_output=True, text=True, timeout=1800)
+                    check = _launch_benchmark_gate(root)
                     out = check.stdout
                     summary = json.loads(out[out.rindex("\n{") + 1:] if "\n{" in out else out[out.index("{"):])["summary"]
                     relay_state("queen.self_repair", "seeing", {"silent_wrong": summary})
@@ -404,10 +466,7 @@ def _start_queen_repair_loop(module_name: str) -> None:
                     relay_state("queen.self_repair", "not_doing", {"silent_wrong": f"{type(exc).__name__}: {exc}"[:300]})
             relay_state("queen.self_repair", "trying", {"root": root})
             try:
-                env = dict(os.environ, AUREON_SELF_REPAIR_ENABLE="1")  # operator opted in via REPAIR_ROOT
-                done = subprocess.run([sys.executable, "-m", "aureon_fusion.repair", "--root", root],
-                                      cwd=root, env=env, capture_output=True, text=True,
-                                      timeout=_outer_repair_timeout())
+                done = _launch_queen_repair(root)
                 try:
                     report = json.loads(done.stdout[done.stdout.rindex("\n{") + 1:]
                                         if "\n{" in done.stdout else done.stdout[done.stdout.index("{"):])
