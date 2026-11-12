@@ -14,7 +14,8 @@ of scanners/live_market_momentum_scanner.py:
   * REAL values only, never fabricated. Stale or malformed state -> None.
 
 Inputs (all real, file-backed):
-  * workspace/schumann_state.json          (mtime < 300s, real_data == true)
+  * workspace/schumann_state.json          (observed_at, else timestamp,
+                                            younger than 300s; real_data == true)
       - frequency_hz: Schumann fundamental
       - activity_index: 0..100-ish scalar from the field source
   * aureon_fusion/state/hnc_core_state.json (HNC core coherence)
@@ -49,6 +50,7 @@ from __future__ import annotations
 import json
 import os
 import time
+from datetime import datetime, timezone
 from typing import Optional
 
 # ── symbol mapping (same hub-symbol convention as the reference scanner) ────
@@ -66,6 +68,19 @@ _HNC_MAX_AGE = 300.0
 _FLOOR = 0.35
 
 
+def _parse_iso(value):
+    """Parse an ISO clock to aware UTC, or None. Naive values are UTC."""
+    if value in (None, ""):
+        return None
+    try:
+        ts = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
+    return ts
+
+
 def _read_json(path: str, max_age: float) -> Optional[dict]:
     try:
         if time.time() - os.path.getmtime(path) > max_age:
@@ -77,8 +92,38 @@ def _read_json(path: str, max_age: float) -> Optional[dict]:
         return None
 
 
+def _read_schumann_state(path: str, max_age: float) -> Optional[dict]:
+    """Load schumann_state.json if the measurement is fresh.
+
+    Freshness is judged by observed_at (when Tomsk measured the field)
+    when that key is present; a present but unparseable observed_at is
+    refused. If it is absent, the write timestamp is used. File mtime
+    is not a freshness clock.
+    """
+    try:
+        with open(path, encoding="utf-8") as f:
+            d = json.load(f)
+        if not isinstance(d, dict):
+            return None
+        observed = d.get("observed_at")
+        if observed not in (None, ""):
+            ts = _parse_iso(observed)
+            if ts is None:
+                return None
+        else:
+            ts = _parse_iso(d.get("timestamp"))
+            if ts is None:
+                return None
+        age = (datetime.now(timezone.utc) - ts).total_seconds()
+        if age > max_age:
+            return None
+        return d
+    except Exception:
+        return None
+
+
 def _field_reading() -> Optional[dict]:
-    sch = _read_json(_SCHUMANN_PATH, _SCHUMANN_MAX_AGE)
+    sch = _read_schumann_state(_SCHUMANN_PATH, _SCHUMANN_MAX_AGE)
     if not sch or sch.get("real_data") is not True:
         return None
     hnc = _read_json(_HNC_PATH, _HNC_MAX_AGE)

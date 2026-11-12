@@ -151,7 +151,15 @@ def _read_gaia(now: datetime) -> dict:
     data = _read_json(path)
     if data is None:
         return {"value": None, "fresh": False, "source": src}
-    ts = _parse_ts(data.get("timestamp"))
+    # Age by when Tomsk measured the field (observed_at), not when we wrote
+    # the file. A present but unparseable observed_at is not fresh.
+    observed = data.get("observed_at")
+    if observed not in (None, ""):
+        ts = _parse_ts(observed)
+        if ts is None:
+            return {"value": None, "fresh": False, "source": src}
+    else:
+        ts = _parse_ts(data.get("timestamp"))
     if ts is None or (now - ts).total_seconds() > STALE_SECONDS:
         return {"value": None, "fresh": False, "source": src}
     activity = data.get("activity_index")

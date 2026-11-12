@@ -279,11 +279,24 @@ def gather_readings():
     activity = _finite(schumann.get("activity_index"))
     if activity is not None:
         real = bool(schumann.get("real_data"))
-        sch_age = _age_of_timestamp(schumann.get("timestamp"))
-        sch_stale = (sch_age is None
-                     or sch_age > STALE_FACTOR * SCHUMANN_INTERVAL_S)
-        if sch_stale and not real:
-            pass  # stale non-real data is refused entirely (fail-closed)
+        # Age by observed_at (Tomsk measurement time) when present. A present
+        # but unparseable observed_at is refused entirely — we cannot know
+        # the age, so it is not ingested even as a degraded real reading.
+        observed = schumann.get("observed_at")
+        sch_unparseable = False
+        if observed not in (None, ""):
+            sch_age = _age_of_timestamp(observed)
+            if sch_age is None:
+                sch_unparseable = True
+                sch_stale = True
+            else:
+                sch_stale = sch_age > STALE_FACTOR * SCHUMANN_INTERVAL_S
+        else:
+            sch_age = _age_of_timestamp(schumann.get("timestamp"))
+            sch_stale = (sch_age is None
+                         or sch_age > STALE_FACTOR * SCHUMANN_INTERVAL_S)
+        if sch_unparseable or (sch_stale and not real):
+            pass  # unparseable observed_at, or stale non-real data: refuse
         else:
             confidence = 0.8 if real else 0.4
             if sch_stale:

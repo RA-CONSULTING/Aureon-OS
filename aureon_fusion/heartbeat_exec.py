@@ -32,6 +32,7 @@ from pathlib import Path
 from .paths import WORKSPACE, AUREON_UPSTREAM, HEARTBEAT_STATE, FUSION_STATE, AUREON_RADAR
 from . import conscience_hook
 from . import events
+from .grand_wheel import STALE_SECONDS as SCHUMANN_CACHE_STALE_SECONDS
 
 LAST_RESULTS = FUSION_STATE / "heartbeat_last_results.json"
 SCHUMANN_STATE = WORKSPACE / "schumann_state.json"
@@ -264,16 +265,54 @@ def check_space_weather() -> dict:
     return {"source": None, "status": "unavailable"}
 
 
-def _load_schumann_cache() -> dict:
+def _parse_schumann_clock(value):
+    """Parse an ISO clock to aware UTC, or None. Naive values are UTC."""
+    if value in (None, ""):
+        return None
     try:
-        if SCHUMANN_STATE.exists():
-            with open(SCHUMANN_STATE, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            if isinstance(data, dict):
-                return data
+        ts = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
+    return ts
+
+
+def _load_schumann_cache() -> dict | None:
+    """Fresh schumann_state.json, or None — never serve a stale file as the current field.
+
+    Freshness is judged by observed_at (when Tomsk measured the field) when
+    that key is present; a present but unparseable observed_at is no reading.
+    If it is absent, the write timestamp is used. The age window is
+    grand_wheel.STALE_SECONDS (300 s). A file tagged simulation or
+    real_data=False is refused unless AUREON_ALLOW_SIM_FALLBACK=1, matching
+    planetary_switchboard.
+    """
+    try:
+        if not SCHUMANN_STATE.exists():
+            return None
+        with open(SCHUMANN_STATE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        if not isinstance(data, dict):
+            return None
+        sim_tagged = data.get("simulation") is True or data.get("real_data") is False
+        if sim_tagged and os.getenv("AUREON_ALLOW_SIM_FALLBACK") != "1":
+            return None
+        observed = data.get("observed_at")
+        if observed not in (None, ""):
+            ts = _parse_schumann_clock(observed)
+            if ts is None:
+                return None
+        else:
+            ts = _parse_schumann_clock(data.get("timestamp"))
+            if ts is None:
+                return None
+        age = (datetime.now(timezone.utc) - ts).total_seconds()
+        if age > SCHUMANN_CACHE_STALE_SECONDS:
+            return None
+        return data
     except Exception:
-        pass
-    return {}
+        return None
 
 
 # ───────────────────────────── 4. upstream sync ────────────────────────────

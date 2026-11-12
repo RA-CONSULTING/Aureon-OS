@@ -182,8 +182,11 @@ class NOAAFeed:
 # if the state file is missing, unreadable, unparseable, stale
 # (> AUREON_SCHUMANN_MAX_AGE_SEC, default 600 s), or flagged simulation while
 # AUREON_ALLOW_SIM_FALLBACK is not set, get_schumann() returns None and the
-# switchboard SKIPS Schumann-based signals. No estimated/fallback constants
-# are ever emitted.
+# switchboard SKIPS Schumann-based signals. Freshness is judged by
+# observed_at (when Tomsk measured the field) when that key is present;
+# a present but unparseable observed_at fails closed. If it is absent,
+# the write timestamp is used. No estimated/fallback constants are ever
+# emitted.
 _SCHUMANN_STATE_CANDIDATES = [
     RADAR_DIR.parent / "aureon_fusion" / "state" / "schumann_state.json",
     RADAR_DIR.parent / "schumann_state.json",
@@ -251,10 +254,18 @@ class SchumannFeed:
                   "is not set — skipping Schumann signals [fail-closed]")
             return None
 
-        ts = self._parse_timestamp(data.get("timestamp"))
-        if ts is None:
-            print("[SCHUMANN] state has no valid timestamp — skipping [fail-closed]")
-            return None
+        # Age by when Tomsk measured the field, not when we wrote the file.
+        observed = data.get("observed_at")
+        if observed not in (None, ""):
+            ts = self._parse_timestamp(observed)
+            if ts is None:
+                print("[SCHUMANN] state has unparseable observed_at — skipping [fail-closed]")
+                return None
+        else:
+            ts = self._parse_timestamp(data.get("timestamp"))
+            if ts is None:
+                print("[SCHUMANN] state has no valid timestamp — skipping [fail-closed]")
+                return None
         max_age = _schumann_max_age_sec()
         age = (datetime.now(timezone.utc) - ts).total_seconds()
         if age > max_age:
