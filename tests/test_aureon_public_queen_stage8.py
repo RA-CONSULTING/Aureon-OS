@@ -182,7 +182,7 @@ def test_body_call_opens_only_the_two_stage34_read_entries() -> None:
     from aureon_public.guard_loader import PINNED_COMMIT
     from aureon_public.stage34_gate import READ_KEYS
 
-    assert PINNED_COMMIT == "0646146c53e59dbcab41363a613d5651c9c9d50f"
+    assert PINNED_COMMIT == "050891385291fb77c321996f25e307c794789d89"
     assert {
         ("miner/miner_inhouse_ai_bridge.py", "MinerAIInsight.to_dict"),
         ("queen/temporal_ground.py", "compute_zpe_ground"),
