@@ -20,6 +20,7 @@ Refactored from `orca_complete_kill_cycle.py` and `live_kill_chain_demo.py`.
 """
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import os
+from aureon.exchanges.orca_capital_ownership import split_owned_positions  # CN50 guard: skip Capital deals ORCA did not open
 import time
 import json
 import asyncio
@@ -1765,7 +1766,7 @@ class UnifiedKillChain:
         if self.capital and self.capital.enabled:
             log_queen("Scanning Capital.com reality branches...")
             try:
-                positions = self.capital.get_positions()
+                positions = split_owned_positions(self.capital.get_positions())[0]
                 for p in positions:
                     market = p.get('market', {})
                     pos_data = p.get('position', {})

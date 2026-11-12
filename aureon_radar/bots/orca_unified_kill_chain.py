@@ -599,6 +599,10 @@ class UnifiedKillChain:
         log_sniper(f"Target Locked. {symbol}. Qty: {target['qty']}")
         
         if exchange == 'capital':
+            from aureon.exchanges.orca_capital_ownership import adopted_deal_ids
+            if str(target.get('id')) not in adopted_deal_ids():
+                log_system(f"Capital: refusing to close deal {target.get('id')}: not adopted by ORCA")
+                return
             # Capital.com Kill
             confirm = queen_answer(f"\n🔴 [CAPITAL] CLOSE {symbol} (Deal {target['id']})? [y/N]: ", target['pnl'] > 0)
             if confirm.lower() == 'y':
