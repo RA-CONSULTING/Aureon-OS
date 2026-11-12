@@ -190,6 +190,22 @@ class MetacognitionMonitor:
         except Exception:  # noqa: BLE001
             signals["local_action"] = {"truth_status": "no_data"}
 
+        # 7. shared market feed — can I see the markets I trade? (fresh venues)
+        try:
+            from aureon.data_feeds.shared_market_feed import read_snapshot
+
+            snap = read_snapshot()
+            states = {v: view.get("state") for v, view in snap["venues"].items()}
+            fresh = sum(1 for st in states.values() if st == "fresh")
+            if snap.get("file_present") and fresh:
+                _add("market_feed", fresh / len(states), 0.8, f"{fresh}_of_{len(states)}_fresh", "live")
+                signals["market_feed"]["venues"] = states
+            else:
+                signals["market_feed"] = {"truth_status": "no_data", "venues": states,
+                                          "blocker": "no fresh venue in shared market feed"}
+        except Exception:  # noqa: BLE001
+            signals["market_feed"] = {"truth_status": "no_data", "blocker": "feed read failed"}
+
         return readings, signals, divergence, contributors
 
     @staticmethod

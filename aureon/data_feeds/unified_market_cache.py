@@ -230,7 +230,79 @@ class UnifiedMarketCache:
                         
             except Exception as e:
                 logger.debug(f"Failed to read {path}: {e}")
-    
+
+        self._merge_shared_feed()
+
+    def _merge_shared_feed(self) -> None:
+        """Fold fresh venue quotes from the shared market feed into memory.
+
+        Reads ``state/shared_market_feed.json`` through its reader API (no
+        exchange call). Only venues the feed reports as fresh contribute;
+        stale, errored or missing venues add nothing.
+        """
+        try:
+            from aureon.data_feeds.shared_market_feed import read_snapshot
+            snap = read_snapshot()
+        except Exception as e:
+            logger.debug(f"Shared market feed unreadable: {e}")
+            return
+        with self._cache_lock:
+            for venue, view in snap.get("venues", {}).items():
+                self._source_health[f"shared_feed:{venue}"] = {
+                    "source": view.get("source"),
+                    "state": view.get("state"),
+                    "fresh": view.get("state") == "fresh",
+                    "active": view.get("state") == "fresh",
+                    "ticker_count": len(view.get("quotes") or {}),
+                    "generated_at": view.get("fetched_at"),
+                    "error": view.get("error"),
+                    "cache_path": snap.get("path"),
+                }
+        for venue, view in snap.get("venues", {}).items():
+            if view.get("state") != "fresh":
+                continue
+            for symbol, q in (view.get("quotes") or {}).items():
+                # Newest-wins needs the venue's own quote time. Our poll time
+                # (fetched_at) is not a market timestamp and must never outrank
+                # a real exchange timestamp, so quotes without provider_ts stay
+                # readable through read_snapshot() only and are not merged.
+                if q.get("provider_ts") in (None, "", 0):
+                    continue
+                try:
+                    price = float(q.get("price") or 0)
+                    ts = float(q.get("provider_ts"))
+                except (TypeError, ValueError):
+                    continue
+                if price <= 0 or ts <= 0:
+                    continue
+                base = str(q.get("base") or symbol).upper()
+                bid = q.get("bid")
+                ask = q.get("ask")
+                change = q.get("change_24h_pct")
+                volume = q.get("volume_24h_quote")
+                if not bid or not ask or change is None or volume is None:
+                    # CachedTicker needs a book, a 24h change and a 24h quote
+                    # volume. Never stand in price or 0.0 for a field the venue
+                    # did not report; such quotes stay readable through
+                    # shared_market_feed.read_snapshot() only.
+                    continue
+                ticker = CachedTicker(
+                    symbol=base,
+                    price=price,
+                    bid=float(bid),
+                    ask=float(ask),
+                    change_24h=float(change),
+                    volume_24h=float(volume),
+                    source=f"shared_feed:{venue}",
+                    timestamp=ts,
+                    pair=str(q.get("pair") or base),
+                )
+                with self._cache_lock:
+                    existing = self._tickers.get(base)
+                    if existing and existing.timestamp > ts:
+                        continue
+                    self._tickers[base] = ticker
+
     def _extract_symbol(self, key: str) -> str:
         """Extract base symbol from pair key"""
         key = key.upper()
