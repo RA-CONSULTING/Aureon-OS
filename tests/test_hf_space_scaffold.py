@@ -11,7 +11,9 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-PIN = "0646146c53e59dbcab41363a613d5651c9c9d50f"
+PIN = "050891385291fb77c321996f25e307c794789d89"
+# Pin recorded in the committed HF receipts. Historical; the receipts are not rewritten.
+RECEIPT_PIN = "0646146c53e59dbcab41363a613d5651c9c9d50f"
 TIP = "0646146c53e59dbcab41363a613d5651c9c9d50f"
 SPACES = ("hnc-field", "auris-coherence", "qgita-snr", "organism-replay")
 TOKEN = "hf_test_token_value_not_real"
@@ -316,7 +318,7 @@ def test_committed_receipt_is_hold_skip() -> None:
     assert receipt["pro_status"] == "not_queried"
     assert receipt["pro_required"] is False
     assert "PRO" in receipt["reason"]
-    assert receipt["public_require_pin"] == PIN
+    assert receipt["public_require_pin"] == RECEIPT_PIN
     assert receipt["pin_moved"] is False
     assert receipt["orange_badge"] == "unchanged"
     assert receipt["go_live"] == "HOLD"
