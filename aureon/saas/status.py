@@ -44,7 +44,8 @@ def _coordinator_state() -> Dict[str, Any]:
 
 def get_platform_status() -> Dict[str, Any]:
     """
-    Aggregate platform health. Cheap probes only — per-domain import-reachability
+    Aggregate platform health. Cheap probes only — per-domain module reachability
+    (spec on disk, nothing imported)
     + the operational core's own health snapshot + (if present) coordinator state.
     """
     domains = domain_report()
@@ -84,7 +85,8 @@ def get_platform_status() -> Dict[str, Any]:
         "product_domains": product_domains,
         "operational_core": op,
         "coordinator": {"available": coord.get("available", False)},
-        "note": "Reachability is import-level; a domain can be reachable yet run degraded "
+        "note": "Reachability means the module is on disk (spec check, nothing imported); a "
+                "domain can be reachable yet fail to import or run degraded "
                 "(e.g. optional deps like numpy missing). Health is reported honestly.",
     }
 
