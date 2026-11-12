@@ -267,3 +267,116 @@ def test_radar_incomplete_error_walk_leaves_caches_untouched(capital_env, monkey
     assert client.market_cache == good
     assert disk.read_text(encoding="utf-8") == before
     radar_cc._SHARED_MARKET_CACHE.update({"markets": [], "market_index": {}, "market_cache_time": 0.0})
+
+
+# ── #325 review follow-ups (Charlie's four non-blocking notes) ────────────
+
+
+def test_radar_keepalive_429_records_shared_backoff(capital_env, monkeypatch):
+    state = capital_env["state"]
+    radar = radar_cc.CapitalClient()
+    key = radar._shared_key_name()
+    assert shared.backoff_remaining(key) == 0.0
+    # Pretend the shared session has been idle long enough to win the ping.
+    monkeypatch.setattr(
+        shared,
+        "claim_keepalive",
+        lambda k: {"cst": str(radar.cst), "x_security_token": str(radar.x_security_token)},
+    )
+    state["get_status"] = 429
+    state["get_headers"] = {"Retry-After": "30"}
+    assert radar.keep_alive_if_idle() is True
+    assert len(_calls(capital_env["log"], "PING")) == 1
+
+    # The ping's 429 is now the shared backoff, like any other 429.
+    assert shared.backoff_remaining(key) >= 25.0
+    state["get_status"] = 200
+    main = main_cc.CapitalClient()
+    assert main._request("GET", "/accounts").status_code in (429, 503)
+    assert radar._request("GET", "/accounts").status_code in (429, 503)
+    assert len(_calls(capital_env["log"], "GET")) == 1  # only the ping went out
+
+
+def test_radar_order_401_clears_shared_session_and_relogs_paced(capital_env):
+    state = capital_env["state"]
+    radar = radar_cc.CapitalClient()
+    key = radar._shared_key_name()
+    log = capital_env["log"]
+    assert len(_calls(log, "POST")) == 1  # the login
+    stale = radar.cst
+
+    statuses = iter([401])
+    state["get_status"] = lambda: next(statuses, 200)
+    # Mocked HTTP only: the fake transport records the call, nothing is sent.
+    resp = radar._request("POST", "/positions", json_body={"epic": "UNIT-TEST"})
+    assert resp.status_code == 401
+    assert len(_calls(log, "POST")) == 2  # login + the one (mocked) order, not retried
+
+    with shared.locked_state(key) as bucket:
+        assert bucket.get("cst") != stale
+        assert not bucket.get("cst")
+    assert radar_cc._SHARED_SESSION["cst"] is None
+    assert radar.cst is None
+
+    # A new client must not pick up the dead token either.
+    other = radar_cc.CapitalClient()
+    assert other.cst != stale
+
+    # The next call re-logs in through the paced POST /session path.
+    assert radar._request("GET", "/accounts").status_code == 200
+    assert radar.cst and radar.cst != stale
+    logins = [t for t in _calls(log, "POST")]
+    assert len(logins) == 3  # login, order, one re-login (shared by both clients)
+    assert logins[-1] - logins[0] >= shared.min_login_interval_s() - 0.05
+
+
+def test_radar_partial_walk_without_cache_is_marked_incomplete(capital_env, monkeypatch):
+    disk = capital_env["tmp"] / "markets.json"
+    monkeypatch.setattr(radar_cc, "CAPITAL_MARKET_DISK_CACHE_PATH", str(disk))
+    client = radar_cc.CapitalClient()
+    assert client.market_cache == []
+
+    real_time = time.time
+    offset = {"s": 0.0}
+    monkeypatch.setattr(radar_cc.time, "time", lambda: real_time() + offset["s"])
+
+    def partial_walk(method, path, **kwargs):
+        offset["s"] = 31.0  # past the 30 s walk cap after the first page
+        return _Resp(200, {}, {"markets": [{"epic": "PART"}], "nodes": [{"id": "n1"}]})
+
+    monkeypatch.setattr(client, "_request", partial_walk)
+    result = client.get_all_markets(force_refresh=True)
+    monkeypatch.setattr(radar_cc.time, "time", real_time)
+
+    assert result == [{"epic": "PART"}]
+    assert client.market_catalogue_complete is False
+    assert radar_cc._SHARED_MARKET_CACHE["markets"] == []
+    assert client.market_cache == []
+    assert not disk.exists()
+
+    # A full walk afterwards is marked complete and cached.
+    def full_walk(method, path, **kwargs):
+        return _Resp(200, {}, {"markets": [{"epic": "FULL"}], "nodes": []})
+
+    monkeypatch.setattr(client, "_request", full_walk)
+    assert client.get_all_markets(force_refresh=True) == [{"epic": "FULL"}]
+    assert client.market_catalogue_complete is True
+    radar_cc._SHARED_MARKET_CACHE.update({"markets": [], "market_index": {}, "market_cache_time": 0.0})
+
+
+def test_radar_failed_login_logs_status_and_code_not_body(capital_env, monkeypatch, caplog):
+    class _Echo:
+        status_code = 401
+        headers = {}
+        text = '{"errorCode":"error.invalid.details","identifier":"unit-test-id"}'
+
+        def json(self):
+            return {"errorCode": "error.invalid.details", "identifier": "unit-test-id"}
+
+    monkeypatch.setattr(radar_cc.requests, "post", lambda *a, **k: _Echo())
+    with caplog.at_level(logging.ERROR, logger=radar_cc.logger.name):
+        client = radar_cc.CapitalClient()
+    assert client.init_error == "http_401"
+    assert "401" in caplog.text
+    assert "error.invalid.details" in caplog.text
+    assert "unit-test-id" not in caplog.text
