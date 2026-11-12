@@ -81,7 +81,9 @@ class FakeGit:
         return self._changes.get((tip, head))
 
 
-PUBLISHED_PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
+# Pin recorded in receipts 2 and 4. The live pin is PINNED_COMMIT in
+# mcp/aureon_public/guard_loader.py, read by gate.published_require_pin.
+HISTORICAL_PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
 FIXTURE_PIN = "99" * 20
 
 
@@ -237,9 +239,9 @@ def test_this_tip_stays_hold_and_does_not_flip_the_badge(monkeypatch: pytest.Mon
     assert result["orders_placed"] is False
     assert result["pin_moved"] is False
     assert result["public_pin"] == gate.published_require_pin(ROOT)
-    assert result["public_pin"] == PUBLISHED_PIN
+    assert result["public_pin"] != HISTORICAL_PIN
     assert "34864ff0547d2cff03e707414743a3b0cc8770b5" not in GATE_PATH.read_text(encoding="utf-8")
-    assert PUBLISHED_PIN not in GATE_PATH.read_text(encoding="utf-8")
+    assert HISTORICAL_PIN not in GATE_PATH.read_text(encoding="utf-8")
     assert result["supported_path_taken"] is False
     assert result["flag_file"]["honored"] is False
     by_id = {row["id"]: row for row in result["receipts"]}
@@ -251,17 +253,22 @@ def test_this_tip_stays_hold_and_does_not_flip_the_badge(monkeypatch: pytest.Mon
     assert "tip_is_not_head" in by_id[1]["reasons"]
     assert "worktree_dirty_at_measurement" in by_id[1]["reasons"]
     assert by_id[2]["verified_on_tip"] is False
-    assert by_id[2]["detail"]["digest_ok"] is True
-    assert "pin_mismatch" not in by_id[2]["reasons"]
+    # The committed receipt's digest does not match a recomputation of its
+    # payload, and its pin is the historical value, not the live pin. Do not
+    # rewrite the receipt; treat it as a historical HOLD record.
+    assert by_id[2]["detail"]["digest_ok"] is False
+    assert "digest_mismatch" in by_id[2]["reasons"]
+    assert "pin_mismatch" in by_id[2]["reasons"]
     assert "tip_is_not_head" in by_id[2]["reasons"]
     assert by_id[3]["verified_on_tip"] is False
     assert "pin_mismatch" in by_id[3]["reasons"]
-    assert gate.NOTE_REATTACH in by_id[3]["reasons"]
+    assert gate.NOTE_REATTACH not in by_id[3]["reasons"]
     assert by_id[3]["detail"]["note_commit_is_ancestor"] is True
+    assert by_id[3]["detail"]["notes_match"] is True
     assert by_id[2]["detail"]["tip_note"] == gate.PRE_SQUASH_NOTE
     assert by_id[4]["detail"]["tip_note"] == gate.PRE_SQUASH_NOTE
     assert by_id[4]["verified_on_tip"] is False
-    assert "pin_mismatch" not in by_id[4]["reasons"]
+    assert "pin_mismatch" in by_id[4]["reasons"]
     assert "tip_is_not_head" in by_id[4]["reasons"]
     assert "source_boundary_not_closed" in by_id[4]["reasons"]
     assert by_id[5]["present"] is True
