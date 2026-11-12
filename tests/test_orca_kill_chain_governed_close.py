@@ -7,6 +7,7 @@ import pytest
 
 kc = importlib.import_module("aureon_radar.bots.orca_unified_kill_chain")
 from aureon.governance.economic_boundary import EconomicGovernanceBlocked
+from aureon.exchanges.orca_capital_ownership import ADOPT_ENV
 
 
 def _chain():
@@ -22,6 +23,8 @@ def _target(client, exchange="capital"):
 @pytest.fixture(autouse=True)
 def _fast(monkeypatch):
     monkeypatch.setattr(kc.time, "sleep", lambda *_: None)
+    # #291 made a Capital close re-check ORCA adoption; the test deal must be adopted.
+    monkeypatch.setenv(ADOPT_ENV, "deal-1")
     monkeypatch.setattr(kc.sys if hasattr(kc, "sys") else __import__("sys"), "stdin", None)
 
 
