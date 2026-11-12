@@ -39,6 +39,8 @@ _FS_TO_PRODUCT: Dict[str, str] = {
     "simulation": "research", "atn": "research", "intelligence": "research",
     # Measured Auris / QGITA / harness runs. A figure here is a run, or it is HOLD.
     "evaluation": "research",
+    # Fixed-seed HNC / Auris / QGITA measurement harness (aureon.evidence).
+    "evidence": "research",
     "operator": "cognition", "cognition": "cognition", "queen": "cognition",
     "bots_intelligence": "cognition",
     "utils": "security", "bridges": "security", "data_feeds": "security",
