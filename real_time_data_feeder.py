@@ -146,14 +146,16 @@ def extract_solar_wind_summary(data):
         return None
     try:
         if isinstance(data, list) and data and isinstance(data[-1], dict):
-            latest = None
-            for row in reversed(data):
-                if (isinstance(row, dict) and row.get("active", True)
-                        and row.get("proton_speed") is not None):
-                    latest = row
-                    break
-            if latest is None:
-                latest = data[-1]
+            # RTSW rows come newest-first and hold one row per spacecraft per
+            # minute, so take the newest row by time_tag (the active
+            # spacecraft first), never a list end.
+            rows = [r for r in data if isinstance(r, dict)
+                    and r.get("proton_speed") is not None and r.get("time_tag")]
+            active = [r for r in rows if r.get("active") is True]
+            pool = active or rows
+            if not pool:
+                return None
+            latest = max(pool, key=lambda r: str(r.get("time_tag")))
             return {
                 "time_tag": latest.get("time_tag"),
                 "density": latest.get("proton_density"),
@@ -176,11 +178,19 @@ def extract_xray_summary(data):
         return None
     try:
         if isinstance(data, list) and len(data) > 0:
-            latest = data[-1]
+            # GOES rows alternate the 0.05-0.4nm and 0.1-0.8nm channels.
+            # Flare class is read from 0.1-0.8nm, so take that channel's
+            # newest row; other channels only when it is absent.
+            rows = [r for r in data if isinstance(r, dict) and r.get("time_tag")]
+            long_band = [r for r in rows if r.get("energy") == "0.1-0.8nm"]
+            pool = long_band or rows
+            if not pool:
+                return None
+            latest = max(pool, key=lambda r: str(r.get("time_tag")))
             return {
-                "time_tag": latest.get("time_tag") if isinstance(latest, dict) else None,
-                "flux": latest.get("flux") if isinstance(latest, dict) else None,
-                "energy": latest.get("energy") if isinstance(latest, dict) else None,
+                "time_tag": latest.get("time_tag"),
+                "flux": latest.get("flux"),
+                "energy": latest.get("energy"),
             }
     except Exception as e:
         return {"_error": f"Parse error: {e}"}
@@ -226,28 +236,30 @@ def collect_all():
     # Quake honesty rule: the feed polls the lightweight significant_hour
     # feed; when it reports activity, the full all_hour feed is fetched too
     # so the count/latest reflect every quake, not just significant ones.
+    # A zero from significant_hour is "no significant quake", not "no
+    # quake", so the count always comes from all_hour (cached 300 s by the
+    # communion). If all_hour fails there is no count at all, never the
+    # significant-only figure standing in for it.
     sig = results["quakes"]["_raw"]
     sig_count = None
-    if isinstance(sig, dict) and "features" in sig:
-        sig_count = len(sig.get("features", []))
-    elif isinstance(sig, dict) and "_error" in sig:
-        sig_count = None  # fetch failed — try the full feed below
-    if sig_count or (isinstance(sig, dict) and "_error" in sig):
-        full = fetch_json(ALL_HOUR_URL)
-        if isinstance(full, dict) and "features" in full:
-            results["quakes"] = {
-                "_raw": full,
-                "_fetched_at": datetime.now(timezone.utc).isoformat(),
-                "_url": ALL_HOUR_URL,
-                "_supplement_of": "significant_hour",
-            }
+    if isinstance(sig, dict) and isinstance(sig.get("features"), list):
+        sig_count = len(sig["features"])
+    full = fetch_json(ALL_HOUR_URL, ttl_s=300)
+    full_ok = isinstance(full, dict) and isinstance(full.get("features"), list)
+    results["quakes"] = {
+        "_raw": full if full_ok else {"_error": "all_hour fetch failed", "_url": ALL_HOUR_URL},
+        "_fetched_at": datetime.now(timezone.utc).isoformat(),
+        "_url": ALL_HOUR_URL,
+        "_supplement_of": "significant_hour",
+        "_significant_count": sig_count,
+    }
     # Extract summaries
     summary = {
         "kp": extract_kp_summary(results["kp_index"]["_raw"]),
         "solar_wind": extract_solar_wind_summary(results["solar_wind_plasma"]["_raw"]),
         "xray": extract_xray_summary(results["xray_flux"]["_raw"]),
         "quakes": extract_quake_summary(results["quakes"]["_raw"]),
-        "alerts_count": len(results["alerts"]["_raw"]) if isinstance(results["alerts"]["_raw"], list) else 0,
+        "alerts_count": len(results["alerts"]["_raw"]) if isinstance(results["alerts"]["_raw"], list) else None,
     }
     
     # Build unified output
