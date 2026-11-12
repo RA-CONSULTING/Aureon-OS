@@ -281,6 +281,8 @@ def _restore_os_environ(tmp_path_factory, request):
     os.environ["AUREON_BUS_TRACE_DIR"] = str(slot / "bus-traces")
     os.environ["AUREON_HNC_TRACE_PATH"] = str(slot / "hnc-live-trace.jsonl")
     os.environ["AUREON_AUTONOMY_AUDIT_PATH"] = str(slot / "autonomy_audit.jsonl")
+    # Capital.com's cross-process session/backoff file: one per test, never the checkout's state/.
+    os.environ["CAPITAL_SESSION_CACHE_PATH"] = str(slot / "capital_session_cache.json")
     _retarget_checkout_journals(journal)
     yield
     _apply_environ_snapshot()

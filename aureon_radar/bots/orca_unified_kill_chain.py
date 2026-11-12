@@ -39,6 +39,7 @@ except ImportError:  # pragma: no cover - boundary always ships with aureon
 
 # Seconds to wait before re-attempting a target the boundary refused.
 GOVERNANCE_HOLD_RETRY_S = float(os.environ.get("ORCA_GOVERNANCE_HOLD_RETRY_S", "300"))
+TRUTH_REUSE_WINDOW_S = float(os.environ.get("ORCA_TRUTH_REUSE_WINDOW_S", "30"))
 
 # Clients
 try:
@@ -422,6 +423,7 @@ class UnifiedKillChain:
             return None
         try:
             summary = self.real_portfolio.get_quick_summary()
+            self._truth_refreshed_at = time.time()
             log_system(
                 "TRUTH | Total: {total} | Net: {net} | Trades: {trades} | Dream: {dream}".format(
                     total=summary.get('total_usd', 'N/A'),
@@ -435,6 +437,19 @@ class UnifiedKillChain:
             log_system(f"Truth update failed: {e}")
             return None
         
+    def _refresh_portfolio_after_trade(self) -> bool:
+        # Reuse this cycle's refresh_truth() read instead of a second account
+        # read against the exchanges (rate limits). True if a fresh read was made.
+        if not self.real_portfolio:
+            return False
+        if (time.time() - float(getattr(self, "_truth_refreshed_at", 0.0) or 0.0)) < TRUTH_REUSE_WINDOW_S:
+            return False
+        try:
+            self.real_portfolio.get_real_portfolio()
+        except Exception:
+            pass
+        return True
+
     def scan_all(self):
         log_system("Initiating Global Asset Scan...")
         opportunities = []
@@ -877,11 +892,7 @@ class UnifiedKillChain:
             except:
                 pass
 
-            if self.real_portfolio:
-                try:
-                    self.real_portfolio.get_real_portfolio()
-                except Exception:
-                    pass
+            self._refresh_portfolio_after_trade()
             
             return result
             
