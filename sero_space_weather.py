@@ -62,7 +62,10 @@ KP_TTL_S = 900
 # (real_time_data.json) instead of probing a dedicated CME endpoint.
 FEEDER_ALERTS_PATH = FUSION_PATHS.WORKSPACE / "real_time_data.json"
 FEEDER_ALERTS_MAX_AGE_S = 900
-CME_FALLBACK_URL = "https://services.swpc.noaa.gov/json/alerts/cme.json"
+# The old json/alerts/cme.json fallback returns 404 (checked 12 Nov 2026), so
+# the fallback is the same products/alerts.json the feeder reads.
+CME_FALLBACK_URL = "https://services.swpc.noaa.gov/products/alerts.json"
+CME_WINDOW_S = 24 * 3600
 
 # Kp storm scale interpretation
 KP_QUIET = 3
@@ -78,9 +81,9 @@ KP_SEVERE = 7
 class SpaceWeatherSnapshot:
     """One moment of space weather, as felt from Earth"""
     timestamp: str
-    kp_index: float           # 0-9 planetary K index
+    kp_index: Optional[float]  # 0-9 planetary K index; None when NOAA is unreachable
     storm_level: str          # quiet | unsettled | storm | severe
-    cme_count_24h: int
+    cme_count_24h: Optional[int]  # None when no alerts source answered
     cme_alerts: List[Dict[str, Any]]
     source_reachable: bool
 
@@ -107,6 +110,8 @@ def fetch_kp_index() -> Optional[float]:
         rows = [r for r in data if isinstance(r, dict) and r.get("kp_index") is not None]
         if not rows:
             return None
+        # Newest by time_tag, not list position (NOAA order is not promised).
+        rows.sort(key=lambda r: str(r.get("time_tag") or ""))
         return float(rows[-1]["kp_index"])
     except Exception:
         return None
@@ -130,10 +135,25 @@ def _alerts_from_feeder() -> Optional[List[Dict[str, Any]]]:
         return None
 
 
-def fetch_cme_alerts() -> List[Dict[str, Any]]:
-    """Recent CME alerts. Sourced from the feeder's shared alerts.json
-    snapshot; falls back to a single communion-cached fetch if the feeder
-    snapshot is missing or stale. Empty list if unreachable."""
+def _alert_time(a: Dict[str, Any]) -> Optional[datetime]:
+    raw = str(a.get("issue_datetime") or "").strip()
+    if not raw:
+        return None
+    for fmt in ("%Y-%m-%d %H:%M:%S.%f", "%Y-%m-%d %H:%M:%S"):
+        try:
+            return datetime.strptime(raw, fmt).replace(tzinfo=timezone.utc)
+        except ValueError:
+            continue
+    return None
+
+
+def fetch_cme_alerts(now: Optional[datetime] = None) -> Optional[List[Dict[str, Any]]]:
+    """CME alerts issued in the last 24 hours. Sourced from the feeder's
+    shared real_time_data.json snapshot; falls back to one communion-cached
+    fetch of products/alerts.json. Returns None (unknown, not zero) when
+    neither source answered. NOAA's alert list covers about 30 days, so
+    alerts are filtered by issue_datetime; an alert with no readable time is
+    not counted."""
     alerts = _alerts_from_feeder()
     if alerts is None:
         data = communion_get_json(CME_FALLBACK_URL, ttl_s=KP_TTL_S,
@@ -143,12 +163,21 @@ def fetch_cme_alerts() -> List[Dict[str, Any]]:
         elif isinstance(data, dict) and isinstance(data.get("alerts"), list):
             alerts = data["alerts"]
         else:
-            alerts = []
+            return None
 
-    cme = [a for a in alerts if isinstance(a, dict) and (
-        "CME" in str(a.get("product_id", "")).upper()
-        or "CME" in str(a.get("message", "")).upper())]
-    return cme[:10]
+    now = now or datetime.now(timezone.utc)
+    cme = []
+    for a in alerts:
+        if not isinstance(a, dict):
+            continue
+        if not ("CME" in str(a.get("product_id", "")).upper()
+                or "CME" in str(a.get("message", "")).upper()):
+            continue
+        t = _alert_time(a)
+        if t is None or not (0 <= (now - t).total_seconds() <= CME_WINDOW_S):
+            continue
+        cme.append(a)
+    return cme
 
 
 def classify_storm(kp: float) -> str:
@@ -165,20 +194,20 @@ def fetch_space_weather() -> SpaceWeatherSnapshot:
     """
     One-shot space weather fetch.
 
-    Always returns a snapshot. If NOAA is unreachable, kp_index is -1
+    Always returns a snapshot. If NOAA is unreachable, kp_index is None
     and source_reachable is False — the bridge reports its blindness
     honestly rather than inventing a storm.
     """
     kp = fetch_kp_index()
-    cme_alerts = fetch_cme_alerts() if kp is not None else []
+    cme_alerts = fetch_cme_alerts()
 
     if kp is None:
         return SpaceWeatherSnapshot(
             timestamp=datetime.now(timezone.utc).isoformat(),
-            kp_index=-1.0,
+            kp_index=None,
             storm_level="unknown",
-            cme_count_24h=0,
-            cme_alerts=[],
+            cme_count_24h=len(cme_alerts) if cme_alerts is not None else None,
+            cme_alerts=(cme_alerts or [])[:10],
             source_reachable=False,
         )
 
@@ -186,8 +215,8 @@ def fetch_space_weather() -> SpaceWeatherSnapshot:
         timestamp=datetime.now(timezone.utc).isoformat(),
         kp_index=round(kp, 1),
         storm_level=classify_storm(kp),
-        cme_count_24h=len(cme_alerts),
-        cme_alerts=cme_alerts,
+        cme_count_24h=len(cme_alerts) if cme_alerts is not None else None,
+        cme_alerts=(cme_alerts or [])[:10],
         source_reachable=True,
     )
 
@@ -238,6 +267,7 @@ class SpaceWeatherBridge:
         """True if current conditions could distort field readings."""
         return (self.latest is not None
                 and self.latest.source_reachable
+                and self.latest.kp_index is not None
                 and self.latest.kp_index >= KP_STORM)
 
     def get_stats(self) -> Dict[str, Any]:
@@ -245,7 +275,7 @@ class SpaceWeatherBridge:
             "total_fetches": self.total_fetches,
             "latest_kp": self.latest.kp_index if self.latest else None,
             "storm_level": self.latest.storm_level if self.latest else "unknown",
-            "cme_count_24h": self.latest.cme_count_24h if self.latest else 0,
+            "cme_count_24h": self.latest.cme_count_24h if self.latest else None,
             "source_reachable": self.latest.source_reachable if self.latest else False,
             "storm_perturbed": self.is_storm_perturbed(),
         }
