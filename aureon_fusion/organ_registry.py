@@ -493,7 +493,7 @@ ORGANS = {
         "match": "aureon.launch.daemons.soul_protection_daemon",
         "args": [],
         "cwd": str(WORKSPACE),
-        "mode": "continuous (checkout seat stands by; workspace soul_protection_daemon.py is not in this tree)",
+        "mode": "continuous (restored workspace soul_protection_daemon.py; 5s protection cycle, writes soul_shield_logs / soul_protection.pid / queen_shield_stats.json, no orders)",
         "log": str(LOGS / "organ_soul_protection_daemon.log"),
         "env": _launch_env({"AUREON_LIVE_TRADING": "0", "AUREON_DISABLE_REAL_ORDERS": "1"}),
     },
