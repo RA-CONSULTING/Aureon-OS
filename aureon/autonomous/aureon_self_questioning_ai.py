@@ -876,15 +876,21 @@ class SelfQuestioningAI:
         if "unhealthy" in q or "unwired" in q or "drifting" in q:
             if counts:
                 return (
-                    f"The latest manifest reports {counts.get('wired', 0)} wired, "
-                    f"{counts.get('partial', 0)} partial, and {counts.get('broken', 0)} broken."
+                    f"The latest manifest reports {counts.get('wired', 'unknown')} wired, "
+                    f"{counts.get('partial', 'unknown')} partial, and {counts.get('broken', 'unknown')} broken."
                 )
             return "No current mind-wiring manifest was available, so the first safe action is an audit probe."
         if "model" in q:
             models = (context.get("ollama") or {}).get("models") or []
+            if reason == "ollama_unavailable":
+                return (
+                    "Ollama was not reachable this cycle, so no model was consulted and "
+                    "the model catalog could not be checked; this answer used fallback mode."
+                )
             if models:
                 return (
-                    "Ollama can see local models, but this cycle used fallback mode. "
+                    "Ollama can see local models, but this cycle used fallback mode "
+                    f"because {reason}. "
                     "Prefer a small self-questioning model for fast inner-loop reasoning."
                 )
             return "The configured Ollama endpoint is reachable but reports no chat model, so deeper autonomy needs a refreshed catalog or corrected lane configuration."
@@ -895,7 +901,9 @@ class SelfQuestioningAI:
         if "skill" in q or "tool" in q or "logic" in q or "code system" in q or "goal" in q:
             goal_map = context.get("goal_capability_map") or {}
             surfaces = sorted((goal_map.get("route_surfaces") or {}).keys())
-            tools = ((goal_map.get("tool_registry") or {}).get("count")) or 0
+            tools = ((goal_map.get("tool_registry") or {}).get("count"))
+            if tools is None:
+                tools = "an unknown number of"
             return (
                 "Use the goal loop to recall memory, inspect state, inventory capabilities, "
                 f"and route through relevant surfaces {surfaces}; {tools} registered tool/skill routes are visible."
@@ -910,11 +918,11 @@ class SelfQuestioningAI:
                 return (
                     "Route product UI work through AureonSaaSSystemInventory and AureonFrontendUnificationPlan. "
                     f"status={product.get('status')}, "
-                    f"surfaces={inv_summary.get('surface_count', 0)}, "
-                    f"frontend={inv_summary.get('frontend_surface_count', 0)}, "
-                    f"supabase_functions={inv_summary.get('supabase_function_count', 0)}, "
-                    f"screens={plan_summary.get('screen_count', 0)}, "
-                    f"security_blockers={inv_summary.get('security_blocker_count', 0)}. "
+                    f"surfaces={inv_summary.get('surface_count', 'unknown')}, "
+                    f"frontend={inv_summary.get('frontend_surface_count', 'unknown')}, "
+                    f"supabase_functions={inv_summary.get('supabase_function_count', 'unknown')}, "
+                    f"screens={plan_summary.get('screen_count', 'unknown')}, "
+                    f"security_blockers={inv_summary.get('security_blocker_count', 'unknown')}. "
                     "Migrate into the canonical observation shell while keeping manual-only and safety gates visible."
                 )
             saas = context.get("saas_security") or {}
@@ -926,9 +934,9 @@ class SelfQuestioningAI:
                     "Route SaaS reasoning through HNCSaaSSecurityArchitect, HNCAuthorizedAttackLab, "
                     "GoalCapabilityMap, ThoughtBus, contract stack, and capability growth. "
                     f"status={saas.get('status')}, "
-                    f"benchmarks={summary.get('unhackable_benchmark_count', bridge_summary.get('unhackable_benchmark_count', 0))}, "
-                    f"attack_cases={summary.get('attack_case_count', bridge_summary.get('attack_case_count', 0))}, "
-                    f"actionable_findings={summary.get('actionable_finding_count', bridge_summary.get('actionable_finding_count', 0))}. "
+                    f"benchmarks={summary.get('unhackable_benchmark_count', bridge_summary.get('unhackable_benchmark_count', 'unknown'))}, "
+                    f"attack_cases={summary.get('attack_case_count', bridge_summary.get('attack_case_count', 'unknown'))}, "
+                    f"actionable_findings={summary.get('actionable_finding_count', bridge_summary.get('actionable_finding_count', 'unknown'))}. "
                     "Think on your feet by publishing SaaS cognition state, fixing findings, and retesting authorized local/staging benchmarks."
                 )
             return "SaaS cognition is not available yet, so generate the SaaS cognitive bridge state and publish it to ThoughtBus."
@@ -937,7 +945,7 @@ class SelfQuestioningAI:
         if "account" in q or "tax" in q or "hmrc" in q or "filing" in q:
             accounting = context.get("accounting") or {}
             if accounting.get("available"):
-                raw_files = accounting.get("raw_data_manifest_summary", {}).get("file_count", 0)
+                raw_files = accounting.get("raw_data_manifest_summary", {}).get("file_count", "unknown")
                 workflow = accounting.get("autonomous_workflow_status") or "unknown"
                 cognitive = (accounting.get("cognitive_review") or {}).get("status", "unknown")
                 handoff = (accounting.get("human_filing_handoff_pack") or {})
@@ -954,11 +962,11 @@ class SelfQuestioningAI:
                     f"final-ready pack status is {accounting.get('accounts_build_status')}, "
                     f"overdue_count={accounting.get('overdue_count')}, raw_files={raw_files}, "
                     f"autonomous_workflow={workflow}, handoff_ready={handoff_ready}, "
-                    f"uk_requirements={uk_summary.get('requirement_count', 0)}, "
-                    f"uk_questions={uk_summary.get('question_count', 0)}, "
-                    f"evidence_requests={evidence_summary.get('draft_count', 0)}, "
-                    f"evidence_docs={evidence_summary.get('generated_document_count', 0)}, "
-                    f"llm_document_workpapers={llm_authoring.get('completed_count', 0)} "
+                    f"uk_requirements={uk_summary.get('requirement_count', 'unknown')}, "
+                    f"uk_questions={uk_summary.get('question_count', 'unknown')}, "
+                    f"evidence_requests={evidence_summary.get('draft_count', 'unknown')}, "
+                    f"evidence_docs={evidence_summary.get('generated_document_count', 'unknown')}, "
+                    f"llm_document_workpapers={llm_authoring.get('completed_count', 'unknown')} "
                     f"via {llm_authoring.get('status', 'unknown')}, "
                     f"vat_over_threshold={uk_figures.get('turnover_over_vat_threshold', 'unknown')}, "
                     f"self_questioning={cognitive}. "
