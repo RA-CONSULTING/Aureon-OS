@@ -69,9 +69,17 @@ CREDENTIAL_SUFFIXES = (
 )
 
 
+# Any name that carries PASSWORD or TOKEN anywhere (UKDI_GRANT_PASSWORD_FILE,
+# GH_TOKEN_RW, ...). "TOKENS" is left alone: AUREON_PHI_CHAT_MAX_TOKENS and
+# AUREON_OLLAMA_WEAVER_SHARD_TOKENS are model limits, not secrets.
+_CREDENTIAL_WORD = re.compile(r"PASSWORD|TOKEN(?!S)", re.IGNORECASE)
+
+
 def is_credential_name(name: str) -> bool:
     upper = name.upper()
     if upper.startswith(CREDENTIAL_PREFIXES):
+        return True
+    if _CREDENTIAL_WORD.search(upper):
         return True
     return upper.endswith(CREDENTIAL_SUFFIXES)
 
@@ -82,6 +90,83 @@ def strip_credentials(env: dict[str, str]) -> dict[str, str]:
     return {key: value for key, value in env.items() if not is_credential_name(key)}
 
 
+# Any name with LIVE as its own word part (AUREON_LIVE_TRADING, CONFIRM_LIVE,
+# AUREON_ACCEPT_LIVE_RISK, AUREON_SELF_CODER_LIVECODE_URL, ...) is dropped.
+# LIVE inside another word is kept: ALIVE (AUREON_LLM_KEEP_ALIVE), DELIVERY,
+# OLIVER. The off values below are re-forced afterwards, so names such as
+# AUREON_LIVE_TRADING and AUREON_FUSION_ARM_LIVE come back with their off value.
+_LIVE_WORD = re.compile(r"(?<![A-Z])LIVE")
+
+# Arming and autonomy switches. Each one is off when unset (checked against
+# how it is read), so it is removed rather than given an invented off value.
+# Several also match _LIVE_WORD; they are listed so the set stays explicit.
+ARMING_ENV_DROP = (
+    "AUREON_MAY_ACT",                   # only written by the launcher; never read as on when unset
+    "AUREON_ORDER_INTENT_PUBLISH",      # getenv(..., "0")
+    "AUREON_UNIFIED_ORDER_EXECUTOR",    # off unless set (launcher _live_lock sets "1")
+    "LIVE",                             # getenv("LIVE", "0") == "1"
+    "AUREON_LIVE",
+    "LIVE_TRADING",
+    "LIVE_MODE",
+    "REAL_MONEY",
+    "CONFIRM_LIVE",                     # must equal "yes"
+    "CONFIRM_LIVE_TRADING",
+    "AUREON_ACCEPT_LIVE_RISK",
+    "AUREON_OPERATOR_ALLOW_LIVE",       # capability_gate: explicit true value only
+    "AUREON_GO_LIVE_CLEAR",
+    "AUREON_AZYRA_EXECUTE_LIVE",        # _env_bool(..., False)
+    "AUREON_AUTOSTART_LIVE_RUNNER",     # truthy only
+    "AUREON_DESKTOP_LIVE",
+    "AUREON_DESKTOP_AUTO_ARM",
+    "AUREON_LOCAL_ACTIONS_ARMED",       # _truthy
+    "AUREON_SOUL_ACT",                  # _truthy
+    "AUREON_QUEEN_AUTO_PUSH",           # == "1"
+    "AUREON_QUEEN_SELF_REBOOT",         # == "1"
+    "AUREON_FORCE_ARM",                 # == "1"
+    "AUREON_BILLING_CHARGE_ENABLED",    # == "1"; hard boundary in feature_switchboard
+    "AUREON_SOVEREIGN_MODE",            # hard boundary in feature_switchboard
+    "AUREON_AUTO_APPROVE_LIVE_VOICE",
+    "AZYRA_CURRENT_BALANCE_LIVE_APPROVED",
+    "EPICENTER_LIVE",                   # must equal "YES"
+    "PAPER_MODE",
+    "QGITA_PAPER_TRADING",              # unset means paper
+)
+
+# Forced into every test or repair child, after the drops. These are the ones
+# where unset would not mean off, or where an explicit off value is the
+# contract other launch profiles use (master.PAPER_LOCK, plug_and_play):
+# - AUREON_FUSION_ARM_LIVE is armed at "1" (aureon_fusion/http_service.py:39,
+#   fleet_launcher.py:46); "" is the off value those profiles use.
+# - AUREON_AUTONOMY_MODE unset means full (autonomy_mode.py), so guarded.
+# - AUREON_CODE_AUTO_APPROVE unset follows full mode, so "0".
+# - AUREON_DRY_RUN unset is read as not dry, so "1".
+# - AUREON_DISABLE_LIVE_BACKGROUND_STARTUP is a safety switch the LIVE drop removes.
+FORCED_OFF = {
+    "PYTHON_DOTENV_DISABLED": "1",
+    "AUREON_LIVE_TRADING": "0",
+    "AUREON_FUSION_ARM_LIVE": "",
+    "AUREON_DISABLE_REAL_ORDERS": "1",
+    "AUREON_DISABLE_EXCHANGE_MUTATIONS": "1",
+    "AUREON_DISABLE_LIVE_BACKGROUND_STARTUP": "1",
+    "AUREON_AUTONOMY_MODE": "guarded",
+    "AUREON_CODE_AUTO_APPROVE": "0",
+    "AUREON_DRY_RUN": "1",
+    "DRY_RUN": "1",
+}
+
+
+def disarm(env: dict[str, str]) -> dict[str, str]:
+    """Copy of env with every arming switch dropped and the off values forced."""
+
+    cleaned = {
+        key: value
+        for key, value in env.items()
+        if key not in ARMING_ENV_DROP and not _LIVE_WORD.search(key.upper())
+    }
+    cleaned.update(FORCED_OFF)
+    return cleaned
+
+
 def isolated_child_env(env: dict[str, str]) -> dict[str, str]:
     """Env for a test or repair child spawned from a live process.
 
@@ -90,12 +175,7 @@ def isolated_child_env(env: dict[str, str]) -> dict[str, str]:
     Live trading switches are forced off, even if the parent had them on.
     """
 
-    cleaned = strip_credentials(strip_inherited_session(env))
-    cleaned["PYTHON_DOTENV_DISABLED"] = "1"
-    cleaned["AUREON_LIVE_TRADING"] = "0"
-    cleaned["AUREON_DISABLE_REAL_ORDERS"] = "1"
-    cleaned["DRY_RUN"] = "1"
-    return cleaned
+    return disarm(strip_credentials(strip_inherited_session(env)))
 
 
 _UNIT_SAFE = re.compile(r"[^A-Za-z0-9_.-]")
