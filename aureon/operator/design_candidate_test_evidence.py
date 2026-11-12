@@ -784,16 +784,92 @@ def _resolve_reviewed_node_toolchain() -> Path:
     return executable
 
 
+_MAX_VENV_INTERPRETER_LINKS = 4
+
+
+def _venv_base_interpreter(executable: Path) -> Path | None:
+    """The base interpreter behind a standard POSIX venv's linked ``python``.
+
+    ``python -m venv`` on Linux and macOS writes ``<venv>/bin/python`` and
+    ``python3`` as symlinks: same-directory relative hops inside the venv, then
+    one absolute hop to the interpreter in ``<base_prefix>/bin`` that built the
+    venv. Only that exact shape is followed. The link must sit in the running
+    venv's own ``bin`` beside a regular ``pyvenv.cfg``; the venv path may not
+    traverse a link; relative hops stay
+    in one directory; the single absolute hop must land in ``<base_prefix>/bin``;
+    the chain is bounded; and the final regular file must be the running
+    interpreter's own base executable. Anything else returns ``None`` and the
+    caller's link refusal stands.
+    """
+
+    if os.name == "nt":
+        return None
+    lexical = Path(os.path.abspath(executable))
+    # ``-S`` (the sealed compiler flags) skips ``site``, which leaves
+    # ``sys.prefix`` at the base. The interpreter still found its venv through
+    # the ``pyvenv.cfg`` beside ``bin``, so look for that same marker.
+    venv_root = (
+        Path(os.path.abspath(sys.prefix)) if sys.prefix != sys.base_prefix else lexical.parent.parent
+    )
+    venv_bin = venv_root / "bin"
+    base_bin = Path(os.path.abspath(sys.base_prefix)) / "bin"
+    if lexical.parent != venv_bin or venv_bin == base_bin:
+        return None
+    _inspect_existing_ancestry(venv_bin, label="python virtual environment")
+    marker = venv_root / "pyvenv.cfg"
+    if marker.is_symlink() or not marker.is_file():
+        return None
+    current = lexical
+    left_venv = False
+    for _ in range(_MAX_VENV_INTERPRETER_LINKS):
+        if not current.is_symlink():
+            break
+        target = Path(os.readlink(current))
+        if ".." in target.parts:
+            return None
+        if target.is_absolute():
+            if left_venv or current.parent != venv_bin:
+                return None
+            following = Path(os.path.normpath(target))
+            if following.parent != base_bin:
+                return None
+            left_venv = True
+        else:
+            if len(target.parts) != 1:
+                return None
+            following = current.parent / target
+        current = following
+    else:
+        return None
+    if current.is_symlink() or current.parent != base_bin or not current.is_file():
+        return None
+    base_executable = getattr(sys, "_base_executable", None)
+    if not isinstance(base_executable, str) or not base_executable:
+        return None
+    try:
+        if not os.path.samefile(current, os.path.realpath(base_executable)):
+            return None
+    except OSError:
+        return None
+    return current
+
+
 def _reviewed_python_executable() -> Path:
     """The interpreter, after one same-directory alternative link.
 
     Debian and Ubuntu install ``/usr/bin/python3`` as a relative symlink to
     ``python3.12`` in that same directory. That link is the reviewed
-    interpreter. A link that leaves the directory, an absolute target, or a
-    parent directory that is itself a link is still refused.
+    interpreter. A standard POSIX venv's linked ``python`` is followed only to
+    its own base interpreter (see ``_venv_base_interpreter``). Any other link
+    that leaves the directory, an absolute target, or a parent directory that
+    is itself a link is still refused.
     """
 
     executable = Path(sys.executable)
+    if executable.is_symlink():
+        venv_base = _venv_base_interpreter(executable)
+        if venv_base is not None:
+            executable = venv_base
     if executable.is_symlink():
         target = os.readlink(executable)
         target_path = Path(target)
