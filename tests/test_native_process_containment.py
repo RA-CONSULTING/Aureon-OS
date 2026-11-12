@@ -9,7 +9,6 @@ import subprocess
 from pathlib import Path
 
 import pytest
-
 from aureon.containment.cold_boot import judge_default, measure, repo_root
 from aureon.containment.native import (
     PIN,
@@ -21,6 +20,7 @@ from aureon.containment.native import (
     scrubbed_child_env,
     verify_grant,
 )
+
 from tests.support.receipt_provenance import is_ancestor
 
 ROOT = Path(__file__).resolve().parents[1]

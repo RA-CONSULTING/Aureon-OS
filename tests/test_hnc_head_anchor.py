@@ -8,7 +8,6 @@ import subprocess
 from pathlib import Path
 
 import pytest
-
 from aureon.evidence.hnc_anchor import (
     EXPECTED_ANCHOR_ID,
     EXPECTED_NEXT_ANCHOR_ID,
@@ -40,6 +39,7 @@ from aureon.evidence.hnc_anchor import (
     validate_chain,
     verify_timestamp,
 )
+
 from tests.support.receipt_provenance import last_commit_writing
 
 ROOT = Path(__file__).resolve().parents[1]

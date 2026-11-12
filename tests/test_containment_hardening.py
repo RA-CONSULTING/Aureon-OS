@@ -16,7 +16,6 @@ import sys
 from pathlib import Path
 
 import pytest
-
 from aureon.containment.hardening import (
     EXPECTED_PIN,
     FILTER_DENY,
@@ -38,6 +37,7 @@ from aureon.containment.hardening import (
     run_filter,
 )
 from aureon.containment.native import prepare_launch
+
 from tests.support.receipt_provenance import is_ancestor
 
 ROOT = Path(__file__).resolve().parents[1]
