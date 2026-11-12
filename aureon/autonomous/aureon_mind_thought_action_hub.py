@@ -588,11 +588,32 @@ MIND_THOUGHT_ACTION_HTML = """
 # HUB CLASS
 # ════════════════════════════════════════════════════════════════════════════
 
+def mind_hub_bind() -> tuple[str, int]:
+    """Host and port for the hub. Loopback by default.
+
+    AUREON_MIND_HUB_HOST opens it wider on purpose (for example 0.0.0.0).
+    AUREON_MIND_HUB_PORT moves it. A bad port stops the start.
+    """
+
+    host = os.environ.get("AUREON_MIND_HUB_HOST", "").strip() or "127.0.0.1"
+    raw = os.environ.get("AUREON_MIND_HUB_PORT", "").strip()
+    if not raw:
+        return host, 13002
+    try:
+        port = int(raw)
+    except ValueError:
+        raise SystemExit(f"AUREON_MIND_HUB_PORT must be a port number, got {raw!r}") from None
+    if not 1 <= port <= 65535:
+        raise SystemExit(f"AUREON_MIND_HUB_PORT must be between 1 and 65535, got {port}")
+    return host, port
+
+
 class MindThoughtActionHub:
     """Unified cognitive pipeline hub."""
     
-    def __init__(self, port=13002):
+    def __init__(self, port=13002, host="127.0.0.1"):
         self.port = port
+        self.host = host
         self.clients: Set = set()
         
         # Core systems
@@ -2714,7 +2735,7 @@ class MindThoughtActionHub:
         # Start web server
         runner = web.AppRunner(self.app)
         await runner.setup()
-        site = web.TCPSite(runner, '0.0.0.0', self.port)
+        site = web.TCPSite(runner, self.host, self.port)
         await site.start()
         self._goal_pursuit_task = asyncio.create_task(self.goal_pursuit_loop())
         self._init_task = asyncio.create_task(self._init_systems_async())
@@ -2737,7 +2758,8 @@ class MindThoughtActionHub:
         asyncio.create_task(self.live_stats_updater())
 
 async def main():
-    hub = MindThoughtActionHub(port=13002)
+    host, port = mind_hub_bind()
+    hub = MindThoughtActionHub(port=port, host=host)
     await hub.start()
     await asyncio.Event().wait()
 
