@@ -9,6 +9,7 @@ Ultra-compact kHz-rate signaling between running components using
 from __future__ import annotations
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 
+import logging
 import os
 import sys
 import time
@@ -33,8 +34,15 @@ if sys.platform == 'win32' and sys.stdout.isatty():
 CHIRP_MAGIC = 0xC1
 CHIRP_SIZE = 8
 HEADER_SIZE = 16  # write_idx (8) + read_idx (8)
+CHIRP_RING_VERSION = 1
+VERSION_SIZE = 4  # uint32 layout version stored after the ring payload
 
 CHIRP_STRUCT = struct.Struct(">BBBBHBB")
+logger = logging.getLogger(__name__)
+
+
+def ring_segment_size(slots: int = 512) -> int:
+    return HEADER_SIZE + (slots * CHIRP_SIZE) + VERSION_SIZE
 
 
 class ChirpType(IntEnum):
@@ -127,10 +135,14 @@ class ChirpRingBuffer:
     buf: Optional[memoryview] = field(init=False, default=None)
     _initialized: bool = field(init=False, default=False)
     _owner: bool = field(init=False, default=False)
+    _refused: bool = field(init=False, default=False)
+    _refuse_reason: str | None = field(init=False, default=None)
 
     def __post_init__(self) -> None:
-        size = HEADER_SIZE + (self.slots * CHIRP_SIZE)
+        size = ring_segment_size(self.slots)
         self._owner = False
+        self._refused = False
+        self._refuse_reason = None
         try:
             self.shm = _open_shared_memory(self.name, create=False, track=False)
         except FileNotFoundError:
@@ -154,21 +166,42 @@ class ChirpRingBuffer:
             self._initialized = False
             return
 
-        if self.shm.size < size:
-            # Existing segment is too small; leave it in place for its owner.
-            try:
-                self.shm.close()
-            except Exception:
-                pass
-            self.shm = None
-            self._owner = False
-            self._initialized = False
+        if self.shm.size != size:
+            self._refuse(
+                f"wrong-size leftover segment {self.name!r}: "
+                f"size {self.shm.size} != {size}"
+            )
             return
 
         self.buf = self.shm.buf
+        version_offset = HEADER_SIZE + (self.slots * CHIRP_SIZE)
         if self._owner:
             self.buf[:HEADER_SIZE] = b"\x00" * HEADER_SIZE
+            struct.pack_into(">I", self.buf, version_offset, CHIRP_RING_VERSION)
+        else:
+            version = struct.unpack_from(">I", self.buf, version_offset)[0]
+            if version != CHIRP_RING_VERSION:
+                self._refuse(
+                    f"wrong-version leftover segment {self.name!r}: "
+                    f"version {version} != {CHIRP_RING_VERSION}"
+                )
+                return
         self._initialized = True
+
+    def _refuse(self, reason: str) -> None:
+        # Leave a leftover segment in place; do not create another name.
+        logger.error(reason)
+        try:
+            if self.shm:
+                self.shm.close()
+        except Exception:
+            pass
+        self.shm = None
+        self.buf = None
+        self._owner = False
+        self._initialized = False
+        self._refused = True
+        self._refuse_reason = reason
 
     def close(self) -> None:
         """Close the mapping; unlink only if this instance created the segment."""
@@ -205,6 +238,8 @@ class ChirpRingBuffer:
         struct.pack_into("Q", self.buf, 8, value)
 
     def write(self, chirp_bytes: bytes) -> bool:
+        if not self._initialized or self.buf is None:
+            return False
         if len(chirp_bytes) != CHIRP_SIZE:
             return False
         write_idx = self._write_idx()
@@ -218,6 +253,8 @@ class ChirpRingBuffer:
         return True
 
     def read(self) -> Optional[bytes]:
+        if not self._initialized or self.buf is None:
+            return None
         write_idx = self._write_idx()
         read_idx = self._read_idx()
         if read_idx == write_idx:
@@ -245,12 +282,35 @@ class ChirpBus:
     name: str = "aureon_chirp_bus"
     create: bool = False
     ring: ChirpRingBuffer = field(init=False)
+    _undelivered: int = field(init=False, default=0)
 
     def __post_init__(self) -> None:
         self.ring = ChirpRingBuffer(name=self.name, create=self.create)
+        self._undelivered = 0
+
+    @property
+    def refused(self) -> bool:
+        return bool(getattr(self.ring, "_refused", False))
+
+    @property
+    def undelivered(self) -> int:
+        return self._undelivered
+
+    def _mark_undelivered(self) -> bool:
+        self._undelivered += 1
+        return False
 
     def emit(self, packet: ChirpPacket) -> bool:
-        return self.ring.write(packet.to_bytes())
+        if not getattr(self.ring, "_initialized", False):
+            return self._mark_undelivered()
+        ok = self.ring.write(packet.to_bytes())
+        return ok if ok else self._mark_undelivered()
+
+    def publish(self, message: str | ChirpPacket = "", **kwargs) -> bool:
+        """Publish a chirp. False means the message was not delivered."""
+        if isinstance(message, ChirpPacket):
+            return self.emit(message)
+        return self.emit_message(message, **kwargs)
 
     def emit_message(
         self,

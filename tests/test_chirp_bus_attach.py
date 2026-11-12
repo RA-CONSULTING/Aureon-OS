@@ -7,13 +7,23 @@ touch the live aureon_chirp_bus segment. No network, no orders.
 from __future__ import annotations
 
 import gc
+import logging
 import multiprocessing as mp
 import os
+import struct
 import uuid
 from multiprocessing import shared_memory
 from typing import Any
 
-from aureon.core.aureon_chirp_bus import ChirpDirection, ChirpPacket, ChirpRingBuffer, ChirpType
+from aureon.core.aureon_chirp_bus import (
+    CHIRP_SIZE,
+    HEADER_SIZE,
+    ChirpBus,
+    ChirpDirection,
+    ChirpPacket,
+    ChirpRingBuffer,
+    ChirpType,
+)
 
 _LIVE_BUS_NAME = "aureon_chirp_bus"
 
@@ -55,6 +65,32 @@ def _attach_test_segment(name: str) -> shared_memory.SharedMemory:
         except Exception:
             pass
         return shm
+
+
+
+def _create_leftover(name: str, size: int, *, version: int | None = None) -> int:
+    """Create a leftover test segment and return its inode. Does not touch live names."""
+    if not name.startswith("aureon_test_"):
+        raise RuntimeError("refusing to create a non-test segment")
+    try:
+        shm = shared_memory.SharedMemory(name=name, create=True, size=size, track=False)
+    except TypeError:
+        shm = shared_memory.SharedMemory(name=name, create=True, size=size)
+        try:
+            from multiprocessing import resource_tracker
+            resource_tracker.unregister(shm._name, "shared_memory")
+        except Exception:
+            pass
+    if version is not None:
+        struct.pack_into(">I", shm.buf, size - 4, version)
+    inode = os.fstat(shm._fd).st_ino
+    shm.close()
+    return inode
+
+
+def _expected_ring_size(slots: int = 512) -> int:
+    # Header + payload + 4-byte layout version suffix.
+    return HEADER_SIZE + (slots * CHIRP_SIZE) + 4
 
 
 def _ping_bytes() -> bytes:
@@ -260,3 +296,63 @@ def test_two_processes_map_the_same_inode() -> None:
         if proc_b.is_alive():
             proc_b.terminate()
         _unlink_test_segment(name)
+
+
+def test_publish_on_wrong_size_leftover_is_not_delivered(caplog) -> None:
+    name = _unique_test_name()
+    leftover_size = 64
+    inode = _create_leftover(name, leftover_size)
+    try:
+        with caplog.at_level(logging.ERROR, logger="aureon.core.aureon_chirp_bus"):
+            bus = ChirpBus(name=name, create=True)
+        messages = [rec.getMessage() for rec in caplog.records]
+        assert any("wrong-size leftover segment" in msg for msg in messages)
+        assert getattr(bus, "refused", False) is True
+        assert bus.ring._initialized is False
+        assert bus.ring.shm is None
+        assert bus.name == name
+        packet = ChirpPacket(message_type=ChirpType.PING, direction=ChirpDirection.DOWN)
+        publish = getattr(bus, "publish", None)
+        assert callable(publish), "refused bus must expose publish so delivery can be reported"
+        assert publish(packet) is False
+        assert getattr(bus, "undelivered", 0) == 1
+        assert publish("hello") is False
+        assert getattr(bus, "undelivered", 0) == 2
+        leftover = _attach_test_segment(name)
+        try:
+            assert os.fstat(leftover._fd).st_ino == inode
+            assert leftover.size == leftover_size
+        finally:
+            leftover.close()
+    finally:
+        _unlink_test_segment(name)
+
+
+def test_publish_on_wrong_version_leftover_is_not_delivered(caplog) -> None:
+    name = _unique_test_name()
+    size = _expected_ring_size()
+    inode = _create_leftover(name, size, version=99)
+    try:
+        with caplog.at_level(logging.ERROR, logger="aureon.core.aureon_chirp_bus"):
+            bus = ChirpBus(name=name, create=True)
+        messages = [rec.getMessage() for rec in caplog.records]
+        assert any("wrong-version leftover segment" in msg for msg in messages)
+        assert getattr(bus, "refused", False) is True
+        assert bus.ring._initialized is False
+        assert bus.ring.shm is None
+        assert bus.name == name
+        packet = ChirpPacket(message_type=ChirpType.PING, direction=ChirpDirection.DOWN)
+        publish = getattr(bus, "publish", None)
+        assert callable(publish), "refused bus must expose publish so delivery can be reported"
+        assert publish(packet) is False
+        assert getattr(bus, "undelivered", 0) == 1
+        leftover = _attach_test_segment(name)
+        try:
+            assert os.fstat(leftover._fd).st_ino == inode
+            assert leftover.size == size
+            assert struct.unpack_from(">I", leftover.buf, size - 4)[0] == 99
+        finally:
+            leftover.close()
+    finally:
+        _unlink_test_segment(name)
+
