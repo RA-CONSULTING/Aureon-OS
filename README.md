@@ -31,7 +31,7 @@ cd Aureon-OS
 ./install.sh --smoke
 ```
 
-A measured walkthrough of this path, including the order-safety defaults and the ports that must be free, is in [`INSTALL.md`](INSTALL.md).
+The single evaluator guide for this path is [`EVALUATE.md`](EVALUATE.md). A measured walkthrough of this path, including the order-safety defaults and the ports that must be free, is in [`INSTALL.md`](INSTALL.md).
 
 `./install.sh --smoke` creates `.venv`, installs the pinned `requirements-plug.lock`, and installs the dashboard with `npm ci --ignore-scripts --prefix frontend` when `frontend/node_modules` is absent. It starts the local stack, requests the endpoints, and stops. If a stack record is already present, `./install.sh --stop` clears that record before the smoke. Installer logs from pip, and from `npm ci` on a fresh tree, scroll before the banner. Go-live stays **HOLD**.
 

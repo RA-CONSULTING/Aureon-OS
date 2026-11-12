@@ -4,9 +4,13 @@ There is no approved runtime quick start in this checkout. Canonical launch,
 cloud, packaging, desktop, operational, trading, UI, and data-ingest entrypoints
 are routed to the fixed isolated bootstrap or a non-mutating HOLD receipt.
 
-Do not install dependencies for production, copy credentials, start a listener,
-invoke a direct subsystem module, activate an exchange client, or run a provider
-deployment from this repository. Offline tests and benchmarks may check
+The one supported evaluation route is the guarded `./install.sh --smoke` in
+[`EVALUATE.md`](EVALUATE.md). It binds loopback-only listeners on
+`127.0.0.1` in guarded mode with live trading off, and it is not a runtime
+quick start. Apart from that route, do not install dependencies for
+production, copy credentials, start a listener, invoke a direct subsystem
+module, activate an exchange client, or run a provider deployment from this
+repository. Offline tests and benchmarks may check
 source contracts, but they do not authorize operation and are not a validation
 of the release.
 
