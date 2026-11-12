@@ -675,11 +675,19 @@ def test_space_entry_points_call_enforce_public_pin() -> None:
         # through the shared guarded bind, space_bind.launch(demo), which
         # scrubs secrets and forces share=False before calling demo.launch.
         assert "space_bind.launch(demo)" in text[call_at:]
-        assert "demo.launch(" not in text[:call_at]
+        # app.py never calls demo.launch( itself; only the guarded bind does.
+        assert "demo.launch(" not in text
         assert "share=True" not in text
     bind = (ROOT / "huggingface" / "space_bind.py").read_text(encoding="utf-8")
     body = bind[bind.index("def launch("):]
-    assert "demo.launch(" in body and "share=False" in body
+    start = body.index("demo.launch(")
+    depth, end = 0, start
+    for end, ch in enumerate(body[start:], start):
+        depth += {"(": 1, ")": -1}.get(ch, 0)
+        if ch == ")" and depth == 0:
+            break
+    call = body[start : end + 1]
+    assert "share=False" in call
     for name in ("hnc-field", "auris-coherence", "qgita-snr", "organism-replay"):
         copy = (ROOT / "huggingface" / name / "space_bind.py").read_text(encoding="utf-8")
         assert copy == bind, f"{name}/space_bind.py differs from huggingface/space_bind.py"
