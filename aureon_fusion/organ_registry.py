@@ -417,7 +417,7 @@ ORGANS = {
         "match": "aureon.launch.daemons.sero_space_weather",
         "args": [],
         "cwd": str(WORKSPACE),
-        "mode": "continuous (checkout NOAA seat; workspace sero_space_weather.py is not in this tree)",
+        "mode": "continuous (restored workspace sero_space_weather.py --daemon; public NOAA SWPC Kp + alerts hourly via api_communion, writes WORKSPACE/sero_space_weather/, no orders)",
         "log": str(LOGS / "organ_sero_space_weather.log"),
         "env": _launch_env({"AUREON_LIVE_TRADING": "0", "AUREON_DISABLE_REAL_ORDERS": "1"}),
     },

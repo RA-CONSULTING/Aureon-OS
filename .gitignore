@@ -281,3 +281,6 @@ soul_protection.pid
 queen_shield_stats.json
 /schumann_sensor.pid
 /schumann_sensor.log
+
+# restored sero_space_weather runtime state
+/sero_space_weather/
