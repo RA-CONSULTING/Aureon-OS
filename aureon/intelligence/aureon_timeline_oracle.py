@@ -1485,12 +1485,11 @@ class TimelineOracle:
 
             # 2. ChirpBus
             if self.chirp_bus:
-                self.chirp_bus.emit_message("timeline.prediction", {
-                    "sym": branch.symbol,
-                    "act": branch.action.value,
-                    "conf": branch.branch_confidence,
-                    "id": branch.branch_id
-                })
+                self.chirp_bus.emit_message(
+                    "timeline.prediction",
+                    symbol=branch.symbol,
+                    confidence=branch.branch_confidence,
+                )
         except Exception as e:
             logger.error(f"Failed to publish timeline prediction: {e}")
 
@@ -1507,11 +1506,10 @@ class TimelineOracle:
 
             # 2. ChirpBus
             if self.chirp_bus:
-                self.chirp_bus.emit_message("timeline.validation", {
-                    "sym": validation.symbol,
-                    "pnl": validation.pnl_usd,
-                    "acc": validation.timeline_accuracy
-                })
+                self.chirp_bus.emit_message(
+                    "timeline.validation",
+                    symbol=validation.symbol,
+                )
         except Exception as e:
             logger.error(f"Failed to publish timeline validation: {e}")
 

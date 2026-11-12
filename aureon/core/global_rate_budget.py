@@ -237,3 +237,116 @@ def classify_request_type(endpoint: str, method: str = 'GET') -> RequestPriority
 
     # Default to quotes for unknown endpoints
     return RequestPriority.QUOTES
+
+
+# ───────────────────────── per-host budget registry ─────────────────────────
+# The radar-side exchange clients each get their own GlobalRateBudget sized to
+# the host's real tolerance. Priority buckets guarantee that account/position
+# reads (POSITIONS) and order/session writes (EXECUTION) keep reserved slots
+# that analytics market-data reads (QUOTES) can never consume.
+#
+# Env overrides per host:
+#   AUREON_RATE_BUDGET_<HOST_SLUG>_PER_SEC   (dots/dashes → underscores, upper)
+#   AUREON_RATE_BUDGET_<HOST_SLUG>_BURST
+# Global kill-switch: AUREON_RATE_BUDGET_ENABLED=0 disables host budgets
+# (get_host_rate_budget returns None → callers run unbudgeted).
+
+HOST_BUDGET_DEFAULTS: Dict[str, Dict[str, float]] = {
+    # Kraken spot: conservative, ~1 req/3s matched to a public+private mix.
+    'api.kraken.com': {'rate': 1.0 / 3.0, 'burst': 2.0},
+    # Capital.com is aggressively limited upstream; the portfolio writer
+    # probes every 60s and must never be starved by analytics.
+    'api-capital.backend-capital.com': {'rate': 0.34, 'burst': 4.0},
+    'demo-api-capital.backend-capital.com': {'rate': 0.34, 'burst': 4.0},
+    # Binance public data: generous (quote bucket ≈ 9/min on top of the
+    # client's own TokenBucket) while signed/account reads stay reserved.
+    'api.binance.com': {'rate': 0.5, 'burst': 6.0},
+    'testnet.binance.vision': {'rate': 0.5, 'burst': 6.0},
+}
+
+_HOST_BUDGET_FALLBACK = {'rate': 0.2, 'burst': 2.0}
+_host_budgets: Dict[str, GlobalRateBudget] = {}
+_host_budgets_lock = threading.Lock()
+
+
+def _host_env_slug(host: str) -> str:
+    slug = []
+    for ch in str(host or '').lower():
+        slug.append(ch if ch.isalnum() else '_')
+    return ''.join(slug).strip('_').upper()
+
+
+def get_host_rate_budget(host: str) -> Optional[GlobalRateBudget]:
+    """Get (or lazily create) the GlobalRateBudget for one API host.
+
+    Returns None when host budgets are disabled via
+    AUREON_RATE_BUDGET_ENABLED=0 or the host is empty.
+    """
+    host = str(host or '').strip().lower()
+    if not host:
+        return None
+    if os.getenv('AUREON_RATE_BUDGET_ENABLED', '1').strip().lower() in {'0', 'false', 'off', 'no'}:
+        return None
+
+    with _host_budgets_lock:
+        existing = _host_budgets.get(host)
+        if existing is not None:
+            return existing
+
+        profile = dict(HOST_BUDGET_DEFAULTS.get(host, _HOST_BUDGET_FALLBACK))
+        slug = _host_env_slug(host)
+        try:
+            override_rate = os.getenv(f'AUREON_RATE_BUDGET_{slug}_PER_SEC')
+            if override_rate:
+                profile['rate'] = max(0.01, float(override_rate))
+            override_burst = os.getenv(f'AUREON_RATE_BUDGET_{slug}_BURST')
+            if override_burst:
+                profile['burst'] = max(1.0, float(override_burst))
+        except Exception:
+            pass
+
+        budget = GlobalRateBudget(
+            total_rate_per_second=profile['rate'],
+            total_burst=profile['burst'],
+        )
+        _host_budgets[host] = budget
+        logger.info(
+            "Host rate budget initialized: %s -> %.3f/sec burst=%.1f",
+            host, profile['rate'], profile['burst'],
+        )
+        return budget
+
+
+def wait_for_slot_deferred(
+    budget: GlobalRateBudget,
+    priority: RequestPriority,
+    *,
+    is_trading: bool = False,
+    max_wait_s: float = 10.0,
+    poll_s: float = 0.25,
+) -> bool:
+    """Queue for a rate-limit slot without ever raising.
+
+    Loops on wait_for_slot (which grants immediately, blocks for tokens, or
+    returns False while a higher-priority backoff defers this priority) until
+    the slot is granted or max_wait_s elapses. Read paths use this so a
+    throttled caller is deferred, never crashed; write paths treat a False
+    return as fail-closed and refuse to send.
+
+    If the limiter itself raises, trading requests (is_trading=True) get
+    False so order writes fail closed; read requests still get True so a
+    broken limiter never crashes a read path.
+    """
+    deadline = time.time() + max(0.0, float(max_wait_s))
+    while True:
+        try:
+            if budget.wait_for_slot(priority, is_trading):
+                return True
+        except Exception as exc:  # limiter internals must never crash a caller
+            logger.warning("wait_for_slot_deferred error (%s): %s", priority.name, exc)
+            if is_trading:
+                return False  # fail closed: never send an order on a broken limiter
+            return True  # one uncounted read beats a crashed read path
+        if time.time() >= deadline:
+            return False
+        time.sleep(max(0.05, float(poll_s)))
