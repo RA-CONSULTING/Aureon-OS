@@ -260,3 +260,40 @@ def test_skipping_an_oversized_line_does_not_count_as_drained_on_rotation(tmp_pa
 def test_listener_logs_skipped_lines() -> None:
     src = _listener_source()
     assert "tail.take_skipped()" in src
+
+
+def test_truncate_during_a_skip_resets_the_skip(tmp_path: Path) -> None:
+    """A truncate mid-skip must not swallow the first line of the new content."""
+    p = tmp_path / "thoughts.jsonl"
+    p.write_text("")
+    cap = 256
+    tail = ThoughtTail.at_end(p, max_read_bytes=cap)
+    _write(p, _line(0, pad="e" * (4 * cap))[:600])  # oversized, no newline yet
+    assert _poll(tail) == []
+    with open(p, "w", encoding="utf-8") as f:
+        f.write(_line(1))
+    assert _ids(_poll(tail)) == ["t1"]
+
+
+def test_unfinished_skip_is_counted_on_rotation_without_a_newline(tmp_path: Path) -> None:
+    p = tmp_path / "thoughts.jsonl"
+    p.write_text("")
+    cap = 256
+    tail = ThoughtTail.at_end(p, max_read_bytes=cap)
+    _write(p, _line(0, pad="f" * (4 * cap))[:600])  # oversized, never finished
+    assert _poll(tail) == []
+    os.replace(p, tmp_path / "thoughts.jsonl.1")
+    _write(p, _line(1))
+    assert _ids(_poll(tail)) == ["t1"]
+    assert tail.take_skipped() == (1, 600)
+
+
+def test_skip_end_returns_exactly_the_following_lines(tmp_path: Path) -> None:
+    """No fragment of the skipped line, and not its newline, reaches read_raw."""
+    p = tmp_path / "thoughts.jsonl"
+    p.write_text("")
+    cap = 256
+    tail = ThoughtTail.at_end(p, max_read_bytes=cap)
+    _write(p, _line(0, pad="g" * (3 * cap)), _line(1), _line(2))
+    raw = b"".join(tail.read_raw() for _ in range(50))
+    assert raw == (_line(1) + _line(2)).encode()
