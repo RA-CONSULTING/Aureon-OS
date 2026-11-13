@@ -166,11 +166,48 @@ SEAT_MARKET_PORT = int(os.environ.get("AUREON_SEAT_MARKET_PORT") or 8791)
 OLLAMA_PROBE_TIMEOUT_S = 5.0
 
 
+# _launch_env records the launcher's own values of the suppression flags
+# under these names before pinning them, so a child built inside a
+# _launch_env process (the supervisor) can hand back the launcher's values
+# instead of the pinned ones. LAUNCH_ENV_MARKER says the record was taken.
+PARENT_ENV_PREFIX = "AUREON_PARENT_"
+LAUNCH_ENV_MARKER = "AUREON_PARENT_ENV_RECORDED"
+
+
+def _without_inherited_suppression(base) -> dict:
+    """Copy of ``base`` with the launcher's suppression flags, not pinned ones.
+
+    Outside a _launch_env process (no marker) ``base`` is the launcher's own
+    environment and is returned unchanged, so a launcher started with
+    AUREON_AUDIT_MODE=1 still passes it on. Inside one (the supervisor), the
+    pinned flags are dropped and the launcher's recorded values, if it had
+    any, are put back; the record keys themselves are not passed on."""
+    env = dict(base)
+    if LAUNCH_ENV_MARKER not in env:
+        return env
+    for key in SUPPRESSION_ENV:
+        env.pop(key, None)
+        recorded = env.pop(PARENT_ENV_PREFIX + key, None)
+        if recorded is not None:
+            env[key] = recorded
+    env.pop(LAUNCH_ENV_MARKER, None)
+    return env
+
+
 def _launch_env(extra: dict = None) -> dict:
     """Child environment for activation-wave organs: suppression env vars
     pinned, plus PYTHONPATH pinned to the upstream repo root so upstream
-    module launches resolve the `aureon` package with cwd=workspace."""
+    module launches resolve the `aureon` package with cwd=workspace.
+
+    Before pinning, the launcher's own suppression values are recorded under
+    PARENT_ENV_PREFIX (only the ones it had). A record already present is
+    kept, so a nested _launch_env does not overwrite the launcher's values."""
     env = dict(os.environ)
+    if LAUNCH_ENV_MARKER not in env:
+        for key in SUPPRESSION_ENV:
+            if key in env:
+                env[PARENT_ENV_PREFIX + key] = env[key]
+        env[LAUNCH_ENV_MARKER] = "1"
     env.update(SUPPRESSION_ENV)
     existing = env.get("PYTHONPATH")
     upstream = str(AUREON_UPSTREAM)
@@ -184,8 +221,15 @@ def _radar_env(extra: dict = None) -> dict:
     """Child environment for aureon_radar scripts that import the upstream
     `aureon` package: PYTHONPATH pinned to the upstream repo root, but NO
     activation-wave suppression flags (radar loops run in their native
-    mode)."""
-    env = dict(os.environ)
+    mode).
+
+    Inside a _launch_env process (the supervisor, which re-imports this
+    module) the pinned suppression flags are swapped back for the launcher's
+    recorded values, so a respawn gets what the first launch got.
+    The launcher (aureon/launch/master.py child_env) builds these children
+    from its own environment plus the spec env, which carries neither. An
+    entry that needs a value sets it explicitly through ``extra``."""
+    env = _without_inherited_suppression(os.environ)
     existing = env.get("PYTHONPATH")
     upstream = str(AUREON_UPSTREAM)
     env["PYTHONPATH"] = upstream + (os.pathsep + existing if existing else "")
@@ -196,8 +240,11 @@ def _radar_env(extra: dict = None) -> dict:
 
 def _workspace_env(extra: dict = None) -> dict:
     """Child environment for aureon_fusion modules that need BOTH the workspace
-    package (aureon_fusion.*) and the upstream package (aureon.*)."""
-    env = dict(os.environ)
+    package (aureon_fusion.*) and the upstream package (aureon.*).
+
+    Like _radar_env, a supervisor respawn gets the launcher's suppression
+    values, not the pinned ones; ``extra`` can set them."""
+    env = _without_inherited_suppression(os.environ)
     existing = env.get("PYTHONPATH")
     parts = [str(WORKSPACE), str(AUREON_UPSTREAM)]
     if existing:
