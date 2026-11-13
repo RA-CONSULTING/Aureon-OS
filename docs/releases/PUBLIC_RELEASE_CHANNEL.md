@@ -9,8 +9,8 @@ Historical lineage tip these notes were written against: `08f04936088689e29b7995
 | Go-live | HOLD |
 | Release boundary | HOLD |
 | Orange badge | `release boundary-HOLD-orange` in `README.md` |
-| Published pin | `0646146c53e59dbcab41363a613d5651c9c9d50f` |
-| Pin move in this change | none |
+| Published pin | `ac9fa3151b63bd4143dc1aa434ec79b382406b7e` |
+| Pin move in this change | 0646146c to ac9fa315 (require-pin only; merge needs Gary's own yes; no release, tag, or publish) |
 | production go-live | not cleared |
 | System | not claimed alive |
 | Orders | none placed |

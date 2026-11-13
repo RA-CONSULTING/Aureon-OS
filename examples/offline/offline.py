@@ -38,7 +38,7 @@ BANNER = (
     "Release boundary: HOLD. This gallery is not a production-ready release. "
     "Live trading is off. No order is placed. The public pin and the orange badge stay."
 )
-PUBLIC_PIN = "0646146c53e59dbcab41363a613d5651c9c9d50f"
+PUBLIC_PIN = "ac9fa3151b63bd4143dc1aa434ec79b382406b7e"
 CONTAINMENT_PIN = "34864ff0547d2cff03e707414743a3b0cc8770b5"
 FETCHED_AT = "2026-11-05T00:00:00Z"
 

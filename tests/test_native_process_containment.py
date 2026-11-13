@@ -33,8 +33,8 @@ def test_public_pin_and_orange_badge_stay() -> None:
     guard = (ROOT / "mcp" / "aureon_public" / "guard_loader.py").read_text(encoding="utf-8")
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     installer = (ROOT / "scripts" / "linux" / "install-linux.sh").read_text(encoding="utf-8")
-    published = "0646146c53e59dbcab41363a613d5651c9c9d50f"
-    assert PIN == "bb04503119681adcf832f3c3e9b0cbf09fc7a938"  # historical module pin, not the live published pin (0646146c)
+    published = "ac9fa3151b63bd4143dc1aa434ec79b382406b7e"
+    assert PIN == "bb04503119681adcf832f3c3e9b0cbf09fc7a938"  # historical module pin, not the live published pin (ac9fa315)
     assert f'PINNED_COMMIT = "{published}"' in guard
     assert "release%20boundary-HOLD-orange" in readme
     assert "protected_bootstrap_v05.py" in installer
