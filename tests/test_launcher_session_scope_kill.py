@@ -230,12 +230,81 @@ def _assert_fake_and_disarmed(pid: int) -> None:
             raise AssertionError(f"{key} was not the fake string")
 
 
+def _cgroup_delegation_missing() -> str:
+    """Why this process cannot create and populate a child cgroup, or "".
+
+    Probed independently of aureon.launch.session_scope so a bug there still
+    fails the tests instead of skipping them: make a probe child under our own
+    cgroup v2 path, move a short-lived ``sleep`` into it, confirm the move in
+    /proc, then remove it. Any refusal means the host gave this user no cgroup
+    delegation (for example an unprivileged sandbox or a user namespace where
+    /sys/fs/cgroup is root-owned).
+    """
+
+    try:
+        line = Path("/proc/self/cgroup").read_text(encoding="utf-8").strip().splitlines()
+    except OSError as exc:
+        return f"/proc/self/cgroup is unreadable ({exc.strerror})"
+    unified = [entry.split(":", 2)[2] for entry in line if entry.startswith("0::")]
+    if not unified:
+        return "no cgroup v2 (unified) membership in /proc/self/cgroup"
+    parent = Path("/sys/fs/cgroup") / unified[0].lstrip("/")
+    if not (parent / "cgroup.procs").is_file():
+        return f"cgroup v2 is not mounted at {parent}"
+    if not os.access(parent / "cgroup.procs", os.W_OK):
+        return f"no cgroup delegation: {parent}/cgroup.procs is not writable by uid {os.getuid()}"
+    probe = parent / f"aureon-launcher-probe-{os.getpid()}"
+    sleeper = None
+    try:
+        probe.mkdir()
+    except OSError as exc:
+        return f"no cgroup delegation: cannot create a child cgroup under {parent} ({exc.strerror})"
+    try:
+        sleeper = subprocess.Popen(["sleep", "30"])
+        try:
+            (probe / "cgroup.procs").write_text(str(sleeper.pid), encoding="ascii")
+        except OSError as exc:
+            return f"no cgroup delegation: cannot move a process into {probe} ({exc.strerror})"
+        if probe.name not in _cgroup(sleeper.pid):
+            return f"no cgroup delegation: process move into {probe} did not take effect"
+        return ""
+    finally:
+        if sleeper is not None:
+            sleeper.kill()
+            sleeper.wait(timeout=5)
+        try:
+            probe.rmdir()
+        except OSError:
+            pass
+
+
+def _systemd_user_scope_missing() -> str:
+    """Why ``systemd-run --user --scope`` is unusable here, or ""."""
+
+    if shutil.which("systemd-run") is None:
+        return "systemd-run is not installed"
+    try:
+        proc = subprocess.run(
+            ["systemd-run", "--user", "--scope", "--collect", "--quiet", "--", "true"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return f"systemd-run --user --scope failed to run ({exc})"
+    if proc.returncode != 0:
+        return f"systemd-run --user --scope exited {proc.returncode}"
+    return ""
+
+
 @pytest.mark.timeout(60)
 def test_cgroup_kill_reaches_a_setsid_child(tmp_path: Path) -> None:
     """Scope kill, not killpg, is what reaches a setsid grandchild."""
 
-    if not Path("/sys/fs/cgroup").is_dir():
-        pytest.skip("cgroup v2 is not mounted")
+    missing = _cgroup_delegation_missing()
+    if missing:
+        pytest.skip(f"needs a delegated cgroup v2 subtree for _try_cgroup: {missing}")
     pidfile = tmp_path / "setsid.pid"
     session_path = tmp_path / "session.json"
     state = tmp_path / "state"
@@ -477,6 +546,14 @@ def _sweep(clone: Path, launcher_pid: int) -> None:
 def test_full_launcher_kill_switch_leaves_no_survivors(tmp_path: Path) -> None:
     """Start the full launcher and assert the kill switch clears every pid."""
 
+    # The assertions below require the launcher session to land in an
+    # aureon-launcher cgroup, which it can only do through direct cgroup
+    # delegation or a systemd user scope. The no-cgroup path is covered by
+    # test_pid_tree_fallback_kills_a_setsid_child_without_a_cgroup.
+    direct = _cgroup_delegation_missing()
+    scope = _systemd_user_scope_missing() if direct else ""
+    if direct and scope:
+        pytest.skip(f"needs a delegated cgroup v2 subtree or a systemd user scope: {direct}; {scope}")
     clone = tmp_path / "clone"
     cloned = subprocess.run(
         ["git", "clone", "--no-hardlinks", "--shared", str(ROOT), str(clone)],
