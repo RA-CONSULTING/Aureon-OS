@@ -7370,7 +7370,7 @@ I will NOT sell at a loss when the market is down. 👑
                 enigma_guidance = self.enigma.get_guidance() if hasattr(self.enigma, 'get_guidance') else {}
                 
                 # Extract key metrics
-                enigma_action = enigma_guidance.get('action', 'HOLD')
+                enigma_action = enigma_guidance.get('signal', 'HOLD')
                 enigma_confidence = enigma_guidance.get('confidence', 0.5)
                 enigma_intel_grade = enigma_guidance.get('intelligence_grade', 'ENIGMA')
                 

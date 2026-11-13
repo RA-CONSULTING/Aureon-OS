@@ -14422,7 +14422,7 @@ if __name__ == "__main__":
                     enigma_guidance = self.enigma_integration.get_guidance()
                     
                     # Overall market action from Enigma
-                    enigma_action = enigma_guidance.get('action', 'HOLD')
+                    enigma_action = enigma_guidance.get('signal', 'HOLD')
                     enigma_confidence = enigma_guidance.get('confidence', 0.5)
                     
                     # Convert action to score adjustment (ENIGMA BOOST!)
