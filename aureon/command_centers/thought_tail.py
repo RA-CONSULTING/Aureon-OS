@@ -87,7 +87,7 @@ async def next_local(queue: asyncio.Queue, timeout: float = 1.0) -> Any | None:
     """
     try:
         return await asyncio.wait_for(queue.get(), timeout=timeout)
-    except asyncio.TimeoutError:
+    except TimeoutError:
         return None
 
 
