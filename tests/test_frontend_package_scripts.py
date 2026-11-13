@@ -43,6 +43,10 @@ STATIC_SAFE_SCRIPTS = {
     'lint': 'eslint .',
     'lint:shell': 'eslint src/shell --max-warnings 0',
     'typecheck': 'tsc -p tsconfig.app.json --noEmit',
+    # Offline node:test unit test added in #218 (missing live readings stay
+    # null). It runs one local file through tsx with no server, browser or
+    # network, so it belongs with the static-safe scripts.
+    'test:missing-reading': 'tsx --tsconfig tsconfig.app.json --test src/missingReading.test.tsx',
 }
 
 
