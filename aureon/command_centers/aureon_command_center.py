@@ -6235,6 +6235,12 @@ async def thought_bus_listener_task():
                         t_payload,
                         data.get("source", "unknown") or "unknown",
                     )
+                skipped_lines, skipped_bytes = tail.take_skipped()
+                if skipped_lines:
+                    safe_print(
+                        f"ThoughtBus tail skipped {skipped_lines} line(s), {skipped_bytes} bytes,"
+                        f" longer than the {tail.max_read_bytes}-byte read buffer"
+                    )
             except Exception as e:
                 safe_print(f"ThoughtBus tail error: {e}")
 

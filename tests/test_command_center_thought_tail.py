@@ -39,6 +39,18 @@ def _drain(tail: ThoughtTail) -> list[dict]:
     raise AssertionError("tail never drained")
 
 
+def _poll(tail: ThoughtTail, calls: int = 50) -> list[dict]:
+    """Call read_new a fixed number of times, like the listener loop does.
+
+    Skipping an oversized line moves the position without returning rows, so
+    an empty read does not mean the file is drained.
+    """
+    out: list[dict] = []
+    for _ in range(calls):
+        out.extend(tail.read_new())
+    return out
+
+
 def test_starts_at_end_and_reads_new_lines(tmp_path: Path) -> None:
     p = tmp_path / "thoughts.jsonl"
     _write(p, _line(0))
@@ -189,3 +201,62 @@ def test_listener_uses_timeout_and_one_shared_dedupe() -> None:
     assert src.count("seen.first_time(") == 2
     assert "mark_seen" not in src
     assert "tail.read_new()" in src
+
+
+def test_line_longer_than_cap_is_skipped_and_later_lines_arrive(tmp_path: Path) -> None:
+    """Spike's and Buzz's wedge: one line over the cap must not stop the tail."""
+    p = tmp_path / "thoughts.jsonl"
+    p.write_text("")
+    cap = 1000
+    tail = ThoughtTail.at_end(p, max_read_bytes=cap)
+    big = _line(0, pad="b" * 2000)
+    _write(p, big, _line(1))
+    assert _ids(_poll(tail)) == ["t1"]
+    _write(p, _line(2))
+    assert _ids(_poll(tail)) == ["t2"]
+    assert tail.take_skipped() == (1, len(big))
+    assert tail.take_skipped() == (0, 0)
+
+
+def test_line_many_times_the_cap_still_written_is_skipped_once(tmp_path: Path) -> None:
+    p = tmp_path / "thoughts.jsonl"
+    p.write_text("")
+    cap = 256
+    tail = ThoughtTail.at_end(p, max_read_bytes=cap)
+    big = _line(0, pad="c" * (5 * cap))
+    _write(p, big[:600])  # still being written, already over the cap
+    assert _poll(tail) == []
+    _write(p, big[600:], _line(1), _line(2))
+    assert _ids(_poll(tail)) == ["t1", "t2"]
+    assert tail.take_skipped() == (1, len(big))
+
+
+def test_short_partial_line_is_not_skipped(tmp_path: Path) -> None:
+    p = tmp_path / "thoughts.jsonl"
+    p.write_text("")
+    tail = ThoughtTail.at_end(p, max_read_bytes=1000)
+    whole = _line(1)
+    _write(p, whole[:-5])
+    assert _poll(tail) == []
+    _write(p, whole[-5:])
+    assert _ids(_poll(tail)) == ["t1"]
+    assert tail.take_skipped() == (0, 0)
+
+
+def test_skipping_an_oversized_line_does_not_count_as_drained_on_rotation(tmp_path: Path) -> None:
+    """While a long line is being skipped the old file is not finished, so a
+    rename must not make the tail jump to the new file and lose t1."""
+    p = tmp_path / "thoughts.jsonl"
+    p.write_text("")
+    cap = 256
+    tail = ThoughtTail.at_end(p, max_read_bytes=cap)
+    _write(p, _line(0, pad="d" * (4 * cap)), _line(1))
+    os.replace(p, tmp_path / "thoughts.jsonl.1")
+    _write(p, _line(2))
+    assert _ids(_poll(tail)) == ["t1", "t2"]
+    assert tail.take_skipped()[0] == 1
+
+
+def test_listener_logs_skipped_lines() -> None:
+    src = _listener_source()
+    assert "tail.take_skipped()" in src

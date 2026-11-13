@@ -17,7 +17,12 @@ file, so this module follows that file.
   a data threshold: the rest stays in the file for the next call, so a large
   backlog never blocks the event loop in one read or floods clients at once.
 * Only complete lines are consumed; a half-written last line is read again
-  once its newline lands.
+  once its newline lands. That only applies when a read comes back shorter
+  than the buffer. A read that fills the whole buffer with no newline is a
+  single line longer than ``max_read_bytes``: it can never fit, so it is
+  skipped up to its newline (across calls if needed) and counted in
+  ``skipped_lines`` / ``skipped_bytes``, which the caller logs. Waiting on it
+  would stop the tail for good.
 
 Duplicates: a thought published in this process reaches the listener twice,
 once from the subscription and once from the file. ``SeenIds`` is the single
@@ -48,6 +53,10 @@ class SeenIds:
     Its file copy is read within one or two tail reads of its subscription
     copy, so the limit is derived from the read buffer: enough ids for two
     full reads of lines as short as ``min_line_bytes``.
+
+    ``min_line_bytes=100`` is an assumed floor, not a measured one: a persisted
+    thought line carries an id, source, topic, timestamp and payload, which is
+    well over 100 bytes, but nothing here enforces it.
     """
 
     def __init__(self, max_read_bytes: int = DEFAULT_MAX_READ_BYTES, min_line_bytes: int = 100) -> None:
@@ -88,6 +97,11 @@ class ThoughtTail:
     max_read_bytes: int = DEFAULT_MAX_READ_BYTES
     _fh: IO[bytes] | None = field(default=None, repr=False)
     _inode: tuple[int, int] | None = field(default=None, repr=False)
+    _skipping: bool = field(default=False, repr=False)
+    _skip_run: int = field(default=0, repr=False)
+    # Oversized lines dropped so far, and their bytes. Reset by take_skipped().
+    skipped_lines: int = 0
+    skipped_bytes: int = 0
 
     @classmethod
     def at_end(cls, path: Path, max_read_bytes: int = DEFAULT_MAX_READ_BYTES) -> ThoughtTail:
@@ -113,6 +127,21 @@ class ThoughtTail:
                 self._fh.close()
         self._fh = None
         self._inode = None
+        self._end_skip(finished=False)
+
+    def _end_skip(self, finished: bool) -> None:
+        if self._skipping:
+            self.skipped_lines += 1
+            self.skipped_bytes += self._skip_run + (1 if finished else 0)
+        self._skipping = False
+        self._skip_run = 0
+
+    def take_skipped(self) -> tuple[int, int]:
+        """Return and reset (lines, bytes) skipped as longer than the buffer."""
+        out = (self.skipped_lines, self.skipped_bytes)
+        self.skipped_lines = 0
+        self.skipped_bytes = 0
+        return out
 
     def _path_inode(self) -> tuple[int, int] | None:
         try:
@@ -121,11 +150,16 @@ class ThoughtTail:
             return None
         return (st.st_dev, st.st_ino)
 
-    def _read_chunk(self) -> bytes:
-        """Read up to one buffer, keeping only complete lines."""
+    def _read_chunk(self) -> tuple[bytes, bool]:
+        """Read up to one buffer, keeping only complete lines.
+
+        Returns ``(lines, moved)``. ``moved`` is True when the read position
+        advanced, even with no lines to return (an oversized line being
+        skipped), so the caller does not mistake that for a drained file.
+        """
         fh = self._fh
         if fh is None:
-            return b""
+            return b"", False
         start = fh.tell()
         try:
             size = os.fstat(fh.fileno()).st_size
@@ -134,27 +168,47 @@ class ThoughtTail:
         if size < start:
             fh.seek(0)
             start = 0
+            self._skipping = False
+            self._skip_run = 0
         data = fh.read(self.max_read_bytes)
-        cut = data.rfind(b"\n")
+        if not data:
+            return b"", False
+        offset = 0
+        if self._skipping:
+            nl = data.find(b"\n")
+            if nl < 0:
+                self._skip_run += len(data)
+                return b"", True
+            self._skip_run += nl
+            self._end_skip(finished=True)
+            offset = nl + 1
+        body = data[offset:]
+        cut = body.rfind(b"\n")
         if cut < 0:
-            fh.seek(start)
-            return b""
-        fh.seek(start + cut + 1)
-        return data[: cut + 1]
+            if offset == 0 and len(data) >= self.max_read_bytes:
+                # One line longer than the buffer: it can never fit.
+                self._skipping = True
+                self._skip_run = len(data)
+                return b"", True
+            # Genuine partial last line: wait for its newline.
+            fh.seek(start + offset)
+            return b"", offset > 0
+        fh.seek(start + offset + cut + 1)
+        return body[: cut + 1], True
 
     def read_raw(self) -> bytes:
         """Return complete new lines as bytes, at most one buffer's worth."""
         if self._fh is None and not self._open():
             return b""
-        chunk = self._read_chunk()
-        if chunk:
+        chunk, moved = self._read_chunk()
+        if chunk or moved:
             return chunk
         # Current file drained. If the path now names another file, switch.
         current = self._path_inode()
         if current is not None and current != self._inode:
             self.close()
             if self._open():
-                return self._read_chunk()
+                return self._read_chunk()[0]
         return b""
 
     def read_new(self) -> list[dict]:
