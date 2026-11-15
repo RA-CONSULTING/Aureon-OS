@@ -217,7 +217,6 @@ if sys.platform == 'win32':
     atexit.register(_cleanup_stderr)
 
 import asyncio
-import json
 import time
 import threading
 import logging
@@ -6095,7 +6094,9 @@ async def thought_bus_listener_task():
     loop = asyncio.get_running_loop()
     queue: asyncio.Queue = asyncio.Queue()
     thoughts_path = Path(os.getenv("AUREON_THOUGHTS_FILE", "thoughts.jsonl"))
-    file_pos = thoughts_path.stat().st_size if thoughts_path.exists() else 0
+    from aureon.command_centers.thought_tail import SeenIds, ThoughtTail, next_local
+    tail = ThoughtTail.at_end(thoughts_path)
+    seen = SeenIds(tail.max_read_bytes)
 
     def _enqueue(thought) -> None:
         try:
@@ -6208,36 +6209,40 @@ async def thought_bus_listener_task():
             if not LIVE_FEED_ENABLED:
                 await asyncio.sleep(1)
                 continue
-            thought = await queue.get()
-            topic = getattr(thought, "topic", "") or ""
-            payload = getattr(thought, "payload", None) or {}
-            source = getattr(thought, "source", "unknown")
+            # Wait at most 1 s for an in-process thought, so the file tail
+            # below is still polled while this process is quiet.
+            thought = await next_local(queue, timeout=1.0)
+            if thought is not None and seen.first_time(getattr(thought, "id", None)):
+                await _process_thought(
+                    getattr(thought, "topic", "") or "",
+                    getattr(thought, "payload", None) or {},
+                    getattr(thought, "source", "unknown"),
+                )
 
-            await _process_thought(topic, payload, source)
-
-            # Cross-process fallback: tail thoughts.jsonl if it exists
-            if thoughts_path.exists():
-                if not LIVE_FEED_ENABLED:
-                    await asyncio.sleep(1)
-                    continue
-                try:
-                    with thoughts_path.open("r", encoding="utf-8") as f:
-                        f.seek(file_pos)
-                        for line in f:
-                            file_pos = f.tell()
-                            line = line.strip()
-                            if not line:
-                                continue
-                            try:
-                                data = json.loads(line)
-                            except Exception:
-                                continue
-                            t_topic = data.get("topic", "")
-                            t_payload = data.get("payload", {}) if isinstance(data, dict) else {}
-                            t_source = data.get("source", "unknown") if isinstance(data, dict) else "unknown"
-                            await _process_thought(t_topic, t_payload, t_source)
-                except Exception:
-                    pass
+            # Cross-process fallback: tail thoughts.jsonl for other processes'
+            # thoughts. SeenIds is shared with the path above, so a thought
+            # from this process is handled once, whichever copy arrives first.
+            if not LIVE_FEED_ENABLED:
+                continue
+            try:
+                for data in tail.read_new():
+                    if not seen.first_time(data.get("id")):
+                        continue
+                    payload_in = data.get("payload")
+                    t_payload = payload_in if isinstance(payload_in, dict) else {}
+                    await _process_thought(
+                        data.get("topic", "") or "",
+                        t_payload,
+                        data.get("source", "unknown") or "unknown",
+                    )
+                skipped_lines, skipped_bytes = tail.take_skipped()
+                if skipped_lines:
+                    safe_print(
+                        f"ThoughtBus tail skipped {skipped_lines} line(s), {skipped_bytes} bytes,"
+                        f" longer than the {tail.max_read_bytes}-byte read buffer"
+                    )
+            except Exception as e:
+                safe_print(f"ThoughtBus tail error: {e}")
 
         except Exception as e:
             safe_print(f"ThoughtBus listener error: {e}")
