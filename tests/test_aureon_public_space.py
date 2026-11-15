@@ -1198,7 +1198,7 @@ def test_scaffold_bakes_no_key_and_quotes_the_plan() -> None:
     assert "503" in readme
     assert "`busy`" in readme
     assert "mcp==1.30.0,<2" in requirements
-    assert "0646146c53e59dbcab41363a613d5651c9c9d50f" in requirements
+    assert "ac9fa3151b63bd4143dc1aa434ec79b382406b7e" in requirements
     assert "partial release covering stages 1 and 2 of 4" in readme
     assert "reachable now 69" in readme
     assert "tested 69" in readme

@@ -141,8 +141,8 @@ def test_public_pin_and_hold_are_unchanged() -> None:
     space = (ROOT / "huggingface/hnc-field/guard.py").read_text(encoding="utf-8")
     assert PUBLIC_PIN == "34864ff0547d2cff03e707414743a3b0cc8770b5"
     assert PUBLISHED_PIN == "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
-    assert 'PINNED_COMMIT = "0646146c53e59dbcab41363a613d5651c9c9d50f"' in guard  # live published pin; PUBLISHED_PIN on this head is historical
-    assert 'COMMIT = "0646146c53e59dbcab41363a613d5651c9c9d50f"' in space  # live published pin; PUBLISHED_PIN on this head is historical
+    assert 'PINNED_COMMIT = "ac9fa3151b63bd4143dc1aa434ec79b382406b7e"' in guard  # live published pin; PUBLISHED_PIN on this head is historical
+    assert 'COMMIT = "ac9fa3151b63bd4143dc1aa434ec79b382406b7e"' in space  # live published pin; PUBLISHED_PIN on this head is historical
     assert record["public_require_pin"] == PUBLIC_PIN
     assert record["measurement"]["public_require_pin"] == PUBLIC_PIN
     assert record["published_require_pin"] == PUBLISHED_PIN
@@ -259,7 +259,7 @@ def test_next_head_is_sequence_two_with_a_later_verified_clock() -> None:
     assert "go_live_clear" in follow
     assert "not rewritten" in follow
     guard = (ROOT / "mcp/aureon_public/guard_loader.py").read_text(encoding="utf-8")
-    assert 'PINNED_COMMIT = "0646146c53e59dbcab41363a613d5651c9c9d50f"' in guard  # live published pin; PUBLISHED_PIN on this head is historical
+    assert 'PINNED_COMMIT = "ac9fa3151b63bd4143dc1aa434ec79b382406b7e"' in guard  # live published pin; PUBLISHED_PIN on this head is historical
 
 
 def test_recorded_next_head_is_not_stamped_again(tmp_path: Path) -> None:
