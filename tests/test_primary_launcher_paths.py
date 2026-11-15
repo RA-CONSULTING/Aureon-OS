@@ -8,6 +8,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 LAUNCHER_DIR = REPO_ROOT / "scripts" / "launchers"
@@ -233,6 +234,13 @@ def test_frontend_container_starts_only_the_explicit_non_python_hold() -> None:
     assert "exec " not in hold
 
 
+ORDER_SAFETY_PINS = {
+    "AUREON_LIVE_TRADING": "0",
+    "AUREON_DISABLE_REAL_ORDERS": "1",
+    "AUREON_DISABLE_EXCHANGE_MUTATIONS": "1",
+}
+
+
 @pytest.mark.parametrize(
     ("compose", "expected_holds"),
     (
@@ -261,7 +269,17 @@ def test_compose_surfaces_are_terminal_no_network_holds(
     assert "healthcheck:" not in source
     assert "ports:" not in source
     assert "volumes:" not in source
-    assert "environment:" not in source
+    # #310 pins the order-safety defaults in the root compose so evaluator
+    # keys cannot place orders on that path. Those three exact pins are the
+    # only environment a HOLD compose service may carry: any other key, any
+    # other value, env_file, or a second environment block still fails.
+    assert "env_file" not in source
+    assert source.count("environment:") <= 1
+    services = (yaml.safe_load(source) or {}).get("services") or {}
+    for service in services.values():
+        environment = service.get("environment") if isinstance(service, dict) else None
+        if environment is not None:
+            assert environment == ORDER_SAFETY_PINS
     assert "AUREON_TRADE_GATING" not in source
 
 
