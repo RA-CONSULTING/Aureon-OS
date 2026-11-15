@@ -62,7 +62,7 @@ No Windows run of `install.cmd --smoke` has been measured yet.
 
 `scripts/linux/install-linux.sh` execs `scripts/bootstrap/protected_bootstrap_v05.py --target-id linux-supervisor`. That entry is outside this smoke. Go-live stays **HOLD**. See [`docs/runbooks/GO_LIVE_HARDENING.md`](docs/runbooks/GO_LIVE_HARDENING.md).
 
-**Warning.** `scripts/linux/aureon-up.sh` can boot live trading when a full exchange key group is present in `.env`. When `.venv/bin/python` is missing, that script runs `production/install.sh`, which calls `scripts/launch/aureon-master.sh`. With autonomy left at the public default, that boot reports `trading_mode=live (exchange keys present)`. When `.venv/bin/python` is already present, `aureon-up.sh` runs `python -m aureon.autonomous.aureon_master_launcher --preflight` and sets `AUREON_LIVE_TRADING=0`. Go-live stays **HOLD**. The start-here command stays `./install.sh --smoke`.
+**Warning.** `scripts/linux/aureon-up.sh` can boot live trading when a full exchange key group is present in `.env`. When `.venv/bin/python` is missing, that script runs `production/install.sh`, which calls `scripts/launch/aureon-master.sh`. With autonomy left at the public default, that boot reports `trading_mode=live (exchange keys present)`. When `.venv/bin/python` is already present, `aureon-up.sh` sets `AUREON_LIVE_TRADING=0` and runs the master launcher's `--preflight` check only. Go-live stays **HOLD**. The start-here command stays `./install.sh --smoke`.
 
 ### What the guarded smoke covers
 
@@ -120,7 +120,7 @@ Older notes in `docs/` (for example `docs/AUREON_MIND_STATUS.md`), `aureon-tradi
 | Posture | What it needs | What the flags do |
 |---|---|---|
 | **Guarded offline** | No `.env`. `./install.sh` sets guarded autonomy, `AUREON_LLM_OFFLINE=1`, and real orders disabled in that process. `./install.sh` skips `.env`. | Off for that process. |
-| **Read-only market fetch** | No exchange key. `AUREON_DISABLE_REAL_ORDERS=1 PYTHONPATH=. python3 -m aureon.evaluation.market_series --out reports/measured` | That command sends no order. |
+| **Read-only market fetch** | No exchange key. The read-only fetch command, run with `AUREON_DISABLE_REAL_ORDERS=1`, is in [`docs/PUBLIC_ENV.md`](docs/PUBLIC_ENV.md). | That command sends no order. |
 | **Template copy** | The copied file ships `AUREON_DISABLE_REAL_ORDERS` and `AUREON_DRY_RUN`, paper and demo venue URLs, blank exchange key names, and no live-trading assignment. | Those lines are the file. They are not a lock. A full+keyed master boot overrides the disable and dry-run flags. |
 
 ---
