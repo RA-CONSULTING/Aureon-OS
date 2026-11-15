@@ -4812,6 +4812,22 @@ class UnifiedProfitGoalTracker:
 # �🔬 MICRO PROFIT LABYRINTH ENGINE
 # ════════════════════════════════════════════════════════════════════════════
 
+def enigma_guidance_base_score(guidance: Dict[str, Any]) -> Tuple[float, str]:
+    """Base Enigma score and direction from ``EnigmaIntegration.get_guidance()``.
+
+    ``get_guidance()`` returns its direction under ``'signal'`` (BUY, SELL or
+    HOLD). The scan used to read ``'action'``, a key that dict never has, so
+    the base score was always 0.0 and the direction always NEUTRAL.
+    """
+    enigma_action = guidance.get('signal', 'HOLD')
+    enigma_confidence = guidance.get('confidence', 0.5)
+    if enigma_action == 'BUY':
+        return enigma_confidence * 0.3, "BULLISH"
+    if enigma_action == 'SELL':
+        return -enigma_confidence * 0.15, "BEARISH"
+    return 0.0, "NEUTRAL"
+
+
 class MicroProfitLabyrinth:
     """
     Uses ALL existing systems but with LOWER thresholds.
@@ -14682,20 +14698,8 @@ if __name__ == "__main__":
                     # Get Enigma guidance for this trade
                     enigma_guidance = self.enigma_integration.get_guidance()
                     
-                    # Overall market action from Enigma
-                    enigma_action = enigma_guidance.get('action', 'HOLD')
-                    enigma_confidence = enigma_guidance.get('confidence', 0.5)
-                    
-                    # Convert action to score adjustment (ENIGMA BOOST!)
-                    if enigma_action == 'BUY':
-                        enigma_score = enigma_confidence * 0.3  # Boosted to 30% importance
-                        enigma_direction = "BULLISH"
-                    elif enigma_action == 'SELL':
-                        enigma_score = -enigma_confidence * 0.15 # Penalty for selling
-                        enigma_direction = "BEARISH"
-                    else:
-                        enigma_score = 0.0
-                        enigma_direction = "NEUTRAL"
+                    # Overall market signal from Enigma, converted to a score adjustment.
+                    enigma_score, enigma_direction = enigma_guidance_base_score(enigma_guidance)
                     
                     # Additional boosts from subsystems
                     if hasattr(self.enigma_integration, 'coherence_system') and self.enigma_integration.coherence_system:
