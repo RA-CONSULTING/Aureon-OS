@@ -1,0 +1,65 @@
+[probe] job=8594623 node=nid011213
+GPU 0: NVIDIA GH200 120GB (UUID: GPU-45f3d88c-d6fb-502e-071b-4746a4b5c642)
+GPU 1: NVIDIA GH200 120GB (UUID: GPU-120c4c4b-65db-907e-420d-113790a3ad1d)
+GPU 2: NVIDIA GH200 120GB (UUID: GPU-37c0a715-95b8-a11a-93ef-be7d21903935)
+GPU 3: NVIDIA GH200 120GB (UUID: GPU-4e47b731-25c5-810c-6141-afc77e9e878e)
+[probe] exporting -> /projects/u6vs/hnc-organism/runs/aureon-7b-v65k/hf-17k
+INFO:    fuse2fs not found, will not be able to mount EXT3 filesystems
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+[export] 6.995B params, vocab 65536 -> /projects/u6vs/hnc-organism/runs/aureon-7b-v65k/hf-17k
+[probe] sampling
+INFO:    fuse2fs not found, will not be able to mount EXT3 filesystems
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+{
+  "model": "/projects/u6vs/hnc-organism/runs/aureon-7b-v65k/hf-17k",
+  "params": 6995383808,
+  "vocab_size": 65536,
+  "eos_token": "<eos>",
+  "device": "cuda"
+}
+--- prompt ---
+system: You are Aureon, a coding agent working inside the Aureon-OS repository. You write Python that matches the repository's existing module layout, type hints, and docstring conventions.
+user: Write the Python module aureon_systems/aureon_lattice_simulation.py in the Aureon-OS repository.
+assistant:
+--- continuation ---
+WritethePythonpypypy.      .Youshouldaddthepypypypy.    pypy .py     Youshouldpy.       .youpy.   py.     .pypy .  pypy   .py    py.   .py    py    .      .py                    .                                                                          
+[probe] eval_gate self-test
+INFO:    fuse2fs not found, will not be able to mount EXT3 filesystems
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+[self-test] reference-vs-itself  recall=1.000 parse=1.000 -> OK
+[self-test] empty-generation     recall=0.000 parse=0.000 -> OK
+[self-test] fence-stripping     recall=1.000 parses=True -> OK
+[probe] quick eval (limit=120, raw prompts)
+INFO:    fuse2fs not found, will not be able to mount EXT3 filesystems
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+[eval] 8/120
+[eval] 16/120
+[eval] 24/120
+[eval] 32/120
+[eval] 40/120
+[eval] 48/120
+[eval] 56/120
+[eval] 64/120
+[eval] 72/120
+[eval] 80/120
+[eval] 88/120
+[eval] 96/120
+[eval] 104/120
+[eval] 112/120
+[eval] 120/120
+{
+  "rows": 120,
+  "parse_rate": 0.9722222222222222,
+  "parse_scored": 72,
+  "symbol_recall": 0.0,
+  "symbol_scored": 93,
+  "line_f1": 0.0,
+  "implement_rows": 72,
+  "implement_symbol_recall": 0.0,
+  "implement_line_f1": 0.0,
+  "explain_rows": 8,
+  "explain_symbol_recall": 0.0,
+  "explain_line_f1": 0.0
+}
+[eval] report -> /projects/u6vs/hnc-organism/runs/eval-17k-quick.json
+[probe] done -> /projects/u6vs/hnc-organism/runs/eval-17k-quick.json
