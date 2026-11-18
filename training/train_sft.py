@@ -197,12 +197,15 @@ def main() -> int:
     rows, dropped_long, dropped_bad = build_rows(args)
     batches, n_micro, _ = make_batches(
         rows, args.batch_size, rank, world, args.seed, args.seq_len)
-    # len(batches) is the GLOBAL batch list: one optimizer step consumes
-    # grad_accum batches PER RANK, i.e. grad_accum*world batches globally.
-    # The training loop below is bound by this number; computing it here (not
-    # inside make_batches) keeps the LR schedule and resume math consistent.
-    steps_per_epoch = (len(batches) + args.grad_accum * world - 1) // (
-        args.grad_accum * world)
+    # Each rank owns its own stride of the global batch list (batches[r::world],
+    # returned as `batches`). One optimizer step consumes grad_accum batches
+    # FROM THIS RANK'S OWN LIST — consecutive locals, not a world stride. The
+    # step count is derived from the LARGEST rank share so every rank runs the
+    # same step count; when a rank runs out of its own micros it repeats its
+    # last batch instead of skipping, because a skipped backward would
+    # desynchronise the FSDP gradient all-reduce and hang the job.
+    n_max = (len(batches) + world - 1) // world
+    steps_per_epoch = (n_max + args.grad_accum - 1) // args.grad_accum
     total_steps = steps_per_epoch * args.epochs
     if rank == 0:
         print(json.dumps({
@@ -261,13 +264,11 @@ def main() -> int:
             for group in optim.param_groups:
                 group["lr"] = lr
             loss_value = 0.0
-            did_work = False
             for micro in range(args.grad_accum):
-                gi = optimizer_step * (args.grad_accum * world) + micro * world + rank
-                if gi >= len(batches):
-                    continue
-                did_work = True
-                batch = batches[gi]
+                li = optimizer_step * args.grad_accum + micro
+                if li >= len(batches):
+                    li = len(batches) - 1   # repeat last micro; never skip a backward
+                batch = batches[li]
                 input_ids = batch["input_ids"].to(local_rank, non_blocking=True)
                 labels = batch["labels"].to(local_rank, non_blocking=True)
                 attn = batch["attention_mask"].to(local_rank, non_blocking=True)
@@ -278,10 +279,9 @@ def main() -> int:
                 (loss / args.grad_accum).backward()
                 tokens_done += int((labels != -100).sum().item()) * world
                 loss_value = loss
-            if did_work:
-                model.clip_grad_norm_(1.0)
-                optim.step()
-                optim.zero_grad(set_to_none=True)
+            model.clip_grad_norm_(1.0)
+            optim.step()
+            optim.zero_grad(set_to_none=True)
 
             if rank == 0 and step % args.log_every == 0 and loss_value != 0.0:
                 elapsed = max(time.time() - t0, 1e-9)
