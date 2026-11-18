@@ -40,13 +40,18 @@ import numpy as np
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 log = logging.getLogger("aureon.zpe")
 
-# Sacred frequencies
+# One seed for the HNC bridge and Project Druid. The musical solfeggio
+# ladder stays at 528 Hz elsewhere. This loop uses the HNC seed.
 SCHUMANN_HZ = 7.83
-LOVE_HZ = 528.0
+PHI = (1.0 + math.sqrt(5.0)) / 2.0
+HNC_SEED_HZ = 528.422
+# Druid defence is the sub-phi complement of that same seed, so the two
+# tones are one pair: counter = seed / phi, and the mix is seed + counter.
+DRUID_COUNTER_HZ = HNC_SEED_HZ / PHI
+LOVE_HZ = HNC_SEED_HZ
 LIBERATION_HZ = 396.0
 CROWN_HZ = 963.0
 HARMONY_HZ = 432.0
-PHI = 1.618033988749895
 
 # EPAS configuration
 SAMPLE_RATE = 44100
@@ -62,12 +67,9 @@ class EPASPhase:
         self.gain = gain
 
 
-# The 6-phase EPAS cycle from the whitepaper
-# FWM (Four-Wave Mixing) output frequency:
-# f_FWM = 2*f_pump - f_signal = 2*LOVE_HZ - (LOVE_HZ - (LOVE_HZ/PHI))
-# Simplified: f_FWM = LOVE_HZ + LOVE_HZ/PHI = 528 + 326.34 = 854.34 Hz (approx)
-# Alternative from whitepaper: f_FWM = HARMONY_HZ + (SCHUMANN_HZ * PHI * PHI) = 432 + 28.34 = 460.34 Hz
-FWM_FREQUENCY = HARMONY_HZ + (SCHUMANN_HZ * PHI * PHI)  # 460.3384 Hz — the actual mixing product
+# Tandem mix. f_FWM = seed + seed/phi = seed * phi.
+# The old 460.34 Hz product (432 + Schumann*phi^2) is not this pair.
+FWM_FREQUENCY = HNC_SEED_HZ + DRUID_COUNTER_HZ
 
 # DCE (Dynamic Casimir Effect) scaling law from HNC whitepaper:
 # P = P0 * N^2 * Gamma^4
@@ -98,7 +100,8 @@ SARCOPHAGUS_PERIOD_S = 1.0 / SARCOPHAGUS_FREQUENCY  # ~2.4 seconds
 
 EPAS_CYCLE = [
     EPASPhase("P1_SPARK", SCHUMANN_HZ, duration=0.5, gain=0.3),
-    EPASPhase("P2_RESONANCE", LOVE_HZ, duration=1.0, gain=0.5),
+    EPASPhase("P2_RESONANCE", HNC_SEED_HZ, duration=1.0, gain=0.5),
+    EPASPhase("P2_DRUID", DRUID_COUNTER_HZ, duration=1.0, gain=0.5),
     EPASPhase("P3_DCE", CROWN_HZ, duration=1.5, gain=0.7),
     EPASPhase("P4_FWM", FWM_FREQUENCY, duration=1.0, gain=0.8),  # Now uses actual FWM product
     EPASPhase("P5_STABILIZE", SCHUMANN_HZ * PHI, duration=0.5, gain=0.6),

@@ -56,6 +56,49 @@ def _llm_timeout(default_s: float, audit_default_s: float) -> float:
     return audit_default_s if _env_truthy("AUREON_AUDIT_MODE") else default_s
 
 
+_SYSTEM_PROMPT_CACHE: Optional[str] = None
+
+
+def _training_system_prompt() -> str:
+    """The system prompt the tuned adapter was trained with.
+
+    Training and inference share one text: ``training/prompt_contract.py`` is
+    the single source, loaded here by path so the runtime needs no install
+    step. A model tuned *with* a system prompt but called *without* one is a
+    distribution shift that looks exactly like a broken model, so this is the
+    default whenever a caller supplies nothing.
+
+    ``AUREON_LLM_SYSTEM`` overrides it; set it to an empty string to send no
+    system turn at all (matching behaviour on a backend that never saw the
+    tuned prompt).
+    """
+    global _SYSTEM_PROMPT_CACHE
+    if _SYSTEM_PROMPT_CACHE is not None:
+        return _SYSTEM_PROMPT_CACHE
+
+    override = os.environ.get("AUREON_LLM_SYSTEM")
+    if override is not None:
+        _SYSTEM_PROMPT_CACHE = override.strip()
+        return _SYSTEM_PROMPT_CACHE
+
+    _SYSTEM_PROMPT_CACHE = ""
+    contract = Path(__file__).resolve().parents[2] / "training" / "prompt_contract.py"
+    if not contract.is_file():
+        return _SYSTEM_PROMPT_CACHE
+    try:
+        import importlib.util
+
+        spec = importlib.util.spec_from_file_location("_aureon_prompt_contract", contract)
+        if spec is None or spec.loader is None:
+            return _SYSTEM_PROMPT_CACHE
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        _SYSTEM_PROMPT_CACHE = str(getattr(module, "SYSTEM", "") or "").strip()
+    except Exception as exc:  # a broken contract must not take the adapter down
+        logger.debug("prompt contract unreadable at %s: %s", contract, exc)
+    return _SYSTEM_PROMPT_CACHE
+
+
 def _read_small_json(path: Path) -> Dict[str, Any]:
     try:
         if path.exists():
@@ -263,6 +306,9 @@ class AureonLocalAdapter(LLMAdapter):
 
         self._keep_alive = os.environ.get("AUREON_LLM_KEEP_ALIVE", "30m") or None
 
+        # Sent whenever a caller passes no system prompt. Empty disables it.
+        self.system_prompt = _training_system_prompt()
+
         self._session: Any = None
         try:
             import requests
@@ -437,13 +483,14 @@ class AureonLocalAdapter(LLMAdapter):
             "stream": stream,
         }
 
-        # Ollama-specific: pin the model in RAM. The OpenAI shim ignores
-        # unknown fields so this is safe against other backends, and
-        # makes every follow-up call ~3s warm instead of ~8s cold.
+        # Ollama-only: pin the model in RAM so follow-ups decode warm. Sent
+        # only to Ollama endpoints — a strict OpenAI-compatible server may
+        # reject unknown top-level fields, and the field means nothing there.
         # Override via AUREON_LLM_KEEP_ALIVE ("5m", "1h", "-1" for forever).
-        keep_alive = os.environ.get("AUREON_LLM_KEEP_ALIVE", "30m")
-        if keep_alive:
-            payload["keep_alive"] = keep_alive
+        if looks_like_ollama_url(self.base_url):
+            keep_alive = os.environ.get("AUREON_LLM_KEEP_ALIVE", "30m")
+            if keep_alive:
+                payload["keep_alive"] = keep_alive
 
         if is_ollama_cloud_url(self.base_url):
             payload["reasoning_effort"] = resolve_ollama_reasoning_effort()
@@ -592,6 +639,10 @@ class AureonLocalAdapter(LLMAdapter):
         if _llm_http_disabled():
             return LLMResponse(text="[ERROR] LLM HTTP disabled by audit/offline mode", stop_reason="error")
 
+        # Default to the prompt this model was tuned with; callers that pass
+        # their own system text still win.
+        system = system or getattr(self, "system_prompt", "")
+
         # Ollama-native fast path: only used when we have no tool defs
         # (the native /api/chat doesn't emit OpenAI-style tool_calls),
         # and when auto-detected or explicitly enabled.
@@ -632,7 +683,17 @@ class AureonLocalAdapter(LLMAdapter):
             data = resp.json()
         except Exception as e:
             logger.error("Local LLM request failed: %s", e)
-            return LLMResponse(text=f"[ERROR] {e}", stop_reason="error")
+            text = f"[ERROR] {e}"
+            blob = str(e).lower()
+            if "404" in blob or "not found" in blob or "no such model" in blob:
+                # A bare 404 against a local server almost always means the
+                # served name does not match the one we asked for; say so
+                # instead of leaving it looking like an outage.
+                text += (
+                    f"\n[hint] the server does not serve model '{self.model}'. "
+                    "Set AUREON_LLM_MODEL to a name it does serve."
+                )
+            return LLMResponse(text=text, stop_reason="error")
 
         choice = data.get("choices", [{}])[0]
         message = choice.get("message", {})
