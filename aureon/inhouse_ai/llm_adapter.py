@@ -2199,9 +2199,11 @@ def build_voice_adapter(lane: str = "general") -> LLMAdapter:
         )
 
     if backend in ("", "auto", "local", "aureon_ollama", "unified_cognitive"):
-        # Self-sufficiency first: the Aureon own-model endpoint outranks every
-        # other default when it is reachable (it is the whole point of the
-        # training pipeline — no borrowed weights, no paid API).
+        # Uncaged, self-sufficient: the org's voice is OUR OWN trained model or
+        # it has no voice. No borrowed open weights (Ollama switchboard) and no
+        # cloud API take over when it is unreachable — an explicit
+        # AUREON_VOICE_BACKEND=ollama_hybrid / anthropic / brain remains the
+        # operator's deliberate override, but never the silent default.
         if not _llm_http_disabled():
             try:
                 own_candidate = _aureon_own_adapter()
@@ -2209,35 +2211,13 @@ def build_voice_adapter(lane: str = "general") -> LLMAdapter:
                     return own_candidate
             except Exception as exc:  # noqa: BLE001
                 logger.debug("aureon own-model auto-probe failed: %s", exc)
-        try:
-            from aureon.integrations.ollama import OllamaModelSwitchboard
-
-            hybrid, _selection = OllamaModelSwitchboard().hybrid_adapter_for(lane)
-        except Exception:
-            hybrid = AureonHybridAdapter()
-        if not _llm_http_disabled() and hybrid.local.health_check():
-            hybrid.model = f"aureon-ollama-hybrid:{hybrid.local.model}"
-            return hybrid
-        if backend in ("", "auto") and hybrid.brain.health_check():
-            return hybrid
-
-    if backend in ("plain_local", "local_only"):
-        try:
-            from aureon.integrations.ollama import OllamaModelSwitchboard
-
-            local, _selection = OllamaModelSwitchboard().compatible_adapter_for(lane)
-        except Exception:
-            local = AureonLocalAdapter()
-        if local.health_check():
-            return local
-
-    # Offline-safe final fallback. When the configured Ollama endpoint is cloud,
-    # the hybrid branch above is the explicit repo-wide external fallback.
-    return AureonStubAdapter(
-        "No LLM backend is reachable.\n"
-        "To enable real conversation for Vault voices:\n"
-        "  1) Start Ollama and install a local chat model.\n"
-        "  2) Set AUREON_VOICE_BACKEND=ollama_hybrid and AUREON_LLM_ALLOW_HTTP_IN_AUDIT=1.\n"
-        "  3) Set AUREON_LLM_MODEL to a local model such as llama3:latest for deeper replies.\n",
-        model="no-backend",
-    )
+        return AureonStubAdapter(
+            "Aureon's own model endpoint is not reachable — uncaged mode declines\n"
+            "borrowed or cloud fallbacks. Serve it from Isambard with:\n"
+            "  sbatch training/chat_server_now.sbatch\n"
+            "then tunnel from this machine:\n"
+            "  ssh -L 11435:<node-ip>:8000 u6vs.aip2.isambard\n"
+            "(the node-ip is printed in the chat-server job log), or set\n"
+            "AUREON_OWN_LLM_BASE_URL if the server lives elsewhere.",
+            model="aureon-own-unavailable",
+        )
