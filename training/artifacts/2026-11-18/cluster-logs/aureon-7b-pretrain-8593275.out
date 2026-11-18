@@ -1,0 +1,49 @@
+[pretrain] job=8593275 node=nid010547 steps=0
+GPU 0: NVIDIA GH200 120GB (UUID: GPU-4534e0e6-f16a-68be-9e3b-1bf6b8fb2698)
+GPU 1: NVIDIA GH200 120GB (UUID: GPU-5819206a-9e56-e32e-6729-1287f68a86be)
+GPU 2: NVIDIA GH200 120GB (UUID: GPU-32e69106-8f91-9fec-f3d0-f33f7942b582)
+GPU 3: NVIDIA GH200 120GB (UUID: GPU-69135b05-715b-415b-b23a-091b2425cc22)
+[pretrain] vocab_size 152064 -> 65536 to match the tokenizer that produced the shards
+[pretrain] vocab_size 152064 -> 65536 to match the tokenizer that produced the shards
+[pretrain] vocab_size 152064 -> 65536 to match the tokenizer that produced the shards
+[pretrain] vocab_size 152064 -> 65536 to match the tokenizer that produced the shards
+[pretrain] shard=full
+/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:680: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+  warnings.warn(
+/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:680: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+  warnings.warn(
+/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:680: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+  warnings.warn(
+/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:680: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+  warnings.warn(
+[pretrain] resumed ckpt_0017000.pt at step 17000
+[pretrain] fast-forwarded 2131760 windows/rank in 2.2s to resume the data stream
+{
+  "params": 6995383808,
+  "params_b": 6.995,
+  "world_size": 4,
+  "shards": 1355,
+  "corpus_tokens": 271000000000,
+  "tokens_per_optimizer_step": 131072,
+  "planned_steps": 2067565
+}
+/projects/u6vs/hnc-organism/training/pretrain.py:301: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /opt/pytorch/pytorch/aten/src/ATen/native/Scalar.cpp:22.)
+  "step": step, "loss": round(float(loss.item()), 4),
+{"step": 17010, "loss": 1.7481, "lr": "3.000e-04", "tokens": 34919539200, "tokens_per_s": 21119, "eta_h": 3535.1}
+{"step": 17020, "loss": 1.6688, "lr": "3.000e-04", "tokens": 34920849600, "tokens_per_s": 21196, "eta_h": 3522.3}
+{"step": 17030, "loss": 1.9754, "lr": "3.000e-04", "tokens": 34922160000, "tokens_per_s": 21215, "eta_h": 3519.1}
+{"step": 17040, "loss": 1.8435, "lr": "3.000e-04", "tokens": 34923470400, "tokens_per_s": 21229, "eta_h": 3516.8}
+{"step": 17050, "loss": 1.8984, "lr": "3.000e-04", "tokens": 34924780800, "tokens_per_s": 21248, "eta_h": 3513.5}
+{"step": 17060, "loss": 1.8929, "lr": "3.000e-04", "tokens": 34926091200, "tokens_per_s": 21247, "eta_h": 3513.8}
+{"step": 17070, "loss": 1.7564, "lr": "3.000e-04", "tokens": 34927401600, "tokens_per_s": 21243, "eta_h": 3514.3}
+{"step": 17080, "loss": 1.8072, "lr": "3.000e-04", "tokens": 34928712000, "tokens_per_s": 21252, "eta_h": 3513.0}
+{"step": 17090, "loss": 1.9913, "lr": "3.000e-04", "tokens": 34930022400, "tokens_per_s": 21258, "eta_h": 3511.9}
+{"step": 17100, "loss": 1.7674, "lr": "3.000e-04", "tokens": 34931332800, "tokens_per_s": 21260, "eta_h": 3511.5}
+{"step": 17110, "loss": 1.7692, "lr": "3.000e-04", "tokens": 34932643200, "tokens_per_s": 21260, "eta_h": 3511.4}
+{"step": 17120, "loss": 1.8338, "lr": "3.000e-04", "tokens": 34933953600, "tokens_per_s": 21260, "eta_h": 3511.5}
+{"step": 17130, "loss": 1.9285, "lr": "3.000e-04", "tokens": 34935264000, "tokens_per_s": 21262, "eta_h": 3511.1}
+{"step": 17140, "loss": 1.972, "lr": "3.000e-04", "tokens": 34936574400, "tokens_per_s": 21264, "eta_h": 3510.7}
+{"step": 17150, "loss": 1.8763, "lr": "3.000e-04", "tokens": 34937884800, "tokens_per_s": 21266, "eta_h": 3510.5}
+{"step": 17160, "loss": 1.8836, "lr": "3.000e-04", "tokens": 34939195200, "tokens_per_s": 21268, "eta_h": 3510.2}
+{"step": 17170, "loss": 1.6501, "lr": "3.000e-04", "tokens": 34940505600, "tokens_per_s": 21268, "eta_h": 3510.0}

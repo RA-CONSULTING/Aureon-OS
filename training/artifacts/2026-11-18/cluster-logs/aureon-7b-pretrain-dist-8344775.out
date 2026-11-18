@@ -1,0 +1,591 @@
+[dist] job=8344775 nodes=2 master=nid010595 port=29875
+[dist] out=/projects/u6vs/hnc-organism/runs/aureon-7b-v65k steps=0 batch=8 accum=1 resume=auto keep=20 shard=full
+GPU 0: NVIDIA GH200 120GB (UUID: GPU-a0d83583-4b13-3026-3ba8-0fd4285dd268)
+GPU 1: NVIDIA GH200 120GB (UUID: GPU-d7561fa1-3d51-d371-dcf1-94dcc0cbc0c8)
+GPU 2: NVIDIA GH200 120GB (UUID: GPU-e76ecf0b-d712-d566-ff4e-81d8e4e31c6c)
+GPU 3: NVIDIA GH200 120GB (UUID: GPU-989bd91e-5e5f-2305-41ff-337511d0dbd5)
+INFO:    fuse2fs not found, will not be able to mount EXT3 filesystems
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+INFO:    fuse2fs not found, will not be able to mount EXT3 filesystems
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+[default1]:/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:680: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+[default1]:  warnings.warn(
+[default0]:/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:680: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+[default0]:  warnings.warn(
+[default2]:/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:680: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+[default2]:  warnings.warn(
+[default3]:/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:680: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+[default3]:  warnings.warn(
+[default2]:/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:680: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+[default2]:  warnings.warn(
+[default0]:/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:680: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+[default0]:  warnings.warn(
+[default1]:/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:680: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+[default1]:  warnings.warn(
+[default3]:/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:680: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+[default3]:  warnings.warn(
+[default0]:/projects/u6vs/hnc-organism/training/pretrain.py:301: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+[default0]:Consider using tensor.detach() first. (Triggered internally at /opt/pytorch/pytorch/aten/src/ATen/native/Scalar.cpp:22.)
+[default0]:  "step": step, "loss": round(float(loss.item()), 4),
+[default2]:/usr/local/lib/python3.12/dist-packages/torch/distributed/distributed_c10d.py:860: UserWarning: `_get_pg_default_device` will be deprecated, it only stays for backward-compatiblity reason. If you need to find a device for object collectives, please use `_get_object_coll_device`. If you need to query the device types supported by group, please use `_device_capability(group)`. 
+[default2]:  warnings.warn(
+[default1]:/usr/local/lib/python3.12/dist-packages/torch/distributed/distributed_c10d.py:860: UserWarning: `_get_pg_default_device` will be deprecated, it only stays for backward-compatiblity reason. If you need to find a device for object collectives, please use `_get_object_coll_device`. If you need to query the device types supported by group, please use `_device_capability(group)`. 
+[default1]:  warnings.warn(
+[default1]:/usr/local/lib/python3.12/dist-packages/torch/distributed/distributed_c10d.py:860: UserWarning: `_get_pg_default_device` will be deprecated, it only stays for backward-compatiblity reason. If you need to find a device for object collectives, please use `_get_object_coll_device`. If you need to query the device types supported by group, please use `_device_capability(group)`. 
+[default1]:  warnings.warn(
+[default0]:/usr/local/lib/python3.12/dist-packages/torch/distributed/distributed_c10d.py:860: UserWarning: `_get_pg_default_device` will be deprecated, it only stays for backward-compatiblity reason. If you need to find a device for object collectives, please use `_get_object_coll_device`. If you need to query the device types supported by group, please use `_device_capability(group)`. 
+[default0]:  warnings.warn(
+[default2]:/usr/local/lib/python3.12/dist-packages/torch/distributed/distributed_c10d.py:860: UserWarning: `_get_pg_default_device` will be deprecated, it only stays for backward-compatiblity reason. If you need to find a device for object collectives, please use `_get_object_coll_device`. If you need to query the device types supported by group, please use `_device_capability(group)`. 
+[default2]:  warnings.warn(
+[default0]:/usr/local/lib/python3.12/dist-packages/torch/distributed/distributed_c10d.py:860: UserWarning: `_get_pg_default_device` will be deprecated, it only stays for backward-compatiblity reason. If you need to find a device for object collectives, please use `_get_object_coll_device`. If you need to query the device types supported by group, please use `_device_capability(group)`. 
+[default0]:  warnings.warn(
+[default3]:/usr/local/lib/python3.12/dist-packages/torch/distributed/distributed_c10d.py:860: UserWarning: `_get_pg_default_device` will be deprecated, it only stays for backward-compatiblity reason. If you need to find a device for object collectives, please use `_get_object_coll_device`. If you need to query the device types supported by group, please use `_device_capability(group)`. 
+[default3]:  warnings.warn(
+[default3]:/usr/local/lib/python3.12/dist-packages/torch/distributed/distributed_c10d.py:860: UserWarning: `_get_pg_default_device` will be deprecated, it only stays for backward-compatiblity reason. If you need to find a device for object collectives, please use `_get_object_coll_device`. If you need to query the device types supported by group, please use `_device_capability(group)`. 
+[default3]:  warnings.warn(
+[default0]:[pretrain] vocab_size 152064 -> 65536 to match the tokenizer that produced the shards
+[default1]:[pretrain] vocab_size 152064 -> 65536 to match the tokenizer that produced the shards
+[default2]:[pretrain] vocab_size 152064 -> 65536 to match the tokenizer that produced the shards
+[default3]:[pretrain] vocab_size 152064 -> 65536 to match the tokenizer that produced the shards
+[default0]:[pretrain] shard=full
+[default0]:NCCL version 2.26.5+cuda12.9
+[default0]:[pretrain] resumed ckpt_0000030.pt at step 30
+[default0]:[pretrain] fast-forwarded 120 windows/rank in 0.0s to resume the data stream
+[default0]:{
+[default0]:  "params": 6995383808,
+[default0]:  "params_b": 6.995,
+[default0]:  "world_size": 8,
+[default0]:  "shards": 1355,
+[default0]:  "corpus_tokens": 271000000000,
+[default0]:  "tokens_per_optimizer_step": 262144,
+[default0]:  "planned_steps": 1033782
+[default0]:}
+[default0]:{"step": 40, "loss": 7.4968, "lr": "6.000e-06", "tokens": 6552000, "tokens_per_s": 28052, "eta_h": 2683.4}
+[default0]:{"step": 50, "loss": 7.1526, "lr": "7.500e-06", "tokens": 9172800, "tokens_per_s": 28501, "eta_h": 2641.1}
+[default0]:{"step": 60, "loss": 6.4411, "lr": "9.000e-06", "tokens": 11793600, "tokens_per_s": 28736, "eta_h": 2619.5}
+[default0]:{"step": 70, "loss": 6.1071, "lr": "1.050e-05", "tokens": 14414400, "tokens_per_s": 28813, "eta_h": 2612.5}
+[default0]:{"step": 80, "loss": 5.9174, "lr": "1.200e-05", "tokens": 17035200, "tokens_per_s": 28859, "eta_h": 2608.3}
+[default0]:{"step": 90, "loss": 5.9002, "lr": "1.350e-05", "tokens": 19656000, "tokens_per_s": 28836, "eta_h": 2610.3}
+[default0]:{"step": 100, "loss": 5.5476, "lr": "1.500e-05", "tokens": 22276800, "tokens_per_s": 28846, "eta_h": 2609.4}
+[default0]:{"step": 110, "loss": 5.6645, "lr": "1.650e-05", "tokens": 24897600, "tokens_per_s": 28825, "eta_h": 2611.3}
+[default0]:{"step": 120, "loss": 5.5956, "lr": "1.800e-05", "tokens": 27518400, "tokens_per_s": 28834, "eta_h": 2610.5}
+[default0]:{"step": 130, "loss": 5.2918, "lr": "1.950e-05", "tokens": 30139200, "tokens_per_s": 28830, "eta_h": 2610.7}
+[default0]:{"step": 140, "loss": 5.3028, "lr": "2.100e-05", "tokens": 32760000, "tokens_per_s": 28813, "eta_h": 2612.2}
+[default0]:{"step": 150, "loss": 5.2842, "lr": "2.250e-05", "tokens": 35380800, "tokens_per_s": 28824, "eta_h": 2611.3}
+[default0]:{"step": 160, "loss": 5.0375, "lr": "2.400e-05", "tokens": 38001600, "tokens_per_s": 28818, "eta_h": 2611.8}
+[default0]:{"step": 170, "loss": 4.9099, "lr": "2.550e-05", "tokens": 40622400, "tokens_per_s": 28817, "eta_h": 2611.9}
+[default0]:{"step": 180, "loss": 4.788, "lr": "2.700e-05", "tokens": 43243200, "tokens_per_s": 28818, "eta_h": 2611.8}
+[default0]:{"step": 190, "loss": 4.7561, "lr": "2.850e-05", "tokens": 45864000, "tokens_per_s": 28810, "eta_h": 2612.4}
+[default0]:{"step": 200, "loss": 4.6708, "lr": "3.000e-05", "tokens": 48484800, "tokens_per_s": 28806, "eta_h": 2612.7}
+[default0]:{"step": 210, "loss": 4.804, "lr": "3.150e-05", "tokens": 51105600, "tokens_per_s": 28818, "eta_h": 2611.6}
+[default0]:{"step": 220, "loss": 4.6898, "lr": "3.300e-05", "tokens": 53726400, "tokens_per_s": 28822, "eta_h": 2611.2}
+[default0]:{"step": 230, "loss": 4.6035, "lr": "3.450e-05", "tokens": 56347200, "tokens_per_s": 28823, "eta_h": 2611.1}
+[default0]:{"step": 240, "loss": 4.418, "lr": "3.600e-05", "tokens": 58968000, "tokens_per_s": 28832, "eta_h": 2610.3}
+[default0]:{"step": 250, "loss": 4.481, "lr": "3.750e-05", "tokens": 61588800, "tokens_per_s": 28844, "eta_h": 2609.2}
+[default0]:{"step": 260, "loss": 4.7676, "lr": "3.900e-05", "tokens": 64209600, "tokens_per_s": 28505, "eta_h": 2640.2}
+[default0]:{"step": 270, "loss": 4.4834, "lr": "4.050e-05", "tokens": 66830400, "tokens_per_s": 28533, "eta_h": 2637.6}
+[default0]:{"step": 280, "loss": 4.2053, "lr": "4.200e-05", "tokens": 69451200, "tokens_per_s": 28543, "eta_h": 2636.6}
+[default0]:{"step": 290, "loss": 4.355, "lr": "4.350e-05", "tokens": 72072000, "tokens_per_s": 28567, "eta_h": 2634.4}
+[default0]:{"step": 300, "loss": 4.3628, "lr": "4.500e-05", "tokens": 74692800, "tokens_per_s": 28575, "eta_h": 2633.6}
+[default0]:{"step": 310, "loss": 4.2553, "lr": "4.650e-05", "tokens": 77313600, "tokens_per_s": 28592, "eta_h": 2632.1}
+[default0]:{"step": 320, "loss": 4.2965, "lr": "4.800e-05", "tokens": 79934400, "tokens_per_s": 28598, "eta_h": 2631.4}
+[default0]:{"step": 330, "loss": 4.2965, "lr": "4.950e-05", "tokens": 82555200, "tokens_per_s": 28609, "eta_h": 2630.5}
+[default0]:{"step": 340, "loss": 4.4778, "lr": "5.100e-05", "tokens": 85176000, "tokens_per_s": 28628, "eta_h": 2628.7}
+[default0]:{"step": 350, "loss": 4.1555, "lr": "5.250e-05", "tokens": 87796800, "tokens_per_s": 28643, "eta_h": 2627.2}
+[default0]:{"step": 360, "loss": 4.2049, "lr": "5.400e-05", "tokens": 90417600, "tokens_per_s": 28647, "eta_h": 2626.8}
+[default0]:{"step": 370, "loss": 4.2552, "lr": "5.550e-05", "tokens": 93038400, "tokens_per_s": 28664, "eta_h": 2625.3}
+[default0]:{"step": 380, "loss": 4.1738, "lr": "5.700e-05", "tokens": 95659200, "tokens_per_s": 28675, "eta_h": 2624.2}
+[default0]:{"step": 390, "loss": 4.3392, "lr": "5.850e-05", "tokens": 98280000, "tokens_per_s": 28686, "eta_h": 2623.2}
+[default0]:{"step": 400, "loss": 4.1322, "lr": "6.000e-05", "tokens": 100900800, "tokens_per_s": 28686, "eta_h": 2623.2}
+[default0]:{"step": 410, "loss": 4.3189, "lr": "6.150e-05", "tokens": 103521600, "tokens_per_s": 28691, "eta_h": 2622.7}
+[default0]:{"step": 420, "loss": 4.165, "lr": "6.300e-05", "tokens": 106142400, "tokens_per_s": 28688, "eta_h": 2623.0}
+[default0]:{"step": 430, "loss": 4.0824, "lr": "6.450e-05", "tokens": 108763200, "tokens_per_s": 28684, "eta_h": 2623.3}
+[default0]:{"step": 440, "loss": 4.1789, "lr": "6.600e-05", "tokens": 111384000, "tokens_per_s": 28685, "eta_h": 2623.1}
+[default0]:{"step": 450, "loss": 4.1525, "lr": "6.750e-05", "tokens": 114004800, "tokens_per_s": 28693, "eta_h": 2622.4}
+[default0]:{"step": 460, "loss": 4.3426, "lr": "6.900e-05", "tokens": 116625600, "tokens_per_s": 28704, "eta_h": 2621.4}
+[default0]:{"step": 470, "loss": 4.0347, "lr": "7.050e-05", "tokens": 119246400, "tokens_per_s": 28707, "eta_h": 2621.0}
+[default0]:{"step": 480, "loss": 4.0114, "lr": "7.200e-05", "tokens": 121867200, "tokens_per_s": 28712, "eta_h": 2620.6}
+[default0]:{"step": 490, "loss": 4.0628, "lr": "7.350e-05", "tokens": 124488000, "tokens_per_s": 28715, "eta_h": 2620.3}
+[default0]:{"step": 500, "loss": 4.0934, "lr": "7.500e-05", "tokens": 127108800, "tokens_per_s": 28718, "eta_h": 2620.0}
+[default0]:{"step": 510, "loss": 3.942, "lr": "7.650e-05", "tokens": 129729600, "tokens_per_s": 28558, "eta_h": 2634.6}
+[default0]:{"step": 520, "loss": 3.9587, "lr": "7.800e-05", "tokens": 132350400, "tokens_per_s": 28559, "eta_h": 2634.5}
+[default0]:{"step": 530, "loss": 3.9533, "lr": "7.950e-05", "tokens": 134971200, "tokens_per_s": 28561, "eta_h": 2634.3}
+[default0]:{"step": 540, "loss": 4.034, "lr": "8.100e-05", "tokens": 137592000, "tokens_per_s": 28574, "eta_h": 2633.1}
+[default0]:{"step": 550, "loss": 3.9589, "lr": "8.250e-05", "tokens": 140212800, "tokens_per_s": 28585, "eta_h": 2632.1}
+[default0]:{"step": 560, "loss": 3.8986, "lr": "8.400e-05", "tokens": 142833600, "tokens_per_s": 28593, "eta_h": 2631.3}
+[default0]:{"step": 570, "loss": 3.8519, "lr": "8.550e-05", "tokens": 145454400, "tokens_per_s": 28593, "eta_h": 2631.3}
+[default0]:{"step": 580, "loss": 3.856, "lr": "8.700e-05", "tokens": 148075200, "tokens_per_s": 28602, "eta_h": 2630.5}
+[default0]:{"step": 590, "loss": 3.9298, "lr": "8.850e-05", "tokens": 150696000, "tokens_per_s": 28602, "eta_h": 2630.4}
+[default0]:{"step": 600, "loss": 3.8864, "lr": "9.000e-05", "tokens": 153316800, "tokens_per_s": 28605, "eta_h": 2630.1}
+[default0]:{"step": 610, "loss": 3.9952, "lr": "9.150e-05", "tokens": 155937600, "tokens_per_s": 28607, "eta_h": 2629.9}
+[default0]:{"step": 620, "loss": 3.8602, "lr": "9.300e-05", "tokens": 158558400, "tokens_per_s": 28611, "eta_h": 2629.5}
+[default0]:{"step": 630, "loss": 3.8043, "lr": "9.450e-05", "tokens": 161179200, "tokens_per_s": 28612, "eta_h": 2629.4}
+[default0]:{"step": 640, "loss": 3.944, "lr": "9.600e-05", "tokens": 163800000, "tokens_per_s": 28618, "eta_h": 2628.8}
+[default0]:{"step": 650, "loss": 3.8595, "lr": "9.750e-05", "tokens": 166420800, "tokens_per_s": 28627, "eta_h": 2628.0}
+[default0]:{"step": 660, "loss": 3.7067, "lr": "9.900e-05", "tokens": 169041600, "tokens_per_s": 28637, "eta_h": 2627.0}
+[default0]:{"step": 670, "loss": 3.8015, "lr": "1.005e-04", "tokens": 171662400, "tokens_per_s": 28645, "eta_h": 2626.2}
+[default0]:{"step": 680, "loss": 3.7166, "lr": "1.020e-04", "tokens": 174283200, "tokens_per_s": 28656, "eta_h": 2625.3}
+[default0]:{"step": 690, "loss": 3.6029, "lr": "1.035e-04", "tokens": 176904000, "tokens_per_s": 28666, "eta_h": 2624.2}
+[default0]:{"step": 700, "loss": 3.8583, "lr": "1.050e-04", "tokens": 179524800, "tokens_per_s": 28673, "eta_h": 2623.6}
+[default0]:{"step": 710, "loss": 3.8096, "lr": "1.065e-04", "tokens": 182145600, "tokens_per_s": 28685, "eta_h": 2622.5}
+[default0]:{"step": 720, "loss": 3.6762, "lr": "1.080e-04", "tokens": 184766400, "tokens_per_s": 28695, "eta_h": 2621.6}
+[default0]:{"step": 730, "loss": 3.8139, "lr": "1.095e-04", "tokens": 187387200, "tokens_per_s": 28703, "eta_h": 2620.8}
+[default0]:{"step": 740, "loss": 3.7373, "lr": "1.110e-04", "tokens": 190008000, "tokens_per_s": 28711, "eta_h": 2620.0}
+[default0]:{"step": 750, "loss": 3.6515, "lr": "1.125e-04", "tokens": 192628800, "tokens_per_s": 28718, "eta_h": 2619.3}
+[default0]:{"step": 760, "loss": 3.5387, "lr": "1.140e-04", "tokens": 195249600, "tokens_per_s": 28621, "eta_h": 2628.2}
+[default0]:{"step": 770, "loss": 3.7398, "lr": "1.155e-04", "tokens": 197870400, "tokens_per_s": 28628, "eta_h": 2627.6}
+[default0]:{"step": 780, "loss": 3.5016, "lr": "1.170e-04", "tokens": 200491200, "tokens_per_s": 28637, "eta_h": 2626.7}
+[default0]:{"step": 790, "loss": 3.4767, "lr": "1.185e-04", "tokens": 203112000, "tokens_per_s": 28640, "eta_h": 2626.4}
+[default0]:{"step": 800, "loss": 3.5329, "lr": "1.200e-04", "tokens": 205732800, "tokens_per_s": 28645, "eta_h": 2625.9}
+[default0]:{"step": 810, "loss": 3.6161, "lr": "1.215e-04", "tokens": 208353600, "tokens_per_s": 28647, "eta_h": 2625.7}
+[default0]:{"step": 820, "loss": 3.6039, "lr": "1.230e-04", "tokens": 210974400, "tokens_per_s": 28648, "eta_h": 2625.6}
+[default0]:{"step": 830, "loss": 3.4455, "lr": "1.245e-04", "tokens": 213595200, "tokens_per_s": 28649, "eta_h": 2625.5}
+[default0]:{"step": 840, "loss": 3.5747, "lr": "1.260e-04", "tokens": 216216000, "tokens_per_s": 28654, "eta_h": 2625.0}
+[default0]:{"step": 850, "loss": 3.5712, "lr": "1.275e-04", "tokens": 218836800, "tokens_per_s": 28656, "eta_h": 2624.8}
+[default0]:{"step": 860, "loss": 3.5833, "lr": "1.290e-04", "tokens": 221457600, "tokens_per_s": 28659, "eta_h": 2624.4}
+[default0]:{"step": 870, "loss": 3.6379, "lr": "1.305e-04", "tokens": 224078400, "tokens_per_s": 28657, "eta_h": 2624.6}
+[default0]:{"step": 880, "loss": 3.5347, "lr": "1.320e-04", "tokens": 226699200, "tokens_per_s": 28663, "eta_h": 2624.1}
+[default0]:{"step": 890, "loss": 3.643, "lr": "1.335e-04", "tokens": 229320000, "tokens_per_s": 28665, "eta_h": 2623.9}
+[default0]:{"step": 900, "loss": 3.5451, "lr": "1.350e-04", "tokens": 231940800, "tokens_per_s": 28670, "eta_h": 2623.4}
+[default0]:{"step": 910, "loss": 3.3702, "lr": "1.365e-04", "tokens": 234561600, "tokens_per_s": 28675, "eta_h": 2622.9}
+[default0]:{"step": 920, "loss": 3.3875, "lr": "1.380e-04", "tokens": 237182400, "tokens_per_s": 28677, "eta_h": 2622.7}
+[default0]:{"step": 930, "loss": 3.5471, "lr": "1.395e-04", "tokens": 239803200, "tokens_per_s": 28675, "eta_h": 2622.8}
+[default0]:{"step": 940, "loss": 3.6319, "lr": "1.410e-04", "tokens": 242424000, "tokens_per_s": 28678, "eta_h": 2622.6}
+[default0]:{"step": 950, "loss": 3.482, "lr": "1.425e-04", "tokens": 245044800, "tokens_per_s": 28677, "eta_h": 2622.6}
+[default0]:{"step": 960, "loss": 3.4134, "lr": "1.440e-04", "tokens": 247665600, "tokens_per_s": 28679, "eta_h": 2622.4}
+[default0]:{"step": 970, "loss": 3.4385, "lr": "1.455e-04", "tokens": 250286400, "tokens_per_s": 28682, "eta_h": 2622.1}
+[default0]:{"step": 980, "loss": 3.3594, "lr": "1.470e-04", "tokens": 252907200, "tokens_per_s": 28683, "eta_h": 2621.9}
+[default0]:{"step": 990, "loss": 3.4281, "lr": "1.485e-04", "tokens": 255528000, "tokens_per_s": 28686, "eta_h": 2621.7}
+[default0]:{"step": 1000, "loss": 3.3468, "lr": "1.500e-04", "tokens": 258148800, "tokens_per_s": 28688, "eta_h": 2621.5}
+[default0]:{"step": 1010, "loss": 3.4355, "lr": "1.515e-04", "tokens": 260769600, "tokens_per_s": 28611, "eta_h": 2628.5}
+[default0]:{"step": 1020, "loss": 3.4921, "lr": "1.530e-04", "tokens": 263390400, "tokens_per_s": 28614, "eta_h": 2628.2}
+[default0]:{"step": 1030, "loss": 3.3924, "lr": "1.545e-04", "tokens": 266011200, "tokens_per_s": 28617, "eta_h": 2627.9}
+[default0]:{"step": 1040, "loss": 3.2433, "lr": "1.560e-04", "tokens": 268632000, "tokens_per_s": 28619, "eta_h": 2627.7}
+[default0]:{"step": 1050, "loss": 3.3864, "lr": "1.575e-04", "tokens": 271252800, "tokens_per_s": 28622, "eta_h": 2627.4}
+[default0]:{"step": 1060, "loss": 3.3336, "lr": "1.590e-04", "tokens": 273873600, "tokens_per_s": 28625, "eta_h": 2627.1}
+[default0]:{"step": 1070, "loss": 3.3612, "lr": "1.605e-04", "tokens": 276494400, "tokens_per_s": 28630, "eta_h": 2626.6}
+[default0]:{"step": 1080, "loss": 3.2459, "lr": "1.620e-04", "tokens": 279115200, "tokens_per_s": 28630, "eta_h": 2626.6}
+[default0]:{"step": 1090, "loss": 3.3143, "lr": "1.635e-04", "tokens": 281736000, "tokens_per_s": 28631, "eta_h": 2626.5}
+[default0]:{"step": 1100, "loss": 3.1598, "lr": "1.650e-04", "tokens": 284356800, "tokens_per_s": 28632, "eta_h": 2626.3}
+[default0]:{"step": 1110, "loss": 3.31, "lr": "1.665e-04", "tokens": 286977600, "tokens_per_s": 28637, "eta_h": 2625.8}
+[default0]:{"step": 1120, "loss": 3.1563, "lr": "1.680e-04", "tokens": 289598400, "tokens_per_s": 28643, "eta_h": 2625.3}
+[default0]:{"step": 1130, "loss": 3.1551, "lr": "1.695e-04", "tokens": 292219200, "tokens_per_s": 28647, "eta_h": 2624.9}
+[default0]:{"step": 1140, "loss": 3.0689, "lr": "1.710e-04", "tokens": 294840000, "tokens_per_s": 28649, "eta_h": 2624.7}
+[default0]:{"step": 1150, "loss": 3.0741, "lr": "1.725e-04", "tokens": 297460800, "tokens_per_s": 28652, "eta_h": 2624.4}
+[default0]:{"step": 1160, "loss": 3.1586, "lr": "1.740e-04", "tokens": 300081600, "tokens_per_s": 28653, "eta_h": 2624.2}
+[default0]:{"step": 1170, "loss": 3.3322, "lr": "1.755e-04", "tokens": 302702400, "tokens_per_s": 28656, "eta_h": 2624.0}
+[default0]:{"step": 1180, "loss": 3.0933, "lr": "1.770e-04", "tokens": 305323200, "tokens_per_s": 28660, "eta_h": 2623.5}
+[default0]:{"step": 1190, "loss": 3.1821, "lr": "1.785e-04", "tokens": 307944000, "tokens_per_s": 28660, "eta_h": 2623.5}
+[default0]:{"step": 1200, "loss": 3.0639, "lr": "1.800e-04", "tokens": 310564800, "tokens_per_s": 28666, "eta_h": 2622.9}
+[default0]:{"step": 1210, "loss": 3.2544, "lr": "1.815e-04", "tokens": 313185600, "tokens_per_s": 28668, "eta_h": 2622.8}
+[default0]:{"step": 1220, "loss": 3.0819, "lr": "1.830e-04", "tokens": 315806400, "tokens_per_s": 28668, "eta_h": 2622.7}
+[default0]:{"step": 1230, "loss": 3.1639, "lr": "1.845e-04", "tokens": 318427200, "tokens_per_s": 28670, "eta_h": 2622.5}
+[default0]:{"step": 1240, "loss": 3.2311, "lr": "1.860e-04", "tokens": 321048000, "tokens_per_s": 28671, "eta_h": 2622.4}
+[default0]:{"step": 1250, "loss": 3.18, "lr": "1.875e-04", "tokens": 323668800, "tokens_per_s": 28673, "eta_h": 2622.2}
+[default0]:{"step": 1260, "loss": 3.0562, "lr": "1.890e-04", "tokens": 326289600, "tokens_per_s": 28615, "eta_h": 2627.5}
+[default0]:{"step": 1270, "loss": 2.9266, "lr": "1.905e-04", "tokens": 328910400, "tokens_per_s": 28618, "eta_h": 2627.2}
+[default0]:{"step": 1280, "loss": 3.1276, "lr": "1.920e-04", "tokens": 331531200, "tokens_per_s": 28618, "eta_h": 2627.2}
+[default0]:{"step": 1290, "loss": 3.0084, "lr": "1.935e-04", "tokens": 334152000, "tokens_per_s": 28620, "eta_h": 2627.0}
+[default0]:{"step": 1300, "loss": 3.0658, "lr": "1.950e-04", "tokens": 336772800, "tokens_per_s": 28623, "eta_h": 2626.7}
+[default0]:{"step": 1310, "loss": 3.1364, "lr": "1.965e-04", "tokens": 339393600, "tokens_per_s": 28623, "eta_h": 2626.6}
+[default0]:{"step": 1320, "loss": 2.9871, "lr": "1.980e-04", "tokens": 342014400, "tokens_per_s": 28625, "eta_h": 2626.4}
+[default0]:{"step": 1330, "loss": 2.9646, "lr": "1.995e-04", "tokens": 344635200, "tokens_per_s": 28627, "eta_h": 2626.2}
+[default0]:{"step": 1340, "loss": 3.0534, "lr": "2.010e-04", "tokens": 347256000, "tokens_per_s": 28631, "eta_h": 2625.8}
+[default0]:{"step": 1350, "loss": 3.063, "lr": "2.025e-04", "tokens": 349876800, "tokens_per_s": 28633, "eta_h": 2625.6}
+[default0]:{"step": 1360, "loss": 3.0539, "lr": "2.040e-04", "tokens": 352497600, "tokens_per_s": 28635, "eta_h": 2625.4}
+[default0]:{"step": 1370, "loss": 3.1846, "lr": "2.055e-04", "tokens": 355118400, "tokens_per_s": 28637, "eta_h": 2625.2}
+[default0]:{"step": 1380, "loss": 2.9201, "lr": "2.070e-04", "tokens": 357739200, "tokens_per_s": 28638, "eta_h": 2625.0}
+[default0]:{"step": 1390, "loss": 2.9062, "lr": "2.085e-04", "tokens": 360360000, "tokens_per_s": 28640, "eta_h": 2624.8}
+[default0]:{"step": 1400, "loss": 2.8567, "lr": "2.100e-04", "tokens": 362980800, "tokens_per_s": 28642, "eta_h": 2624.7}
+[default0]:{"step": 1410, "loss": 2.9254, "lr": "2.115e-04", "tokens": 365601600, "tokens_per_s": 28647, "eta_h": 2624.2}
+[default0]:{"step": 1420, "loss": 3.1109, "lr": "2.130e-04", "tokens": 368222400, "tokens_per_s": 28650, "eta_h": 2623.9}
+[default0]:{"step": 1430, "loss": 2.9326, "lr": "2.145e-04", "tokens": 370843200, "tokens_per_s": 28651, "eta_h": 2623.8}
+[default0]:{"step": 1440, "loss": 2.9915, "lr": "2.160e-04", "tokens": 373464000, "tokens_per_s": 28652, "eta_h": 2623.6}
+[default0]:{"step": 1450, "loss": 2.7703, "lr": "2.175e-04", "tokens": 376084800, "tokens_per_s": 28653, "eta_h": 2623.6}
+[default0]:{"step": 1460, "loss": 3.0322, "lr": "2.190e-04", "tokens": 378705600, "tokens_per_s": 28654, "eta_h": 2623.4}
+[default0]:{"step": 1470, "loss": 3.0156, "lr": "2.205e-04", "tokens": 381326400, "tokens_per_s": 28658, "eta_h": 2623.0}
+[default0]:{"step": 1480, "loss": 2.8378, "lr": "2.220e-04", "tokens": 383947200, "tokens_per_s": 28660, "eta_h": 2622.9}
+[default0]:{"step": 1490, "loss": 2.8656, "lr": "2.235e-04", "tokens": 386568000, "tokens_per_s": 28659, "eta_h": 2622.9}
+[default0]:{"step": 1500, "loss": 2.6953, "lr": "2.250e-04", "tokens": 389188800, "tokens_per_s": 28662, "eta_h": 2622.6}
+[default0]:{"step": 1510, "loss": 2.8299, "lr": "2.265e-04", "tokens": 391809600, "tokens_per_s": 28613, "eta_h": 2627.0}
+[default0]:{"step": 1520, "loss": 2.8519, "lr": "2.280e-04", "tokens": 394430400, "tokens_per_s": 28614, "eta_h": 2626.9}
+[default0]:{"step": 1530, "loss": 2.7127, "lr": "2.295e-04", "tokens": 397051200, "tokens_per_s": 28619, "eta_h": 2626.4}
+[default0]:{"step": 1540, "loss": 2.8778, "lr": "2.310e-04", "tokens": 399672000, "tokens_per_s": 28621, "eta_h": 2626.3}
+[default0]:{"step": 1550, "loss": 3.1096, "lr": "2.325e-04", "tokens": 402292800, "tokens_per_s": 28624, "eta_h": 2625.9}
+[default0]:{"step": 1560, "loss": 3.2203, "lr": "2.340e-04", "tokens": 404913600, "tokens_per_s": 28627, "eta_h": 2625.6}
+[default0]:{"step": 1570, "loss": 3.082, "lr": "2.355e-04", "tokens": 407534400, "tokens_per_s": 28627, "eta_h": 2625.6}
+[default0]:{"step": 1580, "loss": 3.0561, "lr": "2.370e-04", "tokens": 410155200, "tokens_per_s": 28629, "eta_h": 2625.4}
+[default0]:{"step": 1590, "loss": 3.0755, "lr": "2.385e-04", "tokens": 412776000, "tokens_per_s": 28632, "eta_h": 2625.1}
+[default0]:{"step": 1600, "loss": 3.1446, "lr": "2.400e-04", "tokens": 415396800, "tokens_per_s": 28635, "eta_h": 2624.8}
+[default0]:{"step": 1610, "loss": 2.9422, "lr": "2.415e-04", "tokens": 418017600, "tokens_per_s": 28637, "eta_h": 2624.6}
+[default0]:{"step": 1620, "loss": 2.9482, "lr": "2.430e-04", "tokens": 420638400, "tokens_per_s": 28637, "eta_h": 2624.5}
+[default0]:{"step": 1630, "loss": 3.0505, "lr": "2.445e-04", "tokens": 423259200, "tokens_per_s": 28639, "eta_h": 2624.3}
+[default0]:{"step": 1640, "loss": 3.1123, "lr": "2.460e-04", "tokens": 425880000, "tokens_per_s": 28640, "eta_h": 2624.2}
+[default0]:{"step": 1650, "loss": 3.0635, "lr": "2.475e-04", "tokens": 428500800, "tokens_per_s": 28645, "eta_h": 2623.8}
+[default0]:{"step": 1660, "loss": 3.0517, "lr": "2.490e-04", "tokens": 431121600, "tokens_per_s": 28643, "eta_h": 2623.9}
+[default0]:{"step": 1670, "loss": 3.0747, "lr": "2.505e-04", "tokens": 433742400, "tokens_per_s": 28645, "eta_h": 2623.7}
+[default0]:{"step": 1680, "loss": 3.1321, "lr": "2.520e-04", "tokens": 436363200, "tokens_per_s": 28648, "eta_h": 2623.4}
+[default0]:{"step": 1690, "loss": 3.0374, "lr": "2.535e-04", "tokens": 438984000, "tokens_per_s": 28649, "eta_h": 2623.3}
+[default0]:{"step": 1700, "loss": 2.9475, "lr": "2.550e-04", "tokens": 441604800, "tokens_per_s": 28649, "eta_h": 2623.3}
+[default0]:{"step": 1710, "loss": 3.0589, "lr": "2.565e-04", "tokens": 444225600, "tokens_per_s": 28650, "eta_h": 2623.2}
+[default0]:{"step": 1720, "loss": 2.9458, "lr": "2.580e-04", "tokens": 446846400, "tokens_per_s": 28651, "eta_h": 2623.0}
+[default0]:{"step": 1730, "loss": 2.9891, "lr": "2.595e-04", "tokens": 449467200, "tokens_per_s": 28653, "eta_h": 2622.8}
+[default0]:{"step": 1740, "loss": 3.0709, "lr": "2.610e-04", "tokens": 452088000, "tokens_per_s": 28655, "eta_h": 2622.6}
+[default0]:{"step": 1750, "loss": 2.882, "lr": "2.625e-04", "tokens": 454708800, "tokens_per_s": 28657, "eta_h": 2622.4}
+[default0]:{"step": 1760, "loss": 2.7912, "lr": "2.640e-04", "tokens": 457329600, "tokens_per_s": 28617, "eta_h": 2626.1}
+[default0]:{"step": 1770, "loss": 3.1354, "lr": "2.655e-04", "tokens": 459950400, "tokens_per_s": 28617, "eta_h": 2626.0}
+[default0]:{"step": 1780, "loss": 3.0485, "lr": "2.670e-04", "tokens": 462571200, "tokens_per_s": 28619, "eta_h": 2625.8}
+[default0]:{"step": 1790, "loss": 2.8691, "lr": "2.685e-04", "tokens": 465192000, "tokens_per_s": 28622, "eta_h": 2625.5}
+[default0]:{"step": 1800, "loss": 2.8677, "lr": "2.700e-04", "tokens": 467812800, "tokens_per_s": 28624, "eta_h": 2625.3}
+[default0]:{"step": 1810, "loss": 3.0224, "lr": "2.715e-04", "tokens": 470433600, "tokens_per_s": 28626, "eta_h": 2625.1}
+[default0]:{"step": 1820, "loss": 2.8949, "lr": "2.730e-04", "tokens": 473054400, "tokens_per_s": 28628, "eta_h": 2624.9}
+[default0]:{"step": 1830, "loss": 2.8796, "lr": "2.745e-04", "tokens": 475675200, "tokens_per_s": 28629, "eta_h": 2624.8}
+[default0]:{"step": 1840, "loss": 3.0452, "lr": "2.760e-04", "tokens": 478296000, "tokens_per_s": 28631, "eta_h": 2624.6}
+[default0]:{"step": 1850, "loss": 3.0222, "lr": "2.775e-04", "tokens": 480916800, "tokens_per_s": 28633, "eta_h": 2624.3}
+[default0]:{"step": 1860, "loss": 2.8812, "lr": "2.790e-04", "tokens": 483537600, "tokens_per_s": 28636, "eta_h": 2624.0}
+[default0]:{"step": 1870, "loss": 2.9154, "lr": "2.805e-04", "tokens": 486158400, "tokens_per_s": 28640, "eta_h": 2623.7}
+[default0]:{"step": 1880, "loss": 2.9261, "lr": "2.820e-04", "tokens": 488779200, "tokens_per_s": 28641, "eta_h": 2623.6}
+[default0]:{"step": 1890, "loss": 2.8845, "lr": "2.835e-04", "tokens": 491400000, "tokens_per_s": 28643, "eta_h": 2623.4}
+[default0]:{"step": 1900, "loss": 2.8901, "lr": "2.850e-04", "tokens": 494020800, "tokens_per_s": 28644, "eta_h": 2623.2}
+[default0]:{"step": 1910, "loss": 2.8471, "lr": "2.865e-04", "tokens": 496641600, "tokens_per_s": 28645, "eta_h": 2623.1}
+[default0]:{"step": 1920, "loss": 3.1016, "lr": "2.880e-04", "tokens": 499262400, "tokens_per_s": 28647, "eta_h": 2622.9}
+[default0]:{"step": 1930, "loss": 2.9248, "lr": "2.895e-04", "tokens": 501883200, "tokens_per_s": 28646, "eta_h": 2622.9}
+[default0]:{"step": 1940, "loss": 2.7485, "lr": "2.910e-04", "tokens": 504504000, "tokens_per_s": 28648, "eta_h": 2622.7}
+[default0]:{"step": 1950, "loss": 2.8504, "lr": "2.925e-04", "tokens": 507124800, "tokens_per_s": 28650, "eta_h": 2622.5}
+[default0]:{"step": 1960, "loss": 2.8485, "lr": "2.940e-04", "tokens": 509745600, "tokens_per_s": 28650, "eta_h": 2622.5}
+[default0]:{"step": 1970, "loss": 2.9429, "lr": "2.955e-04", "tokens": 512366400, "tokens_per_s": 28653, "eta_h": 2622.2}
+[default0]:{"step": 1980, "loss": 3.0014, "lr": "2.970e-04", "tokens": 514987200, "tokens_per_s": 28657, "eta_h": 2621.8}
+[default0]:{"step": 1990, "loss": 2.9401, "lr": "2.985e-04", "tokens": 517608000, "tokens_per_s": 28659, "eta_h": 2621.6}
+[default0]:{"step": 2000, "loss": 2.7963, "lr": "3.000e-04", "tokens": 520228800, "tokens_per_s": 28663, "eta_h": 2621.2}
+[default0]:{"step": 2010, "loss": 2.7884, "lr": "3.000e-04", "tokens": 522849600, "tokens_per_s": 28627, "eta_h": 2624.5}
+[default0]:{"step": 2020, "loss": 2.8919, "lr": "3.000e-04", "tokens": 525470400, "tokens_per_s": 28630, "eta_h": 2624.2}
+[default0]:{"step": 2030, "loss": 2.9212, "lr": "3.000e-04", "tokens": 528091200, "tokens_per_s": 28632, "eta_h": 2624.0}
+[default0]:{"step": 2040, "loss": 2.952, "lr": "3.000e-04", "tokens": 530712000, "tokens_per_s": 28634, "eta_h": 2623.7}
+[default0]:{"step": 2050, "loss": 2.9444, "lr": "3.000e-04", "tokens": 533332800, "tokens_per_s": 28634, "eta_h": 2623.8}
+[default0]:{"step": 2060, "loss": 3.0206, "lr": "3.000e-04", "tokens": 535953600, "tokens_per_s": 28634, "eta_h": 2623.8}
+[default0]:{"step": 2070, "loss": 2.801, "lr": "3.000e-04", "tokens": 538574400, "tokens_per_s": 28633, "eta_h": 2623.8}
+[default0]:{"step": 2080, "loss": 2.8977, "lr": "3.000e-04", "tokens": 541195200, "tokens_per_s": 28634, "eta_h": 2623.7}
+[default0]:{"step": 2090, "loss": 2.8315, "lr": "3.000e-04", "tokens": 543816000, "tokens_per_s": 28635, "eta_h": 2623.5}
+[default0]:{"step": 2100, "loss": 2.7188, "lr": "3.000e-04", "tokens": 546436800, "tokens_per_s": 28635, "eta_h": 2623.6}
+[default0]:{"step": 2110, "loss": 2.8821, "lr": "3.000e-04", "tokens": 549057600, "tokens_per_s": 28634, "eta_h": 2623.6}
+[default0]:{"step": 2120, "loss": 2.9912, "lr": "3.000e-04", "tokens": 551678400, "tokens_per_s": 28635, "eta_h": 2623.5}
+[default0]:{"step": 2130, "loss": 2.8359, "lr": "3.000e-04", "tokens": 554299200, "tokens_per_s": 28634, "eta_h": 2623.5}
+[default0]:{"step": 2140, "loss": 2.8883, "lr": "3.000e-04", "tokens": 556920000, "tokens_per_s": 28635, "eta_h": 2623.4}
+[default0]:{"step": 2150, "loss": 2.7723, "lr": "3.000e-04", "tokens": 559540800, "tokens_per_s": 28638, "eta_h": 2623.1}
+[default0]:{"step": 2160, "loss": 2.621, "lr": "3.000e-04", "tokens": 562161600, "tokens_per_s": 28641, "eta_h": 2622.8}
+[default0]:{"step": 2170, "loss": 2.9045, "lr": "3.000e-04", "tokens": 564782400, "tokens_per_s": 28642, "eta_h": 2622.7}
+[default0]:{"step": 2180, "loss": 2.7131, "lr": "3.000e-04", "tokens": 567403200, "tokens_per_s": 28641, "eta_h": 2622.7}
+[default0]:{"step": 2190, "loss": 2.855, "lr": "3.000e-04", "tokens": 570024000, "tokens_per_s": 28642, "eta_h": 2622.7}
+[default0]:{"step": 2200, "loss": 2.8569, "lr": "3.000e-04", "tokens": 572644800, "tokens_per_s": 28642, "eta_h": 2622.7}
+[default0]:{"step": 2210, "loss": 2.8692, "lr": "3.000e-04", "tokens": 575265600, "tokens_per_s": 28641, "eta_h": 2622.7}
+[default0]:{"step": 2220, "loss": 2.7757, "lr": "3.000e-04", "tokens": 577886400, "tokens_per_s": 28642, "eta_h": 2622.6}
+[default0]:{"step": 2230, "loss": 2.8162, "lr": "3.000e-04", "tokens": 580507200, "tokens_per_s": 28643, "eta_h": 2622.5}
+[default0]:{"step": 2240, "loss": 2.7302, "lr": "3.000e-04", "tokens": 583128000, "tokens_per_s": 28642, "eta_h": 2622.5}
+[default0]:{"step": 2250, "loss": 2.7634, "lr": "3.000e-04", "tokens": 585748800, "tokens_per_s": 28642, "eta_h": 2622.5}
+[default0]:{"step": 2260, "loss": 2.921, "lr": "3.000e-04", "tokens": 588369600, "tokens_per_s": 28607, "eta_h": 2625.7}
+[default0]:{"step": 2270, "loss": 2.7599, "lr": "3.000e-04", "tokens": 590990400, "tokens_per_s": 28607, "eta_h": 2625.7}
+[default0]:{"step": 2280, "loss": 2.7633, "lr": "3.000e-04", "tokens": 593611200, "tokens_per_s": 28607, "eta_h": 2625.6}
+[default0]:{"step": 2290, "loss": 2.7533, "lr": "3.000e-04", "tokens": 596232000, "tokens_per_s": 28607, "eta_h": 2625.6}
+[default0]:{"step": 2300, "loss": 2.6797, "lr": "3.000e-04", "tokens": 598852800, "tokens_per_s": 28608, "eta_h": 2625.5}
+[default0]:{"step": 2310, "loss": 2.6762, "lr": "3.000e-04", "tokens": 601473600, "tokens_per_s": 28609, "eta_h": 2625.4}
+[default0]:{"step": 2320, "loss": 2.6768, "lr": "3.000e-04", "tokens": 604094400, "tokens_per_s": 28611, "eta_h": 2625.1}
+[default0]:{"step": 2330, "loss": 2.7293, "lr": "3.000e-04", "tokens": 606715200, "tokens_per_s": 28613, "eta_h": 2625.0}
+[default0]:{"step": 2340, "loss": 2.7788, "lr": "3.000e-04", "tokens": 609336000, "tokens_per_s": 28613, "eta_h": 2624.9}
+[default0]:{"step": 2350, "loss": 2.6443, "lr": "3.000e-04", "tokens": 611956800, "tokens_per_s": 28615, "eta_h": 2624.7}
+[default0]:{"step": 2360, "loss": 2.8564, "lr": "3.000e-04", "tokens": 614577600, "tokens_per_s": 28615, "eta_h": 2624.7}
+[default0]:{"step": 2370, "loss": 2.5521, "lr": "3.000e-04", "tokens": 617198400, "tokens_per_s": 28618, "eta_h": 2624.4}
+[default0]:{"step": 2380, "loss": 2.5903, "lr": "3.000e-04", "tokens": 619819200, "tokens_per_s": 28618, "eta_h": 2624.3}
+[default0]:{"step": 2390, "loss": 2.5091, "lr": "3.000e-04", "tokens": 622440000, "tokens_per_s": 28619, "eta_h": 2624.2}
+[default0]:{"step": 2400, "loss": 2.5238, "lr": "3.000e-04", "tokens": 625060800, "tokens_per_s": 28621, "eta_h": 2624.1}
+[default0]:{"step": 2410, "loss": 2.6812, "lr": "3.000e-04", "tokens": 627681600, "tokens_per_s": 28621, "eta_h": 2624.0}
+[default0]:{"step": 2420, "loss": 2.7215, "lr": "3.000e-04", "tokens": 630302400, "tokens_per_s": 28623, "eta_h": 2623.8}
+[default0]:{"step": 2430, "loss": 2.6416, "lr": "3.000e-04", "tokens": 632923200, "tokens_per_s": 28625, "eta_h": 2623.7}
+[default0]:{"step": 2440, "loss": 2.6748, "lr": "3.000e-04", "tokens": 635544000, "tokens_per_s": 28626, "eta_h": 2623.5}
+[default0]:{"step": 2450, "loss": 2.6522, "lr": "3.000e-04", "tokens": 638164800, "tokens_per_s": 28626, "eta_h": 2623.4}
+[default0]:{"step": 2460, "loss": 2.6234, "lr": "3.000e-04", "tokens": 640785600, "tokens_per_s": 28626, "eta_h": 2623.4}
+[default0]:{"step": 2470, "loss": 2.6439, "lr": "3.000e-04", "tokens": 643406400, "tokens_per_s": 28627, "eta_h": 2623.3}
+[default0]:{"step": 2480, "loss": 2.6083, "lr": "3.000e-04", "tokens": 646027200, "tokens_per_s": 28628, "eta_h": 2623.2}
+[default0]:{"step": 2490, "loss": 2.592, "lr": "3.000e-04", "tokens": 648648000, "tokens_per_s": 28629, "eta_h": 2623.1}
+[default0]:{"step": 2500, "loss": 2.5284, "lr": "3.000e-04", "tokens": 651268800, "tokens_per_s": 28630, "eta_h": 2623.0}
+[default0]:{"step": 2510, "loss": 2.7095, "lr": "3.000e-04", "tokens": 653889600, "tokens_per_s": 28600, "eta_h": 2625.7}
+[default0]:{"step": 2520, "loss": 2.5555, "lr": "3.000e-04", "tokens": 656510400, "tokens_per_s": 28602, "eta_h": 2625.5}
+[default0]:{"step": 2530, "loss": 2.5232, "lr": "3.000e-04", "tokens": 659131200, "tokens_per_s": 28602, "eta_h": 2625.4}
+[default0]:{"step": 2540, "loss": 2.5853, "lr": "3.000e-04", "tokens": 661752000, "tokens_per_s": 28604, "eta_h": 2625.3}
+[default0]:{"step": 2550, "loss": 2.6371, "lr": "3.000e-04", "tokens": 664372800, "tokens_per_s": 28605, "eta_h": 2625.1}
+[default0]:{"step": 2560, "loss": 2.4769, "lr": "3.000e-04", "tokens": 666993600, "tokens_per_s": 28606, "eta_h": 2625.0}
+[default0]:{"step": 2570, "loss": 2.5029, "lr": "3.000e-04", "tokens": 669614400, "tokens_per_s": 28608, "eta_h": 2624.8}
+[default0]:{"step": 2580, "loss": 2.6442, "lr": "3.000e-04", "tokens": 672235200, "tokens_per_s": 28610, "eta_h": 2624.6}
+[default0]:{"step": 2590, "loss": 2.504, "lr": "3.000e-04", "tokens": 674856000, "tokens_per_s": 28611, "eta_h": 2624.5}
+[default0]:{"step": 2600, "loss": 2.5707, "lr": "3.000e-04", "tokens": 677476800, "tokens_per_s": 28612, "eta_h": 2624.4}
+[default0]:{"step": 2610, "loss": 2.4618, "lr": "3.000e-04", "tokens": 680097600, "tokens_per_s": 28613, "eta_h": 2624.3}
+[default0]:{"step": 2620, "loss": 2.6027, "lr": "3.000e-04", "tokens": 682718400, "tokens_per_s": 28613, "eta_h": 2624.2}
+[default0]:{"step": 2630, "loss": 2.4941, "lr": "3.000e-04", "tokens": 685339200, "tokens_per_s": 28615, "eta_h": 2624.0}
+[default0]:{"step": 2640, "loss": 2.5662, "lr": "3.000e-04", "tokens": 687960000, "tokens_per_s": 28617, "eta_h": 2623.8}
+[default0]:{"step": 2650, "loss": 2.5633, "lr": "3.000e-04", "tokens": 690580800, "tokens_per_s": 28619, "eta_h": 2623.6}
+[default0]:{"step": 2660, "loss": 2.5799, "lr": "3.000e-04", "tokens": 693201600, "tokens_per_s": 28620, "eta_h": 2623.4}
+[default0]:{"step": 2670, "loss": 2.3897, "lr": "3.000e-04", "tokens": 695822400, "tokens_per_s": 28622, "eta_h": 2623.3}
+[default0]:{"step": 2680, "loss": 2.526, "lr": "3.000e-04", "tokens": 698443200, "tokens_per_s": 28623, "eta_h": 2623.2}
+[default0]:{"step": 2690, "loss": 2.5146, "lr": "3.000e-04", "tokens": 701064000, "tokens_per_s": 28624, "eta_h": 2623.1}
+[default0]:{"step": 2700, "loss": 2.557, "lr": "3.000e-04", "tokens": 703684800, "tokens_per_s": 28625, "eta_h": 2622.9}
+[default0]:{"step": 2710, "loss": 2.3474, "lr": "3.000e-04", "tokens": 706305600, "tokens_per_s": 28625, "eta_h": 2622.9}
+[default0]:{"step": 2720, "loss": 2.6233, "lr": "3.000e-04", "tokens": 708926400, "tokens_per_s": 28626, "eta_h": 2622.7}
+[default0]:{"step": 2730, "loss": 2.5026, "lr": "3.000e-04", "tokens": 711547200, "tokens_per_s": 28627, "eta_h": 2622.7}
+[default0]:{"step": 2740, "loss": 2.6867, "lr": "3.000e-04", "tokens": 714168000, "tokens_per_s": 28628, "eta_h": 2622.5}
+[default0]:{"step": 2750, "loss": 2.523, "lr": "3.000e-04", "tokens": 716788800, "tokens_per_s": 28628, "eta_h": 2622.5}
+[default0]:{"step": 2760, "loss": 2.3061, "lr": "3.000e-04", "tokens": 719409600, "tokens_per_s": 28601, "eta_h": 2624.9}
+[default0]:{"step": 2770, "loss": 2.4543, "lr": "3.000e-04", "tokens": 722030400, "tokens_per_s": 28602, "eta_h": 2624.8}
+[default0]:{"step": 2780, "loss": 2.5247, "lr": "3.000e-04", "tokens": 724651200, "tokens_per_s": 28604, "eta_h": 2624.6}
+[default0]:{"step": 2790, "loss": 2.4059, "lr": "3.000e-04", "tokens": 727272000, "tokens_per_s": 28605, "eta_h": 2624.6}
+[default0]:{"step": 2800, "loss": 2.603, "lr": "3.000e-04", "tokens": 729892800, "tokens_per_s": 28606, "eta_h": 2624.4}
+[default0]:{"step": 2810, "loss": 2.5423, "lr": "3.000e-04", "tokens": 732513600, "tokens_per_s": 28606, "eta_h": 2624.3}
+[default0]:{"step": 2820, "loss": 2.4892, "lr": "3.000e-04", "tokens": 735134400, "tokens_per_s": 28607, "eta_h": 2624.3}
+[default0]:{"step": 2830, "loss": 2.4532, "lr": "3.000e-04", "tokens": 737755200, "tokens_per_s": 28609, "eta_h": 2624.1}
+[default0]:{"step": 2840, "loss": 2.5127, "lr": "3.000e-04", "tokens": 740376000, "tokens_per_s": 28608, "eta_h": 2624.1}
+[default0]:{"step": 2850, "loss": 2.4171, "lr": "3.000e-04", "tokens": 742996800, "tokens_per_s": 28609, "eta_h": 2624.0}
+[default0]:{"step": 2860, "loss": 2.6796, "lr": "3.000e-04", "tokens": 745617600, "tokens_per_s": 28609, "eta_h": 2623.9}
+[default0]:{"step": 2870, "loss": 2.382, "lr": "3.000e-04", "tokens": 748238400, "tokens_per_s": 28611, "eta_h": 2623.8}
+[default0]:{"step": 2880, "loss": 2.392, "lr": "3.000e-04", "tokens": 750859200, "tokens_per_s": 28613, "eta_h": 2623.5}
+[default0]:{"step": 2890, "loss": 2.2969, "lr": "3.000e-04", "tokens": 753480000, "tokens_per_s": 28613, "eta_h": 2623.5}
+[default0]:{"step": 2900, "loss": 2.4063, "lr": "3.000e-04", "tokens": 756100800, "tokens_per_s": 28614, "eta_h": 2623.4}
+[default0]:{"step": 2910, "loss": 2.4991, "lr": "3.000e-04", "tokens": 758721600, "tokens_per_s": 28615, "eta_h": 2623.3}
+[default0]:{"step": 2920, "loss": 2.4899, "lr": "3.000e-04", "tokens": 761342400, "tokens_per_s": 28617, "eta_h": 2623.1}
+[default0]:{"step": 2930, "loss": 2.3708, "lr": "3.000e-04", "tokens": 763963200, "tokens_per_s": 28619, "eta_h": 2622.9}
+[default0]:{"step": 2940, "loss": 2.4828, "lr": "3.000e-04", "tokens": 766584000, "tokens_per_s": 28621, "eta_h": 2622.7}
+[default0]:{"step": 2950, "loss": 2.3938, "lr": "3.000e-04", "tokens": 769204800, "tokens_per_s": 28623, "eta_h": 2622.5}
+[default0]:{"step": 2960, "loss": 2.5439, "lr": "3.000e-04", "tokens": 771825600, "tokens_per_s": 28624, "eta_h": 2622.4}
+[default0]:{"step": 2970, "loss": 2.4239, "lr": "3.000e-04", "tokens": 774446400, "tokens_per_s": 28626, "eta_h": 2622.1}
+[default0]:{"step": 2980, "loss": 2.3418, "lr": "3.000e-04", "tokens": 777067200, "tokens_per_s": 28628, "eta_h": 2622.0}
+[default0]:{"step": 2990, "loss": 2.2952, "lr": "3.000e-04", "tokens": 779688000, "tokens_per_s": 28630, "eta_h": 2621.7}
+[default0]:{"step": 3000, "loss": 2.5567, "lr": "3.000e-04", "tokens": 782308800, "tokens_per_s": 28632, "eta_h": 2621.5}
+[default0]:{"step": 3010, "loss": 2.5327, "lr": "3.000e-04", "tokens": 784929600, "tokens_per_s": 28608, "eta_h": 2623.7}
+[default0]:{"step": 3020, "loss": 2.2997, "lr": "3.000e-04", "tokens": 787550400, "tokens_per_s": 28609, "eta_h": 2623.6}
+[default0]:{"step": 3030, "loss": 2.5006, "lr": "3.000e-04", "tokens": 790171200, "tokens_per_s": 28610, "eta_h": 2623.4}
+[default0]:{"step": 3040, "loss": 2.421, "lr": "3.000e-04", "tokens": 792792000, "tokens_per_s": 28611, "eta_h": 2623.4}
+[default0]:{"step": 3050, "loss": 2.4094, "lr": "3.000e-04", "tokens": 795412800, "tokens_per_s": 28612, "eta_h": 2623.3}
+[default0]:{"step": 3060, "loss": 2.592, "lr": "3.000e-04", "tokens": 798033600, "tokens_per_s": 28613, "eta_h": 2623.1}
+[default0]:{"step": 3070, "loss": 2.6952, "lr": "3.000e-04", "tokens": 800654400, "tokens_per_s": 28612, "eta_h": 2623.1}
+[default0]:{"step": 3080, "loss": 2.6161, "lr": "3.000e-04", "tokens": 803275200, "tokens_per_s": 28614, "eta_h": 2623.0}
+[default0]:{"step": 3090, "loss": 2.9711, "lr": "3.000e-04", "tokens": 805896000, "tokens_per_s": 28615, "eta_h": 2622.8}
+[default0]:{"step": 3100, "loss": 2.6469, "lr": "3.000e-04", "tokens": 808516800, "tokens_per_s": 28616, "eta_h": 2622.7}
+[default0]:{"step": 3110, "loss": 2.7588, "lr": "3.000e-04", "tokens": 811137600, "tokens_per_s": 28617, "eta_h": 2622.6}
+[default0]:{"step": 3120, "loss": 2.5887, "lr": "3.000e-04", "tokens": 813758400, "tokens_per_s": 28618, "eta_h": 2622.5}
+[default0]:{"step": 3130, "loss": 2.5248, "lr": "3.000e-04", "tokens": 816379200, "tokens_per_s": 28619, "eta_h": 2622.4}
+[default0]:{"step": 3140, "loss": 2.7088, "lr": "3.000e-04", "tokens": 819000000, "tokens_per_s": 28620, "eta_h": 2622.3}
+[default0]:{"step": 3150, "loss": 2.592, "lr": "3.000e-04", "tokens": 821620800, "tokens_per_s": 28622, "eta_h": 2622.1}
+[default0]:{"step": 3160, "loss": 2.536, "lr": "3.000e-04", "tokens": 824241600, "tokens_per_s": 28623, "eta_h": 2622.0}
+[default0]:{"step": 3170, "loss": 2.5971, "lr": "3.000e-04", "tokens": 826862400, "tokens_per_s": 28623, "eta_h": 2621.9}
+[default0]:{"step": 3180, "loss": 2.6905, "lr": "3.000e-04", "tokens": 829483200, "tokens_per_s": 28624, "eta_h": 2621.8}
+[default0]:{"step": 3190, "loss": 2.5659, "lr": "3.000e-04", "tokens": 832104000, "tokens_per_s": 28625, "eta_h": 2621.7}
+[default0]:{"step": 3200, "loss": 2.5976, "lr": "3.000e-04", "tokens": 834724800, "tokens_per_s": 28626, "eta_h": 2621.5}
+[default0]:{"step": 3210, "loss": 2.4579, "lr": "3.000e-04", "tokens": 837345600, "tokens_per_s": 28628, "eta_h": 2621.4}
+[default0]:{"step": 3220, "loss": 2.4744, "lr": "3.000e-04", "tokens": 839966400, "tokens_per_s": 28629, "eta_h": 2621.3}
+[default0]:{"step": 3230, "loss": 2.741, "lr": "3.000e-04", "tokens": 842587200, "tokens_per_s": 28629, "eta_h": 2621.2}
+[default0]:{"step": 3240, "loss": 2.8453, "lr": "3.000e-04", "tokens": 845208000, "tokens_per_s": 28630, "eta_h": 2621.1}
+[default0]:{"step": 3250, "loss": 2.7709, "lr": "3.000e-04", "tokens": 847828800, "tokens_per_s": 28630, "eta_h": 2621.0}
+[default0]:{"step": 3260, "loss": 2.671, "lr": "3.000e-04", "tokens": 850449600, "tokens_per_s": 28607, "eta_h": 2623.1}
+[default0]:{"step": 3270, "loss": 2.5939, "lr": "3.000e-04", "tokens": 853070400, "tokens_per_s": 28608, "eta_h": 2623.0}
+[default0]:{"step": 3280, "loss": 2.5298, "lr": "3.000e-04", "tokens": 855691200, "tokens_per_s": 28610, "eta_h": 2622.8}
+[default0]:{"step": 3290, "loss": 2.6797, "lr": "3.000e-04", "tokens": 858312000, "tokens_per_s": 28610, "eta_h": 2622.8}
+[default0]:{"step": 3300, "loss": 2.6361, "lr": "3.000e-04", "tokens": 860932800, "tokens_per_s": 28611, "eta_h": 2622.7}
+[default0]:{"step": 3310, "loss": 2.6325, "lr": "3.000e-04", "tokens": 863553600, "tokens_per_s": 28612, "eta_h": 2622.6}
+[default0]:{"step": 3320, "loss": 2.6276, "lr": "3.000e-04", "tokens": 866174400, "tokens_per_s": 28612, "eta_h": 2622.5}
+[default0]:{"step": 3330, "loss": 2.6495, "lr": "3.000e-04", "tokens": 868795200, "tokens_per_s": 28614, "eta_h": 2622.4}
+[default0]:{"step": 3340, "loss": 2.6031, "lr": "3.000e-04", "tokens": 871416000, "tokens_per_s": 28615, "eta_h": 2622.2}
+[default0]:{"step": 3350, "loss": 2.6014, "lr": "3.000e-04", "tokens": 874036800, "tokens_per_s": 28615, "eta_h": 2622.1}
+[default0]:{"step": 3360, "loss": 2.8558, "lr": "3.000e-04", "tokens": 876657600, "tokens_per_s": 28616, "eta_h": 2622.0}
+[default0]:{"step": 3370, "loss": 2.5715, "lr": "3.000e-04", "tokens": 879278400, "tokens_per_s": 28617, "eta_h": 2621.9}
+[default0]:{"step": 3380, "loss": 2.5226, "lr": "3.000e-04", "tokens": 881899200, "tokens_per_s": 28617, "eta_h": 2621.9}
+[default0]:{"step": 3390, "loss": 2.7503, "lr": "3.000e-04", "tokens": 884520000, "tokens_per_s": 28618, "eta_h": 2621.8}
+[default0]:{"step": 3400, "loss": 2.5625, "lr": "3.000e-04", "tokens": 887140800, "tokens_per_s": 28617, "eta_h": 2621.8}
+[default0]:{"step": 3410, "loss": 2.5916, "lr": "3.000e-04", "tokens": 889761600, "tokens_per_s": 28618, "eta_h": 2621.8}
+[default0]:{"step": 3420, "loss": 2.6397, "lr": "3.000e-04", "tokens": 892382400, "tokens_per_s": 28620, "eta_h": 2621.6}
+[default0]:{"step": 3430, "loss": 2.7122, "lr": "3.000e-04", "tokens": 895003200, "tokens_per_s": 28621, "eta_h": 2621.4}
+[default0]:{"step": 3440, "loss": 2.5155, "lr": "3.000e-04", "tokens": 897624000, "tokens_per_s": 28623, "eta_h": 2621.2}
+[default0]:{"step": 3450, "loss": 2.4913, "lr": "3.000e-04", "tokens": 900244800, "tokens_per_s": 28624, "eta_h": 2621.1}
+[default0]:{"step": 3460, "loss": 2.6507, "lr": "3.000e-04", "tokens": 902865600, "tokens_per_s": 28625, "eta_h": 2621.0}
+[default0]:{"step": 3470, "loss": 2.6458, "lr": "3.000e-04", "tokens": 905486400, "tokens_per_s": 28627, "eta_h": 2620.8}
+[default0]:{"step": 3480, "loss": 2.5695, "lr": "3.000e-04", "tokens": 908107200, "tokens_per_s": 28629, "eta_h": 2620.6}
+[default0]:{"step": 3490, "loss": 2.6362, "lr": "3.000e-04", "tokens": 910728000, "tokens_per_s": 28629, "eta_h": 2620.6}
+[default0]:{"step": 3500, "loss": 2.5999, "lr": "3.000e-04", "tokens": 913348800, "tokens_per_s": 28630, "eta_h": 2620.4}
+[default0]:{"step": 3510, "loss": 2.5541, "lr": "3.000e-04", "tokens": 915969600, "tokens_per_s": 28609, "eta_h": 2622.4}
+[default0]:{"step": 3520, "loss": 2.9435, "lr": "3.000e-04", "tokens": 918590400, "tokens_per_s": 28609, "eta_h": 2622.3}
+[default0]:{"step": 3530, "loss": 2.5633, "lr": "3.000e-04", "tokens": 921211200, "tokens_per_s": 28609, "eta_h": 2622.3}
+[default0]:{"step": 3540, "loss": 2.6603, "lr": "3.000e-04", "tokens": 923832000, "tokens_per_s": 28609, "eta_h": 2622.2}
+[default0]:{"step": 3550, "loss": 2.662, "lr": "3.000e-04", "tokens": 926452800, "tokens_per_s": 28611, "eta_h": 2622.0}
+[default0]:{"step": 3560, "loss": 2.5838, "lr": "3.000e-04", "tokens": 929073600, "tokens_per_s": 28612, "eta_h": 2621.9}
+[default0]:{"step": 3570, "loss": 2.4591, "lr": "3.000e-04", "tokens": 931694400, "tokens_per_s": 28613, "eta_h": 2621.8}
+[default0]:{"step": 3580, "loss": 2.483, "lr": "3.000e-04", "tokens": 934315200, "tokens_per_s": 28614, "eta_h": 2621.7}
+[default0]:{"step": 3590, "loss": 2.5487, "lr": "3.000e-04", "tokens": 936936000, "tokens_per_s": 28615, "eta_h": 2621.5}
+[default0]:{"step": 3600, "loss": 2.5794, "lr": "3.000e-04", "tokens": 939556800, "tokens_per_s": 28616, "eta_h": 2621.4}
+[default0]:{"step": 3610, "loss": 2.6027, "lr": "3.000e-04", "tokens": 942177600, "tokens_per_s": 28618, "eta_h": 2621.3}
+[default0]:{"step": 3620, "loss": 2.5925, "lr": "3.000e-04", "tokens": 944798400, "tokens_per_s": 28619, "eta_h": 2621.2}
+[default0]:{"step": 3630, "loss": 2.5246, "lr": "3.000e-04", "tokens": 947419200, "tokens_per_s": 28619, "eta_h": 2621.1}
+[default0]:{"step": 3640, "loss": 2.3144, "lr": "3.000e-04", "tokens": 950040000, "tokens_per_s": 28620, "eta_h": 2621.0}
+[default0]:{"step": 3650, "loss": 2.6551, "lr": "3.000e-04", "tokens": 952660800, "tokens_per_s": 28621, "eta_h": 2620.9}
+[default0]:{"step": 3660, "loss": 2.546, "lr": "3.000e-04", "tokens": 955281600, "tokens_per_s": 28622, "eta_h": 2620.8}
+[default0]:{"step": 3670, "loss": 2.6698, "lr": "3.000e-04", "tokens": 957902400, "tokens_per_s": 28623, "eta_h": 2620.7}
+[default0]:{"step": 3680, "loss": 2.6051, "lr": "3.000e-04", "tokens": 960523200, "tokens_per_s": 28623, "eta_h": 2620.6}
+[default0]:{"step": 3690, "loss": 2.7203, "lr": "3.000e-04", "tokens": 963144000, "tokens_per_s": 28625, "eta_h": 2620.4}
+[default0]:{"step": 3700, "loss": 2.7201, "lr": "3.000e-04", "tokens": 965764800, "tokens_per_s": 28625, "eta_h": 2620.4}
+[default0]:{"step": 3710, "loss": 2.5742, "lr": "3.000e-04", "tokens": 968385600, "tokens_per_s": 28626, "eta_h": 2620.2}
+[default0]:{"step": 3720, "loss": 2.7137, "lr": "3.000e-04", "tokens": 971006400, "tokens_per_s": 28627, "eta_h": 2620.2}
+[default0]:{"step": 3730, "loss": 2.5356, "lr": "3.000e-04", "tokens": 973627200, "tokens_per_s": 28628, "eta_h": 2620.1}
+[default0]:{"step": 3740, "loss": 2.5827, "lr": "3.000e-04", "tokens": 976248000, "tokens_per_s": 28628, "eta_h": 2620.0}
+[default0]:{"step": 3750, "loss": 2.3642, "lr": "3.000e-04", "tokens": 978868800, "tokens_per_s": 28630, "eta_h": 2619.8}
+[default0]:{"step": 3760, "loss": 2.7181, "lr": "3.000e-04", "tokens": 981489600, "tokens_per_s": 28611, "eta_h": 2621.5}
+[default0]:{"step": 3770, "loss": 2.4113, "lr": "3.000e-04", "tokens": 984110400, "tokens_per_s": 28611, "eta_h": 2621.5}
+[default0]:{"step": 3780, "loss": 2.4138, "lr": "3.000e-04", "tokens": 986731200, "tokens_per_s": 28612, "eta_h": 2621.4}
+[default0]:{"step": 3790, "loss": 2.4801, "lr": "3.000e-04", "tokens": 989352000, "tokens_per_s": 28613, "eta_h": 2621.3}
+[default0]:{"step": 3800, "loss": 2.7381, "lr": "3.000e-04", "tokens": 991972800, "tokens_per_s": 28614, "eta_h": 2621.1}
+[default0]:{"step": 3810, "loss": 2.6702, "lr": "3.000e-04", "tokens": 994593600, "tokens_per_s": 28615, "eta_h": 2621.0}
+[default0]:{"step": 3820, "loss": 2.5806, "lr": "3.000e-04", "tokens": 997214400, "tokens_per_s": 28617, "eta_h": 2620.8}
+[default0]:{"step": 3830, "loss": 2.4469, "lr": "3.000e-04", "tokens": 999835200, "tokens_per_s": 28617, "eta_h": 2620.7}
+[default0]:{"step": 3840, "loss": 2.3832, "lr": "3.000e-04", "tokens": 1002456000, "tokens_per_s": 28619, "eta_h": 2620.6}
+[default0]:{"step": 3850, "loss": 2.4845, "lr": "3.000e-04", "tokens": 1005076800, "tokens_per_s": 28619, "eta_h": 2620.5}
+[default0]:{"step": 3860, "loss": 2.3295, "lr": "3.000e-04", "tokens": 1007697600, "tokens_per_s": 28621, "eta_h": 2620.4}
+[default0]:{"step": 3870, "loss": 2.4321, "lr": "3.000e-04", "tokens": 1010318400, "tokens_per_s": 28621, "eta_h": 2620.3}
+[default0]:{"step": 3880, "loss": 2.3935, "lr": "3.000e-04", "tokens": 1012939200, "tokens_per_s": 28623, "eta_h": 2620.1}
+[default0]:{"step": 3890, "loss": 2.469, "lr": "3.000e-04", "tokens": 1015560000, "tokens_per_s": 28624, "eta_h": 2620.0}
+[default0]:{"step": 3900, "loss": 2.4593, "lr": "3.000e-04", "tokens": 1018180800, "tokens_per_s": 28624, "eta_h": 2620.0}
+[default0]:{"step": 3910, "loss": 2.339, "lr": "3.000e-04", "tokens": 1020801600, "tokens_per_s": 28624, "eta_h": 2619.9}
+[default0]:{"step": 3920, "loss": 2.2798, "lr": "3.000e-04", "tokens": 1023422400, "tokens_per_s": 28625, "eta_h": 2619.9}
+[default0]:{"step": 3930, "loss": 2.5001, "lr": "3.000e-04", "tokens": 1026043200, "tokens_per_s": 28626, "eta_h": 2619.7}
+[default0]:{"step": 3940, "loss": 2.4004, "lr": "3.000e-04", "tokens": 1028664000, "tokens_per_s": 28626, "eta_h": 2619.7}
+[default0]:{"step": 3950, "loss": 2.2918, "lr": "3.000e-04", "tokens": 1031284800, "tokens_per_s": 28626, "eta_h": 2619.6}
+[default0]:{"step": 3960, "loss": 2.2859, "lr": "3.000e-04", "tokens": 1033905600, "tokens_per_s": 28626, "eta_h": 2619.6}
+[default0]:{"step": 3970, "loss": 2.409, "lr": "3.000e-04", "tokens": 1036526400, "tokens_per_s": 28626, "eta_h": 2619.6}
+[default0]:{"step": 3980, "loss": 2.3616, "lr": "3.000e-04", "tokens": 1039147200, "tokens_per_s": 28627, "eta_h": 2619.5}
+[default0]:{"step": 3990, "loss": 2.47, "lr": "3.000e-04", "tokens": 1041768000, "tokens_per_s": 28627, "eta_h": 2619.4}
+[default0]:{"step": 4000, "loss": 2.3726, "lr": "3.000e-04", "tokens": 1044388800, "tokens_per_s": 28628, "eta_h": 2619.3}
+[default0]:{"step": 4010, "loss": 2.3082, "lr": "3.000e-04", "tokens": 1047009600, "tokens_per_s": 28609, "eta_h": 2621.0}
+[default0]:{"step": 4020, "loss": 2.3628, "lr": "3.000e-04", "tokens": 1049630400, "tokens_per_s": 28610, "eta_h": 2620.9}
+[default0]:{"step": 4030, "loss": 2.3229, "lr": "3.000e-04", "tokens": 1052251200, "tokens_per_s": 28612, "eta_h": 2620.8}
+[default0]:{"step": 4040, "loss": 2.2927, "lr": "3.000e-04", "tokens": 1054872000, "tokens_per_s": 28612, "eta_h": 2620.7}
+[default0]:{"step": 4050, "loss": 2.3772, "lr": "3.000e-04", "tokens": 1057492800, "tokens_per_s": 28614, "eta_h": 2620.5}
+[default0]:{"step": 4060, "loss": 2.3602, "lr": "3.000e-04", "tokens": 1060113600, "tokens_per_s": 28614, "eta_h": 2620.4}
+[default0]:{"step": 4070, "loss": 2.4075, "lr": "3.000e-04", "tokens": 1062734400, "tokens_per_s": 28614, "eta_h": 2620.4}
+[default0]:{"step": 4080, "loss": 2.3115, "lr": "3.000e-04", "tokens": 1065355200, "tokens_per_s": 28615, "eta_h": 2620.4}
+[default0]:{"step": 4090, "loss": 2.4367, "lr": "3.000e-04", "tokens": 1067976000, "tokens_per_s": 28615, "eta_h": 2620.3}
+[default0]:{"step": 4100, "loss": 2.3214, "lr": "3.000e-04", "tokens": 1070596800, "tokens_per_s": 28615, "eta_h": 2620.2}
+[default0]:{"step": 4110, "loss": 2.386, "lr": "3.000e-04", "tokens": 1073217600, "tokens_per_s": 28616, "eta_h": 2620.1}
+[default0]:{"step": 4120, "loss": 2.4299, "lr": "3.000e-04", "tokens": 1075838400, "tokens_per_s": 28617, "eta_h": 2620.1}
+[default0]:{"step": 4130, "loss": 2.3466, "lr": "3.000e-04", "tokens": 1078459200, "tokens_per_s": 28617, "eta_h": 2620.0}
+[default0]:{"step": 4140, "loss": 2.4367, "lr": "3.000e-04", "tokens": 1081080000, "tokens_per_s": 28617, "eta_h": 2620.0}
+[default0]:{"step": 4150, "loss": 2.4186, "lr": "3.000e-04", "tokens": 1083700800, "tokens_per_s": 28619, "eta_h": 2619.8}
+[default0]:{"step": 4160, "loss": 2.3023, "lr": "3.000e-04", "tokens": 1086321600, "tokens_per_s": 28619, "eta_h": 2619.8}
+[default0]:{"step": 4170, "loss": 2.4043, "lr": "3.000e-04", "tokens": 1088942400, "tokens_per_s": 28620, "eta_h": 2619.7}
+[default0]:{"step": 4180, "loss": 2.4603, "lr": "3.000e-04", "tokens": 1091563200, "tokens_per_s": 28620, "eta_h": 2619.6}
+[default0]:{"step": 4190, "loss": 2.3739, "lr": "3.000e-04", "tokens": 1094184000, "tokens_per_s": 28620, "eta_h": 2619.6}
+[default0]:{"step": 4200, "loss": 2.3886, "lr": "3.000e-04", "tokens": 1096804800, "tokens_per_s": 28621, "eta_h": 2619.4}
+[default0]:{"step": 4210, "loss": 2.2463, "lr": "3.000e-04", "tokens": 1099425600, "tokens_per_s": 28622, "eta_h": 2619.3}
+[default0]:{"step": 4220, "loss": 2.3478, "lr": "3.000e-04", "tokens": 1102046400, "tokens_per_s": 28623, "eta_h": 2619.3}
+[default0]:{"step": 4230, "loss": 2.3415, "lr": "3.000e-04", "tokens": 1104667200, "tokens_per_s": 28623, "eta_h": 2619.2}
+[default0]:{"step": 4240, "loss": 2.2497, "lr": "3.000e-04", "tokens": 1107288000, "tokens_per_s": 28624, "eta_h": 2619.1}
+[default0]:{"step": 4250, "loss": 2.3198, "lr": "3.000e-04", "tokens": 1109908800, "tokens_per_s": 28624, "eta_h": 2619.1}
+[default0]:{"step": 4260, "loss": 2.46, "lr": "3.000e-04", "tokens": 1112529600, "tokens_per_s": 28607, "eta_h": 2620.6}
+[default0]:{"step": 4270, "loss": 2.3135, "lr": "3.000e-04", "tokens": 1115150400, "tokens_per_s": 28606, "eta_h": 2620.6}
+[default0]:{"step": 4280, "loss": 2.3124, "lr": "3.000e-04", "tokens": 1117771200, "tokens_per_s": 28607, "eta_h": 2620.6}
+[default0]:{"step": 4290, "loss": 2.4912, "lr": "3.000e-04", "tokens": 1120392000, "tokens_per_s": 28607, "eta_h": 2620.5}
+[default0]:{"step": 4300, "loss": 2.4159, "lr": "3.000e-04", "tokens": 1123012800, "tokens_per_s": 28607, "eta_h": 2620.5}
+[default0]:{"step": 4310, "loss": 2.2393, "lr": "3.000e-04", "tokens": 1125633600, "tokens_per_s": 28609, "eta_h": 2620.3}
+[default0]:{"step": 4320, "loss": 2.2266, "lr": "3.000e-04", "tokens": 1128254400, "tokens_per_s": 28609, "eta_h": 2620.2}
+[default0]:{"step": 4330, "loss": 2.288, "lr": "3.000e-04", "tokens": 1130875200, "tokens_per_s": 28610, "eta_h": 2620.2}
+[default0]:{"step": 4340, "loss": 2.3176, "lr": "3.000e-04", "tokens": 1133496000, "tokens_per_s": 28610, "eta_h": 2620.1}
+[default0]:{"step": 4350, "loss": 2.5346, "lr": "3.000e-04", "tokens": 1136116800, "tokens_per_s": 28611, "eta_h": 2620.0}
+[default0]:{"step": 4360, "loss": 2.3364, "lr": "3.000e-04", "tokens": 1138737600, "tokens_per_s": 28612, "eta_h": 2619.9}
+[default0]:{"step": 4370, "loss": 2.401, "lr": "3.000e-04", "tokens": 1141358400, "tokens_per_s": 28613, "eta_h": 2619.8}
+[default0]:{"step": 4380, "loss": 2.3024, "lr": "3.000e-04", "tokens": 1143979200, "tokens_per_s": 28613, "eta_h": 2619.8}
+[default0]:{"step": 4390, "loss": 2.2504, "lr": "3.000e-04", "tokens": 1146600000, "tokens_per_s": 28614, "eta_h": 2619.6}
+[default0]:{"step": 4400, "loss": 2.2029, "lr": "3.000e-04", "tokens": 1149220800, "tokens_per_s": 28615, "eta_h": 2619.6}
+[default0]:{"step": 4410, "loss": 2.1475, "lr": "3.000e-04", "tokens": 1151841600, "tokens_per_s": 28615, "eta_h": 2619.5}
+[default0]:{"step": 4420, "loss": 2.3844, "lr": "3.000e-04", "tokens": 1154462400, "tokens_per_s": 28615, "eta_h": 2619.4}
+[default0]:{"step": 4430, "loss": 2.3986, "lr": "3.000e-04", "tokens": 1157083200, "tokens_per_s": 28615, "eta_h": 2619.4}
+[default0]:{"step": 4440, "loss": 2.4071, "lr": "3.000e-04", "tokens": 1159704000, "tokens_per_s": 28615, "eta_h": 2619.4}
+[default0]:{"step": 4450, "loss": 2.3619, "lr": "3.000e-04", "tokens": 1162324800, "tokens_per_s": 28615, "eta_h": 2619.4}
+[default0]:{"step": 4460, "loss": 2.322, "lr": "3.000e-04", "tokens": 1164945600, "tokens_per_s": 28615, "eta_h": 2619.4}
+[default0]:{"step": 4470, "loss": 2.2654, "lr": "3.000e-04", "tokens": 1167566400, "tokens_per_s": 28615, "eta_h": 2619.3}
+[default0]:{"step": 4480, "loss": 2.3388, "lr": "3.000e-04", "tokens": 1170187200, "tokens_per_s": 28615, "eta_h": 2619.3}
+[default0]:{"step": 4490, "loss": 2.1353, "lr": "3.000e-04", "tokens": 1172808000, "tokens_per_s": 28615, "eta_h": 2619.3}
+[default0]:{"step": 4500, "loss": 2.4202, "lr": "3.000e-04", "tokens": 1175428800, "tokens_per_s": 28615, "eta_h": 2619.2}
+[default0]:{"step": 4510, "loss": 2.3058, "lr": "3.000e-04", "tokens": 1178049600, "tokens_per_s": 28598, "eta_h": 2620.8}
+[default0]:{"step": 4520, "loss": 2.4194, "lr": "3.000e-04", "tokens": 1180670400, "tokens_per_s": 28599, "eta_h": 2620.7}
+[default0]:{"step": 4530, "loss": 2.2961, "lr": "3.000e-04", "tokens": 1183291200, "tokens_per_s": 28599, "eta_h": 2620.7}
+[default0]:{"step": 4540, "loss": 2.2938, "lr": "3.000e-04", "tokens": 1185912000, "tokens_per_s": 28599, "eta_h": 2620.6}
+[default0]:{"step": 4550, "loss": 2.4114, "lr": "3.000e-04", "tokens": 1188532800, "tokens_per_s": 28599, "eta_h": 2620.6}
+[default0]:{"step": 4560, "loss": 2.2904, "lr": "3.000e-04", "tokens": 1191153600, "tokens_per_s": 28599, "eta_h": 2620.5}
+[default0]:{"step": 4570, "loss": 2.303, "lr": "3.000e-04", "tokens": 1193774400, "tokens_per_s": 28600, "eta_h": 2620.5}
+[default0]:{"step": 4580, "loss": 2.3144, "lr": "3.000e-04", "tokens": 1196395200, "tokens_per_s": 28599, "eta_h": 2620.5}
+[default0]:{"step": 4590, "loss": 2.3202, "lr": "3.000e-04", "tokens": 1199016000, "tokens_per_s": 28599, "eta_h": 2620.5}
+[default0]:{"step": 4600, "loss": 2.6199, "lr": "3.000e-04", "tokens": 1201636800, "tokens_per_s": 28599, "eta_h": 2620.5}
+[default0]:{"step": 4610, "loss": 2.6526, "lr": "3.000e-04", "tokens": 1204257600, "tokens_per_s": 28599, "eta_h": 2620.4}
+[default0]:{"step": 4620, "loss": 2.583, "lr": "3.000e-04", "tokens": 1206878400, "tokens_per_s": 28600, "eta_h": 2620.3}
+[default0]:{"step": 4630, "loss": 2.4069, "lr": "3.000e-04", "tokens": 1209499200, "tokens_per_s": 28601, "eta_h": 2620.2}
+[default0]:{"step": 4640, "loss": 2.4001, "lr": "3.000e-04", "tokens": 1212120000, "tokens_per_s": 28602, "eta_h": 2620.1}
+[default0]:{"step": 4650, "loss": 2.5307, "lr": "3.000e-04", "tokens": 1214740800, "tokens_per_s": 28602, "eta_h": 2620.0}
+[default0]:{"step": 4660, "loss": 2.6147, "lr": "3.000e-04", "tokens": 1217361600, "tokens_per_s": 28603, "eta_h": 2619.9}
+[default0]:{"step": 4670, "loss": 2.2673, "lr": "3.000e-04", "tokens": 1219982400, "tokens_per_s": 28604, "eta_h": 2619.8}
+[default0]:{"step": 4680, "loss": 2.5813, "lr": "3.000e-04", "tokens": 1222603200, "tokens_per_s": 28605, "eta_h": 2619.7}
+[default0]:{"step": 4690, "loss": 2.6169, "lr": "3.000e-04", "tokens": 1225224000, "tokens_per_s": 28605, "eta_h": 2619.6}
+[default0]:{"step": 4700, "loss": 2.4795, "lr": "3.000e-04", "tokens": 1227844800, "tokens_per_s": 28606, "eta_h": 2619.6}
+[default0]:{"step": 4710, "loss": 2.7607, "lr": "3.000e-04", "tokens": 1230465600, "tokens_per_s": 28605, "eta_h": 2619.6}
+[default0]:{"step": 4720, "loss": 2.3818, "lr": "3.000e-04", "tokens": 1233086400, "tokens_per_s": 28606, "eta_h": 2619.5}
+[default0]:{"step": 4730, "loss": 2.472, "lr": "3.000e-04", "tokens": 1235707200, "tokens_per_s": 28606, "eta_h": 2619.5}
+[default0]:{"step": 4740, "loss": 2.5844, "lr": "3.000e-04", "tokens": 1238328000, "tokens_per_s": 28607, "eta_h": 2619.4}
+[default0]:{"step": 4750, "loss": 2.3576, "lr": "3.000e-04", "tokens": 1240948800, "tokens_per_s": 28607, "eta_h": 2619.3}
+[default0]:{"step": 4760, "loss": 2.5562, "lr": "3.000e-04", "tokens": 1243569600, "tokens_per_s": 28592, "eta_h": 2620.7}
+[default0]:{"step": 4770, "loss": 2.3672, "lr": "3.000e-04", "tokens": 1246190400, "tokens_per_s": 28593, "eta_h": 2620.6}
+[default0]:{"step": 4780, "loss": 2.4661, "lr": "3.000e-04", "tokens": 1248811200, "tokens_per_s": 28594, "eta_h": 2620.5}
+[default0]:{"step": 4790, "loss": 2.6326, "lr": "3.000e-04", "tokens": 1251432000, "tokens_per_s": 28594, "eta_h": 2620.4}
+[default0]:{"step": 4800, "loss": 2.448, "lr": "3.000e-04", "tokens": 1254052800, "tokens_per_s": 28595, "eta_h": 2620.3}
+[default0]:{"step": 4810, "loss": 2.4018, "lr": "3.000e-04", "tokens": 1256673600, "tokens_per_s": 28596, "eta_h": 2620.2}
+[default0]:{"step": 4820, "loss": 2.703, "lr": "3.000e-04", "tokens": 1259294400, "tokens_per_s": 28597, "eta_h": 2620.1}
+[default0]:{"step": 4830, "loss": 2.4128, "lr": "3.000e-04", "tokens": 1261915200, "tokens_per_s": 28598, "eta_h": 2620.0}
+[default0]:{"step": 4840, "loss": 2.4556, "lr": "3.000e-04", "tokens": 1264536000, "tokens_per_s": 28598, "eta_h": 2620.0}
+[default0]:{"step": 4850, "loss": 2.4694, "lr": "3.000e-04", "tokens": 1267156800, "tokens_per_s": 28598, "eta_h": 2619.9}
+[default0]:{"step": 4860, "loss": 2.4857, "lr": "3.000e-04", "tokens": 1269777600, "tokens_per_s": 28599, "eta_h": 2619.8}
+[default0]:{"step": 4870, "loss": 2.4465, "lr": "3.000e-04", "tokens": 1272398400, "tokens_per_s": 28600, "eta_h": 2619.7}
+[default0]:{"step": 4880, "loss": 2.4691, "lr": "3.000e-04", "tokens": 1275019200, "tokens_per_s": 28600, "eta_h": 2619.6}
+[default0]:{"step": 4890, "loss": 2.4328, "lr": "3.000e-04", "tokens": 1277640000, "tokens_per_s": 28601, "eta_h": 2619.6}
+[default0]:{"step": 4900, "loss": 2.5152, "lr": "3.000e-04", "tokens": 1280260800, "tokens_per_s": 28600, "eta_h": 2619.6}
+[default0]:{"step": 4910, "loss": 2.5532, "lr": "3.000e-04", "tokens": 1282881600, "tokens_per_s": 28601, "eta_h": 2619.5}
+[default0]:{"step": 4920, "loss": 2.4505, "lr": "3.000e-04", "tokens": 1285502400, "tokens_per_s": 28601, "eta_h": 2619.4}
+[default0]:{"step": 4930, "loss": 2.4635, "lr": "3.000e-04", "tokens": 1288123200, "tokens_per_s": 28601, "eta_h": 2619.4}
+[default0]:{"step": 4940, "loss": 2.5259, "lr": "3.000e-04", "tokens": 1290744000, "tokens_per_s": 28602, "eta_h": 2619.3}
+[default0]:{"step": 4950, "loss": 2.5641, "lr": "3.000e-04", "tokens": 1293364800, "tokens_per_s": 28602, "eta_h": 2619.3}
+[default0]:{"step": 4960, "loss": 2.4736, "lr": "3.000e-04", "tokens": 1295985600, "tokens_per_s": 28603, "eta_h": 2619.2}
+[default0]:{"step": 4970, "loss": 2.6007, "lr": "3.000e-04", "tokens": 1298606400, "tokens_per_s": 28604, "eta_h": 2619.1}
+[default0]:{"step": 4980, "loss": 2.5649, "lr": "3.000e-04", "tokens": 1301227200, "tokens_per_s": 28605, "eta_h": 2619.0}
+[default0]:{"step": 4990, "loss": 2.3841, "lr": "3.000e-04", "tokens": 1303848000, "tokens_per_s": 28605, "eta_h": 2618.9}
+[default0]:{"step": 5000, "loss": 2.5153, "lr": "3.000e-04", "tokens": 1306468800, "tokens_per_s": 28605, "eta_h": 2618.9}
+[default0]:{"step": 5010, "loss": 2.4667, "lr": "3.000e-04", "tokens": 1309089600, "tokens_per_s": 28591, "eta_h": 2620.2}
+[default0]:{"step": 5020, "loss": 2.4255, "lr": "3.000e-04", "tokens": 1311710400, "tokens_per_s": 28592, "eta_h": 2620.1}
+[default0]:{"step": 5030, "loss": 2.4589, "lr": "3.000e-04", "tokens": 1314331200, "tokens_per_s": 28592, "eta_h": 2620.0}
+[default0]:{"step": 5040, "loss": 2.3339, "lr": "3.000e-04", "tokens": 1316952000, "tokens_per_s": 28594, "eta_h": 2619.8}
+[default0]:{"step": 5050, "loss": 2.4334, "lr": "3.000e-04", "tokens": 1319572800, "tokens_per_s": 28594, "eta_h": 2619.8}
+[default0]:{"step": 5060, "loss": 2.395, "lr": "3.000e-04", "tokens": 1322193600, "tokens_per_s": 28595, "eta_h": 2619.7}
+[default0]:{"step": 5070, "loss": 2.6712, "lr": "3.000e-04", "tokens": 1324814400, "tokens_per_s": 28596, "eta_h": 2619.6}
+[default0]:{"step": 5080, "loss": 2.5026, "lr": "3.000e-04", "tokens": 1327435200, "tokens_per_s": 28597, "eta_h": 2619.4}
+[default0]:{"step": 5090, "loss": 2.4523, "lr": "3.000e-04", "tokens": 1330056000, "tokens_per_s": 28597, "eta_h": 2619.4}
+[default0]:{"step": 5100, "loss": 2.3613, "lr": "3.000e-04", "tokens": 1332676800, "tokens_per_s": 28597, "eta_h": 2619.3}
+[default0]:{"step": 5110, "loss": 2.4111, "lr": "3.000e-04", "tokens": 1335297600, "tokens_per_s": 28598, "eta_h": 2619.3}
+[default0]:{"step": 5120, "loss": 2.309, "lr": "3.000e-04", "tokens": 1337918400, "tokens_per_s": 28599, "eta_h": 2619.2}
+[default0]:{"step": 5130, "loss": 2.4672, "lr": "3.000e-04", "tokens": 1340539200, "tokens_per_s": 28599, "eta_h": 2619.1}
+[default0]:{"step": 5140, "loss": 2.561, "lr": "3.000e-04", "tokens": 1343160000, "tokens_per_s": 28600, "eta_h": 2619.0}
+[default0]:{"step": 5150, "loss": 2.3298, "lr": "3.000e-04", "tokens": 1345780800, "tokens_per_s": 28600, "eta_h": 2619.0}
+[default0]:{"step": 5160, "loss": 2.5025, "lr": "3.000e-04", "tokens": 1348401600, "tokens_per_s": 28600, "eta_h": 2618.9}
+[default0]:{"step": 5170, "loss": 2.6963, "lr": "3.000e-04", "tokens": 1351022400, "tokens_per_s": 28600, "eta_h": 2618.9}
+[default0]:{"step": 5180, "loss": 2.4853, "lr": "3.000e-04", "tokens": 1353643200, "tokens_per_s": 28601, "eta_h": 2618.8}
+[default0]:{"step": 5190, "loss": 2.3691, "lr": "3.000e-04", "tokens": 1356264000, "tokens_per_s": 28602, "eta_h": 2618.7}
+[default0]:{"step": 5200, "loss": 2.3821, "lr": "3.000e-04", "tokens": 1358884800, "tokens_per_s": 28602, "eta_h": 2618.6}
+[default0]:{"step": 5210, "loss": 2.4451, "lr": "3.000e-04", "tokens": 1361505600, "tokens_per_s": 28603, "eta_h": 2618.5}
+[default0]:{"step": 5220, "loss": 2.5058, "lr": "3.000e-04", "tokens": 1364126400, "tokens_per_s": 28604, "eta_h": 2618.5}
+[default0]:{"step": 5230, "loss": 2.4994, "lr": "3.000e-04", "tokens": 1366747200, "tokens_per_s": 28604, "eta_h": 2618.4}
+[default0]:{"step": 5240, "loss": 2.5186, "lr": "3.000e-04", "tokens": 1369368000, "tokens_per_s": 28605, "eta_h": 2618.3}
+[default0]:{"step": 5250, "loss": 2.5775, "lr": "3.000e-04", "tokens": 1371988800, "tokens_per_s": 28605, "eta_h": 2618.3}
+[default0]:{"step": 5260, "loss": 2.4052, "lr": "3.000e-04", "tokens": 1374609600, "tokens_per_s": 28591, "eta_h": 2619.6}
+[default0]:{"step": 5270, "loss": 2.4412, "lr": "3.000e-04", "tokens": 1377230400, "tokens_per_s": 28591, "eta_h": 2619.5}
+[default0]:{"step": 5280, "loss": 2.4946, "lr": "3.000e-04", "tokens": 1379851200, "tokens_per_s": 28591, "eta_h": 2619.4}
+[default0]:{"step": 5290, "loss": 2.5248, "lr": "3.000e-04", "tokens": 1382472000, "tokens_per_s": 28592, "eta_h": 2619.3}
+[default0]:{"step": 5300, "loss": 2.5276, "lr": "3.000e-04", "tokens": 1385092800, "tokens_per_s": 28593, "eta_h": 2619.3}
+[2026-11-13T12:00:11.948] error: *** STEP 8344775.0 ON nid010595 CANCELLED AT 2026-11-13T12:00:11 DUE TO TIME LIMIT ***
+[2026-11-13T12:00:11.949] error: *** JOB 8344775 ON nid010595 CANCELLED AT 2026-11-13T12:00:11 DUE TO TIME LIMIT ***

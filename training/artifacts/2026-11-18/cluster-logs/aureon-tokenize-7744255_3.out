@@ -1,0 +1,273 @@
+[tokenize] job=7744255 task=3 node=nid010743
+INFO:    fuse2fs not found, will not be able to mount EXT3 filesystems
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+[tokenize] fineweb-edu: 140 files
+[tokenize] fineweb: 150 files
+[tokenize] code: 54 files
+[tokenize] worker 3/8: 43 files
+[tokenize] wrote shard_00000.bin  200.0M tokens  total 0.20B
+[tokenize] wrote shard_00001.bin  200.0M tokens  total 0.40B
+[tokenize] wrote shard_00002.bin  200.0M tokens  total 0.60B
+[tokenize] wrote shard_00003.bin  200.0M tokens  total 0.80B
+[tokenize] wrote shard_00004.bin  200.0M tokens  total 1.00B
+[tokenize] wrote shard_00005.bin  200.0M tokens  total 1.20B
+[tokenize] fineweb-edu/000_00003.parquet  running total 1.20B tokens
+[tokenize] wrote shard_00006.bin  200.0M tokens  total 1.40B
+[tokenize] wrote shard_00007.bin  200.0M tokens  total 1.60B
+[tokenize] wrote shard_00008.bin  200.0M tokens  total 1.80B
+[tokenize] wrote shard_00009.bin  200.0M tokens  total 2.00B
+[tokenize] wrote shard_00010.bin  200.0M tokens  total 2.20B
+[tokenize] wrote shard_00011.bin  200.0M tokens  total 2.40B
+[tokenize] wrote shard_00012.bin  200.0M tokens  total 2.60B
+[tokenize] fineweb-edu/001_00001.parquet  running total 2.60B tokens
+[tokenize] wrote shard_00013.bin  200.0M tokens  total 2.80B
+[tokenize] wrote shard_00014.bin  200.0M tokens  total 3.00B
+[tokenize] wrote shard_00015.bin  200.0M tokens  total 3.20B
+[tokenize] wrote shard_00016.bin  200.0M tokens  total 3.40B
+[tokenize] wrote shard_00017.bin  200.0M tokens  total 3.60B
+[tokenize] wrote shard_00018.bin  200.0M tokens  total 3.80B
+[tokenize] wrote shard_00019.bin  200.0M tokens  total 4.00B
+[tokenize] fineweb-edu/001_00009.parquet  running total 4.00B tokens
+[tokenize] wrote shard_00020.bin  200.0M tokens  total 4.20B
+[tokenize] wrote shard_00021.bin  200.0M tokens  total 4.40B
+[tokenize] wrote shard_00022.bin  200.0M tokens  total 4.60B
+[tokenize] wrote shard_00023.bin  200.0M tokens  total 4.80B
+[tokenize] wrote shard_00024.bin  200.0M tokens  total 5.00B
+[tokenize] wrote shard_00025.bin  200.0M tokens  total 5.20B
+[tokenize] wrote shard_00026.bin  200.0M tokens  total 5.40B
+[tokenize] fineweb-edu/002_00007.parquet  running total 5.40B tokens
+[tokenize] wrote shard_00027.bin  200.0M tokens  total 5.60B
+[tokenize] wrote shard_00028.bin  200.0M tokens  total 5.80B
+[tokenize] wrote shard_00029.bin  200.0M tokens  total 6.00B
+[tokenize] wrote shard_00030.bin  200.0M tokens  total 6.20B
+[tokenize] wrote shard_00031.bin  200.0M tokens  total 6.40B
+[tokenize] wrote shard_00032.bin  200.0M tokens  total 6.60B
+[tokenize] wrote shard_00033.bin  200.0M tokens  total 6.80B
+[tokenize] fineweb-edu/003_00005.parquet  running total 6.80B tokens
+[tokenize] wrote shard_00034.bin  200.0M tokens  total 7.00B
+[tokenize] wrote shard_00035.bin  200.0M tokens  total 7.20B
+[tokenize] wrote shard_00036.bin  200.0M tokens  total 7.40B
+[tokenize] wrote shard_00037.bin  200.0M tokens  total 7.60B
+[tokenize] wrote shard_00038.bin  200.0M tokens  total 7.80B
+[tokenize] wrote shard_00039.bin  200.0M tokens  total 8.00B
+[tokenize] wrote shard_00040.bin  200.0M tokens  total 8.20B
+[tokenize] fineweb-edu/004_00003.parquet  running total 8.20B tokens
+[tokenize] wrote shard_00041.bin  200.0M tokens  total 8.40B
+[tokenize] wrote shard_00042.bin  200.0M tokens  total 8.60B
+[tokenize] wrote shard_00043.bin  200.0M tokens  total 8.80B
+[tokenize] wrote shard_00044.bin  200.0M tokens  total 9.00B
+[tokenize] wrote shard_00045.bin  200.0M tokens  total 9.20B
+[tokenize] wrote shard_00046.bin  200.0M tokens  total 9.40B
+[tokenize] wrote shard_00047.bin  200.0M tokens  total 9.60B
+[tokenize] fineweb-edu/005_00001.parquet  running total 9.60B tokens
+[tokenize] wrote shard_00048.bin  200.0M tokens  total 9.80B
+[tokenize] wrote shard_00049.bin  200.0M tokens  total 10.00B
+[tokenize] wrote shard_00050.bin  200.0M tokens  total 10.20B
+[tokenize] wrote shard_00051.bin  200.0M tokens  total 10.40B
+[tokenize] wrote shard_00052.bin  200.0M tokens  total 10.60B
+[tokenize] wrote shard_00053.bin  200.0M tokens  total 10.80B
+[tokenize] wrote shard_00054.bin  200.0M tokens  total 11.00B
+[tokenize] fineweb-edu/005_00009.parquet  running total 11.00B tokens
+[tokenize] wrote shard_00055.bin  200.0M tokens  total 11.20B
+[tokenize] wrote shard_00056.bin  200.0M tokens  total 11.40B
+[tokenize] wrote shard_00057.bin  200.0M tokens  total 11.60B
+[tokenize] wrote shard_00058.bin  200.0M tokens  total 11.80B
+[tokenize] wrote shard_00059.bin  200.0M tokens  total 12.00B
+[tokenize] wrote shard_00060.bin  200.0M tokens  total 12.20B
+[tokenize] wrote shard_00061.bin  200.0M tokens  total 12.40B
+[tokenize] fineweb-edu/006_00007.parquet  running total 12.40B tokens
+[tokenize] wrote shard_00062.bin  200.0M tokens  total 12.60B
+[tokenize] wrote shard_00063.bin  200.0M tokens  total 12.80B
+[tokenize] wrote shard_00064.bin  200.0M tokens  total 13.00B
+[tokenize] wrote shard_00065.bin  200.0M tokens  total 13.20B
+[tokenize] wrote shard_00066.bin  200.0M tokens  total 13.40B
+[tokenize] wrote shard_00067.bin  200.0M tokens  total 13.60B
+[tokenize] fineweb-edu/007_00005.parquet  running total 13.60B tokens
+[tokenize] wrote shard_00068.bin  200.0M tokens  total 13.80B
+[tokenize] wrote shard_00069.bin  200.0M tokens  total 14.00B
+[tokenize] wrote shard_00070.bin  200.0M tokens  total 14.20B
+[tokenize] wrote shard_00071.bin  200.0M tokens  total 14.40B
+[tokenize] wrote shard_00072.bin  200.0M tokens  total 14.60B
+[tokenize] wrote shard_00073.bin  200.0M tokens  total 14.80B
+[tokenize] wrote shard_00074.bin  200.0M tokens  total 15.00B
+[tokenize] fineweb-edu/008_00003.parquet  running total 15.00B tokens
+[tokenize] wrote shard_00075.bin  200.0M tokens  total 15.20B
+[tokenize] wrote shard_00076.bin  200.0M tokens  total 15.40B
+[tokenize] wrote shard_00077.bin  200.0M tokens  total 15.60B
+[tokenize] wrote shard_00078.bin  200.0M tokens  total 15.80B
+[tokenize] wrote shard_00079.bin  200.0M tokens  total 16.00B
+[tokenize] wrote shard_00080.bin  200.0M tokens  total 16.20B
+[tokenize] wrote shard_00081.bin  200.0M tokens  total 16.40B
+[tokenize] fineweb-edu/009_00001.parquet  running total 16.40B tokens
+[tokenize] wrote shard_00082.bin  200.0M tokens  total 16.60B
+[tokenize] wrote shard_00083.bin  200.0M tokens  total 16.80B
+[tokenize] wrote shard_00084.bin  200.0M tokens  total 17.00B
+[tokenize] wrote shard_00085.bin  200.0M tokens  total 17.20B
+[tokenize] wrote shard_00086.bin  200.0M tokens  total 17.40B
+[tokenize] wrote shard_00087.bin  200.0M tokens  total 17.60B
+[tokenize] wrote shard_00088.bin  200.0M tokens  total 17.80B
+[tokenize] fineweb-edu/009_00009.parquet  running total 17.80B tokens
+[tokenize] wrote shard_00089.bin  200.0M tokens  total 18.00B
+[tokenize] wrote shard_00090.bin  200.0M tokens  total 18.20B
+[tokenize] wrote shard_00091.bin  200.0M tokens  total 18.40B
+[tokenize] wrote shard_00092.bin  200.0M tokens  total 18.60B
+[tokenize] wrote shard_00093.bin  200.0M tokens  total 18.80B
+[tokenize] wrote shard_00094.bin  200.0M tokens  total 19.00B
+[tokenize] wrote shard_00095.bin  200.0M tokens  total 19.20B
+[tokenize] fineweb-edu/010_00007.parquet  running total 19.20B tokens
+[tokenize] wrote shard_00096.bin  200.0M tokens  total 19.40B
+[tokenize] wrote shard_00097.bin  200.0M tokens  total 19.60B
+[tokenize] wrote shard_00098.bin  200.0M tokens  total 19.80B
+[tokenize] wrote shard_00099.bin  200.0M tokens  total 20.00B
+[tokenize] wrote shard_00100.bin  200.0M tokens  total 20.20B
+[tokenize] wrote shard_00101.bin  200.0M tokens  total 20.40B
+[tokenize] wrote shard_00102.bin  200.0M tokens  total 20.60B
+[tokenize] fineweb-edu/011_00005.parquet  running total 20.60B tokens
+[tokenize] wrote shard_00103.bin  200.0M tokens  total 20.80B
+[tokenize] wrote shard_00104.bin  200.0M tokens  total 21.00B
+[tokenize] wrote shard_00105.bin  200.0M tokens  total 21.20B
+[tokenize] wrote shard_00106.bin  200.0M tokens  total 21.40B
+[tokenize] wrote shard_00107.bin  200.0M tokens  total 21.60B
+[tokenize] wrote shard_00108.bin  200.0M tokens  total 21.80B
+[tokenize] wrote shard_00109.bin  200.0M tokens  total 22.00B
+[tokenize] fineweb-edu/012_00003.parquet  running total 22.00B tokens
+[tokenize] wrote shard_00110.bin  200.0M tokens  total 22.20B
+[tokenize] wrote shard_00111.bin  200.0M tokens  total 22.40B
+[tokenize] fineweb-edu/013_00001.parquet  running total 22.40B tokens
+[tokenize] wrote shard_00112.bin  200.0M tokens  total 22.60B
+[tokenize] wrote shard_00113.bin  200.0M tokens  total 22.80B
+[tokenize] wrote shard_00114.bin  200.0M tokens  total 23.00B
+[tokenize] fineweb-edu/013_00009.parquet  running total 23.00B tokens
+[tokenize] wrote shard_00115.bin  200.0M tokens  total 23.20B
+[tokenize] wrote shard_00116.bin  200.0M tokens  total 23.40B
+[tokenize] wrote shard_00117.bin  200.0M tokens  total 23.60B
+[tokenize] wrote shard_00118.bin  200.0M tokens  total 23.80B
+[tokenize] wrote shard_00119.bin  200.0M tokens  total 24.00B
+[tokenize] wrote shard_00120.bin  200.0M tokens  total 24.20B
+[tokenize] fineweb/000_00007.parquet  running total 24.20B tokens
+[tokenize] wrote shard_00121.bin  200.0M tokens  total 24.40B
+[tokenize] wrote shard_00122.bin  200.0M tokens  total 24.60B
+[tokenize] wrote shard_00123.bin  200.0M tokens  total 24.80B
+[tokenize] wrote shard_00124.bin  200.0M tokens  total 25.00B
+[tokenize] wrote shard_00125.bin  200.0M tokens  total 25.20B
+[tokenize] wrote shard_00126.bin  200.0M tokens  total 25.40B
+[tokenize] wrote shard_00127.bin  200.0M tokens  total 25.60B
+[tokenize] fineweb/001_00005.parquet  running total 25.60B tokens
+[tokenize] wrote shard_00128.bin  200.0M tokens  total 25.80B
+[tokenize] wrote shard_00129.bin  200.0M tokens  total 26.00B
+[tokenize] wrote shard_00130.bin  200.0M tokens  total 26.20B
+[tokenize] wrote shard_00131.bin  200.0M tokens  total 26.40B
+[tokenize] wrote shard_00132.bin  200.0M tokens  total 26.60B
+[tokenize] wrote shard_00133.bin  200.0M tokens  total 26.80B
+[tokenize] wrote shard_00134.bin  200.0M tokens  total 27.00B
+[tokenize] fineweb/002_00003.parquet  running total 27.00B tokens
+[tokenize] wrote shard_00135.bin  200.0M tokens  total 27.20B
+[tokenize] wrote shard_00136.bin  200.0M tokens  total 27.40B
+[tokenize] wrote shard_00137.bin  200.0M tokens  total 27.60B
+[tokenize] wrote shard_00138.bin  200.0M tokens  total 27.80B
+[tokenize] wrote shard_00139.bin  200.0M tokens  total 28.00B
+[tokenize] wrote shard_00140.bin  200.0M tokens  total 28.20B
+[tokenize] fineweb/003_00001.parquet  running total 28.20B tokens
+[tokenize] wrote shard_00141.bin  200.0M tokens  total 28.40B
+[tokenize] wrote shard_00142.bin  200.0M tokens  total 28.60B
+[tokenize] wrote shard_00143.bin  200.0M tokens  total 28.80B
+[tokenize] wrote shard_00144.bin  200.0M tokens  total 29.00B
+[tokenize] wrote shard_00145.bin  200.0M tokens  total 29.20B
+[tokenize] wrote shard_00146.bin  200.0M tokens  total 29.40B
+[tokenize] wrote shard_00147.bin  200.0M tokens  total 29.60B
+[tokenize] fineweb/003_00009.parquet  running total 29.60B tokens
+[tokenize] wrote shard_00148.bin  200.0M tokens  total 29.80B
+[tokenize] wrote shard_00149.bin  200.0M tokens  total 30.00B
+[tokenize] wrote shard_00150.bin  200.0M tokens  total 30.20B
+[tokenize] wrote shard_00151.bin  200.0M tokens  total 30.40B
+[tokenize] wrote shard_00152.bin  200.0M tokens  total 30.60B
+[tokenize] wrote shard_00153.bin  200.0M tokens  total 30.80B
+[tokenize] fineweb/004_00007.parquet  running total 30.80B tokens
+[tokenize] wrote shard_00154.bin  200.0M tokens  total 31.00B
+[tokenize] wrote shard_00155.bin  200.0M tokens  total 31.20B
+[tokenize] wrote shard_00156.bin  200.0M tokens  total 31.40B
+[tokenize] wrote shard_00157.bin  200.0M tokens  total 31.60B
+[tokenize] wrote shard_00158.bin  200.0M tokens  total 31.80B
+[tokenize] wrote shard_00159.bin  200.0M tokens  total 32.00B
+[tokenize] wrote shard_00160.bin  200.0M tokens  total 32.20B
+[tokenize] fineweb/005_00005.parquet  running total 32.20B tokens
+[tokenize] wrote shard_00161.bin  200.0M tokens  total 32.40B
+[tokenize] wrote shard_00162.bin  200.0M tokens  total 32.60B
+[tokenize] wrote shard_00163.bin  200.0M tokens  total 32.80B
+[tokenize] wrote shard_00164.bin  200.0M tokens  total 33.00B
+[tokenize] wrote shard_00165.bin  200.0M tokens  total 33.20B
+[tokenize] wrote shard_00166.bin  200.0M tokens  total 33.40B
+[tokenize] wrote shard_00167.bin  200.0M tokens  total 33.60B
+[tokenize] fineweb/006_00003.parquet  running total 33.60B tokens
+[tokenize] wrote shard_00168.bin  200.0M tokens  total 33.80B
+[tokenize] wrote shard_00169.bin  200.0M tokens  total 34.00B
+[tokenize] wrote shard_00170.bin  200.0M tokens  total 34.20B
+[tokenize] wrote shard_00171.bin  200.0M tokens  total 34.40B
+[tokenize] wrote shard_00172.bin  200.0M tokens  total 34.60B
+[tokenize] wrote shard_00173.bin  200.0M tokens  total 34.80B
+[tokenize] fineweb/007_00001.parquet  running total 34.80B tokens
+[tokenize] wrote shard_00174.bin  200.0M tokens  total 35.00B
+[tokenize] wrote shard_00175.bin  200.0M tokens  total 35.20B
+[tokenize] wrote shard_00176.bin  200.0M tokens  total 35.40B
+[tokenize] wrote shard_00177.bin  200.0M tokens  total 35.60B
+[tokenize] wrote shard_00178.bin  200.0M tokens  total 35.80B
+[tokenize] wrote shard_00179.bin  200.0M tokens  total 36.00B
+[tokenize] wrote shard_00180.bin  200.0M tokens  total 36.20B
+[tokenize] fineweb/007_00009.parquet  running total 36.20B tokens
+[tokenize] wrote shard_00181.bin  200.0M tokens  total 36.40B
+[tokenize] wrote shard_00182.bin  200.0M tokens  total 36.60B
+[tokenize] wrote shard_00183.bin  200.0M tokens  total 36.80B
+[tokenize] wrote shard_00184.bin  200.0M tokens  total 37.00B
+[tokenize] wrote shard_00185.bin  200.0M tokens  total 37.20B
+[tokenize] wrote shard_00186.bin  200.0M tokens  total 37.40B
+[tokenize] wrote shard_00187.bin  200.0M tokens  total 37.60B
+[tokenize] fineweb/008_00007.parquet  running total 37.60B tokens
+[tokenize] wrote shard_00188.bin  200.0M tokens  total 37.80B
+[tokenize] wrote shard_00189.bin  200.0M tokens  total 38.00B
+[tokenize] wrote shard_00190.bin  200.0M tokens  total 38.20B
+[tokenize] wrote shard_00191.bin  200.0M tokens  total 38.40B
+[tokenize] wrote shard_00192.bin  200.0M tokens  total 38.60B
+[tokenize] wrote shard_00193.bin  200.0M tokens  total 38.80B
+[tokenize] fineweb/009_00005.parquet  running total 38.80B tokens
+[tokenize] wrote shard_00194.bin  200.0M tokens  total 39.00B
+[tokenize] wrote shard_00195.bin  200.0M tokens  total 39.20B
+[tokenize] wrote shard_00196.bin  200.0M tokens  total 39.40B
+[tokenize] wrote shard_00197.bin  200.0M tokens  total 39.60B
+[tokenize] wrote shard_00198.bin  200.0M tokens  total 39.80B
+[tokenize] wrote shard_00199.bin  200.0M tokens  total 40.00B
+[tokenize] wrote shard_00200.bin  200.0M tokens  total 40.20B
+[tokenize] fineweb/010_00003.parquet  running total 40.20B tokens
+[tokenize] wrote shard_00201.bin  200.0M tokens  total 40.40B
+[tokenize] wrote shard_00202.bin  200.0M tokens  total 40.60B
+[tokenize] wrote shard_00203.bin  200.0M tokens  total 40.80B
+[tokenize] wrote shard_00204.bin  200.0M tokens  total 41.00B
+[tokenize] wrote shard_00205.bin  200.0M tokens  total 41.20B
+[tokenize] wrote shard_00206.bin  200.0M tokens  total 41.40B
+[tokenize] wrote shard_00207.bin  200.0M tokens  total 41.60B
+[tokenize] fineweb/011_00001.parquet  running total 41.60B tokens
+[tokenize] wrote shard_00208.bin  200.0M tokens  total 41.80B
+[tokenize] wrote shard_00209.bin  200.0M tokens  total 42.00B
+[tokenize] wrote shard_00210.bin  200.0M tokens  total 42.20B
+[tokenize] wrote shard_00211.bin  200.0M tokens  total 42.40B
+[tokenize] wrote shard_00212.bin  200.0M tokens  total 42.60B
+[tokenize] wrote shard_00213.bin  200.0M tokens  total 42.80B
+[tokenize] fineweb/011_00009.parquet  running total 42.80B tokens
+[tokenize] wrote shard_00214.bin  200.0M tokens  total 43.00B
+[tokenize] wrote shard_00215.bin  200.0M tokens  total 43.20B
+[tokenize] wrote shard_00216.bin  200.0M tokens  total 43.40B
+[tokenize] wrote shard_00217.bin  200.0M tokens  total 43.60B
+[tokenize] wrote shard_00218.bin  200.0M tokens  total 43.80B
+[tokenize] wrote shard_00219.bin  200.0M tokens  total 44.00B
+[tokenize] wrote shard_00220.bin  200.0M tokens  total 44.20B
+[tokenize] fineweb/012_00007.parquet  running total 44.20B tokens
+Traceback (most recent call last):
+  File "/projects/u6vs/hnc-organism/training/tokenize_corpus.py", line 246, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/projects/u6vs/hnc-organism/training/tokenize_corpus.py", line 211, in main
+    for text in iter_texts(path):
+  File "/projects/u6vs/hnc-organism/training/tokenize_corpus.py", line 43, in iter_texts
+    for batch in pq.ParquetFile(path).iter_batches(batch_size=1024):
+  File "pyarrow/_parquet.pyx", line 1634, in iter_batches
+  File "pyarrow/error.pxi", line 92, in pyarrow.lib.check_status
+OSError: Unexpected end of stream: Page was smaller (1773861) than expected (2771862)

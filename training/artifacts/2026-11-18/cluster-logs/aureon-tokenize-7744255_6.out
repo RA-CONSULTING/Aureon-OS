@@ -1,0 +1,14 @@
+[tokenize] job=7744255 task=6 node=nid010835
+INFO:    fuse2fs not found, will not be able to mount EXT3 filesystems
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+[tokenize] fineweb-edu: 140 files
+[tokenize] fineweb: 150 files
+[tokenize] code: 54 files
+[tokenize] worker 6/8: 43 files
+[tokenize] wrote shard_00000.bin  200.0M tokens  total 0.20B
+[tokenize] wrote shard_00001.bin  200.0M tokens  total 0.40B
+[tokenize] wrote shard_00002.bin  200.0M tokens  total 0.60B
+[tokenize] wrote shard_00003.bin  200.0M tokens  total 0.80B
+[tokenize] wrote shard_00004.bin  200.0M tokens  total 1.00B
+[tokenize] wrote shard_00005.bin  200.0M tokens  total 1.20B
+[2026-10-27T01:29:18.770] error: *** JOB 7744296 ON nid010835 CANCELLED AT 2026-10-27T01:29:18 DUE to SIGNAL Terminated ***

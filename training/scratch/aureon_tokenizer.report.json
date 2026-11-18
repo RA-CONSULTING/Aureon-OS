@@ -1,0 +1,60 @@
+{
+  "vocab_size": 65536,
+  "vocab_requested": 65536,
+  "round_trip_ok": true,
+  "identifiers": {
+    "hnc_coherence_field": 2,
+    "aureon_swarm_search": 2,
+    "reconstruction_error": 2,
+    "self_coder_benchmark": 1,
+    "x": 1
+  },
+  "holdout": {
+    "split": "holdout",
+    "bytes_measured": 3290522,
+    "chars_per_token": 3.985,
+    "tokens_for_measured_text": 796681,
+    "by_ext": {
+      ".py": {
+        "chars": 2954947,
+        "tokens": 728268,
+        "chars_per_token": 4.057
+      },
+      ".tsx": {
+        "chars": 88342,
+        "tokens": 24314,
+        "chars_per_token": 3.633
+      },
+      ".md": {
+        "chars": 78495,
+        "tokens": 29217,
+        "chars_per_token": 2.687
+      },
+      ".ts": {
+        "chars": 42180,
+        "tokens": 11940,
+        "chars_per_token": 3.533
+      },
+      ".sql": {
+        "chars": 6443,
+        "tokens": 1732,
+        "chars_per_token": 3.72
+      },
+      ".ps1": {
+        "chars": 3234,
+        "tokens": 941,
+        "chars_per_token": 3.437
+      },
+      ".bat": {
+        "chars": 594,
+        "tokens": 198,
+        "chars_per_token": 3.0
+      },
+      ".sh": {
+        "chars": 226,
+        "tokens": 71,
+        "chars_per_token": 3.183
+      }
+    }
+  }
+}

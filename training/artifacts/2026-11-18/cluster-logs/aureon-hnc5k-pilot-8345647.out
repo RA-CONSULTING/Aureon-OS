@@ -1,0 +1,50 @@
+2026-11-12T11:30:44Z
+nid010537
+aureon-7b-v65k
+Thu Nov 12 11:30:44 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.178.04             Driver Version: 580.178.04     CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GH200 120GB             On  |   00000009:01:00.0 Off |                    0 |
+| N/A   36C    P0             90W /  900W |       0MiB /  97871MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+[pilot] model ready after 5 probes
+Processing /projects/u6vs/hnc-organism/kimi-validation/hnc-5000/pack-v2/vendor/wheels/pypdf-6.16.2-py3-none-any.whl
+Installing collected packages: pypdf
+Successfully installed pypdf-6.16.2
+{"campaign_id": "HNC-5000-NHR-2026-08-27", "claim_boundary": "C0-C2 tests and C5 mappings only; not physical observation or independent replication.", "completed_utc": "2026-11-12T12:33:15.006546+00:00", "elapsed_seconds": 3728.199165, "epochs": [{"elapsed_seconds": 3131.929355, "epoch": 0, "global_shard": 0, "request_count": 120, "returncode": 1, "summary_sha256": "62591db866b542e8ca73d68d55ec0ddf95835227e0938ba218747c5c24d62ae3"}], "inventory_sha256": "185d909ff6d33b382497bc884f17fbf651edebe5a1fa5e2d440e0024b1cb455c", "mapping": {"attempted": 5, "domains": {"auris_nodes": 1, "general_repository": 3, "reality_framework": 1}, "extraction_failures": 0, "parse_rate": 0.0, "parsed": 0, "raw_sha256": "4733c354b0301b9fa1d3a88bc585356a2238d6d9989dab304abc7d81262c72f0", "request_failures": 0, "source_kinds": {"pinned_repository": 4, "zenodo_current": 1}}, "passed": false, "pilot": true, "protocol_sha256": "cbeeee8322e3c35d557cd08fbf51d204d3adf454bee37c49c6acccf221086d79", "public_inventory_sha256": "3b4325790a1f996a9bf618f51deafd7fb3e384a20da0820e842d14c2da5a2a18", "record_audit": {"attempted": 1, "parsed": 0, "raw_sha256": "e8b99d14264d4ba17fe42d40e1c9f22897903c752b960c27cad2b7bcca040412", "record_ids": ["17527831"], "valid": 0}, "schema_version": "1.0", "source_commit": "f5fb1916c07ac26eb7fc38c34ff2dc9bd029e21d", "stage1_script_sha256": "186938d13aaf2d69b2ab58bcf598e4af4be14b3fdfa05388fc652f694169f110", "started_utc": "2026-11-12T11:31:06.807383+00:00", "successful_epochs": 0, "task_count": 206, "task_id": 0, "test_registry_sha256": "142324aefdb1ad9419b175f6f335e8e78b8bb313263504939fd3dcc6b478b3e9", "total_model_requests": 126}
+1
+Thu Nov 12 12:33:15 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.178.04             Driver Version: 580.178.04     CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GH200 120GB             On  |   00000009:01:00.0 Off |                    0 |
+| N/A   39C    P0            193W /  900W |   15999MiB /  97871MiB |     13%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    0   N/A  N/A          163538      C   ...m/venvs/aureon-sft/bin/python      15990MiB |
++-----------------------------------------------------------------------------------------+
+2026-11-12T12:33:15Z

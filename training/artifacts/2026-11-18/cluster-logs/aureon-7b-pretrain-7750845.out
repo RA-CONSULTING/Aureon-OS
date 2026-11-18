@@ -1,0 +1,8 @@
+[pretrain] job=7750845 node=nid010375 steps=20
+GPU 0: NVIDIA GH200 120GB (UUID: GPU-6af499e6-1126-f7bf-7750-393f3a2504da)
+GPU 1: NVIDIA GH200 120GB (UUID: GPU-1a39fe20-5da2-cd8e-a7db-4f33031a1488)
+GPU 2: NVIDIA GH200 120GB (UUID: GPU-73514dfa-e659-ea4e-bc41-5879a485ef99)
+GPU 3: NVIDIA GH200 120GB (UUID: GPU-3d4fc1e8-37ea-28d1-6d9d-44b9932afcf8)
+INFO:    fuse2fs not found, will not be able to mount EXT3 filesystems
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+FATAL:   stat /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/torchrun: no such file or directory

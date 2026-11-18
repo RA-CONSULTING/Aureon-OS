@@ -1,0 +1,4 @@
+[export] job=7751385 node=nid010018 ckpt=/projects/u6vs/hnc-organism/runs/aureon-7b-v65k/ckpt_0000030.pt
+INFO:    fuse2fs not found, will not be able to mount EXT3 filesystems
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+[export] 6.995B params, vocab 65536 -> /projects/u6vs/hnc-organism/runs/aureon-7b-v65k/hf

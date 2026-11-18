@@ -1,0 +1,293 @@
+[dist] job=7763985 nodes=2 master=nid010743 port=31085
+[dist] out=/projects/u6vs/hnc-organism/runs/aureon-7b-pretrain steps=534188 batch=8 accum=1 resume=auto
+GPU 0: NVIDIA GH200 120GB (UUID: GPU-c924ff41-004c-ea6f-4cec-c926f23e0941)
+GPU 1: NVIDIA GH200 120GB (UUID: GPU-c80147a9-6506-54b7-065d-6fbb4926cbab)
+GPU 2: NVIDIA GH200 120GB (UUID: GPU-ac1d7346-fcfa-56d8-f273-f3dd767b97dd)
+GPU 3: NVIDIA GH200 120GB (UUID: GPU-94d821fc-5fc2-0e5d-4d2a-45b9e3257663)
+INFO:    fuse2fs not found, will not be able to mount EXT3 filesystems
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+INFO:    fuse2fs not found, will not be able to mount EXT3 filesystems
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+[default3]:/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:680: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+[default3]:  warnings.warn(
+[default0]:/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:680: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+[default0]:  warnings.warn(
+[default2]:/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:680: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+[default2]:  warnings.warn(
+[default1]:/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:680: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+[default1]:  warnings.warn(
+[default0]:/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:680: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+[default0]:  warnings.warn(
+[default3]:/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:680: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+[default3]:  warnings.warn(
+[default2]:/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:680: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+[default2]:  warnings.warn(
+[default1]:/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:680: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+[default1]:  warnings.warn(
+[default3]:[rank3]: Traceback (most recent call last):
+[default3]:[rank3]:   File "/projects/u6vs/hnc-organism/training/pretrain.py", line 311, in <module>
+[default3]:[rank3]:     raise SystemExit(main())
+[default3]:[rank3]:                      ^^^^^^
+[default3]:[rank3]:   File "/projects/u6vs/hnc-organism/training/pretrain.py", line 233, in main
+[default3]:[rank3]:     model.load_state_dict(payload["model"])
+[default3]:[rank3]:   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 2593, in load_state_dict
+[default3]:[rank3]:     raise RuntimeError(
+[default3]:[rank3]: RuntimeError: Error(s) in loading state_dict for FullyShardedDataParallel:
+[default3]:[rank3]: 	size mismatch for _fsdp_wrapped_module.model.embed_tokens.weight: copying a param with shape torch.Size([152064, 3584]) from checkpoint, the shape in current model is torch.Size([65536, 3584]).
+[default3]:[rank3]: 	size mismatch for _fsdp_wrapped_module.lm_head.weight: copying a param with shape torch.Size([152064, 3584]) from checkpoint, the shape in current model is torch.Size([65536, 3584]).
+[default0]:[rank0]: Traceback (most recent call last):
+[default0]:[rank0]:   File "/projects/u6vs/hnc-organism/training/pretrain.py", line 311, in <module>
+[default0]:[rank0]:     raise SystemExit(main())
+[default0]:[rank0]:                      ^^^^^^
+[default0]:[rank0]:   File "/projects/u6vs/hnc-organism/training/pretrain.py", line 233, in main
+[default0]:[rank0]:     model.load_state_dict(payload["model"])
+[default0]:[rank0]:   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 2593, in load_state_dict
+[default0]:[rank0]:     raise RuntimeError(
+[default0]:[rank0]: RuntimeError: Error(s) in loading state_dict for FullyShardedDataParallel:
+[default0]:[rank0]: 	size mismatch for _fsdp_wrapped_module.model.embed_tokens.weight: copying a param with shape torch.Size([152064, 3584]) from checkpoint, the shape in current model is torch.Size([65536, 3584]).
+[default0]:[rank0]: 	size mismatch for _fsdp_wrapped_module.lm_head.weight: copying a param with shape torch.Size([152064, 3584]) from checkpoint, the shape in current model is torch.Size([65536, 3584]).
+[default1]:[rank1]: Traceback (most recent call last):
+[default1]:[rank1]:   File "/projects/u6vs/hnc-organism/training/pretrain.py", line 311, in <module>
+[default1]:[rank1]:     raise SystemExit(main())
+[default1]:[rank1]:                      ^^^^^^
+[default2]:[rank2]: Traceback (most recent call last):
+[default2]:[rank2]:   File "/projects/u6vs/hnc-organism/training/pretrain.py", line 311, in <module>
+[default2]:[rank2]:     raise SystemExit(main())
+[default2]:[rank2]:                      ^^^^^^
+[default1]:[rank1]:   File "/projects/u6vs/hnc-organism/training/pretrain.py", line 233, in main
+[default2]:[rank2]:   File "/projects/u6vs/hnc-organism/training/pretrain.py", line 233, in main
+[default2]:[rank2]:     model.load_state_dict(payload["model"])
+[default2]:[rank2]:   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 2593, in load_state_dict
+[default1]:[rank1]:     model.load_state_dict(payload["model"])
+[default2]:[rank2]:     raise RuntimeError(
+[default1]:[rank1]:   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 2593, in load_state_dict
+[default2]:[rank2]: RuntimeError: Error(s) in loading state_dict for FullyShardedDataParallel:
+[default1]:[rank1]:     raise RuntimeError(
+[default2]:[rank2]: 	size mismatch for _fsdp_wrapped_module.model.embed_tokens.weight: copying a param with shape torch.Size([152064, 3584]) from checkpoint, the shape in current model is torch.Size([65536, 3584]).
+[default1]:[rank1]: RuntimeError: Error(s) in loading state_dict for FullyShardedDataParallel:
+[default2]:[rank2]: 	size mismatch for _fsdp_wrapped_module.lm_head.weight: copying a param with shape torch.Size([152064, 3584]) from checkpoint, the shape in current model is torch.Size([65536, 3584]).
+[default1]:[rank1]: 	size mismatch for _fsdp_wrapped_module.model.embed_tokens.weight: copying a param with shape torch.Size([152064, 3584]) from checkpoint, the shape in current model is torch.Size([65536, 3584]).
+[default1]:[rank1]: 	size mismatch for _fsdp_wrapped_module.lm_head.weight: copying a param with shape torch.Size([152064, 3584]) from checkpoint, the shape in current model is torch.Size([65536, 3584]).
+[default2]:[rank6]: Traceback (most recent call last):
+[default2]:[rank6]:   File "/projects/u6vs/hnc-organism/training/pretrain.py", line 311, in <module>
+[default2]:[rank6]:     raise SystemExit(main())
+[default2]:[rank6]:                      ^^^^^^
+[default2]:[rank6]:   File "/projects/u6vs/hnc-organism/training/pretrain.py", line 233, in main
+[default2]:[rank6]:     model.load_state_dict(payload["model"])
+[default2]:[rank6]:   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 2593, in load_state_dict
+[default2]:[rank6]:     raise RuntimeError(
+[default2]:[rank6]: RuntimeError: Error(s) in loading state_dict for FullyShardedDataParallel:
+[default2]:[rank6]: 	size mismatch for _fsdp_wrapped_module.model.embed_tokens.weight: copying a param with shape torch.Size([152064, 3584]) from checkpoint, the shape in current model is torch.Size([65536, 3584]).
+[default2]:[rank6]: 	size mismatch for _fsdp_wrapped_module.lm_head.weight: copying a param with shape torch.Size([152064, 3584]) from checkpoint, the shape in current model is torch.Size([65536, 3584]).
+[default0]:[rank4]: Traceback (most recent call last):
+[default0]:[rank4]:   File "/projects/u6vs/hnc-organism/training/pretrain.py", line 311, in <module>
+[default0]:[rank4]:     raise SystemExit(main())
+[default0]:[rank4]:                      ^^^^^^
+[default0]:[rank4]:   File "/projects/u6vs/hnc-organism/training/pretrain.py", line 233, in main
+[default0]:[rank4]:     model.load_state_dict(payload["model"])
+[default0]:[rank4]:   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 2593, in load_state_dict
+[default0]:[rank4]:     raise RuntimeError(
+[default0]:[rank4]: RuntimeError: Error(s) in loading state_dict for FullyShardedDataParallel:
+[default0]:[rank4]: 	size mismatch for _fsdp_wrapped_module.model.embed_tokens.weight: copying a param with shape torch.Size([152064, 3584]) from checkpoint, the shape in current model is torch.Size([65536, 3584]).
+[default0]:[rank4]: 	size mismatch for _fsdp_wrapped_module.lm_head.weight: copying a param with shape torch.Size([152064, 3584]) from checkpoint, the shape in current model is torch.Size([65536, 3584]).
+[default3]:[rank7]: Traceback (most recent call last):
+[default3]:[rank7]:   File "/projects/u6vs/hnc-organism/training/pretrain.py", line 311, in <module>
+[default3]:[rank7]:     raise SystemExit(main())
+[default3]:[rank7]:                      ^^^^^^
+[default3]:[rank7]:   File "/projects/u6vs/hnc-organism/training/pretrain.py", line 233, in main
+[default3]:[rank7]:     model.load_state_dict(payload["model"])
+[default3]:[rank7]:   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 2593, in load_state_dict
+[default3]:[rank7]:     raise RuntimeError(
+[default3]:[rank7]: RuntimeError: Error(s) in loading state_dict for FullyShardedDataParallel:
+[default3]:[rank7]: 	size mismatch for _fsdp_wrapped_module.model.embed_tokens.weight: copying a param with shape torch.Size([152064, 3584]) from checkpoint, the shape in current model is torch.Size([65536, 3584]).
+[default3]:[rank7]: 	size mismatch for _fsdp_wrapped_module.lm_head.weight: copying a param with shape torch.Size([152064, 3584]) from checkpoint, the shape in current model is torch.Size([65536, 3584]).
+[default1]:[rank5]: Traceback (most recent call last):
+[default1]:[rank5]:   File "/projects/u6vs/hnc-organism/training/pretrain.py", line 311, in <module>
+[default1]:[rank5]:     raise SystemExit(main())
+[default1]:[rank5]:                      ^^^^^^
+[default1]:[rank5]:   File "/projects/u6vs/hnc-organism/training/pretrain.py", line 233, in main
+[default1]:[rank5]:     model.load_state_dict(payload["model"])
+[default1]:[rank5]:   File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 2593, in load_state_dict
+[default1]:[rank5]:     raise RuntimeError(
+[default1]:[rank5]: RuntimeError: Error(s) in loading state_dict for FullyShardedDataParallel:
+[default1]:[rank5]: 	size mismatch for _fsdp_wrapped_module.model.embed_tokens.weight: copying a param with shape torch.Size([152064, 3584]) from checkpoint, the shape in current model is torch.Size([65536, 3584]).
+[default1]:[rank5]: 	size mismatch for _fsdp_wrapped_module.lm_head.weight: copying a param with shape torch.Size([152064, 3584]) from checkpoint, the shape in current model is torch.Size([65536, 3584]).
+[default0]:[rank0]:[W1027 15:37:45.148181368 ProcessGroupNCCL.cpp:1505] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+[default0]:[rank4]:[W1027 15:37:45.835322874 ProcessGroupNCCL.cpp:1505] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+W1027 15:37:47.847000 61518 torch/distributed/elastic/multiprocessing/api.py:900] Sending process 61599 closing signal SIGTERM
+W1027 15:37:47.848000 61518 torch/distributed/elastic/multiprocessing/api.py:900] Sending process 61600 closing signal SIGTERM
+W1027 15:37:47.849000 61518 torch/distributed/elastic/multiprocessing/api.py:900] Sending process 61601 closing signal SIGTERM
+W1027 15:37:47.999000 108291 torch/distributed/elastic/multiprocessing/api.py:900] Sending process 108374 closing signal SIGTERM
+W1027 15:37:48.000000 108291 torch/distributed/elastic/multiprocessing/api.py:900] Sending process 108375 closing signal SIGTERM
+W1027 15:37:48.000000 108291 torch/distributed/elastic/multiprocessing/api.py:900] Sending process 108377 closing signal SIGTERM
+E1027 15:37:48.138000 61518 torch/distributed/elastic/multiprocessing/api.py:874] failed (exitcode: 1) local_rank: 3 (pid: 61602) of binary: /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/dist-packages/torch/distributed/run.py", line 896, in <module>
+    main()
+  File "/usr/local/lib/python3.12/dist-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/distributed/run.py", line 892, in main
+    run(args)
+  File "/usr/local/lib/python3.12/dist-packages/torch/distributed/run.py", line 883, in run
+    elastic_launch(
+  File "/usr/local/lib/python3.12/dist-packages/torch/distributed/launcher/api.py", line 139, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/distributed/launcher/api.py", line 270, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+/projects/u6vs/hnc-organism/training/pretrain.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-10-27_15:37:47
+  host      : nid010743
+  rank      : 3 (local_rank: 3)
+  exitcode  : 1 (pid: 61602)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+[default0]:[pretrain] vocab_size 152064 -> 65536 to match the tokenizer that produced the shards
+[default2]:[pretrain] vocab_size 152064 -> 65536 to match the tokenizer that produced the shards
+[default1]:[pretrain] vocab_size 152064 -> 65536 to match the tokenizer that produced the shards
+[default3]:[pretrain] vocab_size 152064 -> 65536 to match the tokenizer that produced the shards
+[default0]:NCCL version 2.26.5+cuda12.9
+E1027 15:37:48.266000 108291 torch/distributed/elastic/multiprocessing/api.py:874] failed (exitcode: 1) local_rank: 2 (pid: 108376) of binary: /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python
+[W1027 15:37:48.348413123 TCPStore.cpp:115] [c10d] recvVector failed on SocketImpl(fd=3, addr=[nid010808-hsn2]:42244, remote=[nid010743]:31085): failed to recv, got 0 bytes
+Exception raised from recvBytes at /opt/pytorch/pytorch/torch/csrc/distributed/c10d/Utils.hpp:678 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0xbc (0x400060efd47c in /usr/local/lib/python3.12/dist-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x5ac2c30 (0x40000fe12c30 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #2: <unknown function> + 0x5ac5a04 (0x40000fe15a04 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #3: <unknown function> + 0x5ac6208 (0x40000fe16208 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #4: <unknown function> + 0x5ac7a34 (0x40000fe17a34 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #5: c10d::TCPStore::compareSet(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::vector<unsigned char, std::allocator<unsigned char> > const&, std::vector<unsigned char, std::allocator<unsigned char> > const&) + 0x1bc (0x40000fe18a6c in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #6: <unknown function> + 0xf74d70 (0x40000a1f4d70 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_python.so)
+frame #7: <unknown function> + 0x596de0 (0x400009816de0 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_python.so)
+frame #8: /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python() [0x5036b4]
+frame #9: _PyObject_MakeTpCall + 0x78 (0x4c2c98 in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #10: /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python() [0x4c6f6c]
+frame #11: _PyEval_EvalFrameDefault + 0x3cf4 (0x567308 in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #12: _PyObject_Call_Prepend + 0xc4 (0x4c4774 in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #13: /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python() [0x528ba0]
+frame #14: PyObject_Call + 0x6c (0x4c517c in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #15: _PyEval_EvalFrameDefault + 0x3cf4 (0x567308 in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #16: PyEval_EvalCode + 0x130 (0x562204 in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #17: /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python() [0x55f0c8]
+frame #18: /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python() [0x5034ac]
+frame #19: PyObject_Vectorcall + 0x4c (0x4c384c in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #20: _PyEval_EvalFrameDefault + 0x8a0 (0x563eb4 in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #21: /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python() [0x68c048]
+frame #22: Py_RunMain + 0x1ac (0x68b70c in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #23: Py_BytesMain + 0x28 (0x68b3f8 in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #24: <unknown function> + 0x284c4 (0x4000087984c4 in /lib/aarch64-linux-gnu/libc.so.6)
+frame #25: __libc_start_main + 0x98 (0x400008798598 in /lib/aarch64-linux-gnu/libc.so.6)
+frame #26: _start + 0x30 (0x5f6df0 in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+
+W1027 15:37:48.311000 108291 torch/distributed/elastic/rendezvous/dynamic_rendezvous.py:1292] The node 'nid010808_108291_0' has failed to shutdown the rendezvous '7763985' due to an error of type RendezvousConnectionError.
+[W1027 15:37:48.370032646 TCPStore.cpp:106] [c10d] sendBytes failed on SocketImpl(fd=3, addr=[nid010808-hsn2]:42244, remote=[nid010743]:31085): Broken pipe
+Exception raised from sendBytes at /opt/pytorch/pytorch/torch/csrc/distributed/c10d/Utils.hpp:653 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0xbc (0x400060efd47c in /usr/local/lib/python3.12/dist-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x5ac2c30 (0x40000fe12c30 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #2: <unknown function> + 0x5ac5cbc (0x40000fe15cbc in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #3: <unknown function> + 0x5ac8084 (0x40000fe18084 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #4: c10d::TCPStore::compareSet(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::vector<unsigned char, std::allocator<unsigned char> > const&, std::vector<unsigned char, std::allocator<unsigned char> > const&) + 0x1ac (0x40000fe18a5c in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #5: <unknown function> + 0xf74d70 (0x40000a1f4d70 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_python.so)
+frame #6: <unknown function> + 0x596de0 (0x400009816de0 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_python.so)
+frame #7: /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python() [0x5036b4]
+frame #8: _PyObject_MakeTpCall + 0x78 (0x4c2c98 in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #9: /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python() [0x4c6f6c]
+frame #10: _PyEval_EvalFrameDefault + 0x3cf4 (0x567308 in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #11: _PyObject_Call_Prepend + 0xc4 (0x4c4774 in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #12: /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python() [0x528ba0]
+frame #13: PyObject_Call + 0x6c (0x4c517c in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #14: _PyEval_EvalFrameDefault + 0x3cf4 (0x567308 in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #15: PyEval_EvalCode + 0x130 (0x562204 in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #16: /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python() [0x55f0c8]
+frame #17: /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python() [0x5034ac]
+frame #18: PyObject_Vectorcall + 0x4c (0x4c384c in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #19: _PyEval_EvalFrameDefault + 0x8a0 (0x563eb4 in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #20: /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python() [0x68c048]
+frame #21: Py_RunMain + 0x1ac (0x68b70c in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #22: Py_BytesMain + 0x28 (0x68b3f8 in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #23: <unknown function> + 0x284c4 (0x4000087984c4 in /lib/aarch64-linux-gnu/libc.so.6)
+frame #24: __libc_start_main + 0x98 (0x400008798598 in /lib/aarch64-linux-gnu/libc.so.6)
+frame #25: _start + 0x30 (0x5f6df0 in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+
+W1027 15:37:48.322000 108291 torch/distributed/elastic/rendezvous/dynamic_rendezvous.py:1292] The node 'nid010808_108291_0' has failed to shutdown the rendezvous '7763985' due to an error of type RendezvousConnectionError.
+[W1027 15:37:48.377844747 TCPStore.cpp:106] [c10d] sendBytes failed on SocketImpl(fd=3, addr=[nid010808-hsn2]:42244, remote=[nid010743]:31085): Broken pipe
+Exception raised from sendBytes at /opt/pytorch/pytorch/torch/csrc/distributed/c10d/Utils.hpp:653 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0xbc (0x400060efd47c in /usr/local/lib/python3.12/dist-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x5ac2c30 (0x40000fe12c30 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #2: <unknown function> + 0x5ac5cbc (0x40000fe15cbc in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #3: <unknown function> + 0x5ac8084 (0x40000fe18084 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #4: c10d::TCPStore::compareSet(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::vector<unsigned char, std::allocator<unsigned char> > const&, std::vector<unsigned char, std::allocator<unsigned char> > const&) + 0x1ac (0x40000fe18a5c in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #5: <unknown function> + 0xf74d70 (0x40000a1f4d70 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_python.so)
+frame #6: <unknown function> + 0x596de0 (0x400009816de0 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_python.so)
+frame #7: /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python() [0x5036b4]
+frame #8: _PyObject_MakeTpCall + 0x78 (0x4c2c98 in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #9: /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python() [0x4c6f6c]
+frame #10: _PyEval_EvalFrameDefault + 0x3cf4 (0x567308 in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #11: _PyObject_Call_Prepend + 0xc4 (0x4c4774 in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #12: /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python() [0x528ba0]
+frame #13: PyObject_Call + 0x6c (0x4c517c in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #14: _PyEval_EvalFrameDefault + 0x3cf4 (0x567308 in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #15: PyEval_EvalCode + 0x130 (0x562204 in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #16: /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python() [0x55f0c8]
+frame #17: /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python() [0x5034ac]
+frame #18: PyObject_Vectorcall + 0x4c (0x4c384c in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #19: _PyEval_EvalFrameDefault + 0x8a0 (0x563eb4 in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #20: /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python() [0x68c048]
+frame #21: Py_RunMain + 0x1ac (0x68b70c in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #22: Py_BytesMain + 0x28 (0x68b3f8 in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+frame #23: <unknown function> + 0x284c4 (0x4000087984c4 in /lib/aarch64-linux-gnu/libc.so.6)
+frame #24: __libc_start_main + 0x98 (0x400008798598 in /lib/aarch64-linux-gnu/libc.so.6)
+frame #25: _start + 0x30 (0x5f6df0 in /projects/u6vs/hnc-organism/venvs/aureon-sft/bin/python)
+
+W1027 15:37:48.329000 108291 torch/distributed/elastic/rendezvous/dynamic_rendezvous.py:1292] The node 'nid010808_108291_0' has failed to shutdown the rendezvous '7763985' due to an error of type RendezvousConnectionError.
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/dist-packages/torch/distributed/run.py", line 896, in <module>
+    main()
+  File "/usr/local/lib/python3.12/dist-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/distributed/run.py", line 892, in main
+    run(args)
+  File "/usr/local/lib/python3.12/dist-packages/torch/distributed/run.py", line 883, in run
+    elastic_launch(
+  File "/usr/local/lib/python3.12/dist-packages/torch/distributed/launcher/api.py", line 139, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/distributed/launcher/api.py", line 270, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+/projects/u6vs/hnc-organism/training/pretrain.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-10-27_15:37:47
+  host      : nid010808
+  rank      : 6 (local_rank: 2)
+  exitcode  : 1 (pid: 108376)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+[default0]:[pretrain] vocab_size 152064 -> 65536 to match the tokenizer that produced the shards
+[default2]:[pretrain] vocab_size 152064 -> 65536 to match the tokenizer that produced the shards
+[default3]:[pretrain] vocab_size 152064 -> 65536 to match the tokenizer that produced the shards
+[default1]:[pretrain] vocab_size 152064 -> 65536 to match the tokenizer that produced the shards
+srun: error: nid010743: task 0: Exited with exit code 1
+srun: Terminating StepId=7763985.0
+srun: error: nid010808: task 1: Exited with exit code 1

@@ -1,0 +1,25 @@
+{
+  "vocab_size": 16000,
+  "vocab_requested": 16000,
+  "round_trip_ok": true,
+  "identifiers": {
+    "hnc_coherence_field": 2,
+    "aureon_swarm_search": 3,
+    "reconstruction_error": 3,
+    "self_coder_benchmark": 2,
+    "x": 1
+  },
+  "holdout": {
+    "split": "holdout",
+    "bytes_measured": 1082290,
+    "chars_per_token": 3.609,
+    "tokens_for_measured_text": 286691,
+    "by_ext": {
+      ".py": {
+        "chars": 1034525,
+        "tokens": 286691,
+        "chars_per_token": 3.609
+      }
+    }
+  }
+}

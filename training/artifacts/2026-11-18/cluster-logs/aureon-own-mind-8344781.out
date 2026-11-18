@@ -1,0 +1,13 @@
+[own-mind] job=8344781 node=nid011203 model=/projects/u6vs/hnc-organism/runs/aureon-7b-v65k/hf
+INFO:    fuse2fs not found, will not be able to mount EXT3 filesystems
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+Traceback (most recent call last):
+  File "/projects/u6vs/hnc-organism/training/own_mind.py", line 243, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/projects/u6vs/hnc-organism/training/own_mind.py", line 181, in main
+    module, auris_path = load_auris()
+                         ^^^^^^^^^^^^
+  File "/projects/u6vs/hnc-organism/training/own_mind.py", line 45, in load_auris
+    raise FileNotFoundError("auris_metacognition.py not found in " + ", ".join(map(str, AURIS_CANDIDATES)))
+FileNotFoundError: auris_metacognition.py not found in /projects/u6vs/hnc-organism/aureon/vault/auris_metacognition.py, /projects/u6vs/hnc-organism/aureon/vault/auris_metacognition.py

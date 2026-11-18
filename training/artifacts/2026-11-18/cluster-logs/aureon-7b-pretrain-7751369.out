@@ -1,0 +1,43 @@
+[pretrain] job=7751369 node=nid010152 steps=30
+GPU 0: NVIDIA GH200 120GB (UUID: GPU-f6c2124e-a42e-80a3-2ca3-76f9b16a1278)
+GPU 1: NVIDIA GH200 120GB (UUID: GPU-9d3c7691-e9bb-b4d3-6295-5a2d3734ca1d)
+GPU 2: NVIDIA GH200 120GB (UUID: GPU-404d746c-e2cd-0072-e2ed-3e92e3749b77)
+GPU 3: NVIDIA GH200 120GB (UUID: GPU-b7e295cf-9dcb-01bd-db08-92e69503f912)
+INFO:    fuse2fs not found, will not be able to mount EXT3 filesystems
+INFO:    gocryptfs not found, will not be able to use gocryptfs
+[pretrain] vocab_size 152064 -> 65536 to match the tokenizer that produced the shards
+[pretrain] vocab_size 152064 -> 65536 to match the tokenizer that produced the shards
+[pretrain] vocab_size 152064 -> 65536 to match the tokenizer that produced the shards
+[pretrain] vocab_size 152064 -> 65536 to match the tokenizer that produced the shards
+{
+  "params": 6995383808,
+  "params_b": 6.995,
+  "world_size": 4,
+  "shards": 1355,
+  "corpus_tokens": 271000000000,
+  "tokens_per_optimizer_step": 131072,
+  "planned_steps": 30
+}
+/projects/u6vs/hnc-organism/training/pretrain.py:280: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /opt/pytorch/pytorch/aten/src/ATen/native/Scalar.cpp:22.)
+  "step": step, "loss": round(float(loss.item()), 4),
+{"step": 10, "loss": 11.5874, "lr": "1.500e-06", "tokens": 1310400, "tokens_per_s": 21164, "eta_h": 0.0}
+{"step": 20, "loss": 9.8147, "lr": "3.000e-06", "tokens": 2620800, "tokens_per_s": 21210, "eta_h": 0.0}
+/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:680: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+  warnings.warn(
+/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:680: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+  warnings.warn(
+/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:680: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+  warnings.warn(
+{"step": 30, "loss": 8.1077, "lr": "4.500e-06", "tokens": 3931200, "tokens_per_s": 21199, "eta_h": 0.0}
+/usr/local/lib/python3.12/dist-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:680: FutureWarning: FSDP.state_dict_type() and FSDP.set_state_dict_type() are being deprecated. Please use APIs, get_state_dict() and set_state_dict(), which can support different parallelisms, FSDP1, FSDP2, DDP. API doc: https://pytorch.org/docs/stable/distributed.checkpoint.html#torch.distributed.checkpoint.state_dict.get_state_dict .Tutorial: https://pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html .
+  warnings.warn(
+/usr/local/lib/python3.12/dist-packages/torch/distributed/distributed_c10d.py:860: UserWarning: `_get_pg_default_device` will be deprecated, it only stays for backward-compatiblity reason. If you need to find a device for object collectives, please use `_get_object_coll_device`. If you need to query the device types supported by group, please use `_device_capability(group)`. 
+  warnings.warn(
+/usr/local/lib/python3.12/dist-packages/torch/distributed/distributed_c10d.py:860: UserWarning: `_get_pg_default_device` will be deprecated, it only stays for backward-compatiblity reason. If you need to find a device for object collectives, please use `_get_object_coll_device`. If you need to query the device types supported by group, please use `_device_capability(group)`. 
+  warnings.warn(
+/usr/local/lib/python3.12/dist-packages/torch/distributed/distributed_c10d.py:860: UserWarning: `_get_pg_default_device` will be deprecated, it only stays for backward-compatiblity reason. If you need to find a device for object collectives, please use `_get_object_coll_device`. If you need to query the device types supported by group, please use `_device_capability(group)`. 
+  warnings.warn(
+/usr/local/lib/python3.12/dist-packages/torch/distributed/distributed_c10d.py:860: UserWarning: `_get_pg_default_device` will be deprecated, it only stays for backward-compatiblity reason. If you need to find a device for object collectives, please use `_get_object_coll_device`. If you need to query the device types supported by group, please use `_device_capability(group)`. 
+  warnings.warn(
+[pretrain] done: 30 steps, 0.00B tokens

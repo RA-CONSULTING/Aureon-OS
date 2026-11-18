@@ -1,0 +1,48 @@
+[probe] pinning /projects/u6vs/hnc-organism/runs/aureon-7b-v65k/ckpt_0017000.pt -> /projects/u6vs/hnc-organism/runs/aureon-7b-v65k/pinned/ckpt_0017000.pt
+[probe] job=8593274 node=nid010489
+GPU 0: NVIDIA GH200 120GB (UUID: GPU-5fc32292-9048-f2fd-a2ca-98c72396a450)
+GPU 1: NVIDIA GH200 120GB (UUID: GPU-132deddc-95a6-566b-855d-b37a29140174)
+GPU 2: NVIDIA GH200 120GB (UUID: GPU-4be08432-e5ee-c2eb-b0a3-b234fb7fe105)
+GPU 3: NVIDIA GH200 120GB (UUID: GPU-43f63b04-fefb-245b-00d5-c559414105ce)
+[probe] exporting -> /projects/u6vs/hnc-organism/runs/aureon-7b-v65k/hf-17k
+[export] 6.995B params, vocab 65536 -> /projects/u6vs/hnc-organism/runs/aureon-7b-v65k/hf-17k
+[probe] sampling
+{
+  "model": "/projects/u6vs/hnc-organism/runs/aureon-7b-v65k/hf-17k",
+  "params": 6995383808,
+  "vocab_size": 65536,
+  "eos_token": "<eos>",
+  "device": "cuda"
+}
+--- prompt ---
+system: You are Aureon, a coding agent working inside the Aureon-OS repository. You write Python that matches the repository's existing module layout, type hints, and docstring conventions.
+user: Write the Python module aureon_systems/aureon_lattice_simulation.py in the Aureon-OS repository.
+assistant:
+--- continuation ---
+Buildtheproject ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+[probe] eval_gate self-test
+[self-test] reference-vs-itself  recall=1.000 parse=1.000 -> OK
+[self-test] empty-generation     recall=0.000 parse=0.000 -> OK
+[self-test] fence-stripping     recall=1.000 parses=True -> OK
+[probe] quick eval (limit=120, raw prompts)
+Traceback (most recent call last):
+  File "/projects/u6vs/hnc-organism/training/eval_gate.py", line 322, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/projects/u6vs/hnc-organism/training/eval_gate.py", line 318, in main
+    return args.func(args)
+           ^^^^^^^^^^^^^^^
+  File "/projects/u6vs/hnc-organism/training/eval_gate.py", line 206, in cmd_run
+    generations = generate_all(args, rows)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/projects/u6vs/hnc-organism/training/eval_gate.py", line 184, in generate_all
+    ids = model.generate(
+          ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/projects/u6vs/hnc-organism/venvs/aureon-sft/lib/python3.12/site-packages/transformers/generation/utils.py", line 2390, in generate
+    self._validate_model_kwargs(model_kwargs.copy())
+  File "/projects/u6vs/hnc-organism/venvs/aureon-sft/lib/python3.12/site-packages/transformers/generation/utils.py", line 1599, in _validate_model_kwargs
+    raise ValueError(
+ValueError: The following `model_kwargs` are not used by the model: ['token_type_ids'] (note: typos in the generate arguments will also show up in this list)

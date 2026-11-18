@@ -1,0 +1,9 @@
+{
+  "source_checkpoint": "ckpt_0000030.pt",
+  "step": 30,
+  "tokens": 3931200,
+  "params": 6995383808,
+  "params_b": 6.995,
+  "vocab_size": 65536,
+  "eos_token": "<eos>"
+}
