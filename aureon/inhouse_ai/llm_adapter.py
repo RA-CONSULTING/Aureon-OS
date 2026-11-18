@@ -2079,6 +2079,43 @@ class AureonAnthropicAdapter(LLMAdapter):
         return bool(self._client)
 
 
+def _aureon_own_adapter() -> AureonLocalAdapter:
+    """Adapter to the Aureon OWN served model — the self-sufficiency endpoint.
+
+    The organism's own weights, served by training/aureon_chat_server.py
+    (on Isambard via training/chat_server_now.sbatch) instead of any external
+    or paid API. The chat contract is byte-identical at both ends:
+    prompt_contract.SYSTEM inside the server's format_prompt, and this
+    adapter's default system prompt both come from training/prompt_contract.py.
+
+    Defaults assume the documented tunnel:
+        ssh -L 11435:<node-ip>:8000 u6vs.aip2.isambard
+    Override with AUREON_OWN_LLM_BASE_URL / AUREON_OWN_LLM_MODEL, or drop the
+    tunnel entirely when Aureon-OS runs on the same node as the server.
+    """
+    base = (
+        os.environ.get("AUREON_OWN_LLM_BASE_URL", "") or "http://127.0.0.1:11435/v1"
+    ).strip()
+    model = (
+        os.environ.get("AUREON_OWN_LLM_MODEL", "") or "aureon-7b-v65k"
+    ).strip()
+    api_key = os.environ.get("AUREON_OWN_LLM_API_KEY") or None
+    return AureonLocalAdapter(
+        base_url=base,
+        model=model,
+        api_key=api_key,
+        strict_loopback_no_redirects=base.startswith("http://127.0.0.1"),
+    )
+
+
+def _own_model_reachable() -> bool:
+    try:
+        return _aureon_own_adapter().health_check()
+    except Exception as exc:  # noqa: BLE001 — reachability probe must never raise
+        logger.debug("aureon own-model probe failed: %s", exc)
+        return False
+
+
 def build_voice_adapter(lane: str = "general") -> LLMAdapter:
     """
     Build a safe default adapter for the Vault Voice layer.
@@ -2095,6 +2132,27 @@ def build_voice_adapter(lane: str = "general") -> LLMAdapter:
 
     if backend in ("brain", "aureonbrain", "rule", "rules"):
         return AureonBrainAdapter()
+
+    if backend in ("aureon", "own", "own_model", "aureon_own_model"):
+        if _llm_http_disabled():
+            return AureonStubAdapter(
+                "AUREON_LLM_OFFLINE=1 blocks the Aureon own-model endpoint.\n"
+                "Unset it for self-hosted inference.",
+                model="aureon-own-offline",
+            )
+        local_own = _aureon_own_adapter()
+        if local_own.health_check():
+            return local_own
+        return AureonStubAdapter(
+            "Aureon's own model endpoint is not reachable.\n"
+            "Serve it from Isambard with:\n"
+            "  sbatch training/chat_server_now.sbatch\n"
+            "then tunnel from this machine:\n"
+            "  ssh -L 11435:<node-ip>:8000 u6vs.aip2.isambard\n"
+            "(the node-ip is printed in the chat-server job log), or set\n"
+            "AUREON_OWN_LLM_BASE_URL if the server lives elsewhere.",
+            model="aureon-own-unavailable",
+        )
 
     if backend in ("hybrid", "ollama_hybrid", "cognitive", "cognitive_ollama", "aureon_hybrid"):
         try:
@@ -2141,6 +2199,16 @@ def build_voice_adapter(lane: str = "general") -> LLMAdapter:
         )
 
     if backend in ("", "auto", "local", "aureon_ollama", "unified_cognitive"):
+        # Self-sufficiency first: the Aureon own-model endpoint outranks every
+        # other default when it is reachable (it is the whole point of the
+        # training pipeline — no borrowed weights, no paid API).
+        if not _llm_http_disabled():
+            try:
+                own_candidate = _aureon_own_adapter()
+                if own_candidate.health_check():
+                    return own_candidate
+            except Exception as exc:  # noqa: BLE001
+                logger.debug("aureon own-model auto-probe failed: %s", exc)
         try:
             from aureon.integrations.ollama import OllamaModelSwitchboard
 
