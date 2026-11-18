@@ -197,15 +197,15 @@ def main() -> int:
     rows, dropped_long, dropped_bad = build_rows(args)
     batches, n_micro, _ = make_batches(
         rows, args.batch_size, rank, world, args.seed, args.seq_len)
-    # Each rank owns its own stride of the global batch list (batches[r::world],
-    # returned as `batches`). One optimizer step consumes grad_accum batches
-    # FROM THIS RANK'S OWN LIST — consecutive locals, not a world stride. The
-    # step count is derived from the LARGEST rank share so every rank runs the
-    # same step count; when a rank runs out of its own micros it repeats its
-    # last batch instead of skipping, because a skipped backward would
-    # desynchronise the FSDP gradient all-reduce and hang the job.
-    n_max = (len(batches) + world - 1) // world
-    steps_per_epoch = (n_max + args.grad_accum - 1) // args.grad_accum
+    # `batches` here is THIS rank's own stride of the global batch list
+    # (batches[r::world], returned by make_batches). One optimizer step
+    # consumes grad_accum consecutive micro-batches from that same list, so
+    # the step count is simply ceil(len(rank_local)/grad_accum). Rank-local
+    # sizes differ by at most one micro, so every rank derives the SAME
+    # step count; an exhausted tail repeats its last batch instead of
+    # skipping, because a skipped backward would desynchronise the FSDP
+    # gradient all-reduce and hang the job.
+    steps_per_epoch = (len(batches) + args.grad_accum - 1) // args.grad_accum
     total_steps = steps_per_epoch * args.epochs
     if rank == 0:
         print(json.dumps({
