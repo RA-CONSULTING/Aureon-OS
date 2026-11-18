@@ -195,8 +195,14 @@ def main() -> int:
     out.mkdir(parents=True, exist_ok=True)
 
     rows, dropped_long, dropped_bad = build_rows(args)
-    batches, n_micro, steps_per_epoch = make_batches(
+    batches, n_micro, _ = make_batches(
         rows, args.batch_size, rank, world, args.seed, args.seq_len)
+    # len(batches) is the GLOBAL batch list: one optimizer step consumes
+    # grad_accum batches PER RANK, i.e. grad_accum*world batches globally.
+    # The training loop below is bound by this number; computing it here (not
+    # inside make_batches) keeps the LR schedule and resume math consistent.
+    steps_per_epoch = (len(batches) + args.grad_accum * world - 1) // (
+        args.grad_accum * world)
     total_steps = steps_per_epoch * args.epochs
     if rank == 0:
         print(json.dumps({
