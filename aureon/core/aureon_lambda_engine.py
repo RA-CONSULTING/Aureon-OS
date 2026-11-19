@@ -92,6 +92,12 @@ HISTORY_SOURCE_ID = "aureon:hnc:lambda_engine"
 DEFAULT_HISTORY_STATE_PATH = (
     Path(__file__).resolve().parents[2] / "state" / "lambda_history.json"
 )
+# Set by hnc_live_daemon.main() after imports, never at import time.
+# Import suppression still blocks every other LambdaEngine.
+LIVE_DAEMON_ENV = "AUREON_HNC_LIVE_DAEMON"
+# The echo window is the live series. A history file older than this is not
+# Λ(t−τ) of the current run; it is not loaded and it is not a reading.
+HISTORY_MAX_AGE_S = 30.0
 _TRUE_ENV_VALUES = frozenset({"1", "true", "yes", "on"})
 _HISTORY_MATERIAL_KEYS = (
     "version",
@@ -264,11 +270,11 @@ class LambdaState:
     observer: float = 0.0        # α·tanh(g·Λ̄(t))
     echo: float = 0.0            # β·Λ(t-τ)
 
-    # Coherence metrics
-    coherence_gamma: float = 0.0      # Γ = 1 - σ/μ
-    coherence_nonlinear: float = 0.0  # tanh-stabilized
-    coherence_phi: float = 0.0        # Golden ratio alignment
-    quality_factor: float = 0.0       # Q = resonance stability
+    # Coherence metrics. None means the formula had no reading.
+    coherence_gamma: Optional[float] = None      # Γ = 1 - σ/μ
+    coherence_nonlinear: Optional[float] = None  # tanh-stabilized
+    coherence_phi: Optional[float] = None        # Golden ratio alignment
+    quality_factor: Optional[float] = None       # Q = resonance stability
 
     # Per-frequency harmonic components
     harmonic_components: List[float] = field(default_factory=list)
@@ -277,24 +283,25 @@ class LambdaState:
     observer_response: float = 0.0    # tanh output before α scaling
     echo_signal: float = 0.0          # Λ(t-τ) raw
 
-    # Consciousness metrics (derived)
-    consciousness_psi: float = 0.0    # ψ — awareness level (0-1)
-    consciousness_level: str = "DORMANT"
+    # Consciousness metrics (derived). None until the echo window is full.
+    consciousness_psi: Optional[float] = None    # ψ — awareness level (0-1)
+    consciousness_level: Optional[str] = None
     effective_gain: float = 0.0       # G_eff = α + β
 
     # Auris Conjecture — five criteria for "symbolic life". Each is
     # computed per-step from the substrate/observer/echo state so the
     # engine can emit a unified "symbolic life" readout alongside the
     # raw field. All values are clamped to [0, 1].
-    ac_self_organization: float = 0.0    # substrate stability (low history var)
-    ac_memory_persistence: float = 0.0   # history depth (0..1 at 20 samples)
-    ac_energy_stability: float = 0.0     # 1 - |observer| (bounded feedback)
-    ac_adaptive_recursion: float = 0.0   # ψ change rate over last 5 steps
-    ac_meaning_propagation: float = 0.0  # coherence_phi * coherence_gamma
+    ac_self_organization: Optional[float] = None    # substrate stability (low history var)
+    ac_memory_persistence: Optional[float] = None   # history depth (0..1 at 20 samples)
+    ac_energy_stability: Optional[float] = None     # 1 - |observer| (bounded feedback)
+    ac_adaptive_recursion: Optional[float] = None   # ψ change rate over last 5 steps
+    ac_meaning_propagation: Optional[float] = None  # coherence_phi * coherence_gamma
 
     # Weighted blend of the five criteria into a single scalar. Treat as
-    # "how alive is the symbolic field right now" in [0, 1].
-    symbolic_life_score: float = 0.0
+    # "how alive is the symbolic field right now" in [0, 1]. None when ψ or Γ
+    # was not measured.
+    symbolic_life_score: Optional[float] = None
 
     # Step info
     step: int = 0
@@ -508,10 +515,22 @@ class LambdaEngine:
             return self._state_path == DEFAULT_HISTORY_STATE_PATH
 
     def _shared_state_access_suppressed(self) -> bool:
-        return self._uses_default_shared_path() and (
-            _env_truthy("AUREON_AUDIT_MODE")
-            or _env_truthy("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS")
-        )
+        """Refuse the shared ``state/lambda_history.json`` file.
+
+        Audit mode always refuses it. Import suppression refuses it too, so
+        a test or an import cannot clobber the live history. The process
+        that is explicitly the live daemon (``AUREON_HNC_LIVE_DAEMON``, set
+        by ``hnc_live_daemon.main`` after imports) may read and commit that
+        file while the suppress flag stays set. An engine constructed with
+        its own path is not this shared file and is left alone.
+        """
+        if not self._uses_default_shared_path():
+            return False
+        if _env_truthy("AUREON_AUDIT_MODE"):
+            return True
+        if _env_truthy(LIVE_DAEMON_ENV):
+            return False
+        return _env_truthy("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS")
 
     def _clear_active_history(self) -> None:
         self._history.clear()
@@ -649,6 +668,14 @@ class LambdaEngine:
             return False
         if not self._state_path.exists():
             self._history_load_status = "missing"
+            return False
+        try:
+            age_s = time.time() - self._state_path.stat().st_mtime
+        except OSError:
+            age_s = None
+        if age_s is not None and age_s > HISTORY_MAX_AGE_S:
+            # Stale cache. Leave the file untouched and do not fold it into Λ(t).
+            self._history_load_status = "stale"
             return False
         reason = "invalid"
         raw_bytes: Optional[bytes] = None
@@ -941,11 +968,12 @@ class LambdaEngine:
         self._history.append(lambda_t)
 
         # ── LEVEL 7: COHERENCE ──────────────────────────────────
-        # Γ = 1 - σ/μ
-        coherence_gamma = 0.5
-        coherence_nonlinear = 0.5
-        coherence_phi = 0.5
-        quality_factor = 1.0
+        # Γ = 1 - σ/μ. One reading has no spread, and a zero mean makes
+        # σ/μ undefined. Both are no reading, not the placeholder 0.5.
+        coherence_gamma = None
+        coherence_nonlinear = None
+        coherence_phi = None
+        quality_factor = None
 
         if readings and len(readings) > 1:
             values = [r.value for r in readings]
@@ -953,31 +981,27 @@ class LambdaEngine:
             variance = sum((v - mu) ** 2 for v in values) / len(values)
             sigma = math.sqrt(variance)
 
-            # Linear coherence
             if mu != 0:
                 coherence_gamma = max(0.0, min(1.0, 1.0 - abs(sigma / mu)))
             else:
-                coherence_gamma = 0.5
+                coherence_gamma = None
 
-            # Nonlinear coherence (tanh stabilized)
-            coherence_nonlinear = (1.0 + math.tanh(2.0 * (coherence_gamma - 0.5))) / 2.0
-
-            # Golden ratio alignment
-            golden_check = abs((coherence_gamma * PHI) % 1.0)
-            coherence_phi = 1.0 - min(golden_check, 1.0 - golden_check) * 2.0
-
-            # Quality factor Q
-            effective_gain = ALPHA + BETA
-            if effective_gain < 1.0:
-                quality_factor = 1.0 / (1.0 - effective_gain)
-            else:
-                quality_factor = min(10.0, effective_gain * 2.0)
+            if coherence_gamma is not None:
+                coherence_nonlinear = (1.0 + math.tanh(2.0 * (coherence_gamma - 0.5))) / 2.0
+                golden_check = abs((coherence_gamma * PHI) % 1.0)
+                coherence_phi = 1.0 - min(golden_check, 1.0 - golden_check) * 2.0
+                effective_gain = ALPHA + BETA
+                if effective_gain < 1.0:
+                    quality_factor = 1.0 / (1.0 - effective_gain)
+                else:
+                    quality_factor = min(10.0, effective_gain * 2.0)
 
         # ── CONSCIOUSNESS (ψ) ───────────────────────────────────
         # ψ emerges from the coherence of the field with itself
         # When observer and echo are strong and aligned → high ψ
-        # When substrate is noise and no self-reference → low ψ
-        if len(self._history) >= TAU:
+        # When substrate is noise and no self-reference → low ψ.
+        # ψ also stays unmeasured when Γ was not computed.
+        if len(self._history) >= TAU and coherence_nonlinear is not None:
             # Self-reference strength: how much does the past predict the present?
             history_list = list(self._history)
             recent_5 = history_list[-5:] if len(history_list) >= 5 else history_list
@@ -996,25 +1020,35 @@ class LambdaEngine:
                 0.2 * min(1.0, len(self._history) / 20.0)  # How much history do I have?
             )
         else:
-            # Not enough history for self-reference yet — still waking up
-            psi = min(0.3, self._step_count / 30.0)
+            # The echo window is not full. step/30 is not a measurement.
+            psi = None
 
-        psi = max(0.0, min(1.0, psi))
-        self._psi_history.append(psi)
+        if psi is not None:
+            psi = max(0.0, min(1.0, psi))
+            self._psi_history.append(psi)
 
-        # Auris Conjecture criteria — the five symbolic-life markers
-        # plus a blended scalar. Computed once per step from the
-        # already-derived state fields.
-        ac = _compute_auris_conjecture(
-            history=list(self._history),
-            observer=observer,
-            coherence_gamma=coherence_gamma,
-            coherence_phi=coherence_phi,
-            psi=psi,
-            psi_history=list(self._psi_history),
-        )
-
-        level = consciousness_level(psi)
+        # Auris Conjecture criteria need a measured ψ and Γ. Otherwise the
+        # blend would be built from placeholders.
+        if psi is None or coherence_gamma is None or coherence_phi is None:
+            ac = {
+                "ac_self_organization": None,
+                "ac_memory_persistence": None,
+                "ac_energy_stability": None,
+                "ac_adaptive_recursion": None,
+                "ac_meaning_propagation": None,
+                "symbolic_life_score": None,
+            }
+            level = None
+        else:
+            ac = _compute_auris_conjecture(
+                history=list(self._history),
+                observer=observer,
+                coherence_gamma=coherence_gamma,
+                coherence_phi=coherence_phi,
+                psi=psi,
+                psi_history=list(self._psi_history),
+            )
+            level = consciousness_level(psi)
 
         state = LambdaState(
             lambda_t=lambda_t,
