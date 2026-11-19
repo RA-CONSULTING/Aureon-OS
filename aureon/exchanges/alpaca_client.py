@@ -383,14 +383,16 @@ class AlpacaClient:
             body = str(body)
         code_match = re.search(r'"code"\s*:\s*"?(?P<code>-?\d+)"?', body)
         code = code_match.group("code") if code_match else ""
-        if status_code in (401, 403) or code == "40110000":
-            self._set_auth_outcome("rejected", f"alpaca auth rejected {code or status_code}")
-            return
         authenticated_call = (
             str(request_type or "") == "trading"
             and str(endpoint or "").startswith("/v2/")
             and request_base == self.base_url
         )
+        # A data-API 403 is a plan or feed limit, not a refused trading key.
+        # 40110000 is Alpaca's credential refusal and counts on any endpoint.
+        if code == "40110000" or (authenticated_call and status_code in (401, 403)):
+            self._set_auth_outcome("rejected", f"alpaca auth rejected {code or status_code}")
+            return
         if not authenticated_call:
             return
         if 200 <= status_code < 300:

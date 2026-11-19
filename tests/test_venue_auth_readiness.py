@@ -304,3 +304,149 @@ def test_alpaca_40110000_is_not_ready_and_binance_success_stays_ready(monkeypatc
     routes = _route_map(trader)
     assert routes[("alpaca", "spot")]["ready"] is True
     assert routes[("binance", "spot")]["ready"] is True
+
+
+def test_data_api_403_does_not_reject_a_verified_alpaca_client(monkeypatch):
+    _block_real_http(monkeypatch)
+    alpaca = _alpaca(monkeypatch)
+    alpaca._set_auth_outcome("verified", "ok")
+    alpaca.session = _ScriptedSession(
+        lambda method, url, **kwargs: _Response(
+            403,
+            '{"message":"subscription does not permit recent SIP data"}',
+        )
+    )
+
+    alpaca._request(
+        "GET",
+        "/v2/stocks/bars",
+        params={"symbols": "AAPL", "feed": "sip"},
+        base_url=alpaca.data_url,
+        request_type="data",
+    )
+
+    assert alpaca.session.calls == ["GET https://data.alpaca.markets/v2/stocks/bars"]
+    assert alpaca.auth_status == "verified"
+    assert alpaca.auth_reason == "ok"
+    assert alpaca.auth_verified is True
+
+
+def test_positions_40110000_rejects_alpaca_without_a_retry(monkeypatch):
+    _block_real_http(monkeypatch)
+    monkeypatch.setenv("ALPACA_RETRY_COUNT", "5")
+    alpaca = _alpaca(monkeypatch)
+    assert alpaca.max_retries == 5
+    alpaca._set_auth_outcome("verified", "ok")
+    alpaca.session = _ScriptedSession(
+        lambda method, url, **kwargs: _Response(401, ALPACA_AUTH_BODY)
+    )
+
+    result = alpaca._request("GET", "/v2/positions", request_type="trading")
+
+    assert result == {}
+    assert alpaca.session.calls == ["GET https://api.alpaca.markets/v2/positions"]
+    assert alpaca.auth_status == "rejected"
+    assert alpaca.auth_reason == "alpaca auth rejected 40110000"
+
+
+def test_rejected_alpaca_and_binance_keys_never_submit_or_retry(monkeypatch):
+    """A refused key stops before place_market_order and before the retry loop."""
+
+    _block_real_http(monkeypatch)
+    monkeypatch.setenv("ALPACA_RETRY_COUNT", "5")
+    alpaca = _alpaca(monkeypatch)
+    binance = _binance(monkeypatch)
+    binance.max_retries = 4
+    alpaca.session = _ScriptedSession(
+        lambda method, url, **kwargs: _Response(401, ALPACA_AUTH_BODY)
+    )
+    binance.session = _ScriptedSession(
+        lambda method, url, **kwargs: _Response(
+            401,
+            '{"code":-2015,"msg":"Invalid API-key, IP, or permissions for action."}',
+        )
+    )
+
+    alpaca._request("GET", "/v2/positions", request_type="trading")
+    with pytest.raises(RuntimeError):
+        binance.account()
+
+    assert alpaca.session.calls == ["GET https://api.alpaca.markets/v2/positions"]
+    assert binance.session.calls == ["GET https://api.binance.com/api/v3/account"]
+    assert alpaca.auth_status == "rejected"
+    assert binance.auth_status == "rejected"
+    assert "40110000" in alpaca.auth_reason
+    assert binance.auth_reason.startswith("binance auth rejected")
+
+    alpaca.session = _BlockedSession()
+    binance.session = _BlockedSession()
+    submits: list[str] = []
+
+    def _refuse_submit(venue):
+        def submit(*args, **kwargs):
+            submits.append(venue)
+            raise AssertionError(f"{venue} order submit")
+
+        return submit
+
+    alpaca.place_market_order = _refuse_submit("alpaca")
+    binance.place_market_order = _refuse_submit("binance")
+    binance.place_margin_order = _refuse_submit("binance-margin")
+
+    trader = _trader()
+    trader.alpaca = alpaca
+    trader.binance = binance
+    trader.alpaca_error = ""
+    trader.binance_error = ""
+    trader.kraken_ready = False
+    trader.capital_ready = False
+    trader._dynamic_intelligence_budget = {"schema_version": 1, "exchanges": {}}
+    trader._binance_diag = {
+        "network_ok": True,
+        "account_ok": False,
+        "margin_available": False,
+        "uk_mode": True,
+    }
+    alpaca.get_crypto_orderbook = lambda *args, **kwargs: {}
+    alpaca.get_account_balance = lambda: {}
+    alpaca.get_positions = lambda: []
+    trader._execution_blockers = lambda payload, action_plan: []
+    trader._persist_execution_summary = lambda summary: None
+
+    routes = _route_map(trader)
+    assert routes[("alpaca", "spot")]["ready"] is False
+    assert "alpaca auth rejected 40110000" in routes[("alpaca", "spot")]["blockers"]
+    assert routes[("binance", "spot")]["ready"] is False
+    assert routes[("binance", "spot")]["blockers"]
+
+    order_flow = trader._build_global_order_flow_feed(
+        {},
+        {},
+        {
+            "symbols": {
+                "BTCUSD": {
+                    "strength": 0.9,
+                    "confidence": 0.88,
+                    "support_count": 4,
+                    "side": "BUY",
+                    "sources": ["alpaca", "binance"],
+                    "reference_price": 50000.0,
+                    "change_pct": 1.2,
+                }
+            }
+        },
+        {"symbols": {"BTCUSD": 0.9}},
+    )
+    summary = trader._execute_runtime_order_actions(
+        {
+            "shared_order_flow": order_flow,
+            "exchange_action_plan": {"order_intent_publish_enabled": True},
+            "combined": {"open_positions": 0},
+        }
+    )
+
+    assert submits == []
+    assert summary["submitted_count"] == 0
+    assert summary["attempted_count"] == 0
+    assert alpaca.session.calls == []
+    assert binance.session.calls == []
