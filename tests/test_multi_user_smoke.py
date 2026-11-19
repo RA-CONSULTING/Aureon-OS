@@ -12,6 +12,8 @@ import pytest
 from aureon.containment.multi_user_smoke import (
     _RECEIPT_LABEL,
     _SHM_READ_CAP,
+    _SOURCE_FILES,
+    _UNCHANGED_FILES,
     PIN,
     STARTED_FROM,
     _scan_new_shm,
@@ -58,6 +60,7 @@ def _child(**overrides: object) -> dict:
         "live_trading": False,
         "market_data_fetched": False,
         "listener_bound": False,
+        "exchange_module_count": 0,
         "production_ready": False,
         "magic_star_release": False,
         "report_contained_secret": False,
@@ -364,28 +367,17 @@ def test_committed_receipt_keeps_the_release_hold() -> None:
     memory = receipt["shared_memory"]
     assert memory["dev_shm_preexisting_read"] is False
     assert "No universal shared-memory-leak claim" in memory["claim"]
+    assert receipt["holds"] == []
+    assert receipt["child"]["exchange_module_count"] == 0
+    assert receipt["worktree_dirty_at_measurement"] is False
+    # The receipt is bound to the bytes it measured, not to a commit id, so a
+    # squash merge keeps it valid and any edit to a measured file breaks it.
+    assert set(receipt["source_sha256"]) == set(_SOURCE_FILES)
+    assert set(receipt["unchanged_sha256"]) == set(_UNCHANGED_FILES)
     for name, digest in receipt["source_sha256"].items():
-        assert _sha256(ROOT / name) == digest
+        assert _sha256(ROOT / name) == digest, f"{name} changed since the receipt was measured"
     for name, digest in receipt["unchanged_sha256"].items():
-        assert _sha256(ROOT / name) == digest
-    head = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout.strip()
-    parent = subprocess.run(
-        ["git", "rev-parse", "HEAD^"],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    allowed = {head}
-    if parent.returncode == 0:
-        allowed.add(parent.stdout.strip())
-    assert receipt["git_head_at_measurement"] in allowed
+        assert _sha256(ROOT / name) == digest, f"{name} changed since the receipt was measured"
     markdown = RECEIPT_MD.read_text(encoding="utf-8")
     assert f"**{receipt['verdict']}**" in markdown
     assert "not a supported public runtime" in markdown
@@ -425,3 +417,22 @@ def _sha256(path: Path) -> str:
     import hashlib
 
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def test_judge_holds_when_the_child_imported_exchange_modules() -> None:
+    judged = judge(_child(exchange_module_count=10), started=True, parent_net_ns="net:[1]", argv_has_net=True)
+    assert judged["verdict"] == "hold"
+    assert "child imported 10 exchange modules" in judged["holds"]
+
+
+def test_judge_holds_when_exchange_module_count_is_missing() -> None:
+    child = _child()
+    child.pop("exchange_module_count", None)
+    judged = judge(child, started=True, parent_net_ns="net:[1]", argv_has_net=True)
+    assert judged["verdict"] == "hold"
+    assert "exchange_module_count was not reported" in judged["holds"]
+
+
+def test_judge_holds_when_exchange_module_count_is_a_bool() -> None:
+    judged = judge(_child(exchange_module_count=False), started=True, parent_net_ns="net:[1]", argv_has_net=True)
+    assert judged["verdict"] == "hold"
