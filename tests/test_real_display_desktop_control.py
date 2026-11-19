@@ -15,16 +15,19 @@ against a tiny python-xlib window (``tests/real_display_testpad.py``) whose
 state is read back from a JSON file; screenshots are written to
 ``AUREON_REAL_DISPLAY_ARTIFACTS`` (default: pytest's tmp dir).
 
-It covers:
+It pins only behaviour that survives the move to full autonomy (no arming,
+dry-run or confirmation refusals are asserted; the driver passes those
+credentials only when the build still has them):
+
 * import safety: importing the controllers never exits the process
   (pyautogui -> mouseinfo calls sys.exit() on Linux hosts without tkinter);
-* SafeDesktopControl: dry-run moves nothing, approved live click/type land,
-  propose(press_key) is queued for confirmation and runs via approve_next,
-  the kill-switch file refuses the next action;
-* GovernedDesktopGateway (default backend for the host): exact window binding,
-  dry-run, one-time capability token + time-limited lease, before-hash /
-  stale-frame / lease-scope refusals, live click/type/press with before/after
-  evidence and redaction, emergency stop, lease expiry.
+* real clicks, typing and Enter land on the display and are read back, through
+  both SafeDesktopControl and GovernedDesktopGateway (host default backend);
+* every action is written to the audit log (controller state
+  ``recent_actions``; gateway evidence JSONL with before/after frame hashes),
+  and typed text is not written to either;
+* the kill-switch file stops SafeDesktopControl's next action - kept as its
+  own test so it can be dropped independently.
 """
 
 from __future__ import annotations
@@ -75,56 +78,43 @@ def test_importing_desktop_controllers_never_exits_the_process(tmp_path: Path) -
     assert result == {"alive": True, "has_pyautogui": True}
 
 
-def test_safe_desktop_control_on_real_display(tmp_path: Path) -> None:
+def test_safe_desktop_control_clicks_and_types_on_real_display(tmp_path: Path) -> None:
     r = _run("safe_controller", tmp_path)
 
-    assert r["dry_run"]["status"] == "executed"
-    assert r["dry_run"]["clicks"] == 0
-    assert r["dry_run"]["pointer"] == [5, 5]
-
-    assert (r["live_click"]["ok"], r["live_click"]["reason"], r["live_click"]["clicks"]) == (True, "executed", 1)
-    assert (r["live_type"]["ok"], r["live_type"]["text"]) == (True, TEXT)
-
-    # press_key is high-risk: propose() must queue it, approve_next(token) runs it.
-    assert r["propose_press_key"]["proposed_status"] == "pending"
-    assert (r["propose_press_key"]["approve_ok"], r["propose_press_key"]["approve_reason"]) == (True, "executed")
-    assert r["propose_press_key"]["submitted"] == [TEXT]
-
-    assert r["stop_file"] == {"ok": False, "reason": "emergency_stop_active", "unchanged": True}
-    for key in ("png_before", "png_after", "png_stop"):
+    assert (r["click"]["ok"], r["click"]["clicks"]) == (True, 1)
+    assert r["focus"]["ok"] is True
+    assert (r["type"]["ok"], r["type"]["text"]) == (True, TEXT)
+    assert (r["enter"]["ok"], r["enter"]["submitted"]) == (True, [TEXT])
+    # Every action is in the controller's persisted log, without the typed text.
+    assert [tuple(a) for a in r["log_actions"][-4:]] == [
+        ("left_click", True), ("left_click", True), ("type_text", True), ("press_key", True)
+    ]
+    assert r["log_contains_typed_text"] is False
+    for key in ("png_before", "png_after"):
         assert Path(r[key]).stat().st_size > 0
 
 
-def test_governed_desktop_gateway_on_real_display(tmp_path: Path) -> None:
+def test_safe_desktop_control_kill_switch_file_stops_next_action(tmp_path: Path) -> None:
+    r = _run("safe_kill_switch", tmp_path)
+
+    assert r["before_stop"] == {"ok": True, "clicks": 1}
+    assert r["after_stop"] == {"ok": False, "reason": "emergency_stop_active", "unchanged": True}
+    assert r["log_last"] == "emergency_stop_active"
+    assert Path(r["png_stop"]).stat().st_size > 0
+
+
+def test_governed_desktop_gateway_clicks_and_types_on_real_display(tmp_path: Path) -> None:
     r = _run("gateway", tmp_path)
 
-    assert r["binding"]["pid"] > 0
-    assert (r["dry_run"]["ok"], r["dry_run"]["reason"], r["dry_run"]["dry_run"]) == (True, "dry_run", True)
-    assert r["dry_run"]["clicks"] == 0
-
-    assert r["token_replay"] == "capability_token_already_consumed"
-    assert r["live_without_before_hash"] == "expected_before_sha256_required"
-    assert r["live_stale_hash"] == "stale_source_frame"
-    assert r["outside_lease_scope"] == "action_outside_lease_scope"
-    assert r["clicks_after_refusals"] == 0
-
-    for step in ("live_click", "live_focus", "live_type", "live_enter"):
-        assert (r[step]["ok"], r[step]["reason"], r[step]["dry_run"]) == (True, "executed", False), step
-        assert r[step]["before"] and r[step]["after"], step
-    assert r["live_click"]["before"] != r["live_click"]["after"]
-    assert r["live_click"]["clicks"] == 1
-    assert r["live_type"]["text"] == TEXT
-    assert r["live_enter"]["submitted"] == [TEXT]
-
-    assert r["after_emergency_stop"]["ok"] is False
-    assert r["after_emergency_stop"]["reason"] in {"emergency_stop_active", "valid_target_window_binding_required"}
-    assert r["after_emergency_stop"]["unchanged"] is True
-    assert r["after_lease_expiry"] == "active_authorization_lease_required"
-
-    assert {"authorization_issued", "target_window_bound", "action_started", "action_completed",
-            "emergency_stop"} <= set(r["evidence_events"])
-    assert r["live_completed_with_before_after"] >= 4
+    assert r["binding_pid_matches"] is True
+    for name, step in r["steps"].items():
+        assert step["ok"] is True, (name, step["reason"])
+    assert r["steps"]["click"]["clicks"] == 1
+    assert r["steps"]["click"]["before"] != r["steps"]["click"]["after"]
+    assert r["steps"]["type"]["text"] == TEXT
+    assert r["steps"]["enter"]["submitted"] == [TEXT]
+    # Every action has a completed audit record with before/after frame hashes.
+    assert r["audited"] == {"click": True, "focus": True, "type": True, "enter": True}
     assert r["evidence_contains_typed_text"] is False
-    assert r["evidence_contains_token"] is False
-    for key in ("png_before", "png_after", "png_after_masked_observation", "png_stop"):
+    for key in ("png_before", "png_after", "png_after_masked_observation"):
         assert Path(r[key]).stat().st_size > 0

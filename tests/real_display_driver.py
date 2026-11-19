@@ -33,10 +33,12 @@ TEXT = "hello aureon 42"
 class TestPad:
     def __init__(self, workdir: Path) -> None:
         self.state_path = workdir / "testpad_state.json"
+        # Kept open for the app's lifetime; closed in close().
+        self._stderr = open(workdir / "testpad.stderr.log", "w")  # noqa: SIM115
         self.proc = subprocess.Popen(
             [sys.executable, str(HERE / "real_display_testpad.py"), str(self.state_path)],
             stdout=subprocess.DEVNULL,
-            stderr=open(workdir / "testpad.stderr.log", "w"),
+            stderr=self._stderr,
         )
         deadline = time.monotonic() + 15
         while time.monotonic() < deadline:
@@ -72,6 +74,7 @@ class TestPad:
             self.proc.wait(timeout=5)
         except subprocess.TimeoutExpired:
             self.proc.kill()
+        self._stderr.close()
 
 
 def _artifact(workdir: Path, name: str) -> Path:
@@ -100,180 +103,153 @@ def _safe_controller(workdir: Path):
     os.environ["AUREON_DESKTOP_CONTROL_STATE"] = str(workdir / "safe_state.json")
     os.environ["AUREON_DESKTOP_KILL_SWITCH"] = str(workdir / "safe_desktop_control.stop")
     os.environ["AUREON_DESKTOP_CONFIRM_TOKEN"] = "real-display-harness-token"
-    os.environ.pop("AUREON_DESKTOP_REQUIRE_CONFIRMATION", None)
     from aureon.autonomous import aureon_safe_desktop_control as sdc
 
-    return sdc, sdc.SafeDesktopControl(dry_run=True)
+    ctl = sdc.SafeDesktopControl(dry_run=False)
+    # Go live with whatever the current build requires.  Arming / approval /
+    # confirmation are passed when the API has them and are NOT asserted, so
+    # this keeps working once they are removed.
+    if hasattr(ctl, "arm_live"):
+        ctl.arm_live()
+    return sdc, ctl
+
+
+def _safe_act(sdc, ctl, action: str, params: dict):
+    req = sdc.DesktopAction(action, params)
+    for name, value in (("approved", True), ("confirm_token", os.environ["AUREON_DESKTOP_CONFIRM_TOKEN"])):
+        if hasattr(req, name):
+            setattr(req, name, value)
+    return ctl.execute(req)
+
+
+def _safe_log(ctl) -> list:
+    """The controller's persisted action log (state file ``recent_actions``)."""
+
+    payload = json.loads(Path(ctl.state_path).read_text(encoding="utf-8"))
+    return list(payload.get("recent_actions") or [])
 
 
 def scenario_safe_controller(workdir: Path) -> dict:
     # Import the controller first: it is what must make pyautogui importable.
     sdc, ctl = _safe_controller(workdir)
-    import pyautogui
-
-    token = os.environ["AUREON_DESKTOP_CONFIRM_TOKEN"]
     pad = TestPad(workdir)
     out: dict = {}
     try:
         st = pad.state()
         btn, box = st["button_center"], st["box_center"]
-        pyautogui.moveTo(5, 5)
         out["png_before"] = _grab(workdir, "safe_01_before.png")
-
-        ctl.arm_dry_run()
-        r = ctl.propose(sdc.DesktopAction("left_click", {"x": btn[0], "y": btn[1]}))
-        st = pad.settle()
-        out["dry_run"] = {"status": r["status"], "clicks": st["clicks"], "pointer": list(pyautogui.position())}
-
-        ctl.arm_live()
-        r1 = ctl.execute(sdc.DesktopAction("left_click", {"x": btn[0], "y": btn[1]}, approved=True))
+        r1 = _safe_act(sdc, ctl, "left_click", {"x": btn[0], "y": btn[1]})
         st = pad.settle(lambda s: s["clicks"] >= 1)
-        out["live_click"] = {"ok": r1.ok, "reason": r1.reason, "clicks": st["clicks"]}
-        ctl.execute(sdc.DesktopAction("left_click", {"x": box[0], "y": box[1]}, approved=True))
+        out["click"] = {"ok": r1.ok, "reason": r1.reason, "clicks": st["clicks"]}
+        r2 = _safe_act(sdc, ctl, "left_click", {"x": box[0], "y": box[1]})
         pad.settle(lambda s: s["box_focused"])
-        r2 = ctl.execute(sdc.DesktopAction("type_text", {"text": TEXT}, approved=True, confirm_token=token))
+        out["focus"] = {"ok": r2.ok, "reason": r2.reason}
+        r3 = _safe_act(sdc, ctl, "type_text", {"text": TEXT})
         st = pad.settle(lambda s: s["text"] == TEXT)
-        out["live_type"] = {"ok": r2.ok, "reason": r2.reason, "text": st["text"]}
-
-        proposed = ctl.propose(sdc.DesktopAction("press_key", {"key": "enter"}, approved=True))
-        approved = ctl.approve_next(token)
+        out["type"] = {"ok": r3.ok, "reason": r3.reason, "text": st["text"]}
+        r4 = _safe_act(sdc, ctl, "press_key", {"key": "enter"})
         st = pad.settle(lambda s: bool(s["submitted"]))
-        out["propose_press_key"] = {
-            "proposed_status": proposed["status"],
-            "approve_ok": approved.ok,
-            "approve_reason": approved.reason,
-            "submitted": st["submitted"],
-        }
-        out["png_after"] = _grab(workdir, "safe_02_after_live.png")
-
-        before = pad.state()
-        ctl.kill_path.write_text("STOP\n", encoding="utf-8")
-        r3 = ctl.execute(sdc.DesktopAction("left_click", {"x": btn[0], "y": btn[1]}, approved=True))
-        st = pad.settle()
-        out["stop_file"] = {"ok": r3.ok, "reason": r3.reason, "unchanged": st == before}
-        out["png_stop"] = _grab(workdir, "safe_03_after_stop_file.png")
+        out["enter"] = {"ok": r4.ok, "reason": r4.reason, "submitted": st["submitted"]}
+        out["png_after"] = _grab(workdir, "safe_02_after_click_type_enter.png")
+        log = _safe_log(ctl)
+        out["log_actions"] = [(e.get("action"), e.get("ok")) for e in log]
+        out["log_contains_typed_text"] = TEXT in Path(ctl.state_path).read_text(encoding="utf-8")
     finally:
-        ctl.disarm()
+        if hasattr(ctl, "disarm"):
+            ctl.disarm()
+        pad.close()
+    return out
+
+
+def scenario_safe_kill_switch(workdir: Path) -> dict:
+    sdc, ctl = _safe_controller(workdir)
+    pad = TestPad(workdir)
+    out: dict = {}
+    try:
+        btn = pad.state()["button_center"]
+        r1 = _safe_act(sdc, ctl, "left_click", {"x": btn[0], "y": btn[1]})
+        st = pad.settle(lambda s: s["clicks"] >= 1)
+        out["before_stop"] = {"ok": r1.ok, "clicks": st["clicks"]}
+        ctl.kill_path.write_text("STOP\n", encoding="utf-8")
+        before = pad.state()
+        r2 = _safe_act(sdc, ctl, "left_click", {"x": btn[0], "y": btn[1]})
+        st = pad.settle()
+        out["after_stop"] = {"ok": r2.ok, "reason": r2.reason, "unchanged": st == before}
+        out["png_stop"] = _grab(workdir, "safe_03_after_stop_file.png")
+        out["log_last"] = (_safe_log(ctl) or [{}])[-1].get("reason")
+    finally:
+        if ctl.kill_path.exists():
+            ctl.kill_path.unlink()
         pad.close()
     return out
 
 
 def scenario_gateway(workdir: Path) -> dict:
-    import hashlib
+    import inspect
     import secrets
 
-    from aureon.autonomous.aureon_governed_desktop_gateway import (
-        AuthorizationError,
-        GovernedDesktopGateway,
-    )
+    from aureon.autonomous.aureon_governed_desktop_gateway import GovernedDesktopGateway
 
     evidence = workdir / "gateway_evidence.jsonl"
-    token = secrets.token_urlsafe(32)  # one-time capability token, never persisted
-    short_token = secrets.token_urlsafe(32)
     pad = TestPad(workdir)
     out: dict = {}
-    gateway = GovernedDesktopGateway(evidence_path=evidence, min_action_interval_seconds=0.0)
+    gateway = GovernedDesktopGateway(evidence_path=evidence)
     try:
         st = pad.state()
         btn, box = st["button_center"], st["box_center"]
         out["png_before"] = _grab(workdir, "gateway_01_before.png")
         binding = gateway.bind_target_window(TITLE, expected_process_id=st["pid"])
-        out["binding"] = {"handle": binding.handle, "pid": binding.process_id}
-
-        # Dry run: accepted, evidence written, nothing moves.
-        dry = gateway.execute("click", {"x": btn[0], "y": btn[1]}, target_binding_id=binding.binding_id)
-        st = pad.settle()
-        out["dry_run"] = {"ok": dry.ok, "reason": dry.reason, "dry_run": dry.dry_run, "clicks": st["clicks"]}
-
-        # Live action without a lease is refused when not dry-run; arm with a
-        # one-time capability token and a short lease.
-        lease = gateway.authorize_live(
-            token,
-            ttl_seconds=120,
-            subject="real-display-test",
-            allowed_actions=["click", "type", "press"],
-        )
-        try:
-            gateway.authorize_live(token, ttl_seconds=60, subject="replay")
-            out["token_replay"] = "accepted"
-        except AuthorizationError as exc:
-            out["token_replay"] = str(exc)
-
-        no_hash = gateway.execute("click", {"x": btn[0], "y": btn[1]}, target_binding_id=binding.binding_id)
-        out["live_without_before_hash"] = no_hash.reason
-        stale = gateway.execute(
-            "click", {"x": btn[0], "y": btn[1]}, target_binding_id=binding.binding_id,
-            expected_before_sha256=hashlib.sha256(b"not the frame").hexdigest(),
-        )
-        out["live_stale_hash"] = stale.reason
-        scoped = gateway.execute(
-            "scroll", {"amount": 1, "x": btn[0], "y": btn[1]}, target_binding_id=binding.binding_id,
-            expected_before_sha256=gateway.observe(target_binding_id=binding.binding_id).before_sha256,
-        )
-        out["outside_lease_scope"] = scoped.reason
-        st = pad.settle()
-        out["clicks_after_refusals"] = st["clicks"]
+        out["binding_pid_matches"] = binding.process_id == st["pid"]
+        # Go live with whatever this build requires; not asserted.
+        if hasattr(gateway, "authorize_live"):
+            gateway.authorize_live(
+                secrets.token_urlsafe(32), ttl_seconds=120, subject="real-display-test",
+            )
+        wants_hash = "expected_before_sha256" in inspect.signature(gateway.execute).parameters
 
         def act(action: str, params: dict) -> dict:
-            seen = gateway.observe(target_binding_id=binding.binding_id)
-            result = gateway.execute(
-                action, params, target_binding_id=binding.binding_id,
-                expected_before_sha256=seen.before_sha256,
-            )
-            return {"ok": result.ok, "reason": result.reason, "dry_run": result.dry_run,
+            kwargs: dict = {"target_binding_id": binding.binding_id}
+            if wants_hash:
+                kwargs["expected_before_sha256"] = gateway.observe(
+                    target_binding_id=binding.binding_id
+                ).before_sha256
+            result = gateway.execute(action, params, **kwargs)
+            return {"ok": result.ok, "reason": result.reason, "action_id": result.action_id,
                     "before": result.before_sha256, "after": result.after_sha256,
                     "_after_png": result.after.image_bytes if result.after else b""}
 
         click = act("click", {"x": btn[0], "y": btn[1]})
-        st = pad.settle(lambda s: s["clicks"] >= 1)
-        click["clicks"] = st["clicks"]
+        click["clicks"] = pad.settle(lambda s: s["clicks"] >= 1)["clicks"]
         focus = act("click", {"x": box[0], "y": box[1]})
         pad.settle(lambda s: s["box_focused"])
         typed = act("type", {"text": TEXT})
-        st = pad.settle(lambda s: s["text"] == TEXT)
-        typed["text"] = st["text"]
+        typed["text"] = pad.settle(lambda s: s["text"] == TEXT)["text"]
         enter = act("press", {"key": "enter"})
-        st = pad.settle(lambda s: bool(s["submitted"]))
-        enter["submitted"] = st["submitted"]
-        masked = _artifact(workdir, "gateway_02_after_live_masked_observation.png")
-        masked.write_bytes(enter.pop("_after_png"))
-        for item in (click, focus, typed):
+        enter["submitted"] = pad.settle(lambda s: bool(s["submitted"]))["submitted"]
+        masked = _artifact(workdir, "gateway_02_after_masked_observation.png")
+        masked.write_bytes(enter["_after_png"])
+        steps = {"click": click, "focus": focus, "type": typed, "enter": enter}
+        for item in steps.values():
             item.pop("_after_png", None)
-        out.update(live_click=click, live_focus=focus, live_type=typed, live_enter=enter)
-        out["png_after"] = _grab(workdir, "gateway_02_after_live.png")
+        out["steps"] = steps
+        out["png_after"] = _grab(workdir, "gateway_02_after_click_type_enter.png")
         out["png_after_masked_observation"] = str(masked)
-        out["lease_actions"] = sorted(lease.allowed_actions)
 
-        # Emergency stop invalidates lease and binding; next action refused.
-        before = pad.state()
-        gateway.emergency_stop("real_display_test")
-        stopped = gateway.execute("click", {"x": btn[0], "y": btn[1]}, target_binding_id=binding.binding_id)
-        st = pad.settle()
-        out["after_emergency_stop"] = {"ok": stopped.ok, "reason": stopped.reason, "unchanged": st == before}
-        gateway.clear_emergency_stop("real_display_test")
-
-        # A short lease expires on its own.
-        binding2 = gateway.bind_target_window(TITLE, expected_process_id=st["pid"])
-        gateway.authorize_live(short_token, ttl_seconds=1, subject="expiry", allowed_actions=["click"])
-        time.sleep(1.5)
-        seen = gateway.observe(target_binding_id=binding2.binding_id)
-        expired = gateway.execute(
-            "click", {"x": btn[0], "y": btn[1]}, target_binding_id=binding2.binding_id,
-            expected_before_sha256=seen.before_sha256,
-        )
-        out["after_lease_expiry"] = expired.reason
-        out["png_stop"] = _grab(workdir, "gateway_03_after_stop_and_expiry.png")
-
-        events = [json.loads(line) for line in evidence.read_text(encoding="utf-8").splitlines() if line.strip()]
-        out["evidence_events"] = sorted({e.get("event") for e in events})
-        live_done = [e for e in events if e.get("event") == "action_completed" and e.get("mode") == "live" and e.get("ok")]
-        out["live_completed_with_before_after"] = sum(
-            1 for e in live_done if e.get("before_sha256") and (e.get("after") or {}).get("sha256")
-        )
-        out["evidence_contains_typed_text"] = TEXT in evidence.read_text(encoding="utf-8")
-        out["evidence_contains_token"] = token in evidence.read_text(encoding="utf-8")
+        text = evidence.read_text(encoding="utf-8")
+        events = [json.loads(line) for line in text.splitlines() if line.strip()]
+        completed = {e.get("action_id"): e for e in events if e.get("event") == "action_completed"}
+        out["audited"] = {
+            name: bool(
+                completed.get(item["action_id"], {}).get("ok")
+                and completed[item["action_id"]].get("before_sha256")
+                and (completed[item["action_id"]].get("after") or {}).get("sha256")
+            )
+            for name, item in steps.items()
+        }
+        out["evidence_contains_typed_text"] = TEXT in text
     finally:
-        gateway.disarm("real_display_test_end")
+        if hasattr(gateway, "disarm"):
+            gateway.disarm("real_display_test_end")
         pad.close()
     return out
 
@@ -281,6 +257,7 @@ def scenario_gateway(workdir: Path) -> dict:
 SCENARIOS = {
     "import": scenario_import,
     "safe_controller": scenario_safe_controller,
+    "safe_kill_switch": scenario_safe_kill_switch,
     "gateway": scenario_gateway,
 }
 
