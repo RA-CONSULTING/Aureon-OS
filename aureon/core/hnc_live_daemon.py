@@ -56,6 +56,7 @@ from typing import Any, Awaitable, Callable, Dict, List, Optional, Tuple
 
 from aureon.core.aureon_lambda_engine import (
     LIVE_DAEMON_ENV,
+    TAU,
     LambdaEngine,
     SubsystemReading,
     validate_history_receipt,
@@ -105,13 +106,52 @@ def _audit_mode() -> bool:
 
 
 def _finite_reading(value: Any) -> float | None:
-    """A real Lambda reading, including 0.0. Missing or non-finite is None."""
-    if isinstance(value, bool) or not isinstance(value, (int, float)):
+    """A measured reading. A real 0.0 stays 0.0. Anything else unmeasured is None.
+
+    A bool is not a reading: ``float(True)`` is 1.0 and ``float(False)`` is 0.0.
+    NaN and infinity are not readings. A missing value is None, never 0.0.
+    """
+    if isinstance(value, bool):
+        return None
+    if not isinstance(value, (int, float)):
         return None
     number = float(value)
     if not math.isfinite(number):
         return None
     return number
+
+
+def _trace_metric(value: Any) -> float | None:
+    """Trace field. Missing stays None. Do not use ``or 0.0``: a gap would be published as 0.0."""
+    return _finite_reading(value)
+
+
+def _without_unmeasured_readings(
+    envelope: Dict[str, Any],
+    engine: LambdaEngine,
+    readings: List[SubsystemReading],
+) -> Dict[str, Any]:
+    """Drop placeholder HNC fields before they are logged as readings.
+
+    ψ below the echo window is the wake-up ramp ``min(0.3, step/30)``, not a
+    measurement. Γ stays at the 0.5 placeholder until two finite readings have
+    a non-zero mean. A tainted symbolic-life score is not a reading either.
+    """
+    published = dict(envelope)
+    if len(engine._history) < TAU:
+        published["consciousness_psi"] = None
+        published["consciousness_level"] = None
+        published["symbolic_life_score"] = None
+    values: List[float] = []
+    for reading in readings:
+        value = _finite_reading(getattr(reading, "value", None))
+        if value is not None:
+            values.append(value)
+    measured_gamma = len(values) > 1 and (sum(values) / len(values)) != 0.0
+    if not measured_gamma:
+        published["coherence_gamma"] = None
+        published["symbolic_life_score"] = None
+    return published
 
 
 def _get_macro_snapshot_quietly(macro_feed: Any) -> Any:
@@ -1407,20 +1447,27 @@ class HNCLiveDaemon:
         state_step = state_dict.get("step")
         state_lambda = state_dict.get("lambda_t")
         state_psi = state_dict.get("consciousness_psi")
+        psi_is_reading = (
+            not isinstance(state_psi, bool)
+            and isinstance(state_psi, (int, float))
+            and math.isfinite(float(state_psi))
+        )
+        psi_matches = state_psi is None or (
+            psi_is_reading
+            and validated_memory["psi_history"]
+            and validated_memory["psi_history"][-1] == float(state_psi)
+        )
         if (
             isinstance(state_step, bool)
             or not isinstance(state_step, int)
             or isinstance(state_lambda, bool)
             or not isinstance(state_lambda, (int, float))
             or not math.isfinite(float(state_lambda))
-            or isinstance(state_psi, bool)
-            or not isinstance(state_psi, (int, float))
-            or not math.isfinite(float(state_psi))
+            or (state_psi is not None and not psi_is_reading)
+            or not psi_matches
             or not validated_memory["history"]
-            or not validated_memory["psi_history"]
             or validated_memory["step_count"] != state_step
             or validated_memory["history"][-1] != float(state_lambda)
-            or validated_memory["psi_history"][-1] != float(state_psi)
         ):
             raise ValueError("Lambda history receipt does not match emitted state")
         memory_receipt_id = validated_memory["receipt_id"]
@@ -1551,6 +1598,14 @@ class HNCLiveDaemon:
                 ),
                 [],
             )
+        # Γ = 1 − σ/μ needs two readings. Nothing in the engine documents a
+        # lower minimum for publishing Λ(t), so one fresh source is no reading.
+        if len(observations) < 2:
+            return (
+                None,
+                self._no_data_envelope(received_at, "insufficient_sources"),
+                [],
+            )
 
         readings = [observation.reading for observation in observations]
         source_receipts = [observation.receipt for observation in observations]
@@ -1637,6 +1692,7 @@ class HNCLiveDaemon:
         state, envelope, readings = await self._compute_transaction(received_at)
         if self._audit_suppresses_publication():
             return None, envelope, []
+        envelope = _without_unmeasured_readings(envelope, self.engine, readings)
         self._last_state_dict = envelope
         self._append_trace(envelope, readings)
         self._publish_pulse(envelope)
@@ -1723,14 +1779,14 @@ class HNCLiveDaemon:
                     row["lambda_t"] = lambda_t
                     row.update({
                         "step": state_dict.get("step"),
-                        "consciousness_psi": _finite_reading(
+                        "consciousness_psi": _trace_metric(
                             state_dict.get("consciousness_psi")
                         ),
                         "consciousness_level": state_dict.get("consciousness_level"),
-                        "coherence_gamma": _finite_reading(
+                        "coherence_gamma": _trace_metric(
                             state_dict.get("coherence_gamma")
                         ),
-                        "symbolic_life_score": _finite_reading(
+                        "symbolic_life_score": _trace_metric(
                             state_dict.get("symbolic_life_score")
                         ),
                         "source_count": state_dict.get("source_count"),

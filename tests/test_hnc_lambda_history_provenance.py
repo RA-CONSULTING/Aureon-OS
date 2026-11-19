@@ -422,7 +422,8 @@ def test_daemon_commits_memory_before_live_envelope_and_preserves_provider_time(
     )
     assert envelope["step"] == memory["step_count"]
     assert envelope["lambda_t"] == memory["history"][-1]
-    assert envelope["consciousness_psi"] == memory["psi_history"][-1]
+    assert envelope["consciousness_psi"] is None
+    assert memory["psi_history"] == []
     assert len(readings) == 2
     disk = json.loads(
         (tmp_path / "lambda_history.json").read_text(encoding="utf-8")
