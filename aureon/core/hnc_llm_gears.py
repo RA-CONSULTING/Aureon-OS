@@ -36,11 +36,14 @@ def parse_hnc_object(text: str) -> dict[str, Any] | None:
 class _GearVault:
     """The slices Auris reads. Values come from the parse and the field."""
 
-    def __init__(self, parsed: dict[str, Any] | None, field_available: bool, coherence: float | None) -> None:
+    def __init__(self, parsed: dict[str, Any] | None, field_available: bool, lambda_reading: Any) -> None:
         engaged = parsed is not None
         self.love_amplitude = 1.0 if engaged else 0.0
         self.gratitude_score = 1.0 if engaged else 0.0
-        self.last_lambda_t = float(coherence) if coherence is not None else 0.0
+        # lambda_reading is the CoherenceDecision from assess_coherence; only an
+        # accepted reading reaches Auris.
+        accepted = lambda_reading is not None and getattr(lambda_reading, "accepted", False)
+        self.last_lambda_t = float(lambda_reading.value) if accepted else 0.0
         self.cortex_snapshot = (
             {"delta": 0.0, "alpha": 0.0, "gamma": 1.0}
             if engaged
@@ -64,14 +67,18 @@ def turn_gears(text: str, bus: Any = None) -> dict[str, Any]:
     }]
 
     field_available = False
-    coherence = None
+    lambda_reading = None
     field_gear: dict[str, Any] = {"name": "field", "turned": False, "engaged": False}
     try:
-        from aureon.core.hnc_field import read_canonical_field
+        from aureon.core.hnc_field import assess_coherence, read_canonical_field
 
         field = read_canonical_field(bus)
         field_available = bool(field.available)
-        coherence = getattr(field, "coherence_gamma", None)
+        # The one shared coherence check: bool, NaN, inf and values outside
+        # [0, 1] are HOLD, not a reading.
+        lambda_reading = assess_coherence(getattr(field, "coherence_gamma", None))
+        field_gear["coherence"] = lambda_reading.value if lambda_reading.accepted else None
+        field_gear["coherence_verdict"] = lambda_reading.verdict
         field_gear["turned"] = True
         field_gear["engaged"] = field_available
         field_gear["available"] = field_available
@@ -83,7 +90,7 @@ def turn_gears(text: str, bus: Any = None) -> dict[str, Any]:
     try:
         from aureon.vault.auris_metacognition import AurisMetacognition
 
-        vote = AurisMetacognition().vote(_GearVault(parsed, field_available, coherence))
+        vote = AurisMetacognition().vote(_GearVault(parsed, field_available, lambda_reading))
         auris_gear["turned"] = True
         auris_gear["engaged"] = vote.total == 9
         auris_gear["consensus"] = vote.consensus
