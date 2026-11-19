@@ -346,7 +346,7 @@ class HNCInteractionResult:
     intent: Dict[str, Any] = field(default_factory=dict)
 
     # 2. HNC field state
-    lambda_t: float = 0.0
+    lambda_t: float | None = None
     coherence_gamma: float = 0.0
     consciousness_psi: float = 0.0
     consciousness_level: str = "DORMANT"

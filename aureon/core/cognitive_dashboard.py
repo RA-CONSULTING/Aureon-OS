@@ -105,7 +105,7 @@ class _DashboardState:
 
         # SOURCE (Lambda)
         self.source: Dict[str, Any] = {
-            "lambda_t": 0.0, "coherence_gamma": 0.0, "consciousness_psi": 0.0,
+            "lambda_t": None, "coherence_gamma": 0.0, "consciousness_psi": 0.0,
             "consciousness_level": "DORMANT", "symbolic_life_score": 0.0,
         }
 

@@ -170,18 +170,48 @@ def test_watch_line_says_no_reading_until_lambda_is_present():
 def _ics_lambda():
     path = ROOT / "aureon/core/integrated_cognitive_system_unreleased.py"
     tree = ast.parse(path.read_text(encoding="utf-8"))
+    future = next(
+        node for node in tree.body
+        if isinstance(node, ast.ImportFrom) and node.module == "__future__"
+    )
     func = next(
         node for node in tree.body
         if isinstance(node, ast.FunctionDef) and node.name == "_ics_lambda"
     )
-    module = ast.Module(body=[func], type_ignores=[])
+    module = ast.Module(body=[future, func], type_ignores=[])
     ast.fix_missing_locations(module)
-    namespace: dict = {}
+    namespace: dict = {"Any": object}
     exec(compile(module, str(path), "exec"), namespace)
     return namespace["_ics_lambda"]
 
 
-def test_unreleased_ics_lambda_helper_keeps_zero():
+def test_dashboard_starts_with_no_lambda_reading():
+    from aureon.core.cognitive_dashboard import _DashboardState
+
+    state = _DashboardState()
+    assert source_lambda_text(state.source) == "no reading"
+    state.update("source", {"consciousness_level": "AWAKE"})
+    assert source_lambda_text(state.source) == "no reading"
+    state.update("source", {"lambda_t": 0.0})
+    assert source_lambda_text(state.source) == "+0.0000"
+
+
+def test_human_loop_without_a_tick_does_not_ground_zero():
+    from aureon.queen.hnc_human_loop import HNCHumanLoop, HNCInteractionResult
+
+    assert HNCInteractionResult(human_text="unread").lambda_t is None
+    loop = HNCHumanLoop()
+    loop._tick_lambda = lambda text, intent: None
+    result = loop.process("hello")
+    assert result["hnc"]["lambda_t"] is None
+    assert result["temporal_ground"]["status"] == "no reading"
+    assert result["temporal_ground"]["lambda_t"] is None
+
+
+def test_unreleased_ics_fallback_lambda_is_unread():
+    text = (ROOT / "aureon/core/integrated_cognitive_system_unreleased.py").read_text(encoding="utf-8")
+    assert '"lambda_t": None, "coherence_gamma": 0.0' in text
+    assert '"lambda_t": 0.0, "coherence_gamma": 0.0' not in text
     read = _ics_lambda()
     assert read({}) is None
     assert read({"lambda_t": None}) is None
