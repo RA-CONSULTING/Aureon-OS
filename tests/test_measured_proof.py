@@ -306,6 +306,9 @@ def test_humaneval_reference_solution_runs_in_the_harness():
 
 
 def test_configured_endpoint_can_score_a_humaneval_row(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    from tests.support.loopback import require_loopback
+
+    require_loopback()
     import json
     import threading
     from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
