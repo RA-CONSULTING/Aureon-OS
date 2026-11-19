@@ -1589,7 +1589,14 @@ class UnifiedKillChain:
         try:
             from aureon.exchanges.orca_capital_ownership import adopted_deal_ids
             adopted = adopted_deal_ids()
-            owned = bool(deal_id) and str(deal_id) in adopted
+            deal_text = "" if deal_id is None else str(deal_id)
+            # A blank id, a missing id, or the sentinel "unknown" is not ownership.
+            owned = (
+                bool(deal_id)
+                and bool(deal_text.strip())
+                and deal_text.strip().casefold() != "unknown"
+                and deal_text in adopted
+            )
         except Exception as exc:
             log_warn(
                 f"Capital: ownership of {symbol} deal {deal_id} could not be determined ({exc}); not closing"

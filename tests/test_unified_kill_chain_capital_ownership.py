@@ -312,3 +312,31 @@ def test_ownership_lookup_error_closes_nothing(monkeypatch, relative):
     assert evaluated == []
     _assert_nothing_closed(chain.capital)
     assert any("could not be determined" in message for _kind, message in namespace["_logs"])
+
+
+@pytest.mark.parametrize("relative", KILL_CHAINS)
+@pytest.mark.parametrize("adopt", ["REF-CN50", "CN50"])
+def test_close_does_not_treat_deal_reference_or_epic_as_the_deal_id(monkeypatch, relative, adopt):
+    """Pin: at close, dealReference or the epic CN50 must not stand in for dealId.
+
+    Gary's manual position is dealId MANUAL-CN50, dealReference REF-CN50, epic CN50.
+    Adopting the reference, or adopting the epic, leaves the dealId off the list.
+    """
+    monkeypatch.setenv(ADOPT_ENV, adopt)
+    _namespace, chain = _chain(relative, [CN50_MANUAL])
+
+    chain._close_capital("MANUAL-CN50", 0.087, "CN50")
+
+    _assert_nothing_closed(chain.capital)
+
+
+@pytest.mark.parametrize("relative", KILL_CHAINS)
+@pytest.mark.parametrize("deal_id", ["", None, "unknown"])
+def test_blank_none_or_unknown_deal_id_is_never_owned_at_close(monkeypatch, relative, deal_id):
+    """Pin: '', None, and 'unknown' are not an owned Capital deal, even if listed."""
+    monkeypatch.setenv(ADOPT_ENV, "unknown")
+    _namespace, chain = _chain(relative, [CN50_MANUAL])
+
+    chain._close_capital(deal_id, 0.087, "CN50")
+
+    _assert_nothing_closed(chain.capital)
