@@ -112,7 +112,7 @@ Prime Sentinel identity is mathematically tagged to the Harmonic Nexus equation:
 
 **ATLAS Key**:
 - **Decimal**: 15354
-- **Binary**: 0011101111111010
+- **Binary**: 01110111111010
 - **Role**: Planetary carrier / validator authentication
 - **Authority**: Prime Sentinel decides deployment protocol
 
