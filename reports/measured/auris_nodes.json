@@ -1,7 +1,7 @@
 {
   "coherence": 0.5023340603593964,
   "coherence_evidence": "measured",
-  "coherence_status": "\u26d4 COHERENCE BREAK - Do not trade",
+  "coherence_status": "\ud83d\udd34 LOW COHERENCE - Consider waiting",
   "hold_nodes": [],
   "hold_reason": "every node returned a value when volatility, momentum, volume, and spread are present as 0",
   "live_trading": false,
@@ -104,7 +104,7 @@
   },
   "orders_placed": false,
   "source": "aureon.utils.aureon_queen_hive_mind.QueenHiveMind.get_auris_coherence",
-  "status": "\u26d4 COHERENCE BREAK - Do not trade",
+  "status": "\ud83d\udd34 LOW COHERENCE - Consider waiting",
   "trade_readiness": {
     "clownfish_readings": 166,
     "diagnosis": {
@@ -168,21 +168,21 @@
             "threshold": 0.6
           },
           {
-            "op": ">",
+            "op": ">=",
             "ready_mark": false,
             "status": "\ud83d\udd34 LOW COHERENCE - Consider waiting",
-            "threshold": 0.934
+            "threshold": 0.4
           }
         ],
         "else_status": "\u26d4 COHERENCE BREAK - Do not trade",
         "evidence_tag": "cited",
-        "later_compare_buried_under_a_lower_band": true,
+        "later_compare_buried_under_a_lower_band": false,
         "ready_mark": "Ready to trade",
         "ready_threshold": 0.938,
         "source": "aureon.utils.aureon_queen_hive_mind.QueenHiveMind.get_auris_coherence"
       },
-      "summary": "spread prints at or before a labelled decision close: 0; first spread print is 6084 seconds after the last labelled decision close; labelled bars with a numeric coherence: 0; labelled bars returned no_data: 166; window call status: \u26d4 COHERENCE BREAK - Do not trade; window coherence 0.5023340603593964 does not contain the ready mark; formula sweep highest coherence 0.8851989477106523; ready marks 0 of 6977; cited status compares in order: coherence >= 0.938 (ready mark), coherence >= 0.8, coherence >= 0.6, coherence > 0.934; the window coherence matches none of them, so the final else is the branch that ran; a later compare sits under a lower band and does not run, and this window figure is below that lower band, so the order is not what keeps this window off the ready mark; next stage needs a public bid/ask history whose print times are at or before the labelled decision closes, so Deer can be scored on those bars without using a later print; the ready mark stays off on this sweep of the existing formulas, including volatility 0, volume 1, and spread 1; this stage does not change the node formulas or the ready mark, does not copy a later spread print onto an earlier bar, and does not invent outcome labels",
-      "window_matches_final_else": true
+      "summary": "spread prints at or before a labelled decision close: 0; first spread print is 6084 seconds after the last labelled decision close; labelled bars with a numeric coherence: 0; labelled bars returned no_data: 166; window call status: \ud83d\udd34 LOW COHERENCE - Consider waiting; window coherence 0.5023340603593964 does not contain the ready mark; formula sweep highest coherence 0.8851989477106523; ready marks 0 of 6977; cited status compares in order: coherence >= 0.938 (ready mark), coherence >= 0.8, coherence >= 0.6, coherence >= 0.4; the window coherence matches an earlier branch; next stage needs a public bid/ask history whose print times are at or before the labelled decision closes, so Deer can be scored on those bars without using a later print; the ready mark stays off on this sweep of the existing formulas, including volatility 0, volume 1, and spread 1; this stage does not change the node formulas or the ready mark, does not copy a later spread print onto an earlier bar, and does not invent outcome labels",
+      "window_matches_final_else": false
     },
     "entries": 0,
     "entries_not_higher": 0,
@@ -3190,7 +3190,7 @@
     "owl_readings": 166,
     "paper_labels": 166,
     "real_orders": "AUREON_DISABLE_REAL_ORDERS=1",
-    "reason": "paper trade-outcome labels: 166 next-bar close-to-close returns from public:kraken XBTUSD; the prices are measured and the outcomes are paper; filled outcomes: 0; Clownfish readings 166 of 166; Owl readings 166 of 166; nodes without a reading on a labelled bar: Deer; ready-to-trade paper entries: 0; entries with a higher next close: 0; entries without a higher next close: 0; a spread print is used only when its time is at or before the decision close; spread prints at or before a labelled decision close: 0; first spread print is 6084 seconds after the last labelled decision close; labelled bars with a numeric coherence: 0; labelled bars returned no_data: 166; window call status: \u26d4 COHERENCE BREAK - Do not trade; window coherence 0.5023340603593964 does not contain the ready mark; formula sweep highest coherence 0.8851989477106523; ready marks 0 of 6977; cited status compares in order: coherence >= 0.938 (ready mark), coherence >= 0.8, coherence >= 0.6, coherence > 0.934; the window coherence matches none of them, so the final else is the branch that ran; a later compare sits under a lower band and does not run, and this window figure is below that lower band, so the order is not what keeps this window off the ready mark; next stage needs a public bid/ask history whose print times are at or before the labelled decision closes, so Deer can be scored on those bars without using a later print; the ready mark stays off on this sweep of the existing formulas, including volatility 0, volume 1, and spread 1; this stage does not change the node formulas or the ready mark, does not copy a later spread print onto an earlier bar, and does not invent outcome labels; measured fail: get_auris_coherence did not mark any labelled bar ready to trade; release boundary stays HOLD",
+    "reason": "paper trade-outcome labels: 166 next-bar close-to-close returns from public:kraken XBTUSD; the prices are measured and the outcomes are paper; filled outcomes: 0; Clownfish readings 166 of 166; Owl readings 166 of 166; nodes without a reading on a labelled bar: Deer; ready-to-trade paper entries: 0; entries with a higher next close: 0; entries without a higher next close: 0; a spread print is used only when its time is at or before the decision close; spread prints at or before a labelled decision close: 0; first spread print is 6084 seconds after the last labelled decision close; labelled bars with a numeric coherence: 0; labelled bars returned no_data: 166; window call status: \ud83d\udd34 LOW COHERENCE - Consider waiting; window coherence 0.5023340603593964 does not contain the ready mark; formula sweep highest coherence 0.8851989477106523; ready marks 0 of 6977; cited status compares in order: coherence >= 0.938 (ready mark), coherence >= 0.8, coherence >= 0.6, coherence >= 0.4; the window coherence matches an earlier branch; next stage needs a public bid/ask history whose print times are at or before the labelled decision closes, so Deer can be scored on those bars without using a later print; the ready mark stays off on this sweep of the existing formulas, including volatility 0, volume 1, and spread 1; this stage does not change the node formulas or the ready mark, does not copy a later spread print onto an earlier bar, and does not invent outcome labels; measured fail: get_auris_coherence did not mark any labelled bar ready to trade; release boundary stays HOLD",
     "release_boundary": "HOLD",
     "verdict": "fail"
   },
