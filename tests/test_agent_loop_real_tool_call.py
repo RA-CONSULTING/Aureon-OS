@@ -30,11 +30,18 @@ FINAL_TEXT = "shell step finished"
 
 
 def _write_marker_command(path) -> str:
-    script = "import pathlib,sys; pathlib.Path(sys.argv[1]).write_text(sys.argv[2]); print(sys.argv[2])"
+    # Inline ``python -c`` is refused. The child is a script file, and the
+    # assertions below still require that process to write the marker.
+    script_path = path.parent / "write_marker.py"
+    script_path.write_text(
+        "import pathlib, sys\n"
+        "pathlib.Path(sys.argv[1]).write_text(sys.argv[2])\n"
+        "print(sys.argv[2])\n",
+        encoding="utf-8",
+    )
     return " ".join([
         shlex.quote(sys.executable),
-        "-c",
-        shlex.quote(script),
+        shlex.quote(str(script_path)),
         shlex.quote(str(path)),
         shlex.quote(MARKER_TEXT),
     ])

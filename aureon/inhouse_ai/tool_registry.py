@@ -27,6 +27,8 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any, Callable, Dict, List, Mapping, Protocol
 
+from aureon.inhouse_ai.shell_guard import prepare_shell_argv
+
 logger = logging.getLogger("aureon.inhouse_ai.tools")
 
 
@@ -1244,17 +1246,16 @@ def _builtin_execute_shell(args: Dict[str, Any]) -> str:
     command = args.get("command", "")
     timeout = min(int(args.get("timeout", 30)), 60)
 
-    # Sandbox: block destructive commands
-    blocked = ["rm ", "del ", "format ", "mkfs", "dd ", "shutdown", "reboot", "> /dev/", ":(){ ", "fork"]
-    cmd_lower = command.lower()
-    for b in blocked:
-        if b in cmd_lower:
-            return json.dumps({"error": f"Blocked: command contains '{b.strip()}'"})
+    # Tokenize, then decide. A shell is not asked to interpret the string:
+    # metacharacters, wrappers, and destructive argv are refused first.
+    argv, refusal = prepare_shell_argv(command)
+    if refusal or not argv:
+        return json.dumps({"error": f"Blocked: {refusal or 'shell command refused'}"})
 
     try:
         result = subprocess.run(
-            command,
-            shell=True,
+            argv,
+            shell=False,
             capture_output=True,
             text=True,
             timeout=timeout,
