@@ -29,7 +29,9 @@ logger = logging.getLogger(__name__)
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 try:
-    import pyautogui  # type: ignore
+    from aureon.autonomous.pyautogui_loader import import_pyautogui
+
+    pyautogui = import_pyautogui()  # type: ignore
 
     HAS_PYAUTOGUI = True
     try:

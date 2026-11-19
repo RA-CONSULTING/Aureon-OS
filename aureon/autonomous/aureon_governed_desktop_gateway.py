@@ -14,7 +14,6 @@ invalidates every lease and window binding issued before it.
 from __future__ import annotations
 
 import hashlib
-import importlib
 import io
 import json
 import math
@@ -207,7 +206,9 @@ class LazyPyAutoGUIBackend:
         with self._load_lock:
             if self._module is None:
                 try:
-                    self._module = importlib.import_module("pyautogui")
+                    from aureon.autonomous.pyautogui_loader import import_pyautogui
+
+                    self._module = import_pyautogui()
                 except Exception as exc:  # pragma: no cover - host dependent
                     raise DesktopBackendError("local_desktop_backend_unavailable") from exc
             try:

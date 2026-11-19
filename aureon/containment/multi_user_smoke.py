@@ -783,6 +783,11 @@ def judge(child: Mapping[str, Any] | None, *, started: bool, parent_net_ns: str,
         failures.append("contained TCP 1.1.1.1:443 succeeded")
     elif tcp.get("errno") not in {errno.ENETUNREACH, errno.ENETDOWN, errno.EHOSTUNREACH}:
         failures.append(f"contained TCP errno {tcp.get('errno')} is not a no-route failure")
+    exchange_count = child.get("exchange_module_count")
+    if not isinstance(exchange_count, int) or isinstance(exchange_count, bool):
+        holds.append("exchange_module_count was not reported")
+    elif exchange_count > 0:
+        holds.append(f"child imported {exchange_count} exchange modules")
     if child.get("report_contained_secret") is True:
         failures.append("child report contained a canary before redaction")
     surfaces = child.get("surfaces") if isinstance(child.get("surfaces"), dict) else {}

@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import logging
 import os
+import sys
 from typing import Any, Dict
 
 from aureon.operator.identity import verify_supabase_jwt
@@ -147,10 +148,11 @@ def build_organism_payload() -> Dict[str, Any]:
             payload["unification"] = {}
         # Queen children — only if the Queen singleton already exists; never boot
         # the (heavy) Queen from a status read.
+        # A plain import would load the whole Queen module tree (and, through
+        # it, every exchange client), so read only an already-loaded module.
         try:
-            import aureon.utils.aureon_queen_hive_mind as _qhm
-
-            _q = getattr(_qhm, "_QUEEN", None)
+            _qhm = sys.modules.get("aureon.utils.aureon_queen_hive_mind")
+            _q = getattr(_qhm, "_QUEEN", None) if _qhm is not None else None
             payload["queen_children"] = len(getattr(_q, "children", {})) if _q is not None else None
         except Exception:  # noqa: BLE001
             payload["queen_children"] = None
