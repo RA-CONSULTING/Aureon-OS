@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import subprocess
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -107,6 +106,8 @@ def test_allowlist_env_permits_named_hosts_and_keeps_loopback(monkeypatch: pytes
     assert url_refusal("http://127.0.0.1:9/", allow_hosts=["127.0.0.1:9"]) is None
     monkeypatch.setenv("AUREON_BROWSER_ALLOW_HOSTS", "*")
     assert url_refusal("https://example.com/") is not None
+    assert url_refusal("ws://127.0.0.1:9/ws") == "websocket refused"
+    assert url_refusal("wss://127.0.0.1:443/ws") == "websocket refused"
 
 
 def test_default_audit_path_is_state_jsonl(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -432,38 +433,7 @@ def test_screenshots_stay_inside_one_directory(tmp_path: Path, monkeypatch: pyte
 
 
 _PROBE_HOST = "layer-probe.aureon.test"
-
-
-def _hosts_has_probe() -> bool:
-    try:
-        text = Path("/etc/hosts").read_text(encoding="utf-8", errors="replace")
-    except OSError:
-        return False
-    return _PROBE_HOST in text
-
-
-def _install_probe_host() -> bool:
-    if _hosts_has_probe():
-        return True
-    line = f"127.0.0.2 {_PROBE_HOST}\n"
-    completed = subprocess.run(
-        ["sudo", "-n", "tee", "-a", "/etc/hosts"],
-        input=line,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    return completed.returncode == 0 and _hosts_has_probe()
-
-
-def _remove_probe_host() -> None:
-    if not _hosts_has_probe():
-        return
-    subprocess.run(
-        ["sudo", "-n", "sed", "-i", f"/{_PROBE_HOST}/d", "/etc/hosts"],
-        check=False,
-        capture_output=True,
-    )
+_LEAK_RULES = f"MAP {_PROBE_HOST} 127.0.0.2, EXCLUDE 127.0.0.1, EXCLUDE localhost"
 
 
 def _probe_handler(kind: str, bad_base: str) -> type[BaseHTTPRequestHandler]:
@@ -535,8 +505,8 @@ def _layer_hits(
     kind: str,
     *,
     interception: bool,
-    resolver: bool,
-) -> list[str]:
+    resolver_rules: str | None,
+) -> tuple[list[str], list[str], list[dict[str, object]]]:
     hits: list[str] = []
     lock = threading.Lock()
     bad = ThreadingHTTPServer(("127.0.0.2", 0), _bad_hits("", hits, lock))
@@ -550,9 +520,10 @@ def _layer_hits(
     env = pytest.MonkeyPatch()
     env.setenv("AUREON_BROWSER_ALLOW_HOSTS", f"127.0.0.1:{good_port}")
     tool = BrowserTool(
-        audit_path=tmp_path / f"audit-{kind}-{interception}-{resolver}.jsonl",
+        audit_path=tmp_path / f"audit-{kind}-{interception}.jsonl",
         request_interception=interception,
-        host_resolver_rules=resolver,
+        host_resolver_rules=resolver_rules is None,
+        resolver_rules=resolver_rules,
     )
     try:
         opened = tool.open(f"http://127.0.0.1:{good_port}{page}")
@@ -565,7 +536,7 @@ def _layer_hits(
             tool.read_text()
         time.sleep(0.6)
         with lock:
-            return list(hits)
+            return list(hits), list(tool.launch_command), list(tool.attach_log)
     finally:
         tool.close()
         env.undo()
@@ -579,24 +550,45 @@ def _layer_hits(
 def test_each_layer_blocks_websocket_worker_and_popup(tmp_path: Path, kind: str) -> None:
     """Popup and service worker must stay blocked with either layer removed.
 
-    WebSocket handshakes do not pass through Fetch on this Chrome, so the
-    resolver rules are the primary control and this test runs that layer alone.
+    WebSocket handshakes do not pass through Fetch on this Chrome, so
+    ``--host-resolver-rules`` is the primary control and that case is tested
+    with interception off. The probe name is mapped by Chrome's own rules,
+    not by editing ``/etc/hosts``.
     """
 
     _need_chrome()
-    if not _install_probe_host():
-        pytest.fail("could not pin layer-probe.aureon.test to 127.0.0.2")
-    try:
-        if kind == "websocket":
-            without_interception = _layer_hits(tmp_path, kind, interception=False, resolver=True)
-            assert without_interception == [], without_interception
-            return
-        without_resolver = _layer_hits(tmp_path, kind, interception=True, resolver=False)
-        without_interception = _layer_hits(tmp_path, kind, interception=False, resolver=True)
-    finally:
-        _remove_probe_host()
-    assert without_resolver == [], without_resolver
-    assert without_interception == [], without_interception
+    if kind == "websocket":
+        hits, command, _log = _layer_hits(tmp_path, kind, interception=False, resolver_rules=None)
+        assert hits == [], hits
+        assert any("MAP * ~NOTFOUND" in part for part in command)
+        return
+    leaked, _command, _log = _layer_hits(tmp_path, kind, interception=True, resolver_rules=_LEAK_RULES)
+    ruled, command, _log = _layer_hits(tmp_path, kind, interception=False, resolver_rules=None)
+    assert leaked == [], leaked
+    assert ruled == [], ruled
+    assert any("MAP * ~NOTFOUND" in part for part in command)
+
+
+@pytest.mark.browser
+@pytest.mark.timeout(120)
+def test_popup_and_service_worker_stay_paused_until_interception(tmp_path: Path) -> None:
+    """Goes red when waitForDebuggerOnStart is false: the new targets are not paused."""
+
+    _need_chrome()
+    hits, _command, log = _layer_hits(tmp_path, "popup", interception=True, resolver_rules=_LEAK_RULES)
+    assert hits == [], hits
+    assert any(
+        item.get("type") == "page"
+        and item.get("waiting_for_debugger") is True
+        and "about:blank" not in str(item.get("url"))
+        for item in log
+    ), log
+    hits, _command, log = _layer_hits(tmp_path, "service_worker", interception=True, resolver_rules=_LEAK_RULES)
+    assert hits == [], hits
+    assert any(
+        item.get("type") == "service_worker" and item.get("waiting_for_debugger") is True
+        for item in log
+    ), log
 
 
 @pytest.mark.browser
@@ -675,18 +667,25 @@ def test_ordinary_file_outside_scratch_root_is_refused(tmp_path: Path, monkeypat
     (scratch / "page.html").write_text("<html><body><p>scratch-page</p></body></html>", encoding="utf-8")
     plain = outside / "plain.html"
     plain.write_text("<html><body><p>ordinary-outside-marker</p></body></html>", encoding="utf-8")
-    alias = scratch / "alias.html"
+    alias = scratch / "readme.html"
     alias.symlink_to(plain)
+    secret = outside / ".env"
+    secret.write_text("dummy-secret-outside\n", encoding="utf-8")
+    secret_link = scratch / "notes.html"
+    secret_link.symlink_to(secret)
     monkeypatch.setenv("AUREON_BROWSER_FILE_ROOT", str(scratch))
     tool = BrowserTool(audit_path=tmp_path / "audit.jsonl", screenshot_dir=tmp_path / "screens")
     try:
         assert tool.open((scratch / "page.html").as_uri())["ok"] is True
         direct = tool.open(plain.as_uri())
         linked = tool.open(alias.as_uri())
+        secret_open = tool.open(secret_link.as_uri())
         assert direct["ok"] is False, direct
         assert linked["ok"] is False, linked
-        assert direct["refused"] is True and linked["refused"] is True
+        assert secret_open["ok"] is False, secret_open
+        assert direct["refused"] is True and linked["refused"] is True and secret_open["refused"] is True
         read = tool.read_text()
         assert "ordinary-outside-marker" not in read.get("text", "")
+        assert "dummy-secret-outside" not in read.get("text", "")
     finally:
         tool.close()

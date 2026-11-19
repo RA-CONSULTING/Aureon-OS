@@ -25,9 +25,11 @@ every network request before Chrome sends it:
   sees it. Chrome is also started with ``--host-resolver-rules`` mapping
   every non-excluded hostname to ``~NOTFOUND``.
 * This Chrome build does not emit ``Fetch.requestPaused`` for a WebSocket
-  handshake, so interception cannot block ``ws://`` by itself. The resolver
-  rules are the primary control for WebSocket. They also do not see IP
-  literals or ports; a different loopback port is stopped by interception.
+  handshake, so interception cannot block ``ws://`` or ``wss://`` by itself.
+  ``--host-resolver-rules`` (``MAP * ~NOTFOUND``) is the primary control for
+  WebSocket. ``url_refusal`` also refuses those schemes before a process
+  starts. Resolver rules do not see IP literals or ports; a different
+  loopback port is stopped by interception.
 
 Screenshots are written only inside ``state/browser_screens`` (or
 ``AUREON_BROWSER_SCREENSHOT_DIR``), with a generated name unless the caller
@@ -324,6 +326,7 @@ class BrowserTool:
         screenshot_dir: str | Path | None = None,
         request_interception: bool = True,
         host_resolver_rules: bool = True,
+        resolver_rules: str | None = None,
     ) -> None:
         self._audit_path = None if audit_path is None else Path(audit_path)
         self._allow_hosts = None if allow_hosts is None else _parse_endpoints(allow_hosts)
@@ -331,9 +334,12 @@ class BrowserTool:
         self._screenshot_dir = None if screenshot_dir is None else Path(screenshot_dir).expanduser()
         self._request_interception = bool(request_interception)
         self._host_resolver_rules = bool(host_resolver_rules)
+        self._resolver_rules = None if resolver_rules is None else str(resolver_rules)
         self._chrome_binary = chrome_binary
         self._cdp_port: int | None = None
         self._armed_sessions: set[str] = set()
+        self.attach_log: list[dict[str, Any]] = []
+        self.launch_command: list[str] = []
         self._lock = threading.Lock()
         self._proc: subprocess.Popen[bytes] | None = None
         self._stderr: Any = None
@@ -680,8 +686,6 @@ class BrowserTool:
         header_map = {str(key).lower(): str(value).lower() for key, value in (headers or {}).items()}
         if kind == "websocket" or scheme in {"ws", "wss"} or header_map.get("upgrade") == "websocket":
             return "websocket"
-        if kind == "serviceworker" or "service-worker" in header_map:
-            return "service_worker"
         reason = self._refusal(url)
         if reason:
             return "off_host" if _is_off_host_reason(reason) or reason == "devtools port refused" else "blocked"
@@ -718,17 +722,31 @@ class BrowserTool:
             session_id=session_id,
         )
 
+    def _effective_resolver_rules(self) -> str:
+        if self._resolver_rules is not None:
+            return self._resolver_rules
+        if not self._host_resolver_rules:
+            return ""
+        return _host_resolver_rules(self._current_allow_hosts())
+
     def _current_allow_hosts(self) -> frozenset[str]:
         endpoints = self._allow_hosts if self._allow_hosts is not None else allow_endpoints_from_env()
         return frozenset(host for host, _port in endpoints)
 
     def _on_attached(self, params: Mapping[str, Any]) -> None:
         session_id = str(params.get("sessionId") or "")
+        info = params.get("targetInfo") if isinstance(params.get("targetInfo"), dict) else {}
+        waiting = bool(params.get("waitingForDebugger"))
+        self.attach_log.append(
+            {
+                "type": str(info.get("type") or ""),
+                "url": str(info.get("url") or ""),
+                "waiting_for_debugger": waiting,
+            }
+        )
         if not session_id or self._session is None or session_id in self._armed_sessions:
             return
         self._armed_sessions.add(session_id)
-        info = params.get("targetInfo") if isinstance(params.get("targetInfo"), dict) else {}
-        waiting = bool(params.get("waitingForDebugger"))
         if info.get("type") == "page" and self._session.default_session is None:
             self._session.default_session = session_id
         if self._request_interception:
@@ -800,7 +818,7 @@ class BrowserTool:
             "--mute-audio",
             "--disable-breakpad",
             "--allow-file-access-from-files",
-            *([f"--host-resolver-rules={_host_resolver_rules(self._current_allow_hosts())}"] if self._host_resolver_rules else []),
+            *([f"--host-resolver-rules={self._effective_resolver_rules()}"] if self._effective_resolver_rules() else []),
             f"--remote-debugging-port={port}",
             f"--user-data-dir={user_data}",
             "--window-size=1280,800",
@@ -812,6 +830,7 @@ class BrowserTool:
             "TMPDIR": os.environ.get("TMPDIR", "/tmp"),
             "LANG": os.environ.get("LANG", "C.UTF-8"),
         }
+        self.launch_command = list(cmd)
         proc = subprocess.Popen(
             cmd,
             stdin=subprocess.DEVNULL,
@@ -1537,20 +1556,29 @@ def _path_from_file_url(url: str) -> Path:
 
 
 def _file_path_refusal(path: Path, *, file_root: Path | None, run_dirs: Iterable[Path]) -> str | None:
+    """Refuse using the real path, after symlinks are followed.
+
+    The lexical path is checked too, but a symlink whose name is ordinary
+    still has to be judged by ``os.path.realpath`` of its target.
+    """
+
     try:
-        real = path.resolve()
+        real = Path(os.path.realpath(path))
     except OSError as exc:
         return f"file URL refused: {exc.__class__.__name__}"
-    for candidate in (path, real):
+    for candidate in (real, path):
         reason = _secret_or_run_reason(candidate, run_dirs)
         if reason:
             return reason
     if file_root is None:
         return "file URL refused: no scratch root"
     try:
-        root = file_root.resolve()
+        root = Path(os.path.realpath(file_root))
+    except OSError as exc:
+        return f"file URL refused: {exc.__class__.__name__}"
+    try:
         real.relative_to(root)
-    except (OSError, ValueError):
+    except ValueError:
         return "file URL refused: outside scratch root"
     return None
 
