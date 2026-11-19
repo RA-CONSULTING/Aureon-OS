@@ -479,7 +479,8 @@ def test_binance_budget_connectivity_requires_explicit_live_diagnostic():
 
     assert trader._exchange_connected_for_budget("binance") is False
     trader._binance_diag = {"network_ok": True}
-    assert trader._exchange_connected_for_budget("binance") is True
+    # A public ping is not an authenticated account reading.
+    assert trader._exchange_connected_for_budget("binance") is False
 
 
 def test_sell_quantity_requires_fresh_finite_provider_balance_receipt():

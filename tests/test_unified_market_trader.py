@@ -546,6 +546,9 @@ class UnifiedMarketTraderTests(unittest.TestCase):
         trader = self._make_trader()
         trader.kraken_ready = True
         trader.capital_ready = True
+        trader.alpaca.auth_status = "verified"
+        trader.alpaca.auth_reason = "ok"
+        trader.alpaca.auth_verified = True
         trader._binance_diag = {"network_ok": True, "account_ok": True, "margin_available": True, "uk_mode": False}
         trader._kraken_tradable_symbols = lambda: {"BTCUSD": "XXBTZUSD"}  # type: ignore[method-assign]
         trader._capital_tradable_symbols = lambda: {"BTCUSD": "BTCUSD"}  # type: ignore[method-assign]
