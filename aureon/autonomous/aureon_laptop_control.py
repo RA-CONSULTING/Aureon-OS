@@ -154,7 +154,10 @@ except ImportError:
 try:
     import sounddevice
     HAS_SOUNDDEVICE = True
-except ImportError:
+except (ImportError, OSError):
+    # sounddevice raises OSError('PortAudio library not found') at import
+    # when the host has no PortAudio. That is not an ImportError. Fail closed
+    # the same way a missing pyautogui does: audio stays unavailable.
     sounddevice = None
     HAS_SOUNDDEVICE = False
 
