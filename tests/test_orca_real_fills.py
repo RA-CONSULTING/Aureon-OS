@@ -196,6 +196,28 @@ def test_partial_fill_records_partial_qty(isolated):
     assert fills.aureon_owned_qty("binance", "ETHUSDT") == Decimal(FILLED_QTY)
 
 
+def test_disagreeing_fill_quantities_are_not_a_fill():
+    """executedQty 0.5 and filled_qty 1.0 do not agree, so the reading is None.
+
+    Pins the check that every present fill-quantity field is the same value.
+    Dropping that check would return the first field, 0.5.
+    """
+    payload = {"executedQty": "0.5", "filled_qty": "1.0"}
+    assert fills._filled_qty(payload) is None
+    assert fills.confirmed_fill_record("binance", "ETHUSDT", "BUY", _response(**payload)) is None
+
+
+def test_a_zero_fill_quantity_rejects_the_other_fields():
+    """executedQty 1 with filled_qty 0 is not a fill.
+
+    Pins ``if qty is None: return None``. Continuing past the zero field would
+    keep executedQty 1.
+    """
+    payload = {"executedQty": "1", "filled_qty": "0"}
+    assert fills._filled_qty(payload) is None
+    assert fills.confirmed_fill_record("binance", "ETHUSDT", "BUY", _response(**payload)) is None
+
+
 @pytest.mark.parametrize(
     "response",
     [
