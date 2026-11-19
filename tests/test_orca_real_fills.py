@@ -440,6 +440,7 @@ def test_normalized_kraken_receipt_records_vol_exec(isolated):
         "status": "no_data",
         "provider_status": "closed",
         "vol_exec": FILLED_QTY,
+        "requestedQty": "0.1",
         "executedQty": None,
         "orderId": KRAKEN_TXID,
         "reason": "missing_or_stale_provider_close_timestamp",
@@ -596,6 +597,66 @@ def test_any_other_consistency_failure_reason_records_nothing(isolated):
     assert fills.record_kraken_acknowledged_fill(object(), "ETHUSD", "buy", body) is None
     assert not isolated.exists()
     assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(0)
+
+
+def _oversized(**overrides):
+    order = _provider_closed(vol="0.1", vol_exec="5", price="2000", cost="10000")
+    order.update(overrides)
+    return order
+
+
+@pytest.mark.parametrize(
+    ("order", "reason"),
+    [
+        (
+            _oversized(closetm=time.time() - 10**9),
+            "missing_or_stale_provider_close_timestamp",
+        ),
+        (_oversized(price=None), "missing_or_malformed_provider_average_price"),
+        (_oversized(cost=None), "missing_or_malformed_provider_filled_cost"),
+        (_oversized(fee=None), "missing_or_malformed_provider_fee"),
+        (_oversized(trades=[]), "missing_or_ambiguous_provider_trade_ids"),
+    ],
+)
+def test_oversized_fill_stopped_early_records_nothing(isolated, order, reason):
+    """vol_exec 5 against requested 0.1 is not owned, even if an earlier check returns first."""
+    client = _status_client(order)
+    assert _record_ack(client) is None
+    receipt = client.get_order_status(KRAKEN_TXID)
+    assert receipt["reason"] == reason
+    assert receipt["vol_exec"] == "5"
+    assert receipt["requestedQty"] == "0.1"
+    assert receipt.get("consistency_failure") is not True
+    assert not isolated.exists()
+    assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(0)
+    assert fills.aureon_net_fill_qty("kraken", "ETHUSD") == Decimal(0)
+
+
+def test_missing_requested_qty_records_nothing(isolated):
+    order = _provider_closed(vol_exec="5", price="2000", cost="10000")
+    del order["vol"]
+    client = _status_client(order)
+    assert _record_ack(client) is None
+    receipt = client.get_order_status(KRAKEN_TXID)
+    assert receipt["requestedQty"] is None
+    assert receipt["vol_exec"] == "5"
+    assert not isolated.exists()
+    assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(0)
+
+
+def test_genuine_partial_fill_still_records(isolated):
+    """0.05 filled of 0.1 ordered is a real partial, not an oversized fill."""
+    order = _provider_closed(vol="0.1", vol_exec="0.05", price="2000", cost="100")
+    client = _status_client(order)
+    wrote = _record_ack(client)
+    receipt = client.get_order_status(KRAKEN_TXID)
+    assert receipt["status"] == "PARTIALLY_FILLED"
+    assert receipt["requestedQty"] == "0.1"
+    assert receipt["vol_exec"] == "0.05"
+    assert wrote is not None
+    assert wrote["filled_qty"] == "0.05"
+    assert wrote["exchange_order_id"] == KRAKEN_TXID
+    assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal("0.05")
 
 
 @pytest.mark.parametrize(

@@ -409,6 +409,31 @@ def _kraken_provider_status(payload: dict[str, Any]) -> str:
     return str(payload.get("provider_status") or "").strip().lower().replace(" ", "_").replace("-", "_")
 
 
+def _blank(value: Any) -> bool:
+    return value is None or (isinstance(value, str) and not value.strip())
+
+
+def _kraken_ordered_qty(payload: dict[str, Any]) -> Decimal | None:
+    """Ordered size, or None when it is missing or not a positive finite number.
+
+    A normalized receipt carries ``requestedQty`` (and ``origQty``). A raw
+    QueryOrders order carries ``vol``, which is what the client copies into
+    ``requestedQty``. A present ``requestedQty`` that is blank, zero, negative,
+    or not finite is a refusal, not a cue to read ``vol`` instead.
+    """
+    if "requestedQty" in payload or "origQty" in payload:
+        raw = payload.get("requestedQty")
+        if _blank(raw):
+            raw = payload.get("origQty")
+        if _blank(raw):
+            return None
+        return _positive_decimal(raw)
+    raw = payload.get("vol")
+    if _blank(raw):
+        return None
+    return _positive_decimal(raw)
+
+
 def _kraken_reason(payload: dict[str, Any]) -> str:
     return str(payload.get("reason") or "").strip().lower().replace(" ", "_").replace("-", "_")
 
@@ -452,8 +477,11 @@ def _closed_query_fill(
     ``vol_exec`` goes through ``_positive_decimal``. ``1e5000``, NaN, Infinity,
     zero, and negatives are not fills. ``SUBMITTED`` and ``NEW`` are not closed.
     A non-empty ``error`` is not a fill. Neither is a receipt the client marks
-    with ``consistency_failure``, whatever the reason text says, even when
-    ``provider_status`` is still closed and ``vol_exec`` is present.
+    with ``consistency_failure``, whatever the reason text says. ``vol_exec``
+    greater than ``requestedQty`` is not a fill, and neither is a missing or
+    non-positive ``requestedQty``, even when an earlier client check returned
+    first and left ``vol_exec`` on the receipt. A partial fill (``vol_exec``
+    at or below the ordered size) still counts.
     """
     if not isinstance(payload, dict) or payload.get("error"):
         return None
@@ -481,6 +509,9 @@ def _closed_query_fill(
         return None
     filled = _positive_decimal(body.get("vol_exec"))
     if filled is None:
+        return None
+    ordered = _kraken_ordered_qty(body)
+    if ordered is None or filled > ordered:
         return None
     body_txid = _text_id(body.get("txid")) or _text_id(body.get("orderId"))
     if body_txid and queried and body_txid != queried:
