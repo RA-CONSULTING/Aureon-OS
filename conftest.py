@@ -512,6 +512,18 @@ _fixture_commits_skip_operator_signing()
 _OS_ENVIRON_BEFORE_COLLECTION.update(os.environ)
 
 
+@pytest.fixture(autouse=True)
+def _isolate_orca_real_fill_ledger(tmp_path, monkeypatch):
+    """Point the confirmed-fill ledger at this test's tmp dir.
+
+    ``LEDGER_PATH`` otherwise resolves to ``<checkout>/state/aureon_real_fills.jsonl``.
+    No test should append there.
+    """
+    from aureon.exchanges import orca_real_fills as real_fills
+
+    monkeypatch.setattr(real_fills, "LEDGER_PATH", tmp_path / "aureon_real_fills.jsonl")
+
+
 def pytest_collection_modifyitems(config: pytest.Config, items: list) -> None:
     """Deselect ``@pytest.mark.windows`` contract tests off Windows.
 

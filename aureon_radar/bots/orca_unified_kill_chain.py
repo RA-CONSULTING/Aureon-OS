@@ -751,6 +751,8 @@ class UnifiedKillChain:
     
     def _execute_trade(self, opportunity: Dict) -> Dict:
         """Actually execute the trade - BY THE ORCA RULES"""
+        from aureon.exchanges.orca_real_fills import record_confirmed_fill
+
         exchange = opportunity.get('exchange', 'unknown')
         symbol = opportunity.get('symbol', 'UNKNOWN')
         op_type = opportunity.get('type', 'UNKNOWN')
@@ -795,6 +797,7 @@ class UnifiedKillChain:
                     # EXECUTE THE TRADE
                     order_sent = True
                     order_result = self.kraken.place_market_order(kraken_pair, 'buy', volume)
+                    record_confirmed_fill('kraken', kraken_pair, 'buy', order_result)
                     
                     if order_result and not order_result.get('error'):
                         log_sniper(f"💥 ORDER FILLED! {order_result}")
@@ -831,6 +834,7 @@ class UnifiedKillChain:
                     # EXECUTE THE TRADE
                     order_sent = True
                     order_result = self.binance.place_market_order(symbol, 'BUY', volume)
+                    record_confirmed_fill('binance', symbol, 'BUY', order_result)
                     
                     if order_result and order_result.get('status') == 'FILLED':
                         log_sniper(f"💥 ORDER FILLED! {order_result}")
@@ -878,6 +882,7 @@ class UnifiedKillChain:
                             log_sniper(f"   Step 1: BUY {volume:.6f} {coin} on Kraken")
                             order_sent = True
                             buy_order = self.kraken.place_market_order(kraken_pair, 'buy', volume)
+                            record_confirmed_fill('kraken', kraken_pair, 'buy', buy_order)
                             
                             if buy_order and buy_order.get('status') == 'FILLED':
                                 actual_qty = float(buy_order.get('executedQty', volume))
@@ -895,6 +900,7 @@ class UnifiedKillChain:
                                 else:
                                     log_sniper(f"   Step 2: SELL {sell_qty} {coin} on Binance")
                                     sell_order = self.binance.place_market_order(binance_symbol, 'SELL', sell_qty)
+                                    record_confirmed_fill('binance', binance_symbol, 'SELL', sell_order)
                                 
                                 if sell_order and sell_order.get('status') == 'FILLED':
                                     log_sniper(f"   ✅ ARBITRAGE COMPLETE!")
@@ -929,8 +935,10 @@ class UnifiedKillChain:
                         'opportunity': opportunity,
                         'result': result
                     }) + '\n')
-            except:
-                pass
+            except Exception as exc:
+                log_system(
+                    f"⚠️ orca_executions.json write failed: {type(exc).__name__}: {exc}"
+                )
 
             self._refresh_portfolio_after_trade(order_sent=order_sent)
             
