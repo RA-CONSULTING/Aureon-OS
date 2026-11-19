@@ -405,6 +405,128 @@ class LazyPyAutoGUIBackend:
         self._pyautogui().hotkey(*keys)
 
 
+class X11PyAutoGUIBackend(LazyPyAutoGUIBackend):
+    """Linux/X11 backend: native window identity via python-xlib.
+
+    ``LazyPyAutoGUIBackend.foreground_window`` is Win32-only (``ctypes.windll``),
+    so on Linux every bind/observe failed closed with
+    ``foreground_window_query_failed`` and the gateway could not act on any X11
+    display.  This backend keeps pyautogui for input and reads the focused
+    top-level window (``_NET_ACTIVE_WINDOW`` when a window manager publishes it,
+    otherwise the X input focus) with its ``_NET_WM_PID``, title and root
+    geometry.  Screen capture uses Pillow's XCB grab of ``$DISPLAY`` directly,
+    because pyscreeze refuses to capture on Linux unless gnome-screenshot or
+    scrot is installed.  Imports stay lazy: constructing the backend touches
+    nothing.
+    """
+
+    def __init__(self, pause_seconds: float = 0.05, *, display_name: str | None = None) -> None:
+        super().__init__(pause_seconds, platform_name="linux")
+        self._display_name = display_name
+        self._xdisplay: Any = None
+
+    def _x(self) -> Any:
+        with self._load_lock:
+            if self._xdisplay is None:
+                try:
+                    from Xlib import display as xdisplay  # type: ignore[import-not-found]
+
+                    self._xdisplay = xdisplay.Display(self._display_name)
+                except Exception as exc:
+                    raise DesktopBackendError("x11_display_unavailable") from exc
+            return self._xdisplay
+
+    def capture_screen(self) -> bytes:
+        try:
+            from PIL import ImageGrab
+
+            image = ImageGrab.grab(xdisplay=self._display_name or os.environ.get("DISPLAY") or None)
+            buffer = io.BytesIO()
+            image.save(buffer, format="PNG")
+            data = buffer.getvalue()
+        except Exception as exc:
+            raise DesktopBackendError("screen_capture_failed") from exc
+        if not data:
+            raise DesktopBackendError("empty_screen_capture")
+        return data
+
+    def screen_size(self) -> Tuple[int, int]:
+        try:
+            screen = self._x().screen()
+            width, height = int(screen.width_in_pixels), int(screen.height_in_pixels)
+        except DesktopGatewayError:
+            raise
+        except Exception as exc:
+            raise DesktopBackendError("screen_size_failed") from exc
+        if width <= 0 or height <= 0:
+            raise DesktopBackendError("invalid_screen_size")
+        return width, height
+
+    def foreground_window(self) -> WindowInfo:
+        try:
+            info = self._x11_foreground_window()
+        except DesktopGatewayError:
+            raise
+        except Exception as exc:  # pragma: no cover - host dependent
+            raise DesktopBackendError("foreground_window_query_failed") from exc
+        _validate_window_info(info)
+        return info
+
+    def _x11_foreground_window(self) -> WindowInfo:
+        d = self._x()
+        root = d.screen().root
+        candidate: Any = None
+        active_atom = d.intern_atom("_NET_ACTIVE_WINDOW")
+        prop = root.get_full_property(active_atom, 0)
+        if prop is not None and len(prop.value) and int(prop.value[0]):
+            candidate = d.create_resource_object("window", int(prop.value[0]))
+        else:
+            focus = d.get_input_focus().focus
+            if isinstance(focus, int) or not getattr(focus, "id", 0) or focus.id == root.id:
+                raise DesktopBackendError("foreground_window_unavailable")
+            candidate = focus
+        # Walk up to the top-level client (child of root or the WM frame's client).
+        window = candidate
+        while True:
+            tree = window.query_tree()
+            parent = tree.parent
+            if not getattr(parent, "id", 0) or parent.id == root.id:
+                break
+            if window.get_full_property(d.intern_atom("_NET_WM_PID"), 0) is not None:
+                break
+            window = parent
+        pid_prop = window.get_full_property(d.intern_atom("_NET_WM_PID"), 0)
+        if pid_prop is None or not len(pid_prop.value):
+            raise DesktopBackendError("foreground_window_pid_unavailable")
+        title_prop = window.get_full_property(d.intern_atom("_NET_WM_NAME"), 0)
+        title = ""
+        if title_prop is not None:
+            raw = title_prop.value
+            title = raw.decode("utf-8", "replace") if isinstance(raw, bytes) else str(raw)
+        if not title:
+            wm_name = window.get_wm_name()
+            title = wm_name.decode("utf-8", "replace") if isinstance(wm_name, bytes) else str(wm_name or "")
+        geometry = window.get_geometry()
+        origin = window.translate_coords(root, 0, 0)
+        return WindowInfo(
+            handle=int(window.id),
+            title=title,
+            process_id=int(pid_prop.value[0]),
+            left=-int(origin.x),
+            top=-int(origin.y),
+            width=int(geometry.width),
+            height=int(geometry.height),
+        )
+
+
+def default_desktop_backend() -> DesktopBackend:
+    """Pick the native backend for this host without importing pyautogui."""
+
+    if sys.platform.startswith("linux") and os.environ.get("DISPLAY"):
+        return X11PyAutoGUIBackend()
+    return LazyPyAutoGUIBackend()
+
+
 @dataclass(frozen=True)
 class ScreenObservation:
     captured_at: datetime
@@ -547,7 +669,7 @@ class GovernedDesktopGateway:
         if min_action_interval_seconds < 0:
             raise ValueError("min_action_interval_seconds cannot be negative")
 
-        self._backend: DesktopBackend = backend or LazyPyAutoGUIBackend()
+        self._backend: DesktopBackend = backend or default_desktop_backend()
         self.evidence_path = Path(evidence_path or DEFAULT_EVIDENCE_PATH)
         self.max_actions_per_window = int(max_actions_per_window)
         self.rate_window_seconds = float(rate_window_seconds)
@@ -1833,6 +1955,8 @@ __all__ = [
     "GovernedDesktopGateway",
     "get_governed_desktop_gateway",
     "LazyPyAutoGUIBackend",
+    "X11PyAutoGUIBackend",
+    "default_desktop_backend",
     "PostconditionResult",
     "ScreenObservation",
     "WindowBinding",
