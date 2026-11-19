@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import logging
+import multiprocessing
 from decimal import Decimal
 
 import pytest
@@ -283,9 +284,14 @@ def test_completed_arbitrage_records_each_leg_on_its_venue(isolated):
         ("binance", "ETHUSDT", "SELL", FILLED_QTY),
     ]
     assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(FILLED_QTY)
-    assert fills.aureon_owned_qty("binance", "ETHUSDT") == -Decimal(FILLED_QTY)
+    assert fills.aureon_net_fill_qty("kraken", "ETHUSD") == Decimal(FILLED_QTY)
+    # The Binance leg is a sell with no Binance buy. Owned qty clamps at zero;
+    # the signed net keeps the sell.
+    assert fills.aureon_owned_qty("binance", "ETHUSDT") == Decimal(0)
+    assert fills.aureon_net_fill_qty("binance", "ETHUSDT") == -Decimal(FILLED_QTY)
     assert (
-        fills.aureon_owned_qty("kraken", "ETHUSD") + fills.aureon_owned_qty("binance", "ETHUSDT")
+        fills.aureon_net_fill_qty("kraken", "ETHUSD")
+        + fills.aureon_net_fill_qty("binance", "ETHUSDT")
         == Decimal(0)
     )
     assert fills.aureon_owned_qty("kraken", "ETHUSDT") == Decimal(0)
@@ -368,3 +374,162 @@ def test_attempt_log_write_failure_is_logged(isolated, monkeypatch, capsys):
     rows = _rows(isolated)
     assert len(rows) == 1
     assert rows[0]["filled_qty"] == FILLED_QTY
+
+
+def test_owned_qty_clamps_at_zero_and_net_keeps_the_signed_total(isolated):
+    """Buy 0.02, then sells of 0.015 and 0.5. Net is -0.495; owned qty is 0."""
+    fills.record_confirmed_fill("binance", "ETHUSDT", "BUY", _response(orderId="884221", executedQty="0.02"))
+    fills.record_confirmed_fill(
+        "binance", "ETHUSDT", "SELL", _response(orderId="884222", side="SELL", executedQty="0.015")
+    )
+    fills.record_confirmed_fill(
+        "binance", "ETHUSDT", "SELL", _response(orderId="884223", side="SELL", executedQty="0.5")
+    )
+    assert fills.aureon_net_fill_qty("binance", "ETHUSDT") == Decimal("-0.495")
+    assert fills.aureon_owned_qty("binance", "ETHUSDT") == Decimal(0)
+
+
+def test_arbitrage_sell_larger_than_the_buy_clamps_that_venue(isolated):
+    """Kill-chain keys: Kraken pair ETHUSD, Binance symbol ETHUSDT.
+
+    The sell request stays the buy's filled 0.02. The Binance response filled
+    0.5, which is more than the Kraken buy. Owned qty on Binance is 0; the
+    signed net is -0.5.
+    """
+    buy = _response(orderId="K-884221", side="BUY", executedQty="0.02", clientOrderId="ck-kraken-884221")
+    sell = _response(orderId="B-884221", side="SELL", executedQty="0.5", clientOrderId="ck-binance-884221")
+    kraken = _Kraken(buy)
+    binance = _Binance(sell)
+    chain = _chain()
+    chain.kraken = kraken
+    chain.binance = binance
+    result = chain._execute_trade({
+        "exchange": "arbitrage",
+        "symbol": "ETH/USD",
+        "buy_exchange": "kraken",
+        "sell_exchange": "binance",
+        "kraken_price": 100,
+        "binance_price": 100,
+    })
+
+    assert result["status"] == "ARBITRAGE_EXECUTED"
+    assert kraken.orders == [("ETHUSD", "buy", Decimal("0.8"))]
+    assert binance.orders == [("ETHUSDT", "SELL", Decimal("0.02"))]
+    assert [(row["venue"], row["symbol"], row["filled_qty"]) for row in _rows(isolated)] == [
+        ("kraken", "ETHUSD", "0.02"),
+        ("binance", "ETHUSDT", "0.5"),
+    ]
+    assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal("0.02")
+    assert fills.aureon_net_fill_qty("kraken", "ETHUSD") == Decimal("0.02")
+    assert fills.aureon_owned_qty("binance", "ETHUSDT") == Decimal(0)
+    assert fills.aureon_net_fill_qty("binance", "ETHUSDT") == Decimal("-0.5")
+
+
+@pytest.mark.parametrize("qty", ["1e5000", "1e999999999", "NaN", "Infinity", "-0.02"])
+def test_non_finite_negative_and_overflowing_qty_writes_nothing(isolated, qty):
+    wrote = fills.record_confirmed_fill(
+        "binance",
+        "ETHUSDT",
+        "BUY",
+        _response(orderId="884221", executedQty=qty, filled_qty=qty),
+    )
+    assert wrote is None
+    assert not isolated.exists()
+    assert fills.aureon_owned_qty("binance", "ETHUSDT") == Decimal(0)
+    assert fills.aureon_net_fill_qty("binance", "ETHUSDT") == Decimal(0)
+
+
+def test_overflowing_row_is_skipped_and_a_real_fill_still_counts(isolated):
+    isolated.parent.mkdir(parents=True, exist_ok=True)
+    good = {
+        "venue": "binance",
+        "symbol": "ETHUSDT",
+        "side": "BUY",
+        "status": "FILLED",
+        "filled_qty": FILLED_QTY,
+        "executedQty": FILLED_QTY,
+        "exchange_order_id": ORDER_ID,
+        "source": "orca_kill_chain",
+    }
+    huge = dict(good)
+    huge["exchange_order_id"] = "884999"
+    huge["filled_qty"] = "1e999999999"
+    huge["executedQty"] = "1e999999999"
+    isolated.write_text(json.dumps(good) + "\n" + json.dumps(huge) + "\n", encoding="utf-8")
+    assert fills.aureon_owned_qty("binance", "ETHUSDT") == Decimal(FILLED_QTY)
+    assert fills.aureon_net_fill_qty("binance", "ETHUSDT") == Decimal(FILLED_QTY)
+
+
+def test_overflow_while_totaling_fails_closed_to_zero(isolated, monkeypatch):
+    isolated.parent.mkdir(parents=True, exist_ok=True)
+    isolated.write_text(json.dumps({
+        "venue": "binance",
+        "symbol": "ETHUSDT",
+        "side": "BUY",
+        "status": "FILLED",
+        "filled_qty": FILLED_QTY,
+        "executedQty": FILLED_QTY,
+        "exchange_order_id": ORDER_ID,
+        "source": "orca_kill_chain",
+    }) + "\n", encoding="utf-8")
+
+    def _huge(_payload):
+        return Decimal("1e999999999")
+
+    monkeypatch.setattr(fills, "_filled_qty", _huge)
+    assert fills.aureon_owned_qty("binance", "ETHUSDT") == Decimal(0)
+    assert fills.aureon_net_fill_qty("binance", "ETHUSDT") == Decimal(0)
+
+
+def _ledger_worker(path: str, order_ids: list[str], noop: bool, barrier) -> None:
+    """Child writer. A no-op flock waits inside the locked section so both snapshot the same file."""
+    if noop:
+        fills.fcntl.flock = lambda *_args, **_kwargs: None
+        fills._after_read = barrier.wait
+    for order_id in order_ids:
+        wrote = fills.record_confirmed_fill(
+            "binance",
+            "ETHUSDT",
+            "BUY",
+            {"status": "FILLED", "orderId": order_id, "executedQty": FILLED_QTY, "side": "BUY"},
+            ledger_path=path,
+        )
+        if wrote is None:
+            raise RuntimeError(order_id)
+
+
+def _run_writers(path, count: int, noop: bool) -> list[dict]:
+    ctx = multiprocessing.get_context("fork")
+    barrier = ctx.Barrier(2) if noop else None
+    procs = [
+        ctx.Process(
+            target=_ledger_worker,
+            args=(str(path), [f"P{slot}-{i}" for i in range(count)], noop, barrier),
+        )
+        for slot in (0, 1)
+    ]
+    for proc in procs:
+        proc.start()
+    for proc in procs:
+        proc.join(60)
+        if proc.is_alive():
+            proc.kill()
+            proc.join()
+            raise AssertionError(f"writer pid {proc.pid} hung")
+        assert proc.exitcode == 0, proc.exitcode
+    return _rows(path)
+
+
+def test_two_processes_keep_every_fill_only_while_flock_works(tmp_path):
+    """2 processes x 400 fills. All 800 land with flock.
+
+    With flock replaced by a no-op, both processes snapshot the file and the
+    later replace drops the other process's row, so 400 of 800 remain.
+    """
+    kept = _run_writers(tmp_path / "kept.jsonl", 400, noop=False)
+    assert len(kept) == 800
+    assert len({row["exchange_order_id"] for row in kept}) == 800
+
+    dropped = _run_writers(tmp_path / "dropped.jsonl", 400, noop=True)
+    assert len(dropped) == 400
+    assert len({row["exchange_order_id"] for row in dropped}) == 400

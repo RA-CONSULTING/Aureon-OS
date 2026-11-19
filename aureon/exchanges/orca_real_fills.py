@@ -9,15 +9,19 @@ PARTIALLY_FILLED, or Kraken's closed (stored as the venue status), with a
 filled quantity greater than zero and a real exchange order id. Requested
 quantity, dry-run, not-submitted, paper, and shadow responses write nothing.
 
-``aureon_owned_qty`` is buys minus sells for one venue and symbol, using that
-filled quantity. A missing, unreadable, corrupt, or partially written ledger
-returns zero and does not raise. PR #370 consumes this helper for exit caps.
+``aureon_net_fill_qty`` is signed filled buys minus filled sells for one venue
+and symbol. ``aureon_owned_qty`` is that net clamped at zero, which is what an
+exit cap can sell. A missing, unreadable, corrupt, or partially written ledger
+returns zero and does not raise. A quantity that is not finite, negative, or
+too large for the decimal context or for IEEE-754 binary64 is not a fill.
+PR #370 consumes ``aureon_owned_qty`` for exit caps.
 """
 
 from __future__ import annotations
 
 import json
 import logging
+import math
 import os
 from contextlib import contextmanager
 from datetime import UTC, datetime
@@ -65,12 +69,25 @@ def _repo_root() -> Path:
 
 LEDGER_PATH = _repo_root() / "state" / "aureon_real_fills.jsonl"
 
+# Test seam. Production leaves this None. A callable runs after the ledger is
+# read and before it is replaced, while the file lock is held.
+_after_read = None
+
 
 def _ledger(path: Path | None) -> Path:
     return LEDGER_PATH if path is None else Path(path)
 
 
 def _positive_decimal(value: Any) -> Decimal | None:
+    """A positive finite fill quantity, or None.
+
+    No trading cap. Rejected values are those Decimal itself will not carry
+    through arithmetic (not finite, or ``Overflow`` once the active context is
+    applied) and those whose IEEE-754 binary64 conversion is infinite. That
+    float bound is ``sys.float_info.max`` (about 1.8e308); ``1e309`` and
+    ``1e5000`` are finite Decimals and still infinite as floats. Negative, zero,
+    and NaN are not fills.
+    """
     if isinstance(value, bool) or value is None:
         return None
     try:
@@ -78,6 +95,16 @@ def _positive_decimal(value: Any) -> Decimal | None:
     except (InvalidOperation, ValueError, ArithmeticError):
         return None
     if not qty.is_finite() or qty <= 0:
+        return None
+    try:
+        qty + 0  # apply the decimal context; exponents past Emax overflow
+    except ArithmeticError:
+        return None
+    try:
+        as_float = float(qty)
+    except (OverflowError, ValueError, ArithmeticError):
+        return None
+    if math.isinf(as_float):
         return None
     return qty
 
@@ -264,13 +291,8 @@ def _exclusive_lock(path: Path) -> Iterator[None]:
                 msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
 
 
-def _read_rows(path: Path) -> list[dict[str, Any]] | None:
-    """Rows, an empty list when the file is absent, or None when it is not trustworthy."""
-    if not path.exists():
-        return []
-    if not path.is_file():
-        raise OSError(f"real fill ledger is not a file: {path}")
-    text = path.read_text(encoding="utf-8")
+def _rows_from_text(text: str) -> list[dict[str, Any]] | None:
+    """Parsed rows, or None when any non-empty line is not a JSON object."""
     rows: list[dict[str, Any]] = []
     for line in text.splitlines():
         if not line.strip():
@@ -283,6 +305,16 @@ def _read_rows(path: Path) -> list[dict[str, Any]] | None:
             return None
         rows.append(row)
     return rows
+
+
+def _read_rows(path: Path) -> list[dict[str, Any]] | None:
+    """Rows, an empty list when the file is absent, or None when it is not trustworthy."""
+    if not path.exists():
+        return []
+    if not path.is_file():
+        raise OSError(f"real fill ledger is not a file: {path}")
+    parsed = _rows_from_text(path.read_text(encoding="utf-8"))
+    return parsed
 
 
 def _countable_qty(row: dict[str, Any]) -> Decimal | None:
@@ -330,7 +362,10 @@ def record_confirmed_fill(
 
 def _append(path: Path, record: dict[str, Any]) -> None:
     with _exclusive_lock(path):
-        rows = _read_rows(path)
+        if path.exists() and not path.is_file():
+            raise OSError(f"real fill ledger is not a file: {path}")
+        previous = path.read_text(encoding="utf-8") if path.exists() else ""
+        rows = _rows_from_text(previous)
         if rows is None:
             raise OSError(f"real fill ledger corrupt or partial: {path}")
         new_qty = Decimal(record["filled_qty"])
@@ -345,24 +380,27 @@ def _append(path: Path, record: dict[str, Any]) -> None:
                 if existing is not None and existing >= new_qty:
                     return
         line = json.dumps(record, sort_keys=True, separators=(",", ":"), allow_nan=False)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "a", encoding="utf-8", newline="\n") as handle:
-            handle.write(line + "\n")
-            handle.flush()
-            os.fsync(handle.fileno())
+        hook = _after_read
+        if hook is not None:
+            hook()
+        if previous and not previous.endswith("\n"):
+            previous += "\n"
+        _replace_ledger(path, previous + line + "\n")
 
 
-def aureon_owned_qty(
-    venue: str,
-    symbol: str,
-    *,
-    ledger_path: Path | None = None,
-) -> Decimal:
-    """Filled buys minus filled sells for this venue and symbol.
+def _replace_ledger(path: Path, payload: str) -> None:
+    """Replace the ledger with a complete document. Callers hold the file lock."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f"{path.name}.{os.getpid()}.tmp")
+    with open(temporary, "w", encoding="utf-8", newline="\n") as handle:
+        handle.write(payload)
+        handle.flush()
+        os.fsync(handle.fileno())
+    os.replace(temporary, path)
 
-    Any missing, unreadable, corrupt, or partially written ledger is zero.
-    This never raises.
-    """
+
+def _signed_net(venue: str, symbol: str, ledger_path: Path | None) -> Decimal:
+    """Signed filled buys minus filled sells. Zero when the ledger cannot be totaled."""
     venue_key = str(venue or "").strip().lower()
     symbol_key = str(symbol or "").strip().upper()
     if not venue_key or not symbol_key:
@@ -401,6 +439,47 @@ def aureon_owned_qty(
         previous = best.get(key)
         if previous is None or qty > previous:
             best[key] = qty
-    bought = sum((qty for (side, _order), qty in best.items() if side == "BUY"), Decimal(0))
-    sold = sum((qty for (side, _order), qty in best.items() if side == "SELL"), Decimal(0))
-    return bought - sold
+    try:
+        bought = sum((qty for (side, _order), qty in best.items() if side == "BUY"), Decimal(0))
+        sold = sum((qty for (side, _order), qty in best.items() if side == "SELL"), Decimal(0))
+        return bought - sold
+    except ArithmeticError as exc:
+        logger.error(
+            "real fill total failed path=%s venue=%s symbol=%s; owned qty 0: %s: %s",
+            path,
+            venue_key,
+            symbol_key,
+            type(exc).__name__,
+            exc,
+        )
+        return Decimal(0)
+
+
+def aureon_net_fill_qty(
+    venue: str,
+    symbol: str,
+    *,
+    ledger_path: Path | None = None,
+) -> Decimal:
+    """Signed filled buys minus filled sells, including a negative net.
+
+    This never raises. An unreadable total is zero, not a guessed position.
+    """
+    return _signed_net(venue, symbol, ledger_path)
+
+
+def aureon_owned_qty(
+    venue: str,
+    symbol: str,
+    *,
+    ledger_path: Path | None = None,
+) -> Decimal:
+    """Quantity an exit may treat as Aureon's: max(0, signed net).
+
+    Sells larger than recorded buys clamp to zero here. The signed figure is
+    ``aureon_net_fill_qty``. This never raises.
+    """
+    net = _signed_net(venue, symbol, ledger_path)
+    if net > 0:
+        return net
+    return Decimal(0)
