@@ -8,6 +8,15 @@ PyMsgBox==2.0.1
 PyRect==0.2.0
 PyScreeze==1.0.1
 pyperclip==1.11.0
+# python-xlib 0.33 is the Xlib that import Xlib must resolve.
+# PyAutoGUI 0.9.54 also depends on python3-Xlib, which pip installs as
+# python3-xlib==0.15 and which writes the same top-level Xlib package.
+# That pin is intentionally absent. install.sh removes python3-xlib after
+# the lock install and reinstalls python-xlib with --no-deps so 0.15 cannot
+# overwrite 0.33.
 python-xlib==0.33
-python3-xlib==0.15
+# python-xlib imports six. Pillow is the screenshot backend pyscreeze uses
+# on Python 3.11 and 3.12. Both are pinned so a 3.11 install does not float.
+six==1.17.0
+Pillow==10.4.0
 pytweening==1.2.0

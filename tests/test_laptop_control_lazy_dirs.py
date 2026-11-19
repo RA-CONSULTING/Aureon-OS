@@ -10,22 +10,43 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _listing(path: Path) -> tuple[bool, tuple[str, ...]]:
+    if not path.exists():
+        return False, ()
+    return True, tuple(sorted(child.name for child in path.iterdir()))
+
+
 def test_import_does_not_create_screenshot_or_camera_dirs() -> None:
     shots = ROOT / "state" / "screenshots"
     camera = ROOT / "state" / "camera"
+    before = (_listing(shots), _listing(camera))
     env = os.environ.copy()
     env["PYTHONPATH"] = str(ROOT)
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
+    script = (
+        "import pathlib\n"
+        "_orig = pathlib.Path.mkdir\n"
+        "calls = []\n"
+        "def spy(self, *args, **kwargs):\n"
+        "    calls.append(self.name)\n"
+        "    return _orig(self, *args, **kwargs)\n"
+        "pathlib.Path.mkdir = spy\n"
+        "import aureon.autonomous.aureon_laptop_control\n"
+        "bad = [name for name in calls if name in {'screenshots', 'camera'}]\n"
+        "print('BAD', len(bad))\n"
+    )
     proc = subprocess.run(
-        [sys.executable, "-c", "import aureon.autonomous.aureon_laptop_control"],
+        [sys.executable, "-c", script],
         cwd=ROOT,
         env=env,
         capture_output=True,
         text=True,
         check=False,
     )
+    after = (_listing(shots), _listing(camera))
     assert proc.returncode == 0, proc.stderr
-    assert shots.exists() is False
-    assert camera.exists() is False
+    assert after == before
+    assert "BAD 0" in proc.stdout
 
 
 def test_screenshot_and_camera_dirs_are_created_on_first_write(tmp_path: Path, monkeypatch) -> None:

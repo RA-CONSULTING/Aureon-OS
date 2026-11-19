@@ -52,6 +52,11 @@ python -m pip install -r requirements-plug.lock
 # Linux desktop backend (governed gateway / pyautogui). Not read from .env.
 if [[ "$(uname -s)" == "Linux" ]]; then
   python -m pip install -r requirements-desktop.lock
+  # PyAutoGUI pulls python3-xlib 0.15, which overwrites python-xlib's Xlib.
+  # Drop that distribution and put python-xlib 0.33 back without its deps
+  # so import Xlib stays 0.33. six and Pillow stay at the lock pins.
+  python -m pip uninstall -y python3-xlib >/dev/null 2>&1 || true
+  python -m pip install --force-reinstall --no-deps 'python-xlib==0.33'
 fi
 
 if [[ ! -x frontend/node_modules/.bin/vite ]]; then

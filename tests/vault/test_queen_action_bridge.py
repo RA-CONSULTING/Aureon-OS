@@ -34,18 +34,10 @@ from aureon.queen.queen_action_bridge import (  # noqa: E402
 )
 
 
-PASS = 0
-FAIL = 0
-
-
 def check(condition: bool, msg: str) -> None:
-    global PASS, FAIL
-    if condition:
-        PASS += 1
-        print(f"  [OK] {msg}")
-    else:
-        FAIL += 1
-        print(f"  [!!] {msg}")
+    """Pytest fails the test when the condition is false."""
+
+    assert condition, msg
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -273,7 +265,7 @@ def test_history_cap_and_recent_actions():
         registry=reg, dispatcher=StubDispatcher(),
         live_default=True, max_history=5,
     )
-    for i in range(12):
+    for _i in range(12):
         b.handle_message("state check")
     hist = b.recent_actions(n=100)
     check(len(hist) == 5, f"history capped at max_history (got {len(hist)})")
@@ -309,29 +301,92 @@ def test_to_dict_is_json_safe():
     check(True, "action.to_dict round-trips through json")
 
 
-def main():
-    print("=" * 80)
-    print("  QUEEN ACTION BRIDGE TEST SUITE")
-    print("=" * 80)
+def _shell_call(command: str):
+    class _Call:
+        def __init__(self, name, args):
+            self.name = name
+            self.arguments = args
 
-    test_route_intent_common_phrasings()
-    test_route_intent_extracts_coordinates()
-    test_route_intent_empty_on_small_talk()
-    test_bridge_uses_regex_intent_path()
-    test_bridge_honours_native_llm_tool_calls()
-    test_destructive_tool_dry_run_without_lighthouse()
-    test_destructive_tool_fires_with_lighthouse()
-    test_unknown_tool_records_failure()
-    test_history_cap_and_recent_actions()
-    test_status_reports_mode_and_counts()
-    test_to_dict_is_json_safe()
+    class _Resp:
+        def __init__(self, calls):
+            self.tool_calls = calls
 
-    print()
-    print("=" * 80)
-    print(f"  RESULT: {PASS} passed, {FAIL} failed")
-    print("=" * 80)
-    sys.exit(0 if FAIL == 0 else 1)
+    return _Resp([_Call("execute_shell", {"command": command})])
 
 
-if __name__ == "__main__":
-    main()
+def test_chat_execute_shell_without_a_report_stays_dry_run():
+    """Chat passes coherence_report=None. A missing report is not a lighthouse pass."""
+
+    reg = StubRegistry(["execute_shell"])
+    bridge = QueenActionBridge(registry=reg, dispatcher=StubDispatcher(), live_default=True)
+    reply = bridge.handle_message(
+        "run a command",
+        llm_response=_shell_call("echo hi"),
+        coherence_report=None,
+    )
+    act = reply.actions[0]
+    assert act.tool == "execute_shell"
+    assert act.mode == "dry_run"
+    assert act.coherence_gated is True
+    assert reg.executions == []
+
+
+def test_api_queen_execute_shell_without_a_report_stays_dry_run():
+    """/api/queen/execute omits the report. execute_shell stays dry_run while live."""
+
+    reg = StubRegistry(["execute_shell"])
+    bridge = QueenActionBridge(registry=reg, dispatcher=StubDispatcher(), live_default=True)
+    reply = bridge.handle_message("execute execute_shell", llm_response=_shell_call("pwd"))
+    act = reply.actions[0]
+    assert act.mode == "dry_run"
+    assert act.coherence_gated is True
+    assert reg.executions == []
+
+
+def test_stop_file_keeps_a_live_queen_action_dry_run(monkeypatch, tmp_path):
+    """Goes red if the handle_message stop check is removed."""
+
+    stop = tmp_path / "computer_use.stop"
+    stop.write_text("human\n", encoding="utf-8")
+    monkeypatch.setenv("AUREON_COMPUTER_USE_STOP_FILE", str(stop))
+    reg = StubRegistry(["read_state"])
+    bridge = QueenActionBridge(registry=reg, dispatcher=StubDispatcher(), live_default=True)
+    reply = bridge.handle_message("show me the state")
+    assert reply.actions[0].mode == "dry_run"
+    assert reg.executions == []
+    status = bridge.status()
+    assert status["mode"] == "dry_run"
+    assert status["live"] is False
+
+
+def test_governance_block_is_not_recorded_as_a_live_success():
+    """A blocked dispatch is ok=False with the reason, not LIVE ... -> ok."""
+
+    reg = StubRegistry(["execute_shell"])
+    reg.execute = lambda name, params: {  # type: ignore[method-assign]
+        "blocked": True,
+        "reason": "governance_hold",
+    }
+    # lighthouse cleared so the call is allowed to reach the registry
+    class _Coh:
+        auris_lighthouse = True
+
+    class _Call:
+        def __init__(self):
+            self.name = "execute_shell"
+            self.arguments = {"command": "pwd"}
+
+    class _Resp:
+        def __init__(self):
+            self.tool_calls = [_Call()]
+
+    bridge = QueenActionBridge(registry=reg, dispatcher=StubDispatcher(), live_default=True)
+    reply = bridge.handle_message("execute", llm_response=_Resp(), coherence_report=_Coh())
+    act = reply.actions[0]
+    assert act.mode == "live"
+    assert act.ok is False
+    assert act.error == "governance_hold"
+    assert act.to_dict()["blocked"] is True
+    tag = "LIVE" if act.mode == "live" else "dry"
+    shown = "ok" if act.ok else f"FAIL {act.error[:60]}"
+    assert "-> ok" not in f"  {tag} {act.tool} -> {shown}"

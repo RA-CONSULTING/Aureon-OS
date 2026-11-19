@@ -34,6 +34,7 @@ def _isolate(tmp_path, monkeypatch):
     monkeypatch.delenv("AUREON_AUTONOMY", raising=False)
     monkeypatch.delenv("AUREON_SOUL_ACT", raising=False)
     monkeypatch.delenv("AUREON_LOCAL_ACTIONS_ARMED", raising=False)
+    monkeypatch.setenv("AUREON_COMPUTER_USE_STOP_FILE", str(tmp_path / "absent.stop"))
     import aureon.core.affect_monitor as am
     import aureon.core.aureon_thought_bus as tb
     import aureon.core.inner_work as iw

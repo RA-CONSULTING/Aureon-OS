@@ -104,6 +104,8 @@ class ActionRecord:
                 out["result_summary"] = repr(r)[:300]
         else:
             out["error"] = self.error[:500]
+            if isinstance(self.result, dict) and self.result.get("blocked") is True:
+                out["blocked"] = True
         return out
 
 
@@ -143,6 +145,11 @@ DESTRUCTIVE_TOOLS = {
     "vm_triple_click",
     "vm_left_click_drag",
     "vm_scroll",
+    # Pointer motion and focus changes are desktop mutations, same class as
+    # click and scroll. The router already labels them destructive. A missing
+    # lighthouse report must not run them live.
+    "vm_mouse_move",
+    "vm_focus_window",
 }
 
 
@@ -542,10 +549,11 @@ class QueenActionBridge:
                 reply.actions.append(record)
                 continue
 
-            # Destructive tools forced to dry-run unless armed AND lighthouse
-            # cleared (or the caller didn't provide a coherence report).
+            # Destructive tools stay dry-run unless the bridge is live and a
+            # coherence report clears the lighthouse. A missing report is not
+            # a pass: chat and /api/queen/execute both omit it.
             destructive = tool_name in DESTRUCTIVE_TOOLS
-            gate_failed = destructive and coherence_report is not None and not lighthouse
+            gate_failed = bool(destructive and not lighthouse)
             stopped = is_stopped()
             mode = "live" if (self._live and not gate_failed and not stopped) else "dry_run"
 
@@ -572,7 +580,19 @@ class QueenActionBridge:
                     }
                 else:
                     record.result = self._registry.execute(tool_name, params)
-                    record.ok = True
+                    blocked = (
+                        isinstance(record.result, dict)
+                        and record.result.get("blocked") is True
+                    )
+                    if blocked:
+                        record.ok = False
+                        record.error = str(
+                            record.result.get("reason")
+                            or record.result.get("error")
+                            or "blocked"
+                        )
+                    else:
+                        record.ok = True
             except Exception as e:
                 record.ok = False
                 record.error = str(e)

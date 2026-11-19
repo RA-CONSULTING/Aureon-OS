@@ -47,6 +47,13 @@ DEFAULT_INTERVAL_S = 45
 # Minimum interval to prevent runaway loops.
 MIN_INTERVAL_S = 5
 
+# queen_mind restarts back off from one supervisor interval and double until
+# this cap. The owner-approval file is not required. A stop file refuses the
+# restart entirely.
+_QUEEN_BACKOFF_BASE_S = 45.0
+_QUEEN_BACKOFF_CAP_S = 720.0
+_queen_backoff = {"attempts": 0, "not_before": 0.0}
+
 
 def _utcnow() -> datetime:
     return datetime.now(timezone.utc)
@@ -54,6 +61,31 @@ def _utcnow() -> datetime:
 
 def _iso(dt: datetime) -> str:
     return dt.isoformat()
+
+
+def _mono() -> float:
+    return time.monotonic()
+
+
+def _queen_restart_block(now: float) -> str | None:
+    """None when queen_mind may be started. Otherwise a skip reason."""
+
+    from aureon.operator.computer_use_stop import is_stopped
+
+    if is_stopped():
+        return "computer_use_stop_file"
+    if now < _queen_backoff["not_before"]:
+        return "backoff"
+    return None
+
+
+def _queen_note_attempt(now: float) -> None:
+    """Record one real start attempt and push the next one further out."""
+
+    attempts = int(_queen_backoff["attempts"])
+    delay = min(_QUEEN_BACKOFF_CAP_S, _QUEEN_BACKOFF_BASE_S * (2 ** attempts))
+    _queen_backoff["attempts"] = attempts + 1
+    _queen_backoff["not_before"] = now + delay
 
 
 def _supervise_cycle(dry_run: bool = False) -> dict:
@@ -122,6 +154,16 @@ def _supervise_cycle(dry_run: bool = False) -> dict:
         if info["state"] == "running":
             continue
 
+        if name == "queen_mind":
+            block = _queen_restart_block(_mono())
+            if block:
+                decisions.append({
+                    "organ": name,
+                    "action": "skip_queen_restart",
+                    "reason": block,
+                })
+                continue
+
         # Recover a missing process (unless dry-run). The status snapshot can
         # age while another operator starts the organ. Idempotent start rechecks
         # liveness under the registry lock; restart would stop that new process.
@@ -137,6 +179,8 @@ def _supervise_cycle(dry_run: bool = False) -> dict:
             result = organ_registry.start(name)
         except Exception as exc:
             result = {"ok": False, "error": str(exc)}
+        if name == "queen_mind":
+            _queen_note_attempt(_mono())
 
         decision = {
             "organ": name,
