@@ -308,11 +308,12 @@ def get_capital_client():
 def get_all_positions() -> Dict[str, List[Dict[str, Any]]]:
     """Fetch open positions from every configured venue.
 
-    Only holdings with a recorded Aureon entry are returned (owner rule 9 Nov
-    2026): Capital via orca_capital_ownership, Alpaca/Binance/Kraken via
-    orca_spot_ownership. A manual holding is skipped, never an exit candidate.
+    Only holdings Aureon recorded as its own are returned (owner rule 9 Nov
+    2026): Capital via orca_capital_ownership; Alpaca/Binance/Kraken via
+    orca_spot_ownership, with qty capped at Aureon's recorded net real fill.
+    A manual holding is skipped, never an exit candidate.
     """
-    from aureon.exchanges.orca_spot_ownership import is_owned as _spot_owned, split_owned_spot
+    from aureon.exchanges.orca_spot_ownership import capped_qty as _capped_qty, split_owned_spot
     positions: Dict[str, List[Dict[str, Any]]] = {}
 
     try:
@@ -344,8 +345,9 @@ def get_all_positions() -> Dict[str, List[Dict[str, Any]]]:
                 continue
             if amount > 0:
                 symbol = f"{asset}USDT"
-                if not _spot_owned("binance", symbol):
-                    continue  # no Aureon entry for this balance: not ORCA's to exit
+                amount = _capped_qty("binance", symbol, amount)
+                if amount <= 0:
+                    continue  # no recorded real Aureon fill: not ORCA's to exit
                 price_quote = binance.get_price(symbol)
                 price = price_quote.get("price", 0.0) if price_quote.get("ok") else 0.0
                 binance_positions.append({
@@ -371,8 +373,9 @@ def get_all_positions() -> Dict[str, List[Dict[str, Any]]]:
                 continue
             if amount > 0:
                 pair = f"{asset}/USD"
-                if not _spot_owned("kraken", pair):
-                    continue  # no Aureon entry for this balance: not ORCA's to exit
+                amount = _capped_qty("kraken", pair, amount)
+                if amount <= 0:
+                    continue  # no recorded real Aureon fill: not ORCA's to exit
                 try:
                     ticker = kraken.get_ticker(pair)
                     price = ticker.get("last", 0.0)
@@ -446,10 +449,12 @@ def submit_exit_order(
     }
 
     if venue in ("alpaca", "binance", "kraken"):
-        from aureon.exchanges.orca_spot_ownership import is_owned as _spot_owned
-        if not _spot_owned(venue, symbol):
+        from aureon.exchanges.orca_spot_ownership import capped_qty as _capped_qty
+        qty = _capped_qty(venue, symbol, qty)
+        record["qty"] = qty
+        if qty <= 0:
             record["status"] = "refused"
-            record["error"] = "no recorded Aureon entry for this holding; not closing a position Aureon did not open"
+            record["error"] = "no recorded real Aureon fill for this holding; not closing a position Aureon did not open"
             journal_live_order(record)
             return record
 
