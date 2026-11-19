@@ -107,9 +107,10 @@ def _safe_controller(workdir: Path):
 
 
 def scenario_safe_controller(workdir: Path) -> dict:
+    # Import the controller first: it is what must make pyautogui importable.
+    sdc, ctl = _safe_controller(workdir)
     import pyautogui
 
-    sdc, ctl = _safe_controller(workdir)
     token = os.environ["AUREON_DESKTOP_CONFIRM_TOKEN"]
     pad = TestPad(workdir)
     out: dict = {}
@@ -159,6 +160,7 @@ def scenario_safe_controller(workdir: Path) -> dict:
 
 def scenario_gateway(workdir: Path) -> dict:
     import hashlib
+    import secrets
 
     from aureon.autonomous.aureon_governed_desktop_gateway import (
         AuthorizationError,
@@ -166,6 +168,8 @@ def scenario_gateway(workdir: Path) -> dict:
     )
 
     evidence = workdir / "gateway_evidence.jsonl"
+    token = secrets.token_urlsafe(32)  # one-time capability token, never persisted
+    short_token = secrets.token_urlsafe(32)
     pad = TestPad(workdir)
     out: dict = {}
     gateway = GovernedDesktopGateway(evidence_path=evidence, min_action_interval_seconds=0.0)
@@ -184,13 +188,13 @@ def scenario_gateway(workdir: Path) -> dict:
         # Live action without a lease is refused when not dry-run; arm with a
         # one-time capability token and a short lease.
         lease = gateway.authorize_live(
-            "real-display-one-time-token",
+            token,
             ttl_seconds=120,
             subject="real-display-test",
             allowed_actions=["click", "type", "press"],
         )
         try:
-            gateway.authorize_live("real-display-one-time-token", ttl_seconds=60, subject="replay")
+            gateway.authorize_live(token, ttl_seconds=60, subject="replay")
             out["token_replay"] = "accepted"
         except AuthorizationError as exc:
             out["token_replay"] = str(exc)
@@ -250,7 +254,7 @@ def scenario_gateway(workdir: Path) -> dict:
 
         # A short lease expires on its own.
         binding2 = gateway.bind_target_window(TITLE, expected_process_id=st["pid"])
-        gateway.authorize_live("real-display-short-token", ttl_seconds=1, subject="expiry", allowed_actions=["click"])
+        gateway.authorize_live(short_token, ttl_seconds=1, subject="expiry", allowed_actions=["click"])
         time.sleep(1.5)
         seen = gateway.observe(target_binding_id=binding2.binding_id)
         expired = gateway.execute(
@@ -267,7 +271,7 @@ def scenario_gateway(workdir: Path) -> dict:
             1 for e in live_done if e.get("before_sha256") and (e.get("after") or {}).get("sha256")
         )
         out["evidence_contains_typed_text"] = TEXT in evidence.read_text(encoding="utf-8")
-        out["evidence_contains_token"] = "real-display-one-time-token" in evidence.read_text(encoding="utf-8")
+        out["evidence_contains_token"] = token in evidence.read_text(encoding="utf-8")
     finally:
         gateway.disarm("real_display_test_end")
         pad.close()
