@@ -303,6 +303,13 @@ class SafeDesktopControl:
     def _should_auto_execute(self, req: DesktopAction) -> bool:
         if not self.armed:
             return False
+        # press_key sits in both AUTO_EXECUTE_ACTIONS and HIGH_RISK_ACTIONS.
+        # Auto-executing a high-risk action from propose() can never carry a
+        # confirmation token, so execute() rejected it with
+        # confirmation_required and the request was dropped instead of queued
+        # for approve_next().  Queue anything that still needs confirmation.
+        if self.require_confirmation and req.action in HIGH_RISK_ACTIONS:
+            return False
         if req.action in AUTO_EXECUTE_ACTIONS and (self.dry_run or req.approved):
             return True
         if self.auto_approve_live_voice and not self.dry_run and self._is_voice_request(req):
