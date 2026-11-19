@@ -17,11 +17,10 @@ ORCA may exit a spot holding only up to its **sellable cap**:
   chain's exchange-confirmed fills, buys minus sells for that venue and exact
   symbol, ``0`` on a missing, unreadable or corrupt ledger. When that module is
   not installed (``#370`` merged first) the local fallback is ``0``: nothing is
-  owned. The ledger keys fills by exact symbol (``ETHUSD`` on Kraken,
-  ``ETHUSDT`` on Binance), so the cap sums the helper over the spellings of one
-  base asset on that venue (``ETH``, ``ETHUSD``, ``ETH/USD``, ``XETHZUSD``,
-  ``ETHUSDT``, ...). Each fill sits under exactly one spelling, so nothing is
-  counted twice. Only the venue asked for counts;
+  owned. The ledger keys fills by the exact symbol the kill chain sends
+  (``kraken_pair`` such as ``ETHUSD`` on Kraken, ``ETHUSDT`` on Binance); only
+  that key is asked (``ledger_key``), any other spelling reads 0, and only the
+  venue asked for counts. A negative ledger value is nothing to sell;
 * minus exits this branch records and the ledger does not: every spot sell
   attempt of ``execute_kill_chain`` (``state/orca_spot_exits.jsonl``, written by
   ``record_spot_exit``) and every SELL of ``orca_live_monitor.submit_exit_order``
@@ -85,25 +84,21 @@ def base_asset(symbol: Any) -> str:
     return _ALIASES.get(text, text)
 
 
-def symbol_spellings(symbol: Any) -> list[str]:
-    """Every ledger spelling of ``symbol``'s base asset: bare, base+quote, base/quote, Kraken X..Z.."""
+def ledger_key(venue: str, symbol: Any) -> str:
+    """The exact symbol the kill chain writes to the #382 ledger for this venue, '' if none.
+
+    Kraken: ``kraken_pair`` (``ETH/USD`` -> ``ETHUSD``); Binance: ``<ASSET>USDT``.
+    Any other spelling reads 0 in the ledger, so only this one key is asked.
+    Alpaca fills are not recorded by the kill chain: no key, owned 0.
+    """
     asset = base_asset(symbol)
     if not asset:
-        return []
-    bases = [asset] + [code for code, alias in _ALIASES.items() if alias == asset]
-    quotes = ("USDT", "USDC", "BUSD", "USD", "EUR", "GBP")
-    found = [str(symbol or "").strip().upper()]
-    for base in bases:
-        found.append(base)
-        for quote in quotes:
-            found += [base + quote, f"{base}/{quote}", f"{base}-{quote}"]
-            if quote in ("USD", "EUR", "GBP"):
-                found += [base + "Z" + quote, "X" + base + "Z" + quote]
-    seen: list[str] = []
-    for item in found:
-        if item and item not in seen and base_asset(item) == asset:
-            seen.append(item)
-    return seen
+        return ""
+    if venue == "kraken":
+        return f"{asset}USD"
+    if venue == "binance":
+        return f"{asset}USDT"
+    return ""
 
 
 def _positive(value: Any) -> float | None:
@@ -121,30 +116,28 @@ def _ledger_helper():
     try:
         return getattr(importlib.import_module(REAL_FILLS_MODULE), "aureon_owned_qty", None)
     except Exception:
-        return None
+        return None  # #382 absent or broken: nothing is owned
 
 
 def aureon_owned_qty(venue: str, symbol: str) -> float:
-    """Aureon's confirmed real buys minus sells on ``venue`` for ``symbol``'s base asset.
+    """Aureon's confirmed real buys minus sells on ``venue`` for ``symbol``'s asset, floored at 0.
 
-    Same name and arguments as ``orca_real_fills.aureon_owned_qty`` (#382), which
-    it delegates to for every spelling of the asset; 0.0 when that module is
-    absent, on any error, or when the total is not a positive finite number.
+    Same name and arguments as ``orca_real_fills.aureon_owned_qty`` (#382), which it
+    asks for the exact key the kill chain writes (``ledger_key``). The ledger can be
+    negative (an arbitrage Binance sell of Gary's coins records -q): owned <= 0 is
+    nothing to sell, never abs(). 0.0 when that module is absent, on any exception
+    (e.g. ``decimal.Overflow``), or when the value is not a finite number.
     """
     venue_key = str(venue or "").strip().lower()
+    key = ledger_key(venue_key, symbol)
     helper = _ledger_helper()
-    if helper is None or venue_key not in SPOT_VENUES:
+    if helper is None or venue_key not in SPOT_VENUES or not key:
         return 0.0
-    total = 0.0
     try:
-        for spelling in symbol_spellings(symbol):
-            number = float(helper(venue_key, spelling))
-            if not math.isfinite(number):
-                return 0.0
-            total += number
-    except Exception:
+        number = float(helper(venue_key, key))
+    except Exception:  # any helper error (e.g. decimal.Overflow) is 0 owned
         return 0.0
-    return total if total > 0 else 0.0
+    return number if math.isfinite(number) and number > 0 else 0.0
 
 
 def records_root(env: dict[str, str] | None = None) -> Path:

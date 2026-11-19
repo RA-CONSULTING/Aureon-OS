@@ -61,10 +61,14 @@ class FakeLedger:
     def __init__(self):
         self.owned = {}
         self.calls = []
+        self.recorded = []
 
     def aureon_owned_qty(self, venue, symbol):
         self.calls.append((venue, symbol))
         return self.owned.get((venue, symbol), 0)
+
+    def record_confirmed_fill(self, venue, symbol, side, response):  # #382's writer, called by the kill chain
+        self.recorded.append((venue, symbol, side))
 
 
 def _paper_book(root: Path, venue: str, symbol: str, qty: float = 0.02) -> None:
@@ -331,13 +335,35 @@ def test_decimal_from_the_real_helper_is_accepted(monkeypatch, root):
     assert own.capped_qty("binance", "ETH", 5.0) == pytest.approx(0.02)
 
 
-def test_spellings_of_one_asset_are_summed_but_other_assets_are_not(ledger):
-    ledger.owned[("binance", "ETHUSDT")] = 0.02
-    ledger.owned[("binance", "ETHUSDC")] = 0.01
-    ledger.owned[("binance", "ETHBTC")] = 9.0      # not an ETH spot spelling here
-    ledger.owned[("binance", "SETHUSDT")] = 9.0    # another asset
+def test_only_the_exact_kill_chain_keys_are_read(ledger):
+    for key in (("binance", "ETHUSDC"), ("binance", "ETH"), ("binance", "ETH/USDT"),
+                ("kraken", "ETH/USD"), ("kraken", "XETHZUSD"), ("kraken", "ETH"), ("alpaca", "ETH/USD")):
+        ledger.owned[key] = 9.0
     from aureon.exchanges import orca_spot_ownership as own
-    assert own.capped_qty("binance", "ETH", 5.0) == pytest.approx(0.03)
+    assert own.capped_qty("binance", "ETH", 5.0) == 0.0
+    assert own.capped_qty("kraken", "ETH/USD", 5.0) == 0.0
+    assert own.capped_qty("alpaca", "ETH/USD", 5.0) == 0.0
+    ledger.owned[("binance", "ETHUSDT")] = 0.02
+    ledger.owned[("kraken", "ETHUSD")] = 0.03
+    assert own.capped_qty("binance", "ETH", 5.0) == pytest.approx(0.02)
+    assert own.capped_qty("kraken", "XETH", 5.0) == pytest.approx(0.03)
+    assert set(ledger.calls) == {("binance", "ETHUSDT"), ("kraken", "ETHUSD")}
+
+
+def test_raising_helper_means_no_sell(monkeypatch, kill_chain, root):
+    import decimal
+
+    def boom(venue, symbol):
+        raise decimal.Overflow("ledger overflow")
+    monkeypatch.setitem(sys.modules, REAL_FILLS, SimpleNamespace(aureon_owned_qty=boom, record_confirmed_fill=lambda *a: None))
+    mon = _monitor(monkeypatch, binance={"ETH": 5.0}, kraken={"ETH": 5.0})
+    positions = mon.get_all_positions()
+    assert positions["binance"] == [] and positions["kraken"] == []
+    assert mon.submit_exit_order("binance", "ETHUSDT", 5.0, 3000.0, "TP", {})["status"] == "refused"
+    client = FakeBalanceVenue({"ETH": 5.0})
+    target = {"exchange": "binance", "symbol": "ETHUSDT", "id": "ETH", "type": "SPOT", "qty": 5.0, "pnl": 1.0, "client": client}
+    kill_chain.UnifiedKillChain.execute_kill_chain(SimpleNamespace(), target)
+    assert client.orders == [] and mon._venues.binance.orders == []
 
 
 # ── Charlie's surviving mutations: qty-0 row, venue mismatch, adopt for another venue ──
@@ -361,7 +387,7 @@ def test_fill_on_one_venue_does_not_own_another(monkeypatch, kill_chain, ledger)
     target = {"exchange": "binance", "symbol": "ETHUSDT", "id": "ETH", "type": "SPOT", "qty": 5.0, "pnl": 1.0, "client": client}
     kill_chain.UnifiedKillChain.execute_kill_chain(SimpleNamespace(), target)
     assert client.orders == []
-    assert ("binance", "ETHUSD") in ledger.calls  # binance was asked about its own venue only
+    assert ("binance", "ETHUSDT") in ledger.calls
 
 
 def test_adoption_for_another_venue_owns_nothing_here(monkeypatch, kill_chain, ledger):
@@ -461,3 +487,18 @@ def test_real_ledger_corrupt_file_owns_nothing(monkeypatch, real_ledger):
         fh.write("{not json\n")
     mon = _monitor(monkeypatch, binance={"ETH": 5.0})
     assert mon.get_all_positions()["binance"] == []
+
+
+def test_negative_owned_qty_sells_nothing(monkeypatch, kill_chain, ledger):
+    """Spike (#382 gate): an earlier arbitrage Binance sell records -q (Gary's coins). cap = max(0, owned)."""
+    ledger.owned[("binance", "ETHUSDT")] = -0.04
+    mon = _monitor(monkeypatch, binance={"ETH": 5.0})
+    assert mon.get_all_positions()["binance"] == []
+    receipt = mon.submit_exit_order("binance", "ETHUSDT", 5.0, 3000.0, "TP", {})
+    assert receipt["status"] == "refused" and mon._venues.binance.orders == []
+    client = FakeBalanceVenue({"ETH": 5.0})
+    chain = SimpleNamespace(capital=None, kraken=None, binance=client, cost_basis={"ETHUSDT": {"avg_entry_price": 1.0}})
+    assert kill_chain.UnifiedKillChain.scan_all(chain) == []
+    target = {"exchange": "binance", "symbol": "ETHUSDT", "id": "ETH", "type": "SPOT", "qty": 5.0, "pnl": 1.0, "client": client}
+    kill_chain.UnifiedKillChain.execute_kill_chain(SimpleNamespace(), target)
+    assert client.orders == []
