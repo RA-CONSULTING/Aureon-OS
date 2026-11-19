@@ -287,9 +287,13 @@ class DualCapitalConnector:
             
             if resp.status_code == 200:
                 data = resp.json()
-                deal_id = data.get('dealReference', data.get('dealId', 'unknown'))
+                # Capital acknowledges with a dealReference; a dealId is
+                # only known once /confirms or /positions reports it.
+                deal_reference = data.get('dealReference')
+                deal_id = data.get('dealId')
                 return {
-                    "dealId": deal_id,
+                    "dealId": deal_id or deal_reference or 'unknown',
+                    "dealReference": deal_reference,
                     "epic": epic,
                     "direction": direction,
                     "size": actual_size,
@@ -349,6 +353,50 @@ class DualCapitalConnector:
         """Get positions from LIVE account."""
         return self._get_positions(self.live)
     
+    def get_live_positions_snapshot(self):
+        """LIVE positions, or None when they could not be read (read-only).
+
+        Unlike get_live_positions(), a failed read is None rather than [],
+        so callers can tell "no open positions" from "unknown".
+        """
+        try:
+            resp = self.live._request('GET', '/positions')
+            if resp.status_code != 200:
+                return None
+            positions = resp.json().get('positions')
+            return positions if isinstance(positions, list) else None
+        except Exception as e:
+            logger.debug(f"Position snapshot error: {e}")
+            return None
+
+    def get_live_deal_confirmation(self, deal_reference: str):
+        """dealIds Capital reports OPENED for an order reference (read-only).
+
+        POST /positions only returns a dealReference. This reads the
+        existing CapitalClient.confirm_order path (GET /confirms/{ref}) and
+        returns the opened dealId(s): a list (empty if the deal did not
+        open), or None when the confirmation could not be read.
+        """
+        ref = str(deal_reference or "").strip()
+        if not ref:
+            return None
+        try:
+            data = self.live.confirm_order(ref)
+            if not isinstance(data, dict) or data.get('error'):
+                return None
+            if str(data.get('dealReference') or ref) != ref:
+                return None
+            opened = [str(row['dealId']) for row in data.get('affectedDeals') or []
+                      if isinstance(row, dict) and row.get('dealId')
+                      and str(row.get('status') or '').upper() == 'OPENED']
+            if not opened and str(data.get('dealStatus') or '').upper() == 'ACCEPTED' \
+                    and data.get('dealId'):
+                opened = [str(data['dealId'])]
+            return opened
+        except Exception as e:
+            logger.debug(f"Deal confirmation error: {e}")
+            return None
+
     def _get_positions(self, client: CapitalClient) -> list:
         """Internal position fetch (hardened request layer: re-auth on 401)."""
         try:
