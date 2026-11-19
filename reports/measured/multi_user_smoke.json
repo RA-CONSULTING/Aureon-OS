@@ -4,16 +4,16 @@
     "admin_pulse_status": 200,
     "boot": "create_app",
     "canary_sha256": {
-      "canary_control_sha256": "7bfc7936dfbb1b794d96f381e8801d0320bcda0299b73f5819045c6f107f2c7b",
-      "canary_operator_sha256": "09fdec12a9d65fc25f7c761a908cd36f3dc42d1a2ef129973f4992d62cccb2cf",
-      "canary_prompt_a_revoked_sha256": "e333d82455c56aa6034b8d00954f715dd0bf485d50186917c45ac271e9970fc2",
-      "canary_prompt_a_sha256": "0c7098afca76cd69c3e9a7eb3481438615ca382b2fd050ba4b49f3704d51ffef",
-      "canary_prompt_b_absent_sha256": "116ec7cd75cdd7dd9c11cc6419212479fc97138b3117c02186c7c2b17dfa1ddb",
-      "canary_prompt_b_sha256": "70692525b145dc60a246a317d2a500d564f682456c7fea2a608be1b44e6d930c",
-      "canary_prompt_b_still_sha256": "8d53bb856dacdfd8777f2773273568c58546393c393f9bc31f5df46f20792a52",
-      "canary_signer_sha256": "fa977c52ca0be123ab087a2bc4f00fbbd1cf9fbd86ae2ce0524992910fc584fb",
-      "canary_tenant_a_sha256": "62e0d570dc5e5a79f9ac3eda92f59240941ac0e4e36b4d6151b3ba9e68345abd",
-      "canary_tenant_b_sha256": "f3a2667e424c031a2ad80ae0473fdfe7090ae01a9e2997c66ead0dc712dc9c06"
+      "canary_control_sha256": "4d7207295ba4e07297c50a8587919550b338e75eda8abe13af118d992fa9d145",
+      "canary_operator_sha256": "b2664972f62bb62c14ffee6f739e5215ef81dfaab8ce74e3e3d6fb1d90c21b88",
+      "canary_prompt_a_revoked_sha256": "a1476dd1727cc95724d495e8f8d152be24de3cabac9749a5b43227531fb564c4",
+      "canary_prompt_a_sha256": "3142ea6bc21d9cf4dc79b6f0da756ece13fa5f97c7ce0cd28a76e79af8b2755b",
+      "canary_prompt_b_absent_sha256": "a937122e1c39faa491b374f739efc59402c2ec94ce7a78f6392d12fe9dbad1b6",
+      "canary_prompt_b_sha256": "e39534beaf34ab4bca52936d4e0e27b9bb49c99ad56aa066706e004b0f260076",
+      "canary_prompt_b_still_sha256": "559e7d165207f2f14da3c85138718740d71cc21d4932baf9ec76d4cb95447487",
+      "canary_signer_sha256": "3cc535a312b2270ca743f267f6b0a560798fd61167bc7ba4855084da84fa00e5",
+      "canary_tenant_a_sha256": "3603d16dea03643543934a56ad570f3c22561495a33833f3c122a33f98eca480",
+      "canary_tenant_b_sha256": "70d9056787981fcb8b2604a46b535ca63e3e4133c4851980a73087bcddd6edf5"
     },
     "caps": {
       "CapAmb": "0000000000000000",
@@ -85,7 +85,7 @@
     "live_trading": false,
     "magic_star_release": false,
     "market_data_fetched": false,
-    "net_ns": "net:[4026532500]",
+    "net_ns": "net:[4026532416]",
     "ok": true,
     "orders_placed": false,
     "plaintext_key_in_store": false,
@@ -192,7 +192,7 @@
         "truncated_segments": []
       },
       "home_files": {
-        "bytes": 1860,
+        "bytes": 1862,
         "files": 6,
         "paths": {
           "canary_control": [
@@ -304,15 +304,15 @@
     "PYTHONPATH",
     "PYTHONUNBUFFERED"
   ],
-  "child_net_ns": "net:[4026532500]",
+  "child_net_ns": "net:[4026532416]",
   "cold_boot_argv_has_net": true,
   "cold_boot_command": "python -m aureon.containment.multi_user_smoke",
   "containment_pin": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
   "containment_pin_is_public_pin": false,
   "failures": [],
-  "finished_at": "2026-11-19T07:03:07Z",
+  "finished_at": "2026-11-19T07:12:09Z",
   "gaps": [],
-  "git_head_at_measurement": "e062ea65497ee93ca939652fb2815e13d91f03a4",
+  "git_head_at_measurement": "ae25ba2cd0513fd0c1781a8b03c2f6ef334c3429",
   "go_live_clear": false,
   "go_live_receipt": null,
   "holds": [],
@@ -346,7 +346,7 @@
   "orange_badge": "unchanged",
   "orders_placed": false,
   "parent_env_copied": false,
-  "parent_net_ns": "net:[4026532415]",
+  "parent_net_ns": "net:[4026532212]",
   "pin": "ac9fa3151b63bd4143dc1aa434ec79b382406b7e",
   "pin_changed": false,
   "python": "3.13.5",
@@ -400,10 +400,10 @@
   "source_sha256": {
     "aureon/containment/_multi_user_child.py": "33a12bc07b8ec8246b5d7403004c7f77add471d8b4b880f24af173d354c7ea59",
     "aureon/containment/multi_user_smoke.py": "d7374b649a93022b3602295f85f44a30df12a5b197cee250a1d4f03f8397ab98",
-    "tests/test_multi_user_smoke.py": "c87e84109c123494b80eb83779a91faef87ca1948e2f55e92681756c0a6d7afd"
+    "tests/test_multi_user_smoke.py": "f7b73ded31e0c403bea41d0ec38e6961f068e5d43651612666df797a83551715"
   },
   "stage": 9,
-  "started_at": "2026-11-19T07:03:04Z",
+  "started_at": "2026-11-19T07:12:06Z",
   "started_from": "c68a89d2a184d99582bb24310b91e024323a212c",
   "title": "contained multi-user tenant boundary",
   "unchanged_sha256": {

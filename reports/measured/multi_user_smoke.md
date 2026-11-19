@@ -14,7 +14,7 @@ python -m aureon.containment.multi_user_smoke
 ```
 
 Command included `unshare --net`: **True** (measured).
-Parent net namespace `net:[4026532415]`, child `net:[4026532500]` (measured).
+Parent net namespace `net:[4026532212]`, child `net:[4026532416]` (measured).
 Contained TCP 1.1.1.1:443 ok=False errno=101 error=ENETUNREACH bytes_read=0 (measured).
 Boot entry: `create_app` with the local test ingress seam. `operator_server.main` was not called. `production_ready` on that seam is false.
 
@@ -43,5 +43,5 @@ Not scored. The child handled the prompts, so those bytes exist in that process.
 - Receipt 4: complete source-boundary census closure — HOLD
 - Receipt 5: authenticated deployment receipt and provider-side read-back — HOLD
 
-Started from `c68a89d2a184d99582bb24310b91e024323a212c`. Git HEAD at measurement: `e062ea65497ee93ca939652fb2815e13d91f03a4`.
+Started from `c68a89d2a184d99582bb24310b91e024323a212c`. Git HEAD at measurement: `ae25ba2cd0513fd0c1781a8b03c2f6ef334c3429`.
 The child boots create_app with the local test ingress seam. operator_server.main is not called and no listener is bound. source_sha256 binds this stage's sources. git_head_at_measurement is HEAD when the command ran. The UTC stamps are this machine's clock, not receipt 3. go_live_clear stays false. aureon/operator/keystore.py is not listed in unchanged_sha256. This stage does not modify that file.
