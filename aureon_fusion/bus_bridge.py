@@ -14,11 +14,25 @@ The bridge is fail-closed and degrades gracefully: if either side cannot be
 imported or written to, the other side and the unified log keep running. Events
 are never dropped for transient errors — the tail offset is only advanced after
 a line is successfully merged (and, when possible, forwarded).
+
+Size cap (opt-in, off unless set):
+    AUREON_UNIFIED_BUS_MAX_BYTES — a positive integer. When the unified log is
+    already at or over that size, the next append moves it to a new timestamped
+    name and starts a fresh ``unified_bus.jsonl``. Every moved file is kept.
+    On POSIX the move tries, in order, Linux ``renameat2(RENAME_NOREPLACE)``,
+    then macOS ``renamex_np(RENAME_EXCL)``, and only then a hard link followed
+    by dropping the old name. A missing primitive raises ``ENOSYS`` and the
+    next step runs. None of the three replaces an existing file. Unset, empty,
+    0, negative, or not an integer: append
+    with no cap, as before. There is no backup count and no delete.
+    ``AUREON_UNIFIED_BUS_BACKUPS`` is not read.
 """
 
 from __future__ import annotations
 
 import argparse
+import ctypes
+import errno
 import json
 import logging
 import os
@@ -26,6 +40,7 @@ import sys
 import time
 import uuid
 from collections import deque
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Set, Tuple
@@ -50,6 +65,7 @@ SERO_LOG = SERO_THOUGHTBUS / "thought_bus.jsonl"
 UPSTREAM_LOG = Path(
     os.environ.get("AUREON_THOUGHT_BUS_PATH", WORKSPACE / "thoughts.jsonl")
 )
+# Written only by _append_jsonl. Cap, when opted in, is applied there.
 UNIFIED_LOG = FUSION_STATE / "unified_bus.jsonl"
 UPSTREAM_MIRROR_LOG = FUSION_STATE / "upstream_bus.jsonl"
 OFFSETS_FILE = FUSION_STATE / "bus_bridge_offsets.json"
@@ -156,15 +172,259 @@ def _load_seen_ids() -> Set[str]:
     return seen
 
 
-def _append_jsonl(path: Path, record: Dict[str, Any]) -> None:
-    line = json.dumps(record, ensure_ascii=False, default=str) + "\n"
-    with open(path, "a", encoding="utf-8", errors="replace") as f:
-        f.write(line)
-        f.flush()
+def _env_int(name: str, default: int) -> int:
+    raw = os.getenv(name, "").strip()
+    if not raw:
+        return default
+    try:
+        return int(raw)
+    except ValueError:
+        return default
+
+
+def _unified_bus_max_bytes() -> int:
+    """Positive cap, or 0 when rotation is off. A bad value stays off."""
+    limit = _env_int("AUREON_UNIFIED_BUS_MAX_BYTES", 0)
+    return limit if limit > 0 else 0
+
+
+def _lock_file(handle) -> None:
+    if sys.platform == "win32":
+        import msvcrt
+
+        handle.seek(0)
+        msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
+    else:
+        import fcntl
+
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+
+
+def _unlock_file(handle) -> None:
+    if sys.platform == "win32":
+        import msvcrt
+
         try:
-            os.fsync(f.fileno())
+            handle.seek(0)
+            msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+        except OSError:
+            pass
+    else:
+        import fcntl
+
+        fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+
+
+@contextmanager
+def _unified_bus_lock(path: Path):
+    """One cross-process lock for rotate-and-append.
+
+    The lock sits on a sibling of the log, not on the log inode, so moving
+    the log cannot strand a writer on an unlinked file. The lock file is not
+    a log and is never removed.
+    """
+    lock_path = path.with_name("." + path.name + ".lock")
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(lock_path, "a+", encoding="utf-8") as handle:
+        if handle.seek(0, os.SEEK_END) == 0:
+            handle.write("\n")
+            handle.flush()
+        _lock_file(handle)
+        try:
+            yield
+        finally:
+            _unlock_file(handle)
+
+
+_AT_FDCWD = -100
+_RENAME_NOREPLACE = 1
+# Apple renamex_np: fail if the destination already exists. Same promise as
+# Linux RENAME_NOREPLACE. macOS has no renameat2.
+_RENAME_EXCL = 0x00000004
+_rotate_nonce = 0
+# Tests set this to meet two writers inside the non-atomic move. None unless
+# a test installs it. Production never waits here.
+_rotation_window_hook = None
+
+
+def _raise_rename_error(err: int, src: Path, dst: Path) -> None:
+    if err == errno.EEXIST:
+        raise FileExistsError(err, os.strerror(err), os.fspath(dst))
+    if err == errno.ENOENT:
+        raise FileNotFoundError(err, os.strerror(err), os.fspath(src))
+    raise OSError(err, os.strerror(err), os.fspath(src))
+
+
+def _rename_noreplace_linux(src: Path, dst: Path) -> None:
+    """Atomic no-replace rename. ENOSYS when this libc has no renameat2."""
+    libc = ctypes.CDLL(None, use_errno=True)
+    renameat2 = getattr(libc, "renameat2", None)
+    if renameat2 is None:
+        raise OSError(errno.ENOSYS, "renameat2 unavailable")
+    renameat2.argtypes = [
+        ctypes.c_int,
+        ctypes.c_char_p,
+        ctypes.c_int,
+        ctypes.c_char_p,
+        ctypes.c_uint,
+    ]
+    renameat2.restype = ctypes.c_int
+    rc = renameat2(
+        _AT_FDCWD,
+        os.fsencode(src),
+        _AT_FDCWD,
+        os.fsencode(dst),
+        _RENAME_NOREPLACE,
+    )
+    if rc == 0:
+        return
+    _raise_rename_error(ctypes.get_errno(), src, dst)
+
+
+def _rename_noreplace_darwin(src: Path, dst: Path) -> None:
+    """Atomic no-replace rename on macOS. ENOSYS when renamex_np is absent."""
+    libc = ctypes.CDLL(None, use_errno=True)
+    renamex_np = getattr(libc, "renamex_np", None)
+    if renamex_np is None:
+        raise OSError(errno.ENOSYS, "renamex_np unavailable")
+    renamex_np.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_uint]
+    renamex_np.restype = ctypes.c_int
+    rc = renamex_np(os.fsencode(src), os.fsencode(dst), _RENAME_EXCL)
+    if rc == 0:
+        return
+    _raise_rename_error(ctypes.get_errno(), src, dst)
+
+
+def _rename_noreplace_link(src: Path, dst: Path) -> None:
+    """Move by a new hard link, then drop the old name.
+
+    ``os.link`` fails when dst exists, so an older log is never replaced.
+    The old name is removed only after the new name is in place. If that
+    removal fails, the new name is removed and src is left unchanged.
+    """
+    try:
+        os.link(os.fspath(src), os.fspath(dst))
+    except FileExistsError:
+        raise
+    except OSError as exc:
+        if exc.errno == errno.EEXIST:
+            raise FileExistsError(exc.errno, exc.strerror, os.fspath(dst)) from exc
+        raise
+    hook = _rotation_window_hook
+    if hook is not None:
+        hook(src)
+    try:
+        os.unlink(os.fspath(src))
+    except OSError:
+        try:
+            os.unlink(os.fspath(dst))
+        except OSError:
+            pass
+        raise
+
+
+def _rename_noreplace(src: Path, dst: Path) -> None:
+    """Move src onto a name that must not already exist.
+
+    POSIX order: Linux ``renameat2(RENAME_NOREPLACE)``, then macOS
+    ``renamex_np(RENAME_EXCL)``, then :func:`_rename_noreplace_link`.
+    ``ENOSYS`` tries the next step. ``EEXIST`` and ``ENOENT`` propagate.
+    ``os.replace`` / ``os.rename`` on POSIX would unlink the destination and
+    drop an older log. Windows ``os.rename`` already fails when the
+    destination exists.
+    """
+    if sys.platform == "win32":
+        os.rename(os.fspath(src), os.fspath(dst))
+        return
+    for native in (_rename_noreplace_linux, _rename_noreplace_darwin):
+        try:
+            native(src, dst)
+            return
+        except OSError as exc:
+            if exc.errno != errno.ENOSYS:
+                raise
+    _rename_noreplace_link(src, dst)
+
+
+def _archive_path(path: Path) -> Path:
+    global _rotate_nonce
+    _rotate_nonce += 1
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+    token = f"{os.getpid()}-{_rotate_nonce}-{time.time_ns()}"
+    return path.with_name(f"{path.name}.{stamp}.{token}")
+
+
+def _rotate_unified_bus_while_locked(path: Path) -> None:
+    """Move path aside when it is at the cap. Caller holds the bus lock.
+
+    The live name is recreated with ``O_APPEND`` (never ``O_TRUNC``) so a
+    tailer that opens ``unified_bus.jsonl`` still finds the current file.
+    A missing file means another writer already moved it; that is not an error.
+    """
+    limit = _unified_bus_max_bytes()
+    if limit <= 0:
+        return
+    try:
+        size = path.stat().st_size
+    except OSError:
+        return
+    if size < limit:
+        return
+    moved = False
+    for _ in range(8):
+        dest = _archive_path(path)
+        try:
+            _rename_noreplace(path, dest)
+        except FileExistsError:
+            continue
+        except FileNotFoundError:
+            return
+        moved = True
+        break
+    if not moved:
+        raise OSError(f"could not move {path} aside without replacing a file")
+    flags = os.O_CREAT | os.O_APPEND | os.O_WRONLY
+    if hasattr(os, "O_CLOEXEC"):
+        flags |= os.O_CLOEXEC
+    fd = os.open(os.fspath(path), flags, 0o644)
+    os.close(fd)
+
+
+def _write_line(path: Path, line: str) -> None:
+    with open(path, "a", encoding="utf-8", errors="replace") as handle:
+        handle.write(line)
+        handle.flush()
+        try:
+            os.fsync(handle.fileno())
         except Exception:
             pass
+
+
+def _append_jsonl_capped(path: Path, line: str) -> None:
+    """Append while the cap is on. A failed rotation still writes the line."""
+    with _unified_bus_lock(path):
+        try:
+            _rotate_unified_bus_while_locked(path)
+        except OSError as exc:
+            logger.warning(f"unified bus rotation skipped: {exc}")
+        _write_line(path, line)
+
+
+def _append_jsonl(path: Path, record: Dict[str, Any]) -> None:
+    """Append one JSON object to the unified bus.
+
+    ``AUREON_UNIFIED_BUS_MAX_BYTES`` unset or not a positive integer keeps the
+    original append. A positive cap moves the current file, when it is already
+    at or over the cap, to a new timestamped name and starts a fresh file.
+    Existing files, including older rotations, are never deleted or truncated.
+    Several processes can append: the rotate and the write share one lock, and
+    a process that finds the file already moved appends to the live path.
+    """
+    line = json.dumps(record, ensure_ascii=False, default=str) + "\n"
+    if _unified_bus_max_bytes() <= 0:
+        _write_line(path, line)
+        return
+    _append_jsonl_capped(path, line)
 
 
 def _source_id_from(record: Dict[str, Any], line: str) -> str:
