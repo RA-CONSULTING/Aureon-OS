@@ -8,6 +8,7 @@ import json
 import os
 import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
 
@@ -329,6 +330,85 @@ def test_missing_renameat2_still_rotates_without_replacing(tmp_path, monkeypatch
     assert sorted(_int_ids(tmp_path)) == list(range(6))
     assert path.is_file()
     assert max(_int_ids(tmp_path)) in [row["i"] for row in _records(path)]
+
+
+def test_two_writers_in_the_rotate_window_keep_every_line(tmp_path, monkeypatch):
+    """Two writers meet after both have linked the live file and before either drops it.
+
+    The rotation lock keeps the second writer out of that window. Without the
+    lock the second unlink removes the line the first writer just stored, and
+    this fails every time. A planted archive must stay byte-for-byte.
+    """
+    import errno
+
+    import aureon_fusion.bus_bridge as bridge
+
+    def _missing(src, dst):
+        raise OSError(errno.ENOSYS, "native rename unavailable")
+
+    monkeypatch.setattr(bridge, "_rename_noreplace_linux", _missing)
+    monkeypatch.setattr(bridge, "_rename_noreplace_darwin", _missing)
+
+    path = tmp_path / _BUS_NAME
+    monkeypatch.delenv("AUREON_UNIFIED_BUS_MAX_BYTES", raising=False)
+    _append(path, {"i": 0, "pad": "s" * 40})
+    seed = path.read_bytes()
+    planted = tmp_path / "unified_bus.jsonl.1"
+    planted_bytes = b'{"i":"planted"}\n'
+    planted.write_bytes(planted_bytes)
+    monkeypatch.setenv("AUREON_UNIFIED_BUS_MAX_BYTES", "1")
+
+    state = {
+        "n": 0,
+        "owner": None,
+        "event": threading.Event(),
+        "second": threading.Event(),
+    }
+    gate = threading.Lock()
+
+    def _meet(live):
+        with gate:
+            state["n"] += 1
+            n = state["n"]
+            if n == 1:
+                state["owner"] = threading.get_ident()
+        if n == 1:
+            # The second writer arrives only when the rotation lock does not
+            # exclude it. A timeout means it is blocked on that lock.
+            state["second"].wait(timeout=0.5)
+            return
+        state["second"].set()
+        state["event"].wait()
+
+    monkeypatch.setattr(bridge, "_rotation_window_hook", _meet)
+
+    errors = []
+
+    def _writer(i):
+        try:
+            _append(path, {"i": i, "pad": "w" * 40})
+        except Exception as exc:
+            errors.append(exc)
+        finally:
+            if threading.get_ident() == state["owner"]:
+                state["event"].set()
+
+    threads = [threading.Thread(target=_writer, args=(i,)) for i in (1, 2)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(5)
+        assert not thread.is_alive()
+    assert errors == []
+    assert planted.read_bytes() == planted_bytes
+    assert any(archive.read_bytes() == seed for archive in _archives(tmp_path))
+    assert _int_ids(tmp_path).count(0) == 1
+    assert _int_ids(tmp_path).count(1) == 1
+    assert _int_ids(tmp_path).count(2) == 1
+    for bus_file in _bus_files(tmp_path):
+        for line in bus_file.read_text(encoding="utf-8").splitlines():
+            if line:
+                json.loads(line)
 
 
 def test_link_rename_rolls_back_if_the_old_name_cannot_be_dropped(tmp_path, monkeypatch):

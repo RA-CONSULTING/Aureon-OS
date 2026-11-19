@@ -19,10 +19,11 @@ Size cap (opt-in, off unless set):
     AUREON_UNIFIED_BUS_MAX_BYTES — a positive integer. When the unified log is
     already at or over that size, the next append moves it to a new timestamped
     name and starts a fresh ``unified_bus.jsonl``. Every moved file is kept.
-    Linux uses ``renameat2(RENAME_NOREPLACE)``, macOS uses
-    ``renamex_np(RENAME_EXCL)``, and any other POSIX system hard-links the
-    file to the new name before dropping the old one. None of those replace
-    an existing file. Unset, empty, 0, negative, or not an integer: append
+    On POSIX the move tries, in order, Linux ``renameat2(RENAME_NOREPLACE)``,
+    then macOS ``renamex_np(RENAME_EXCL)``, and only then a hard link followed
+    by dropping the old name. A missing primitive raises ``ENOSYS`` and the
+    next step runs. None of the three replaces an existing file. Unset, empty,
+    0, negative, or not an integer: append
     with no cap, as before. There is no backup count and no delete.
     ``AUREON_UNIFIED_BUS_BACKUPS`` is not read.
 """
@@ -241,6 +242,9 @@ _RENAME_NOREPLACE = 1
 # Linux RENAME_NOREPLACE. macOS has no renameat2.
 _RENAME_EXCL = 0x00000004
 _rotate_nonce = 0
+# Tests set this to meet two writers inside the non-atomic move. None unless
+# a test installs it. Production never waits here.
+_rotation_window_hook = None
 
 
 def _raise_rename_error(err: int, src: Path, dst: Path) -> None:
@@ -306,6 +310,9 @@ def _rename_noreplace_link(src: Path, dst: Path) -> None:
         if exc.errno == errno.EEXIST:
             raise FileExistsError(exc.errno, exc.strerror, os.fspath(dst)) from exc
         raise
+    hook = _rotation_window_hook
+    if hook is not None:
+        hook(src)
     try:
         os.unlink(os.fspath(src))
     except OSError:
@@ -319,21 +326,24 @@ def _rename_noreplace_link(src: Path, dst: Path) -> None:
 def _rename_noreplace(src: Path, dst: Path) -> None:
     """Move src onto a name that must not already exist.
 
-    ``os.replace`` / ``os.rename`` on POSIX unlink the destination. That would
+    POSIX order: Linux ``renameat2(RENAME_NOREPLACE)``, then macOS
+    ``renamex_np(RENAME_EXCL)``, then :func:`_rename_noreplace_link`.
+    ``ENOSYS`` tries the next step. ``EEXIST`` and ``ENOENT`` propagate.
+    ``os.replace`` / ``os.rename`` on POSIX would unlink the destination and
     drop an older log. Windows ``os.rename`` already fails when the
-    destination exists. Everywhere else, a missing atomic primitive falls
-    through to :func:`_rename_noreplace_link` instead of skipping the cap.
+    destination exists.
     """
     if sys.platform == "win32":
         os.rename(os.fspath(src), os.fspath(dst))
         return
-    native = _rename_noreplace_darwin if sys.platform == "darwin" else _rename_noreplace_linux
-    try:
-        native(src, dst)
-    except OSError as exc:
-        if exc.errno != errno.ENOSYS:
-            raise
-        _rename_noreplace_link(src, dst)
+    for native in (_rename_noreplace_linux, _rename_noreplace_darwin):
+        try:
+            native(src, dst)
+            return
+        except OSError as exc:
+            if exc.errno != errno.ENOSYS:
+                raise
+    _rename_noreplace_link(src, dst)
 
 
 def _archive_path(path: Path) -> Path:
