@@ -474,7 +474,8 @@ def test_real_ledger_filled_buy_caps_and_completed_arbitrage_nets_to_zero(monkey
     real_ledger.record_confirmed_fill("kraken", "ETHUSD", "buy", {"status": "FILLED", "orderId": "k-1", "executedQty": "0.04"})
     real_ledger.record_confirmed_fill("binance", "ETHUSDT", "SELL", {"status": "FILLED", "orderId": "b-1", "executedQty": "0.04"})
     from aureon.exchanges import orca_spot_ownership as own
-    assert own.aureon_owned_qty("kraken", "ETH") + float(real_ledger.aureon_owned_qty("binance", "ETHUSDT")) == pytest.approx(0.0)
+    assert own.aureon_owned_qty("kraken", "ETH") + float(real_ledger.aureon_net_fill_qty("binance", "ETHUSDT")) == pytest.approx(0.0)
+    assert own.aureon_owned_qty("binance", "ETHUSDT") == 0.0  # negative net is nothing to sell
     mon = _monitor(monkeypatch, binance={"ETH": 5.0}, kraken={"ETH": 5.0})
     positions = mon.get_all_positions()
     assert positions["binance"] == []
