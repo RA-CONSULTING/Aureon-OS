@@ -110,6 +110,21 @@ def test_allowlist_env_permits_named_hosts_and_keeps_loopback(monkeypatch: pytes
     assert url_refusal("wss://127.0.0.1:443/ws") == "websocket refused"
 
 
+def test_symlink_inside_scratch_root_to_env_is_refused(tmp_path: Path) -> None:
+    """notes2.html sits in the scratch root. Its target, scratch/.env, does too.
+
+    Judging only the unresolved path leaves this green, because the link name
+    is ordinary and the real path is still inside the root.
+    """
+
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    (scratch / ".env").write_text("dummy-secret-inside\n", encoding="utf-8")
+    link = scratch / "notes2.html"
+    link.symlink_to(scratch / ".env")
+    assert url_refusal(link.as_uri(), file_root=scratch) == "secret path refused"
+
+
 def test_default_audit_path_is_state_jsonl(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("AUREON_BROWSER_AUDIT_PATH", raising=False)
     monkeypatch.chdir(tmp_path)
