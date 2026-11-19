@@ -1969,6 +1969,9 @@ class UnifiedMarketTraderTests(unittest.TestCase):
                     "support_count": 4,
                     "reference_price": 50000.0,
                     "change_pct": 1.1,
+                    "volume_24h": 1250000.0,
+                    "bid": 49990.0,
+                    "ask": 50010.0,
                     "model_alignment": True,
                 }
             },
@@ -2011,36 +2014,36 @@ class UnifiedMarketTraderTests(unittest.TestCase):
         proof = trader._build_hnc_cognitive_proof(central_beat, order_flow, action_plan, shadow_report, persist=False)
 
         self.assertEqual(proof["auris_nodes"]["node_count"], 9)
-        self.assertEqual(proof["auris_nodes"]["nodes_with_reading"], 9)
-        self.assertIsNotNone(proof["auris_nodes"]["coherence"])
-        self.assertNotEqual(proof["auris_nodes"]["status"], "no_data")
-        self.assertTrue(proof["auris_nodes"]["passed"])
-        self.assertIsNotNone(proof["auris_nodes"]["nodes"]["Owl"]["value"])
-        self.assertIsNotNone(proof["auris_nodes"]["nodes"]["Clownfish"]["value"])
-        self.assertIsNotNone(proof["auris_nodes"]["nodes"]["Tiger"]["value"])
+        self.assertIsNone(proof["market_texture"]["volatility"])
+        self.assertIsNone(proof["market_texture"]["momentum"])
+        self.assertEqual(proof["market_texture"]["volume"], 1250000.0)
+        self.assertEqual(proof["market_texture"]["spread"], 20.0)
+        self.assertIsNone(proof["auris_nodes"]["coherence"])
+        self.assertIsNone(proof["auris_nodes"]["nodes"]["Tiger"]["value"])
+        self.assertIsNone(proof["auris_nodes"]["nodes"]["Owl"]["value"])
+        self.assertIsNone(proof["auris_nodes"]["nodes"]["Falcon"]["value"])
+        self.assertIsNotNone(proof["auris_nodes"]["nodes"]["CargoShip"]["value"])
+        self.assertIsNotNone(proof["auris_nodes"]["nodes"]["Deer"]["value"])
         self.assertTrue(proof["real_data"]["passed"])
-        self.assertTrue(proof["master_formula"]["evaluated"])
-        self.assertIsNotNone(proof["master_formula"]["score"])
-        self.assertNotEqual(proof["master_formula"]["status"], "no_data")
-        self.assertIsNotNone(proof["master_formula"]["inputs"]["auris"])
+        self.assertFalse(proof["master_formula"]["evaluated"])
+        self.assertIsNone(proof["master_formula"]["score"])
         self.assertTrue(proof["systems"]["seer"]["passed"])
-        self.assertTrue(proof["systems"]["lyra"]["passed"])
-        self.assertIsNotNone(proof["systems"]["lyra"]["runtime_reading"]["resonance_frequency_hz"])
+        self.assertFalse(proof["systems"]["lyra"]["passed"])
+        self.assertIsNone(proof["systems"]["lyra"]["runtime_reading"]["resonance_frequency_hz"])
         self.assertTrue(proof["systems"]["king"]["passed"])
         cycle = proof["operating_cycle"]
         self.assertEqual(cycle["cycle_order"], ["who", "what", "where", "when", "how", "act"])
-        self.assertTrue(cycle["passed"])
+        self.assertFalse(cycle["passed"])
         self.assertTrue(cycle["fed_to_decision_logic"])
         self.assertEqual(cycle["step_count"], 6)
-        self.assertIsNotNone(cycle["auris_coherence"])
-        self.assertIsNotNone(cycle["master_formula_score"])
+        self.assertIsNone(cycle["auris_coherence"])
+        self.assertIsNone(cycle["master_formula_score"])
         self.assertEqual(cycle["auris_node_count"], 9)
         self.assertEqual(cycle["decision_output"]["action_state"], "runtime_gated_order_intent_ready")
         self.assertTrue(any(step["step"] == "hnc_operating_cycle" for step in proof["flow"]))
         auris_step = next(step for step in proof["flow"] if step["step"] == "auris_nodes")
-        self.assertTrue(auris_step["passed"])
-        self.assertEqual(proof["status"], "passing")
-        self.assertEqual(proof["passed_count"], proof["step_count"])
+        self.assertFalse(auris_step["passed"])
+        self.assertNotEqual(proof["status"], "passing")
         self.assertIs(action_plan["hnc_cognitive_proof"], proof)
         self.assertIs(action_plan["hnc_operating_cycle"], cycle)
 
