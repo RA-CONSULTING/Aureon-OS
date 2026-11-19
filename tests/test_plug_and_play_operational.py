@@ -59,11 +59,11 @@ def test_computer_use_stop_file_forces_dry_run_and_is_not_created(monkeypatch, t
     stop.write_text("human\n", encoding="utf-8")
     monkeypatch.setenv("AUREON_COMPUTER_USE_STOP_FILE", str(stop))
     monkeypatch.delenv("AUREON_LOCAL_ACTIONS_ARMED", raising=False)
-    from aureon.operator.computer_use_stop import computer_use_stopped
+    from aureon.operator.computer_use_stop import is_stopped
     from aureon.operator.grounded_action import GroundedActionGate
     from aureon.operator.local_action_bridge import LocalActionBridge
 
-    assert computer_use_stopped() is True
+    assert is_stopped() is True
     before = stop.read_text(encoding="utf-8")
     bridge = LocalActionBridge(
         gate=GroundedActionGate(enable_llm=False),

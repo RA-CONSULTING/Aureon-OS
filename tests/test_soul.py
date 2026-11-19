@@ -65,6 +65,10 @@ def _isolate(tmp_path, monkeypatch):
     monkeypatch.setattr(mm, "_monitor", None, raising=False)
     monkeypatch.setattr(soulmod, "_soul", None, raising=False)
     monkeypatch.setattr(scmod, "_company", None, raising=False)
+    import aureon.operator.local_action_bridge as local_action_bridge
+
+    monkeypatch.setattr(local_action_bridge, "_bridge_singleton", None, raising=False)
+    monkeypatch.setenv("AUREON_COMPUTER_USE_STOP_FILE", str(tmp_path / "absent.stop"))
     # test_armed_soul_routes_through_guarded_bridge builds LocalActionBridge.
     # join_organism calls get_mycelium() and the mesh stays up for the rest of
     # the module: the leaky-singleton restore in conftest runs only at module

@@ -40,7 +40,7 @@ from collections import deque
 from typing import Any, Callable, Deque, Dict
 
 from aureon.operator.aureon_operator import join_organism
-from aureon.operator.computer_use_stop import computer_use_stopped
+from aureon.operator.computer_use_stop import is_stopped
 from aureon.operator.grounded_action import ActionVerdict, GroundedActionGate
 
 logger = logging.getLogger("aureon.operator.local_action_bridge")
@@ -71,7 +71,7 @@ def _truthy(value: str) -> bool:
 def _default_armed() -> bool:
     """Unset means execute. An explicit 0, or the human stop file, stays dry-run."""
 
-    if computer_use_stopped():
+    if is_stopped():
         return False
     if "AUREON_LOCAL_ACTIONS_ARMED" not in os.environ:
         return True
@@ -215,7 +215,7 @@ class LocalActionBridge:
             self._publish("local.action.abandoned", verdict.trace_id, base)
             return {**base, "ok": False, "blocked": True, "executed": False, "dry_run": False}
 
-        if computer_use_stopped():
+        if is_stopped():
             note = "stopped: state/computer_use.stop is present; Aureon does not create that file"
             self._publish("local.action.result", verdict.trace_id, {**base, "dry_run": True})
             return {**base, "ok": True, "blocked": False, "executed": False, "dry_run": True, "note": note}

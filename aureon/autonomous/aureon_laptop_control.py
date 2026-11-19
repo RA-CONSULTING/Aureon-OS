@@ -33,8 +33,12 @@ _SCREENSHOT_DIR = _STATE_DIR / "screenshots"
 _CAMERA_DIR = _STATE_DIR / "camera"
 _LOG_PATH = _STATE_DIR / "laptop_control_log.jsonl"
 
-for _d in (_SCREENSHOT_DIR, _CAMERA_DIR):
-    _d.mkdir(parents=True, exist_ok=True)
+
+def _ensure_dir(path: pathlib.Path) -> pathlib.Path:
+    """Create an output directory on first write. Import does not call this."""
+
+    path.mkdir(parents=True, exist_ok=True)
+    return path
 
 # ---------------------------------------------------------------------------
 # Optional library imports with availability flags
@@ -217,7 +221,10 @@ class LaptopControl:
                 return _fail("pyautogui not available")
             img = pyautogui.screenshot(region=region)
             if save_path is None:
+                _ensure_dir(_SCREENSHOT_DIR)
                 save_path = str(_SCREENSHOT_DIR / f"screenshot_{_ts()}.png")
+            else:
+                _ensure_dir(pathlib.Path(save_path).parent)
             img.save(save_path)
             r = _ok(save_path)
             _log_action("screenshot", {"region": region, "save_path": save_path}, r)
@@ -590,7 +597,10 @@ class LaptopControl:
             if not ret:
                 return _fail("Failed to capture frame from camera")
             if save_path is None:
+                _ensure_dir(_CAMERA_DIR)
                 save_path = str(_CAMERA_DIR / f"capture_{_ts()}.png")
+            else:
+                _ensure_dir(pathlib.Path(save_path).parent)
             cv2.imwrite(save_path, frame)
             r = _ok(save_path)
             _log_action("camera_capture", {"camera_index": camera_index}, r)

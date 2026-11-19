@@ -73,9 +73,9 @@ def _truthy(name: str) -> bool:
 def _local_hand() -> str:
     """Match LocalActionBridge: unset executes; 0 or the human stop file is dry-run."""
 
-    from aureon.operator.computer_use_stop import computer_use_stopped
+    from aureon.operator.computer_use_stop import is_stopped
 
-    if computer_use_stopped():
+    if is_stopped():
         return "dry_run"
     if "AUREON_LOCAL_ACTIONS_ARMED" not in os.environ:
         return "armed"

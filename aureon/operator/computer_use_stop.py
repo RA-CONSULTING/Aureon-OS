@@ -14,8 +14,8 @@ STOP_ENV = "AUREON_COMPUTER_USE_STOP_FILE"
 DEFAULT_STOP = Path("state") / "computer_use.stop"
 
 
-def computer_use_stop_path() -> Path:
-    """Path of the human stop file. This function does not create it."""
+def stop_path() -> Path:
+    """Resolve the human stop file. This function does not create it."""
 
     override = os.environ.get(STOP_ENV, "").strip()
     if override:
@@ -23,7 +23,7 @@ def computer_use_stop_path() -> Path:
     return DEFAULT_STOP
 
 
-def computer_use_stopped() -> bool:
+def is_stopped() -> bool:
     """True when the human stop file is already on disk."""
 
-    return computer_use_stop_path().is_file()
+    return stop_path().is_file()

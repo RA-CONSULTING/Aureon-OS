@@ -49,7 +49,7 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
-from aureon.operator.computer_use_stop import computer_use_stopped
+from aureon.operator.computer_use_stop import is_stopped
 
 logger = logging.getLogger("aureon.queen.action_bridge")
 
@@ -389,7 +389,7 @@ class QueenActionBridge:
                 skill_count = len(self._skill_library.by_level(0))
             except Exception:
                 pass
-        live = self._live and not computer_use_stopped()
+        live = self._live and not is_stopped()
         return {
             "initialized": self._initialized,
             "live": live,
@@ -546,7 +546,7 @@ class QueenActionBridge:
             # cleared (or the caller didn't provide a coherence report).
             destructive = tool_name in DESTRUCTIVE_TOOLS
             gate_failed = destructive and coherence_report is not None and not lighthouse
-            stopped = computer_use_stopped()
+            stopped = is_stopped()
             mode = "live" if (self._live and not gate_failed and not stopped) else "dry_run"
 
             record = ActionRecord(
