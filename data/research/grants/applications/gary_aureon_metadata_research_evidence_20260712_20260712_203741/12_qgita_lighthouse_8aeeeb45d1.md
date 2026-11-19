@@ -1,3 +1,13 @@
+> **Evidence correction (19 November 2026):** This is a speculative narrative,
+> not a measurement receipt or a causal validation. The stated 10–100 second
+> prediction window, 100× specificity improvement, five-metric architecture,
+> and June 2026 event are not established by the Python analyzer. The measured
+> evaluation reports only analyzer counts on the public series and leaves
+> detection and false-alarm rates at HOLD for want of exogenous signal/noise
+> labels. The separate `synthetic_planted` harness plants one-sample impulses
+> in standardized series; its rates and Wilson intervals are test-only, not
+> market, gravitational, seismic, or telemetry performance.
+
 # QGITA Lighthouse: The Two-Stage Anomaly Detection Framework
 
 **Quantum Gravity in the Act (QGITA)** is a predictive framework that uses harmonic coherence to detect gravitational anomalies before they manifest. The Lighthouse system is the operational implementation.

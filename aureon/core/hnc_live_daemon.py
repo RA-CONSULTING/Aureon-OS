@@ -55,6 +55,7 @@ from pathlib import Path
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Tuple
 
 from aureon.core.aureon_lambda_engine import (
+    LIVE_DAEMON_ENV,
     LambdaEngine,
     SubsystemReading,
     validate_history_receipt,
@@ -62,6 +63,18 @@ from aureon.core.aureon_lambda_engine import (
 from aureon.core.hnc_params import HNCParams, apply_to_lambda_engine, load_params
 
 logger = logging.getLogger(__name__)
+
+
+def _audit_mode() -> bool:
+    return os.environ.get("AUREON_AUDIT_MODE", "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _finite_reading(value: Any) -> float | None:
+    """A finite real measurement; bools and missing values are not readings."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    number = float(value)
+    return number if math.isfinite(number) else None
 
 
 # ─── Cadence config ────────────────────────────────────────────────
@@ -1586,15 +1599,24 @@ class HNCLiveDaemon:
             memory_receipt=memory_receipt,
         )
         envelope["source_count"] = len(readings)
+        # A failed transaction has no publication. Existing no-data envelopes are
+        # already rolled back; reject any other non-finite Lambda before tracing.
+        if _finite_reading(envelope.get("lambda_t")) is None:
+            return None, self._no_data_envelope(received_at, "lambda_reading_missing"), []
+        return state, envelope, readings
+
+    async def publish_heartbeat(self, received_at: float) -> tuple[Any | None, dict[str, Any], list[SubsystemReading]]:
+        """Run one transaction; audit mode writes neither shared history nor a trace."""
+        state, envelope, readings = await self._compute_transaction(received_at)
+        self._last_state_dict = envelope
+        if not _audit_mode():
+            self._append_trace(envelope, readings)
+            self._publish_pulse(envelope)
         return state, envelope, readings
 
     async def _compute_loop(self) -> None:
         while not self._stop.is_set():
-            _now = time.time()
-            state, envelope, readings = await self._compute_transaction(_now)
-            self._last_state_dict = envelope
-            self._append_trace(envelope, readings)
-            self._publish_pulse(envelope)
+            state, _envelope, _readings = await self.publish_heartbeat(time.time())
             if state is None:
                 try:
                     await asyncio.wait_for(self._stop.wait(), timeout=COMPUTE_INTERVAL)
@@ -1662,13 +1684,21 @@ class HNCLiveDaemon:
                 if key in state_dict
             }
             if state_dict.get("data_status") == "live":
+                lambda_t = _finite_reading(state_dict.get("lambda_t"))
+                if lambda_t is None:
+                    row["data_status"] = "no_data"
+                    row["truth_status"] = "no_data"
+                    row["reason"] = row.get("reason") or "lambda_reading_missing"
+                    with open(self._trace_path, "a", encoding="utf-8") as fh:
+                        fh.write(json.dumps(row) + "\n")
+                    return
                 row.update({
                     "step": state_dict.get("step"),
-                    "lambda_t": state_dict.get("lambda_t"),
-                    "consciousness_psi": state_dict.get("consciousness_psi"),
+                    "lambda_t": lambda_t,
+                    "consciousness_psi": _finite_reading(state_dict.get("consciousness_psi")),
                     "consciousness_level": state_dict.get("consciousness_level"),
-                    "coherence_gamma": state_dict.get("coherence_gamma"),
-                    "symbolic_life_score": state_dict.get("symbolic_life_score"),
+                    "coherence_gamma": _finite_reading(state_dict.get("coherence_gamma")),
+                    "symbolic_life_score": _finite_reading(state_dict.get("symbolic_life_score")),
                     "source_count": state_dict.get("source_count"),
                     "sources": {
                         r.name: {
@@ -1775,6 +1805,9 @@ def main() -> None:
         logger.info("HNC daemon credentials: %s", _keys)
     except Exception as exc:  # noqa: BLE001 - never block the daemon on env setup
         logger.warning("HNC daemon: credential bootstrap skipped (%s)", exc)
+    # Imports stayed under suppression. Only this explicit live entry point may
+    # permit shared Lambda history; audit mode still refuses reads and writes.
+    os.environ[LIVE_DAEMON_ENV] = "1"
     duration = float(os.environ.get("AUREON_HNC_DAEMON_DURATION", "0")) or None
     asyncio.run(HNCLiveDaemon().run(duration_s=duration))
 

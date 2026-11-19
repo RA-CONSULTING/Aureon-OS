@@ -112,6 +112,7 @@ _HISTORY_MATERIAL_KEYS = (
 _HISTORY_RECORD_KEYS = frozenset(
     (*_HISTORY_MATERIAL_KEYS, "canonical_hash", "receipt_id")
 )
+LIVE_DAEMON_ENV = "AUREON_HNC_LIVE_DAEMON"
 
 
 def _env_truthy(name: str) -> bool:
@@ -510,7 +511,10 @@ class LambdaEngine:
     def _shared_state_access_suppressed(self) -> bool:
         return self._uses_default_shared_path() and (
             _env_truthy("AUREON_AUDIT_MODE")
-            or _env_truthy("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS")
+            or (
+                _env_truthy("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS")
+                and not _env_truthy(LIVE_DAEMON_ENV)
+            )
         )
 
     def _clear_active_history(self) -> None:
