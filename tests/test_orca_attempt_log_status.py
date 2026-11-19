@@ -498,3 +498,101 @@ def test_kraken_filled_status_with_short_error_is_not_filled(
     )
     assert status == "x"
     assert status != "FILLED"
+
+
+class _ArbKraken:
+    dry_run = False
+    last_balance_source = "live"
+
+    def __init__(self, receipt):
+        self.receipt = receipt
+        self.calls = []
+
+    def get_balance(self):
+        return {"USD": "100"}
+
+    def place_market_order(self, pair, side, volume):
+        self.calls.append((pair, side, volume))
+        return self.receipt
+
+
+class _ArbBinance:
+    def __init__(self, receipt):
+        self.receipt = receipt
+        self.calls = []
+
+    def place_market_order(self, symbol, side, volume):
+        self.calls.append((symbol, side, volume))
+        return self.receipt
+
+
+def _arbitrage(module, monkeypatch, tmp_path, kraken_receipt, binance_receipt):
+    _quiet(monkeypatch, module)
+    monkeypatch.chdir(tmp_path)
+    kraken = _ArbKraken(kraken_receipt)
+    binance = _ArbBinance(binance_receipt)
+    chain = _chain(module, kraken=kraken, binance=binance)
+    result = chain._execute_trade({
+        "exchange": "arbitrage",
+        "symbol": "ETH/USD",
+        "buy_exchange": "kraken",
+        "sell_exchange": "binance",
+        "kraken_price": 10.0,
+        "binance_price": 11.0,
+    })
+    assert result["status"] == _logged_status(tmp_path)
+    return result, kraken, binance
+
+
+UNCONFIRMED_KRAKEN_FILL = {
+    "status": "FILLED",
+    "executedQty": "1.0",
+    "orderId": "NOT-A-CLOSED-FILL",
+}
+CONFIRMED_KRAKEN_FILL = {
+    "status": "closed",
+    "vol_exec": "1.0",
+    "txid": TXID,
+    "executedQty": "1.0",
+    "orderId": "K-CLOSED-1",
+}
+
+
+@pytest.mark.parametrize(
+    "module_name",
+    (
+        "aureon.bots.orca_unified_kill_chain",
+        "unified_margin_trader.orca_unified_kill_chain",
+    ),
+)
+def test_unconfirmed_kraken_buy_does_not_reach_the_arbitrage_sell(
+    module_name, monkeypatch, tmp_path
+):
+    result, kraken, binance = _arbitrage(
+        _load(module_name),
+        monkeypatch,
+        tmp_path,
+        UNCONFIRMED_KRAKEN_FILL,
+        {"status": "FILLED", "executedQty": "1.0", "orderId": "B-1"},
+    )
+    assert kraken.calls
+    assert binance.calls == []
+    assert result["status"] == "BUY_FAILED"
+    assert result["status"] != "ARBITRAGE_EXECUTED"
+
+
+@pytest.mark.parametrize("module_name", MODULES)
+@pytest.mark.parametrize("executed_qty", ["0", None, True])
+def test_binance_false_fill_is_not_arbitrage_executed(
+    module_name, executed_qty, monkeypatch, tmp_path
+):
+    result, _kraken, binance = _arbitrage(
+        _load(module_name),
+        monkeypatch,
+        tmp_path,
+        CONFIRMED_KRAKEN_FILL,
+        {"status": "FILLED", "executedQty": executed_qty, "orderId": "B-1"},
+    )
+    assert binance.calls
+    assert result["status"] == "PARTIAL"
+    assert result["status"] != "ARBITRAGE_EXECUTED"
