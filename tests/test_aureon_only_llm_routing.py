@@ -2,10 +2,20 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 
+from aureon.autonomous.aureon_internal_coding_workforce import (
+    _issue_brain_passport,
+    provision_brain_bound_workforce,
+    validate_brain_passport,
+)
+from aureon.autonomous.aureon_own_model_resolver import AureonOwnModelBrainResolver
 from aureon.inhouse_ai import llm_adapter
 from aureon.inhouse_ai.llm_adapter import (
+    AUREON_OWN_DEFAULT_BASE_URL,
+    AUREON_OWN_DEFAULT_MODEL,
     AureonAnthropicAdapter,
     AureonLocalAdapter,
     AureonStubAdapter,
@@ -199,6 +209,169 @@ def test_action_rationale_calls_own_adapter_not_provider_fanout(monkeypatch):
 
     assert text == "Hold for review."
     assert len(own.calls) == 1
+
+
+def test_own_adapter_strict_transport_and_response_identity(monkeypatch):
+    _clear_http_guards(monkeypatch)
+    adapter = llm_adapter._aureon_own_adapter()
+    assert adapter.strict_loopback_no_redirects is True
+    assert adapter._session.trust_env is False
+
+    class Response:
+        status_code = 200
+        url = AUREON_OWN_DEFAULT_BASE_URL + "/chat/completions"
+        is_redirect = False
+        is_permanent_redirect = False
+        history = ()
+
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {
+                "model": "gpt-4o-mini",
+                "choices": [{"message": {"content": "borrowed answer"}}],
+            }
+
+    monkeypatch.setattr(adapter, "_http_post", lambda *a, **k: Response())
+    response = adapter.prompt([{"role": "user", "content": "ping"}])
+    assert response.stop_reason == "error"
+    assert response.raw["error"] == "aureon_own_model_response_invalid"
+    assert adapter.health_check() is False
+
+
+def test_own_adapter_accepts_exact_model_and_nonempty_stream(monkeypatch):
+    _clear_http_guards(monkeypatch)
+    adapter = llm_adapter._aureon_own_adapter()
+
+    class Response:
+        status_code = 200
+        url = AUREON_OWN_DEFAULT_BASE_URL + "/chat/completions"
+        is_redirect = False
+        is_permanent_redirect = False
+        history = ()
+
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {
+                "model": AUREON_OWN_DEFAULT_MODEL,
+                "choices": [{"message": {"content": "OK"}}],
+            }
+
+        def iter_lines(self):
+            yield ("data: " + __import__("json").dumps({
+                "model": AUREON_OWN_DEFAULT_MODEL,
+                "choices": [{"delta": {"content": "OK"}, "finish_reason": "stop"}],
+            })).encode("utf-8")
+
+    monkeypatch.setattr(adapter, "_http_post", lambda *a, **k: Response())
+    monkeypatch.setattr(adapter, "_http_get", lambda *a, **k: type("Models", (), {
+        "status_code": 200,
+        "url": AUREON_OWN_DEFAULT_BASE_URL + "/models",
+        "is_redirect": False,
+        "is_permanent_redirect": False,
+        "history": (),
+        "json": lambda self: {"data": [{"id": AUREON_OWN_DEFAULT_MODEL}]},
+    })())
+    response = adapter.prompt([{"role": "user", "content": "ping"}])
+    assert response.stop_reason == "end_turn"
+    assert response.text == "OK"
+    chunks = list(adapter.stream([{"role": "user", "content": "ping"}]))
+    assert "".join(chunk.text for chunk in chunks) == "OK"
+    assert chunks[-1].done is True
+    assert chunks[-1].stop_reason == "stop"
+    assert adapter.health_check() is True
+
+
+def test_own_adapter_rejects_streaming_identity_mismatch(monkeypatch):
+    _clear_http_guards(monkeypatch)
+    adapter = llm_adapter._aureon_own_adapter()
+
+    class Response:
+        url = AUREON_OWN_DEFAULT_BASE_URL + "/chat/completions"
+        is_redirect = False
+        is_permanent_redirect = False
+        history = ()
+
+        def raise_for_status(self):
+            return None
+
+        def iter_lines(self):
+            yield b'data: {"model":"gpt-4o-mini","choices":[{"delta":{"content":"bad"}}]}'
+
+    monkeypatch.setattr(adapter, "_http_post", lambda *a, **k: Response())
+    chunks = list(adapter.stream([{"role": "user", "content": "ping"}]))
+    assert chunks == [chunk for chunk in chunks if chunk.done]
+    assert len(chunks) == 1
+    assert chunks[0].stop_reason == "error"
+    assert "identity mismatch" in chunks[0].text
+
+
+    class FakeAdapter:
+        model = AUREON_OWN_DEFAULT_MODEL
+        calls = 0
+
+        def health_check(self):
+            self.calls += 1
+            return True
+
+    field = SimpleNamespace(
+        available=True,
+        receipt_id="hnc:live_field:test",
+        coherence_gamma=0.9,
+        consciousness_psi=0.8,
+        lambda_t=1.2,
+        source_timestamp=1000.0,
+    )
+    adapter = FakeAdapter()
+    resolver = AureonOwnModelBrainResolver(
+        adapter=adapter, field_reader=lambda: field, clock=lambda: 1001.0
+    )
+    brain = resolver.resolve("coding")
+    passport = _issue_brain_passport("agent", "Implementation Worker", "coding", brain)
+
+    assert adapter.calls == 1
+    assert brain.provider_mode == "aureon_own_model"
+    assert brain.model == AUREON_OWN_DEFAULT_MODEL
+    assert brain.routing_receipt_id.startswith("aureon-own:hnc-route:")
+    assert passport.brain_ready is True
+    assert validate_brain_passport(passport) is True
+    assert passport.action_eligible is False
+    assert passport.economic_eligible is False
+
+    field.available = False
+    unresolved = AureonOwnModelBrainResolver(
+        adapter=adapter, field_reader=lambda: field, clock=lambda: 1002.0
+    ).resolve("coding")
+    held = _issue_brain_passport("agent", "Implementation Worker", "coding", unresolved)
+    assert held.status == "no_data"
+    assert held.brain_ready is False
+    assert validate_brain_passport(held) is True
+
+
+def test_workforce_default_own_model_absence_is_explicit_hold(monkeypatch):
+    _clear_http_guards(monkeypatch)
+    monkeypatch.setenv("AUREON_OWN_LLM_BASE_URL", AUREON_OWN_DEFAULT_BASE_URL)
+    monkeypatch.setenv("AUREON_OWN_LLM_MODEL", AUREON_OWN_DEFAULT_MODEL)
+    monkeypatch.setenv("AUREON_LLM_PROBE_TIMEOUT_S", "1")
+    workforce = provision_brain_bound_workforce(
+        role_brain_lanes={"Worker": "coding"},
+        process_brain_bindings={"process:worker": ("coding", "Worker")},
+    )
+    report = workforce.report()
+
+    assert report["status"] == "no_data"
+    assert report["ready"] is False
+    assert report["provider_mode"] == "hold"
+    assert report["agent_brain_count"] == 1
+    assert report["process_brain_count"] == 1
+    assert report["brain_fabric_ready"] is False
+    assert report["unready_agents"] == ["Worker"]
+    assert report["unready_processes"] == ["process:worker"]
+    assert report["action_eligible"] is False
+    assert report["economic_eligible"] is False
 
 
 def test_anthropic_adapter_is_retained_only_as_a_disabled_boundary(monkeypatch):

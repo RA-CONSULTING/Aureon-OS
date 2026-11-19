@@ -26,8 +26,17 @@ from pathlib import Path
 from typing import Any, Dict, Generator, List, Optional
 from urllib.parse import urlsplit
 
+from aureon.inhouse_ai.own_model_config import (
+    AUREON_OWN_DEFAULT_BASE_URL,
+    AUREON_OWN_DEFAULT_MODEL,
+)
+from aureon.inhouse_ai.own_model_config import (
+    aureon_own_route as _aureon_own_route,
+)
+from aureon.inhouse_ai.own_model_config import (
+    is_aureon_own_route as _is_aureon_own_route,
+)
 from aureon.ollama_config import (
-    ensure_ollama_runtime_config,
     is_ollama_cloud_url,
     looks_like_ollama_url,
     ollama_authorization_headers,
@@ -37,44 +46,6 @@ from aureon.ollama_config import (
 )
 
 logger = logging.getLogger("aureon.inhouse_ai.llm")
-
-AUREON_OWN_DEFAULT_BASE_URL = "http://127.0.0.1:11435/v1"
-AUREON_OWN_DEFAULT_MODEL = "aureon-7b-v65k"
-
-
-def _aureon_own_route() -> tuple[str, str]:
-    base = (
-        os.environ.get("AUREON_OWN_LLM_BASE_URL", "") or AUREON_OWN_DEFAULT_BASE_URL
-    ).strip().rstrip("/")
-    model = (
-        os.environ.get("AUREON_OWN_LLM_MODEL", "") or AUREON_OWN_DEFAULT_MODEL
-    ).strip()
-    return base, model
-
-
-def _is_aureon_own_route(base_url: str, model: str) -> bool:
-    expected_base, expected_model = _aureon_own_route()
-    candidate = str(base_url).strip().rstrip("/")
-    if candidate != expected_base or str(model).strip() != expected_model:
-        return False
-    if expected_model != AUREON_OWN_DEFAULT_MODEL or looks_like_ollama_url(candidate):
-        return False
-    try:
-        parsed = urlsplit(candidate)
-        address = ipaddress.ip_address(str(parsed.hostname or ""))
-        port = parsed.port
-    except (TypeError, ValueError):
-        return False
-    return bool(
-        parsed.scheme == "http"
-        and address.is_loopback
-        and port is not None
-        and parsed.path.rstrip("/") == "/v1"
-        and parsed.username is None
-        and parsed.password is None
-        and not parsed.query
-        and not parsed.fragment
-    )
 
 
 def _env_truthy(name: str) -> bool:
@@ -294,7 +265,7 @@ class AureonLocalAdapter(LLMAdapter):
         model: Optional[str] = None,
         api_key: Optional[str] = None,
         *,
-        strict_loopback_no_redirects: bool = False,
+        strict_loopback_no_redirects: bool = True,
     ):
         configured_base_url = (
             base_url
@@ -322,6 +293,7 @@ class AureonLocalAdapter(LLMAdapter):
         )
         self._model_verified: bool = False
         self.strict_loopback_no_redirects = False
+        own_route = _is_aureon_own_route(self.base_url, self.model)
 
         # Ollama detection. The OpenAI /v1 shim Ollama ships with silently
         # drops the ``keep_alive`` payload field, so the model unloads every
@@ -350,7 +322,7 @@ class AureonLocalAdapter(LLMAdapter):
             import requests
 
             self._session = requests.Session()
-            if strict_loopback_no_redirects:
+            if strict_loopback_no_redirects and own_route:
                 self.enable_strict_loopback_transport()
         except ImportError:
             self._session = None
@@ -744,7 +716,20 @@ class AureonLocalAdapter(LLMAdapter):
                 )
             return LLMResponse(text=text, stop_reason="error")
 
-        choice = data.get("choices", [{}])[0]
+        choices = data.get("choices")
+        if (
+            data.get("model") != self.model
+            or not isinstance(choices, list)
+            or len(choices) != 1
+            or not isinstance(choices[0], dict)
+        ):
+            return LLMResponse(
+                text="[ERROR] Aureon own-model response identity mismatch",
+                stop_reason="error",
+                model=self.model,
+                raw={"error": "aureon_own_model_response_invalid"},
+            )
+        choice = choices[0]
         message = choice.get("message", {})
 
         tool_calls = []
@@ -852,6 +837,13 @@ class AureonLocalAdapter(LLMAdapter):
             except json.JSONDecodeError:
                 continue
 
+            if chunk_data.get("model") != self.model:
+                yield StreamChunk(
+                    text="[ERROR] Aureon own-model response identity mismatch",
+                    done=True,
+                    stop_reason="error",
+                )
+                return
             delta = chunk_data.get("choices", [{}])[0].get("delta", {})
             finish = chunk_data.get("choices", [{}])[0].get("finish_reason")
 
@@ -973,7 +965,8 @@ class AureonLocalAdapter(LLMAdapter):
         # If the requested model is present, trust the listing by default and
         # let the real small-packet request be the proof. Operators can set
         # AUREON_LLM_SKIP_PROBE=0 to restore strict probe-before-use behavior.
-        skip_probe_raw = os.environ.get("AUREON_LLM_SKIP_PROBE", "1" if self._prefer_native else "0")
+        # An own-model readiness claim always requires an actual inference probe.
+        skip_probe_raw = os.environ.get("AUREON_LLM_SKIP_PROBE", "")
         if candidates and skip_probe_raw.strip().lower() in {"1", "true", "yes", "on"}:
             self.model = candidates[0]
             self._model_verified = True
@@ -1036,7 +1029,11 @@ class AureonLocalAdapter(LLMAdapter):
         if resp.status_code != 200:
             logger.debug("LLM probe %s rejected: %s %s", model_id, resp.status_code, resp.text[:200])
             return False
-        return True
+        try:
+            data = resp.json()
+        except (TypeError, ValueError):
+            return False
+        return data.get("model") == model_id
 
 
 # ─────────────────────────────────────────────────────────────────────────────
