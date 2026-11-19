@@ -7,6 +7,7 @@ fails there.
 
 from __future__ import annotations
 
+import hashlib
 import io
 import json
 import os
@@ -21,9 +22,13 @@ import pytest
 from PIL import Image
 
 from aureon.autonomous.aureon_agent_core import AureonAgentCore
-from aureon.autonomous.aureon_governed_desktop_gateway import GovernedDesktopGateway, WindowInfo
+from aureon.autonomous.aureon_governed_desktop_gateway import (
+    GovernedDesktopGateway,
+    WindowInfo,
+    X11PyAutoGUIBackend,
+)
 from aureon.autonomy.computer_agent_loop import ComputerAgentLoop
-from aureon.autonomy.computer_use import ComputerUse
+from aureon.autonomy.computer_use import ComputerUse, GatewayDesktopAdapter, default_computer_backend
 from aureon.inhouse_ai.llm_adapter import LLMResponse, ToolCall
 from aureon.operator.tools import TENANT_ALLOWED_TOOLS, build_operator_tools
 
@@ -154,9 +159,9 @@ def _audit_lines(computer: ComputerUse) -> list[dict]:
 def test_pyautogui_import_does_not_exit_without_tkinter(tmp_path: Path) -> None:
     """A stub tkinter that raises must not let mouseinfo sys.exit the loader.
 
-    The shared loader lives in draft PR #374. Until that lands, ComputerUse
-    installs a minimal mouseinfo stub itself. This child puts the stub ahead
-    of the real tkinter so the guard is what keeps the process alive.
+    ComputerUse loads pyautogui through ``pyautogui_loader``. This child puts a
+    failing tkinter ahead of the real one so the shared shim is what keeps the
+    process alive.
     """
 
     stub = tmp_path / "tkinter_stub"
@@ -183,6 +188,14 @@ def test_pyautogui_import_does_not_exit_without_tkinter(tmp_path: Path) -> None:
     assert completed.returncode == 0, completed.stderr
     assert "loaded" in completed.stdout
     assert "MouseInfo" not in completed.stderr
+
+
+def test_linux_computer_use_uses_default_desktop_backend(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(sys, "platform", "linux")
+    monkeypatch.setenv("DISPLAY", ":42")
+    backend = default_computer_backend()
+    assert isinstance(backend, GatewayDesktopAdapter)
+    assert isinstance(backend._backend, X11PyAutoGUIBackend)
 
 
 def test_run_shell_returns_python_stdout(tmp_path: Path) -> None:
@@ -307,22 +320,85 @@ def test_configured_deny_path_and_file_url_are_refused(tmp_path: Path, monkeypat
 
 
 def test_child_process_does_not_see_parent_exchange_key(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("KRAKEN_API_KEY", "dummy-parent-value")
+    secrets = {
+        "KRAKEN_API_KEY": "kraken-fixture-value",
+        "BINANCE_API_SECRET": "binance-fixture-value",
+        "ALPACA_API_KEY": "alpaca-fixture-value",
+        "APCA_API_KEY_ID": "apca-fixture-value",
+        "CAPITAL_API_KEY": "capital-fixture-value",
+        "COINAPI_KEY": "coinapi-fixture-value",
+        "SERVICE_TOKEN": "service-token-fixture-value",
+    }
+    for name, value in secrets.items():
+        monkeypatch.setenv(name, value)
     monkeypatch.setenv("AUREON_CU_VISIBLE", "yes")
     computer = _computer(tmp_path)
     script = (
-        "import os; "
-        "print(repr(os.environ.get('KRAKEN_API_KEY'))); "
-        "print(os.environ.get('AUREON_CU_VISIBLE', ''))"
+        "import os, subprocess, sys\n"
+        "names = ['KRAKEN_API_KEY','BINANCE_API_SECRET','ALPACA_API_KEY','APCA_API_KEY_ID',"
+        "'CAPITAL_API_KEY','COINAPI_KEY','SERVICE_TOKEN']\n"
+        "print('CHILD', {n: os.environ.get(n) for n in names})\n"
+        "print('PROCSELF', open('/proc/self/environ','rb').read().decode('utf-8','replace'))\n"
+        "for pid in range(1, 20):\n"
+        "    try:\n"
+        "        print(pid, open(f'/proc/{pid}/environ','rb').read().decode('utf-8','replace'))\n"
+        "    except Exception as exc:\n"
+        "        print(pid, type(exc).__name__)\n"
+        "grand = subprocess.run([sys.executable, '-c', "
+        "'import os; print({n: os.environ.get(n) for n in "
+        "[\"KRAKEN_API_KEY\",\"BINANCE_API_SECRET\",\"ALPACA_API_KEY\",\"APCA_API_KEY_ID\","
+        "\"CAPITAL_API_KEY\",\"COINAPI_KEY\",\"SERVICE_TOKEN\"]}); "
+        "print(open(\"/proc/self/environ\",\"rb\").read().decode(\"utf-8\",\"replace\"))'"
+        "], capture_output=True, text=True)\n"
+        "print('GRAND', grand.stdout)\n"
+        "print('VISIBLE', os.environ.get('AUREON_CU_VISIBLE'))\n"
     )
 
     result = computer.run_shell([sys.executable, "-c", script])
 
-    assert result["returncode"] == 0
-    lines = result["stdout"].splitlines()
-    assert lines[0] == "None"
-    assert lines[1] == "yes"
-    assert "dummy-parent-value" not in result["stdout"]
+    assert result["returncode"] == 0, result
+    blob = result["stdout"] + result.get("stderr", "")
+    for value in secrets.values():
+        assert value not in blob
+    assert "VISIBLE yes" in result["stdout"] or "VISIBLE\nyes" in result["stdout"] or "yes" in result["stdout"]
+
+
+def test_filesystem_wall_hides_dotenv_symlinks_run_dir_and_inline_open(tmp_path: Path) -> None:
+    env_file = tmp_path / ".env"
+    env_file.write_text(f"{MARKER}=dummy\n", encoding="utf-8")
+    key_dir = tmp_path / "keys"
+    key_dir.mkdir()
+    (key_dir / "exchange.txt").write_text(MARKER, encoding="utf-8")
+    link = tmp_path / "looks_fine"
+    link.symlink_to(env_file)
+    run_dir = Path("/workspace/aureon_run_f21fb3ec")
+    run_dir.mkdir(exist_ok=True)
+    run_file = run_dir / "k.txt"
+    run_file.write_text(MARKER, encoding="utf-8")
+    computer = _computer(tmp_path)
+    inline = (
+        "def show(path):\n"
+        "    try:\n"
+        "        print(open(path).read())\n"
+        "    except Exception as exc:\n"
+        "        print(type(exc).__name__)\n"
+        "show('.env')\n"
+        "show('looks_fine')\n"
+        "show('keys/exchange.txt')\n"
+        f"show({str(run_file)!r})\n"
+    )
+    try:
+        opened = computer.run_shell([sys.executable, "-c", inline], cwd=tmp_path)
+        listed = computer.run_shell(["cat", ".env"], cwd=tmp_path)
+    finally:
+        run_file.unlink(missing_ok=True)
+        run_dir.rmdir()
+
+    blob = json.dumps([opened, listed])
+    assert MARKER not in blob
+    assert listed["status"] == "denied"
+    assert opened["returncode"] == 0
+    assert env_file.read_text(encoding="utf-8").startswith(MARKER)
 
 
 def test_agent_core_desktop_shell_and_url_are_not_hold(tmp_path: Path) -> None:
@@ -360,6 +436,71 @@ def test_audit_line_is_written_for_every_action(tmp_path: Path) -> None:
     computer.hotkey(["ctrl", "c"])
     actions = [line["action"] for line in _audit_lines(computer)]
     assert actions == ["move", "press_key", "hotkey"]
+
+
+def test_typed_text_is_hashed_in_the_audit_and_screenshots_do_not_overwrite(tmp_path: Path) -> None:
+    backend = RecordingDesktop()
+    computer = _computer(tmp_path, backend=backend)
+    typed = "TYPED_FIXTURE_NOT_A_SECRET_phi"
+    assert computer.type_text(typed)["ok"] is True
+    first = computer.screenshot()
+    second = computer.screenshot()
+    audit = computer.audit_path.read_text(encoding="utf-8")
+    assert typed not in audit
+    digest = hashlib.sha256(typed.encode("utf-8")).hexdigest()
+    assert digest in audit
+    assert '"text_length": ' + str(len(typed)) in audit or f'"text_length":{len(typed)}' in audit
+    first_path = Path(first["path"])
+    second_path = Path(second["path"])
+    assert first_path != second_path
+    assert first_path.parent == computer.screenshot_dir
+    assert second_path.parent == computer.screenshot_dir
+    assert first_path.read_bytes() == backend.png
+    assert second_path.read_bytes() == backend.png
+
+
+def test_stop_file_halts_the_next_action_for_the_loop_and_the_gateway(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    stop = tmp_path / "state" / "computer_use.stop"
+    stop.parent.mkdir()
+    monkeypatch.setenv("AUREON_COMPUTER_USE_STOP_FILE", str(stop))
+    backend = RecordingDesktop()
+    computer = _computer(tmp_path, backend=backend, stop_path=stop)
+    assert computer.click(1, 2)["status"] == "ok"
+    stop.write_text("stop\n", encoding="utf-8")
+    halted_type = computer.type_text("should-not-type")
+    assert halted_type["status"] == "stopped"
+    assert not any(call[0] == "type" for call in backend.calls)
+
+    stop.unlink()
+    clicks_before = [call for call in backend.calls if call[0] == "click"]
+
+    class _Adapter:
+        def prompt(self, messages, system="", tools=None, **kwargs):
+            del messages, system, tools, kwargs
+            stop.write_text("stop\n", encoding="utf-8")
+            return LLMResponse(tool_calls=[ToolCall(name="click", arguments={"x": 9, "y": 8})])
+
+    looped = ComputerAgentLoop(computer, _Adapter(), max_steps=2).run("click next")
+    assert looped["stopped"] is True
+    assert [call for call in backend.calls if call[0] == "click"] == clicks_before
+
+    stop.unlink()
+    gateway_backend = _GatewayBackend()
+    gateway = GovernedDesktopGateway(
+        backend=gateway_backend,
+        evidence_path=tmp_path / "gateway.jsonl",
+        min_action_interval_seconds=0.0,
+    )
+    first = gateway.execute("observe")
+    assert first.ok is True
+    assert first.reason != "computer_use_stop_file"
+    stop.write_text("stop\n", encoding="utf-8")
+    halted = gateway.execute("click", {"x": 1, "y": 2})
+    assert halted.ok is False
+    assert halted.reason == "computer_use_stop_file"
+    assert gateway_backend.actions == []
 
 
 def test_gateway_stop_file_halts_the_next_action(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

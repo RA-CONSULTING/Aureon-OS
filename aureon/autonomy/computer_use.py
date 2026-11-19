@@ -13,18 +13,24 @@ It does not substring-match the command text. That wall is a speed bump, not a
 sandbox: a separate OS user without read access to the live-run folder is the
 isolation that actually holds.
 
-PyAutoGUI is imported lazily. Until PR #374 lands, a missing-tkinter host gets
-a tiny ``mouseinfo`` stub here so ``mouseinfo`` cannot ``sys.exit`` the process.
-Rebase onto that shared loader and delete ``_import_pyautogui_until_shared_loader``.
-This module does not add a Linux window backend; PR #376 owns that for the
-governed gateway.
+On Linux the pointer, keyboard, and screenshot go through
+``default_desktop_backend`` (the X11 backend when ``DISPLAY`` is set).
+PyAutoGUI itself is loaded by ``aureon.autonomous.pyautogui_loader``, which
+keeps a missing tkinter from exiting the process.
+
+``run_shell`` does not use a command blocklist. Each child runs under
+``unshare`` with a new user, mount, and pid namespace (``--mount-proc``,
+``--propagation private``). Secret files are covered by an empty bind mount
+and secret directories, including ``/workspace/aureon_run_*``, by a tmpfs.
+The parent ``/proc/<pid>/environ`` is not in that pid namespace. bubblewrap
+is not required and is not used.
 """
 
 from __future__ import annotations
 
 import datetime
 import fnmatch
-import importlib
+import hashlib
 import io
 import json
 import logging
@@ -32,8 +38,8 @@ import os
 import shlex
 import subprocess
 import sys
+import tempfile
 import threading
-import types
 import webbrowser
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
@@ -49,7 +55,8 @@ DEFAULT_SCREENSHOT_DIR = STATE_DIR / "computer_use_screenshots"
 
 _NAME_GLOBS = (".env*", "*keys*", "*secret*", "*credentials*")
 _ENV_MARKERS = ("KEY", "SECRET", "TOKEN", "PASSWORD", "API")
-_EXCHANGE_PREFIXES = ("KRAKEN_", "BINANCE_", "ALPACA_", "CAPITAL_")
+_ENV_SUFFIXES = ("_KEY", "_SECRET", "_TOKEN")
+_EXCHANGE_PREFIXES = ("KRAKEN_", "BINANCE_", "ALPACA_", "APCA_", "CAPITAL_", "COINAPI_")
 _MAX_AUDIT_TEXT = 500
 _MAX_OUTPUT_CHARS = 64_000
 
@@ -86,6 +93,8 @@ def scrub_child_environ(source: Mapping[str, str] | None = None) -> dict[str, st
         upper = str(name).upper()
         if any(upper.startswith(prefix) for prefix in _EXCHANGE_PREFIXES):
             continue
+        if any(upper.endswith(suffix) for suffix in _ENV_SUFFIXES):
+            continue
         if any(marker in upper for marker in _ENV_MARKERS):
             continue
         cleaned[str(name)] = str(value)
@@ -97,43 +106,197 @@ def _name_denied(component: str) -> str | None:
     for pattern in _NAME_GLOBS:
         if fnmatch.fnmatch(folded, pattern.casefold()):
             return pattern
+    if folded.startswith("aureon_run_"):
+        return "aureon_run"
     return None
 
 
-def _import_pyautogui_until_shared_loader() -> Any:
-    """Import pyautogui without letting mouseinfo exit the process.
+_WALL_LAUNCHER = r"""
+import json, os, subprocess, sys
+masks = json.loads(os.environ.get("AUREON_CU_MASKS") or "[]")
+argv = json.loads(os.environ["AUREON_CU_ARGV"])
+empty = os.environ["AUREON_CU_EMPTY"]
+child_env = json.loads(os.environ["AUREON_CU_ENV"])
+cwd = os.environ.get("AUREON_CU_CWD") or None
+for kind, path in masks:
+    if not os.path.lexists(path):
+        continue
+    if kind == "dir":
+        mounted = subprocess.run(["mount", "-t", "tmpfs", "tmpfs", path], check=False)
+    else:
+        mounted = subprocess.run(["mount", "--bind", empty, path], check=False)
+    if mounted.returncode != 0:
+        sys.stderr.write(f"mount_failed {kind}\n")
+        sys.exit(97)
+os.chdir(cwd or os.getcwd())
+os.execvpe(argv[0], argv, child_env)
+"""
 
-    Temporary. PR #374 adds ``aureon.autonomous.pyautogui_loader.import_pyautogui``.
-    Delete this once that loader is on the branch.
-    """
 
-    if "mouseinfo" not in sys.modules:
+def _run_dir_mounts() -> list[Path]:
+    found: list[Path] = []
+    for root_text in ("/workspace", str(REPO_ROOT)):
+        root = Path(root_text)
         try:
-            importlib.import_module("tkinter")
-        except Exception:
-            stub = types.ModuleType("mouseinfo")
-            stub.__version__ = "aureon-shim"
+            if not root.is_dir():
+                continue
+            for child in root.iterdir():
+                if child.name.casefold().startswith("aureon_run_"):
+                    found.append(child)
+        except OSError:
+            continue
+    return found
 
-            def _unavailable(*_args: Any, **_kwargs: Any) -> None:
-                raise RuntimeError("mouseinfo_unavailable")
 
-            stub.MouseInfoWindow = _unavailable  # type: ignore[attr-defined]
-            sys.modules["mouseinfo"] = stub
+def _redact_audit_args(action: str, args: Mapping[str, Any]) -> dict[str, Any]:
+    redacted = dict(args)
+    if "text" in redacted and action in {"type_text", "type"}:
+        text = "" if redacted.get("text") is None else str(redacted.pop("text"))
+        redacted["text_length"] = len(text)
+        redacted["text_sha256"] = hashlib.sha256(text.encode("utf-8")).hexdigest()
+    return redacted
+
+
+def _redact_audit_summary(summary: Mapping[str, Any]) -> dict[str, Any]:
+    redacted = dict(summary)
+    redacted.pop("stdout", None)
+    redacted.pop("stderr", None)
+    redacted.pop("text", None)
+    return redacted
+
+
+def _write_new_screenshot(directory: Path, data: bytes) -> Path:
+    """Write a PNG only inside ``directory``, and never over an existing file."""
+
+    directory.mkdir(parents=True, exist_ok=True)
+    root = directory.resolve()
+    for attempt in range(8):
+        stamp = datetime.datetime.now(datetime.UTC).strftime("%Y%m%dT%H%M%S%fZ")
+        path = directory / f"screen-{stamp}-{attempt}.png"
+        if path.resolve().parent != root:
+            raise ValueError("screenshot_outside_dir")
+        try:
+            fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
+        except FileExistsError:
+            continue
+        with os.fdopen(fd, "wb") as handle:
+            handle.write(data)
+        return path
+    raise FileExistsError("screenshot_name_collision")
+
+
+def _spawn_walled(
+    argv: list[str],
+    cwd: Path | None,
+    env: Mapping[str, str],
+    timeout: float,
+    masks: list[tuple[str, str]],
+) -> subprocess.CompletedProcess[str]:
+    """Run ``argv`` where secret paths are hidden and the parent environ is not mounted."""
+
+    if not shutil_which("unshare"):
+        raise OSError("filesystem_wall_unavailable")
+    descriptor, empty_name = tempfile.mkstemp(prefix="aureon-cu-empty-")
+    os.close(descriptor)
+    helper = dict(env)
+    helper["AUREON_CU_MASKS"] = json.dumps([[kind, path] for kind, path in masks])
+    helper["AUREON_CU_ARGV"] = json.dumps(argv)
+    helper["AUREON_CU_CWD"] = "" if cwd is None else str(cwd)
+    helper["AUREON_CU_EMPTY"] = empty_name
+    helper["AUREON_CU_ENV"] = json.dumps(dict(env))
     try:
-        return importlib.import_module("pyautogui")
-    except SystemExit as exc:
-        raise ImportError("pyautogui_import_exited") from exc
+        return subprocess.run(
+            [
+                "unshare",
+                "--user",
+                "--mount",
+                "--pid",
+                "--fork",
+                "--mount-proc",
+                "--map-root-user",
+                "--propagation",
+                "private",
+                sys.executable,
+                "-c",
+                _WALL_LAUNCHER,
+            ],
+            cwd=None if cwd is None else str(cwd),
+            env=helper,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            check=False,
+        )
+    finally:
+        try:
+            os.unlink(empty_name)
+        except OSError:
+            pass
+
+
+def shutil_which(name: str) -> str | None:
+    import shutil
+
+    return shutil.which(name)
 
 
 def load_pyautogui() -> Any:
-    try:
-        loader = importlib.import_module("aureon.autonomous.pyautogui_loader")
-        importer = getattr(loader, "import_pyautogui", None)
-        if callable(importer):
-            return importer()
-    except ImportError:
-        pass
-    return _import_pyautogui_until_shared_loader()
+    """Load pyautogui through the shared loader. Never ``sys.exit``."""
+
+    from aureon.autonomous.pyautogui_loader import import_pyautogui
+
+    return import_pyautogui()
+
+
+class GatewayDesktopAdapter:
+    """ComputerUse actions over ``default_desktop_backend`` on Linux.
+
+    The gateway backend names ``press`` and ``capture_screen``. Drag is not on
+    that surface, so drag moves with the backend and finishes with pyautogui.
+    """
+
+    def __init__(self, backend: Any) -> None:
+        self._backend = backend
+
+    def screenshot_png(self) -> bytes:
+        data = self._backend.capture_screen()
+        if not isinstance(data, (bytes, bytearray)) or not bytes(data).startswith(b"\x89PNG"):
+            raise ValueError("screenshot_not_png")
+        return bytes(data)
+
+    def move(self, x: int, y: int, duration: float = 0.0) -> None:
+        self._backend.move(int(x), int(y), float(duration))
+
+    def click(self, x: int, y: int, button: str = "left", clicks: int = 1) -> None:
+        self._backend.click(int(x), int(y), str(button), int(clicks))
+
+    def drag(self, x: int, y: int, x2: int, y2: int, button: str = "left") -> None:
+        self.move(x, y, 0.0)
+        gui = load_pyautogui()
+        gui.FAILSAFE = False
+        gui.dragTo(int(x2), int(y2), button=str(button), duration=0.1)
+
+    def scroll(self, amount: int, x: int, y: int) -> None:
+        self._backend.scroll(int(amount), int(x), int(y))
+
+    def type_text(self, text: str, interval: float = 0.0) -> None:
+        self._backend.type_text(str(text), float(interval))
+
+    def press_key(self, key: str) -> None:
+        self._backend.press(str(key))
+
+    def hotkey(self, keys: Sequence[str]) -> None:
+        self._backend.hotkey([str(key) for key in keys])
+
+
+def default_computer_backend() -> Any:
+    """Linux uses the gateway's host backend. Other hosts keep a direct driver."""
+
+    if sys.platform.startswith("linux"):
+        from aureon.autonomous.aureon_governed_desktop_gateway import default_desktop_backend
+
+        return GatewayDesktopAdapter(default_desktop_backend())
+    return PyAutoGUIDesktop()
 
 
 class PyAutoGUIDesktop:
@@ -239,7 +402,7 @@ class ComputerUse:
 
     def _backend_or_default(self) -> Any:
         if self._backend is None:
-            self._backend = PyAutoGUIDesktop()
+            self._backend = default_computer_backend()
         return self._backend
 
     def _deny_roots(self) -> list[Path]:
@@ -281,6 +444,8 @@ class ComputerUse:
             matched = _name_denied(part)
             if matched:
                 return f"path_denied:{matched}"
+            if part.casefold().startswith("aureon_run_"):
+                return "path_denied:aureon_run"
         try:
             repo_env = Path(os.path.realpath(self.repo_env_path))
         except OSError:
@@ -297,7 +462,10 @@ class ComputerUse:
         return None
 
     def _looks_like_path(self, token: str, cwd: Path) -> bool:
-        if not token or token.startswith("-"):
+        if not token or token.startswith("-") or any(character.isspace() for character in token):
+            return False
+        # A python -c snippet is not a path. The mount namespace hides the file.
+        if any(character in token for character in "()\"'`$;|&"):
             return False
         if token.lower().startswith("file:"):
             return True
@@ -342,8 +510,8 @@ class ComputerUse:
         entry = {
             "ts": datetime.datetime.now(datetime.UTC).isoformat(),
             "action": action,
-            "args": _jsonable(dict(args)),
-            "result": _jsonable(dict(summary)),
+            "args": _jsonable(_redact_audit_args(action, args)),
+            "result": _jsonable(_redact_audit_summary(summary)),
             "screenshot_path": screenshot_path,
         }
         try:
@@ -412,10 +580,7 @@ class ComputerUse:
             if not isinstance(data, (bytes, bytearray)) or not data.startswith(b"\x89PNG"):
                 raise ValueError("screenshot_not_png")
             width, height = _png_size(bytes(data))
-            self.screenshot_dir.mkdir(parents=True, exist_ok=True)
-            stamp = datetime.datetime.now(datetime.UTC).strftime("%Y%m%dT%H%M%S%fZ")
-            path = self.screenshot_dir / f"screen-{stamp}.png"
-            path.write_bytes(bytes(data))
+            path = _write_new_screenshot(self.screenshot_dir, bytes(data))
         except Exception as exc:
             logger.warning("screenshot failed: %s", exc)
             return self._finish("screenshot", args, ok=False, status="error", error=type(exc).__name__)
@@ -544,6 +709,57 @@ class ComputerUse:
             return self._finish("hotkey", args, ok=False, status="error", error=type(exc).__name__)
         return self._finish("hotkey", args, ok=True, status="ok")
 
+    def _secret_mounts(self, cwd: Path) -> list[tuple[str, str]]:
+        """Files and directories the child must see as empty."""
+
+        chosen: dict[str, str] = {}
+
+        def add(path: Path) -> None:
+            try:
+                if path.is_symlink():
+                    add(Path(os.path.realpath(path)))
+                if not path.exists() and not path.is_symlink():
+                    return
+                real = Path(os.path.realpath(path))
+            except OSError:
+                return
+            if real == Path("/") or len(real.parts) < 2:
+                return
+            kind = "dir" if real.is_dir() and not real.is_file() else "file"
+            chosen[str(real)] = kind
+
+        def consider(path: Path) -> None:
+            if path.name.casefold().startswith("aureon_run_") or self.path_denied(path):
+                add(path)
+
+        def walk(root: Path, depth: int) -> None:
+            if depth < 0:
+                return
+            try:
+                children = list(root.iterdir())
+            except OSError:
+                return
+            for child in children:
+                consider(child)
+                if child.is_dir() and not child.is_symlink() and not self.path_denied(child):
+                    walk(child, depth - 1)
+
+        for root in (cwd, REPO_ROOT, Path("/workspace")):
+            consider(root)
+            if root.is_dir():
+                walk(root, 2 if root == cwd else 0)
+        for run_dir in _run_dir_mounts():
+            add(run_dir)
+        for root in self._deny_roots():
+            add(root)
+        dirs = {path for path, kind in chosen.items() if kind == "dir"}
+        mounts: list[tuple[str, str]] = []
+        for path, kind in sorted(chosen.items()):
+            if kind == "file" and any(path == directory or path.startswith(directory + os.sep) for directory in dirs):
+                continue
+            mounts.append((kind, path))
+        return mounts
+
     def run_shell(
         self,
         argv: str | Sequence[str],
@@ -583,17 +799,9 @@ class ComputerUse:
                 error="cwd_not_found",
                 extra={"stdout": "", "stderr": "", "returncode": None},
             )
+        child_env = scrub_child_environ(self._environ)
         try:
-            completed = subprocess.run(
-                parsed,
-                shell=False,
-                cwd=str(workdir) if cwd is not None else None,
-                capture_output=True,
-                text=True,
-                timeout=timeout_s,
-                env=scrub_child_environ(self._environ),
-                check=False,
-            )
+            completed = _spawn_walled(parsed, workdir if cwd is not None else None, child_env, timeout_s, self._secret_mounts(workdir))
         except subprocess.TimeoutExpired:
             return self._finish(
                 "run_shell",
@@ -604,13 +812,23 @@ class ComputerUse:
                 extra={"stdout": "", "stderr": "", "returncode": None},
             )
         except OSError as exc:
+            error = "filesystem_wall_unavailable" if "filesystem_wall" in str(exc) or isinstance(exc, FileNotFoundError) else type(exc).__name__
             return self._finish(
                 "run_shell",
                 {"argv": parsed, "cwd": str(workdir)},
                 ok=False,
                 status="error",
-                error=type(exc).__name__,
+                error=error,
                 extra={"stdout": "", "stderr": "", "returncode": None},
+            )
+        if completed.returncode == 97:
+            return self._finish(
+                "run_shell",
+                {"argv": parsed, "timeout": timeout_s, "cwd": str(workdir)},
+                ok=False,
+                status="error",
+                error="filesystem_wall_unavailable",
+                extra={"stdout": "", "stderr": completed.stderr[:500], "returncode": 97},
             )
         stdout = completed.stdout[:_MAX_OUTPUT_CHARS]
         stderr = completed.stderr[:_MAX_OUTPUT_CHARS]
