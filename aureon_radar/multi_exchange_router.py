@@ -645,6 +645,7 @@ class MultiExchangeRouter:
             err = receipt.get("error")
             return {
                 "dealId": receipt.get("dealId") or receipt.get("dealReference") or "unknown",
+                "dealReference": receipt.get("dealReference"),
                 "account": "capital_live",
                 "size": receipt.get("size", size),
                 "error": err,
@@ -734,13 +735,16 @@ class MultiExchangeRouter:
                     "account": result.get("account"),
                     "dealId": result.get("dealId"),
                 })
-                return {
+                routed = {
                     "dealId": result.get("dealId"),
                     "account": result.get("account"),
                     "size": result.get("size", size),
                     "error": None,
                     "venue": venue,
                 }
+                if result.get("dealReference"):
+                    routed["dealReference"] = result.get("dealReference")
+                return routed
 
             last_error = result.get("error")
             logger.info("venue %s rejected %s: %s", venue, symbol, last_error)

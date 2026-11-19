@@ -153,18 +153,24 @@ def test_phi_radar_fails_closed_on_ownership_error(monkeypatch, tmp_path):
 # ── Reconciliation must not launder a manual deal into ownership ──────────
 
 GARY = "GARY_MANUAL_CN50"
+SIZE = 0.087
 
 
-def _cap_pos(deal_id: str, epic: str = "CN50", direction: str = "BUY"):
-    return {"position": {"dealId": deal_id, "direction": direction}, "market": {"epic": epic}}
+def _cap_pos(deal_id: str, epic: str = "CN50", direction: str = "BUY", size: float = SIZE,
+             deal_reference=None):
+    position = {"dealId": deal_id, "direction": direction, "size": size}
+    if deal_reference:
+        position["dealReference"] = deal_reference
+    return {"position": position, "market": {"epic": epic}}
 
 
 class _FakeCapital:
-    """Fake Capital client: serves the ledger, reconciliation and snapshot reads."""
+    """Fake Capital client: serves the ledger, reconciliation, snapshot and confirm reads."""
 
-    def __init__(self, positions, snapshot="live"):
+    def __init__(self, positions, snapshot="live", confirms=None):
         self.positions = list(positions)
         self.snapshot = snapshot  # "live" | "none" | "raise"
+        self.confirms = dict(confirms or {})
 
     def get_positions(self):
         return list(self.positions)
@@ -178,6 +184,9 @@ class _FakeCapital:
         if self.snapshot == "none":
             return None
         return list(self.positions)
+
+    def get_live_deal_confirmation(self, ref):
+        return self.confirms.get(ref)
 
 
 def _ledger_setup(monkeypatch, tmp_path, adopt=""):
@@ -193,67 +202,145 @@ def _ledger_setup(monkeypatch, tmp_path, adopt=""):
     return phi, tl, path
 
 
-def _confirmed_rows(path: Path, deal_id: str):
+def _confirmed_rows(path: Path, deal_id=None):
     if not path.is_file():
         return []
     rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
-    return [r for r in rows if r.get("stage") == "CAPITAL_CONFIRMED" and r.get("deal_id") == deal_id]
+    return [r for r in rows if r.get("stage") == "CAPITAL_CONFIRMED"
+            and (deal_id is None or r.get("deal_id") == deal_id)]
 
 
 def _cn50_shadow():
     return SimpleNamespace(symbol="CN50", direction="LONG")
 
 
-def test_reconcile_does_not_adopt_manual_deal_open_before_order(monkeypatch, tmp_path):
-    phi, tl, path = _ledger_setup(monkeypatch, tmp_path)
-    cap = _FakeCapital([_cap_pos(GARY)])
+def _setup_radar(phi, tl, cap):
     radar = _minimal_radar(phi)
     radar.capital_dual = cap
-    ledger = tl.TradeLedger(cap)
+    return radar, tl.TradeLedger(cap)
+
+
+def test_reconcile_does_not_adopt_manual_deal_open_before_order(monkeypatch, tmp_path):
+    phi, tl, path = _ledger_setup(monkeypatch, tmp_path)
+    # Even a confirmation that points at the pre-existing deal is refused.
+    cap = _FakeCapital([_cap_pos(GARY)], confirms={"o_REF1": [GARY]})
+    radar, ledger = _setup_radar(phi, tl, cap)
     snapshot = radar._capital_deal_id_snapshot()
     assert snapshot == frozenset({GARY})
-    got = radar._reconcile_live_position(_cn50_shadow(), "AUD-T-1", 0.087, ledger,
-                                         pre_order_deal_ids=snapshot)
-    assert got is None
+    for ref in ("o_REF1", None):
+        got = radar._reconcile_live_position(_cn50_shadow(), "AUD-T-1", SIZE, ledger,
+                                             pre_order_deal_ids=snapshot, order_ref=ref)
+        assert got is None
     assert _confirmed_rows(path, GARY) == []
     assert phi._phi_capital_deal_owned(GARY, "capital") is False
 
 
-def test_reconcile_adopts_genuinely_new_deal(monkeypatch, tmp_path):
+def test_reference_adopts_only_that_deal_even_with_another_new_same_size_deal(monkeypatch, tmp_path):
     phi, tl, path = _ledger_setup(monkeypatch, tmp_path)
-    cap = _FakeCapital([_cap_pos(GARY)])
-    radar = _minimal_radar(phi)
-    radar.capital_dual = cap
-    ledger = tl.TradeLedger(cap)
+    cap = _FakeCapital([], confirms={"o_REF2": ["AUREON-NEW-1"]})
+    radar, ledger = _setup_radar(phi, tl, cap)
     snapshot = radar._capital_deal_id_snapshot()
-    cap.positions.append(_cap_pos("AUREON-NEW-1"))  # created by Aureon's order
-    got = radar._reconcile_live_position(_cn50_shadow(), "AUD-T-2", 0.087, ledger,
-                                         pre_order_deal_ids=snapshot)
+    assert snapshot == frozenset()
+    # Gary opens the same CN50 BUY, same size, by hand after the snapshot;
+    # his deal is listed first.
+    cap.positions += [_cap_pos("GARY_NEW_CN50"), _cap_pos("AUREON-NEW-1")]
+    got = radar._reconcile_live_position(_cn50_shadow(), "AUD-T-2", SIZE, ledger,
+                                         pre_order_deal_ids=snapshot, order_ref="o_REF2")
     assert got == "AUREON-NEW-1"
-    rows = _confirmed_rows(path, "AUREON-NEW-1")
-    assert len(rows) == 1
+    rows = _confirmed_rows(path)
+    assert [r["deal_id"] for r in rows] == ["AUREON-NEW-1"]
     assert rows[0]["reconciled"] is True and rows[0]["pre_order_snapshot_excluded"] is True
     assert phi._phi_capital_deal_owned("AUREON-NEW-1", "capital") is True
-    assert phi._phi_capital_deal_owned(GARY, "capital") is False
+    assert phi._phi_capital_deal_owned("GARY_NEW_CN50", "capital") is False
+
+
+def test_reference_matches_position_deal_reference_without_confirm(monkeypatch, tmp_path):
+    phi, tl, path = _ledger_setup(monkeypatch, tmp_path)
+    cap = _FakeCapital([])
+    radar, ledger = _setup_radar(phi, tl, cap)
+    snapshot = radar._capital_deal_id_snapshot()
+    cap.positions += [_cap_pos("GARY_NEW_CN50"),
+                      _cap_pos("AUREON-NEW-3", deal_reference="o_REF3")]
+    got = radar._reconcile_live_position(_cn50_shadow(), "AUD-T-3", SIZE, ledger,
+                                         pre_order_deal_ids=snapshot, order_ref="o_REF3")
+    assert got == "AUREON-NEW-3"
+    assert phi._phi_capital_deal_owned("GARY_NEW_CN50", "capital") is False
+
+
+def test_no_reference_reconciles_nothing_even_for_single_same_size_new_deal(monkeypatch, tmp_path):
+    phi, tl, path = _ledger_setup(monkeypatch, tmp_path)
+    cap = _FakeCapital([])
+    radar, ledger = _setup_radar(phi, tl, cap)
+    snapshot = radar._capital_deal_id_snapshot()
+    cap.positions.append(_cap_pos("GARY_NEW_CN50"))  # opened by hand in the window
+    for ref in (None, "", "unknown"):
+        got = radar._reconcile_live_position(_cn50_shadow(), "AUD-T-4", SIZE, ledger,
+                                             pre_order_deal_ids=snapshot, order_ref=ref)
+        assert got is None
+    assert _confirmed_rows(path) == []
+    assert phi._phi_capital_deal_owned("GARY_NEW_CN50", "capital") is False
+
+
+def test_referenced_deal_with_wrong_epic_size_or_direction_adopts_nothing(monkeypatch, tmp_path):
+    phi, tl, path = _ledger_setup(monkeypatch, tmp_path)
+    cases = [
+        _cap_pos("AUREON-X", epic="CN50X"),
+        _cap_pos("AUREON-X", size=0.09),
+        _cap_pos("AUREON-X", direction="SELL"),
+        _cap_pos("AUREON-X", size="n/a"),
+    ]
+    for pos in cases:
+        cap = _FakeCapital([], confirms={"o_REF5": ["AUREON-X"]})
+        radar, ledger = _setup_radar(phi, tl, cap)
+        snapshot = radar._capital_deal_id_snapshot()
+        cap.positions.append(pos)
+        got = radar._reconcile_live_position(_cn50_shadow(), "AUD-T-5", SIZE, ledger,
+                                             pre_order_deal_ids=snapshot, order_ref="o_REF5")
+        assert got is None, pos
+    assert _confirmed_rows(path) == []
+
+
+def test_two_referenced_new_deals_adopt_nothing(monkeypatch, tmp_path):
+    phi, tl, path = _ledger_setup(monkeypatch, tmp_path)
+    cap = _FakeCapital([], confirms={"o_REF6": ["AUREON-A", "AUREON-B"]})
+    radar, ledger = _setup_radar(phi, tl, cap)
+    snapshot = radar._capital_deal_id_snapshot()
+    cap.positions += [_cap_pos("AUREON-A"), _cap_pos("AUREON-B")]
+    got = radar._reconcile_live_position(_cn50_shadow(), "AUD-T-6", SIZE, ledger,
+                                         pre_order_deal_ids=snapshot, order_ref="o_REF6")
+    assert got is None
+    assert _confirmed_rows(path) == []
+
+
+def test_zero_or_unknown_size_reconciles_nothing(monkeypatch, tmp_path):
+    phi, tl, path = _ledger_setup(monkeypatch, tmp_path)
+    cap = _FakeCapital([], confirms={"o_REF7": ["AUREON-NEW-7"]})
+    radar, ledger = _setup_radar(phi, tl, cap)
+    snapshot = radar._capital_deal_id_snapshot()
+    cap.positions.append(_cap_pos("AUREON-NEW-7"))
+    for size in (0.0, None, float("nan"), -SIZE):
+        got = radar._reconcile_live_position(_cn50_shadow(), "AUD-T-7", size, ledger,
+                                             pre_order_deal_ids=snapshot, order_ref="o_REF7")
+        assert got is None
+    assert _confirmed_rows(path) == []
 
 
 def test_snapshot_failure_reconciles_nothing(monkeypatch, tmp_path):
     phi, tl, path = _ledger_setup(monkeypatch, tmp_path)
     for mode in ("raise", "none"):
-        cap = _FakeCapital([_cap_pos(GARY)], snapshot=mode)
-        radar = _minimal_radar(phi)
-        radar.capital_dual = cap
+        cap = _FakeCapital([_cap_pos(GARY)], snapshot=mode, confirms={"o_REF8": ["AUREON-NEW-2"]})
+        radar, ledger = _setup_radar(phi, tl, cap)
         snapshot = radar._capital_deal_id_snapshot()
         assert snapshot is None
         cap.positions.append(_cap_pos("AUREON-NEW-2"))
-        got = radar._reconcile_live_position(_cn50_shadow(), "AUD-T-3", 0.087,
-                                             tl.TradeLedger(cap), pre_order_deal_ids=snapshot)
+        got = radar._reconcile_live_position(_cn50_shadow(), "AUD-T-8", SIZE, ledger,
+                                             pre_order_deal_ids=snapshot, order_ref="o_REF8")
         assert got is None
     # A client with no snapshot read at all is also "unknown", never "empty".
     radar = _minimal_radar(phi)
     radar.capital_dual = SimpleNamespace(get_live_positions=lambda: [])
     assert radar._capital_deal_id_snapshot() is None
-    assert path.read_text(encoding="utf-8").count("CAPITAL_CONFIRMED") == 0
+    assert _confirmed_rows(path) == []
     assert phi._phi_capital_deal_owned("AUREON-NEW-2", "capital") is False
 
 
@@ -279,6 +366,7 @@ def _order_path_radar(phi, tl, cap, place_order):
         authenticated=True,
         get_live_positions=cap.get_live_positions,
         get_live_positions_snapshot=cap.get_live_positions_snapshot,
+        get_live_deal_confirmation=cap.get_live_deal_confirmation,
     )
     radar.capital_live = SimpleNamespace(get_account_balance=lambda: 1000.0)
     radar._trade_ledger = tl.TradeLedger(cap)
@@ -288,7 +376,7 @@ def _order_path_radar(phi, tl, cap, place_order):
     radar._daily_live_cap_reached = lambda: False
     radar._get_price = lambda *_a, **_k: 100.0
     radar._matrix_approves = lambda *_a: True
-    radar._calculate_position_size = lambda **_k: 0.087
+    radar._calculate_position_size = lambda **_k: SIZE
     radar._notional_cap_exceeded = lambda *_a: False
     radar._compute_stop_level = lambda *_a: 98.5
     radar._expectancy_gate_verdict = lambda *_a: {"allowed": True}
@@ -314,6 +402,7 @@ def test_order_path_timeout_does_not_adopt_manual_deal(monkeypatch, tmp_path):
     cap = _FakeCapital([_cap_pos(GARY)])
 
     def timeout(**_kw):
+        cap.positions.append(_cap_pos("GARY_NEW_CN50"))  # opened by hand meanwhile
         raise TimeoutError("order call timed out")
 
     radar = _order_path_radar(phi, tl, cap, timeout)
@@ -321,22 +410,48 @@ def test_order_path_timeout_does_not_adopt_manual_deal(monkeypatch, tmp_path):
     radar._execute_honey_pot(shadow)
     assert radar.adopted == []
     assert shadow.status == "FAILED"
-    assert _confirmed_rows(path, GARY) == []
+    assert _confirmed_rows(path) == []
     assert phi._phi_capital_deal_owned(GARY, "capital") is False
+    assert phi._phi_capital_deal_owned("GARY_NEW_CN50", "capital") is False
 
 
-def test_order_path_timeout_adopts_deal_the_order_created(monkeypatch, tmp_path):
+def test_order_path_error_without_reference_adopts_nothing(monkeypatch, tmp_path):
     phi, tl, path = _ledger_setup(monkeypatch, tmp_path)
-    cap = _FakeCapital([_cap_pos(GARY)])
+    cap = _FakeCapital([])
 
-    def executed_then_timeout(**_kw):
-        cap.positions.append(_cap_pos("AUREON-NEW-9"))
-        return {"error": "timeout after execute"}
+    def error_no_ref(**_kw):
+        cap.positions.append(_cap_pos("GARY_NEW_CN50"))
+        return {"dealId": "unknown", "size": SIZE, "error": "timeout after send"}
 
-    radar = _order_path_radar(phi, tl, cap, executed_then_timeout)
+    radar = _order_path_radar(phi, tl, cap, error_no_ref)
+    radar._execute_honey_pot(_order_shadow())
+    assert radar.adopted == []
+    assert phi._phi_capital_deal_owned("GARY_NEW_CN50", "capital") is False
+
+
+def test_order_path_reference_adopts_only_aureons_deal(monkeypatch, tmp_path):
+    phi, tl, path = _ledger_setup(monkeypatch, tmp_path)
+    cap = _FakeCapital([_cap_pos(GARY)], confirms={"o_REF9": ["AUREON-NEW-9"]})
+
+    def acknowledged(**_kw):
+        # Capital's POST /positions only acknowledges with a dealReference
+        # (o_REF9); the opened position's dealId (AUREON-NEW-9) differs and
+        # is only known from /confirms. Gary opens a same-size CN50 BUY by
+        # hand in the same window, listed first.
+        cap.positions += [_cap_pos("GARY_NEW_CN50"),
+                          _cap_pos("AUREON-NEW-9", deal_reference="p_AUREON-NEW-9")]
+        return {"dealId": "o_REF9", "dealReference": "o_REF9", "account": "capital_live",
+                "size": SIZE, "error": None, "venue": "capital"}
+
+    radar = _order_path_radar(phi, tl, cap, acknowledged)
     radar._execute_honey_pot(_order_shadow())
     assert radar.adopted == ["AUREON-NEW-9"]
+    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    # The reference is never compared against position dealIds as if it were one.
+    assert all(r.get("deal_id") != "o_REF9" for r in rows)
+    assert [r["deal_id"] for r in _confirmed_rows(path)] == ["AUREON-NEW-9"]
     assert phi._phi_capital_deal_owned("AUREON-NEW-9", "capital") is True
+    assert phi._phi_capital_deal_owned("GARY_NEW_CN50", "capital") is False
     assert phi._phi_capital_deal_owned(GARY, "capital") is False
 
 
@@ -366,3 +481,112 @@ def test_dual_snapshot_read_is_none_on_failure_not_empty():
     assert conn(lambda *_a, **_k: _Resp(200, {"positions": []})).get_live_positions_snapshot() == []
     pos = [_cap_pos(GARY)]
     assert conn(lambda *_a, **_k: _Resp(200, {"positions": pos})).get_live_positions_snapshot() == pos
+
+
+def test_dual_deal_confirmation_uses_confirm_order():
+    _load_phi_radar()
+    import aureon_dual_capital as dual
+
+    def conn(confirm_order):
+        c = dual.DualCapitalConnector.__new__(dual.DualCapitalConnector)
+        c.live = SimpleNamespace(confirm_order=confirm_order)
+        return c
+
+    seen = []
+
+    def ok(ref):
+        seen.append(ref)
+        return {"dealReference": "o_R", "dealStatus": "ACCEPTED", "dealId": "D-1",
+                "affectedDeals": [{"dealId": "D-1", "status": "OPENED"},
+                                  {"dealId": "D-0", "status": "CLOSED"}]}
+
+    assert conn(ok).get_live_deal_confirmation("o_R") == ["D-1"]
+    assert seen == ["o_R"]
+    assert conn(ok).get_live_deal_confirmation("") is None
+    assert conn(ok).get_live_deal_confirmation("o_OTHER") is None  # reference mismatch
+    assert conn(lambda _r: {"error": "404"}).get_live_deal_confirmation("o_R") is None
+    assert conn(lambda _r: {"dealReference": "o_R", "dealStatus": "REJECTED",
+                            "affectedDeals": []}).get_live_deal_confirmation("o_R") == []
+    assert conn(lambda _r: {"dealReference": "o_R", "dealStatus": "ACCEPTED",
+                            "dealId": "D-2"}).get_live_deal_confirmation("o_R") == ["D-2"]
+
+    def boom(_r):
+        raise ConnectionError("down")
+
+    assert conn(boom).get_live_deal_confirmation("o_R") is None
+
+
+def test_capital_receipt_keeps_deal_reference_separate():
+    _load_phi_radar()
+    import aureon_dual_capital as dual
+    import multi_exchange_router as mer
+
+    class _Resp:
+        status_code = 200
+
+        def json(self):
+            return {"dealReference": "o_A"}
+
+    c = dual.DualCapitalConnector.__new__(dual.DualCapitalConnector)
+    client = SimpleNamespace(demo_mode=False, _request=lambda *_a, **_k: _Resp())
+    c._symbol_to_epic = lambda _client, sym: sym
+    c._get_symbol_category = lambda _sym: "indices"
+    c._get_dealing_rules = lambda _sym: {"minDealSize": 0.01}
+    receipt = c._place_order(client, "CN50", "BUY", SIZE)
+    assert receipt["dealReference"] == "o_A"
+    assert receipt["dealId"] == "o_A"  # acceptance id, unchanged for callers
+
+    router = mer.MultiExchangeRouter.__new__(mer.MultiExchangeRouter)
+    router._capital_connector = lambda: SimpleNamespace(
+        place_live_order=lambda **_k: {"dealId": "o_A", "dealReference": "o_A", "size": SIZE})
+    routed = router._route_capital("CN50", "buy", SIZE, 98.5, 102.0)
+    assert routed["dealReference"] == "o_A"
+
+
+def test_live_log_reference_is_not_treated_as_a_deal_id(monkeypatch, tmp_path):
+    phi, _tl, _path = _ledger_setup(monkeypatch, tmp_path)
+    live = tmp_path / "live_trades.jsonl"
+    live.write_text(json.dumps({"dealId": None, "dealReference": "o_X", "venue": "capital"}) + "\n"
+                    + json.dumps({"dealId": "D-REAL", "dealReference": "o_Y"}) + "\n",
+                    encoding="utf-8")
+    assert phi._phi_capital_deal_owned("o_X", "capital") is False
+    assert phi._phi_capital_deal_owned("o_Y", "capital") is False
+    assert phi._phi_capital_deal_owned("D-REAL", "capital") is True
+
+
+def test_order_path_confirm_pointing_at_preexisting_deal_adopts_nothing(monkeypatch, tmp_path):
+    phi, tl, path = _ledger_setup(monkeypatch, tmp_path)
+    cap = _FakeCapital([_cap_pos(GARY)], confirms={"o_BAD": [GARY]})
+
+    def acknowledged(**_kw):
+        return {"dealId": "o_BAD", "dealReference": "o_BAD", "size": SIZE,
+                "error": None, "venue": "capital"}
+
+    radar = _order_path_radar(phi, tl, cap, acknowledged)
+    radar._execute_honey_pot(_order_shadow())
+    assert radar.adopted == []
+    assert phi._phi_capital_deal_owned(GARY, "capital") is False
+
+
+def test_exception_path_uses_reference_and_real_size(monkeypatch, tmp_path):
+    phi, tl, path = _ledger_setup(monkeypatch, tmp_path)
+    cap = _FakeCapital([], confirms={"o_REF10": ["AUREON-NEW-10"]})
+
+    def acknowledged(**_kw):
+        cap.positions += [_cap_pos("GARY_NEW_CN50"), _cap_pos("AUREON-NEW-10")]
+        return {"dealId": "o_REF10", "dealReference": "o_REF10", "size": SIZE,
+                "error": None, "venue": "capital"}
+
+    radar = _order_path_radar(phi, tl, cap, acknowledged)
+    calls = []
+
+    def adopt_fails_once(shadow, deal_id, size, venue="capital"):
+        calls.append((deal_id, size))
+        if len(calls) == 1:
+            raise RuntimeError("adopt failed after the order")
+
+    radar._adopt_honey_pot = adopt_fails_once
+    radar._execute_honey_pot(_order_shadow())
+    # The exception path re-reconciles with the order's reference and size.
+    assert calls == [("AUREON-NEW-10", SIZE), ("AUREON-NEW-10", SIZE)]
+    assert phi._phi_capital_deal_owned("GARY_NEW_CN50", "capital") is False
