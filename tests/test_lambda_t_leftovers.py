@@ -13,6 +13,7 @@ from types import SimpleNamespace
 import pytest
 
 from aureon.core.cognitive_dashboard import source_lambda_text
+from aureon.core.lambda_reading import lambda_reading
 from aureon.gates.panel import FieldVault
 from aureon.observer.benchmark import engine_lambda_trace
 from aureon.observer.historical_backtest import snapshot_lambda_cell, snapshot_lambda_trace
@@ -128,6 +129,15 @@ def test_engine_lambda_missing_attribute_is_not_zero():
     assert read_engine_lambda(SimpleNamespace(lambda_t=0.0)) == 0.0
     assert read_engine_lambda(SimpleNamespace(lambda_t=0.0)) is not None
     assert read_engine_lambda(None) is None
+
+
+def test_lambda_reading_rejects_bool_and_non_finite():
+    assert lambda_reading(True) is None
+    assert lambda_reading(float("nan")) is None
+    assert lambda_reading(float("inf")) is None
+    assert lambda_reading(float("-inf")) is None
+    assert lambda_reading(0.0) == 0.0
+    assert lambda_reading(0.0) is not None
 
 
 def test_dashboard_lambda_text_distinguishes_gap_from_zero():

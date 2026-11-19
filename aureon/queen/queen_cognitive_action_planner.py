@@ -17,12 +17,43 @@ import math
 import threading
 import time
 from collections import deque
-from typing import Any, Deque, Dict, List, Optional
+from typing import Any, Deque, Dict, List
+
+from aureon.core.lambda_reading import format_lambda, lambda_reading
 
 logger = logging.getLogger("aureon.queen.cognitive_action_planner")
 
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
 _PLAN_INTERVAL = PHI * PHI * 60.0   # ≈ 157s between autonomous goal submissions
+
+NO_READING = "no reading"
+
+
+def published_lambda(payload: Any) -> float | None:
+    """Finite Λ(t) on this input, or None.
+
+    The planner keeps no freshness timestamp. An input that does not
+    carry ``lambda_t`` is stale: the previous reading must not be reused.
+    A present value is accepted only through ``lambda_reading``, the same
+    finite check the HNC live daemon uses before it publishes Λ(t).
+    A real ``0.0`` stays ``0.0``.
+    """
+    if not isinstance(payload, dict) or "lambda_t" not in payload:
+        return None
+    return lambda_reading(payload["lambda_t"])
+
+
+
+def lambda_phase_for(lam: float | None) -> str:
+    """Phase label from a measured Λ(t). A gap is not a threshold decision."""
+    if lam is None:
+        return NO_READING
+    if lam < 30:
+        return "TRANSITION"
+    if lam < 65:
+        return "COHERENCE"
+    return "UNITY"
+
 
 
 class QueenCognitiveActionPlanner:
@@ -57,13 +88,13 @@ class QueenCognitiveActionPlanner:
         self._last_urgency: float = 0.0
         self._last_coherence: float = 0.0
         self._last_consciousness: str = "DORMANT"
-        self._last_lambda_phase: str = "TRANSITION"
-        self._last_lambda_t: float = 0.0
+        self._last_lambda_phase: str = NO_READING
+        self._last_lambda_t: float | None = None
 
         self._last_plan_ts: float = 0.0
         self._plan_count: int = 0
         self._running = False
-        self._thread: Optional[threading.Thread] = None
+        self._thread: threading.Thread | None = None
         self._lock = threading.Lock()
 
     # ─────────────────────────────────────────────────────────────────────
@@ -131,15 +162,14 @@ class QueenCognitiveActionPlanner:
 
     def _on_source_law(self, topic: str, payload: Dict[str, Any], **_) -> None:
         with self._lock:
-            self._last_coherence = float(payload.get("coherence_gamma", self._last_coherence))
-            self._last_lambda_t = float(payload.get("lambda_t", self._last_lambda_t))
-            lam = self._last_lambda_t
-            if lam < 30:
-                self._last_lambda_phase = "TRANSITION"
-            elif lam < 65:
-                self._last_lambda_phase = "COHERENCE"
-            else:
-                self._last_lambda_phase = "UNITY"
+            if isinstance(payload, dict) and "coherence_gamma" in payload:
+                measured_gamma = lambda_reading(payload.get("coherence_gamma"))
+                if measured_gamma is not None:
+                    self._last_coherence = measured_gamma
+            # No lambda_t on this input: the stored Λ(t) is stale.
+            measured = published_lambda(payload)
+            self._last_lambda_t = measured
+            self._last_lambda_phase = lambda_phase_for(measured)
 
     # ─────────────────────────────────────────────────────────────────────
     # Planning loop
@@ -183,8 +213,8 @@ class QueenCognitiveActionPlanner:
                     "urgency": str(urgency),
                     "coherence": str(coherence),
                     "consciousness": str(consciousness),
-                    "lambda_phase": str(lambda_phase),
-                    "lambda_t": str(lambda_t),
+                    "lambda_phase": lambda_phase if lambda_t is not None else NO_READING,
+                    "lambda_t": format_lambda(lambda_t),
                 },
             )
         except Exception as exc:
@@ -220,12 +250,15 @@ class QueenCognitiveActionPlanner:
         coherence: float,
         consciousness: str,
         lambda_phase: str,
-        lambda_t: float,
+        lambda_t: float | None,
     ) -> str:
         recent_dialogue = "\n".join(f"  - {d}" for d in dialogues[-6:]) or "  (none yet)"
         recent_insights = "\n".join(
             f"  - [{i['type']}] {str(i['data'])[:80]}" for i in insights[-4:]
         ) or "  (none yet)"
+
+        lambda_text = format_lambda(lambda_t, ".2f")
+        phase_text = NO_READING if lambda_t is None else lambda_phase
 
         system_prompt = (
             "You are the goal-synthesis mind of Aureon, an autonomous AI trading organism. "
@@ -242,7 +275,7 @@ class QueenCognitiveActionPlanner:
             f"  Urgency         : {urgency:.2f}\n"
             f"  Coherence γ     : {coherence:.3f}\n"
             f"  Consciousness   : {consciousness}\n"
-            f"  Λ(t) field      : {lambda_t:.2f} ({lambda_phase})\n\n"
+            f"  Λ(t) field      : {lambda_text} ({phase_text})\n\n"
             f"RECENT INTERNAL DIALOGUE\n{recent_dialogue}\n\n"
             f"RECENT INSIGHTS\n{recent_insights}\n\n"
             f"Given this state, what ONE concrete goal should the organism pursue now?\n"
