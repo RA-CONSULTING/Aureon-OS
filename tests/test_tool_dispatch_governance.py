@@ -662,6 +662,7 @@ def test_registry_level_governance_cannot_be_downgraded_by_call() -> None:
 def test_operator_toolbelt_has_no_unknown_effects_and_stable_operations() -> None:
     registry = build_operator_tools(allow_writes=True, allow_shell=True)
     expected_effects = {
+        "browser": ToolEffect.PRIVILEGED,
         "read_state": ToolEffect.READ_ONLY,
         "read_positions": ToolEffect.READ_ONLY,
         "read_prices": ToolEffect.READ_ONLY,

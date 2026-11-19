@@ -142,6 +142,7 @@ def test_tool_registry_has_all_capability_groups():
     assert "code_validate" in names                                       # code
     assert {"read_state", "read_positions", "read_prices"} <= names      # trading state
     assert {"write_repo_file", "patch_repo_file"} <= names               # gated writes
+    assert "browser" in names                                            # admin-plane browser
 
 
 def test_guarded_dispatch_blocks_boundary_and_escapes(monkeypatch):

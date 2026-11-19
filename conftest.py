@@ -505,7 +505,7 @@ _OS_ENVIRON_BEFORE_COLLECTION.update(os.environ)
 def pytest_collection_modifyitems(config: pytest.Config, items: list) -> None:
     """Deselect ``@pytest.mark.windows`` contract tests off Windows.
 
-    pyproject's addopts already passes ``-m "not live and not windows"``, but a
+    pyproject's addopts already passes ``-m "not live and not windows and not browser"``, but a
     gate run with ``-o addopts=`` (the private-/dev/shm gate command) drops that
     filter, and every Windows-only contract then fails on Linux. The 22 tests in
     test_design_candidate_test_policy_compiler.py and

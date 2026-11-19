@@ -4,8 +4,8 @@ Aureon Operator — tool set + guarded dispatch.
 
 The cognition uses tools the way a flagship model does. This module assembles a
 :class:`ToolRegistry` from the repo's existing built-ins (state/positions/prices,
-publish_thought, execute_shell, web_search/web_fetch, skill_base_status) and adds
-operator tools — repo-wide search/read, code validation, and gated file
+publish_thought, execute_shell, web_search/web_fetch, skill_base_status, browser)
+and adds operator tools — repo-wide search/read, code validation, and gated file
 write/patch.
 
 Every dispatch goes through :class:`GuardedToolRegistry`, which enforces the same
@@ -41,6 +41,7 @@ logger = logging.getLogger("aureon.operator.tools")
 
 # Tools that can change the world → always guarded before execution.
 CONSEQUENTIAL = {
+    "browser",
     "execute_shell",
     "patch_repo_file",
     "publish_thought",
@@ -566,6 +567,8 @@ def build_operator_tools(
     if not allow_shell and "execute_shell" in reg:
         reg._tools.pop("execute_shell", None)
 
+    # `browser` is a built-in, so it is on this admin belt. It is not in
+    # TENANT_ALLOWED_TOOLS. The filter below is what keeps it off the tenant plane.
     # Final positive filter — everything not explicitly allowed is removed, whatever registered it.
     if allowlist is not None:
         keep = set(allowlist)

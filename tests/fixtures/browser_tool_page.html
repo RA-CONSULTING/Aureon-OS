@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Aureon browser tool fixture</title>
+</head>
+<body style="background:#f4efe4;color:#1c140c;font-family:Georgia,serif;margin:2rem">
+  <label for="phrase">Phrase</label>
+  <input id="phrase" type="text" value="">
+  <button id="commit" type="button">Commit</button>
+  <div id="result"></div>
+  <script>
+    document.getElementById("commit").addEventListener("click", function () {
+      var value = document.getElementById("phrase").value;
+      document.getElementById("result").textContent = "committed:" + value;
+    });
+  </script>
+</body>
+</html>
