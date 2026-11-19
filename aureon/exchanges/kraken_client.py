@@ -1844,6 +1844,7 @@ class KrakenClient:
                 "status": "no_data",
                 "data_status": "no_data",
                 "truth_status": "no_data",
+                "consistency_failure": True,
                 "reason": "inconsistent_provider_fill_cost_and_average_price",
             })
             return receipt
@@ -1862,6 +1863,7 @@ class KrakenClient:
                 "status": "no_data",
                 "data_status": "no_data",
                 "truth_status": "no_data",
+                "consistency_failure": True,
                 "reason": "provider_filled_quantity_exceeds_order_quantity",
             })
             return receipt

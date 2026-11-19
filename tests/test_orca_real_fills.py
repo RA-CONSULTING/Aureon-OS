@@ -564,6 +564,26 @@ def test_inconsistent_kraken_status_records_nothing(isolated, order, reason, vol
     assert fills.aureon_net_fill_qty("kraken", "ETHUSD") == Decimal(0)
 
 
+def test_consistency_failure_flag_refuses_a_reason_without_those_words(isolated):
+    """The client's flag refuses the fill. The reason text is not the signal.
+
+    ``quantity_cost_price_do_not_reconcile`` contains neither "inconsistent"
+    nor "exceeds", so a keyword-only check records vol_exec 5.
+    """
+    body = {
+        "status": "no_data",
+        "provider_status": "closed",
+        "vol_exec": "5",
+        "orderId": KRAKEN_TXID,
+        "reason": "quantity_cost_price_do_not_reconcile",
+        "consistency_failure": True,
+    }
+    assert fills._closed_query_fill(body) is None
+    assert fills.record_kraken_acknowledged_fill(object(), "ETHUSD", "buy", body) is None
+    assert not isolated.exists()
+    assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(0)
+
+
 def test_any_other_consistency_failure_reason_records_nothing(isolated):
     body = {
         "status": "no_data",

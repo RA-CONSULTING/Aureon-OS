@@ -72,9 +72,8 @@ _KRAKEN_NO_QUERY = frozenset(
         "failed",
     }
 )
-# The client can copy vol_exec onto a closed order and still flag the figures
-# as contradictory. Those receipts are not fills. Stale close time, a missing
-# fee, and missing trade ids are incomplete, not contradictory, and stay eligible.
+# Extra guard for receipts that name a contradiction but omit the flag.
+# The flag is the signal. These words are not.
 _KRAKEN_CONSISTENCY_FAILURES = frozenset(
     {
         "provider_filled_quantity_exceeds_order_quantity",
@@ -415,12 +414,16 @@ def _kraken_reason(payload: dict[str, Any]) -> str:
 
 
 def _kraken_consistency_failure(payload: dict[str, Any]) -> bool:
-    """True when the client says the provider figures contradict each other.
+    """True when the client reports that the provider figures contradict.
 
-    Known reasons are refused, and so is any other reason whose text says the
-    figures are inconsistent or that the fill exceeds the order. A reason this
-    function does not recognize is not treated as a contradiction.
+    The signal is ``consistency_failure is True``. The reason text does not
+    decide it: a new wording with that flag is still not a fill. The known
+    reason names, and the words "inconsistent" and "exceeds", are only an
+    extra guard for a receipt that predates the flag. Stale close time, a
+    missing fee, and missing trade ids do not set the flag and stay eligible.
     """
+    if payload.get("consistency_failure") is True:
+        return True
     reason = _kraken_reason(payload)
     if not reason:
         return False
@@ -448,8 +451,9 @@ def _closed_query_fill(
 
     ``vol_exec`` goes through ``_positive_decimal``. ``1e5000``, NaN, Infinity,
     zero, and negatives are not fills. ``SUBMITTED`` and ``NEW`` are not closed.
-    A non-empty ``error`` and a consistency-failure reason are not fills, even
-    when ``provider_status`` is still closed and ``vol_exec`` is present.
+    A non-empty ``error`` is not a fill. Neither is a receipt the client marks
+    with ``consistency_failure``, whatever the reason text says, even when
+    ``provider_status`` is still closed and ``vol_exec`` is present.
     """
     if not isinstance(payload, dict) or payload.get("error"):
         return None
