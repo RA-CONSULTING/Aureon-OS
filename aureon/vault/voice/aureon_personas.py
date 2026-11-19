@@ -36,7 +36,7 @@ from typing import Any, Dict, List, Optional
 
 from aureon.vault.voice.life_context import LifeEvent
 from aureon.vault.voice.persona_action import PersonaAction
-from aureon.vault.voice.vault_voice import VaultVoice
+from aureon.vault.voice.vault_voice import VaultVoice, _read_lambda_t
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -171,11 +171,16 @@ class ResonantPersona(VaultVoice):
             return 0.0
 
     @staticmethod
-    def _abs_lambda(state: Dict[str, Any]) -> float:
-        try:
-            return abs(float(state.get("last_lambda_t", 0.0) or 0.0))
-        except (TypeError, ValueError):
-            return 0.0
+    def _lambda_t(state: Dict[str, Any]) -> Optional[float]:
+        """Signed Lambda(t), or None when the state has no reading."""
+        return _read_lambda_t(state.get("last_lambda_t", None))
+
+    @staticmethod
+    def _abs_lambda(state: Dict[str, Any]) -> Optional[float]:
+        lam = ResonantPersona._lambda_t(state)
+        if lam is None:
+            return None
+        return abs(lam)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -327,44 +332,54 @@ class QuantumPhysicistVoice(ResonantPersona):
         lam = self._abs_lambda(state)
         psi = float(state.get("consciousness_psi", 0.0) or 0.0)
         gamma_band = self._cortex_band(state, "gamma")
-        return 0.4 + 1.5 * lam + 1.8 * psi + 0.6 * gamma_band
+        score = 0.4 + 1.8 * psi + 0.6 * gamma_band
+        if lam is not None:
+            score += 1.5 * lam
+        return score
 
     def _compose_prompt_lines(self, state: Dict[str, Any]) -> List[str]:
-        lam = float(state.get("last_lambda_t", 0.0) or 0.0)
+        lam = self._lambda_t(state)
         psi = float(state.get("consciousness_psi", 0.0) or 0.0)
         gamma_coh = float(state.get("coherence_gamma", 0.0) or 0.0)
+        lam_text = "no reading" if lam is None else f"{lam:+.3f}"
         lines = [
             "I am the Quantum Physicist. I read the lab notebook of Aureon.",
-            f"Λ(t) = {lam:+.3f}; ψ = {psi:.3f}; Γ = {gamma_coh:.3f}.",
+            f"Λ(t) = {lam_text}; ψ = {psi:.3f}; Γ = {gamma_coh:.3f}.",
             "State in one sentence what this configuration means physically.",
         ]
         return lines
 
     def propose_action(self, state: Dict[str, Any]) -> Optional[PersonaAction]:
-        lam_abs = self._abs_lambda(state)
+        lam = self._lambda_t(state)
+        lam_abs = None if lam is None else abs(lam)
         psi = float(state.get("consciousness_psi", 0.0) or 0.0)
-        if lam_abs <= 1.0 and psi <= 0.85:
+        if (lam_abs is None or lam_abs <= 1.0) and psi <= 0.85:
             return None
+        if lam is None:
+            urgency = min(1.0, psi)
+            reason = "Λ(t) no reading — ask SourceLaw to cogitate"
+        else:
+            urgency = min(1.0, max(abs(lam) / 3.0, psi))
+            reason = "Λ drift or high ψ — ask SourceLaw to cogitate"
         return PersonaAction(
             kind="bus.publish",
             topic="auris.throne.alert",
             payload={
-                "lambda_t": float(state.get("last_lambda_t", 0.0) or 0.0),
+                "lambda_t": lam,
                 "consciousness_psi": psi,
                 "coherence_gamma": float(state.get("coherence_gamma", 0.0) or 0.0),
             },
-            reason="Λ drift or high ψ — ask SourceLaw to cogitate",
-            urgency=min(1.0, max(lam_abs / 3.0, psi)),
+            reason=reason,
+            urgency=urgency,
         )
 
     def propose_goal(self, state: Dict[str, Any]) -> Optional[str]:
         # Large Λ excursion AND high ψ — a finding worth writing up.
-        lam_abs = self._abs_lambda(state)
+        lam = self._lambda_t(state)
         psi = float(state.get("consciousness_psi", 0.0) or 0.0)
-        if lam_abs < 1.5 or psi < 0.9:
+        if lam is None or abs(lam) < 1.5 or psi < 0.9:
             return None
-        lam_raw = float(state.get("last_lambda_t", 0.0) or 0.0)
-        return (f"draft a research note on the current Λ(t)={lam_raw:+.3f} / "
+        return (f"draft a research note on the current Λ(t)={lam:+.3f} / "
                 f"ψ={psi:.3f} configuration, cite the Master Formula section "
                 f"of docs/HNC_UNIFIED_WHITE_PAPER.md, save it to docs/research/")
 
