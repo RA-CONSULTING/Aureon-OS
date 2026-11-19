@@ -16,6 +16,7 @@ import os
 import sys
 import tempfile
 import threading
+import uuid
 from pathlib import Path
 
 import pytest
@@ -118,6 +119,13 @@ for dirpath, dirnames, _filenames in os.walk(AUREON):
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
+# A private segment for the whole pytest process, set before the chirp import
+# so collection cannot attach the live /dev/shm/aureon_chirp_bus. Each test
+# narrows this to its own aureon_test_* name. The live name is never a legal
+# value of this variable (default_chirp_bus_name refuses it).
+_SESSION_CHIRP_NAME = f"aureon_test_pytest_{os.getpid()}"
+os.environ["AUREON_CHIRP_BUS_NAME"] = _SESSION_CHIRP_NAME
+
 # Bind the two singleton-bearing legacy names to their PACKAGE modules eagerly.
 # The path entries above make bare names importable, but a bare import creates
 # a SECOND module instance from the same file — two bus/mycelium modules, two
@@ -219,6 +227,9 @@ _JOURNAL_ENV_KEYS = {
     "AUREON_HNC_TRACE_PATH",
     "AUREON_AUTONOMY_AUDIT_PATH",
     "AUREON_OPERATOR_REPO_INDEX_PATH",
+    # Per-test chirp segment. Scrubbing it would make get_chirp_bus() open
+    # the live aureon_chirp_bus name.
+    "AUREON_CHIRP_BUS_NAME",
 }
 # Non-secret opt-ins for tests that are skipped by default.  They must survive
 # the AUREON_* scrub below or the opt-in could never be switched on.
@@ -299,6 +310,53 @@ def _restore_os_environ(tmp_path_factory, request):
     _retarget_checkout_journals(_PYTEST_JOURNAL)
 
 
+def _release_chirp_singleton() -> None:
+    """Close this process's chirp mapping and drop the singleton.
+
+    Does not unlink, and does not open a segment. A still-referenced bus is
+    closed so the next test cannot read the previous ring.
+    """
+
+    for mod_name in ("aureon.core.aureon_chirp_bus", "aureon_chirp_bus"):
+        mod = sys.modules.get(mod_name)
+        if mod is None:
+            continue
+        bus = getattr(mod, "_chirp_bus", None)
+        ring = getattr(bus, "ring", None)
+        close = getattr(ring, "close", None)
+        if close is not None:
+            try:
+                close()
+            except Exception:
+                pass
+        if hasattr(mod, "_chirp_bus"):
+            mod._chirp_bus = None
+
+
+@pytest.fixture(autouse=True)
+def _isolate_chirp_bus_name():
+    """Give each test its own chirp segment name.
+
+    ``get_chirp_bus()`` and ``ChirpBus()`` read ``AUREON_CHIRP_BUS_NAME`` at
+    construction. The name is always ``aureon_test_*``, so the live
+    ``aureon_chirp_bus`` segment is never created or attached. Child
+    processes inherit the variable and join the same private segment.
+    """
+
+    import aureon.core.aureon_chirp_bus as chirp
+
+    _release_chirp_singleton()
+    name = f"aureon_test_{uuid.uuid4().hex}"
+    if not name.startswith("aureon_test_") or name == "aureon_chirp_bus":
+        raise RuntimeError("refusing a chirp test segment that could be the live bus")
+    os.environ["AUREON_CHIRP_BUS_NAME"] = name
+    yield
+    _release_chirp_singleton()
+    if name.startswith("aureon_test_"):
+        chirp.unlink_chirp_bus(name)
+    os.environ["AUREON_CHIRP_BUS_NAME"] = _SESSION_CHIRP_NAME
+
+
 @pytest.fixture(autouse=True)
 def _socket_blocked_asyncio_run(request, monkeypatch):
     """Run async tests on the pre-created loop while sockets stay blocked."""
@@ -360,6 +418,7 @@ def pytest_collection_finish(session):
         mod = sys.modules.get(mod_name)
         if mod is not None and getattr(mod, attr, None) is not None:
             setattr(mod, attr, None)
+    _release_chirp_singleton()
     # Threads can't be cleared the way singleton slots can — a background
     # publisher surviving collection poisons every later test's isolated trace
     # dir (bus_trace resolves its dir per call). Name any survivor loudly so a
