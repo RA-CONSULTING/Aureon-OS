@@ -70,6 +70,18 @@ def _truthy(name: str) -> bool:
     return str(os.environ.get(name, "") or "").strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _local_hand() -> str:
+    """Match LocalActionBridge: unset executes; 0 or the human stop file is dry-run."""
+
+    from aureon.operator.computer_use_stop import computer_use_stopped
+
+    if computer_use_stopped():
+        return "dry_run"
+    if "AUREON_LOCAL_ACTIONS_ARMED" not in os.environ:
+        return "armed"
+    return "armed" if _truthy("AUREON_LOCAL_ACTIONS_ARMED") else "dry_run"
+
+
 def _clamp01(x: float) -> float:
     try:
         return max(0.0, min(1.0, float(x)))
@@ -234,7 +246,7 @@ class Pursuit:
         eff_cadence = self._effective_cadence(base_cadence, trust)
 
         autonomy = "autonomous" if _truthy("AUREON_AUTONOMY") else "propose"
-        hand = "armed" if _truthy("AUREON_LOCAL_ACTIONS_ARMED") else "dry_run"
+        hand = _local_hand()
         st = PursuitState(
             available=True, pillars={k: round(v, 4) for k, v in pillars.items()},
             creator_happiness=round(creator, 4), aureon_happiness=round(aureon, 4) if aureon is not None else None,

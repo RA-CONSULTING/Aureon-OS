@@ -4,11 +4,9 @@ Runs a supervision loop that loads the organ registry, checks liveness for
 every supervised organ/loop, and restarts dead ones via the registry's own
 start/stop/restart functions. Critical safety gates:
 
-  * queen_mind is NEVER restarted unless an explicit owner-approval file
-    `aureon_fusion/state/queen_mind_restart_approved.json` exists with
-    {approved:true, ts}. If queen_mind is dead without approval, the
-    supervisor emits a loud chirp/event and records status
-    'dead-awaiting-owner-restart'.
+  * queen_mind is a non-trading organ. A dead queen_mind is restarted like
+    the other non-trading organs. The supervisor does not create
+    `queen_mind_restart_approved.json` and does not wait on it.
   * requires_release organs (e.g. live-trading radar suite) are skipped when
     the capital release pin is absent.
   * dormant organs are skipped.
@@ -35,11 +33,10 @@ import os
 import sys
 import time
 from datetime import datetime, timezone
-from pathlib import Path
 
 from . import events
 from . import organ_registry
-from .paths import FUSION_STATE, WORKSPACE
+from .paths import FUSION_STATE
 
 SUPERVISOR_STATE_FILE = FUSION_STATE / "supervisor_state.json"
 QUEEN_MIND_RESTART_APPROVAL = FUSION_STATE / "queen_mind_restart_approved.json"
@@ -57,17 +54,6 @@ def _utcnow() -> datetime:
 
 def _iso(dt: datetime) -> str:
     return dt.isoformat()
-
-
-def _queen_restart_approved() -> bool:
-    """True only when the owner-approval file exists and declares approved."""
-    if not QUEEN_MIND_RESTART_APPROVAL.exists():
-        return False
-    try:
-        data = json.loads(QUEEN_MIND_RESTART_APPROVAL.read_text(encoding="utf-8"))
-        return bool(data.get("approved")) and bool(data.get("ts"))
-    except Exception:
-        return False
 
 
 def _supervise_cycle(dry_run: bool = False) -> dict:
@@ -132,41 +118,9 @@ def _supervise_cycle(dry_run: bool = False) -> dict:
                 })
             continue
 
-        # Already alive — nothing to do.
+        # Already alive — nothing to do. queen_mind uses this same path.
         if info["state"] == "running":
             continue
-
-        # queen_mind restart requires explicit owner approval.
-        if name == "queen_mind":
-            if not _queen_restart_approved():
-                entry["status"] = "dead-awaiting-owner-restart"
-                reason = (
-                    f"queen_mind is dead but {QUEEN_MIND_RESTART_APPROVAL.name} "
-                    "missing or not approved — restart refused; waiting for owner"
-                )
-                decisions.append({
-                    "organ": name,
-                    "action": "await_owner_restart",
-                    "reason": reason,
-                })
-                events.chirp(
-                    "unity_supervisor",
-                    "queen_mind_dead_awaiting_owner_restart",
-                    urgency=9,
-                    payload={
-                        "organ": name,
-                        "status": "dead-awaiting-owner-restart",
-                        "approval_file": str(QUEEN_MIND_RESTART_APPROVAL),
-                        "ts": _iso(ts),
-                    },
-                )
-                events.publish_event(
-                    "unity_supervisor",
-                    "supervisor.queen_awaiting_owner_restart",
-                    {"organ": name, "approval_file": str(QUEEN_MIND_RESTART_APPROVAL)},
-                    priority=9,
-                )
-                continue
 
         # Recover a missing process (unless dry-run). The status snapshot can
         # age while another operator starts the organ. Idempotent start rechecks

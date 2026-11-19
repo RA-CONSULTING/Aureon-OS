@@ -80,7 +80,7 @@ def test_next_step_is_safe_scoped():
 def test_default_posture_proposes_never_injects(tmp_path):
     _field()
     s = Pursuit().assess()
-    assert s.autonomy == "propose" and s.hand == "dry_run" and s.soul_armed is False
+    assert s.autonomy == "propose" and s.hand == "armed" and s.soul_armed is False
     assert not (tmp_path / "inbox.jsonl").exists()  # assess never touches the soul inbox
 
 

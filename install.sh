@@ -49,6 +49,10 @@ export AUREON_DISABLE_EXCHANGE_MUTATIONS=1
 . .venv/bin/activate
 python -m pip install -U pip
 python -m pip install -r requirements-plug.lock
+# Linux desktop backend (governed gateway / pyautogui). Not read from .env.
+if [[ "$(uname -s)" == "Linux" ]]; then
+  python -m pip install -r requirements-desktop.lock
+fi
 
 if [[ ! -x frontend/node_modules/.bin/vite ]]; then
   npm ci --ignore-scripts --prefix frontend

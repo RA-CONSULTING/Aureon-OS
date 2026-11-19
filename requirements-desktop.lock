@@ -1,0 +1,13 @@
+# Pinned Linux desktop backend. ./install.sh installs this file when uname is Linux.
+# python-xlib is the X11 window identity import (from Xlib import display).
+# PyAutoGUI is the input backend. No hashes: every distribution is == pinned.
+MouseInfo==0.1.3
+PyAutoGUI==0.9.54
+PyGetWindow==0.0.9
+PyMsgBox==2.0.1
+PyRect==0.2.0
+PyScreeze==1.0.1
+pyperclip==1.11.0
+python-xlib==0.33
+python3-xlib==0.15
+pytweening==1.2.0

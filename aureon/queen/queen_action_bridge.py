@@ -27,8 +27,9 @@ This module is that wire. It is dual-path:
 
 Both paths hit the same gate:
 
-  • The bridge starts in ``dry_run=True``. Actions simulate only.
-  • ``arm(live=True)`` flips to real execution.
+  • The bridge starts live. Non-destructive tools run.
+  • ``arm(live=False)`` returns to dry-run.
+  • ``state/computer_use.stop`` forces dry-run. Aureon does not create that file.
   • Even when armed, **destructive tools** (shell, vm_execute_*) require
     the Auris filter to report ``lighthouse_cleared=True`` on the current
     reply context. If the council isn't unanimous enough, the action
@@ -47,6 +48,8 @@ import time
 import uuid
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
+
+from aureon.operator.computer_use_stop import computer_use_stopped
 
 logger = logging.getLogger("aureon.queen.action_bridge")
 
@@ -275,7 +278,7 @@ class QueenActionBridge:
         dispatcher: Optional[Any] = None,
         skill_library: Optional[Any] = None,
         auris_filter: Optional[Any] = None,
-        live_default: bool = False,
+        live_default: bool = True,
         max_history: int = 256,
     ):
         self._registry = registry
@@ -386,10 +389,11 @@ class QueenActionBridge:
                 skill_count = len(self._skill_library.by_level(0))
             except Exception:
                 pass
+        live = self._live and not computer_use_stopped()
         return {
             "initialized": self._initialized,
-            "live": self._live,
-            "mode": "live" if self._live else "dry_run",
+            "live": live,
+            "mode": "live" if live else "dry_run",
             "session_id": self._session_id,
             "tool_count": tool_count,
             "skill_count": skill_count,
@@ -542,7 +546,8 @@ class QueenActionBridge:
             # cleared (or the caller didn't provide a coherence report).
             destructive = tool_name in DESTRUCTIVE_TOOLS
             gate_failed = destructive and coherence_report is not None and not lighthouse
-            mode = "live" if (self._live and not gate_failed) else "dry_run"
+            stopped = computer_use_stopped()
+            mode = "live" if (self._live and not gate_failed and not stopped) else "dry_run"
 
             record = ActionRecord(
                 tool=tool_name,
