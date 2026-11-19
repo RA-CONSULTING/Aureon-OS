@@ -47,6 +47,22 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from aureon.core.lambda_reading import format_lambda, lambda_reading
+
+
+def engine_lambda_trace(snaps: List[Any]) -> List[float]:
+    """Measured Λ(t) points. A missing sample is dropped, not written as 0.0."""
+    values: List[float] = []
+    for snap in snaps:
+        engine = snap.get("engine_state") if isinstance(snap, dict) else None
+        if not isinstance(engine, dict) or "lambda_t" not in engine:
+            continue
+        number = lambda_reading(engine["lambda_t"])
+        if number is None:
+            continue
+        values.append(number)
+    return values
+
 logger = logging.getLogger("aureon.observer.benchmark")
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -377,7 +393,7 @@ def _write_markdown(report_path: Path, agg: Dict[str, Any], capture: _BenchCaptu
     add("## Field state at end of run")
     add("")
     if last_engine:
-        add(f"- **Λ_full:** {last_engine.get('lambda_t', 0):.6f}")
+        add(f"- **Λ_full:** {format_lambda(last_engine.get('lambda_t'), '.6f')}")
         add(f"- **ψ (consciousness_psi):** {last_engine.get('consciousness_psi', 0):.4f}")
         add(f"- **Level:** {last_engine.get('consciousness_level', 'n/a')}")
         add(f"- **Γ (coherence_gamma):** {last_engine.get('coherence_gamma', 0):.4f}")
@@ -419,11 +435,14 @@ def _write_markdown(report_path: Path, agg: Dict[str, Any], capture: _BenchCaptu
         add(f"```\n{_sparkline(cohs, width=min(len(cohs), 60))}\n```")
         add("")
     # Λ_full trace from engine_state
-    lambdas = [float(s["engine_state"].get("lambda_t", 0.0) or 0.0) for s in snaps]
+    lambdas = engine_lambda_trace(snaps)
     if lambdas:
         add(f"**Λ_full** ({min(lambdas):.3f} → {max(lambdas):.3f}):")
         add("")
         add(f"```\n{_sparkline(lambdas, width=min(len(lambdas), 60))}\n```")
+        add("")
+    else:
+        add("**Λ_full:** no reading")
         add("")
     # ψ trace
     psis = [float(s["engine_state"].get("consciousness_psi", 0.0) or 0.0)

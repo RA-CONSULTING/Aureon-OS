@@ -28,6 +28,15 @@ _COGNITIVE_ENTRY_COHERENCE = 0.938
 _COGNITIVE_EXIT_COHERENCE = 0.934
 
 
+def _ics_lambda(source_state: Any) -> float | None:
+    """Lambda(t) from a tick state. A missing key is not 0.0."""
+    from aureon.core.lambda_reading import lambda_reading
+
+    if not isinstance(source_state, dict) or "lambda_t" not in source_state:
+        return None
+    return lambda_reading(source_state["lambda_t"])
+
+
 def _background_side_effects_suppressed() -> bool:
     """Return True when callers require a deterministic, non-autonomous boot."""
 
@@ -1194,12 +1203,14 @@ class IntegratedCognitiveSystem:
         # TEMPORAL GROUND: maintain multiverse hash chain continuously
         if self.temporal_ground is not None:
             try:
-                self.temporal_ground.tick(
-                    lambda_t=source_state.get("lambda_t", 0.0),
-                    coherence_gamma=source_state.get("coherence_gamma", 0.0),
-                    consciousness_psi=source_state.get("consciousness_psi", 0.0),
-                    auris_consensus=hnc_state.get("auris_consensus", "NEUTRAL"),
-                )
+                lam = _ics_lambda(source_state)
+                if lam is not None:
+                    self.temporal_ground.tick(
+                        lambda_t=lam,
+                        coherence_gamma=source_state.get("coherence_gamma", 0.0),
+                        consciousness_psi=source_state.get("consciousness_psi", 0.0),
+                        auris_consensus=hnc_state.get("auris_consensus", "NEUTRAL"),
+                    )
             except Exception:
                 pass
 
@@ -1207,7 +1218,7 @@ class IntegratedCognitiveSystem:
         if self.vault is not None:
             try:
                 self.vault.ingest("ics.tick", {
-                    "lambda_t": source_state.get("lambda_t", 0.0),
+                    "lambda_t": _ics_lambda(source_state),
                     "coherence": source_state.get("coherence_gamma", 0.0),
                     "consciousness": source_state.get("consciousness_level", ""),
                     "auris": hnc_state.get("auris_consensus", "NEUTRAL"),
@@ -1277,7 +1288,7 @@ class IntegratedCognitiveSystem:
                 bridge_state = dict(self.sentient_loop.get_status())
                 bridge_state.update({
                     # Lambda field + consciousness level from source_state
-                    "lambda_t":            source_state.get("lambda_t", 0.0),
+                    "lambda_t":            _ics_lambda(source_state),
                     "coherence_gamma":     source_state.get("coherence_gamma", 0.0),
                     "consciousness_psi":   source_state.get("consciousness_psi", 0.0),
                     "consciousness_level": source_state.get("consciousness_level", "DORMANT"),

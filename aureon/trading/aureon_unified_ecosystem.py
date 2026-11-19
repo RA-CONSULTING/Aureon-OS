@@ -25620,10 +25620,11 @@ class AureonKrakenEcosystem:
         parts = []
 
         # Lambda / Gamma / Psi
-        lam = report.get("lambda_t", 0.0)
+        from aureon.core.lambda_reading import format_lambda, lambda_from_mapping
+        lam = lambda_from_mapping(report)
         gam = report.get("coherence_gamma", 0.0)
         psi = report.get("consciousness_psi", 0.0)
-        parts.append(f"L={lam:.3f} G={gam:.3f} P={psi:.3f}")
+        parts.append(f"L={format_lambda(lam, '.3f')} G={gam:.3f} P={psi:.3f}")
 
         # Temporal Ground
         tg = report.get("temporal_ground", {})

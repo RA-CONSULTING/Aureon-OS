@@ -19,7 +19,20 @@ import time
 from collections import deque
 from typing import Any, Deque, Dict, List, Optional
 
+from aureon.core.lambda_reading import lambda_reading
+
 logger = logging.getLogger("aureon.core.dashboard")
+
+
+def source_lambda_text(src: Any) -> str:
+    """Dashboard Lambda(t). A missing key is ``no reading``, not 0.0000."""
+    if not isinstance(src, dict) or "lambda_t" not in src:
+        return "no reading"
+    number = lambda_reading(src["lambda_t"])
+    if number is None:
+        return "no reading"
+    sign = "+" if number >= 0 else ""
+    return f"{sign}{number:.4f}"
 
 # ---------------------------------------------------------------------------
 # Rich imports (graceful degradation)
@@ -366,9 +379,7 @@ class CognitiveDashboard:
         # SOURCE panel
         src = snap["source"]
         source_table = Table.grid(padding=(0, 1))
-        lam = src.get("lambda_t", 0.0)
-        lam_sign = "+" if lam >= 0 else ""
-        source_table.add_row("Lambda(t):", f"{lam_sign}{lam:.4f}")
+        source_table.add_row("Lambda(t):", source_lambda_text(src))
         source_table.add_row("Gamma:", f"{src.get('coherence_gamma', 0.0):.3f}")
         source_table.add_row("Psi:", f"{src.get('consciousness_psi', 0.0):.3f}")
         source_table.add_row("Level:", str(src.get("consciousness_level", "DORMANT")))
@@ -468,8 +479,7 @@ class CognitiveDashboard:
 
         # Source
         src = snap["source"]
-        lam = src.get("lambda_t", 0.0)
-        lines.append(f"  {BOLD}Lambda(t):{RESET} {YELLOW}{'+' if lam >= 0 else ''}{lam:.4f}{RESET}  "
+        lines.append(f"  {BOLD}Lambda(t):{RESET} {YELLOW}{source_lambda_text(src)}{RESET}  "
                       f"{BOLD}Gamma:{RESET} {GREEN}{src.get('coherence_gamma', 0.0):.3f}{RESET}  "
                       f"{BOLD}Psi:{RESET} {CYAN}{src.get('consciousness_psi', 0.0):.3f}{RESET}  "
                       f"{BOLD}Level:{RESET} {src.get('consciousness_level', 'DORMANT')}")

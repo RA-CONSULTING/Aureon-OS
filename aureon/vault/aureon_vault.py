@@ -31,6 +31,8 @@ from collections import OrderedDict, defaultdict, deque
 from dataclasses import dataclass, field
 from typing import Any, Deque, Dict, List, Optional
 
+from aureon.core.lambda_reading import format_lambda, lambda_reading
+
 logger = logging.getLogger("aureon.vault")
 
 
@@ -165,7 +167,9 @@ class AureonVault:
             "beta": 0.0, "gamma": 0.0,
         }
         self.last_casimir_force: float = 0.0
-        self.last_lambda_t: float = 0.0
+        self.last_lambda_t: float | None = None
+        # Γ from the cortex. Never copied into last_lambda_t.
+        self.coherence_gamma: float | None = None
         self.love_amplitude: float = 0.0
         self.gratitude_score: float = 0.5
         self.dominant_chakra: str = "love"
@@ -366,22 +370,23 @@ class AureonVault:
                         band = bands.get(band_name)
                         if isinstance(band, dict) and "amplitude" in band:
                             self.cortex_snapshot[band_name] = float(band["amplitude"])
-                    # The cortex publishes the master field under coherence_gamma
-                    if "coherence_gamma" in payload:
-                        self.last_lambda_t = float(payload["coherence_gamma"])
-                    elif "coherence_gamma_field" in payload:
-                        self.last_lambda_t = float(payload["coherence_gamma_field"])
                 else:
                     for band_name in ("delta", "theta", "alpha", "beta", "gamma"):
                         band = payload.get(band_name)
                         if isinstance(band, dict) and "amplitude" in band:
                             self.cortex_snapshot[band_name] = float(band["amplitude"])
-                    # Cortex state also carries psi / coherence
-                    if "coherence_gamma_field" in payload:
-                        self.last_lambda_t = float(payload["coherence_gamma_field"])
+                # QueenCortex publishes Γ as coherence_gamma. That is not Λ(t).
+                # #379 keeps the two gears apart: Gamma stays on its own name,
+                # and last_lambda_t moves only when the payload carries lambda_t.
+                if "coherence_gamma" in payload:
+                    self.coherence_gamma = lambda_reading(payload["coherence_gamma"])
+                elif "coherence_gamma_field" in payload:
+                    self.coherence_gamma = lambda_reading(payload["coherence_gamma_field"])
+                if "lambda_t" in payload:
+                    self.last_lambda_t = lambda_reading(payload["lambda_t"])
             elif topic == "love.stream.528hz":
                 if "lambda_t" in payload:
-                    self.last_lambda_t = float(payload["lambda_t"])
+                    self.last_lambda_t = lambda_reading(payload["lambda_t"])
                 if "gamma_coherence" in payload:
                     self.love_amplitude = max(0.0, min(1.0, float(payload["gamma_coherence"])))
                 if "dominant_chakra" in payload:
@@ -467,7 +472,14 @@ class AureonVault:
                 "by_category": dict(self._by_category_counts),
                 "cortex_snapshot": dict(self.cortex_snapshot),
                 "last_casimir_force": round(self.last_casimir_force, 6),
-                "last_lambda_t": round(self.last_lambda_t, 6),
+                "last_lambda_t": (
+                    None if (lam := lambda_reading(self.last_lambda_t)) is None
+                    else round(lam, 6)
+                ),
+                "coherence_gamma": (
+                    None if (gam := lambda_reading(self.coherence_gamma)) is None
+                    else round(gam, 6)
+                ),
                 "love_amplitude": round(self.love_amplitude, 6),
                 "gratitude_score": round(self.gratitude_score, 6),
                 "dominant_chakra": self.dominant_chakra,
@@ -486,7 +498,7 @@ class AureonVault:
                 f"love={self.love_amplitude:.4f}",
                 f"grat={self.gratitude_score:.4f}",
                 f"cortex={json.dumps(self.cortex_snapshot, sort_keys=True)}",
-                f"lambda={self.last_lambda_t:.4f}",
+                f"lambda={format_lambda(self.last_lambda_t)}",
                 f"chakra={self.dominant_chakra}",
             ]
             raw = "|".join(parts).encode("utf-8")

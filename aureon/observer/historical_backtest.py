@@ -49,6 +49,27 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
+from aureon.core.lambda_reading import format_lambda, lambda_reading
+
+
+def snapshot_lambda_trace(snaps: List[Any]) -> List[float]:
+    """Measured Λ(t) from replay snapshots. Missing points are not 0.0."""
+    values: List[float] = []
+    for snap in snaps:
+        if not isinstance(snap, dict) or "lambda_t" not in snap:
+            continue
+        number = lambda_reading(snap["lambda_t"])
+        if number is None:
+            continue
+        values.append(number)
+    return values
+
+
+def snapshot_lambda_cell(snap: Any) -> str:
+    if not isinstance(snap, dict) or "lambda_t" not in snap:
+        return "no reading"
+    return format_lambda(snap["lambda_t"], ".3f")
+
 logger = logging.getLogger("aureon.observer.historical_backtest")
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -461,7 +482,7 @@ def _write_markdown(path: Path, capture: _ReplayCapture, agg: Dict[str, Any],
 
     if snaps:
         kps = [float(s.get("kp") or 0.0) for s in snaps]
-        lambdas = [float(s.get("lambda_t") or 0.0) for s in snaps]
+        lambdas = snapshot_lambda_trace(snaps)
         psis = [float(s.get("consciousness_psi") or 0.0) for s in snaps]
         cohs = [float(s.get("coherence_score") or 0.0) for s in snaps]
         sls = [float(s.get("symbolic_life_score") or 0.0) for s in snaps]
@@ -471,8 +492,11 @@ def _write_markdown(path: Path, capture: _ReplayCapture, agg: Dict[str, Any],
         add(f"**Kp input** ({min(kps):.2f} → {max(kps):.2f}):")
         add(f"```\n{_sparkline(kps)}\n```")
         add("")
-        add(f"**Λ_full** ({min(lambdas):.3f} → {max(lambdas):.3f}):")
-        add(f"```\n{_sparkline(lambdas)}\n```")
+        if lambdas:
+            add(f"**Λ_full** ({min(lambdas):.3f} → {max(lambdas):.3f}):")
+            add(f"```\n{_sparkline(lambdas)}\n```")
+        else:
+            add("**Λ_full:** no reading")
         add("")
         add(f"**ψ (consciousness)** ({min(psis):.3f} → {max(psis):.3f}):")
         add(f"```\n{_sparkline(psis)}\n```")
@@ -489,7 +513,7 @@ def _write_markdown(path: Path, capture: _ReplayCapture, agg: Dict[str, Any],
         add("| Date | Kp | Λ_full | ψ | Level | Regime | Coherence | Pred dir |")
         add("|---|---|---|---|---|---|---|---|")
         for s in snaps[-12:]:
-            add(f"| {s['date']} | {s['kp']:.2f} | {s['lambda_t']:.3f} | "
+            add(f"| {s['date']} | {s['kp']:.2f} | {snapshot_lambda_cell(s)} | "
                 f"{s['consciousness_psi']:.3f} | {s['consciousness_level']} | "
                 f"{s['regime']} | {s['coherence_score']:.3f} | "
                 f"{s['predictor']['direction']} |")
