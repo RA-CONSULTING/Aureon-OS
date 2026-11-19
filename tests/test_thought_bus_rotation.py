@@ -1,4 +1,5 @@
 import json
+import threading
 
 from aureon.core.aureon_thought_bus import Thought, ThoughtBus
 
@@ -62,6 +63,24 @@ def test_bad_limit_value_is_ignored(tmp_path, monkeypatch):
     for i in range(5):
         bus._persist(_thought(i))
     assert _lines(path) == list(range(5))
+
+
+def test_concurrent_writers_share_the_rotation_lock(tmp_path, monkeypatch):
+    path = tmp_path / "thoughts.jsonl"
+    bus = ThoughtBus(persist_path=str(path))
+    monkeypatch.setenv("AUREON_THOUGHT_BUS_MAX_BYTES", "5000")
+    monkeypatch.setenv("AUREON_THOUGHT_BUS_BACKUPS", "20")
+    threads = [threading.Thread(target=bus.publish, args=(_thought(i),)) for i in range(40)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(10)
+        assert not thread.is_alive()
+    kept = []
+    for index in range(20, 0, -1):
+        kept += _lines(tmp_path / f"thoughts.jsonl.{index}")
+    kept += _lines(path)
+    assert sorted(kept) == list(range(40))
 
 
 def test_failed_rotation_still_writes(tmp_path, monkeypatch):
