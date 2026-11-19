@@ -574,7 +574,8 @@ def test_consistency_failure_flag_refuses_a_reason_without_those_words(isolated)
     body = {
         "status": "no_data",
         "provider_status": "closed",
-        "vol_exec": "5",
+        "vol_exec": "0.1",
+        "requestedQty": "0.1",
         "orderId": KRAKEN_TXID,
         "reason": "quantity_cost_price_do_not_reconcile",
         "consistency_failure": True,
@@ -619,14 +620,20 @@ def _oversized(**overrides):
     ],
 )
 def test_oversized_fill_stopped_early_records_nothing(isolated, order, reason):
-    """vol_exec 5 against requested 0.1 is not owned, even if an earlier check returns first."""
+    """vol_exec 5 against requested 0.1 is not owned.
+
+    The quantity check runs before the stale-close or missing-field return
+    that used to hide it. ``reason`` is the stop that would have won before
+    that reorder; the receipt now reports the quantity failure instead.
+    """
+    assert reason
     client = _status_client(order)
     assert _record_ack(client) is None
     receipt = client.get_order_status(KRAKEN_TXID)
-    assert receipt["reason"] == reason
+    assert receipt["reason"] == "provider_filled_quantity_exceeds_order_quantity"
+    assert receipt["consistency_failure"] is True
     assert receipt["vol_exec"] == "5"
     assert receipt["requestedQty"] == "0.1"
-    assert receipt.get("consistency_failure") is not True
     assert not isolated.exists()
     assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(0)
     assert fills.aureon_net_fill_qty("kraken", "ETHUSD") == Decimal(0)
@@ -640,6 +647,66 @@ def test_missing_requested_qty_records_nothing(isolated):
     receipt = client.get_order_status(KRAKEN_TXID)
     assert receipt["requestedQty"] is None
     assert receipt["vol_exec"] == "5"
+    assert not isolated.exists()
+    assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(0)
+
+
+def _priced(cost, **overrides):
+    """0.1 ordered and filled at price 100. An honest cost is 10."""
+    order = _provider_closed(
+        vol="0.1",
+        vol_exec="0.1",
+        price="100",
+        cost=cost,
+        fee="0.01",
+    )
+    order.update(overrides)
+    return order
+
+
+@pytest.mark.parametrize(
+    ("cost", "overrides"),
+    [
+        ("1", {"closetm": time.time() - 10**9}),
+        ("999", {"closetm": time.time() - 10**9}),
+        ("1", {"fee": None}),
+        ("999", {"fee": None}),
+    ],
+)
+def test_cost_disagreement_hidden_by_an_earlier_return_records_nothing(
+    isolated, cost, overrides
+):
+    """vol_exec 0.1 at price 100 is a cost of 10. Cost 1 or 999 is not owned.
+
+    A stale close or a missing fee used to return before the cost check, and
+    the size check cannot see it because 0.1 is not more than 0.1.
+    """
+    client = _status_client(_priced(cost, **overrides))
+    assert _record_ack(client) is None
+    receipt = client.get_order_status(KRAKEN_TXID)
+    assert receipt["consistency_failure"] is True
+    assert receipt["reason"] == "inconsistent_provider_fill_cost_and_average_price"
+    assert receipt["vol_exec"] == "0.1"
+    assert receipt["requestedQty"] == "0.1"
+    assert not isolated.exists()
+    assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(0)
+    assert fills.aureon_net_fill_qty("kraken", "ETHUSD") == Decimal(0)
+
+
+def test_ledger_rechecks_cost_against_vol_exec_times_price(isolated):
+    """The ledger refuses a bad cost even when the client did not set the flag."""
+    body = {
+        "status": "no_data",
+        "provider_status": "closed",
+        "vol_exec": "0.1",
+        "requestedQty": "0.1",
+        "price": "100",
+        "cost": "1",
+        "orderId": KRAKEN_TXID,
+        "reason": "missing_or_stale_provider_close_timestamp",
+    }
+    assert fills._closed_query_fill(body) is None
+    assert fills.record_kraken_acknowledged_fill(object(), "ETHUSD", "buy", body) is None
     assert not isolated.exists()
     assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(0)
 

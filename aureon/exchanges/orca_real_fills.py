@@ -434,6 +434,28 @@ def _kraken_ordered_qty(payload: dict[str, Any]) -> Decimal | None:
     return _positive_decimal(raw)
 
 
+def _kraken_cost_disagrees(payload: dict[str, Any]) -> bool:
+    """True when price and cost are present and cost is not vol_exec * price.
+
+    This is the ledger's own check. It does not depend on the client having
+    reached its later cost comparison or set ``consistency_failure``.
+    """
+    filled = _positive_decimal(payload.get("vol_exec"))
+    price = _positive_decimal(payload.get("price"))
+    if price is None:
+        price = _positive_decimal(payload.get("avgPrice"))
+    cost = _positive_decimal(payload.get("cost"))
+    if cost is None:
+        cost = _positive_decimal(payload.get("cummulativeQuoteQty"))
+    if cost is None:
+        cost = _positive_decimal(payload.get("filled_notional"))
+    if filled is None or price is None or cost is None:
+        return False
+    expected = filled * price
+    tolerance = max(Decimal("0.00000001"), cost * Decimal("0.001"))
+    return abs(expected - cost) > tolerance
+
+
 def _kraken_reason(payload: dict[str, Any]) -> str:
     return str(payload.get("reason") or "").strip().lower().replace(" ", "_").replace("-", "_")
 
@@ -479,9 +501,10 @@ def _closed_query_fill(
     A non-empty ``error`` is not a fill. Neither is a receipt the client marks
     with ``consistency_failure``, whatever the reason text says. ``vol_exec``
     greater than ``requestedQty`` is not a fill, and neither is a missing or
-    non-positive ``requestedQty``, even when an earlier client check returned
-    first and left ``vol_exec`` on the receipt. A partial fill (``vol_exec``
-    at or below the ordered size) still counts.
+    non-positive ``requestedQty``. When price and cost are both present, cost
+    must match ``vol_exec * price``; a stale close or a missing fee does not
+    waive that. A partial fill (``vol_exec`` at or below the ordered size,
+    with a matching cost) still counts.
     """
     if not isinstance(payload, dict) or payload.get("error"):
         return None
@@ -512,6 +535,8 @@ def _closed_query_fill(
         return None
     ordered = _kraken_ordered_qty(body)
     if ordered is None or filled > ordered:
+        return None
+    if _kraken_cost_disagrees(body):
         return None
     body_txid = _text_id(body.get("txid")) or _text_id(body.get("orderId"))
     if body_txid and queried and body_txid != queried:
