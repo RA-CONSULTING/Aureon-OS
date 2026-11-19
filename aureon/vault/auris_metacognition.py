@@ -166,8 +166,16 @@ class AurisMetacognition:
         return NodeVote("Tiger", "BUY", 0.6, f"drift force {force:.2f} — moderate")
 
     def _falcon(self, vault: Any) -> NodeVote:
-        """Falcon rides momentum — tracks Λ(t) sign and magnitude."""
-        lam = float(getattr(vault, "last_lambda_t", 0.0) or 0.0)
+        """Falcon rides momentum — tracks Λ(t) sign and magnitude.
+
+        ``None`` means the gear had no reading. It is not read as 0.0.
+        A missing attribute still defaults to 0.0, which is this node's
+        old input when the vault never set Lambda.
+        """
+        raw = getattr(vault, "last_lambda_t", 0.0)
+        if raw is None:
+            return NodeVote("Falcon", "NEUTRAL", 0.4, "no Λ(t) reading")
+        lam = float(raw)
         if lam > 0.5:
             return NodeVote("Falcon", "BUY", 0.8, f"Λ(t)={lam:.3f} — strong up")
         if lam < -0.5:
