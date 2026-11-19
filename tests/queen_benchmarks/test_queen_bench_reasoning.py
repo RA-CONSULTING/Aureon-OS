@@ -27,10 +27,30 @@ COG_DRIFT = (
     "now 0.0 because every cognition answer returns HOLD "
     "(independent_council_and_crown_suppliers_required) from the governance boundary"
 )
-SOUL_DRIFT = {
-    "plan:large-fix-test": "DRIFT: recorded pass; work orders now RepoCartographer + Security Auditor",
-    "resolve:field-small-divided": "DRIFT: recorded pass; a divided small field now resolves (want unresolved)",
-    "stance:field-small-divided": "DRIFT: recorded pass; a divided small field now acts (want wait/refuse)",
+# Reasons are string literals so the quarantine scan can see them. A
+# subscript such as SOUL_DRIFT[name] is not a stated reason.
+_SOUL_XFAILS = {
+    "plan:large-fix-test": pytest.param(
+        "plan:large-fix-test",
+        marks=pytest.mark.xfail(
+            reason="DRIFT: recorded pass; work orders now RepoCartographer + Security Auditor",
+            strict=False,
+        ),
+    ),
+    "resolve:field-small-divided": pytest.param(
+        "resolve:field-small-divided",
+        marks=pytest.mark.xfail(
+            reason="DRIFT: recorded pass; a divided small field now resolves (want unresolved)",
+            strict=False,
+        ),
+    ),
+    "stance:field-small-divided": pytest.param(
+        "stance:field-small-divided",
+        marks=pytest.mark.xfail(
+            reason="DRIFT: recorded pass; a divided small field now acts (want wait/refuse)",
+            strict=False,
+        ),
+    ),
 }
 
 
@@ -81,8 +101,7 @@ _RECORDED_CRITICAL = [c["check"] for c in SOUL_RECORDED["checks"] if c["critical
 
 @pytest.mark.parametrize(
     "check",
-    [pytest.param(name, marks=pytest.mark.xfail(reason=SOUL_DRIFT[name], strict=False))
-     if name in SOUL_DRIFT else name for name in _RECORDED_CRITICAL],
+    [_SOUL_XFAILS[name] if name in _SOUL_XFAILS else name for name in _RECORDED_CRITICAL],
 )
 def test_soul_recorded_critical_check_still_passes(soul, check):
     now = {c["check"]: c["ok"] for c in soul["checks"]}

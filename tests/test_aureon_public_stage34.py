@@ -9,7 +9,10 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
+# The sweep file is the measurement at the historical pin. The live published
+# pin is the one in guard_loader. This test does not move either.
+RECORD_PIN = "bb04503119681adcf832f3c3e9b0cbf09fc7a938"
+PUBLISHED_PIN = "ac9fa3151b63bd4143dc1aa434ec79b382406b7e"
 
 pytestmark = pytest.mark.timeout(180)
 
@@ -23,7 +26,7 @@ def test_read_gate_counts_leave_zero_and_trading_stays_closed() -> None:
     from aureon_public.coverage_plan import plan_rows
     from aureon_public.guard_loader import PINNED_COMMIT
 
-    assert PINNED_COMMIT == PIN
+    assert PINNED_COMMIT == PUBLISHED_PIN
     assert OPEN_PLAN_THROUGH == 2
     rows = {row["package"]: row for row in plan_rows()}
     assert rows["miner"]["stage"] == 3
@@ -105,7 +108,7 @@ def test_stage34_sweep_record_blocks_network_and_names_the_pin() -> None:
         (ROOT / "measured" / "aureon_public_stage34_call_sweep.json").read_text(encoding="utf-8")
     )
     assert record["schema"] == "aureon.public.stage34-call-sweep.v1"
-    assert record["pin"] == PIN
+    assert record["pin"] == RECORD_PIN
     assert record["sockets"] == "blocked"
     assert record["processes"] == "blocked"
     assert record["live_orders"] == "refused"
