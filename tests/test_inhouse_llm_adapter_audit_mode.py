@@ -1,5 +1,7 @@
 import logging
 
+import pytest
+
 from aureon.inhouse_ai.llm_adapter import (
     AureonBrainAdapter,
     AureonHybridAdapter,
@@ -90,6 +92,23 @@ def test_default_voice_adapter_is_stub_when_own_model_unreachable(monkeypatch):
     assert not isinstance(adapter, (AureonHybridAdapter, AureonLocalAdapter))
     assert response.model == "aureon-own-unavailable"
     assert "declines" in response.text
+
+
+@pytest.mark.parametrize("backend", ["plain_local", "local_only", "no-such-backend"])
+def test_unserved_voice_backend_is_stub_not_none(monkeypatch, backend):
+    _auto_lane_env(monkeypatch)
+    monkeypatch.setenv("AUREON_VOICE_BACKEND", backend)
+    # Even with every local endpoint reachable, these names must not pick one.
+    monkeypatch.setattr(AureonLocalAdapter, "health_check", lambda self: True)
+
+    adapter = build_voice_adapter()
+
+    assert adapter is not None
+    assert isinstance(adapter, AureonStubAdapter)
+    assert not isinstance(adapter, (AureonHybridAdapter, AureonLocalAdapter))
+    response = adapter.prompt([{"role": "user", "content": "ping"}])
+    assert response.model == "voice-backend-unavailable"
+    assert backend in response.text
 
 
 def test_hybrid_adapter_weaves_small_ollama_shards(monkeypatch):

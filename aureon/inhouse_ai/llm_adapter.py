@@ -2221,3 +2221,13 @@ def build_voice_adapter(lane: str = "general") -> LLMAdapter:
             "AUREON_OWN_LLM_BASE_URL if the server lives elsewhere.",
             model="aureon-own-unavailable",
         )
+
+    # Any other AUREON_VOICE_BACKEND value (including the plain_local and
+    # local_only lanes 703cf9bd removed) gets a stub, never None and never a
+    # borrowed model.
+    return AureonStubAdapter(
+        f"AUREON_VOICE_BACKEND={backend!r} is not a voice backend this build serves.\n"
+        "Leave it unset for Aureon's own model, or set it to one of:\n"
+        "  own | brain | ollama_hybrid | ollama | anthropic",
+        model="voice-backend-unavailable",
+    )
