@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import sys
+import types
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -590,3 +591,196 @@ def test_exception_path_uses_reference_and_real_size(monkeypatch, tmp_path):
     # The exception path re-reconciles with the order's reference and size.
     assert calls == [("AUREON-NEW-10", SIZE), ("AUREON-NEW-10", SIZE)]
     assert phi._phi_capital_deal_owned("GARY_NEW_CN50", "capital") is False
+
+
+# ── Main live loop ("[LIVE] Routing order") must confirm the reference ──
+
+LIVE_REF = "o_REF_LIVE"
+LIVE_DEAL = "AUREON-LIVE-1"
+
+
+def _live_ack(**overrides):
+    receipt = {
+        "dealId": LIVE_REF,
+        "dealReference": LIVE_REF,
+        "account": "capital_live",
+        "size": SIZE,
+        "error": None,
+        "venue": "capital",
+    }
+    receipt.update(overrides)
+    return receipt
+
+
+def _run_live_loop(monkeypatch, tmp_path, ack, confirms, *, append_deal=None, confirm_raises=False):
+    phi, _tl, path = _ledger_setup(monkeypatch, tmp_path)
+    cap = _FakeCapital([_cap_pos(GARY)], confirms=confirms if isinstance(confirms, dict) else {})
+    if confirm_raises:
+        def _boom(_ref):
+            raise ConnectionError("confirm down")
+        cap.get_live_deal_confirmation = _boom
+    seen = []
+    if not confirm_raises:
+        _orig = cap.get_live_deal_confirmation
+
+        def _watch(ref):
+            seen.append(ref)
+            return _orig(ref)
+
+        cap.get_live_deal_confirmation = _watch
+    placed = []
+
+    def place_order(**kwargs):
+        placed.append(kwargs)
+        if append_deal:
+            cap.positions.append(_cap_pos(append_deal))
+        return ack
+
+    radar = _minimal_radar(phi)
+    radar.capital_dual = cap
+    radar.capital_live = cap
+    cap.calculate_micro_tp = lambda **_k: 101.0
+    cap.get_live_balance = lambda: 0
+    radar.state = phi.SystemState.ARMED
+    radar.symbol_keys = ["CN50"]
+    radar.price_history = {}
+    radar.live_trades_today = 0
+    radar._honey_pot_reconciled = True
+    radar._existing_positions_reconciled = True
+    radar._check_demo_shadows = lambda: None
+    radar._read_fused_signals = lambda: {}
+    radar._get_price = lambda *_a, **_k: 100.0
+    radar._compute_stop_level = lambda *_a: 98.5
+    radar._compute_live_size = lambda *_a, **_k: SIZE
+    radar._expectancy_gate_verdict = lambda *_a: {"allowed": True}
+    radar._floor_clamp_tp = lambda _d, _p, target: target
+    radar.scanner = SimpleNamespace(
+        feed_price=lambda *_a, **_k: None,
+        calculate_volatility=lambda *_a: 0.01,
+        money_flow_score=lambda *_a: 0.5,
+        detect_breakout=lambda *_a: (True, "LONG", 0.9),
+    )
+    radar.play_board = SimpleNamespace(build_plan=lambda *_a, **_k: {"execution": {}})
+    import honey_ladder
+    radar.honey_ladder = honey_ladder.HoneyLadder()
+    radar.router = SimpleNamespace(
+        aggregate_exposure=lambda: {"position_exposure": 0.0, "limit": 1.0, "utilization_pct": 0.0},
+        place_order=place_order,
+        close_position=_RecordingClose(),
+        get_open_positions=lambda: [],
+    )
+    _install_scan_stubs(monkeypatch, radar)
+    radar.scan()
+    return phi, radar, path, placed, seen
+
+
+def _install_scan_stubs(monkeypatch, radar):
+    import radar_probability_matrix as rpm
+
+    intel = SimpleNamespace(adjusted_probability=0.8, action="APPROVE", risk_flags=[])
+    monkeypatch.setattr(rpm, "evaluate_signal", lambda **_k: intel)
+    monkeypatch.setattr(rpm, "should_trade", lambda *_a, **_k: True)
+    monkeypatch.setattr(rpm, "get_matrix", lambda: SimpleNamespace(explain=lambda *_a, **_k: "ok"))
+    bridge = types.ModuleType("aureon_capital_momentum_bridge")
+
+    class _QuietScanner:
+        def __init__(self, *_a, **_k):
+            pass
+
+        def feed_prices_from_capital(self, *_a, **_k):
+            return None
+
+        def scan_all(self):
+            return []
+
+        def write_signals(self, *_a, **_k):
+            return None
+
+    bridge.CapitalMomentumScanner = _QuietScanner
+    monkeypatch.setitem(sys.modules, "aureon_capital_momentum_bridge", bridge)
+    monkeypatch.setenv("LIVE", "1")
+    monkeypatch.setenv("HOMING_ENABLED", "0")
+
+
+def _assert_live_loop_unmanaged(phi, radar, path, *deal_ids):
+    assert radar.live_positions == []
+    assert _confirmed_rows(path) == []
+    for deal_id in deal_ids:
+        assert phi._phi_capital_deal_owned(deal_id, "capital") is False
+
+
+def test_live_loop_opened_confirm_stores_real_deal_and_guard_closes(monkeypatch, tmp_path):
+    phi, radar, path, placed, seen = _run_live_loop(
+        monkeypatch, tmp_path, _live_ack(), {LIVE_REF: [LIVE_DEAL]}, append_deal=LIVE_DEAL)
+    assert placed, "live loop did not route an order"
+    assert len(radar.live_positions) == 1
+    pot = radar.live_positions[0]
+    assert pot.deal_id == LIVE_DEAL
+    assert getattr(pot, "deal_reference", None) == LIVE_REF
+    assert seen == [LIVE_REF]
+    rows = _confirmed_rows(path, LIVE_DEAL)
+    assert len(rows) == 1
+    assert rows[0]["capital_confirmed"] is True
+    assert phi._phi_capital_deal_owned(LIVE_DEAL, "capital") is True
+    assert phi._phi_capital_deal_owned(GARY, "capital") is False
+    assert phi._phi_capital_deal_owned(LIVE_REF, "capital") is False
+    assert radar._close_live_position(pot, 101.0, "target_hit") is True
+    assert radar.router.close_position.calls == [{
+        "deal_id": LIVE_DEAL,
+        "venue": "capital",
+        "symbol": "CN50",
+        "size": SIZE,
+        "direction": "LONG",
+    }]
+    # Placement itself is unchanged: the broker still receives a stop and a limit.
+    assert placed[0]["stop_level"] == 98.5
+    assert placed[0]["profit_level"] == 101.0
+
+
+def test_live_loop_rejected_confirm_stores_no_deal(monkeypatch, tmp_path, caplog):
+    caplog.set_level("ERROR")
+    phi, radar, path, _placed, _seen = _run_live_loop(
+        monkeypatch, tmp_path, _live_ack(), {LIVE_REF: []})
+    _assert_live_loop_unmanaged(phi, radar, path, LIVE_REF, LIVE_DEAL, GARY)
+    assert "unconfirmed" in caplog.text.lower()
+
+
+def test_live_loop_confirm_error_stores_no_deal(monkeypatch, tmp_path, caplog):
+    caplog.set_level("ERROR")
+    phi, radar, path, _placed, _seen = _run_live_loop(
+        monkeypatch, tmp_path, _live_ack(), {}, confirm_raises=True)
+    _assert_live_loop_unmanaged(phi, radar, path, LIVE_REF, GARY)
+    assert "unconfirmed" in caplog.text.lower() or "confirm failed" in caplog.text.lower()
+
+
+def test_live_loop_missing_confirm_stores_no_deal(monkeypatch, tmp_path, caplog):
+    caplog.set_level("ERROR")
+    phi, radar, path, _placed, _seen = _run_live_loop(
+        monkeypatch, tmp_path, _live_ack(), {LIVE_REF: None})
+    _assert_live_loop_unmanaged(phi, radar, path, LIVE_REF, GARY)
+
+
+def test_live_loop_no_reference_stores_no_deal(monkeypatch, tmp_path, caplog):
+    caplog.set_level("ERROR")
+    phi, radar, path, _placed, seen = _run_live_loop(
+        monkeypatch, tmp_path, _live_ack(dealId="o_NOREF", dealReference=None), {})
+    _assert_live_loop_unmanaged(phi, radar, path, "o_NOREF", LIVE_REF, GARY)
+    assert seen == []
+
+
+def test_live_loop_two_opened_deals_store_neither_and_not_gary(monkeypatch, tmp_path, caplog):
+    caplog.set_level("ERROR")
+    phi, radar, path, _placed, _seen = _run_live_loop(
+        monkeypatch, tmp_path, _live_ack(), {LIVE_REF: [GARY, LIVE_DEAL]}, append_deal=LIVE_DEAL)
+    _assert_live_loop_unmanaged(phi, radar, path, GARY, LIVE_DEAL, LIVE_REF)
+    assert "unconfirmed" in caplog.text.lower()
+
+
+def test_live_loop_non_capital_keeps_its_deal_id(monkeypatch, tmp_path):
+    ack = _live_ack(dealId="ALPACA-1", dealReference=None, venue="alpaca", account="alpaca_live")
+    phi, radar, _path, placed, seen = _run_live_loop(monkeypatch, tmp_path, ack, {})
+    assert placed
+    assert seen == []
+    assert len(radar.live_positions) == 1
+    assert radar.live_positions[0].deal_id == "ALPACA-1"
+    assert phi._phi_capital_deal_owned("ALPACA-1", "alpaca") is True
