@@ -1787,6 +1787,7 @@ class UnifiedKillChain:
                         'exchange': 'capital',
                         'symbol': epic,
                         'id': pos_data.get('dealId'),
+                        'deal_reference': pos_data.get('dealReference') or pos_data.get('deal_reference'),
                         'type': 'CFD',
                         'qty': qty,
                         'pnl': upl,
@@ -1991,7 +1992,57 @@ class UnifiedKillChain:
         log_queen("Harvest complete.")
         return committed
 
+    def _read_capital_confirm(self, client, deal_reference: str):
+        """GET /confirms/{ref} via CapitalClient.confirm_order, or None."""
+        ref = str(deal_reference or "").strip()
+        if not ref or ref.lower() == "unknown" or client is None:
+            return None
+        confirm = getattr(client, "confirm_order", None)
+        if not callable(confirm):
+            return None
+        try:
+            return confirm(ref)
+        except Exception as exc:
+            log_system(f"Capital confirm failed for {ref}: {exc}")
+            return None
+
+    def _capital_close_deal_id(self, target) -> str | None:
+        """Adopted dealId to close. A reference is resolved, never sent as the id."""
+        from aureon.exchanges.orca_capital_ownership import (
+            adopted_deal_ids,
+            resolve_capital_close_id,
+        )
+        return resolve_capital_close_id(
+            target,
+            adopted_deal_ids(),
+            lambda ref: self._read_capital_confirm(target.get("client"), ref),
+        )
+
+    def _close_capital(self, target):
+        """Close one adopted Capital deal by its confirmed dealId."""
+        deal_id = self._capital_close_deal_id(target)
+        if deal_id:
+            target["id"] = deal_id
+        if not deal_id:
+            log_system(
+                f"Capital: refusing to close deal {target.get('id')}: not adopted by ORCA"
+            )
+            return {"status": "not_submitted", "reason": "capital_deal_not_adopted"}
+        client = target.get("client")
+        close_position = getattr(client, "close_position", None)
+        if not callable(close_position):
+            log_system(f"Capital: refusing to close deal {deal_id}: no close_position")
+            return {"status": "not_submitted", "reason": "capital_close_unavailable"}
+        return close_position(deal_id)
+
     def execute_kill_chain(self, target):
+        if (
+            isinstance(target, dict)
+            and target.get("exchange") == "capital"
+            and target.get("type") == "CFD"
+            and target.get("client") is not None
+        ):
+            return self._close_capital(target)
         if self.execution_state_path is None:
             return _no_data_decision("execution_state_path_required")
         now = _finite_provider_number(self.clock(), positive=True)
