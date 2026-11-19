@@ -267,6 +267,7 @@ def test_default_audit_or_suppress_neither_loads_nor_writes_shared_state(
     monkeypatch.setattr(lambda_module, "DEFAULT_HISTORY_STATE_PATH", state_path)
     monkeypatch.setenv("AUREON_AUDIT_MODE", "0")
     monkeypatch.setenv("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS", "0")
+    monkeypatch.delenv(lambda_module.LIVE_DAEMON_ENV, raising=False)
     monkeypatch.setenv(flag, "1")
 
     engine = lambda_module.LambdaEngine()

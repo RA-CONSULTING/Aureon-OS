@@ -92,6 +92,9 @@ HISTORY_SOURCE_ID = "aureon:hnc:lambda_engine"
 DEFAULT_HISTORY_STATE_PATH = (
     Path(__file__).resolve().parents[2] / "state" / "lambda_history.json"
 )
+# Set by hnc_live_daemon.main() after imports, never at import time.
+# Import suppression still blocks every other LambdaEngine.
+LIVE_DAEMON_ENV = "AUREON_HNC_LIVE_DAEMON"
 _TRUE_ENV_VALUES = frozenset({"1", "true", "yes", "on"})
 _HISTORY_MATERIAL_KEYS = (
     "version",
@@ -508,10 +511,22 @@ class LambdaEngine:
             return self._state_path == DEFAULT_HISTORY_STATE_PATH
 
     def _shared_state_access_suppressed(self) -> bool:
-        return self._uses_default_shared_path() and (
-            _env_truthy("AUREON_AUDIT_MODE")
-            or _env_truthy("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS")
-        )
+        """Refuse the shared ``state/lambda_history.json`` file.
+
+        Audit mode always refuses it. Import suppression refuses it too, so
+        a test or an import cannot clobber the live history. The process
+        that is explicitly the live daemon (``AUREON_HNC_LIVE_DAEMON``, set
+        by ``hnc_live_daemon.main`` after imports) may read and commit that
+        file while the suppress flag stays set. An engine constructed with
+        its own path is not this shared file and is left alone.
+        """
+        if not self._uses_default_shared_path():
+            return False
+        if _env_truthy("AUREON_AUDIT_MODE"):
+            return True
+        if _env_truthy(LIVE_DAEMON_ENV):
+            return False
+        return _env_truthy("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS")
 
     def _clear_active_history(self) -> None:
         self._history.clear()
