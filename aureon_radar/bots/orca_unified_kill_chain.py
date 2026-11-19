@@ -91,6 +91,139 @@ def kraken_balance_not_live(client) -> str:
     return ''
 
 
+_ATTEMPT_LOG_SENTINEL_TXIDS = frozenset({
+    'unknown', 'none', 'null', '0', 'dry_run', 'dry-run', 'dryrun',
+    'not_submitted', 'mock', 'mock_order', 'test', 'test_order',
+})
+
+
+def _positive_fill_amount(value):
+    """True when a provider quantity is a finite number greater than zero."""
+    if isinstance(value, bool) or value is None:
+        return False
+    if isinstance(value, str):
+        value = value.strip()
+        if not value:
+            return False
+    try:
+        amount = float(value)
+    except (TypeError, ValueError):
+        return False
+    if amount != amount or amount in (float('inf'), float('-inf')):
+        return False
+    return amount > 0
+
+
+def _real_txids(raw):
+    """Kraken txid string or txid list, with sentinels rejected."""
+    if isinstance(raw, str):
+        items = [raw]
+    elif isinstance(raw, (list, tuple)):
+        items = list(raw)
+    else:
+        return []
+    found = []
+    for item in items:
+        if not isinstance(item, str):
+            return []
+        token = item.strip()
+        if not token:
+            return []
+        normalized = token.lower().replace('-', '_').replace(' ', '_')
+        if (
+            normalized in _ATTEMPT_LOG_SENTINEL_TXIDS
+            or normalized.startswith(('dry_run', 'mock_', 'test_'))
+        ):
+            return []
+        found.append(token)
+    return found
+
+
+def _attempt_not_submitted(order_result):
+    for key in ('status', 'data_status', 'truth_status'):
+        if str(order_result.get(key) or '').strip().lower() == 'not_submitted':
+            return True
+    if order_result.get('dryRun') is True or order_result.get('dry_run') is True:
+        return True
+    reason = str(order_result.get('reason') or '').strip().lower()
+    return 'not_submitted' in reason or reason.startswith('dry_run')
+
+
+def _attempt_error_status(order_result, error):
+    """Keep the provider's own status or error text. Never call it FILLED."""
+    status = order_result.get('status')
+    if isinstance(status, str) and status.strip():
+        token = status.strip().upper()
+        if token != 'FILLED':
+            return token
+    if isinstance(error, str) and error.strip():
+        return error.strip()
+    if isinstance(error, (list, tuple)):
+        texts = [str(item).strip() for item in error if str(item).strip()]
+        if texts:
+            return texts[0] if len(texts) == 1 else '; '.join(texts)
+    return 'FAILED'
+
+
+def _kraken_attempt_filled(order_result):
+    status = str(order_result.get('status') or '').strip().lower()
+    return (
+        status == 'closed'
+        and _positive_fill_amount(order_result.get('vol_exec'))
+        and bool(_real_txids(order_result.get('txid')))
+    )
+
+
+def _binance_attempt_filled(order_result):
+    status = str(order_result.get('status') or '').strip().upper()
+    return status == 'FILLED' and _positive_fill_amount(order_result.get('executedQty'))
+
+
+def _plain_kraken_addorder_ack(order_result):
+    """Kraken AddOrder result: txid list plus descr, no status or executedQty."""
+    if str(order_result.get('status') or '').strip():
+        return False
+    if 'executedQty' in order_result or 'vol_exec' in order_result:
+        return False
+    descr = order_result.get('descr')
+    txids = order_result.get('txid')
+    if not isinstance(descr, dict) or not descr:
+        return False
+    if not isinstance(txids, (list, tuple)) or not txids:
+        return False
+    return bool(_real_txids(txids))
+
+
+def _attempt_log_status(order_result, exchange):
+    """Status string written to orca_executions.json.
+
+    Does not place, size, or exit an order. FILLED means the exchange
+    confirmed a fill: Kraken closed with vol_exec > 0 and a txid, or
+    Binance FILLED with executedQty > 0.
+    """
+    if not isinstance(order_result, dict):
+        return 'FAILED'
+    if _attempt_not_submitted(order_result):
+        return 'NOT_SUBMITTED'
+    error = order_result.get('error')
+    if error:
+        return _attempt_error_status(order_result, error)
+    venue = str(exchange or '').strip().lower()
+    if venue == 'kraken' and _kraken_attempt_filled(order_result):
+        return 'FILLED'
+    if venue == 'binance' and _binance_attempt_filled(order_result):
+        return 'FILLED'
+    if venue == 'kraken' and _plain_kraken_addorder_ack(order_result):
+        return 'SUBMITTED/UNCONFIRMED'
+    status = order_result.get('status')
+    if isinstance(status, str) and status.strip():
+        token = status.strip().upper()
+        if token == 'FILLED':
+            return 'ZERO_FILL'
+        return token
+    return 'FAILED'
+
+
 def queen_answer(question, queen_approves):
     """Answer a y/N prompt. Interactive runs still ask the operator; headless
     runs (no TTY, e.g. under the master launcher) take the Queen's verdict."""
@@ -771,12 +904,20 @@ class UnifiedKillChain:
                     order_result = self.kraken.place_market_order(kraken_pair, 'buy', volume)
                     
                     if order_result and not order_result.get('error'):
-                        log_sniper(f"💥 ORDER FILLED! {order_result}")
-                        result = {'status': 'FILLED', 'pair': kraken_pair, 'exchange': 'kraken', 
+                        label = _attempt_log_status(order_result, 'kraken')
+                        if label == 'FILLED':
+                            log_sniper(f"💥 ORDER FILLED! {order_result}")
+                        else:
+                            log_sniper(f"❌ Order {label}: {order_result}")
+                        result = {'status': label, 'pair': kraken_pair, 'exchange': 'kraken',
                                   'volume': volume, 'order': order_result}
                     else:
+                        label = (
+                            _attempt_log_status(order_result, 'kraken')
+                            if isinstance(order_result, dict) else 'FAILED'
+                        )
                         log_sniper(f"❌ Order failed: {order_result}")
-                        result = {'status': 'FAILED', 'error': order_result}
+                        result = {'status': label, 'error': order_result}
                 else:
                     result = {'status': 'NO_PRICE', 'exchange': 'kraken'}
                 
@@ -807,12 +948,20 @@ class UnifiedKillChain:
                     order_result = self.binance.place_market_order(symbol, 'BUY', volume)
                     
                     if order_result and order_result.get('status') == 'FILLED':
-                        log_sniper(f"💥 ORDER FILLED! {order_result}")
-                        result = {'status': 'FILLED', 'pair': symbol, 'exchange': 'binance',
+                        label = _attempt_log_status(order_result, 'binance')
+                        if label == 'FILLED':
+                            log_sniper(f"💥 ORDER FILLED! {order_result}")
+                        else:
+                            log_sniper(f"❌ Order {label}: {order_result}")
+                        result = {'status': label, 'pair': symbol, 'exchange': 'binance',
                                   'volume': volume, 'order': order_result}
                     else:
+                        label = (
+                            _attempt_log_status(order_result, 'binance')
+                            if isinstance(order_result, dict) else 'FAILED'
+                        )
                         log_sniper(f"❌ Order failed: {order_result}")
-                        result = {'status': 'FAILED', 'error': order_result}
+                        result = {'status': label, 'error': order_result}
                 else:
                     result = {'status': 'NO_PRICE', 'exchange': 'binance'}
                 
