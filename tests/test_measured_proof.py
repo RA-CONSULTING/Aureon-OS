@@ -65,7 +65,16 @@ def test_brain_proof_matches_the_committed_run_and_holds_without_labels():
     assert diagnosis["formula_ceiling"]["ready_marks"] == 0
     assert diagnosis["formula_ceiling"]["highest_coherence"] < diagnosis["status_ladder"]["ready_threshold"]
     assert diagnosis["ready_mark_below_sweep"] is True
-    assert diagnosis["window_matches_final_else"] is True
+    # PR 343 made the 0.40 LOW COHERENCE band reachable. This window's
+    # coherence sits in that band, so the final else (COHERENCE BREAK) does not run.
+    assert diagnosis["window_matches_final_else"] is False
+    assert "LOW COHERENCE" in fresh["auris"]["coherence_status"]
+    ladder = diagnosis["status_ladder"]
+    low = next(item for item in ladder["compares"] if "LOW COHERENCE" in item["status"])
+    moderate = next(item for item in ladder["compares"] if "MODERATE COHERENCE" in item["status"])
+    assert low["ready_mark"] is False
+    assert low["threshold"] <= fresh["auris"]["coherence"] < moderate["threshold"]
+    assert ladder["later_compare_buried_under_a_lower_band"] is False
     assert "Deer" in trade["nodes_without_reading_on_a_label"]
     assert "does not invent outcome labels" in diagnosis["next_stage"]
     assert fresh["auris"]["nodes"]["Clownfish"]["data_status"] == "reading"
