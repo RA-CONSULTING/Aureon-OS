@@ -70,6 +70,12 @@ from aureon.ollama_config import (
 load_dotenv()
 logger = logging.getLogger(__name__)
 
+# Missing issuance endpoint (HTTP 404) used to log an error about every 35s.
+# Back off instead. The first failure is a warning; later attempts summarize.
+# The cap is 15 minutes. A failure never invents a token.
+TOKEN_BACKOFF_INITIAL_S = 30.0
+TOKEN_BACKOFF_CAP_S = 15 * 60.0
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # ⚡ HARMONIC HFT COMPRESSION - MINIMAL TOKENS FOR DR. AURIS
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -139,6 +145,10 @@ class SeroClient:
         self._cached_token = None
         self._token_expiry = 0  # Unix timestamp when token expires
         self._token_ttl = 300  # 5 minute token cache TTL
+        self._token_backoff_until = 0.0
+        self._token_backoff_s = 0.0
+        self._token_failure_count = 0
+        self._token_suppressed_logs = 0
         
         if not self.enabled:
             logger.warning("Dr Auris Throne Chatbot not configured - AI augmentation disabled")
@@ -387,18 +397,57 @@ Reply: PROCEED/CAUTION/ABORT + 0.0-1.0 + reason"""
             logger.warning("Dr Auris Ollama fallback failed: %s", type(exc).__name__)
             return None
 
-    async def _get_access_token(self, session: aiohttp.ClientSession) -> Optional[str]:
+    def _note_token_issuance_failure(self, status: object, detail: str) -> None:
+        """Remember a failed issuance and stretch the quiet period.
+
+        The first failure is one warning. Later real attempts log a summary.
+        Calls that arrive while the quiet period is open are counted, not logged.
+        """
+        self._token_failure_count += 1
+        if self._token_backoff_s <= 0:
+            delay = TOKEN_BACKOFF_INITIAL_S
+        else:
+            delay = min(self._token_backoff_s * 2.0, TOKEN_BACKOFF_CAP_S)
+        self._token_backoff_s = delay
+        self._token_backoff_until = time.monotonic() + delay
+        if self._token_failure_count == 1:
+            logger.warning("Token issuance failed: %s | %s", status, detail)
+            return
+        suppressed = self._token_suppressed_logs
+        self._token_suppressed_logs = 0
+        logger.warning(
+            "Token issuance still failing (%s); %s attempts, %s repeats not logged; next attempt in %.0fs",
+            status,
+            self._token_failure_count,
+            suppressed,
+            delay,
+        )
+
+    def _clear_token_issuance_failure(self) -> None:
+        self._token_backoff_until = 0.0
+        self._token_backoff_s = 0.0
+        self._token_failure_count = 0
+        self._token_suppressed_logs = 0
+
+    async def _get_access_token(self, session: aiohttp.ClientSession) -> str | None:
         """Issue access token via DigitalOcean Agents auth endpoint.
-        
+
         ⚡ TOKEN CACHING: Reuses cached token for 5 minutes to reduce API calls.
         This is critical for avoiding rate limits!
+
+        A missing endpoint returns None. It does not invent a token, and it
+        does not ask again until the backoff window (capped at 15 minutes) opens.
         """
         # ⚡ CHECK CACHE FIRST - Don't request new token if we have a valid one!
         now = time.time()
         if self._cached_token and now < self._token_expiry:
             logger.debug(f"Using cached token (expires in {self._token_expiry - now:.0f}s)")
             return self._cached_token
-        
+
+        if time.monotonic() < self._token_backoff_until:
+            self._token_suppressed_logs += 1
+            return None
+
         url = f"https://cloud.digitalocean.com/gen-ai/auth/agents/{self.agent_id}/token"
         api_keys = []
         if self.chatbot_id:
@@ -406,6 +455,7 @@ Reply: PROCEED/CAUTION/ABORT + 0.0-1.0 + reason"""
         if self.api_key and self.api_key != self.chatbot_id:
             api_keys.append(self.api_key)
 
+        last_failure: tuple[object, str] | None = None
         for key in api_keys:
             headers = {
                 'Content-Type': 'application/json',
@@ -415,19 +465,24 @@ Reply: PROCEED/CAUTION/ABORT + 0.0-1.0 + reason"""
                 async with session.post(url, json={}, headers=headers) as resp:
                     if resp.status == 200:
                         data = await resp.json()
-                        token = data.get('access_token')
-                        if token:
-                            # ⚡ CACHE THE TOKEN
+                        token = data.get('access_token') if isinstance(data, dict) else None
+                        if isinstance(token, str) and token:
+                            # ⚡ CACHE THE TOKEN — only a token the endpoint actually issued
                             self._cached_token = token
                             self._token_expiry = now + self._token_ttl
+                            self._clear_token_issuance_failure()
                             logger.info(f"New token acquired (cached for {self._token_ttl}s)")
-                        return token
+                            return token
+                        last_failure = (resp.status, "missing access_token")
+                        continue
                     text = await resp.text()
-                    logger.error(f"Token issuance failed: {resp.status} | {text[:200]}")
-            except aiohttp.ClientError as e:
-                logger.error(f"Token request failed: {e}")
+                    last_failure = (resp.status, text[:200])
+            except aiohttp.ClientError:
+                last_failure = ("error", "ClientError")
                 continue
 
+        if last_failure is not None:
+            self._note_token_issuance_failure(*last_failure)
         return None
     
     def _parse_trading_response(self, response: Optional[Dict[str, Any]]) -> Optional[SeroAdvice]:
