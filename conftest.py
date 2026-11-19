@@ -220,6 +220,12 @@ _JOURNAL_ENV_KEYS = {
     "AUREON_AUTONOMY_AUDIT_PATH",
     "AUREON_OPERATOR_REPO_INDEX_PATH",
 }
+# Non-secret opt-ins for tests that are skipped by default.  They must survive
+# the AUREON_* scrub below or the opt-in could never be switched on.
+_OPT_IN_TEST_ENV_KEYS = {
+    "AUREON_REAL_DISPLAY_TEST",
+    "AUREON_REAL_DISPLAY_ARTIFACTS",
+}
 _EXCHANGE_ENV_PREFIXES = ("ALPACA_", "APCA_", "KRAKEN_", "BINANCE_", "CAPITAL_", "COINAPI_")
 
 
@@ -231,7 +237,11 @@ def _isolate_leaked_credentials() -> None:
     """
 
     for key in list(os.environ):
-        if key.startswith("AUREON_") and key not in _JOURNAL_ENV_KEYS:
+        if (
+            key.startswith("AUREON_")
+            and key not in _JOURNAL_ENV_KEYS
+            and key not in _OPT_IN_TEST_ENV_KEYS
+        ):
             os.environ.pop(key, None)
             continue
         if key.startswith(_EXCHANGE_ENV_PREFIXES):
