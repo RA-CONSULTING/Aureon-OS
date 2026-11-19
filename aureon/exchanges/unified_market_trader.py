@@ -2003,6 +2003,119 @@ class UnifiedMarketTrader:
         )
         return items
 
+    def _alpaca_spot_route_readiness(self) -> Dict[str, Any]:
+        """Spot-route auth. Unknown and refused credentials are not ready."""
+
+        client = self.alpaca
+        if client is None:
+            return {
+                "ready": False,
+                "reason": str(getattr(self, "alpaca_error", "") or "alpaca auth unchecked"),
+            }
+        status = str(getattr(client, "auth_status", "") or "")
+        reason = str(getattr(client, "auth_reason", "") or "")
+        if status == "verified":
+            return {"ready": True, "reason": "ok"}
+        if status in {"rejected", "failed"}:
+            return {"ready": False, "reason": reason or "alpaca auth unchecked"}
+        if getattr(client, "auth_verified", False) is True:
+            return {"ready": True, "reason": "ok"}
+        init_error = str(getattr(client, "init_error", "") or "")
+        trader_error = str(getattr(self, "alpaca_error", "") or "")
+        if init_error.startswith("auth_failed_"):
+            return {
+                "ready": False,
+                "reason": f"alpaca auth rejected {init_error[len('auth_failed_'):]}",
+            }
+        if init_error or trader_error:
+            return {"ready": False, "reason": init_error or trader_error}
+        return {"ready": False, "reason": reason or "alpaca auth unchecked"}
+
+    def _binance_auth_detail(self, detail: str) -> str:
+        text = str(detail or "").strip()
+        if not text:
+            return "binance auth unchecked"
+        if text.startswith("binance auth ") or text.startswith("binance account call failed"):
+            return text
+        if "40110000" in text:
+            return "binance auth rejected 40110000"
+        for code in ("-2015", "-2014"):
+            if f'"code":{code}' in text or f'"code": {code}' in text:
+                return f"binance auth rejected {code}"
+        if "401" in text:
+            return "binance auth rejected 401"
+        if "403" in text:
+            return "binance auth rejected 403"
+        return text
+
+    def _binance_spot_route_readiness(self) -> Dict[str, Any]:
+        """Spot-route auth. A public ping does not make the account ready."""
+
+        client = self.binance
+        diag = getattr(self, "_binance_diag", {}) or {}
+        if not isinstance(diag, dict):
+            diag = {}
+        status = str(getattr(client, "auth_status", "") or "") if client is not None else ""
+        reason = str(getattr(client, "auth_reason", "") or "") if client is not None else ""
+        diag_status = str(diag.get("auth_status") or "")
+        if status == "verified" or (
+            status not in {"rejected", "failed"} and diag_status == "verified"
+        ):
+            return {"ready": True, "reason": "ok", "account_ready": True}
+        if status in {"rejected", "failed"}:
+            return {
+                "ready": False,
+                "reason": reason or "binance auth unchecked",
+                "account_ready": False,
+            }
+        if diag_status in {"rejected", "failed"}:
+            return {
+                "ready": False,
+                "reason": str(diag.get("auth_reason") or "binance auth unchecked"),
+                "account_ready": False,
+            }
+        if status not in {"rejected", "failed"} and diag.get("account_ok") is True:
+            return {"ready": True, "reason": "ok", "account_ready": True}
+        if client is None:
+            return {
+                "ready": False,
+                "reason": str(getattr(self, "binance_error", "") or "binance auth unchecked"),
+                "account_ready": False,
+            }
+        detail = str(
+            diag.get("auth_reason")
+            or diag.get("account_error")
+            or getattr(self, "binance_error", "")
+            or ""
+        )
+        return {
+            "ready": False,
+            "reason": self._binance_auth_detail(detail),
+            "account_ready": False,
+        }
+
+    def _alpaca_spot_route_text(self) -> str:
+        report = self._alpaca_spot_route_readiness()
+        state = "spot_route_ready" if report["ready"] else "spot_route_not_ready"
+        return f"ALPACA: {state} | {report['reason']}"
+
+    def _binance_spot_route_text(self) -> str:
+        report = self._binance_spot_route_readiness()
+        if self.binance is None:
+            return f"BINANCE: unavailable | {report['reason']}"
+        diag = getattr(self, "_binance_diag", {}) or {}
+        if not isinstance(diag, dict):
+            diag = {}
+        state = "spot_route_ready" if report["ready"] else "spot_route_not_ready"
+        return (
+            "BINANCE: "
+            f"{state} "
+            f"account_ready={bool(report.get('account_ready'))} "
+            f"margin_available={bool(diag.get('margin_available', False))} "
+            f"uk_mode={bool(diag.get('uk_mode', getattr(self.binance, 'uk_mode', False)))} "
+            f"| {report['reason']}"
+        )
+
     def _build_preflight_report(self) -> Dict[str, Any]:
         items: List[Dict[str, Any]] = []
 
@@ -2023,33 +2136,33 @@ class UnifiedMarketTrader:
             )
         )
 
-        alpaca_ok = self.alpaca is not None and not bool(getattr(self.alpaca, "init_error", "") or self.alpaca_error)
+        alpaca_report = self._alpaca_spot_route_readiness()
+        alpaca_ok = bool(alpaca_report["ready"])
         items.append(
             self._preflight_item(
                 "alpaca_spot_execution_route",
                 alpaca_ok,
                 "warning" if not alpaca_ok else "ok",
-                self.alpaca_error or str(getattr(self.alpaca, "init_error", "") or ("ready" if self.alpaca is not None else "not_initialized")),
+                str(alpaca_report["reason"]),
                 meta={"market_type": "spot_crypto", "intent_route": True},
             )
         )
 
         binance_diag = getattr(self, "_binance_diag", {}) or {}
-        binance_network_ok = bool(binance_diag.get("network_ok", False))
+        binance_report = self._binance_spot_route_readiness()
+        binance_ok = bool(binance_report["ready"])
         items.append(
             self._preflight_item(
                 "binance_spot_margin_execution_route",
-                self.binance is not None and binance_network_ok,
-                "warning" if self.binance is not None else "warning",
-                self.binance_error
-                or str((binance_diag.get("init_error") if isinstance(binance_diag, dict) else "") or "")
-                or ("ready" if binance_network_ok else "network_unavailable"),
+                binance_ok,
+                "warning" if not binance_ok else "ok",
+                str(binance_report["reason"]),
                 meta={
                     "market_type": "spot_crypto_and_margin",
                     "intent_route": True,
-                    "account_ready": bool(binance_diag.get("account_ok", False)),
-                    "margin_available": bool(binance_diag.get("margin_available", False)),
-                    "uk_mode": bool(binance_diag.get("uk_mode", False)),
+                    "account_ready": bool(binance_report.get("account_ready")),
+                    "margin_available": bool(binance_diag.get("margin_available", False)) if isinstance(binance_diag, dict) else False,
+                    "uk_mode": bool(binance_diag.get("uk_mode", False)) if isinstance(binance_diag, dict) else False,
                 },
             )
         )
@@ -3409,10 +3522,9 @@ class UnifiedMarketTrader:
         if exchange_norm == "capital":
             return bool(self.capital_ready and self.capital is not None)
         if exchange_norm == "alpaca":
-            return bool(self.alpaca is not None and not bool(getattr(self.alpaca, "init_error", "") or self.alpaca_error))
+            return bool(self._alpaca_spot_route_readiness()["ready"])
         if exchange_norm == "binance":
-            diag = getattr(self, "_binance_diag", {}) or {}
-            return bool(self.binance is not None and (diag.get("network_ok") is True or diag.get("account_ok") is True))
+            return bool(self._binance_spot_route_readiness()["ready"])
         return False
 
     def _build_dynamic_intelligence_budget(
@@ -8201,9 +8313,12 @@ class UnifiedMarketTrader:
             )
         )
         binance_diag = getattr(self, "_binance_diag", {}) or {}
-        alpaca_ok = self.alpaca is not None and not bool(getattr(self.alpaca, "init_error", "") or self.alpaca_error)
+        alpaca_report = self._alpaca_spot_route_readiness()
+        alpaca_ok = bool(alpaca_report["ready"])
+        binance_report = self._binance_spot_route_readiness()
+        binance_spot_ready = bool(binance_report["ready"])
         binance_network_ok = self.binance is not None and bool(binance_diag.get("network_ok", False))
-        binance_account_ok = bool(binance_diag.get("account_ok", False))
+        binance_account_ok = binance_spot_ready
         binance_margin_ok = bool(binance_diag.get("margin_available", False)) and not bool(
             binance_diag.get("uk_mode", getattr(self.binance, "uk_mode", False) if self.binance is not None else False)
         )
@@ -8331,7 +8446,7 @@ class UnifiedMarketTrader:
                         "spot",
                         alpaca_tradables.get(normalized, normalized),
                         alpaca_ok,
-                        [] if alpaca_ok else [self.alpaca_error or "alpaca_not_ready"],
+                        [] if alpaca_ok else [str(alpaca_report["reason"] or "alpaca auth unchecked")],
                         side=route_side,
                     )
                 )
@@ -8341,8 +8456,8 @@ class UnifiedMarketTrader:
                         "binance",
                         "spot",
                         binance_tradables.get(normalized, normalized),
-                        binance_network_ok,
-                        [] if binance_network_ok else [self.binance_error or "binance_network_not_ready"],
+                        binance_spot_ready,
+                        [] if binance_spot_ready else [str(binance_report["reason"] or "binance auth unchecked")],
                         side=route_side,
                     )
                 )
@@ -11580,9 +11695,10 @@ class UnifiedMarketTrader:
         if booting and boot_age_sec > max(READY_STALE_AFTER_SEC * 3.0, 180.0):
             stale_reason = "booting_timeout"
         stale = bool(stale_reason)
-        alpaca_ok = self.alpaca is not None and not bool(self.alpaca_error or getattr(self.alpaca, "init_error", ""))
-        binance_diag = getattr(self, "_binance_diag", {}) or {}
-        binance_ok = self.binance is not None and bool(binance_diag.get("network_ok", False))
+        alpaca_report = self._alpaca_spot_route_readiness()
+        alpaca_ok = bool(alpaca_report["ready"])
+        binance_report = self._binance_spot_route_readiness()
+        binance_ok = bool(binance_report["ready"])
         client_trading_ready = bool(self.kraken_ready and self.capital_ready)
         client_data_ready = bool(alpaca_ok and binance_ok)
         shared_order_flow = payload.get("shared_order_flow", {}) if isinstance(payload.get("shared_order_flow"), dict) else {}
@@ -11696,8 +11812,8 @@ class UnifiedMarketTrader:
             "errors": {
                 "kraken": self.kraken_error,
                 "capital": self.capital_error,
-                "alpaca": self.alpaca_error,
-                "binance": self.binance_error,
+                "alpaca": "" if alpaca_ok else alpaca_report["reason"],
+                "binance": "" if binance_ok else binance_report["reason"],
                 "last_tick_error": self._last_tick_error,
             },
             "combined": {
@@ -11842,20 +11958,8 @@ class UnifiedMarketTrader:
                     )
             if parts:
                 lines.append("API governor: " + " ".join(parts))
-        alpaca_state = "ready" if self.alpaca is not None and not self.alpaca_error else "unavailable"
-        lines.append(f"ALPACA: spot_route_{alpaca_state} | {self.alpaca_error or 'ok'}")
-        binance_diag = getattr(self, "_binance_diag", {}) or {}
-        if self.binance is not None:
-            lines.append(
-                "BINANCE: "
-                f"spot_route_ready={bool(binance_diag.get('network_ok', False))} "
-                f"account_ready={bool(binance_diag.get('account_ok', False))} "
-                f"margin_available={bool(binance_diag.get('margin_available', False))} "
-                f"uk_mode={bool(binance_diag.get('uk_mode', getattr(self.binance, 'uk_mode', False)))} "
-                f"| {self.binance_error or 'ok'}"
-            )
-        else:
-            lines.append(f"BINANCE: unavailable | {self.binance_error or 'not_ready'}")
+        lines.append(self._alpaca_spot_route_text())
+        lines.append(self._binance_spot_route_text())
         if self.kraken_ready and self.kraken is not None:
             lines.extend(self.kraken._latest_status_lines[-10:] if getattr(self.kraken, "_latest_status_lines", None) else [])
         else:
@@ -11902,19 +12006,8 @@ class UnifiedMarketTrader:
             f"critical={int(preflight.get('critical_failures', 0) or 0)} "
             f"warnings={int(preflight.get('warnings', 0) or 0)}"
         )
-        _safe_print(f"  ALPACA: {'spot_route_ready' if self.alpaca is not None and not self.alpaca_error else 'spot_route_unavailable'} | {self.alpaca_error or 'ok'}")
-        binance_diag = getattr(self, "_binance_diag", {}) or {}
-        if self.binance is not None:
-            _safe_print(
-                "  BINANCE: "
-                f"spot_route_ready={bool(binance_diag.get('network_ok', False))} "
-                f"account_ready={bool(binance_diag.get('account_ok', False))} "
-                f"margin_available={bool(binance_diag.get('margin_available', False))} "
-                f"uk_mode={bool(binance_diag.get('uk_mode', getattr(self.binance, 'uk_mode', False)))} "
-                f"| {self.binance_error or 'ok'}"
-            )
-        else:
-            _safe_print(f"  BINANCE: unavailable | {self.binance_error or 'not_ready'}")
+        _safe_print(f"  {self._alpaca_spot_route_text()}")
+        _safe_print(f"  {self._binance_spot_route_text()}")
         _safe_print("-" * 78)
         _safe_print("  [KRAKEN]")
         if self.kraken_ready and self.kraken is not None:
@@ -12108,8 +12201,8 @@ class UnifiedMarketTrader:
             self._publish_thought("unified.status", {
                 "kraken_ready": self.kraken_ready,
                 "capital_ready": self.capital_ready,
-                "alpaca_ready": self.alpaca is not None and not bool(self.alpaca_error),
-                "binance_ready": self.binance is not None and bool((getattr(self, "_binance_diag", {}) or {}).get("network_ok", False)),
+                "alpaca_ready": bool(self._alpaca_spot_route_readiness()["ready"]),
+                "binance_ready": bool(self._binance_spot_route_readiness()["ready"]),
                 "uptime_secs": now - self.start_time,
                 "api_governor": self._api_governor_snapshot(),
             })

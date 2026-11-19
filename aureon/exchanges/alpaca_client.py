@@ -195,6 +195,11 @@ class AlpacaClient:
         self.init_error: str = ""
         self.auth_probe_warning = ""
         self.auth_verified = False
+        # Keys in the environment are not an authenticated call. Readiness
+        # stays unchecked until an account/auth response is observed.
+        self.auth_status = "unchecked"
+        self.auth_reason = "alpaca auth unchecked"
+        self._auth_state_lock = threading.Lock()
         self._auth_probe_thread: Optional[threading.Thread] = None
         self._auth_probe_lock = threading.Lock()
         self._closed = False
@@ -343,6 +348,55 @@ class AlpacaClient:
             logger.warning("Alpaca API keys not found in environment variables.")
             self.init_error = "credentials_missing"
             self.is_authenticated = False
+            self.auth_status = "failed"
+            self.auth_reason = "credentials_missing"
+
+    def _set_auth_outcome(self, status: str, reason: str) -> None:
+        lock = getattr(self, "_auth_state_lock", None)
+        if lock is None:
+            lock = threading.Lock()
+            self._auth_state_lock = lock
+        with lock:
+            self.auth_status = status
+            self.auth_reason = reason
+            self.auth_verified = status == "verified"
+
+    def _observe_auth_response(
+        self,
+        resp: Any,
+        *,
+        endpoint: str,
+        request_type: str,
+        request_base: str,
+    ) -> None:
+        """Record the latest auth or account response. Does not retry."""
+
+        try:
+            status_code = int(getattr(resp, "status_code", 0) or 0)
+        except (TypeError, ValueError):
+            status_code = 0
+        try:
+            body = getattr(resp, "text", "") or ""
+        except Exception:
+            body = ""
+        if not isinstance(body, str):
+            body = str(body)
+        code_match = re.search(r'"code"\s*:\s*"?(?P<code>-?\d+)"?', body)
+        code = code_match.group("code") if code_match else ""
+        if status_code in (401, 403) or code == "40110000":
+            self._set_auth_outcome("rejected", f"alpaca auth rejected {code or status_code}")
+            return
+        authenticated_call = (
+            str(request_type or "") == "trading"
+            and str(endpoint or "").startswith("/v2/")
+            and request_base == self.base_url
+        )
+        if not authenticated_call:
+            return
+        if 200 <= status_code < 300:
+            self._set_auth_outcome("verified", "ok")
+        elif status_code and status_code != 429:
+            self._set_auth_outcome("failed", f"alpaca account call failed {status_code}")
 
     def _probe_initial_auth(self) -> None:
         """Probe auth once without disabling the client on transient network issues."""
@@ -353,6 +407,12 @@ class AlpacaClient:
             auth_resp = self.session.get(test_url, timeout=self.auth_probe_timeout_seconds)
             if self._closed:
                 return
+            self._observe_auth_response(
+                auth_resp,
+                endpoint="/v2/account",
+                request_type="trading",
+                request_base=self.base_url,
+            )
             if auth_resp.status_code in (401, 403):
                 logger.warning(f"⚠️ Alpaca authentication failed ({auth_resp.status_code}). Disabling client.")
                 self.init_error = f"auth_failed_{auth_resp.status_code}"
@@ -468,6 +528,7 @@ class AlpacaClient:
         self.is_authenticated = False
         self.auth_verified = False
         self.init_error = "client_closed"
+        self._set_auth_outcome("failed", "client_closed")
         telemetry_stopped = self.stop_telemetry(timeout=timeout)
         try:
             self.session.close()
@@ -703,6 +764,13 @@ class AlpacaClient:
                     )
                 finally:
                     self._discard_economic_dispatch(dispatch)
+
+                self._observe_auth_response(
+                    resp,
+                    endpoint=endpoint,
+                    request_type=request_type,
+                    request_base=request_base,
+                )
 
                 # 🛡️ RATE LIMIT HANDLING - Respect Retry-After header if present
                 if resp.status_code == 429:

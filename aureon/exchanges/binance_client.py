@@ -1,4 +1,4 @@
-import os, time, hmac, hashlib, requests, json, logging, math, threading
+import os, time, hmac, hashlib, re, requests, json, logging, math, threading
 from pathlib import Path
 from decimal import Decimal, InvalidOperation, ROUND_DOWN
 from requests.adapters import HTTPAdapter
@@ -75,6 +75,11 @@ class BinanceClient:
         # Only require API keys if NOT in dry-run mode
         if not self.dry_run and (not self.api_key or not self.api_secret):
             raise ValueError("Missing BINANCE_API_KEY or BINANCE_API_SECRET in environment")
+
+        # Construction performs no account call. A public ping is not auth.
+        self.auth_status = "unchecked"
+        self.auth_reason = "binance auth unchecked"
+        self._auth_state_lock = threading.Lock()
         
         self.base = BINANCE_TESTNET if self.use_testnet else BINANCE_MAINNET
         self.session = requests.Session()
@@ -999,6 +1004,41 @@ class BinanceClient:
                 "exact_binance_mutation_query_and_body_required"
             )
 
+    def _set_auth_outcome(self, status: str, reason: str) -> None:
+        lock = getattr(self, "_auth_state_lock", None)
+        if lock is None:
+            lock = threading.Lock()
+            self._auth_state_lock = lock
+        with lock:
+            self.auth_status = status
+            self.auth_reason = reason
+
+    def _observe_signed_auth(self, resp: Any) -> None:
+        """Record a signed account response. Does not issue another request."""
+
+        try:
+            status_code = int(getattr(resp, "status_code", 0) or 0)
+        except (TypeError, ValueError):
+            status_code = 0
+        try:
+            body = getattr(resp, "text", "") or ""
+        except Exception:
+            body = ""
+        if not isinstance(body, str):
+            body = str(body)
+        code_match = re.search(r'"code"\s*:\s*"?(?P<code>-?\d+)"?', body)
+        code = code_match.group("code") if code_match else ""
+        if status_code in (401, 403) or code in {"40110000", "-2014", "-2015"}:
+            self._set_auth_outcome(
+                "rejected",
+                f"binance auth rejected {code or status_code}",
+            )
+            return
+        if 200 <= status_code < 300:
+            self._set_auth_outcome("verified", "ok")
+        elif status_code and status_code != 429:
+            self._set_auth_outcome("failed", f"binance account call failed {status_code}")
+
     def _do_request(
         self,
         method: str,
@@ -1008,6 +1048,7 @@ class BinanceClient:
         timeout: int = 15,
         *,
         _economic_dispatch: object | None = None,
+        signed: bool = False,
     ):
         """Internal request helper: respects rate limiter, handles 429 Retry-After and retries."""
         normalized_method = str(method).strip().upper()
@@ -1037,6 +1078,8 @@ class BinanceClient:
                     data=data,
                     timeout=timeout,
                 )
+                if signed:
+                    self._observe_signed_auth(resp)
             except Exception as e:
                 self.last_error = str(e)
                 if "[WinError 10013]" in self.last_error:
@@ -1132,6 +1175,7 @@ class BinanceClient:
                 path,
                 params=wire_params,
                 _economic_dispatch=dispatch,
+                signed=True,
             )
         finally:
             self._discard_economic_dispatch(dispatch)
@@ -1179,6 +1223,8 @@ class BinanceClient:
             "init_error": self.init_error,
             "last_error": self.last_error,
             "account_error": account_error,
+            "auth_status": getattr(self, "auth_status", "unchecked"),
+            "auth_reason": getattr(self, "auth_reason", "binance auth unchecked"),
         }
 
     def server_time(self) -> Dict[str, Any]:

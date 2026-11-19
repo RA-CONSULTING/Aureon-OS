@@ -1,0 +1,306 @@
+"""Spot-route readiness must follow venue auth, not client construction.
+
+Fake key strings only. The HTTP layer is mocked and a real socket call is a
+failure. No orders are placed.
+"""
+
+from __future__ import annotations
+
+import importlib.util
+import json
+import os
+from pathlib import Path
+
+import pytest
+import requests
+
+os.environ.setdefault("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS", "1")
+
+from aureon.exchanges.alpaca_client import AlpacaClient
+from aureon.exchanges.binance_client import BinanceClient
+
+
+ALPACA_AUTH_BODY = json.dumps(
+    {"code": 40110000, "message": "request is not authorized"}
+)
+BINANCE_ACCOUNT_BODY = json.dumps(
+    {
+        "accountType": "SPOT",
+        "canTrade": False,
+        "permissions": ["SPOT"],
+    }
+)
+
+
+class _BlockedSession:
+    """Stand-in that refuses every call until a test installs a scripted one."""
+
+    def __init__(self) -> None:
+        self.headers: dict[str, str] = {}
+        self.calls: list[str] = []
+
+    def request(self, method, url, **kwargs):
+        raise AssertionError(f"network blocked: {method} {url}")
+
+    def get(self, url, **kwargs):
+        raise AssertionError(f"network blocked: GET {url}")
+
+    def send(self, *args, **kwargs):
+        raise AssertionError("network blocked: session.send")
+
+    def mount(self, *args, **kwargs):
+        return None
+
+    def close(self) -> None:
+        return None
+
+
+class _Response:
+    def __init__(self, status_code: int, text: str) -> None:
+        self.status_code = status_code
+        self.text = text
+        self.headers: dict[str, str] = {}
+        self.ok = 200 <= status_code < 300
+
+    def json(self):
+        return json.loads(self.text)
+
+
+class _ScriptedSession(_BlockedSession):
+    def __init__(self, handler) -> None:
+        super().__init__()
+        self._handler = handler
+
+    def request(self, method, url, **kwargs):
+        self.calls.append(f"{method} {url}")
+        return self._handler(method, url, **kwargs)
+
+    def get(self, url, **kwargs):
+        return self.request("GET", url, **kwargs)
+
+
+def _block_real_http(monkeypatch) -> None:
+    def blocked(*args, **kwargs):
+        raise AssertionError("network blocked")
+
+    monkeypatch.setattr(requests.sessions.Session, "request", blocked)
+    monkeypatch.setattr(requests.sessions.Session, "send", blocked)
+    monkeypatch.setattr(requests.sessions.Session, "get", blocked)
+
+
+def _alpaca(monkeypatch) -> AlpacaClient:
+    monkeypatch.setenv("ALPACA_API_KEY", "fake-alpaca-key")
+    monkeypatch.setenv("ALPACA_SECRET_KEY", "fake-alpaca-secret")
+    monkeypatch.setenv("ALPACA_DRY_RUN", "false")
+    monkeypatch.setenv("ALPACA_PAPER", "false")
+    monkeypatch.delenv("PROMETHEUS_METRICS_PORT", raising=False)
+    client = AlpacaClient()
+    client._rate_limiter = type(
+        "NoWait",
+        (),
+        {
+            "wait_trading": lambda self: None,
+            "wait_data": lambda self: None,
+            "on_429_error": lambda self: None,
+        },
+    )()
+    client._global_rate_budget = None
+    client._account_cache = type(
+        "NoCache",
+        (),
+        {"get": lambda self, key: None, "set": lambda self, key, value, ttl=None: None},
+    )()
+    return client
+
+
+def _binance(monkeypatch) -> BinanceClient:
+    monkeypatch.setenv("BINANCE_API_KEY", "fake-binance-key")
+    monkeypatch.setenv("BINANCE_API_SECRET", "fake-binance-secret")
+    monkeypatch.setenv("BINANCE_DRY_RUN", "false")
+    monkeypatch.setenv("BINANCE_UK_MODE", "true")
+    client = BinanceClient()
+    client._rate_limiter = None
+    client._time_sync_timestamp = 10**12
+    return client
+
+
+def _trader():
+    helper_path = Path(__file__).with_name("test_unified_market_trader.py")
+    spec = importlib.util.spec_from_file_location(
+        "unified_market_trader_auth_helper", helper_path
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    trader = module.UnifiedMarketTraderTests()._make_trader()
+    trader.capital.status_lines = lambda: ["CAPITAL: session ready"]
+    trader.kraken._latest_status_lines = ["KRAKEN: ready"]
+    trader._kraken_spot_fast_profit_state = {
+        "enabled": False,
+        "open_positions": [],
+        "closed_positions": [],
+        "last_check": {},
+    }
+    trader.kraken_ready = True
+    trader.capital_ready = True
+    trader._kraken_tradable_symbols = lambda: {"BTCUSD": "XXBTZUSD"}
+    trader._kraken_spot_tradable_symbols = lambda: {"BTCUSD": "XBTUSD"}
+    trader._capital_tradable_symbols = lambda: {"BTCUSD": "BTCUSD"}
+    trader._alpaca_tradable_symbols = lambda: {"BTCUSD": "BTC/USD"}
+    trader._binance_tradable_symbols = lambda: {"BTCUSD": "BTCUSDT"}
+    return trader
+
+
+def _lines(trader) -> list[str]:
+    import sys
+
+    lines = list(trader.get_status_lines())
+    printed: list[str] = []
+
+    def capture(*args, **kwargs):
+        printed.append(" ".join(str(arg) for arg in args))
+
+    module = sys.modules[trader.__class__.__module__]
+    original = module._safe_print
+    module._safe_print = capture
+    try:
+        trader.print_status()
+    finally:
+        module._safe_print = original
+    lines.extend(printed)
+    return lines
+
+
+def _route_map(trader) -> dict[tuple[str, str], dict]:
+    central_beat = {
+        "symbols": {
+            "BTCUSD": {
+                "strength": 0.9,
+                "confidence": 0.88,
+                "support_count": 4,
+                "side": "BUY",
+                "sources": ["kraken", "capital", "alpaca", "binance"],
+                "reference_price": 50000.0,
+                "change_pct": 1.2,
+            }
+        }
+    }
+    order_flow = trader._build_global_order_flow_feed(
+        {}, {}, central_beat, {"symbols": {"BTCUSD": 0.9}}
+    )
+    routes = order_flow["active_order_flow"][0]["execution_routes"]
+    return {(route["venue"], route["market_type"]): route for route in routes}
+
+
+def test_unchecked_alpaca_is_not_spot_route_ready(monkeypatch):
+    _block_real_http(monkeypatch)
+    alpaca = _alpaca(monkeypatch)
+    alpaca.session = _BlockedSession()
+    trader = _trader()
+    trader.alpaca = alpaca
+    trader.alpaca_error = ""
+    trader.binance = None
+
+    text = "\n".join(_lines(trader))
+
+    assert "spot_route_ready | ok" not in text
+    assert "ALPACA: spot_route_not_ready | alpaca auth unchecked" in text
+    assert alpaca.session.calls == []
+
+
+def test_alpaca_40110000_is_not_ready_and_binance_success_stays_ready(monkeypatch):
+    _block_real_http(monkeypatch)
+    alpaca = _alpaca(monkeypatch)
+    binance = _binance(monkeypatch)
+
+    def alpaca_http(method, url, **kwargs):
+        assert kwargs.get("json") in (None, {})
+        if str(url).endswith("/v2/account"):
+            return _Response(401, ALPACA_AUTH_BODY)
+        if "data.alpaca.markets" in str(url):
+            return _Response(200, "{}")
+        raise AssertionError(f"unexpected alpaca url {url}")
+
+    def binance_http(method, url, **kwargs):
+        assert method.upper() == "GET"
+        if str(url).endswith("/api/v3/account"):
+            return _Response(200, BINANCE_ACCOUNT_BODY)
+        raise AssertionError(f"unexpected binance url {url}")
+
+    alpaca.session = _ScriptedSession(alpaca_http)
+    binance.session = _ScriptedSession(binance_http)
+
+    account = alpaca.get_account()
+    assert account == {}
+    binance_account = binance.account()
+    assert binance_account["accountType"] == "SPOT"
+    assert len(alpaca.session.calls) == 1
+    assert len(binance.session.calls) == 1
+
+    trader = _trader()
+    trader.alpaca = alpaca
+    trader.alpaca_error = ""
+    trader.binance = binance
+    trader.binance_error = ""
+    trader._binance_diag = {
+        "network_ok": True,
+        "account_ok": True,
+        "margin_available": False,
+        "uk_mode": True,
+        "auth_status": "verified",
+        "auth_reason": "ok",
+    }
+
+    before_status = (len(alpaca.session.calls), len(binance.session.calls))
+    text = "\n".join(_lines(trader))
+    assert (len(alpaca.session.calls), len(binance.session.calls)) == before_status
+
+    assert "ALPACA: spot_route_not_ready | alpaca auth rejected 40110000" in text
+    assert "spot_route_ready | ok" not in text.split("BINANCE:")[0]
+    assert "BINANCE: spot_route_ready" in text
+    assert "account_ready=True" in text
+    binance_line = next(line for line in text.splitlines() if "BINANCE:" in line and "spot_route" in line)
+    assert "| ok" in binance_line
+    assert "not_ready" not in binance_line
+    assert "40110000" not in binance_line
+
+    preflight = {item["name"]: item for item in trader._build_preflight_report()["items"]}
+    assert preflight["alpaca_spot_execution_route"]["ok"] is False
+    assert "alpaca auth rejected 40110000" in preflight["alpaca_spot_execution_route"]["detail"]
+    assert preflight["binance_spot_margin_execution_route"]["ok"] is True
+
+    routes = _route_map(trader)
+    assert routes[("alpaca", "spot")]["ready"] is False
+    assert "alpaca auth rejected 40110000" in routes[("alpaca", "spot")]["blockers"]
+    assert routes[("binance", "spot")]["ready"] is True
+    assert routes[("kraken", "margin")]["ready"] is True
+    assert routes[("capital", "cfd")]["ready"] is True
+
+    # A later public-data success must not clear the auth rejection.
+    alpaca._request(
+        "GET",
+        "/v1beta3/crypto/latest/quotes",
+        params={"symbols": "BTC/USD"},
+        base_url=alpaca.data_url,
+        request_type="data",
+    )
+    text_after_data = "\n".join(trader.get_status_lines())
+    assert "alpaca auth rejected 40110000" in text_after_data
+    assert "ALPACA: spot_route_ready | ok" not in text_after_data
+
+    def alpaca_ok(method, url, **kwargs):
+        if str(url).endswith("/v2/account"):
+            return _Response(200, '{"id":"fake-account","status":"ACTIVE"}')
+        raise AssertionError(f"unexpected alpaca url {url}")
+
+    alpaca.session = _ScriptedSession(alpaca_ok)
+    recovered = alpaca.get_account()
+    assert recovered.get("status") == "ACTIVE"
+    assert len(alpaca.session.calls) == 1
+
+    text_recovered = "\n".join(trader.get_status_lines())
+    assert "ALPACA: spot_route_ready | ok" in text_recovered
+    assert "BINANCE: spot_route_ready" in text_recovered
+    routes = _route_map(trader)
+    assert routes[("alpaca", "spot")]["ready"] is True
+    assert routes[("binance", "spot")]["ready"] is True
