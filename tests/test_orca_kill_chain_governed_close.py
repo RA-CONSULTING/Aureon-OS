@@ -55,8 +55,10 @@ def test_boundary_refusal_is_hold_and_not_fatal():
     assert c.close_position.call_count == 1
 
 
-def test_spot_sell_refusal_and_other_errors_not_fatal(monkeypatch):
+def test_spot_sell_refusal_and_other_errors_not_fatal(monkeypatch, tmp_path):
     # Spot sells now need a recorded Aureon entry (orca_spot_ownership); adopt the test holdings.
+    # Keep the exit record the kill chain writes out of the repo root.
+    monkeypatch.setenv("AUREON_ORCA_RECORDS_ROOT", str(tmp_path))
     monkeypatch.setenv("AUREON_ORCA_ADOPT_POSITIONS", "kraken:deal-1,binance:deal-1")
     c = _client()
     c.place_market_order.side_effect = EconomicGovernanceBlocked("x")

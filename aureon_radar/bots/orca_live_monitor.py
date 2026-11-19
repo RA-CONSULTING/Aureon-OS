@@ -310,7 +310,7 @@ def get_all_positions() -> Dict[str, List[Dict[str, Any]]]:
 
     Only holdings Aureon recorded as its own are returned (owner rule 9 Nov
     2026): Capital via orca_capital_ownership; Alpaca/Binance/Kraken via
-    orca_spot_ownership, with qty capped at Aureon's recorded net real fill.
+    orca_spot_ownership, with qty capped at Aureon's owned qty (confirmed real fills).
     A manual holding is skipped, never an exit candidate.
     """
     from aureon.exchanges.orca_spot_ownership import capped_qty as _capped_qty, split_owned_spot
@@ -347,7 +347,7 @@ def get_all_positions() -> Dict[str, List[Dict[str, Any]]]:
                 symbol = f"{asset}USDT"
                 amount = _capped_qty("binance", symbol, amount)
                 if amount <= 0:
-                    continue  # no recorded real Aureon fill: not ORCA's to exit
+                    continue  # not Aureon-owned: not ORCA's to exit
                 price_quote = binance.get_price(symbol)
                 price = price_quote.get("price", 0.0) if price_quote.get("ok") else 0.0
                 binance_positions.append({
@@ -375,7 +375,7 @@ def get_all_positions() -> Dict[str, List[Dict[str, Any]]]:
                 pair = f"{asset}/USD"
                 amount = _capped_qty("kraken", pair, amount)
                 if amount <= 0:
-                    continue  # no recorded real Aureon fill: not ORCA's to exit
+                    continue  # not Aureon-owned: not ORCA's to exit
                 try:
                     ticker = kraken.get_ticker(pair)
                     price = ticker.get("last", 0.0)
@@ -454,7 +454,7 @@ def submit_exit_order(
         record["qty"] = qty
         if qty <= 0:
             record["status"] = "refused"
-            record["error"] = "no recorded real Aureon fill for this holding; not closing a position Aureon did not open"
+            record["error"] = "not Aureon-owned (no confirmed real fill or adoption); not closing a position Aureon did not open"
             journal_live_order(record)
             return record
 

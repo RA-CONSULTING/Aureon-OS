@@ -484,10 +484,10 @@ class UnifiedKillChain:
             except Exception as e:
                 log_system(f"Capital Scan Error: {e}")
 
-        # 2. Crypto (Spot - requires a recorded real Aureon fill AND a cost basis).
+        # 2. Crypto (Spot - requires Aureon-owned qty AND a cost basis).
         # A balance, a cost_basis_history.json row or a paper/shadow book alone is
-        # not Aureon's (owner rule 9 Nov 2026); qty is capped at the recorded net
-        # real fill, see aureon.exchanges.orca_spot_ownership.
+        # not Aureon's (owner rule 9 Nov 2026); qty is capped at Aureon's owned
+        # qty (confirmed real fills), see aureon.exchanges.orca_spot_ownership.
         from aureon.exchanges.orca_spot_ownership import capped_qty as _capped_qty
         # Check Binance
         if self.binance:
@@ -503,7 +503,7 @@ class UnifiedKillChain:
                     if total > 0 and asset not in ['USDT', 'USDC', 'USD', 'EUR', 'GBP']:
                         total = _capped_qty('binance', asset, total)
                         if total <= 0:
-                            continue  # no recorded real Aureon fill: Gary's own holding, skip
+                            continue  # not Aureon-owned: Gary's own holding, skip
                         # Found non-stable asset. Check cost basis.
                         basis_key = f"{asset}USDT" # Assumption for lookup
                         basis = self.cost_basis.get(basis_key, {})
@@ -538,7 +538,7 @@ class UnifiedKillChain:
                     if total > 0 and asset not in ['USDT', 'USDC', 'USD', 'EUR', 'GBP', 'ZUSD', 'ZEUR']:
                         total = _capped_qty('kraken', asset, total)
                         if total <= 0:
-                            continue  # no recorded real Aureon fill: Gary's own holding, skip
+                            continue  # not Aureon-owned: Gary's own holding, skip
                          # Look for cost basis
                         basis_key = f"{asset}USD" # Standard Kraken
                         basis = self.cost_basis.get(basis_key, {})
@@ -659,9 +659,9 @@ class UnifiedKillChain:
             asset_key = target.get('id') or symbol
             sell_qty = _capped_qty(exchange, asset_key, target['qty'])
             if sell_qty <= 0:
-                log_system(f"{exchange}: refusing to sell {symbol}: no recorded real Aureon fill")
+                log_system(f"{exchange}: refusing to sell {symbol}: not Aureon-owned")
                 return
-            # Spot Kill (Sell) - never more than Aureon's recorded net real fill.
+            # Spot Kill (Sell) - never more than Aureon's owned qty.
             confirm = queen_answer(f"\n🔴 [{exchange.upper()}] SELL {sell_qty} {symbol}? [y/N]: ", target['pnl'] > 0)
             if confirm.lower() == 'y':
                 log_sniper("Firing...")
@@ -682,7 +682,11 @@ class UnifiedKillChain:
                 except Exception as e:
                     log_sniper(f"❌ Execution Exception: {e}")
                 finally:
-                    _record_spot_exit(exchange, symbol, asset_key, sell_qty, exit_status)
+                    try:
+                        from aureon.exchanges.orca_spot_ownership import record_spot_exit
+                        record_spot_exit(exchange, symbol, sell_qty, exit_status)
+                    except Exception as e:
+                        log_system(f"⚠️ could not record {exchange} exit of {sell_qty} {symbol}: {e}")
 
     def redeploy_energy(self):
         """Simulate identifying a buying opportunity."""
@@ -879,11 +883,18 @@ class UnifiedKillChain:
                                 actual_qty = float(buy_order.get('executedQty', volume))
                                 log_sniper(f"   ✅ Bought {actual_qty} {coin}")
                                 
-                                # Now sell on Binance
+                                # Now sell on Binance - only coins Aureon owns THERE. The
+                                # Kraken buy does not make Binance coins Aureon's; never
+                                # sell more than Aureon's owned Binance qty (owner rule 9 Nov).
+                                from aureon.exchanges.orca_spot_ownership import capped_qty as _capped_qty
                                 binance_symbol = f"{coin}USDT"
-                                log_sniper(f"   Step 2: SELL {actual_qty} {coin} on Binance")
-                                
-                                sell_order = self.binance.place_market_order(binance_symbol, 'SELL', actual_qty)
+                                sell_qty = _capped_qty('binance', binance_symbol, actual_qty)
+                                if sell_qty <= 0:
+                                    log_sniper(f"   ⛔ Not selling {coin} on Binance: not Aureon-owned there; holding {actual_qty} {coin} on Kraken")
+                                    sell_order = {'status': 'REFUSED', 'reason': 'binance_qty_not_aureon_owned'}
+                                else:
+                                    log_sniper(f"   Step 2: SELL {sell_qty} {coin} on Binance")
+                                    sell_order = self.binance.place_market_order(binance_symbol, 'SELL', sell_qty)
                                 
                                 if sell_order and sell_order.get('status') == 'FILLED':
                                     log_sniper(f"   ✅ ARBITRAGE COMPLETE!")
@@ -910,10 +921,9 @@ class UnifiedKillChain:
                 'timestamp': datetime.now().isoformat()
             })
             
-            # Save execution log (same file orca_spot_ownership reads real fills from)
+            # Save execution log
             try:
-                from aureon.exchanges.orca_spot_ownership import executions_path
-                with open(executions_path(), 'a') as f:
+                with open('orca_executions.json', 'a') as f:
                     f.write(json.dumps({
                         'timestamp': datetime.now().isoformat(),
                         'opportunity': opportunity,
@@ -961,24 +971,6 @@ class UnifiedKillChain:
                 print(f"      Price: ${op.get('price', 0):.6f} | Δ24h: {op.get('change_24h', 0):+.1f}%")
                 print(f"      Target: ${op.get('target', 0):.6f} | R:R: {op.get('risk_reward', 0):.1f}:1")
             print()
-
-def _record_spot_exit(exchange: str, symbol: str, asset: str, qty: float, status: str) -> None:
-    """Append a spot exit attempt so orca_spot_ownership subtracts it from the cap."""
-    try:
-        from aureon.exchanges.orca_spot_ownership import executions_path
-        with open(executions_path(), 'a') as f:
-            f.write(json.dumps({
-                'kind': 'exit',
-                'timestamp': datetime.now().isoformat(),
-                'exchange': exchange,
-                'symbol': symbol,
-                'asset': asset,
-                'qty': qty,
-                'status': status,
-            }) + '\n')
-    except Exception as e:
-        log_system(f"⚠️ could not record {exchange} exit of {qty} {symbol}: {e}")
-
 
 def _relay(kind: str, payload: dict) -> None:
     try:
