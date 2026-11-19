@@ -96,6 +96,76 @@ SIGNAL_LOG = RADAR_DIR / "signal_log.jsonl"
 SHADOW_LOG = RADAR_DIR / "shadow_trades.jsonl"
 LIVE_LOG = RADAR_DIR / "live_trades.jsonl"
 SCANNER_LOG = RADAR_DIR / "scanner_log.jsonl"
+_PHI_ENTRY_LEDGER = Path(__file__).resolve().parent / "trade_ledger.jsonl"
+
+# Permanent Capital ownership guard: never adopt or close a Capital deal
+# unless it is listed in orca_capital_ownership.adopted_deal_ids() or
+# Aureon itself has an entry record for it (trade_ledger.jsonl
+# CAPITAL_CONFIRMED, or live_trades.jsonl). Errors fail closed. New live
+# orders are unchanged.
+_PHI_ENTRY_STAGES = frozenset({"CAPITAL_CONFIRMED"})
+
+
+def _phi_is_capital_venue(venue) -> bool:
+    name = str(venue or "capital").strip().lower()
+    return name == "capital" or name.startswith("capital") or name.endswith("_capital")
+
+
+def _phi_jsonl_has_deal(path: Path, deal_id: str, *, id_keys, stages=None) -> bool:
+    if not path.is_file():
+        return False
+    with open(path, encoding="utf-8", errors="replace") as handle:
+        for raw in handle:
+            line = raw.strip()
+            if not line:
+                continue
+            try:
+                rec = json.loads(line)
+            except Exception:
+                continue
+            if not isinstance(rec, dict):
+                continue
+            if stages is not None and str(rec.get("stage") or "") not in stages:
+                continue
+            for key in id_keys:
+                if str(rec.get(key) or "") == deal_id:
+                    return True
+    return False
+
+
+def _phi_has_aureon_entry_record(deal_id) -> bool:
+    deal = str(deal_id or "")
+    if not deal:
+        return False
+    if _phi_jsonl_has_deal(
+        _PHI_ENTRY_LEDGER, deal,
+        id_keys=("deal_id", "dealId", "capital_position_id"),
+        stages=_PHI_ENTRY_STAGES,
+    ):
+        return True
+    return _phi_jsonl_has_deal(
+        LIVE_LOG, deal, id_keys=("dealId", "deal_id"),
+    )
+
+
+def _phi_capital_deal_owned(deal_id, venue=None) -> bool:
+    """True if this Capital deal is allowlisted or has an Aureon entry record.
+
+    Non-Capital venues are outside this guard. Any error fails closed.
+    """
+    try:
+        if not _phi_is_capital_venue(venue):
+            return True
+        deal = str(deal_id or "")
+        if not deal:
+            return False
+        from aureon.exchanges.orca_capital_ownership import adopted_deal_ids
+        if deal in adopted_deal_ids():
+            return True
+        return _phi_has_aureon_entry_record(deal)
+    except Exception:
+        return False
+
 OLLAMA_CACHE = RADAR_DIR / "ollama_cache"
 OLLAMA_CACHE.mkdir(exist_ok=True)
 
@@ -908,6 +978,10 @@ class AureonPhiRadar:
                 entry = float(pos.get("entry_price") or 0.0)
                 venue = str(pos.get("venue") or "capital").lower()
                 if not deal_id or not symbol or size <= 0 or entry <= 0:
+                    continue
+                if not _phi_capital_deal_owned(deal_id, venue):
+                    logger.error(f"[OWNERSHIP] not adopting broker position {symbol} "
+                                 f"dealId={deal_id} venue={venue}: not an adopted or Aureon-opened Capital deal")
                     continue
                 # Skip if already tracked (e.g. from persisted state)
                 if any(getattr(p, 'deal_id', None) == deal_id for p in self.live_positions):
@@ -2640,12 +2714,16 @@ class AureonPhiRadar:
     def _close_live_position(self, pot: HoneyPot, current_price: float,
                              reason: str) -> bool:
         """Close a single live position through the router."""
+        venue = getattr(pot, "venue", "capital")
+        if not _phi_capital_deal_owned(pot.deal_id, venue):
+            logger.error(f"[OWNERSHIP] refusing close of {pot.symbol} dealId={pot.deal_id} "
+                         f"reason={reason}: not an adopted or Aureon-opened Capital deal")
+            return False
         if pot.direction == 'LONG':
             pnl = (current_price - pot.entry_price) / pot.entry_price * 100
         else:
             pnl = (pot.entry_price - current_price) / pot.entry_price * 100
 
-        venue = getattr(pot, 'venue', 'capital')
         close_result = self.router.close_position(
             deal_id=pot.deal_id,
             venue=venue,
