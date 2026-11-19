@@ -36,7 +36,7 @@ SYNTHETIC_PLANTED = "synthetic_planted"
 _LABEL = "synthetic_planted. Seeded shuffles and planted impulses. Not a measured market rate."
 
 
-def _envelope(payload: dict[str, Any]) -> dict[str, Any]:
+def _envelope(payload: dict[str, Any], *, samples: int | None = None) -> dict[str, Any]:
     """Stamp every harness return ``synthetic_planted`` before it leaves this module."""
 
     payload["tag"] = SYNTHETIC_PLANTED
@@ -46,6 +46,8 @@ def _envelope(payload: dict[str, Any]) -> dict[str, Any]:
     payload["label"] = _LABEL
     payload["orders_placed"] = False
     payload["rates_verdict"] = SYNTHETIC_PLANTED
+    if samples is not None:
+        payload["samples"] = int(samples)
     nested = payload.get("signal_in_noise")
     if isinstance(nested, dict):
         nested["tag"] = SYNTHETIC_PLANTED
@@ -71,7 +73,7 @@ def _hold(reason: str, samples: int | None = None) -> dict[str, Any]:
     }
     if samples is not None:
         body["signal_in_noise"]["samples"] = samples
-    return _envelope(body)
+    return _envelope(body, samples=samples)
 
 
 def _unit_variance(values: list[float]) -> tuple[list[float], float, float] | None:
@@ -316,14 +318,17 @@ def measure_signal_in_noise(values: list[float]) -> dict[str, Any]:
             "cells": cells,
         },
     }
-    return _envelope(result)
+    return _envelope(result, samples=count)
 
 
 def rate_phrase(block: dict[str, Any]) -> str:
     """Name the harness as ``synthetic_planted``. This sentence is not a market-rate line."""
 
     if block.get("harness_status") != "scored":
-        return f"synthetic_planted harness, not scored. {block.get('rates_reason', '')}".rstrip()
+        return (
+            "synthetic_planted harness, not scored. Not a measured market rate. "
+            f"{block.get('rates_reason', '')}"
+        ).rstrip()
     return (
         "synthetic_planted harness. "
         f"Planted-impulse detection `{block.get('detection_rate')}` "

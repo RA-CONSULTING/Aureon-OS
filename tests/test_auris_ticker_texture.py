@@ -69,6 +69,21 @@ def test_quote_volume_and_explicit_spread_are_readings():
     assert texture["spread"] == 20.0
 
 
+def test_raw_volume_and_spread_are_not_clamped_into_a_node_reading():
+    trader = _trader()
+    proof = trader._build_auris_node_proof(
+        {"volume": 1250000.0, "spread": 20.0, "volatility": None, "momentum": None}
+    )
+    assert proof["nodes"]["CargoShip"]["value"] is None
+    assert proof["nodes"]["Deer"]["value"] is None
+
+    zero = trader._build_auris_node_proof(
+        {"volume": 0.0, "spread": 0.0, "volatility": None, "momentum": None}
+    )
+    assert zero["nodes"]["CargoShip"]["value"] == 0.0
+    assert zero["nodes"]["Deer"]["value"] == 0.0
+
+
 def test_the_old_scales_are_not_in_the_texture():
     source = (ROOT / "aureon/exchanges/unified_market_trader.py").read_text(encoding="utf-8")
     assert "avg_abs_change / 5.0" not in source

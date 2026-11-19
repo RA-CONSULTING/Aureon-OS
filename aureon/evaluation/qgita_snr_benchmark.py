@@ -12,6 +12,7 @@ from typing import Any
 
 
 def evaluate_qgita_snr(root: Path | None = None) -> dict[str, Any]:
+    """Return measured counts/HOLD plus a separately labelled synthetic harness."""
     from aureon.evaluation.brain_proof import evaluate_brain
 
     return evaluate_brain(root)["qgita"]
@@ -21,6 +22,8 @@ def render_qgita_markdown(report: dict[str, Any]) -> str:
     public = report.get("derived_series") or {}
     on_lambda = report.get("on_hnc_series") or {}
     on_market = report.get("on_market_series") or {}
+    from aureon.evaluation.qgita_series_rates import rate_phrase
+    synthetic = rate_phrase(report["test_only_synthetic"])
     lines = [
         "# QGITA analyzer",
         "",
@@ -46,6 +49,7 @@ def render_qgita_markdown(report: dict[str, Any]) -> str:
             f"{on_market.get('rates_reason', on_market.get('reason', ''))} "
             f"Clock: {on_market.get('timestamps', '')}"
         ),
+        synthetic,
         "The public series is not an order. Release boundary stays HOLD.",
         "",
     ]

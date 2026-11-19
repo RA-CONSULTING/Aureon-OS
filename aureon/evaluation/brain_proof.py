@@ -1483,6 +1483,19 @@ def _evaluate_brain(root: Path | None = None) -> dict[str, Any]:
             os.environ["AUREON_DISABLE_REAL_ORDERS"] = previous_orders
 
 
+def _synthetic_qgita_harness(pack: dict[str, Any]) -> dict[str, Any]:
+    from aureon.evaluation.qgita_series_rates import measure_signal_in_noise
+
+    values = [float(bar["close"]) for bar in pack.get("bars", [])] if pack.get("verdict") == "loaded" else []
+    return measure_signal_in_noise(values)
+
+
+def _synthetic_rate_phrase(report: dict[str, Any]) -> str:
+    from aureon.evaluation.qgita_series_rates import rate_phrase
+
+    return rate_phrase(report)
+
+
 def _evaluate_brain_body(root: Path) -> dict[str, Any]:
     pack = load_market_series(root)
     hnc = _run_hnc()
@@ -1546,6 +1559,7 @@ def _evaluate_brain_body(root: Path) -> dict[str, Any]:
             series_kind="formula",
         ),
     )
+    synthetic = _synthetic_qgita_harness(pack)
     return {
         "schema": "aureon.brain-proof.v1",
         "live_trading": False,
@@ -1560,6 +1574,7 @@ def _evaluate_brain_body(root: Path) -> dict[str, Any]:
             "derived_series": derived,
             "on_hnc_series": on_lambda,
             "on_market_series": _market_qgita(pack),
+            "test_only_synthetic": synthetic,
         },
         "together": {
             "qgita_on_the_formula_series": RATES_HOLD_VERDICT,
@@ -1586,6 +1601,7 @@ def render_brain_markdown(report: dict[str, Any]) -> str:
     public = report["qgita"]["derived_series"]
     on_lambda = report["qgita"]["on_hnc_series"]
     on_market = report["qgita"].get("on_market_series") or {}
+    synthetic = _synthetic_rate_phrase(report["qgita"]["test_only_synthetic"])
     series_nodes = auris.get("market_nodes_without_reading")
     series_text = "no series loaded" if series_nodes is None else (", ".join(series_nodes) or "none")
     lines = [
@@ -1630,6 +1646,7 @@ def render_brain_markdown(report: dict[str, Any]) -> str:
             f"{_rate_line(on_market)} "
             f"Clock: {on_market.get('timestamps', '')}"
         ),
+        synthetic,
         (
             "Auris joined to Λ(t): **"
             f"{report['together']['auris_joined_to_lambda']['verdict']}**. "
