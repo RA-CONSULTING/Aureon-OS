@@ -112,3 +112,33 @@ def test_market_record_does_not_receive_the_harness() -> None:
     assert isinstance(harness["detection_rate"], float)
     assert market["detection_rate"] != harness["detection_rate"]
     assert market["false_alarm_rate"] != harness["false_alarm_rate"]
+
+
+def test_brain_proof_labels_the_synthetic_harness_and_preserves_market_hold(monkeypatch) -> None:
+    from aureon.evaluation import brain_proof
+    from aureon.evaluation.qgita_series_rates import measure_signal_in_noise
+
+    values = [float(index) + ((index * 17) % 5) * 0.01 for index in range(40)]
+    synthetic = measure_signal_in_noise(values)
+    monkeypatch.setattr(
+        "aureon.evaluation.qgita_series_rates.measure_signal_in_noise", lambda _values: synthetic
+    )
+    result = brain_proof._synthetic_qgita_harness({"verdict": "missing"})
+    _assert_synthetic_planted(result)
+    assert "synthetic_planted" in brain_proof._synthetic_rate_phrase(result).casefold()
+
+
+def test_qgita_benchmark_renders_only_the_labelled_synthetic_block() -> None:
+    from aureon.evaluation.qgita_snr_benchmark import render_qgita_markdown
+
+    synthetic = {
+        "harness_status": "not_scored", "rates_reason": "no public series loaded",
+        "detection_rate": None, "false_alarm_rate": None,
+    }
+    rendered = render_qgita_markdown({
+        "derived_series": {"evidence_tag": "cited-unverified"},
+        "on_hnc_series": {}, "on_market_series": {},
+        "test_only_synthetic": synthetic,
+    })
+    assert "synthetic_planted harness, not scored" in rendered
+    assert "measured market rate" in rendered

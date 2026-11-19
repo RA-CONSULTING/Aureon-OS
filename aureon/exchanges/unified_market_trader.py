@@ -10342,6 +10342,16 @@ class UnifiedMarketTrader:
             return self._finite_number(row.get("spread"), nonnegative=True)
         return None
 
+    def _node_unit(self, value: Optional[float]) -> Optional[float]:
+        """Return only an input already measured on the Auris node's [0, 1] scale.
+
+        Raw ticker volume and price-unit spread remain available as telemetry.
+        Without a documented conversion they must not become a saturated node value.
+        """
+        if value is None or not 0.0 <= value <= 1.0:
+            return None
+        return value
+
     def _mean_present(self, values: List[Optional[float]]) -> Optional[float]:
         present = [value for value in values if value is not None]
         if not present:
@@ -10457,7 +10467,13 @@ class UnifiedMarketTrader:
         from aureon.utils.aureon_queen_hive_mind import QueenHiveMind
 
         queen = QueenHiveMind.__new__(QueenHiveMind)
-        texture = {key: float(parsed[key]) for key in required_fields if parsed[key] is not None}
+        texture = {}
+        for key in required_fields:
+            number = parsed[key]
+            if key in ("volume", "spread"):
+                number = self._node_unit(number)
+            if number is not None:
+                texture[key] = float(number)
         raw_nodes = queen.read_auris_nodes(texture)
         coherence, status = queen.get_auris_coherence(texture)
         nodes: Dict[str, Any] = {}
