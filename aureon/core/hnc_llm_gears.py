@@ -68,6 +68,7 @@ class _GearVault:
         from aureon.core.hnc_field import assess_coherence
 
         # Gamma stays on its own input. It does not fill last_lambda_t.
+        # Lambda(t) is only the field's published lambda_t, or None.
         decision = assess_coherence(gamma)
         self.coherence_gamma = float(decision.value) if decision.accepted else None
         self.last_lambda_t = lambda_t
