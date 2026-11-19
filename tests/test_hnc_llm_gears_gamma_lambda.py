@@ -116,6 +116,9 @@ def test_real_zero_lambda_is_not_dropped(monkeypatch, captured) -> None:
     # A real 0.0 is the flat reading. If that 0.0 were turned into None,
     # Falcon would say "no Λ(t) reading" and this assertion would fail.
     assert "flat" in falcon.reasoning
+    # NodeVote stores the vote on verdict. If this flat vote were BUY
+    # while the wording stayed "flat", this assertion would fail.
+    assert falcon.verdict == "NEUTRAL"
     assert captured["last_lambda_t"] == 0.0
     assert captured["last_lambda_t"] is not None
     assert captured["coherence_gamma"] == pytest.approx(0.42)
