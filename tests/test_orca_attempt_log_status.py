@@ -14,6 +14,10 @@ MODULES = (
     "aureon.bots.orca_unified_kill_chain",
     "unified_margin_trader.orca_unified_kill_chain",
 )
+COPIES = (
+    "aureon_radar.bots.orca_unified_kill_chain",
+    "aureon.bots.orca_unified_kill_chain",
+)
 
 TXID = "OQCLML-BW3P3-BUCMWZ"
 ADD_ORDER_ACK = {
@@ -255,6 +259,10 @@ def test_binance_non_filled_status_is_not_filled(
     )
     assert status == provider_status
     assert status != "FILLED"
+    from aureon.exchanges.orca_attempt_fill import confirmed_exchange_fill
+
+    receipt = {"status": provider_status, "executedQty": "0.20000000", "orderId": 123456789}
+    assert confirmed_exchange_fill(receipt, "binance") is False
 
 
 def test_kraken_open_and_inf_are_not_confirmed_fills():
@@ -428,4 +436,65 @@ def test_kraken_submission_receipt_is_not_filled(module_name, monkeypatch, tmp_p
     assert "executedQty" in receipt
     status = _kraken_buy(_load(module_name), monkeypatch, tmp_path, receipt)
     assert status == "PENDING_RECONCILIATION"
+    assert status != "FILLED"
+
+
+@pytest.mark.parametrize("module_name", COPIES)
+def test_binance_executed_qty_true_is_not_filled(module_name, monkeypatch, tmp_path):
+    from aureon.exchanges.orca_attempt_fill import confirmed_exchange_fill
+
+    receipt = {"status": "FILLED", "executedQty": True, "orderId": 123456789}
+    status = _binance_buy(_load(module_name), monkeypatch, tmp_path, receipt)
+    assert status == "ZERO_FILL"
+    assert status != "FILLED"
+    assert confirmed_exchange_fill(receipt, "binance") is False
+
+
+@pytest.mark.parametrize("module_name", COPIES)
+@pytest.mark.parametrize("txid", ["unknown", "0", "none"])
+def test_sentinel_txid_set_is_not_a_real_fill(module_name, txid, monkeypatch, tmp_path):
+    from aureon.exchanges.orca_attempt_fill import confirmed_exchange_fill
+
+    receipt = {"status": "closed", "vol_exec": "0.20000000", "txid": txid}
+    status = _kraken_buy(_load(module_name), monkeypatch, tmp_path, receipt)
+    assert status == "CLOSED"
+    assert status != "FILLED"
+    assert confirmed_exchange_fill(receipt, "kraken") is False
+
+
+@pytest.mark.parametrize("module_name", COPIES)
+@pytest.mark.parametrize("flag", ["dryRun", "dry_run"])
+def test_dry_run_flag_either_spelling_is_not_submitted(
+    module_name, flag, monkeypatch, tmp_path
+):
+    receipt = {
+        flag: True,
+        "status": "closed",
+        "vol_exec": "0.20000000",
+        "txid": TXID,
+    }
+    status = _kraken_buy(_load(module_name), monkeypatch, tmp_path, receipt)
+    assert status == "NOT_SUBMITTED"
+    assert status != "FILLED"
+
+
+def test_padded_filled_error_text_is_not_filled():
+    from aureon.exchanges.orca_attempt_fill import _attempt_error_status
+
+    label = _attempt_error_status({"error": " filled "}, " filled ")
+    assert label == "FAILED"
+    assert label != "FILLED"
+
+
+@pytest.mark.parametrize("module_name", COPIES)
+def test_kraken_filled_status_with_short_error_is_not_filled(
+    module_name, monkeypatch, tmp_path
+):
+    status = _kraken_buy(
+        _load(module_name),
+        monkeypatch,
+        tmp_path,
+        {"status": "FILLED", "error": "x"},
+    )
+    assert status == "x"
     assert status != "FILLED"

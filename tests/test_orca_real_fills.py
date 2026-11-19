@@ -74,6 +74,15 @@ class _Kraken:
         return self.response
 
 
+def _kraken_closed(**overrides):
+    """Binance-shaped qty fields plus a Kraken closed fill the attempt log accepts."""
+    payload = _response(**overrides)
+    payload["status"] = "closed"
+    payload["vol_exec"] = payload.get("executedQty")
+    payload["txid"] = "OQCLML-BW3P3-BUCMWZ"
+    return payload
+
+
 def _response(**overrides):
     payload = {
         "status": "FILLED",
@@ -131,7 +140,7 @@ def test_partial_fill_records_partial_qty(isolated):
     chain.binance = client
     result = chain._execute_trade({"exchange": "binance", "symbol": "ETHUSDT", "price": 100})
 
-    assert result["status"] == "FAILED"
+    assert result["status"] == "PARTIALLY_FILLED"
     assert client.orders[0][2] == Decimal("0.1")
     rows = _rows(isolated)
     assert len(rows) == 1
@@ -187,7 +196,7 @@ def test_kraken_dry_run_not_submitted_receipt_contributes_zero(isolated):
     chain.kraken = client
     result = chain._execute_trade({"exchange": "kraken", "symbol": "ETHUSD", "price": 100})
 
-    assert result["status"] == "FILLED"  # attempt log still treats a non-error body as filled
+    assert result["status"] == "NOT_SUBMITTED"
     assert client.orders
     assert not isolated.exists()
     assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(0)
@@ -259,7 +268,7 @@ def test_other_statuses_contribute_zero_even_with_a_quantity(isolated):
 
 
 def test_completed_arbitrage_records_each_leg_on_its_venue(isolated):
-    buy = _response(orderId="K-884221", side="BUY", executedQty=FILLED_QTY, clientOrderId="ck-kraken-884221")
+    buy = _kraken_closed(orderId="K-884221", side="BUY", executedQty=FILLED_QTY, clientOrderId="ck-kraken-884221")
     sell = _response(orderId="B-884221", side="SELL", executedQty=FILLED_QTY, clientOrderId="ck-binance-884221")
     kraken = _Kraken(buy)
     binance = _Binance(sell)
@@ -396,7 +405,7 @@ def test_arbitrage_sell_larger_than_the_buy_clamps_that_venue(isolated):
     0.5, which is more than the Kraken buy. Owned qty on Binance is 0; the
     signed net is -0.5.
     """
-    buy = _response(orderId="K-884221", side="BUY", executedQty="0.02", clientOrderId="ck-kraken-884221")
+    buy = _kraken_closed(orderId="K-884221", side="BUY", executedQty="0.02", clientOrderId="ck-kraken-884221")
     sell = _response(orderId="B-884221", side="SELL", executedQty="0.5", clientOrderId="ck-binance-884221")
     kraken = _Kraken(buy)
     binance = _Binance(sell)

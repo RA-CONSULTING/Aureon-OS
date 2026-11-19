@@ -18,7 +18,7 @@ BY ANY MEANS NECESSARY - ONLY WINS COUNT
 Refactored from `orca_complete_kill_cycle.py` and `live_kill_chain_demo.py`.
 ═══════════════════════════════════════════════════════════════════════════════
 """
-from aureon.exchanges.orca_attempt_fill import _attempt_log_status
+from aureon.exchanges.orca_attempt_fill import _attempt_log_status, confirmed_exchange_fill
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import os
 import time
@@ -654,7 +654,7 @@ class UnifiedKillChain:
                 # Kraken/Binance clients both try to follow this standard
                 try:
                     res = client.place_market_order(symbol, 'SELL', target['qty'])
-                    if res and (res.get('status') == 'FILLED' or res.get('orderId')):
+                    if isinstance(res, dict) and confirmed_exchange_fill(res, exchange):
                         log_sniper(f"💥 Sold. Cash secured. OrderID: {res.get('orderId')}")
                     else:
                         log_sniper(f"❌ Sell Failed: {res}")
