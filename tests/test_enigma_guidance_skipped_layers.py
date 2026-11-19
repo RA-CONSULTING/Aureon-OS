@@ -109,3 +109,22 @@ def test_default_build_get_guidance_does_not_raise(enigma_module) -> None:
 
     assert guidance["signal"] in {"BUY", "SELL", "HOLD"}
     assert isinstance(guidance["skipped_layers"], list)
+
+
+def test_skipped_layer_is_omitted_from_layer_contributions(enigma_module) -> None:
+    """A skipped layer is left out of the layer_contributions dict.
+
+    ``get_guidance()`` returns that dict as ``layers``. A non-numeric Layer 2
+    value is named in ``skipped_layers`` and is not kept in the dict with its
+    mix weight. No reader of ``layer_contributions`` needs that name.
+    """
+    guidance = _bare(
+        enigma_module,
+        harmonic_fusion=_Fusion(0.5),
+        probability_nexus=_Nexus({"signal": "BUY", "confidence": 0.9}),
+    ).get_guidance()
+
+    layers = guidance["layers"]
+    assert guidance["skipped_layers"] == ["probability_nexus"]
+    assert "probability_nexus" not in layers
+    assert layers["harmonic_fusion"] == {"signal": 0.5, "weight": 0.8}
