@@ -141,14 +141,10 @@ def capital_close_deal_id(
 def resolve_capital_close_id(target: Dict[str, Any], allow: Set[str], read_confirm) -> str | None:
     """Close id for one scanned Capital target.
 
-    ``read_confirm(ref)`` is GET /confirms/{ref} (CapitalClient.confirm_order).
-    A recorded ``confirmation`` or ``receipt`` on the target is used instead.
+    ``read_confirm(ref)`` is a fresh GET /confirms/{ref}
+    (CapitalClient.confirm_order). A stored confirmation or receipt on the
+    target is not a reading and is not used. No confirm means no dealId.
     """
-    recorded = target.get("confirmation")
-    if not isinstance(recorded, dict):
-        recorded = target.get("receipt")
-    if isinstance(recorded, dict):
-        return capital_close_deal_id(target, allow, recorded)
     direct = capital_close_deal_id(target, allow, None)
     if direct:
         return direct

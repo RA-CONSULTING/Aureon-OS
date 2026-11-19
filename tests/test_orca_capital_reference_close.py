@@ -77,6 +77,16 @@ def test_reference_with_opened_deal_closes_on_both_copies():
     client.confirm_order.assert_called_once_with("o_REF")
 
 
+def test_stored_receipt_is_not_a_reading_and_does_not_close():
+    client = _client(lambda _ref: {"error": "404"})
+    target = _target(client)
+    target["confirmation"] = _opened(deal_id="D-STALE")
+    chain = radar_kc.UnifiedKillChain.__new__(radar_kc.UnifiedKillChain)
+    chain.execute_kill_chain_safe(target)
+    client.close_position.assert_not_called()
+    client.confirm_order.assert_called_once_with("o_REF")
+
+
 def test_aureon_capital_close_stays_behind_execution_gate():
     client = _client(lambda ref: _opened(ref))
     chain = aureon_kc.UnifiedKillChain.__new__(aureon_kc.UnifiedKillChain)
