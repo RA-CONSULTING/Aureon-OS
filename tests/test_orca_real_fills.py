@@ -11,11 +11,14 @@ from __future__ import annotations
 import json
 import logging
 import multiprocessing
+import time
 from decimal import Decimal
+from unittest.mock import Mock
 
 import pytest
 
 from aureon.exchanges import orca_real_fills as fills
+from aureon.exchanges.kraken_client import KrakenClient
 from aureon_radar.bots import orca_unified_kill_chain as kc
 
 FILLED_QTY = "0.02"
@@ -488,6 +491,232 @@ def test_kraken_bad_vol_exec_writes_nothing(isolated, vol_exec):
     assert not isolated.exists()
     assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(0)
     assert fills.aureon_net_fill_qty("kraken", "ETHUSD") == Decimal(0)
+
+
+def _provider_closed(**overrides):
+    order = {
+        "status": "closed",
+        "vol": "1.25",
+        "vol_exec": "1.25",
+        "price": "2000",
+        "cost": "2500",
+        "fee": "6.5",
+        "closetm": time.time(),
+        "trades": ["TCCCTY-WE2O6-P3NB37"],
+        "descr": {
+            "pair": "XETHZUSD",
+            "type": "buy",
+            "ordertype": "market",
+            "price": "0",
+        },
+    }
+    order.update(overrides)
+    return order
+
+
+def _status_client(order):
+    """Real KrakenClient.get_order_status, with QueryOrders mocked underneath."""
+    client = KrakenClient.__new__(KrakenClient)
+    client.dry_run = False
+    client._pairs_cache = {}
+    client._alt_to_int = {}
+    client._int_to_alt = {}
+    client._private = Mock(return_value={KRAKEN_TXID: order})
+    client._pair_base_quote = Mock(return_value=("ETH", "USD"))
+    return client
+
+
+def _record_ack(client):
+    return fills.record_kraken_acknowledged_fill(
+        client, "ETHUSD", "buy", _add_order_ack()
+    )
+
+
+@pytest.mark.parametrize(
+    ("order", "reason", "vol_exec"),
+    [
+        (
+            _provider_closed(vol="0.1", vol_exec="5", cost="10000"),
+            "provider_filled_quantity_exceeds_order_quantity",
+            "5",
+        ),
+        (
+            _provider_closed(cost="1"),
+            "inconsistent_provider_fill_cost_and_average_price",
+            "1.25",
+        ),
+    ],
+)
+def test_inconsistent_kraken_status_records_nothing(isolated, order, reason, vol_exec):
+    """A closed QueryOrders read the client calls inconsistent is not owned.
+
+    get_order_status copies vol_exec before those checks. 0.1 ordered with
+    vol_exec 5, and a cost that disagrees with price, must not hit the ledger.
+    """
+    client = _status_client(order)
+    assert _record_ack(client) is None
+    receipt = client.get_order_status(KRAKEN_TXID)
+    assert receipt["reason"] == reason
+    assert receipt["provider_status"] == "closed"
+    assert receipt["vol_exec"] == vol_exec
+    assert not isolated.exists()
+    assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(0)
+    assert fills.aureon_net_fill_qty("kraken", "ETHUSD") == Decimal(0)
+
+
+def test_any_other_consistency_failure_reason_records_nothing(isolated):
+    body = {
+        "status": "no_data",
+        "provider_status": "closed",
+        "vol_exec": "5",
+        "orderId": KRAKEN_TXID,
+        "reason": "inconsistent_provider_new_check",
+    }
+    assert fills._closed_query_fill(body) is None
+    assert fills.record_kraken_acknowledged_fill(object(), "ETHUSD", "buy", body) is None
+    assert not isolated.exists()
+    assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(0)
+
+
+@pytest.mark.parametrize(
+    ("order", "reason"),
+    [
+        (
+            _provider_closed(closetm=time.time() - 10**9),
+            "missing_or_stale_provider_close_timestamp",
+        ),
+        (
+            _provider_closed(fee=None),
+            "missing_or_malformed_provider_fee",
+        ),
+        (
+            _provider_closed(trades=[]),
+            "missing_or_ambiguous_provider_trade_ids",
+        ),
+    ],
+)
+def test_incomplete_but_consistent_kraken_status_still_records(isolated, order, reason):
+    """Stale close time, a missing fee, and missing trade ids stay fills."""
+    client = _status_client(order)
+    wrote = _record_ack(client)
+    assert client.get_order_status(KRAKEN_TXID)["reason"] == reason
+    assert wrote is not None
+    assert wrote["filled_qty"] == "1.25"
+    assert wrote["exchange_order_id"] == KRAKEN_TXID
+    assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal("1.25")
+
+
+def test_kraken_error_array_records_nothing(isolated):
+    body = {
+        "status": "closed",
+        "provider_status": "closed",
+        "vol_exec": "1.25",
+        "orderId": KRAKEN_TXID,
+        "txid": KRAKEN_TXID,
+        "error": ["EGeneral:Invalid arguments"],
+    }
+    assert fills._closed_query_fill(body) is None
+    assert fills.record_kraken_acknowledged_fill(object(), "ETHUSD", "buy", body) is None
+    assert not isolated.exists()
+    assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(0)
+
+
+def test_closed_body_without_txid_records_nothing(isolated):
+    body = {"status": "closed", "provider_status": "closed", "vol_exec": "1.25"}
+    assert fills._closed_query_fill(body) is None
+    assert fills.record_kraken_acknowledged_fill(object(), "ETHUSD", "buy", body) is None
+
+    queried = []
+
+    class _OpensAnything:
+        def get_order_status(self, order_id):
+            queried.append(order_id)
+            return _query_closed()
+
+    ack = {
+        "status": "pending_reconciliation",
+        "submitted": True,
+        "executedQty": None,
+    }
+    assert fills.record_kraken_acknowledged_fill(_OpensAnything(), "ETHUSD", "buy", ack) is None
+    assert queried == []
+    assert not isolated.exists()
+    assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(0)
+
+
+def test_txid_mismatch_records_nothing(isolated):
+    other = "ZZZZZZ-YYYYY-XXXXXX"
+    body = {
+        "status": "closed",
+        "provider_status": "closed",
+        "vol_exec": "1.25",
+        "orderId": other,
+        "txid": other,
+    }
+    assert fills._closed_query_fill(body, expected_txid=KRAKEN_TXID) is None
+
+    class _Other:
+        def get_order_status(self, order_id):
+            assert order_id == KRAKEN_TXID
+            return body
+
+    assert _record_ack(_Other()) is None
+    assert not isolated.exists()
+    assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(0)
+
+
+def test_deferred_retry_queue_writes_exactly_one_row(isolated):
+    """The queued txid is what writes. The later call is not that order."""
+    ack = _add_order_ack()
+    opens = [{"status": "open", "vol_exec": "0", "txid": KRAKEN_TXID}] * fills._KRAKEN_QUERY_ATTEMPTS
+    kraken = _Kraken(ack, queries=[*opens, _query_closed()])
+    assert fills.record_kraken_acknowledged_fill(kraken, "ETHUSD", "buy", ack) is None
+    assert not isolated.exists()
+
+    assert (
+        fills.record_kraken_acknowledged_fill(
+            kraken, "ETHUSD", "buy", {"error": ["EGeneral:Invalid arguments"]}
+        )
+        is None
+    )
+    rows = _rows(isolated)
+    assert len(rows) == 1
+    assert rows[0]["exchange_order_id"] == KRAKEN_TXID
+    assert rows[0]["filled_qty"] == FILLED_QTY
+    assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(FILLED_QTY)
+
+
+def test_dry_run_closed_reading_records_nothing(isolated):
+    body = {
+        "status": "closed",
+        "provider_status": "closed",
+        "vol_exec": "1.25",
+        "orderId": KRAKEN_TXID,
+        "dryRun": True,
+    }
+    assert fills._closed_query_fill(body) is None
+    assert fills.record_kraken_acknowledged_fill(object(), "ETHUSD", "buy", body) is None
+    assert not isolated.exists()
+    assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(0)
+
+
+@pytest.mark.parametrize(
+    "first",
+    [
+        {"status": "canceled", "vol_exec": "1", "txid": KRAKEN_TXID, "orderId": KRAKEN_TXID},
+        {"status": "closed", "vol_exec": "0", "txid": KRAKEN_TXID, "orderId": KRAKEN_TXID},
+    ],
+)
+def test_terminal_kraken_read_does_not_become_a_fill(isolated, first):
+    ack = _add_order_ack()
+    kraken = _Kraken(ack, queries=[first, _query_closed()])
+    assert fills.record_kraken_acknowledged_fill(kraken, "ETHUSD", "buy", ack) is None
+    assert kraken.queried == [KRAKEN_TXID]
+    fills.record_kraken_acknowledged_fill(
+        kraken, "ETHUSD", "buy", {"error": ["EGeneral:Invalid arguments"]}
+    )
+    assert not isolated.exists()
+    assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(0)
 
 
 def test_open_kraken_order_is_recorded_when_a_later_query_closes(isolated):
