@@ -10321,13 +10321,50 @@ class UnifiedMarketTrader:
             "data_source_kind": "live_exchange_runtime" if data_passed else "awaiting_live_price_evidence",
         }
 
-    def _hnc_market_texture(self, metrics: Dict[str, Any], action_plan: Dict[str, Any]) -> Dict[str, Any]:
+    def _ticker_volume(self, row: Dict[str, Any]) -> Optional[float]:
+        """Exchange volume when the row carries one. A real 0.0 stays 0.0."""
+
+        for key in ("volume_24h", "quoteVolume", "volume"):
+            if key in row:
+                return self._finite_number(row.get(key), nonnegative=True)
+        return None
+
+    def _ticker_spread(self, row: Dict[str, Any]) -> Optional[float]:
+        """Bid/ask spread from the row, or an explicit spread. A real 0.0 stays 0.0."""
+
+        if "bid" in row and "ask" in row:
+            bid = self._finite_number(row.get("bid"), nonnegative=True)
+            ask = self._finite_number(row.get("ask"), nonnegative=True)
+            if bid is None or ask is None or (bid == 0.0 and ask == 0.0):
+                return None
+            return ask - bid
+        if "spread" in row:
+            return self._finite_number(row.get("spread"), nonnegative=True)
+        return None
+
+    def _mean_present(self, values: List[Optional[float]]) -> Optional[float]:
+        present = [value for value in values if value is not None]
+        if not present:
+            return None
+        return sum(present) / len(present)
+
+    def _hnc_market_texture(
+        self,
+        metrics: Dict[str, Any],
+        action_plan: Dict[str, Any],
+        central_beat: Optional[Dict[str, Any]] = None,
+        order_flow_feed: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
         if not isinstance(metrics, dict) or not metrics.get("passed"):
             return {
                 "status": "no_data",
                 "data_status": "no_data",
                 "actionable": False,
                 "reason": "fresh_hnc_market_metrics_required",
+                "volatility": None,
+                "momentum": None,
+                "volume": None,
+                "spread": None,
             }
         venues = action_plan.get("venues", {}) if isinstance(action_plan, dict) else {}
         venue_count = len(venues) if isinstance(venues, dict) else int(action_plan.get("venue_count", 0) or 0)
@@ -10345,15 +10382,29 @@ class UnifiedMarketTrader:
                 "data_status": "no_data",
                 "actionable": False,
                 "reason": "hnc_market_metrics_malformed",
+                "volatility": None,
+                "momentum": None,
+                "volume": None,
+                "spread": None,
             }
         avg_confidence = self._clamp01(avg_confidence)
         model_alignment = self._clamp01(model_alignment_raw)
-
+        rows: List[Dict[str, Any]] = []
+        active = order_flow_feed.get("active_order_flow", []) if isinstance(order_flow_feed, dict) else []
+        symbols = central_beat.get("symbols", {}) if isinstance(central_beat, dict) else {}
+        if isinstance(active, list):
+            rows.extend(row for row in active if isinstance(row, dict))
+        if isinstance(symbols, dict):
+            rows.extend(row for row in symbols.values() if isinstance(row, dict))
+        # No research doc or legacy branch states a scale from percent change
+        # into Tiger/Owl. The /5 clamp is not a reading.
         return {
-            "volatility": self._clamp01(avg_abs_change / 5.0),
-            "momentum": max(-1.0, min(1.0, avg_change / 5.0)),
-            "volume": self._clamp01((avg_support + source_count) / 8.0),
-            "spread": self._clamp01(1.0 - avg_confidence),
+            "volatility": None,
+            "volatility_reason": "no reading",
+            "momentum": None,
+            "momentum_reason": "no reading",
+            "volume": self._mean_present([self._ticker_volume(row) for row in rows]),
+            "spread": self._mean_present([self._ticker_spread(row) for row in rows]),
             "route_unity": route_unity,
             "model_alignment": model_alignment,
             "confidence": avg_confidence,
@@ -10403,23 +10454,10 @@ class UnifiedMarketTrader:
                     canonical_gamma = float(gamma)
         except Exception:
             canonical_gamma = None
-        if any(value is None for value in parsed.values()):
-            return {
-                "source": "QueenHiveMind.read_auris_nodes",
-                "evaluated": False,
-                "passed": False,
-                "status": "no_data",
-                "data_status": "no_data",
-                "reason": "complete_finite_market_texture_required",
-                "node_count": 0,
-                "coherence": None,
-                "canonical_gamma": canonical_gamma,
-                "nodes": {},
-            }
         from aureon.utils.aureon_queen_hive_mind import QueenHiveMind
 
         queen = QueenHiveMind.__new__(QueenHiveMind)
-        texture = {key: float(parsed[key]) for key in required_fields}
+        texture = {key: float(parsed[key]) for key in required_fields if parsed[key] is not None}
         raw_nodes = queen.read_auris_nodes(texture)
         coherence, status = queen.get_auris_coherence(texture)
         nodes: Dict[str, Any] = {}
@@ -10668,7 +10706,7 @@ class UnifiedMarketTrader:
     ) -> Dict[str, Any]:
         generated_at = datetime.now().isoformat()
         metrics = self._hnc_source_metrics(central_beat, order_flow_feed)
-        market_texture = self._hnc_market_texture(metrics, action_plan)
+        market_texture = self._hnc_market_texture(metrics, action_plan, central_beat, order_flow_feed)
         auris = self._build_auris_node_proof(market_texture)
         systems = {
             "hnc_master_protocol": self._repo_logic_contract(

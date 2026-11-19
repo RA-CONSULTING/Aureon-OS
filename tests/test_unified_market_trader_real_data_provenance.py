@@ -250,11 +250,13 @@ def test_auris_nodes_do_not_evaluate_from_missing_market_values():
         }
     )
 
-    assert incomplete["status"] == "no_data"
-    assert incomplete["evaluated"] is False
-    assert incomplete["nodes"] == {}
+    assert incomplete["coherence"] is None
+    assert incomplete["nodes"]["CargoShip"]["data_status"] == "no_data"
+    assert incomplete["nodes"]["Deer"]["data_status"] == "no_data"
+    assert incomplete["nodes"]["Tiger"]["value"] is not None
     assert complete["evaluated"] is True
     assert complete["node_count"] == 9
+    assert complete["coherence"] is not None
 
 
 def test_hnc_operating_cycle_denies_action_when_evidence_is_missing():
