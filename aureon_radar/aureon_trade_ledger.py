@@ -40,6 +40,9 @@ class TradeAuditRecord:
     error: Optional[str]
     source: str
     rung: int
+    # Set only on CAPITAL_CONFIRMED rows written by positions reconciliation.
+    reconciled: bool = False
+    pre_order_snapshot_excluded: bool = False
 
 
 class TradeLedger:
@@ -156,8 +159,13 @@ class TradeLedger:
             pnl=None,
             error=error,
             source="",
-            rung=0
+            rung=0,
         )
+        response = capital_response if isinstance(capital_response, dict) else {}
+        if response.get("reconciled") is True:
+            record.reconciled = True
+            record.pre_order_snapshot_excluded = (
+                response.get("pre_order_snapshot_excluded") is True)
         self._write(record)
         
         if confirmed:

@@ -349,6 +349,22 @@ class DualCapitalConnector:
         """Get positions from LIVE account."""
         return self._get_positions(self.live)
     
+    def get_live_positions_snapshot(self):
+        """LIVE positions, or None when they could not be read (read-only).
+
+        Unlike get_live_positions(), a failed read is None rather than [],
+        so callers can tell "no open positions" from "unknown".
+        """
+        try:
+            resp = self.live._request('GET', '/positions')
+            if resp.status_code != 200:
+                return None
+            positions = resp.json().get('positions')
+            return positions if isinstance(positions, list) else None
+        except Exception as e:
+            logger.debug(f"Position snapshot error: {e}")
+            return None
+
     def _get_positions(self, client: CapitalClient) -> list:
         """Internal position fetch (hardened request layer: re-auth on 401)."""
         try:

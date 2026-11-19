@@ -103,7 +103,19 @@ _PHI_ENTRY_LEDGER = Path(__file__).resolve().parent / "trade_ledger.jsonl"
 # Aureon itself has an entry record for it (trade_ledger.jsonl
 # CAPITAL_CONFIRMED, or live_trades.jsonl). Errors fail closed. New live
 # orders are unchanged.
+#
+# A CAPITAL_CONFIRMED row written by positions reconciliation (reconciled is
+# set) only counts when the same row says the dealId was absent from a
+# positions snapshot taken just before Aureon sent its order. Otherwise a
+# manual deal with the same epic and direction could be laundered into the
+# ledger and counted as Aureon's.
 _PHI_ENTRY_STAGES = frozenset({"CAPITAL_CONFIRMED"})
+
+
+def _phi_entry_row_counts(rec) -> bool:
+    if rec.get("reconciled", False) is False:
+        return True
+    return rec.get("pre_order_snapshot_excluded") is True
 
 
 def _phi_is_capital_venue(venue) -> bool:
@@ -111,7 +123,8 @@ def _phi_is_capital_venue(venue) -> bool:
     return name == "capital" or name.startswith("capital") or name.endswith("_capital")
 
 
-def _phi_jsonl_has_deal(path: Path, deal_id: str, *, id_keys, stages=None) -> bool:
+def _phi_jsonl_has_deal(path: Path, deal_id: str, *, id_keys, stages=None,
+                        row_ok=None) -> bool:
     if not path.is_file():
         return False
     with open(path, encoding="utf-8", errors="replace") as handle:
@@ -127,6 +140,8 @@ def _phi_jsonl_has_deal(path: Path, deal_id: str, *, id_keys, stages=None) -> bo
                 continue
             if stages is not None and str(rec.get("stage") or "") not in stages:
                 continue
+            if row_ok is not None and not row_ok(rec):
+                continue
             for key in id_keys:
                 if str(rec.get(key) or "") == deal_id:
                     return True
@@ -141,6 +156,7 @@ def _phi_has_aureon_entry_record(deal_id) -> bool:
         _PHI_ENTRY_LEDGER, deal,
         id_keys=("deal_id", "dealId", "capital_position_id"),
         stages=_PHI_ENTRY_STAGES,
+        row_ok=_phi_entry_row_counts,
     ):
         return True
     return _phi_jsonl_has_deal(
@@ -2229,15 +2245,49 @@ class AureonPhiRadar:
                         f"REFUSED ({reason}) — will not re-fire")
         shadow._live_attempted = True
 
+    def _capital_deal_id_snapshot(self) -> frozenset | None:
+        """Read-only: the dealIds open on Capital right now, or None if unknown.
+
+        Taken just before a live order is sent so reconciliation can tell a
+        deal Aureon's order created from one that was already open (for
+        example a manual deal). Any error or unreadable entry returns None.
+        """
+        try:
+            # get_live_positions() turns a failed read into [], which would
+            # look like "nothing open"; the snapshot read returns None instead.
+            positions = self.capital_dual.get_live_positions_snapshot()
+            if not isinstance(positions, (list, tuple)):
+                return None
+            ids = set()
+            for pos in positions:
+                deal_id = pos.get("position", {}).get("dealId") if isinstance(pos, dict) else None
+                if not deal_id:
+                    return None
+                ids.add(str(deal_id))
+            return frozenset(ids)
+        except Exception as e:
+            logger.error(f"[HONEY POT] pre-order positions snapshot unavailable: {e} "
+                         f"— an ambiguous result for this order will not be reconciled")
+            return None
+
     def _reconcile_live_position(self, shadow, audit_id: str, size: float,
-                                 ledger) -> Optional[str]:
+                                 ledger, pre_order_deal_ids=None) -> Optional[str]:
         """Positions-API reconciliation after an ambiguous order result.
 
         Covers the timeout-after-execute case: the order call failed or
         timed out, but the broker may have executed it. Returns the adopted
         dealId when a matching open position is found server-side, else None
         (caller marks the shadow FAILED — never retried).
+
+        Only a position whose dealId was absent from ``pre_order_deal_ids``
+        (the snapshot taken just before the order was sent) can be adopted.
+        With no snapshot nothing is reconciled [fail-closed].
         """
+        if pre_order_deal_ids is None:
+            logger.error(f"[HONEY POT] no pre-order positions snapshot for "
+                         f"{shadow.symbol} — not reconciling, outcome left "
+                         f"unconfirmed [fail-closed]")
+            return None
         try:
             positions = self.capital_dual.get_live_positions()
         except Exception as e:
@@ -2258,6 +2308,8 @@ class AureonPhiRadar:
             deal_id = pos.get("position", {}).get("dealId")
             if not deal_id:
                 continue
+            if str(deal_id) in pre_order_deal_ids:
+                continue
             market = pos.get("market", {})
             epic = (market.get("epic") or "").upper()
             direction = (pos.get("position", {}).get("direction") or "").upper()
@@ -2268,7 +2320,10 @@ class AureonPhiRadar:
                 logger.warning(f"[HONEY POT] RECONCILED: open position found "
                                f"server-side for {shadow.symbol} dealId={deal_id} "
                                f"— adopting (order result was ambiguous)")
-                ledger.capital_confirmed(audit_id, deal_id, {"reconciled": True})
+                if not ledger.capital_confirmed(
+                        audit_id, deal_id,
+                        {"reconciled": True, "pre_order_snapshot_excluded": True}):
+                    return None
                 return deal_id
 
         logger.info(f"[HONEY POT] Reconciliation: no open {shadow.symbol} "
@@ -2396,6 +2451,7 @@ class AureonPhiRadar:
             self._trade_ledger = TradeLedger(self.capital_live)
 
         ledger = self._trade_ledger
+        pre_order_deal_ids = None
 
         # Get or create audit ID for this shadow
         audit_id = getattr(shadow, '_audit_id', None)
@@ -2510,6 +2566,10 @@ class AureonPhiRadar:
             shadow._live_attempted = True
             self._save_state()
 
+            # Read-only positions snapshot so an ambiguous result can only
+            # adopt a deal this order created. None => no reconciliation.
+            pre_order_deal_ids = self._capital_deal_id_snapshot()
+
             # Log ORDER_SENT
             ledger.order_sent(
                 audit_id=audit_id,
@@ -2558,7 +2618,8 @@ class AureonPhiRadar:
                     logger.warning(f"[HONEY POT] dealId returned but NOT CONFIRMED in positions: {deal_id}")
                     # Reconcile with positions API before deciding the order
                     # truly failed — the position may exist under another ref.
-                    reconciled_id = self._reconcile_live_position(shadow, audit_id, size, ledger)
+                    reconciled_id = self._reconcile_live_position(
+                        shadow, audit_id, size, ledger, pre_order_deal_ids)
                     if reconciled_id:
                         self._adopt_honey_pot(shadow, reconciled_id, size, venue=venue)
                     else:
@@ -2589,7 +2650,8 @@ class AureonPhiRadar:
                 # The order call failed, but the broker may have executed it
                 # before the failure (timeout-after-execute). For Capital.com,
                 # reconcile with the positions API before allowing any future attempt.
-                reconciled_id = self._reconcile_live_position(shadow, audit_id, size, ledger)
+                reconciled_id = self._reconcile_live_position(
+                    shadow, audit_id, size, ledger, pre_order_deal_ids)
                 if reconciled_id:
                     self._adopt_honey_pot(shadow, reconciled_id, size, venue="capital")
                 else:
@@ -2603,7 +2665,8 @@ class AureonPhiRadar:
             # Even on exception, reconcile with the positions API first —
             # the order may have executed before the exception.
             try:
-                reconciled_id = self._reconcile_live_position(shadow, audit_id, 0.0, ledger)
+                reconciled_id = self._reconcile_live_position(
+                    shadow, audit_id, 0.0, ledger, pre_order_deal_ids)
             except Exception as rec_err:
                 logger.error(f"[HONEY POT] reconciliation error: {rec_err}")
                 reconciled_id = None
