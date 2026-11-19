@@ -589,7 +589,7 @@ class UnifiedKillChain:
     def _read_capital_confirm(self, client, deal_reference: str):
         """GET /confirms/{ref} via CapitalClient.confirm_order, or None."""
         ref = str(deal_reference or "").strip()
-        if not ref or ref.lower() == "unknown" or client is None:
+        if not ref or client is None:
             return None
         confirm = getattr(client, "confirm_order", None)
         if not callable(confirm):
@@ -645,13 +645,14 @@ class UnifiedKillChain:
         
         if exchange == 'capital':
             from aureon.exchanges.orca_capital_ownership import adopted_deal_ids
-            deal_id = self._capital_close_deal_id(target)
+            resolve = getattr(self, "_capital_close_deal_id", None)
+            deal_id = resolve(target) if callable(resolve) else None
             if deal_id:
                 target['id'] = deal_id
-            if str(target.get('id')) not in adopted_deal_ids() and target.get('id') != deal_id:
-                log_system(f"Capital: refusing to close deal {target.get('id')}: not adopted by ORCA")
-                return
-            if not deal_id:
+            if not deal_id or (
+                str(target.get('id')) not in adopted_deal_ids()
+                and target.get('id') != deal_id
+            ):
                 log_system(f"Capital: refusing to close deal {target.get('id')}: not adopted by ORCA")
                 return
             # Capital.com Kill

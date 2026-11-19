@@ -1995,7 +1995,7 @@ class UnifiedKillChain:
     def _read_capital_confirm(self, client, deal_reference: str):
         """GET /confirms/{ref} via CapitalClient.confirm_order, or None."""
         ref = str(deal_reference or "").strip()
-        if not ref or ref.lower() == "unknown" or client is None:
+        if not ref or client is None:
             return None
         confirm = getattr(client, "confirm_order", None)
         if not callable(confirm):
@@ -2018,41 +2018,7 @@ class UnifiedKillChain:
             lambda ref: self._read_capital_confirm(target.get("client"), ref),
         )
 
-    def _close_capital(self, target):
-        """Close one adopted Capital deal by its confirmed dealId."""
-        deal_id = self._capital_close_deal_id(target)
-        if deal_id:
-            target["id"] = deal_id
-        if not deal_id:
-            log_system(
-                f"Capital: refusing to close deal {target.get('id')}: not adopted by ORCA"
-            )
-            return {"status": "not_submitted", "reason": "capital_deal_not_adopted"}
-        client = target.get("client")
-        close_position = getattr(client, "close_position", None)
-        if not callable(close_position):
-            log_system(f"Capital: refusing to close deal {deal_id}: no close_position")
-            return {"status": "not_submitted", "reason": "capital_close_unavailable"}
-        return close_position(deal_id)
-
     def execute_kill_chain(self, target):
-        if (
-            isinstance(target, dict)
-            and target.get("exchange") == "capital"
-            and target.get("type") == "CFD"
-            and target.get("client") is not None
-        ):
-            # Same switch as the receipt path: a chain that is not executing
-            # must not submit a provider close, even for an adopted deal.
-            if getattr(self, "execution_enabled", False) is not True:
-                return _execution_result(
-                    venue="capital",
-                    status="not_submitted",
-                    reason="execution_enable_gate_required",
-                    symbol=target.get("symbol"),
-                    side="SELL",
-                )
-            return self._close_capital(target)
         if self.execution_state_path is None:
             return _no_data_decision("execution_state_path_required")
         now = _finite_provider_number(self.clock(), positive=True)
@@ -2137,7 +2103,7 @@ class UnifiedKillChain:
                     f"HNC/Auris receipt gates complete for "
                     f"{action['symbol']} SELL"
                 )
-                if not self.execution_enabled:
+                if self.execution_enabled is not True:
                     return _execution_result(
                         venue=action["venue"],
                         status="not_submitted",

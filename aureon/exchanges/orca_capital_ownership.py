@@ -123,6 +123,8 @@ def capital_close_deal_id(
         or target.get("deal_reference")
         or target.get("dealReference")
     )
+    if position_deal == ref:
+        position_deal = ""
     ident = _clean_id(target.get("id")) or position_deal
     if ident and ident in allow and ident != ref:
         return ident
@@ -142,8 +144,10 @@ def resolve_capital_close_id(target: Dict[str, Any], allow: Set[str], read_confi
     """Close id for one scanned Capital target.
 
     ``read_confirm(ref)`` is a fresh GET /confirms/{ref}
-    (CapitalClient.confirm_order). A stored confirmation or receipt on the
-    target is not a reading and is not used. No confirm means no dealId.
+    (CapitalClient.confirm_order). A stored confirmation is not a reading:
+    an allowlisted reference is resolved only from that fresh GET, and a
+    reference that is not allowlisted does not close. No confirm means no
+    dealId.
     """
     direct = capital_close_deal_id(target, allow, None)
     if direct:
@@ -156,6 +160,15 @@ def resolve_capital_close_id(target: Dict[str, Any], allow: Set[str], read_confi
         or target.get("dealReference")
     )
     if not ref or ref not in allow:
+        # A stored confirmation is not a reading. It is passed only so the
+        # allow check inside capital_close_deal_id still refuses the close.
+        # While that check stands the result is None and no GET is made.
+        recorded = target.get("confirmation")
+        if not isinstance(recorded, dict):
+            receipt = target.get("receipt")
+            recorded = receipt if isinstance(receipt, dict) else None
+        if isinstance(recorded, dict):
+            return capital_close_deal_id(target, allow, recorded)
         return None
     payload = None
     if callable(read_confirm):
