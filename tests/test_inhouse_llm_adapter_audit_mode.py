@@ -3,9 +3,9 @@ import logging
 from aureon.inhouse_ai.llm_adapter import (
     AureonBrainAdapter,
     AureonHybridAdapter,
-    LLMResponse,
     AureonLocalAdapter,
     AureonStubAdapter,
+    LLMResponse,
     build_voice_adapter,
 )
 
