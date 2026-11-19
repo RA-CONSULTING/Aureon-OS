@@ -83,3 +83,62 @@ def test_queen_mind_restart_backs_off(monkeypatch, tmp_path):
     clock["t"] = 45.0
     supervisor._supervise_cycle(dry_run=False)
     assert started == ["queen_mind", "queen_mind"]
+
+
+def test_backoff_resets_when_queen_mind_is_seen_alive(monkeypatch, tmp_path):
+    """After a crash storm, a running queen_mind returns the next wait to 45s.
+
+    Goes red if the alive path does not clear ``attempts``. Without that clear
+    the next delay stays at the 720s cap.
+    """
+
+    from aureon_fusion import unity_supervisor as supervisor
+
+    supervisor._queen_backoff["attempts"] = 0
+    supervisor._queen_backoff["not_before"] = 0.0
+    started: list[str] = []
+    clock = {"t": 0.0}
+    state = {"queen": "stopped"}
+
+    def start(name):
+        started.append(name)
+        return {"ok": True, "state": "started", "pid": 7}
+
+    def status_data():
+        running = state["queen"] == "running"
+        return {"queen_mind": {"state": state["queen"], "pid": 7 if running else None}}
+
+    _prepare(supervisor, tmp_path, monkeypatch, start)
+    monkeypatch.setattr(supervisor.organ_registry, "status_data", status_data)
+    monkeypatch.setattr(supervisor, "_mono", lambda: clock["t"])
+    monkeypatch.setattr("aureon.operator.computer_use_stop.is_stopped", lambda: False)
+
+    for _ in range(5):
+        before = len(started)
+        supervisor._supervise_cycle(dry_run=False)
+        assert len(started) == before + 1
+        clock["t"] = supervisor._queen_backoff["not_before"]
+
+    assert supervisor._queen_backoff["attempts"] >= 5
+
+    state["queen"] = "running"
+    supervisor._supervise_cycle(dry_run=False)
+    assert supervisor._queen_backoff["attempts"] == 0
+    assert supervisor._queen_backoff["not_before"] == 0.0
+
+    state["queen"] = "stopped"
+    alive_at = clock["t"]
+    supervisor._supervise_cycle(dry_run=False)
+    assert len(started) == 6
+    assert supervisor._queen_backoff["attempts"] == 1
+    delay = supervisor._queen_backoff["not_before"] - alive_at
+    assert delay == supervisor._QUEEN_BACKOFF_BASE_S
+    assert delay < supervisor._QUEEN_BACKOFF_CAP_S
+
+    clock["t"] = alive_at + 1.0
+    supervisor._supervise_cycle(dry_run=False)
+    assert len(started) == 6
+
+    clock["t"] = alive_at + supervisor._QUEEN_BACKOFF_BASE_S
+    supervisor._supervise_cycle(dry_run=False)
+    assert len(started) == 7

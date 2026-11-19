@@ -88,6 +88,17 @@ def _queen_note_attempt(now: float) -> None:
     _queen_backoff["not_before"] = now + delay
 
 
+def _queen_backoff_clear() -> None:
+    """A queen_mind seen alive starts the next crash from the base delay.
+
+    Without this, ``attempts`` stays at the cap after a few crashes, and every
+    later restart waits 720s even when the organ has been running.
+    """
+
+    _queen_backoff["attempts"] = 0
+    _queen_backoff["not_before"] = 0.0
+
+
 def _supervise_cycle(dry_run: bool = False) -> dict:
     """Run one supervision cycle.
 
@@ -150,8 +161,11 @@ def _supervise_cycle(dry_run: bool = False) -> dict:
                 })
             continue
 
-        # Already alive — nothing to do. queen_mind uses this same path.
+        # Already alive — nothing to do. A running queen_mind clears the
+        # crash counter so the next death starts again at the base delay.
         if info["state"] == "running":
+            if name == "queen_mind":
+                _queen_backoff_clear()
             continue
 
         if name == "queen_mind":
