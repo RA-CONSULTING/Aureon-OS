@@ -41,7 +41,7 @@ Local verification does not use GitHub Actions:
 make check
 ```
 
-`make check` installs the pinned `requirements-check.lock` (ruff and pytest) into `.venv` and runs ruff, then the repo pytest suite from `pyproject.toml`.
+`make check` installs the pinned `requirements-check.lock` (ruff and pytest) and the `dev` extra (PyYAML, aiohttp, Pillow, matplotlib, scipy, websockets, and the rest of the test imports) into `.venv`, then runs ruff and the repo pytest suite from `pyproject.toml`.
 
 The single evaluator guide for this path is [`EVALUATE.md`](EVALUATE.md). A measured walkthrough of this path, including the order-safety defaults and the ports that must be free, is in [`INSTALL.md`](INSTALL.md).
 

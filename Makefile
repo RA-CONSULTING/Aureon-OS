@@ -34,6 +34,9 @@ plug-smoke:
 check:
 	@test -x .venv/bin/python || { echo "No .venv yet. Run ./install.sh first." >&2; exit 1; }
 	.venv/bin/python -m pip install -r requirements-check.lock
+	# The suite imports PyYAML, aiohttp, Pillow, matplotlib, scipy, and
+	# websockets. Those live in the dev extra, not in the runtime lock.
+	.venv/bin/python -m pip install -e '.[dev]'
 	.venv/bin/python -m ruff check aureon/operator/computer_use_stop.py aureon/operator/local_action_bridge.py aureon/operator/feature_switchboard.py aureon/core/aureon_lattice_simulation.py aureon/core/pursuit.py tests/test_plug_and_play_operational.py tests/test_feature_switchboard.py tests/test_grounded_action.py tests/test_pursuit.py tests/test_soul.py
 	.venv/bin/python -m pytest
 

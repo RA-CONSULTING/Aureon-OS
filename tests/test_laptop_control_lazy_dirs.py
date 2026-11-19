@@ -21,6 +21,8 @@ def test_import_does_not_create_screenshot_or_camera_dirs() -> None:
     camera = ROOT / "state" / "camera"
     before = (_listing(shots), _listing(camera))
     env = os.environ.copy()
+    env.pop("DISPLAY", None)
+    env.pop("WAYLAND_DISPLAY", None)
     env["PYTHONPATH"] = str(ROOT)
     env["PYTHONDONTWRITEBYTECODE"] = "1"
     script = (
@@ -62,7 +64,7 @@ def test_screenshot_and_camera_dirs_are_created_on_first_write(tmp_path: Path, m
         def save(self, path: str) -> None:
             Path(path).write_bytes(b"png")
 
-    monkeypatch.setattr(laptop, "HAS_PYAUTOGUI", True)
+    monkeypatch.setattr(laptop, "_PYAUTOGUI_LOADED", True)
     monkeypatch.setattr(
         laptop,
         "pyautogui",

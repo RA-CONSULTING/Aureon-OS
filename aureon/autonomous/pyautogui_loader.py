@@ -14,7 +14,10 @@ process (exit status 1).
   never by mouse/keyboard/screenshot calls, so Linux hosts and CI no longer need
   tkinter just to drive the pointer;
 * any ``SystemExit`` raised while importing is converted to ``ImportError`` so
-  callers fail closed (``pyautogui_available = False``) instead of exiting.
+  callers fail closed (``pyautogui_available = False``) instead of exiting;
+* a missing ``DISPLAY`` (pyautogui's X11 backend indexes ``os.environ`` at
+  import and raises ``KeyError``) is the same closed failure. The GUI is
+  unavailable. The process keeps running.
 """
 
 from __future__ import annotations
@@ -59,10 +62,19 @@ def install_mouseinfo_shim_if_needed() -> bool:
 
 
 def import_pyautogui() -> Any:
-    """Return the pyautogui module or raise ``ImportError``; never exit."""
+    """Return the pyautogui module or raise ``ImportError``; never exit.
+
+    A headless host has no ``DISPLAY``. That ``KeyError`` is a missing GUI,
+    not a reason to crash the importer.
+    """
 
     install_mouseinfo_shim_if_needed()
     try:
         return importlib.import_module("pyautogui")
     except SystemExit as exc:
         raise ImportError(f"pyautogui_import_exited:{exc}") from None
+    except KeyError as exc:
+        missing = exc.args[0] if exc.args else ""
+        if missing == "DISPLAY":
+            raise ImportError("pyautogui_unavailable: DISPLAY is not set") from None
+        raise

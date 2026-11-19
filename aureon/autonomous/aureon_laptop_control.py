@@ -43,18 +43,44 @@ def _ensure_dir(path: pathlib.Path) -> pathlib.Path:
 # ---------------------------------------------------------------------------
 # Optional library imports with availability flags
 # ---------------------------------------------------------------------------
-try:
-    from aureon.autonomous.pyautogui_loader import import_pyautogui
+# pyautogui is not imported here. On a Linux host with no DISPLAY its X11
+# backend raises KeyError at import. The first GUI call loads it and reports
+# the GUI unavailable when that happens.
+pyautogui = None
+_PYAUTOGUI_LOADED = False
 
-    pyautogui = import_pyautogui()
-    # Keep the physical corner failsafe enabled even for this legacy HAL.  New
-    # autonomous mutation paths must route through the governed desktop gateway.
-    pyautogui.FAILSAFE = True
-    pyautogui.PAUSE = 0.05
-    HAS_PYAUTOGUI = True
-except ImportError:
-    pyautogui = None
-    HAS_PYAUTOGUI = False
+
+def _ensure_pyautogui() -> bool:
+    """Load pyautogui once. False means the GUI is unavailable."""
+
+    global pyautogui, _PYAUTOGUI_LOADED
+    if _PYAUTOGUI_LOADED:
+        return pyautogui is not None
+    _PYAUTOGUI_LOADED = True
+    try:
+        from aureon.autonomous.pyautogui_loader import import_pyautogui
+
+        loaded = import_pyautogui()
+        # Keep the physical corner failsafe enabled even for this legacy HAL.
+        # New autonomous mutation paths must route through the governed desktop gateway.
+        loaded.FAILSAFE = True
+        loaded.PAUSE = 0.05
+        pyautogui = loaded
+    except ImportError:
+        pyautogui = None
+    return pyautogui is not None
+
+
+def __getattr__(name: str):
+    """``HAS_PYAUTOGUI`` loads on first read and is a plain bool after that."""
+
+    global HAS_PYAUTOGUI
+    if name == "HAS_PYAUTOGUI":
+        available = _ensure_pyautogui()
+        HAS_PYAUTOGUI = available
+        return available
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 try:
     import cv2
@@ -220,7 +246,7 @@ class LaptopControl:
         """Take screenshot. region=(x,y,w,h) or None for full screen.
         Returns path to saved image."""
         try:
-            if not HAS_PYAUTOGUI:
+            if not _ensure_pyautogui():
                 return _fail("pyautogui not available")
             img = pyautogui.screenshot(region=region)
             if save_path is None:
@@ -240,7 +266,7 @@ class LaptopControl:
     def read_screen(self, region=None) -> dict:
         """Take screenshot and OCR it. Returns all text visible on screen."""
         try:
-            if not HAS_PYAUTOGUI or not HAS_TESSERACT:
+            if not _ensure_pyautogui() or not HAS_TESSERACT:
                 return _fail("pyautogui or pytesseract not available")
             img = pyautogui.screenshot(region=region)
             text = pytesseract.image_to_string(img)
@@ -259,7 +285,7 @@ class LaptopControl:
     def find_on_screen(self, text) -> dict:
         """Find text on screen via OCR, return its center coordinates."""
         try:
-            if not HAS_PYAUTOGUI or not HAS_TESSERACT:
+            if not _ensure_pyautogui() or not HAS_TESSERACT:
                 return _fail("pyautogui or pytesseract not available")
             img = pyautogui.screenshot()
             data = pytesseract.image_to_data(img, output_type=pytesseract.Output.DICT)
@@ -302,7 +328,7 @@ class LaptopControl:
     def find_image_on_screen(self, image_path, confidence=0.8) -> dict:
         """Find an image/icon on screen. Returns center coordinates."""
         try:
-            if not HAS_PYAUTOGUI:
+            if not _ensure_pyautogui():
                 return _fail("pyautogui not available")
             location = pyautogui.locateOnScreen(image_path, confidence=confidence)
             if location is None:
@@ -329,7 +355,7 @@ class LaptopControl:
                          "x": m.x, "y": m.y, "is_primary": m.is_primary}
                         for m in monitors]
                 return _ok(info)
-            elif HAS_PYAUTOGUI:
+            elif _ensure_pyautogui():
                 w, h = pyautogui.size()
                 return _ok([{"width": w, "height": h, "is_primary": True}])
             else:
@@ -340,7 +366,7 @@ class LaptopControl:
     def get_pixel_color(self, x, y) -> dict:
         """Get RGB color of pixel at coordinates."""
         try:
-            if not HAS_PYAUTOGUI:
+            if not _ensure_pyautogui():
                 return _fail("pyautogui not available")
             r, g, b = pyautogui.pixel(x, y)
             res = _ok({"r": r, "g": g, "b": b, "hex": f"#{r:02x}{g:02x}{b:02x}"})
@@ -356,7 +382,7 @@ class LaptopControl:
     def mouse_move(self, x, y, duration=0.3) -> dict:
         """Move mouse to absolute coordinates."""
         try:
-            if not HAS_PYAUTOGUI:
+            if not _ensure_pyautogui():
                 return _fail("pyautogui not available")
             pyautogui.moveTo(x, y, duration=duration)
             r = _ok({"x": x, "y": y})
@@ -368,7 +394,7 @@ class LaptopControl:
     def mouse_click(self, x=None, y=None, button="left", clicks=1) -> dict:
         """Click at position. If no coords, click current position."""
         try:
-            if not HAS_PYAUTOGUI:
+            if not _ensure_pyautogui():
                 return _fail("pyautogui not available")
             pyautogui.click(x=x, y=y, button=button, clicks=clicks)
             pos = pyautogui.position()
@@ -389,7 +415,7 @@ class LaptopControl:
     def mouse_drag(self, start_x, start_y, end_x, end_y, duration=0.5) -> dict:
         """Drag from start to end."""
         try:
-            if not HAS_PYAUTOGUI:
+            if not _ensure_pyautogui():
                 return _fail("pyautogui not available")
             pyautogui.moveTo(start_x, start_y)
             pyautogui.drag(end_x - start_x, end_y - start_y, duration=duration)
@@ -402,7 +428,7 @@ class LaptopControl:
     def mouse_scroll(self, clicks, x=None, y=None) -> dict:
         """Scroll wheel. Positive=up, negative=down."""
         try:
-            if not HAS_PYAUTOGUI:
+            if not _ensure_pyautogui():
                 return _fail("pyautogui not available")
             if x is not None and y is not None:
                 pyautogui.moveTo(x, y)
@@ -416,7 +442,7 @@ class LaptopControl:
     def mouse_position(self) -> dict:
         """Get current mouse position."""
         try:
-            if not HAS_PYAUTOGUI:
+            if not _ensure_pyautogui():
                 return _fail("pyautogui not available")
             pos = pyautogui.position()
             return _ok({"x": pos.x, "y": pos.y})
@@ -441,7 +467,7 @@ class LaptopControl:
     def type_text(self, text, interval=0.02) -> dict:
         """Type text. Uses clipboard for non-ASCII characters."""
         try:
-            if not HAS_PYAUTOGUI:
+            if not _ensure_pyautogui():
                 return _fail("pyautogui not available")
             # Check if text is pure ASCII
             try:
@@ -458,7 +484,7 @@ class LaptopControl:
     def press_key(self, key) -> dict:
         """Press and release a key (enter, tab, escape, f1-f12, etc.)."""
         try:
-            if not HAS_PYAUTOGUI:
+            if not _ensure_pyautogui():
                 return _fail("pyautogui not available")
             pyautogui.press(key)
             r = _ok({"key": key})
@@ -470,7 +496,7 @@ class LaptopControl:
     def hotkey(self, *keys) -> dict:
         """Press key combination. E.g. hotkey('ctrl', 'c')."""
         try:
-            if not HAS_PYAUTOGUI:
+            if not _ensure_pyautogui():
                 return _fail("pyautogui not available")
             pyautogui.hotkey(*keys)
             r = _ok({"keys": list(keys)})
@@ -482,7 +508,7 @@ class LaptopControl:
     def key_down(self, key) -> dict:
         """Hold a key down."""
         try:
-            if not HAS_PYAUTOGUI:
+            if not _ensure_pyautogui():
                 return _fail("pyautogui not available")
             pyautogui.keyDown(key)
             r = _ok({"key": key, "state": "down"})
@@ -494,7 +520,7 @@ class LaptopControl:
     def key_up(self, key) -> dict:
         """Release a held key."""
         try:
-            if not HAS_PYAUTOGUI:
+            if not _ensure_pyautogui():
                 return _fail("pyautogui not available")
             pyautogui.keyUp(key)
             r = _ok({"key": key, "state": "up"})
@@ -506,7 +532,7 @@ class LaptopControl:
     def type_unicode(self, text) -> dict:
         """Type any unicode text via clipboard paste."""
         try:
-            if not HAS_PYPERCLIP or not HAS_PYAUTOGUI:
+            if not HAS_PYPERCLIP or not _ensure_pyautogui():
                 return _fail("pyperclip or pyautogui not available")
             # Preserve existing clipboard
             try:
@@ -547,7 +573,7 @@ class LaptopControl:
     def clipboard_paste(self) -> dict:
         """Paste from clipboard (ctrl+v)."""
         try:
-            if not HAS_PYAUTOGUI:
+            if not _ensure_pyautogui():
                 return _fail("pyautogui not available")
             pyautogui.hotkey("ctrl", "v")
             r = _ok({"action": "pasted"})
@@ -569,7 +595,7 @@ class LaptopControl:
     def clipboard_copy_selection(self) -> dict:
         """Copy current selection (ctrl+c) and return clipboard content."""
         try:
-            if not HAS_PYAUTOGUI or not HAS_PYPERCLIP:
+            if not _ensure_pyautogui() or not HAS_PYPERCLIP:
                 return _fail("pyautogui or pyperclip not available")
             pyautogui.hotkey("ctrl", "c")
             time.sleep(0.15)
@@ -1344,7 +1370,7 @@ $notifier.Show($toast)
     def start_menu_search(self, query) -> dict:
         """Open Start menu and type a search query."""
         try:
-            if not HAS_PYAUTOGUI:
+            if not _ensure_pyautogui():
                 return _fail("pyautogui not available")
             pyautogui.press("win")
             time.sleep(0.5)
@@ -1358,7 +1384,7 @@ $notifier.Show($toast)
     def task_manager(self) -> dict:
         """Open Task Manager."""
         try:
-            if not HAS_PYAUTOGUI:
+            if not _ensure_pyautogui():
                 return _fail("pyautogui not available")
             pyautogui.hotkey("ctrl", "shift", "escape")
             r = _ok({"action": "task_manager_opened"})
@@ -1434,7 +1460,7 @@ $notifier.Show($toast)
     def get_library_status(self) -> dict:
         """Return availability status of all hardware libraries."""
         return _ok({
-            "pyautogui": HAS_PYAUTOGUI,
+            "pyautogui": _ensure_pyautogui(),
             "cv2": HAS_CV2,
             "PIL": HAS_PIL,
             "pytesseract": HAS_TESSERACT,

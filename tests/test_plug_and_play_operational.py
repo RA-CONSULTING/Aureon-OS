@@ -29,6 +29,7 @@ def test_install_pins_linux_desktop_backend_and_make_check() -> None:
     assert "\ncheck:" in makefile
     assert "ruff check" in makefile
     assert "pytest" in makefile
+    assert ".[dev]" in makefile or "'[dev]'" in makefile or '".[dev]"' in makefile
     assert "git clone --depth 1" in readme
     assert "make check" in readme
     quick = readme.split("## Quick start in five minutes", 1)[1][:2500]
