@@ -58,6 +58,7 @@ def _child(**overrides: object) -> dict:
         "live_trading": False,
         "market_data_fetched": False,
         "listener_bound": False,
+        "exchange_module_count": 0,
         "production_ready": False,
         "magic_star_release": False,
         "report_contained_secret": False,
@@ -425,3 +426,22 @@ def _sha256(path: Path) -> str:
     import hashlib
 
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def test_judge_holds_when_the_child_imported_exchange_modules() -> None:
+    judged = judge(_child(exchange_module_count=10), started=True, parent_net_ns="net:[1]", argv_has_net=True)
+    assert judged["verdict"] == "hold"
+    assert "child imported 10 exchange modules" in judged["holds"]
+
+
+def test_judge_holds_when_exchange_module_count_is_missing() -> None:
+    child = _child()
+    child.pop("exchange_module_count", None)
+    judged = judge(child, started=True, parent_net_ns="net:[1]", argv_has_net=True)
+    assert judged["verdict"] == "hold"
+    assert "exchange_module_count was not reported" in judged["holds"]
+
+
+def test_judge_holds_when_exchange_module_count_is_a_bool() -> None:
+    judged = judge(_child(exchange_module_count=False), started=True, parent_net_ns="net:[1]", argv_has_net=True)
+    assert judged["verdict"] == "hold"
