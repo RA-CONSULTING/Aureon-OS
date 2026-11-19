@@ -8,7 +8,7 @@ called by both the sentient loop (proactive) and the conversation loop
 (reactive).
 
 Tool categories:
-  1. Shell execution        6. Desktop control (wire SafeDesktopControl)
+  1. Shell execution        6. Desktop control (ComputerUse)
   2. App launcher           7. System info
   3. Web search / browsing  8. Knowledge query (wire global_history_db)
   4. File system            9. Trading (wire exchange clients)
@@ -267,6 +267,7 @@ class AureonAgentCore:
         knowledge_connection: Optional[Any] = None,
         trade_authorization_provider: Optional[Callable[[Any], Any]] = None,
         final_trade_dispatcher: Optional[Callable[[Any], Mapping[str, Any]]] = None,
+        computer_use: Optional[Any] = None,
     ) -> None:
         self.repo_root = REPO_ROOT
         self.state_dir = STATE_DIR
@@ -288,6 +289,7 @@ class AureonAgentCore:
         # Lazy-init wired subsystems
         self._thought_bus: Optional[Any] = None
         self._desktop: Optional[Any] = None
+        self._computer: Optional[Any] = computer_use
         self._db_conn: Optional[Any] = knowledge_connection
         self._laptop: Optional[Any] = None
         self._parser: Optional[Any] = None
@@ -317,6 +319,13 @@ class AureonAgentCore:
             except Exception:
                 self._desktop = None
         return self._desktop
+
+    def _get_computer(self):
+        if self._computer is None:
+            from aureon.autonomy.computer_use import ComputerUse
+
+            self._computer = ComputerUse()
+        return self._computer
 
     def _get_db(self):
         # A caller may inject an already-open read-only connection. The core
@@ -477,10 +486,10 @@ class AureonAgentCore:
     # ===================================================================
     def execute_shell(self, command: str, timeout: int = 30, cwd: str = None,
                       force: bool = False) -> dict:
-        """Remain on HOLD until an argv-bound Plumber capability exists."""
+        """Run a command through ComputerUse. A string is split into argv."""
 
-        del command, timeout, cwd, force
-        return _effect_hold("process.execute", "argv_magic_star_capability_unavailable")
+        del force
+        return self._get_computer().run_shell(command, timeout=timeout, cwd=cwd)
 
     # ===================================================================
     #  2. APP LAUNCHER
@@ -621,8 +630,7 @@ class AureonAgentCore:
             }
 
     def open_url(self, url: str) -> dict:
-        del url
-        return _effect_hold("browser.open", "governed_browser_capability_unavailable")
+        return self._get_computer().open_url(url)
 
     # ===================================================================
     #  4. FILE SYSTEM
@@ -865,14 +873,30 @@ class AureonAgentCore:
         return _effect_hold("code.execute", "dynamic_code_execution_disabled")
 
     # ===================================================================
-    #  6. DESKTOP CONTROL (wire SafeDesktopControl)
+    #  6. DESKTOP CONTROL (ComputerUse — not the governed gateway)
     # ===================================================================
     def _desktop_exec(self, action: str, params: dict) -> dict:
-        del action, params
-        return _effect_hold(
-            "desktop.input",
-            "production_magic_star_desktop_release_unavailable",
-        )
+        computer = self._get_computer()
+        try:
+            if action == "left_click":
+                return computer.click(params.get("x"), params.get("y"), button="left")
+            if action == "right_click":
+                return computer.click(params.get("x"), params.get("y"), button="right")
+            if action == "double_click":
+                return computer.double_click(params.get("x"), params.get("y"))
+            if action == "move_mouse":
+                return computer.move(params.get("x"), params.get("y"), float(params.get("duration") or 0))
+            if action == "type_text":
+                return computer.type_text(params.get("text"), float(params.get("interval") or 0))
+            if action == "press_key":
+                return computer.press_key(params.get("key"))
+            if action == "hotkey":
+                return computer.hotkey(params.get("keys") or [])
+            if action == "scroll":
+                return computer.scroll(params.get("x"), params.get("y"), params.get("amount"))
+        except Exception as exc:
+            return {"success": False, "ok": False, "status": "error", "action": action, "error": type(exc).__name__}
+        return {"success": False, "ok": False, "status": "error", "action": action, "error": f"unsupported_desktop_action:{action}"}
 
     def click(self, x: int, y: int, target_binding_id: str | None = None) -> dict:
         p: Dict[str, Any] = {"x": int(x), "y": int(y)}
@@ -937,32 +961,9 @@ class AureonAgentCore:
         return self._desktop_exec("scroll", p)
 
     def screenshot(self) -> dict:
-        """Observe the screen through the same evidence-producing gateway."""
-        dc = self._get_desktop()
-        if dc is None:
-            return {"success": False, "error": "GovernedDesktopGateway not available"}
-        try:
-            res = dc.observe()
-            self._publish_search_capture(
-                "screen_observed" if res.ok else "screen_capture_failed",
-                source="governed_desktop_gateway",
-                status="success" if res.ok else "error",
-                result_count=1 if res.ok else 0,
-                metadata={
-                    "before_sha256": res.before_sha256,
-                    "action_id": res.action_id,
-                    "data_capture_mode": "in_memory_evidence_hash",
-                },
-            )
-            return {"success": res.ok, **res.to_dict()}
-        except Exception as exc:
-            self._publish_search_capture(
-                "screen_capture_failed",
-                source="governed_desktop_gateway",
-                status="error",
-                error=str(exc),
-            )
-            return {"success": False, "error": str(exc)}
+        """Capture the screen through ComputerUse and return the PNG path."""
+
+        return self._get_computer().screenshot()
 
     def desktop_status(self) -> dict:
         dc = self._get_desktop()
@@ -1506,14 +1507,14 @@ class AureonAgentCore:
     def get_capabilities(self) -> list:
         """Return list of all available intents with descriptions."""
         descs = {
-            "shell": "HOLD: exact argv Magic-Star capability unavailable",
+            "shell": "Run an argv command through ComputerUse",
             "open_app": "HOLD: governed process launch unavailable",
             "close_app": "HOLD: governed process termination unavailable",
             "list_apps": "List running applications",
             "focus_window": "HOLD: governed window-focus capability unavailable",
             "web_search": "Search curated offline documentation links",
             "web_fetch": "Fetch through an injected exact-host HTTPS reader",
-            "open_url": "HOLD: governed browser capability unavailable",
+            "open_url": "Open a URL through ComputerUse",
             "list_dir": "List bounded allowlisted workspace contents",
             "read_file": "Read a bounded allowlisted workspace file",
             "open_file": "HOLD: governed file-open capability unavailable",
@@ -1530,14 +1531,15 @@ class AureonAgentCore:
             "execute_python": "HOLD: dynamic code execution disabled",
             "create_script": "HOLD: dynamic code creation disabled",
             "run_script": "HOLD: dynamic code execution disabled",
-            "click": "HOLD: production Magic-Star desktop release unavailable",
-            "move_mouse": "HOLD: production Magic-Star desktop release unavailable",
-            "right_click": "HOLD: production Magic-Star desktop release unavailable",
-            "double_click": "HOLD: production Magic-Star desktop release unavailable",
-            "type_text": "HOLD: production Magic-Star desktop release unavailable",
-            "press_key": "HOLD: production Magic-Star desktop release unavailable",
-            "hotkey": "HOLD: production Magic-Star desktop release unavailable",
-            "screenshot": "Take a screenshot",
+            "click": "Click the desktop through ComputerUse",
+            "move_mouse": "Move the pointer through ComputerUse",
+            "right_click": "Right-click through ComputerUse",
+            "double_click": "Double-click through ComputerUse",
+            "type_text": "Type text through ComputerUse",
+            "press_key": "Press a key through ComputerUse",
+            "hotkey": "Press a key chord through ComputerUse",
+            "scroll": "Scroll through ComputerUse",
+            "screenshot": "Capture the screen through ComputerUse",
             "desktop_status": "Get desktop controller status",
             "desktop_arm_live": "HOLD: production Magic-Star desktop release unavailable",
             "desktop_arm_dry_run": "Arm desktop controller (dry-run mode)",
