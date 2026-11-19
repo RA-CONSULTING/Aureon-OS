@@ -8,7 +8,9 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import logging
 import os
+import time
 from pathlib import Path
 
 import pytest
@@ -450,3 +452,147 @@ def test_rejected_alpaca_and_binance_keys_never_submit_or_retry(monkeypatch):
     assert summary["attempted_count"] == 0
     assert alpaca.session.calls == []
     assert binance.session.calls == []
+
+
+def test_data_host_40110000_rejects_alpaca_auth(monkeypatch):
+    """Alpaca uses 40110000 for a bad key on every host, including the data API."""
+
+    _block_real_http(monkeypatch)
+    alpaca = _alpaca(monkeypatch)
+    alpaca._set_auth_outcome("verified", "ok", source="account")
+    alpaca.session = _ScriptedSession(
+        lambda method, url, **kwargs: _Response(403, ALPACA_AUTH_BODY)
+    )
+
+    alpaca._request(
+        "GET",
+        "/v2/stocks/bars",
+        params={"symbols": "AAPL"},
+        base_url=alpaca.data_url,
+        request_type="data",
+    )
+
+    assert alpaca.auth_status == "rejected"
+    assert alpaca.auth_reason == "alpaca auth rejected 40110000"
+    assert alpaca.is_authenticated is False
+    assert alpaca.session.calls == ["GET https://data.alpaca.markets/v2/stocks/bars"]
+
+
+def test_place_order_after_rejection_does_not_submit(monkeypatch):
+    _block_real_http(monkeypatch)
+    alpaca = _alpaca(monkeypatch)
+    alpaca._set_auth_outcome(
+        "rejected",
+        "alpaca auth rejected 40110000",
+        source="trading:/v2/positions",
+    )
+    alpaca.session = _BlockedSession()
+
+    market = alpaca.place_market_order("AAPL", "buy", quantity=1)
+    direct = alpaca.place_order("AAPL", 1, "buy")
+
+    assert alpaca.is_authenticated is False
+    assert market["submitted"] is False
+    assert market["reason"] == "auth rejected"
+    assert direct["submitted"] is False
+    assert direct["reason"] == "auth rejected"
+    assert alpaca.session.calls == []
+
+
+def test_mid_tick_position_rejection_stops_the_sell(monkeypatch):
+    _block_real_http(monkeypatch)
+    alpaca = _alpaca(monkeypatch)
+    alpaca._set_auth_outcome("verified", "ok", source="account")
+    submits: list[str] = []
+
+    def free_balance(_asset):
+        alpaca.auth_status = "rejected"
+        alpaca.auth_reason = "alpaca auth rejected 40110000"
+        alpaca.is_authenticated = False
+        return 1.5
+
+    def refuse_submit(*args, **kwargs):
+        submits.append("alpaca")
+        raise AssertionError("alpaca order submit")
+
+    alpaca.get_free_balance = free_balance
+    alpaca.place_market_order = refuse_submit
+    trader = _trader()
+    trader.alpaca = alpaca
+    trader._runtime_real_orders_allowed = lambda: True
+    trader._fresh_route_price_receipt = lambda venue, symbol: {
+        "status": "live",
+        "data_status": "live",
+        "price": 100.0,
+        "actionable": True,
+    }
+
+    result = trader._execute_alpaca_spot_route("SELL", "BTCUSD", 50.0)
+
+    assert submits == []
+    assert result["submitted"] is False
+    assert "auth rejected" in str(result.get("reason") or "")
+
+
+def test_expired_alpaca_verification_is_no_reading(monkeypatch, caplog):
+    caplog.set_level(logging.INFO, logger="aureon.exchanges.alpaca_client")
+    _block_real_http(monkeypatch)
+    monkeypatch.setenv("AUREON_VENUE_AUTH_TTL_S", "300")
+    alpaca = _alpaca(monkeypatch)
+    alpaca._set_auth_outcome("verified", "ok", source="trading:/v2/account")
+    alpaca.auth_verified_at = time.time() - 301
+    alpaca.session = _BlockedSession()
+    trader = _trader()
+    trader.alpaca = alpaca
+    trader.binance = None
+    trader._boot_balances = {
+        "alpaca": {"alive": True, "error": "", "equity": 25.0, "detail": {}},
+    }
+
+    report = trader._alpaca_spot_route_readiness()
+    budget = trader._build_dynamic_intelligence_budget({}, {})
+    before = len(alpaca.session.calls)
+    receipt = alpaca.place_order("AAPL", 1, "buy")
+
+    assert report["ready"] is False
+    assert "unverified" in report["reason"]
+    assert trader._exchange_connected_for_budget("alpaca") is False
+    assert budget["exchanges"]["alpaca"]["connected"] is False
+    assert budget["exchanges"]["alpaca"]["role"] == "offline"
+    assert "alpaca" not in budget["execution_priority_exchanges"]
+    assert "alpaca" not in budget["sensor_priority_exchanges"]
+    assert receipt["submitted"] is False
+    assert receipt["reason"] == "auth unverified"
+    assert len(alpaca.session.calls) == before
+    assert any(
+        "source=ttl" in record.message and "status=unverified" in record.message
+        for record in caplog.records
+    )
+
+
+def test_stale_binance_startup_snapshot_is_no_reading(monkeypatch):
+    _block_real_http(monkeypatch)
+    monkeypatch.setenv("AUREON_VENUE_AUTH_TTL_S", "300")
+    trader = _trader()
+    trader.binance = object()
+    trader._binance_diag = {
+        "network_ok": True,
+        "account_ok": True,
+        "auth_status": "verified",
+        "auth_reason": "ok",
+    }
+    trader._binance_diag_at = time.time() - 301
+    trader._boot_balances = {
+        "binance": {"alive": True, "error": "", "equity": 40.0, "detail": {}},
+    }
+
+    report = trader._binance_spot_route_readiness()
+    budget = trader._build_dynamic_intelligence_budget({}, {})
+
+    assert report["ready"] is False
+    assert report["reason"] == "binance auth unverified"
+    assert trader._exchange_connected_for_budget("binance") is False
+    assert budget["exchanges"]["binance"]["connected"] is False
+    assert budget["exchanges"]["binance"]["role"] == "offline"
+    assert "binance" not in budget["execution_priority_exchanges"]
+    assert "binance" not in budget["sensor_priority_exchanges"]

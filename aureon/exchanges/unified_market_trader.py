@@ -2003,8 +2003,54 @@ class UnifiedMarketTrader:
         )
         return items
 
+    def _venue_auth_ttl_s(self) -> float:
+        try:
+            return max(0.0, float(os.getenv("AUREON_VENUE_AUTH_TTL_S", "300") or 300))
+        except (TypeError, ValueError):
+            return 300.0
+
+    def _auth_reading_fresh(self, verified_at: Any) -> bool:
+        """An undated explicit reading is current. A dated one dies at the TTL."""
+
+        if verified_at is None:
+            return True
+        try:
+            age = time.time() - float(verified_at)
+        except (TypeError, ValueError):
+            return False
+        return age <= self._venue_auth_ttl_s()
+
+    def _client_auth_status(self, client: Any) -> str:
+        if client is None:
+            return ""
+        status_fn = getattr(client, "effective_auth_status", None)
+        if callable(status_fn):
+            try:
+                return str(status_fn() or "")
+            except Exception:
+                pass
+        status = str(getattr(client, "auth_status", "") or "")
+        if status == "verified" and not self._auth_reading_fresh(getattr(client, "auth_verified_at", None)):
+            return "unverified"
+        return status
+
+    def _alpaca_submit_block_reason(self) -> str:
+        client = self.alpaca
+        if client is None:
+            return ""
+        status = self._client_auth_status(client)
+        reason = str(getattr(client, "auth_reason", "") or "")
+        if status == "rejected":
+            return reason or "auth rejected"
+        if status == "unverified":
+            return reason or "alpaca auth unverified"
+        return ""
+
+    def _binance_startup_diag_fresh(self) -> bool:
+        return self._auth_reading_fresh(getattr(self, "_binance_diag_at", None))
+
     def _alpaca_spot_route_readiness(self) -> Dict[str, Any]:
-        """Spot-route auth. Unknown and refused credentials are not ready."""
+        """Spot-route auth. An expired verified reading is no reading."""
 
         client = self.alpaca
         if client is None:
@@ -2012,14 +2058,16 @@ class UnifiedMarketTrader:
                 "ready": False,
                 "reason": str(getattr(self, "alpaca_error", "") or "alpaca auth unchecked"),
             }
-        status = str(getattr(client, "auth_status", "") or "")
+        status = self._client_auth_status(client)
         reason = str(getattr(client, "auth_reason", "") or "")
         if status == "verified":
             return {"ready": True, "reason": "ok"}
-        if status in {"rejected", "failed"}:
+        if status == "rejected":
+            return {"ready": False, "reason": reason or "alpaca auth rejected"}
+        if status == "unverified":
+            return {"ready": False, "reason": reason or "alpaca auth unverified"}
+        if status == "failed":
             return {"ready": False, "reason": reason or "alpaca auth unchecked"}
-        if getattr(client, "auth_verified", False) is True:
-            return {"ready": True, "reason": "ok"}
         init_error = str(getattr(client, "init_error", "") or "")
         trader_error = str(getattr(self, "alpaca_error", "") or "")
         if init_error.startswith("auth_failed_"):
@@ -2055,26 +2103,34 @@ class UnifiedMarketTrader:
         diag = getattr(self, "_binance_diag", {}) or {}
         if not isinstance(diag, dict):
             diag = {}
-        status = str(getattr(client, "auth_status", "") or "") if client is not None else ""
+        status = self._client_auth_status(client) if client is not None else ""
         reason = str(getattr(client, "auth_reason", "") or "") if client is not None else ""
         diag_status = str(diag.get("auth_status") or "")
-        if status == "verified" or (
-            status not in {"rejected", "failed"} and diag_status == "verified"
-        ):
+        diag_claims_auth = diag_status == "verified" or diag.get("account_ok") is True
+        diag_fresh = self._binance_startup_diag_fresh()
+        if status == "verified":
             return {"ready": True, "reason": "ok", "account_ready": True}
-        if status in {"rejected", "failed"}:
+        if status in {"rejected", "failed", "unverified"}:
             return {
                 "ready": False,
-                "reason": reason or "binance auth unchecked",
+                "reason": reason or (
+                    "binance auth unverified" if status == "unverified" else "binance auth unchecked"
+                ),
                 "account_ready": False,
             }
-        if diag_status in {"rejected", "failed"}:
+        if diag_status in {"rejected", "failed"} and diag_fresh:
             return {
                 "ready": False,
                 "reason": str(diag.get("auth_reason") or "binance auth unchecked"),
                 "account_ready": False,
             }
-        if status not in {"rejected", "failed"} and diag.get("account_ok") is True:
+        if diag_claims_auth and not diag_fresh:
+            return {
+                "ready": False,
+                "reason": "binance auth unverified",
+                "account_ready": False,
+            }
+        if diag_claims_auth and diag_fresh:
             return {"ready": True, "reason": "ok", "account_ready": True}
         if client is None:
             return {
@@ -2448,6 +2504,7 @@ class UnifiedMarketTrader:
             except Exception as diag_error:
                 diag = {"init_error": str(diag_error), "network_ok": False, "account_ok": False}
             self._binance_diag = diag if isinstance(diag, dict) else {}
+            self._binance_diag_at = time.time()
             self.binance_error = str(
                 self._binance_diag.get("init_error")
                 or self._binance_diag.get("last_error")
@@ -2465,6 +2522,7 @@ class UnifiedMarketTrader:
                 try:
                     self.binance = BinanceClient()
                     self._binance_diag = {}
+                    self._binance_diag_at = time.time()
                     self.binance_error = ""
                     return
                 except Exception as retry_error:
@@ -7106,6 +7164,9 @@ class UnifiedMarketTrader:
         if price_receipt.get("status") != "live" or price is None:
             return {"ok": False, "submitted": False, "status": "no_data", "venue": "alpaca", "market_type": "spot", "symbol": symbol, "side": side_norm, "reason": str(price_receipt.get("reason") or "fresh_price_receipt_required"), "price_evidence": price_receipt}
         if side_norm == "buy":
+            blocked = self._alpaca_submit_block_reason()
+            if blocked:
+                return {"ok": False, "submitted": False, "status": "denied", "venue": "alpaca", "market_type": "spot", "symbol": symbol, "side": side_norm, "reason": blocked}
             try:
                 result = self._governed_client_for("alpaca").place_market_order(
                     symbol, side_norm, quote_qty=quote_usd
@@ -7119,6 +7180,9 @@ class UnifiedMarketTrader:
             quantity = self._spot_sell_quantity(self.alpaca, "alpaca", symbol, quote_usd, price)
             if quantity <= 0:
                 return {"ok": False, "submitted": False, "status": "no_data", "venue": "alpaca", "symbol": symbol, "side": side_norm, "reason": "no_verified_spot_balance_to_sell"}
+            blocked = self._alpaca_submit_block_reason()
+            if blocked:
+                return {"ok": False, "submitted": False, "status": "denied", "venue": "alpaca", "market_type": "spot", "symbol": symbol, "side": side_norm, "reason": blocked}
             try:
                 result = self._governed_client_for("alpaca").place_market_order(
                     symbol, side_norm, quantity=quantity

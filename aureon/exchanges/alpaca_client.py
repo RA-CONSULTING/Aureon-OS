@@ -351,15 +351,74 @@ class AlpacaClient:
             self.auth_status = "failed"
             self.auth_reason = "credentials_missing"
 
-    def _set_auth_outcome(self, status: str, reason: str) -> None:
+    def _auth_ttl_seconds(self) -> float:
+        try:
+            return max(0.0, float(os.getenv("AUREON_VENUE_AUTH_TTL_S", "300") or 300))
+        except (TypeError, ValueError):
+            return 300.0
+
+    def _set_auth_outcome(self, status: str, reason: str, *, source: str = "unspecified") -> None:
         lock = getattr(self, "_auth_state_lock", None)
         if lock is None:
             lock = threading.Lock()
             self._auth_state_lock = lock
         with lock:
+            previous = str(getattr(self, "auth_status", "") or "")
+            previous_reason = str(getattr(self, "auth_reason", "") or "")
+            now = time.time()
             self.auth_status = status
             self.auth_reason = reason
             self.auth_verified = status == "verified"
+            if status == "verified":
+                self.auth_verified_at = now
+                if not self._closed:
+                    self.is_authenticated = True
+            elif status == "rejected":
+                self.auth_verified_at = None
+                self.is_authenticated = False
+            elif status == "unverified":
+                self.auth_verified = False
+            changed = previous != status or previous_reason != reason
+        if changed:
+            logger.info(
+                "alpaca auth status change previous=%s status=%s reason=%s source=%s time=%.3f",
+                previous or "none",
+                status,
+                reason,
+                source,
+                now,
+            )
+
+    def effective_auth_status(self) -> str:
+        """Fresh verified, or no reading once AUREON_VENUE_AUTH_TTL_S has passed."""
+
+        status = str(getattr(self, "auth_status", "") or "unchecked")
+        if status != "verified":
+            return status
+        verified_at = getattr(self, "auth_verified_at", None)
+        try:
+            age = time.time() - float(verified_at)
+            fresh = age <= self._auth_ttl_seconds()
+        except (TypeError, ValueError):
+            fresh = False
+        if fresh:
+            return "verified"
+        self._set_auth_outcome("unverified", "alpaca auth unverified", source="ttl")
+        return "unverified"
+
+    def _order_block_reason(self) -> str:
+        status = self.effective_auth_status()
+        if status == "rejected":
+            return "auth rejected"
+        if status == "unverified":
+            return "auth unverified"
+        return ""
+
+    def _blocked_order_receipt(self, **fields: Any) -> Optional[Dict[str, Any]]:
+        reason = self._order_block_reason()
+        if not reason:
+            return None
+        return self._not_submitted_order_receipt(reason, **fields)
 
     def _observe_auth_response(
         self,
@@ -390,15 +449,25 @@ class AlpacaClient:
         )
         # A data-API 403 is a plan or feed limit, not a refused trading key.
         # 40110000 is Alpaca's credential refusal and counts on any endpoint.
+        source = f"{request_type}:{endpoint}"
+        # 40110000 is Alpaca's bad-key code on every host, including the data API.
         if code == "40110000" or (authenticated_call and status_code in (401, 403)):
-            self._set_auth_outcome("rejected", f"alpaca auth rejected {code or status_code}")
+            self._set_auth_outcome(
+                "rejected",
+                f"alpaca auth rejected {code or status_code}",
+                source=source,
+            )
             return
         if not authenticated_call:
             return
         if 200 <= status_code < 300:
-            self._set_auth_outcome("verified", "ok")
+            self._set_auth_outcome("verified", "ok", source=source)
         elif status_code and status_code != 429:
-            self._set_auth_outcome("failed", f"alpaca account call failed {status_code}")
+            self._set_auth_outcome(
+                "failed",
+                f"alpaca account call failed {status_code}",
+                source=source,
+            )
 
     def _probe_initial_auth(self) -> None:
         """Probe auth once without disabling the client on transient network issues."""
@@ -689,7 +758,9 @@ class AlpacaClient:
                     "canonical_alpaca_environment_endpoint_required"
                 )
 
-        if self._closed or not getattr(self, 'is_authenticated', True):
+        if self._closed:
+            return {}
+        if is_mutation and (self._order_block_reason() or not getattr(self, "is_authenticated", True)):
             return {}
         url = f"{request_base}{endpoint}"
         attempt_count = 1 if is_mutation else self.max_retries + 1
@@ -1430,7 +1501,8 @@ class AlpacaClient:
 
     def get_account(self) -> Dict[str, Any]:
         """Get account details with short-lived caching."""
-        if not self.is_authenticated:
+        # A rejected key still needs this read: the next 2xx is what restores it.
+        if not self.is_authenticated and str(getattr(self, "auth_status", "") or "") != "rejected":
             return {}
         cached = None
         try:
@@ -1509,6 +1581,15 @@ class AlpacaClient:
                 requested_qty=qty,
                 type=order_type or None,
             )
+        blocked = self._blocked_order_receipt(
+            symbol=symbol,
+            side=side_normalized,
+            requested_qty=quantity,
+            type=order_type,
+            time_in_force=time_in_force,
+        )
+        if blocked is not None:
+            return blocked
         if self.dry_run:
             logger.info(f"[DRY RUN] Alpaca Order: {side_normalized} {quantity} {symbol}")
             return self._not_submitted_order_receipt(
@@ -2068,6 +2149,9 @@ class AlpacaClient:
         if extended_hours:
             data["extended_hours"] = True
             
+        blocked = self._blocked_order_receipt(symbol=symbol, side=str(side or ""), type="order")
+        if blocked is not None:
+            return blocked
         result = self._request("POST", "/v2/orders", data=data, request_type='trading')
         return self._normalize_order_receipt(
             result, fill_activities=[], submission_attempted=True
@@ -2111,6 +2195,9 @@ class AlpacaClient:
             "stop_price": str(stop_price),
             "time_in_force": time_in_force
         }
+        blocked = self._blocked_order_receipt(symbol=symbol, side=str(side or ""), type="order")
+        if blocked is not None:
+            return blocked
         result = self._request("POST", "/v2/orders", data=data, request_type='trading')
         return self._normalize_order_receipt(
             result, fill_activities=[], submission_attempted=True
@@ -2157,6 +2244,9 @@ class AlpacaClient:
             "limit_price": str(limit_price),
             "time_in_force": time_in_force
         }
+        blocked = self._blocked_order_receipt(symbol=symbol, side=str(side or ""), type="order")
+        if blocked is not None:
+            return blocked
         result = self._request("POST", "/v2/orders", data=data, request_type='trading')
         return self._normalize_order_receipt(
             result, fill_activities=[], submission_attempted=True
@@ -2213,6 +2303,9 @@ class AlpacaClient:
         else:
             raise ValueError("Must provide either trail_percent or trail_price")
             
+        blocked = self._blocked_order_receipt(symbol=symbol, side=str(side or ""), type="order")
+        if blocked is not None:
+            return blocked
         result = self._request("POST", "/v2/orders", data=data, request_type='trading')
         return self._normalize_order_receipt(
             result, fill_activities=[], submission_attempted=True
@@ -2291,6 +2384,9 @@ class AlpacaClient:
         if stop_loss_limit:
             data["stop_loss"]["limit_price"] = str(stop_loss_limit)
             
+        blocked = self._blocked_order_receipt(symbol=symbol, side=str(side or ""), type="order")
+        if blocked is not None:
+            return blocked
         result = self._request("POST", "/v2/orders", data=data, request_type='trading')
         return self._normalize_order_receipt(
             result, fill_activities=[], submission_attempted=True
@@ -2350,6 +2446,9 @@ class AlpacaClient:
         if stop_loss_limit:
             data["stop_loss"]["limit_price"] = str(stop_loss_limit)
             
+        blocked = self._blocked_order_receipt(symbol=symbol, side=str(side or ""), type="order")
+        if blocked is not None:
+            return blocked
         result = self._request("POST", "/v2/orders", data=data, request_type='trading')
         return self._normalize_order_receipt(
             result, fill_activities=[], submission_attempted=True
@@ -2421,6 +2520,9 @@ class AlpacaClient:
             if stop_loss_limit:
                 data["stop_loss"]["limit_price"] = str(stop_loss_limit)
                 
+        blocked = self._blocked_order_receipt(symbol=symbol, side=str(side or ""), type="order")
+        if blocked is not None:
+            return blocked
         result = self._request("POST", "/v2/orders", data=data, request_type='trading')
         return self._normalize_order_receipt(
             result, fill_activities=[], submission_attempted=True
@@ -2579,6 +2681,15 @@ class AlpacaClient:
         side_normalized = str(side or "").strip().lower()
         base_quantity = self._finite_number(quantity, positive=True)
         quote_quantity = self._finite_number(quote_qty, positive=True)
+        blocked = self._blocked_order_receipt(
+            symbol=resolved,
+            side=side_normalized,
+            requested_qty=quantity,
+            requested_quote_qty=quote_qty,
+            type="market",
+        )
+        if blocked is not None:
+            return blocked
 
         if base_quantity is None and quote_quantity is not None:
             quote = self.get_latest_crypto_quotes([resolved]).get(resolved)

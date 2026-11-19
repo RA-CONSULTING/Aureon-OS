@@ -1004,14 +1004,53 @@ class BinanceClient:
                 "exact_binance_mutation_query_and_body_required"
             )
 
-    def _set_auth_outcome(self, status: str, reason: str) -> None:
+    def _auth_ttl_seconds(self) -> float:
+        try:
+            return max(0.0, float(os.getenv("AUREON_VENUE_AUTH_TTL_S", "300") or 300))
+        except (TypeError, ValueError):
+            return 300.0
+
+    def _set_auth_outcome(self, status: str, reason: str, *, source: str = "unspecified") -> None:
         lock = getattr(self, "_auth_state_lock", None)
         if lock is None:
             lock = threading.Lock()
             self._auth_state_lock = lock
         with lock:
+            previous = str(getattr(self, "auth_status", "") or "")
+            previous_reason = str(getattr(self, "auth_reason", "") or "")
+            now = time.time()
             self.auth_status = status
             self.auth_reason = reason
+            if status == "verified":
+                self.auth_verified_at = now
+            elif status in {"rejected", "unverified"}:
+                self.auth_verified_at = None
+            changed = previous != status or previous_reason != reason
+        if changed:
+            logging.getLogger(__name__).info(
+                "binance auth status change previous=%s status=%s reason=%s source=%s time=%.3f",
+                previous or "none",
+                status,
+                reason,
+                source,
+                now,
+            )
+
+    def effective_auth_status(self) -> str:
+        """Fresh verified, or no reading once AUREON_VENUE_AUTH_TTL_S has passed."""
+
+        status = str(getattr(self, "auth_status", "") or "unchecked")
+        if status != "verified":
+            return status
+        verified_at = getattr(self, "auth_verified_at", None)
+        try:
+            fresh = (time.time() - float(verified_at)) <= self._auth_ttl_seconds()
+        except (TypeError, ValueError):
+            fresh = False
+        if fresh:
+            return "verified"
+        self._set_auth_outcome("unverified", "binance auth unverified", source="ttl")
+        return "unverified"
 
     def _observe_signed_auth(self, resp: Any) -> None:
         """Record a signed account response. Does not issue another request."""
@@ -1028,16 +1067,22 @@ class BinanceClient:
             body = str(body)
         code_match = re.search(r'"code"\s*:\s*"?(?P<code>-?\d+)"?', body)
         code = code_match.group("code") if code_match else ""
+        source = f"signed:{status_code}"
         if status_code in (401, 403) or code in {"40110000", "-2014", "-2015"}:
             self._set_auth_outcome(
                 "rejected",
                 f"binance auth rejected {code or status_code}",
+                source=source,
             )
             return
         if 200 <= status_code < 300:
-            self._set_auth_outcome("verified", "ok")
+            self._set_auth_outcome("verified", "ok", source=source)
         elif status_code and status_code != 429:
-            self._set_auth_outcome("failed", f"binance account call failed {status_code}")
+            self._set_auth_outcome(
+                "failed",
+                f"binance account call failed {status_code}",
+                source=source,
+            )
 
     def _do_request(
         self,
