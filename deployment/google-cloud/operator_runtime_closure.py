@@ -77,6 +77,7 @@ OPERATOR_COMPANION_SOURCES = frozenset(
         "aureon_fusion/fleet_launcher.py",
         "aureon_fusion/flight_recorder.py",
         "aureon_fusion/hnc_core.py",
+        "aureon_fusion/schumann_freshness.py",
         "aureon_fusion/organ_registry.py",
         "aureon_fusion/paths.py",
         "aureon_fusion/receipts.py",

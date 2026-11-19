@@ -45,9 +45,9 @@ def test_inventory_is_exact_but_truthfully_not_certified(census: dict[str, Any])
     assert census["counts_by_provider"] == {
         "alpaca": 303,
         "binance": 514,
-        "capital": 295,
+        "capital": 294,
         "kraken": 562,
-        "multi-provider": 427,
+        "multi-provider": 428,
         "oanda": 6,
     }
 
@@ -1222,6 +1222,46 @@ class BinanceWebSocketClient:
         name="aureon/exchanges/binance_ws_client.py",
     )
     assert findings == []
+
+
+def test_requests_url_builder_is_not_an_economic_mutation(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """``requests.Request`` prepares a URL. It does not send."""
+
+    findings = _python_fixture_findings(
+        tmp_path,
+        monkeypatch,
+        """
+import requests
+
+class Recorder:
+    def __call__(self, session, method, url, params=None, **kwargs):
+        return requests.Request(method, url, params=params).prepare().url
+""",
+        name="tests/test_shared_market_feed.py",
+    )
+    assert findings == []
+
+
+def test_dynamic_session_request_is_still_an_economic_mutation(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    findings = _python_fixture_findings(
+        tmp_path,
+        monkeypatch,
+        """
+class Client:
+    def send(self, session, method, url):
+        return session.request(method, url)
+""",
+        name="aureon/exchanges/binance_client.py",
+    )
+    assert len(findings) == 1
+    assert findings[0].operation == "dynamic-provider-mutation"
+    assert findings[0].transport == "raw-http-dynamic"
 
 
 def test_capital_session_auth_post_is_not_an_economic_mutation(

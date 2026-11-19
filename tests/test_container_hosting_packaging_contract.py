@@ -59,8 +59,13 @@ def test_root_compose_has_one_non_networked_terminal_preflight() -> None:
     assert service["read_only"] is True
     assert service["cap_drop"] == ["ALL"]
     assert "no-new-privileges:true" in service["security_opt"]
-    for forbidden in ("ports", "volumes", "env_file", "environment", "healthcheck"):
+    for forbidden in ("ports", "volumes", "env_file", "healthcheck"):
         assert forbidden not in service
+    assert service.get("environment") == {
+        "AUREON_LIVE_TRADING": "0",
+        "AUREON_DISABLE_REAL_ORDERS": "1",
+        "AUREON_DISABLE_EXCHANGE_MUTATIONS": "1",
+    }
     assert "trading-engine" not in compose_text
     assert "command-center" not in compose_text
     assert "prometheus" not in compose_text

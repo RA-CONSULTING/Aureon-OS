@@ -7,6 +7,13 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
+# The only environment a HOLD compose service may carry. Same three pins as
+# docker-compose.yml and tests/test_primary_launcher_paths.py.
+ORDER_SAFETY_PINS = {
+    "AUREON_LIVE_TRADING": "0",
+    "AUREON_DISABLE_REAL_ORDERS": "1",
+    "AUREON_DISABLE_EXCHANGE_MUTATIONS": "1",
+}
 COMPOSE_FILES = (
     "docker-compose.yml",
     "docker-compose.autonomous.yml",
@@ -36,9 +43,12 @@ def test_compose_surfaces_have_no_authorized_writer_or_network() -> None:
             assert service["cap_drop"] == ["ALL"], f"{relative}:{name}"
             assert "no-new-privileges:true" in service["security_opt"]
             for forbidden in (
-                "ports", "volumes", "env_file", "environment", "healthcheck", "deploy"
+                "ports", "volumes", "env_file", "healthcheck", "deploy"
             ):
                 assert forbidden not in service, f"{relative}:{name}:{forbidden}"
+            environment = service.get("environment")
+            if environment is not None:
+                assert environment == ORDER_SAFETY_PINS, f"{relative}:{name}"
 
 
 def test_digitalocean_has_zero_components_and_no_autoscaling() -> None:
