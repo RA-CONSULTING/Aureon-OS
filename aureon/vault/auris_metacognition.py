@@ -168,11 +168,11 @@ class AurisMetacognition:
     def _falcon(self, vault: Any) -> NodeVote:
         """Falcon rides momentum — tracks Λ(t) sign and magnitude.
 
-        ``None`` means the gear had no reading. It is not read as 0.0.
-        A missing attribute still defaults to 0.0, which is this node's
-        old input when the vault never set Lambda.
+        ``None`` means there is no reading. It is not read as 0.0.
+        A missing attribute is the same as no reading.
+        An explicit 0.0 stays 0.0.
         """
-        raw = getattr(vault, "last_lambda_t", 0.0)
+        raw = getattr(vault, "last_lambda_t", None)
         if raw is None:
             return NodeVote("Falcon", "NEUTRAL", 0.4, "no Λ(t) reading")
         lam = float(raw)

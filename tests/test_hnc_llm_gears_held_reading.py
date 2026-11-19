@@ -3,7 +3,8 @@
 ``assess_coherence`` already refuses NaN, inf, bools, and values outside
 [0, 1]. The gear used to hand Auris ``last_lambda_t = 0.0`` for every
 refusal, the same input as an accepted 0.0. A refusal is no reading:
-``None`` reaches Auris, and a real 0.0 stays 0.0.
+``None`` reaches Auris. An accepted gamma of 0.0 stays on the gamma
+input and does not fill the lambda slot when the field has no ``lambda_t``.
 """
 
 from __future__ import annotations
@@ -69,12 +70,33 @@ def test_real_zero_reading_stays_zero(monkeypatch, captured) -> None:
 
     receipt = hnc_llm_gears.turn_gears("salad")
 
-    assert captured["last_lambda_t"] == 0.0
-    assert captured["last_lambda_t"] is not None
     field_gear = receipt["gears"][1]
     assert field_gear["coherence"] == 0.0
     assert field_gear["coherence_verdict"] == "ACCEPTED"
-    assert "flat" in captured["falcon"].reasoning
+    assert captured["last_lambda_t"] is None
+    assert field_gear.get("lambda_t") is None
+
+
+def test_vault_without_last_lambda_t_is_no_reading() -> None:
+    auris = AurisMetacognition()
+    vault = SimpleNamespace()
+    assert not hasattr(vault, "last_lambda_t")
+
+    falcon = auris._falcon(vault)
+    explicit_zero = auris._falcon(SimpleNamespace(last_lambda_t=0.0))
+    explicit_none = auris._falcon(SimpleNamespace(last_lambda_t=None))
+
+    assert falcon.verdict == "NEUTRAL"
+    assert falcon.reasoning == "no Λ(t) reading"
+    assert falcon.reasoning == explicit_none.reasoning
+    assert falcon.reasoning != explicit_zero.reasoning
+    assert "flat" not in falcon.reasoning
+    assert "0.000" not in falcon.reasoning
+
+    vote = auris.vote(vault)
+    node = next(item for item in vote.per_node_votes if item.node == "Falcon")
+    assert node.verdict == falcon.verdict
+    assert node.reasoning == falcon.reasoning
 
 
 def test_falcon_does_not_crash_or_read_none_as_zero() -> None:

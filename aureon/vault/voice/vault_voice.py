@@ -25,7 +25,22 @@ assembled from the current vault values at the moment of speaking.
 from __future__ import annotations
 
 import logging
+import math
 from typing import Any, Dict, List, Optional
+
+
+def _read_lambda_t(raw: Any) -> Optional[float]:
+    """A published Lambda(t), or None when there is no reading.
+
+    Missing and None stay None. A real 0.0 stays 0.0. A bool, a
+    non-number, or a non-finite value is not a reading.
+    """
+    if isinstance(raw, bool) or not isinstance(raw, (int, float)):
+        return None
+    number = float(raw)
+    if not math.isfinite(number):
+        return None
+    return number
 
 from aureon.vault.voice.utterance import VoiceStatement
 
@@ -133,11 +148,15 @@ class VaultVoice:
 
     def _extract_slice(self, vault: Any) -> Dict[str, Any]:
         """Pull the fields this voice attends to from the vault."""
+        try:
+            lambda_raw = getattr(vault, "last_lambda_t", None)
+        except Exception:
+            lambda_raw = None
         return {
             "love_amplitude": float(getattr(vault, "love_amplitude", 0.0) or 0.0),
             "gratitude_score": float(getattr(vault, "gratitude_score", 0.5) or 0.5),
             "last_casimir_force": float(getattr(vault, "last_casimir_force", 0.0) or 0.0),
-            "last_lambda_t": float(getattr(vault, "last_lambda_t", 0.0) or 0.0),
+            "last_lambda_t": _read_lambda_t(lambda_raw),
             "dominant_chakra": str(getattr(vault, "dominant_chakra", "love") or "love"),
             "dominant_frequency_hz": float(
                 getattr(vault, "dominant_frequency_hz", 528.0) or 528.0
@@ -224,8 +243,11 @@ class QueenVoice(VaultVoice):
         dominant = max(cortex.items(), key=lambda kv: kv[1], default=(None, 0))
         if dominant[0]:
             lines.append(f"My dominant brainwave band is {dominant[0]} at amplitude {dominant[1]:.2f}.")
-        lam = state.get("last_lambda_t", 0.0)
-        lines.append(f"Λ(t) reads {lam:+.3f}.")
+        lam = _read_lambda_t(state.get("last_lambda_t", None))
+        if lam is None:
+            lines.append("Λ(t) has no reading.")
+        else:
+            lines.append(f"Λ(t) reads {lam:+.3f}.")
         love = state.get("love_amplitude", 0.0)
         chakra = state.get("dominant_chakra", "love")
         lines.append(f"My love amplitude is {love:.3f} and the ruling chakra is {chakra}.")

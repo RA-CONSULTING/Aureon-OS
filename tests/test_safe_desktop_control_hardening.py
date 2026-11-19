@@ -80,6 +80,37 @@ def test_voice_source_never_bypasses_live_confirmation(tmp_path, monkeypatch) ->
     assert fake.typed == []
 
 
+class _ClickBackend:
+    def __init__(self) -> None:
+        self.clicks: list[tuple] = []
+
+    def click(self, x=None, y=None, button="left") -> None:
+        self.clicks.append((x, y, button))
+
+
+def test_stop_file_refuses_execute_and_does_not_call_backend(tmp_path, monkeypatch) -> None:
+    backend = _ClickBackend()
+    monkeypatch.setattr(desktop_module, "HAS_PYAUTOGUI", True)
+    monkeypatch.setattr(desktop_module, "pyautogui", backend)
+    stop = tmp_path / "state" / "computer_use.stop"
+    stop.parent.mkdir(parents=True)
+    stop.write_text("STOP\n", encoding="utf-8")
+    control = SafeDesktopControl(
+        state_path=tmp_path / "state" / "desktop.json",
+        kill_path=stop,
+        dry_run=False,
+    )
+    control.arm()
+
+    result = control.execute(
+        DesktopAction(action="left_click", params={"x": 12, "y": 34}, approved=True)
+    )
+
+    assert result.ok is False
+    assert result.reason == "emergency_stop_active"
+    assert backend.clicks == []
+
+
 def test_live_typing_uses_explicit_approval_and_token_without_persisting_text(tmp_path, monkeypatch) -> None:
     fake = _FakePyAutoGui()
     monkeypatch.setattr(desktop_module, "HAS_PYAUTOGUI", True)
