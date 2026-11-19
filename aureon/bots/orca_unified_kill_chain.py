@@ -2042,6 +2042,16 @@ class UnifiedKillChain:
             and target.get("type") == "CFD"
             and target.get("client") is not None
         ):
+            # Same switch as the receipt path: a chain that is not executing
+            # must not submit a provider close, even for an adopted deal.
+            if getattr(self, "execution_enabled", False) is not True:
+                return _execution_result(
+                    venue="capital",
+                    status="not_submitted",
+                    reason="execution_enable_gate_required",
+                    symbol=target.get("symbol"),
+                    side="SELL",
+                )
             return self._close_capital(target)
         if self.execution_state_path is None:
             return _no_data_decision("execution_state_path_required")

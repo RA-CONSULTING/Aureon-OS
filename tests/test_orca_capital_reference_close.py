@@ -63,15 +63,29 @@ def _fast(monkeypatch):
 
 
 def test_reference_with_opened_deal_closes_on_both_copies():
-    for module, runner in (
-        (radar_kc, lambda chain, target: chain.execute_kill_chain_safe(target)),
-        (aureon_kc, lambda chain, target: chain.execute_kill_chain(target)),
-    ):
-        client = _client(lambda ref: _opened(ref))
-        chain = module.UnifiedKillChain.__new__(module.UnifiedKillChain)
-        runner(chain, _target(client))
-        client.close_position.assert_called_once_with("D-REAL")
-        client.confirm_order.assert_called_once_with("o_REF")
+    client = _client(lambda ref: _opened(ref))
+    radar = radar_kc.UnifiedKillChain.__new__(radar_kc.UnifiedKillChain)
+    radar.execute_kill_chain_safe(_target(client))
+    client.close_position.assert_called_once_with("D-REAL")
+    client.confirm_order.assert_called_once_with("o_REF")
+
+    client = _client(lambda ref: _opened(ref))
+    aureon = aureon_kc.UnifiedKillChain.__new__(aureon_kc.UnifiedKillChain)
+    aureon.execution_enabled = True
+    aureon.execute_kill_chain(_target(client))
+    client.close_position.assert_called_once_with("D-REAL")
+    client.confirm_order.assert_called_once_with("o_REF")
+
+
+def test_aureon_capital_close_stays_behind_execution_gate():
+    client = _client(lambda ref: _opened(ref))
+    chain = aureon_kc.UnifiedKillChain.__new__(aureon_kc.UnifiedKillChain)
+    chain.execution_enabled = False
+    result = chain.execute_kill_chain(_target(client))
+    assert result["status"] == "not_submitted"
+    assert result["reason"] == "execution_enable_gate_required"
+    client.close_position.assert_not_called()
+    client.confirm_order.assert_not_called()
 
 
 def test_missing_or_rejected_confirm_does_not_close():
@@ -91,5 +105,6 @@ def test_missing_or_rejected_confirm_does_not_close():
         chain.execute_kill_chain_safe(_target(client))
         client.close_position.assert_not_called()
         aureon = aureon_kc.UnifiedKillChain.__new__(aureon_kc.UnifiedKillChain)
+        aureon.execution_enabled = True
         aureon.execute_kill_chain(_target(client))
         client.close_position.assert_not_called()
