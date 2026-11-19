@@ -24,6 +24,8 @@ import time
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
+from aureon.core.lambda_reading import format_lambda
+
 logger = logging.getLogger("aureon.vault.casimir")
 
 CASIMIR_RELEASE_HOLD = (
@@ -222,7 +224,7 @@ class CasimirQuantifier:
             f"size={len(vault) if hasattr(vault, '__len__') else 0}",
             f"love={getattr(vault, 'love_amplitude', 0.0):.4f}",
             f"grat={getattr(vault, 'gratitude_score', 0.0):.4f}",
-            f"lambda={getattr(vault, 'last_lambda_t', 0.0):.4f}",
+            f"lambda={format_lambda(getattr(vault, 'last_lambda_t', None))}",
             f"rally={bool(getattr(vault, 'rally_active', False))}",
         ]
         raw = "|".join(parts).encode("utf-8")

@@ -49,6 +49,47 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
+from aureon.core.lambda_reading import format_lambda, lambda_reading
+
+
+def snapshot_lambda_trace(snaps: List[Any]) -> List[float]:
+    """Measured Λ(t) from replay snapshots. Missing points are not 0.0."""
+    values: List[float] = []
+    for snap in snaps:
+        if not isinstance(snap, dict) or "lambda_t" not in snap:
+            continue
+        number = lambda_reading(snap["lambda_t"])
+        if number is None:
+            continue
+        values.append(number)
+    return values
+
+
+def measured_snapshot_series(snaps: List[Any], *path: str) -> List[float]:
+    """Numeric replay points. A missing point is skipped. A real 0.0 stays."""
+    values: List[float] = []
+    for snap in snaps:
+        current: Any = snap
+        present = True
+        for key in path:
+            if not isinstance(current, dict) or key not in current:
+                present = False
+                break
+            current = current[key]
+        if not present:
+            continue
+        number = lambda_reading(current)
+        if number is None:
+            continue
+        values.append(number)
+    return values
+
+
+def snapshot_lambda_cell(snap: Any) -> str:
+    if not isinstance(snap, dict) or "lambda_t" not in snap:
+        return "no reading"
+    return format_lambda(snap["lambda_t"], ".3f")
+
 logger = logging.getLogger("aureon.observer.historical_backtest")
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -433,8 +474,8 @@ def _write_markdown(path: Path, capture: _ReplayCapture, agg: Dict[str, Any],
     # the Vote 7 threshold isn't crossed. The threshold gates DECISION;
     # the trace gates UNDERSTANDING.
     cons_dirs = [str((s.get("consensus") or {}).get("direction") or "?") for s in snaps]
-    cons_confs = [float((s.get("consensus") or {}).get("confidence") or 0.0) for s in snaps]
-    cons_strs = [float((s.get("consensus") or {}).get("strength") or 0.0) for s in snaps]
+    cons_confs = measured_snapshot_series(snaps, "consensus", "confidence")
+    cons_strs = measured_snapshot_series(snaps, "consensus", "strength")
     if cons_strs:
         add("**Consensus signal trace** (raw, pre-threshold):")
         add("")
@@ -443,8 +484,11 @@ def _write_markdown(path: Path, capture: _ReplayCapture, agg: Dict[str, Any],
                       for d in sorted(set(cons_dirs))))
         add(f"- Strength range: {min(cons_strs):+.4f} → {max(cons_strs):+.4f} "
             f"(mean {sum(cons_strs)/len(cons_strs):+.4f})")
-        add(f"- Confidence range: {min(cons_confs):.4f} → {max(cons_confs):.4f} "
-            f"(mean {sum(cons_confs)/len(cons_confs):.4f})")
+        if cons_confs:
+            add(f"- Confidence range: {min(cons_confs):.4f} → {max(cons_confs):.4f} "
+                f"(mean {sum(cons_confs)/len(cons_confs):.4f})")
+        else:
+            add("- Confidence range: no reading")
         add("")
         add(f"**Strength sparkline** ({min(cons_strs):+.3f} → {max(cons_strs):+.3f}):")
         add(f"```\n{_sparkline(cons_strs)}\n```")
@@ -460,28 +504,43 @@ def _write_markdown(path: Path, capture: _ReplayCapture, agg: Dict[str, Any],
         add("")
 
     if snaps:
-        kps = [float(s.get("kp") or 0.0) for s in snaps]
-        lambdas = [float(s.get("lambda_t") or 0.0) for s in snaps]
-        psis = [float(s.get("consciousness_psi") or 0.0) for s in snaps]
-        cohs = [float(s.get("coherence_score") or 0.0) for s in snaps]
-        sls = [float(s.get("symbolic_life_score") or 0.0) for s in snaps]
+        kps = measured_snapshot_series(snaps, "kp")
+        lambdas = snapshot_lambda_trace(snaps)
+        psis = measured_snapshot_series(snaps, "consciousness_psi")
+        cohs = measured_snapshot_series(snaps, "coherence_score")
+        sls = measured_snapshot_series(snaps, "symbolic_life_score")
 
         add("## Time series (snapshot-aligned sparklines)")
         add("")
-        add(f"**Kp input** ({min(kps):.2f} → {max(kps):.2f}):")
-        add(f"```\n{_sparkline(kps)}\n```")
+        if kps:
+            add(f"**Kp input** ({min(kps):.2f} → {max(kps):.2f}):")
+            add(f"```\n{_sparkline(kps)}\n```")
+        else:
+            add("**Kp input:** no reading")
         add("")
-        add(f"**Λ_full** ({min(lambdas):.3f} → {max(lambdas):.3f}):")
-        add(f"```\n{_sparkline(lambdas)}\n```")
+        if lambdas:
+            add(f"**Λ_full** ({min(lambdas):.3f} → {max(lambdas):.3f}):")
+            add(f"```\n{_sparkline(lambdas)}\n```")
+        else:
+            add("**Λ_full:** no reading")
         add("")
-        add(f"**ψ (consciousness)** ({min(psis):.3f} → {max(psis):.3f}):")
-        add(f"```\n{_sparkline(psis)}\n```")
+        if psis:
+            add(f"**ψ (consciousness)** ({min(psis):.3f} → {max(psis):.3f}):")
+            add(f"```\n{_sparkline(psis)}\n```")
+        else:
+            add("**ψ (consciousness):** no reading")
         add("")
-        add(f"**Coherence score** ({min(cohs):.3f} → {max(cohs):.3f}):")
-        add(f"```\n{_sparkline(cohs)}\n```")
+        if cohs:
+            add(f"**Coherence score** ({min(cohs):.3f} → {max(cohs):.3f}):")
+            add(f"```\n{_sparkline(cohs)}\n```")
+        else:
+            add("**Coherence score:** no reading")
         add("")
-        add(f"**Symbolic life score** ({min(sls):.3f} → {max(sls):.3f}):")
-        add(f"```\n{_sparkline(sls)}\n```")
+        if sls:
+            add(f"**Symbolic life score** ({min(sls):.3f} → {max(sls):.3f}):")
+            add(f"```\n{_sparkline(sls)}\n```")
+        else:
+            add("**Symbolic life score:** no reading")
         add("")
 
         add("## Recent snapshots (last 12)")
@@ -489,7 +548,7 @@ def _write_markdown(path: Path, capture: _ReplayCapture, agg: Dict[str, Any],
         add("| Date | Kp | Λ_full | ψ | Level | Regime | Coherence | Pred dir |")
         add("|---|---|---|---|---|---|---|---|")
         for s in snaps[-12:]:
-            add(f"| {s['date']} | {s['kp']:.2f} | {s['lambda_t']:.3f} | "
+            add(f"| {s['date']} | {s['kp']:.2f} | {snapshot_lambda_cell(s)} | "
                 f"{s['consciousness_psi']:.3f} | {s['consciousness_level']} | "
                 f"{s['regime']} | {s['coherence_score']:.3f} | "
                 f"{s['predictor']['direction']} |")

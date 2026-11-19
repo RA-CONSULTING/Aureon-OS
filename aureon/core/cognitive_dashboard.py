@@ -19,7 +19,27 @@ import time
 from collections import deque
 from typing import Any, Deque, Dict, List, Optional
 
+from aureon.core.lambda_reading import lambda_reading
+
 logger = logging.getLogger("aureon.core.dashboard")
+
+
+def source_lambda_text(src: Any) -> str:
+    """Dashboard Lambda(t). A missing key is ``no reading``, not 0.0000."""
+    return source_field_text(src, "lambda_t", "+.4f")
+
+
+def source_field_text(src: Any, key: str, spec: str = ".3f") -> str:
+    """A measured field, or ``no reading``. A real 0.0 stays 0.0."""
+    if not isinstance(src, dict) or key not in src:
+        return "no reading"
+    number = lambda_reading(src[key])
+    if number is None:
+        return "no reading"
+    if spec.startswith("+"):
+        sign = "+" if number >= 0 else ""
+        return f"{sign}{number:{spec[1:]}}"
+    return format(number, spec)
 
 # ---------------------------------------------------------------------------
 # Rich imports (graceful degradation)
@@ -92,13 +112,13 @@ class _DashboardState:
 
         # SOURCE (Lambda)
         self.source: Dict[str, Any] = {
-            "lambda_t": 0.0, "coherence_gamma": 0.0, "consciousness_psi": 0.0,
+            "lambda_t": None, "coherence_gamma": None, "consciousness_psi": None,
             "consciousness_level": "DORMANT", "symbolic_life_score": 0.0,
         }
 
         # SOUL (Being)
         self.soul: Dict[str, Any] = {
-            "consciousness_level": "", "consciousness_psi": 0.0,
+            "consciousness_level": "", "consciousness_psi": None,
             "purpose": "", "objective": "", "symbolic_life_score": 0.0,
         }
 
@@ -366,11 +386,9 @@ class CognitiveDashboard:
         # SOURCE panel
         src = snap["source"]
         source_table = Table.grid(padding=(0, 1))
-        lam = src.get("lambda_t", 0.0)
-        lam_sign = "+" if lam >= 0 else ""
-        source_table.add_row("Lambda(t):", f"{lam_sign}{lam:.4f}")
-        source_table.add_row("Gamma:", f"{src.get('coherence_gamma', 0.0):.3f}")
-        source_table.add_row("Psi:", f"{src.get('consciousness_psi', 0.0):.3f}")
+        source_table.add_row("Lambda(t):", source_lambda_text(src))
+        source_table.add_row("Gamma:", source_field_text(src, "coherence_gamma"))
+        source_table.add_row("Psi:", source_field_text(src, "consciousness_psi"))
         source_table.add_row("Level:", str(src.get("consciousness_level", "DORMANT")))
         source_table.add_row("SymLife:", f"{src.get('symbolic_life_score', 0.0):.3f}")
         layout["source"].update(Panel(source_table, title="SOURCE (Lambda)", border_style="yellow"))
@@ -379,8 +397,7 @@ class CognitiveDashboard:
         so = snap["soul"]
         soul_table = Table.grid(padding=(0, 1))
         soul_level = so.get("consciousness_level", "") or src.get("consciousness_level", "")
-        soul_psi = so.get("consciousness_psi", 0.0)
-        soul_table.add_row("Level:", f"{soul_level} psi={soul_psi:.2f}")
+        soul_table.add_row("Level:", f"{soul_level} psi={source_field_text(so, 'consciousness_psi', '.2f')}")
         purpose = so.get("purpose", "") or so.get("sacred_purpose", "")
         soul_table.add_row("Purpose:", (purpose[:30] + "...") if len(purpose) > 30 else purpose)
         objective = so.get("objective", "") or so.get("active_objective", "")
@@ -468,10 +485,9 @@ class CognitiveDashboard:
 
         # Source
         src = snap["source"]
-        lam = src.get("lambda_t", 0.0)
-        lines.append(f"  {BOLD}Lambda(t):{RESET} {YELLOW}{'+' if lam >= 0 else ''}{lam:.4f}{RESET}  "
-                      f"{BOLD}Gamma:{RESET} {GREEN}{src.get('coherence_gamma', 0.0):.3f}{RESET}  "
-                      f"{BOLD}Psi:{RESET} {CYAN}{src.get('consciousness_psi', 0.0):.3f}{RESET}  "
+        lines.append(f"  {BOLD}Lambda(t):{RESET} {YELLOW}{source_lambda_text(src)}{RESET}  "
+                      f"{BOLD}Gamma:{RESET} {GREEN}{source_field_text(src, 'coherence_gamma')}{RESET}  "
+                      f"{BOLD}Psi:{RESET} {CYAN}{source_field_text(src, 'consciousness_psi')}{RESET}  "
                       f"{BOLD}Level:{RESET} {src.get('consciousness_level', 'DORMANT')}")
 
         # HNC

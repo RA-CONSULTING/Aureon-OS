@@ -98,7 +98,7 @@ class FieldVault:
     """
 
     last_casimir_force: float = 0.0      # Tiger — volatility (never grounded)
-    last_lambda_t: float = 0.0           # Falcon — momentum / Λ(t)
+    last_lambda_t: float | None = None    # Falcon — momentum / Λ(t); None is no reading
     dominant_frequency_hz: float = 0.0   # Hummingbird — stability
     love_amplitude: float = 0.0          # Dolphin + the Lighthouse product
     gratitude_score: float = 0.0         # Deer — sensing

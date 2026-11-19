@@ -66,7 +66,24 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
+from aureon.core.lambda_reading import format_lambda, lambda_reading
+
 logger = logging.getLogger("aureon.queen.hnc_human_loop")
+
+
+def read_engine_gamma(lambda_state: Any) -> float | None:
+    """Gamma on an engine state. A missing attribute is not 0.0."""
+    if lambda_state is None:
+        return None
+    return lambda_reading(getattr(lambda_state, "coherence_gamma", None))
+
+
+def read_engine_lambda(lambda_state: Any) -> float | None:
+    """Lambda(t) on an engine state. A missing attribute is not 0.0."""
+    if lambda_state is None:
+        return None
+    return lambda_reading(getattr(lambda_state, "lambda_t", None))
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # φ and HNC constants — kept local so the module is cheap to import in tests.
@@ -311,12 +328,12 @@ def _motion_code_hint(intent: Dict[str, Any], lambda_state: Any) -> Optional[str
         return None
 
     target = str(intent.get("target") or transcript[:60])
-    psi = float(getattr(lambda_state, "consciousness_psi", 0.5))
-    level = str(getattr(lambda_state, "consciousness_level", "PRESENT"))
+    psi = lambda_reading(getattr(lambda_state, "consciousness_psi", None)) if lambda_state is not None else None
+    level = str(getattr(lambda_state, "consciousness_level", "PRESENT")) if lambda_state is not None else "no reading"
 
     return (
         f"Motion: propose skill [{target}] "
-        f"| Ψ={psi:.3f} ({level}) "
+        f"| Ψ={format_lambda(psi, '.3f')} ({level}) "
         f"| route via SelfEnhancementEngine"
     )
 
@@ -336,9 +353,9 @@ class HNCInteractionResult:
     intent: Dict[str, Any] = field(default_factory=dict)
 
     # 2. HNC field state
-    lambda_t: float = 0.0
-    coherence_gamma: float = 0.0
-    consciousness_psi: float = 0.0
+    lambda_t: float | None = None
+    coherence_gamma: float | None = None
+    consciousness_psi: float | None = None
     consciousness_level: str = "DORMANT"
     symbolic_life_score: float = 0.0
 
@@ -450,9 +467,9 @@ class HNCHumanLoop:
         # ── 2. HNC TICK ──────────────────────────────────────────────────
         lambda_state = self._tick_lambda(human_text, result.intent)
         if lambda_state is not None:
-            result.lambda_t            = float(getattr(lambda_state, "lambda_t", 0.0))
-            result.coherence_gamma     = float(getattr(lambda_state, "coherence_gamma", 0.0))
-            result.consciousness_psi   = float(getattr(lambda_state, "consciousness_psi", 0.0))
+            result.lambda_t            = read_engine_lambda(lambda_state)
+            result.coherence_gamma     = read_engine_gamma(lambda_state)
+            result.consciousness_psi   = lambda_reading(getattr(lambda_state, "consciousness_psi", None))
             result.consciousness_level = str(getattr(lambda_state, "consciousness_level", "DORMANT"))
             result.symbolic_life_score = float(getattr(lambda_state, "symbolic_life_score", 0.0))
 
@@ -489,25 +506,28 @@ class HNCHumanLoop:
         phi_resonant_count = sum(
             1 for e in result.phi_prime_train if e.get("resonant")
         )
-        ground_report = self._ground_station.tick(
-            lambda_t=result.lambda_t,
-            coherence_gamma=result.coherence_gamma,
-            consciousness_psi=result.consciousness_psi,
-            auris_consensus=result.auris_consensus,
-            phi_resonance_count=phi_resonant_count,
-            vibration=result.vibration,
-            timestamp=result.timestamp,
-        )
-        result.temporal_ground = ground_report.to_dict()
+        if result.lambda_t is None or result.coherence_gamma is None or result.consciousness_psi is None:
+            result.temporal_ground = {"status": "no reading", "lambda_t": None}
+        else:
+            ground_report = self._ground_station.tick(
+                lambda_t=result.lambda_t,
+                coherence_gamma=result.coherence_gamma,
+                consciousness_psi=result.consciousness_psi,
+                auris_consensus=result.auris_consensus,
+                phi_resonance_count=phi_resonant_count,
+                vibration=result.vibration,
+                timestamp=result.timestamp,
+            )
+            result.temporal_ground = ground_report.to_dict()
 
         # ── PUBLISH ──────────────────────────────────────────────────────
         self._publish(result)
 
         logger.debug(
-            "[HNCHumanLoop] processed in %.3fs  Λ=%.4f  Ψ=%.4f  %s  auris=%s",
+            "[HNCHumanLoop] processed in %.3fs  Λ=%s  Ψ=%s  %s  auris=%s",
             time.time() - t0,
-            result.lambda_t,
-            result.consciousness_psi,
+            format_lambda(result.lambda_t),
+            format_lambda(result.consciousness_psi),
             result.consciousness_level,
             result.auris_consensus,
         )
@@ -633,7 +653,7 @@ class HNCHumanLoop:
 
 class _NullVault:
     """Minimal stub vault when no real vault is available."""
-    last_lambda_t: float = 0.0
+    last_lambda_t: float | None = None
     last_casimir_force: float = 1.0
     dominant_frequency_hz: float = 528.0
     love_amplitude: float = 0.0
