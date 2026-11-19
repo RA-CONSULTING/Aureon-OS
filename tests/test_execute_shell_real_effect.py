@@ -2,8 +2,9 @@
 
 These tests run a real subprocess through the real ``ToolRegistry`` and the
 operator toolbelt (``build_operator_tools``). Nothing here fakes the shell:
-the command is the current Python interpreter printing a marker, and the
-refusal cases point at a real file under ``tmp_path`` that must survive.
+the benign command is ``echo`` of a marker (inline ``python -c`` is refused
+by the shell gate), and the refusal cases point at a real file under
+``tmp_path`` that must survive.
 
 They are pinning tests: on main at the time of writing the handler already
 runs commands, so they pass there. They fail if the handler is replaced by a
@@ -23,7 +24,7 @@ MARKER = "aureon-shell-ok"
 
 
 def _print_marker_command() -> str:
-    return f"{shlex.quote(sys.executable)} -c \"print('{MARKER}')\""
+    return f"echo {shlex.quote(MARKER)}"
 
 
 def _assert_real_run(raw: str) -> None:
@@ -39,12 +40,16 @@ def test_builtin_registry_execute_shell_runs_real_command():
     _assert_real_run(reg.execute("execute_shell", {"command": _print_marker_command()}))
 
 
-def test_builtin_execute_shell_reports_nonzero_returncode_and_stderr():
-    reg = ToolRegistry(include_builtins=True, hnc_coherence_required=False)
-    cmd = (
-        f"{shlex.quote(sys.executable)} -c "
-        "\"import sys; sys.stderr.write('aureon-shell-err'); sys.exit(3)\""
+def test_builtin_execute_shell_reports_nonzero_returncode_and_stderr(tmp_path):
+    script = tmp_path / "report_err.py"
+    script.write_text(
+        "import sys\n"
+        "sys.stderr.write('aureon-shell-err')\n"
+        "sys.exit(3)\n",
+        encoding="utf-8",
     )
+    reg = ToolRegistry(include_builtins=True, hnc_coherence_required=False)
+    cmd = f"{shlex.quote(sys.executable)} {shlex.quote(str(script))}"
     out = json.loads(reg.execute("execute_shell", {"command": cmd}))
     assert out["returncode"] == 3, out
     assert "aureon-shell-err" in out["stderr"], out
