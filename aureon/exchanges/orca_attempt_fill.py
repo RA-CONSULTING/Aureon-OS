@@ -79,3 +79,79 @@ def confirmed_exchange_fill(order_result, exchange):
             and positive_fill_amount(order_result.get('executedQty'))
         )
     return False
+
+
+def _attempt_not_submitted(order_result):
+    for key in ('status', 'data_status', 'truth_status'):
+        if str(order_result.get(key) or '').strip().lower() == 'not_submitted':
+            return True
+    if order_result.get('dryRun') is True or order_result.get('dry_run') is True:
+        return True
+    reason = str(order_result.get('reason') or '').strip().lower()
+    return 'not_submitted' in reason or reason.startswith('dry_run')
+
+
+def _attempt_error_status(order_result, error):
+    """Keep the provider's own status or error text. Never return FILLED."""
+    status = order_result.get('status')
+    if isinstance(status, str) and status.strip():
+        token = status.strip().upper()
+        if token != 'FILLED':
+            return token
+    candidate = ''
+    if isinstance(error, str):
+        candidate = error.strip()
+    elif isinstance(error, (list, tuple)):
+        texts = [str(item).strip() for item in error if str(item).strip()]
+        if len(texts) == 1:
+            candidate = texts[0]
+        elif texts:
+            candidate = '; '.join(texts)
+    if candidate and candidate.upper() != 'FILLED':
+        return candidate
+    return 'FAILED'
+
+
+def _plain_kraken_addorder_ack(order_result):
+    """Kraken AddOrder result: txid list plus descr, no status or executedQty."""
+    if str(order_result.get('status') or '').strip():
+        return False
+    if 'executedQty' in order_result or 'vol_exec' in order_result:
+        return False
+    descr = order_result.get('descr')
+    txids = order_result.get('txid')
+    if not isinstance(descr, dict) or not descr:
+        return False
+    if not isinstance(txids, (list, tuple)) or not txids:
+        return False
+    return bool(kraken_order_txids(txids))
+
+
+def _attempt_log_status(order_result, exchange):
+    """Status string written to orca_executions.json.
+
+    Does not place, size, or exit an order. FILLED is only
+    confirmed_exchange_fill: Kraken closed with vol_exec > 0 and a txid,
+    or Binance FILLED with executedQty > 0.
+    """
+    if not isinstance(order_result, dict):
+        return 'FAILED'
+    if _attempt_not_submitted(order_result):
+        return 'NOT_SUBMITTED'
+    error = order_result.get('error')
+    if error:
+        return _attempt_error_status(order_result, error)
+    venue = str(exchange or '').strip().lower()
+    if confirmed_exchange_fill(order_result, venue):
+        return 'FILLED'
+    if venue == 'kraken' and _plain_kraken_addorder_ack(order_result):
+        return 'SUBMITTED/UNCONFIRMED'
+    status = order_result.get('status')
+    if isinstance(status, str) and status.strip():
+        token = status.strip().upper()
+        if token == 'FILLED':
+            if venue == 'kraken':
+                return 'UNCONFIRMED'
+            return 'ZERO_FILL'
+        return token
+    return 'FAILED'

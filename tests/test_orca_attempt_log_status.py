@@ -12,6 +12,7 @@ import pytest
 MODULES = (
     "aureon_radar.bots.orca_unified_kill_chain",
     "aureon.bots.orca_unified_kill_chain",
+    "unified_margin_trader.orca_unified_kill_chain",
 )
 
 TXID = "OQCLML-BW3P3-BUCMWZ"
@@ -225,6 +226,47 @@ def test_binance_filled_with_executed_qty_is_filled(module_name, monkeypatch, tm
 
 
 @pytest.mark.parametrize("module_name", MODULES)
+def test_binance_filled_with_executed_qty_none_is_not_filled(
+    module_name, monkeypatch, tmp_path
+):
+    status = _binance_buy(
+        _load(module_name),
+        monkeypatch,
+        tmp_path,
+        {"status": "FILLED", "executedQty": None, "orderId": 123456789},
+    )
+    assert status == "ZERO_FILL"
+    assert status != "FILLED"
+
+
+@pytest.mark.parametrize("module_name", MODULES)
+@pytest.mark.parametrize(
+    "provider_status",
+    ["NEW", "PARTIALLY_FILLED"],
+)
+def test_binance_non_filled_status_is_not_filled(
+    module_name, provider_status, monkeypatch, tmp_path
+):
+    status = _binance_buy(
+        _load(module_name),
+        monkeypatch,
+        tmp_path,
+        {"status": provider_status, "executedQty": "0.20000000", "orderId": 123456789},
+    )
+    assert status == provider_status
+    assert status != "FILLED"
+
+
+def test_kraken_open_and_inf_are_not_confirmed_fills():
+    from aureon.exchanges.orca_attempt_fill import confirmed_exchange_fill
+
+    opened = {"status": "open", "vol_exec": "1.50000000", "txid": TXID}
+    infinite = {"status": "closed", "vol_exec": "inf", "txid": TXID}
+    assert confirmed_exchange_fill(opened, "kraken") is False
+    assert confirmed_exchange_fill(infinite, "kraken") is False
+
+
+@pytest.mark.parametrize("module_name", MODULES)
 def test_binance_filled_with_zero_qty_is_not_filled(module_name, monkeypatch, tmp_path):
     status = _binance_buy(
         _load(module_name),
@@ -246,6 +288,34 @@ def test_binance_rejected_keeps_real_status(module_name, monkeypatch, tmp_path):
     )
     assert status == "REJECTED"
     assert status != "FILLED"
+
+
+def test_sully_error_text_filled_is_not_filled_by_attempt_error_status():
+    """Error text that is only the word FILLED must not come out as FILLED."""
+    from aureon.exchanges.orca_attempt_fill import _attempt_error_status
+
+    for error in ("FILLED", ["FILLED"]):
+        label = _attempt_error_status({"error": error}, error)
+        assert label == "FAILED"
+        assert label != "FILLED"
+
+
+@pytest.mark.parametrize("module_name", MODULES)
+def test_spike_filled_status_with_eorder_error_is_not_filled(
+    module_name, monkeypatch, tmp_path
+):
+    module = _load(module_name)
+    receipt = {
+        "status": "FILLED",
+        "error": ["EOrder:Insufficient funds"],
+        "executedQty": "1.0",
+    }
+    kraken = _kraken_buy(module, monkeypatch, tmp_path, receipt)
+    assert kraken == "EOrder:Insufficient funds"
+    assert kraken != "FILLED"
+    binance = _binance_buy(module, monkeypatch, tmp_path, receipt)
+    assert binance == "EOrder:Insufficient funds"
+    assert binance != "FILLED"
 
 
 @pytest.mark.parametrize("module_name", MODULES)
