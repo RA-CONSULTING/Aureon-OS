@@ -208,6 +208,9 @@ def test_dpapi_client_credential_vault_loads_config_without_plaintext(tmp_path: 
 
 
 def test_local_oauth_callback_captures_exact_callback_without_logging_secrets() -> None:
+    from tests.support.loopback import require_loopback
+
+    require_loopback()
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
         port = probe.getsockname()[1]
@@ -251,6 +254,9 @@ def test_local_oauth_callback_rejects_non_local_or_ambiguous_uri() -> None:
 
 
 def test_loopback_credential_receiver_saves_without_echoing_secret() -> None:
+    from tests.support.loopback import require_loopback
+
+    require_loopback()
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
         port = probe.getsockname()[1]
