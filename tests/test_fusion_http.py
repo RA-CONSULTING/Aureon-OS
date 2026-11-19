@@ -11,12 +11,14 @@ import urllib.request
 import pytest
 
 from aureon_fusion.http_service import reset_limits, serve
+from tests.support.loopback import require_loopback
 
 TOKEN = "fusion-test-token-16"
 
 
 @pytest.fixture()
 def server(monkeypatch, tmp_path):
+    require_loopback()
     monkeypatch.setenv("AUREON_FUSION_API_TOKEN", TOKEN)
     monkeypatch.setenv("AUREON_FUSION_RATE_LIMIT", "30")
     monkeypatch.setenv("AUREON_FUSION_RATE_WINDOW_S", "60")

@@ -10,6 +10,8 @@ from pathlib import Path
 
 import pytest
 
+from tests.support.loopback import require_loopback
+
 REPO = Path(__file__).resolve().parents[1]
 FORBIDDEN = ("Math.random", "faker", "mockData", "placeholder", "lorem", "simulated")
 
@@ -38,6 +40,7 @@ def test_seat_tabs_match_and_do_not_invent_readings() -> None:
 
 
 def test_a_down_upstream_is_unavailable_and_an_upstream_number_is_kept(tmp_path: Path) -> None:
+    require_loopback()
     import aureon.operator.seat_proxy as seat_proxy
 
     original = seat_proxy.SEATS
