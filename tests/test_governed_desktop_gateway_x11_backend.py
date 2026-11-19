@@ -145,6 +145,50 @@ def test_x11_no_focus_fails_closed(monkeypatch) -> None:
         gw.X11PyAutoGUIBackend().foreground_window()
 
 
+def test_x11_gateway_rejects_pid_mismatch(monkeypatch, tmp_path) -> None:
+    root = _Win(1)
+    app = _Win(
+        0x200000,
+        parent=root,
+        props={"_NET_WM_PID": [4242], "_NET_WM_NAME": b"Aureon Test Pad"},
+        geom=(0, 0, 600, 260),
+        origin=(100, 100),
+    )
+    _install_fake_xlib(monkeypatch, _Display(root, focus=app, windows={}))
+    monkeypatch.setattr(sys, "platform", "linux")
+    monkeypatch.setenv("DISPLAY", ":42")
+    gateway = gw.GovernedDesktopGateway(evidence_path=tmp_path / "evidence.jsonl")
+
+    with pytest.raises(gw.DesktopGatewayError, match="target_window_process_mismatch"):
+        gateway.bind_target_window("Aureon Test Pad", expected_process_id=9999)
+
+    assert gateway.status()["binding_count"] == 0
+
+
+def test_x11_empty_screenshot_bytes_are_not_success(monkeypatch) -> None:
+    class _EmptyImage:
+        def save(self, buffer, format=None):
+            return None
+
+    imagegrab = types.ModuleType("PIL.ImageGrab")
+    imagegrab.grab = lambda *_args, **_kwargs: _EmptyImage()
+    pil = types.ModuleType("PIL")
+    pil.ImageGrab = imagegrab
+    monkeypatch.setitem(sys.modules, "PIL", pil)
+    monkeypatch.setitem(sys.modules, "PIL.ImageGrab", imagegrab)
+
+    with pytest.raises(gw.DesktopBackendError, match="empty_screen_capture"):
+        gw.X11PyAutoGUIBackend().capture_screen()
+
+
+def test_x11_without_xlib_fails_closed(monkeypatch) -> None:
+    monkeypatch.setitem(sys.modules, "Xlib", None)
+    monkeypatch.delitem(sys.modules, "Xlib.display", raising=False)
+
+    with pytest.raises(gw.DesktopBackendError, match="x11_display_unavailable"):
+        gw.X11PyAutoGUIBackend().screen_size()
+
+
 def test_x11_gateway_binds_window_through_default_backend(monkeypatch, tmp_path) -> None:
     root = _Win(1)
     app = _Win(

@@ -101,8 +101,10 @@ _PHI_ENTRY_LEDGER = Path(__file__).resolve().parent / "trade_ledger.jsonl"
 # Permanent Capital ownership guard: never adopt or close a Capital deal
 # unless it is listed in orca_capital_ownership.adopted_deal_ids() or
 # Aureon itself has an entry record for it (trade_ledger.jsonl
-# CAPITAL_CONFIRMED, or live_trades.jsonl). Errors fail closed. New live
-# orders are unchanged.
+# CAPITAL_CONFIRMED, or live_trades.jsonl). Errors fail closed. The guard's
+# rules are unchanged. The main live loop records a Capital position only
+# after the existing /confirms helper resolves the acknowledgement reference
+# to exactly one OPENED dealId; otherwise that position stays unmanaged.
 #
 # A CAPITAL_CONFIRMED row written by positions reconciliation (reconciled is
 # set) only counts when the same row says the dealId was absent from a
@@ -655,13 +657,45 @@ class CapitalConnector:
             stop_level=stop_level,
             profit_level=profit_level,
         )
-        # Normalise unified-margin-trader receipt back to simple dict
+        # Normalise unified-margin-trader receipt back to simple dict.
+        # A dealReference is not a dealId. dealId is set only when
+        # GET /confirms/{ref} reports exactly one OPENED deal.
         if isinstance(result, dict):
             if "dealReference" in result:
-                return {"dealId": result["dealReference"], "status": "submitted"}
+                ref = result.get("dealReference")
+                return {
+                    "dealId": self._deal_id_from_confirm(ref),
+                    "dealReference": ref,
+                    "status": "submitted",
+                }
             if result.get("rejected"):
                 return {"error": result.get("reason", "rejected")}
         return result if isinstance(result, dict) else {}
+
+    def _deal_id_from_confirm(self, deal_reference):
+        """dealId from GET /confirms/{ref}, or None.
+
+        Same helper as the live loop: DualCapitalConnector
+        .get_live_deal_confirmation (CapitalClient.confirm_order).
+        Exactly one affectedDeals OPENED row, or the top-level dealId
+        when dealStatus is ACCEPTED. A reference is never copied into
+        dealId. Missing, errored, REJECTED, or several OPENED deals
+        leave dealId unset.
+        """
+        ref = str(deal_reference or "").strip()
+        if not ref or ref.lower() == "unknown":
+            return None
+        try:
+            from aureon_dual_capital import DualCapitalConnector
+            helper = DualCapitalConnector.__new__(DualCapitalConnector)
+            helper.live = self.client
+            opened = helper.get_live_deal_confirmation(ref)
+        except Exception as e:
+            logger.error(f"CapitalConnector confirm failed for {ref}: {e}")
+            return None
+        if isinstance(opened, (list, tuple)) and len(opened) == 1 and opened[0]:
+            return str(opened[0])
+        return None
 
     def close_position(self, deal_id: str) -> dict:
         """Close an open position."""
@@ -944,6 +978,7 @@ class AureonPhiRadar:
             "max_hold_seconds": pot.max_hold_seconds,
             "audit_id": getattr(pot, '_audit_id', None),
             "venue": getattr(pot, 'venue', 'capital'),
+            "deal_reference": getattr(pot, 'deal_reference', None),
         }
 
     def _live_positions_to_dicts(self) -> List[Optional[dict]]:
@@ -1107,6 +1142,8 @@ class AureonPhiRadar:
             self.honey_ladder.honey_pot._audit_id = data["audit_id"]
         # Keep the concurrent-positions list in sync with the restored pot.
         self.honey_ladder.honey_pot.venue = data.get("venue", "capital")
+        if data.get("deal_reference"):
+            self.honey_ladder.honey_pot.deal_reference = data["deal_reference"]
         self.live_positions.append(self.honey_ladder.honey_pot)
         self._attach_dtp(self.honey_ladder.honey_pot)
     
@@ -1176,6 +1213,53 @@ class AureonPhiRadar:
             except Exception as e:
                 logger.error(f"🚨 PANIC: error closing position {deal_id}: {e}")
     
+    def _capital_opened_deal_id(self, deal_reference):
+        """The one OPENED dealId for a Capital acknowledgement, or None.
+
+        Uses DualCapitalConnector.get_live_deal_confirmation, the same helper
+        reconciliation uses. That helper reads CapitalClient.confirm_order
+        (GET /confirms/{dealReference}): affectedDeals with status OPENED, or
+        the top-level dealId when dealStatus is ACCEPTED. A reference is never
+        a dealId. No reference, an error, a REJECTED confirm, or any count
+        other than exactly one opened deal returns None (fail closed).
+        """
+        ref = str(deal_reference or "").strip()
+        if not ref or ref.lower() == "unknown":
+            logger.error("[LIVE] Capital acknowledgement has no dealReference — "
+                         "order unconfirmed, dealId left unset, position left "
+                         "unmanaged [fail-closed]")
+            return None
+        try:
+            confirm = getattr(self.capital_dual, "get_live_deal_confirmation", None)
+            opened = confirm(ref) if callable(confirm) else None
+        except Exception as e:
+            logger.error(f"[LIVE] Capital confirm failed for {ref}: {e} — "
+                         "order unconfirmed, dealId left unset, position left "
+                         "unmanaged [fail-closed]")
+            return None
+        if isinstance(opened, (list, tuple)) and len(opened) == 1 and opened[0]:
+            return str(opened[0])
+        logger.error(f"[LIVE] Capital confirm for {ref} resolved {opened!r} — "
+                     "not exactly one OPENED deal; order unconfirmed, dealId "
+                     "left unset, position left unmanaged [fail-closed]")
+        return None
+
+    def _record_live_capital_confirmed(self, deal_id, capital_response):
+        """Write the CAPITAL_CONFIRMED row the ownership guard already reads.
+
+        Same writer as the honey-pot path (TradeLedger.capital_confirmed).
+        The dealId is the one /confirms reported OPENED, never the
+        acknowledgement reference.
+        """
+        try:
+            if not hasattr(self, "_trade_ledger"):
+                from aureon_trade_ledger import TradeLedger
+                self._trade_ledger = TradeLedger(self.capital_live)
+            audit_id = self._trade_ledger._next_id()
+            self._trade_ledger.capital_confirmed(audit_id, deal_id, capital_response)
+        except Exception as e:
+            logger.error(f"[LIVE] ledger write failed for dealId={deal_id}: {e}")
+
     def scan(self):
         """Run a full scan cycle with Honey Ladder."""
         logger.info(f"--- HONEY LADDER SCAN @ {datetime.now(timezone.utc).isoformat()} ---")
@@ -1566,45 +1650,68 @@ class AureonPhiRadar:
                                 is_live_account = (account == "live" or account.endswith("_live"))
                                 if is_live_path and is_live_account:
                                     self.live_trades_today += 1
+                                    venue = result.get("venue") or "capital"
+                                    deal_reference = result.get("dealReference")
+                                    # Capital's acknowledgement dealId is the
+                                    # dealReference. Resolve it before recording.
+                                    if _phi_is_capital_venue(venue):
+                                        stored_deal_id = self._capital_opened_deal_id(deal_reference)
+                                    else:
+                                        stored_deal_id = deal_id
+                                    unconfirmed = _phi_is_capital_venue(venue) and not stored_deal_id
                                     try:
                                         with open(LIVE_LOG, "a") as f:
-                                            f.write(json.dumps({
+                                            row = {
                                                 "timestamp": datetime.now(timezone.utc).isoformat(),
                                                 "symbol": symbol,
                                                 "direction": cap_direction,
                                                 "size": result.get("size"),
                                                 # A Capital dealReference is not a dealId; keep both.
-                                                "dealId": None if deal_id == result.get("dealReference") else deal_id,
-                                                "dealReference": result.get("dealReference"),
-                                                "venue": result.get("venue"),
+                                                "dealId": stored_deal_id,
+                                                "dealReference": deal_reference,
+                                                "venue": venue,
                                                 "entry": price,
                                                 "tp": profit_level,
                                                 "sl": stop_level if 'stop_level' in locals() else None,
-                                            }) + "\n")
+                                            }
+                                            if unconfirmed:
+                                                row["unconfirmed"] = True
+                                            f.write(json.dumps(row) + "\n")
                                     except Exception:
                                         pass
-                                    # Track the new live position alongside any others.
-                                    pot = HoneyPot(
-                                        active=True,
-                                        deal_id=deal_id,
-                                        symbol=symbol,
-                                        sector=sector,
-                                        direction=direction,
-                                        entry_price=price,
-                                        target_price=profit_level,
-                                        size=result.get("size", live_size),
-                                        source="scanner_live",
-                                        opened_at=time.time(),
-                                        max_hold_seconds=self._max_hold_seconds(symbol),
-                                    )
-                                    pot.venue = result.get("venue", "capital")
-                                    pot._live_path = "scan"
-                                    self.live_positions.append(pot)
-                                    self._attach_dtp(pot)
-                                    self.honey_ladder.honey_pot = pot  # backward-compat status
-                                    logger.info(f"[LIVE] Trade accepted: {symbol} "
-                                               f"dealId={deal_id} venue={pot.venue} "
-                                               f"size={result.get('size')}")
+                                    if unconfirmed:
+                                        logger.error(
+                                            f"[LIVE] {symbol} order unconfirmed "
+                                            f"ref={deal_reference}: dealId left unset, "
+                                            f"position left unmanaged [fail-closed]")
+                                    else:
+                                        if _phi_is_capital_venue(venue):
+                                            self._record_live_capital_confirmed(
+                                                stored_deal_id, result)
+                                        # Track the new live position alongside any others.
+                                        pot = HoneyPot(
+                                            active=True,
+                                            deal_id=stored_deal_id,
+                                            symbol=symbol,
+                                            sector=sector,
+                                            direction=direction,
+                                            entry_price=price,
+                                            target_price=profit_level,
+                                            size=result.get("size", live_size),
+                                            source="scanner_live",
+                                            opened_at=time.time(),
+                                            max_hold_seconds=self._max_hold_seconds(symbol),
+                                        )
+                                        pot.venue = venue
+                                        pot.deal_reference = deal_reference
+                                        pot._live_path = "scan"
+                                        self.live_positions.append(pot)
+                                        self._attach_dtp(pot)
+                                        self.honey_ladder.honey_pot = pot  # backward-compat status
+                                        logger.info(f"[LIVE] Trade accepted: {symbol} "
+                                                   f"dealId={stored_deal_id} ref={deal_reference} "
+                                                   f"venue={pot.venue} "
+                                                   f"size={result.get('size')}")
                                 else:
                                     # Store demo dealId on the shadow we just added
                                     if self.honey_ladder.shadow_runs:
