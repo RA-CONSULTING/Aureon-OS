@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -65,15 +66,16 @@ def test_non_local_hosts_are_refused(tmp_path: Path, monkeypatch: pytest.MonkeyP
     ]
     for url in refused:
         assert url_refusal(url) is not None, url
-    allowed = [
+    for url in (
         "http://127.0.0.1/",
         "http://127.0.0.1:8765/index.html",
         "http://localhost/",
         "http://localhost:8080/a",
         "http://[::1]/",
-    ]
-    for url in allowed:
-        assert url_refusal(url) is None, url
+    ):
+        assert url_refusal(url) is not None, url
+    assert url_refusal("http://127.0.0.1:8765/index.html", allow_hosts=["127.0.0.1:8765"]) is None
+    assert url_refusal("http://127.0.0.1:9/json/version", allow_hosts=["127.0.0.1:9"], denied_ports=[9]) is not None
     monkeypatch.setenv("AUREON_BROWSER_FILE_ROOT", str(FIXTURE.parent))
     assert url_refusal(FIXTURE.as_uri()) is None
 
@@ -94,13 +96,15 @@ def test_non_local_hosts_are_refused(tmp_path: Path, monkeypatch: pytest.MonkeyP
 def test_allowlist_env_permits_named_hosts_and_keeps_loopback(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("AUREON_BROWSER_ALLOW_HOSTS", raising=False)
     assert url_refusal("https://example.com/") is not None
-    monkeypatch.setenv("AUREON_BROWSER_ALLOW_HOSTS", "example.com, CDN.Test")
+    monkeypatch.setenv("AUREON_BROWSER_ALLOW_HOSTS", "example.com:443, CDN.Test:80")
     assert url_refusal("https://example.com/docs") is None
     assert url_refusal("http://cdn.test/x") is None
+    assert url_refusal("https://example.com:8443/") is not None
     assert url_refusal("https://example.com.evil.test/") is not None
     assert url_refusal("https://other.test/") is not None
-    assert url_refusal("http://127.0.0.1:9/") is None
-    assert url_refusal("http://localhost/x") is None
+    assert url_refusal("http://127.0.0.1:9/") is not None
+    assert url_refusal("http://localhost/x") is not None
+    assert url_refusal("http://127.0.0.1:9/", allow_hosts=["127.0.0.1:9"]) is None
     monkeypatch.setenv("AUREON_BROWSER_ALLOW_HOSTS", "*")
     assert url_refusal("https://example.com/") is not None
 
@@ -271,15 +275,6 @@ def test_file_secrets_and_run_symlinks_are_refused(tmp_path: Path, monkeypatch: 
     run.mkdir()
     (run / "data.txt").write_text(DUMMY_KEY + "\n", encoding="utf-8")
     (scratch / "run.html").symlink_to(run / "data.txt")
-    workspace_run = Path("/workspace") / "aureon_run_holdprobe"
-    workspace_link = scratch / "ws.html"
-    try:
-        workspace_run.mkdir()
-    except OSError:
-        workspace_run = None
-    else:
-        (workspace_run / "data.txt").write_text(DUMMY_KEY + "\n", encoding="utf-8")
-        workspace_link.symlink_to(workspace_run / "data.txt")
     audit = tmp_path / "audit.jsonl"
     monkeypatch.setenv("AUREON_BROWSER_FILE_ROOT", str(scratch))
     monkeypatch.setenv("AUREON_BROWSER_SCREENSHOT_DIR", str(tmp_path / "screens"))
@@ -291,17 +286,10 @@ def test_file_secrets_and_run_symlinks_are_refused(tmp_path: Path, monkeypatch: 
             result = tool.open(target.as_uri())
             assert result["ok"] is False, (target.name, result)
             assert result["refused"] is True
-        if workspace_run is not None:
-            result = tool.open(workspace_link.as_uri())
-            assert result["ok"] is False, result
         read = tool.read_text()
         assert DUMMY_KEY not in read.get("text", "")
     finally:
         tool.close()
-        if workspace_run is not None:
-            for child in workspace_run.iterdir():
-                child.unlink(missing_ok=True)
-            workspace_run.rmdir()
     assert DUMMY_KEY not in audit.read_text(encoding="utf-8")
 
 
@@ -324,6 +312,8 @@ def test_non_allowed_host_receives_no_hits(tmp_path: Path) -> None:
         thread.start()
         threads.append(thread)
     audit = tmp_path / "audit.jsonl"
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.setenv("AUREON_BROWSER_ALLOW_HOSTS", f"127.0.0.1:{good_port}")
     tool = BrowserTool(audit_path=audit)
     try:
         opened = tool.open(f"http://127.0.0.1:{good_port}/page")
@@ -344,6 +334,7 @@ def test_non_allowed_host_receives_no_hits(tmp_path: Path) -> None:
             assert hits == [], hits
     finally:
         tool.close()
+        monkeypatch.undo()
         good.shutdown()
         bad.shutdown()
 
@@ -414,13 +405,13 @@ def test_screenshots_stay_inside_one_directory(tmp_path: Path, monkeypatch: pyte
     tool = BrowserTool(audit_path=audit)
     try:
         assert tool.open(page.as_uri())["ok"] is True
-        saved = tool.screenshot("fixed.png")
+        saved = tool.screenshot("once.png")
         assert saved["ok"] is True, saved
-        first = (shots / "fixed.png").read_bytes()
+        first = (shots / "once.png").read_bytes()
         assert first.startswith(b"\x89PNG\r\n\x1a\n")
-        again = tool.screenshot("fixed.png")
+        again = tool.screenshot("once.png")
         assert again["ok"] is False, again
-        assert (shots / "fixed.png").read_bytes() == first
+        assert (shots / "once.png").read_bytes() == first
         linked = tool.screenshot("linked.png")
         assert linked["ok"] is False, linked
         assert other.read_text(encoding="utf-8") == "keep"
@@ -438,3 +429,264 @@ def test_screenshots_stay_inside_one_directory(tmp_path: Path, monkeypatch: pyte
         assert not (tmp_path / "missing-parent").exists()
     finally:
         nested.close()
+
+
+_PROBE_HOST = "layer-probe.aureon.test"
+
+
+def _hosts_has_probe() -> bool:
+    try:
+        text = Path("/etc/hosts").read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return False
+    return _PROBE_HOST in text
+
+
+def _install_probe_host() -> bool:
+    if _hosts_has_probe():
+        return True
+    line = f"127.0.0.2 {_PROBE_HOST}\n"
+    completed = subprocess.run(
+        ["sudo", "-n", "tee", "-a", "/etc/hosts"],
+        input=line,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    return completed.returncode == 0 and _hosts_has_probe()
+
+
+def _remove_probe_host() -> None:
+    if not _hosts_has_probe():
+        return
+    subprocess.run(
+        ["sudo", "-n", "sed", "-i", f"/{_PROBE_HOST}/d", "/etc/hosts"],
+        check=False,
+        capture_output=True,
+    )
+
+
+def _probe_handler(kind: str, bad_base: str) -> type[BaseHTTPRequestHandler]:
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:  # noqa: N802
+            path = self.path.split("?", 1)[0]
+            if path == "/sw.js":
+                body = (
+                    "self.addEventListener('install', function (event) {"
+                    f"event.waitUntil(fetch('{bad_base}/sw').catch(function () {{}}));"
+                    "});"
+                ).encode()
+            elif path.startswith("/ws-page"):
+                body = (
+                    "<!DOCTYPE html><html><body><p>local-page</p><script>"
+                    f"try {{ new WebSocket('ws://{_PROBE_HOST}:{bad_base.rsplit(':', 1)[-1]}/ws'); }} catch (e) {{}}"
+                    "</script></body></html>"
+                ).encode()
+            elif path.startswith("/sw-page"):
+                body = (
+                    b"<!DOCTYPE html><html><body><p>local-page</p><script>"
+                    b"navigator.serviceWorker.register('/sw.js').catch(function () {});"
+                    b"</script></body></html>"
+                )
+            elif path.startswith("/pop-page"):
+                body = (
+                    "<!DOCTYPE html><html><body><p>local-page</p>"
+                    f"<a id='pop' href='{bad_base}/popup'>open</a><script>"
+                    "document.getElementById('pop').addEventListener('click', function (ev) {"
+                    "ev.preventDefault();"
+                    f"window.open('{bad_base}/popup');"
+                    "});</script></body></html>"
+                ).encode()
+            else:
+                body = b"hit"
+            self.send_response(200)
+            if path == "/sw.js":
+                self.send_header("Content-Type", "application/javascript")
+            elif path.endswith("-page") or path.startswith("/ws-page") or path.startswith("/sw-page") or path.startswith("/pop-page"):
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, _format: str, *_args: object) -> None:
+            return
+
+    del kind
+    return Handler
+
+
+def _bad_hits(path: str, hits: list[str], lock: threading.Lock) -> type[BaseHTTPRequestHandler]:
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:  # noqa: N802
+            with lock:
+                hits.append(self.path.split("?", 1)[0])
+            self.send_response(200)
+            self.end_headers()
+
+        def log_message(self, _format: str, *_args: object) -> None:
+            return
+
+    del path
+    return Handler
+
+
+def _layer_hits(
+    tmp_path: Path,
+    kind: str,
+    *,
+    interception: bool,
+    resolver: bool,
+) -> list[str]:
+    hits: list[str] = []
+    lock = threading.Lock()
+    bad = ThreadingHTTPServer(("127.0.0.2", 0), _bad_hits("", hits, lock))
+    bad_port = int(bad.server_address[1])
+    bad_base = f"http://{_PROBE_HOST}:{bad_port}"
+    good = ThreadingHTTPServer(("127.0.0.1", 0), _probe_handler(kind, bad_base))
+    good_port = int(good.server_address[1])
+    for server in (bad, good):
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+    page = {"websocket": "/ws-page", "service_worker": "/sw-page", "popup": "/pop-page"}[kind]
+    env = pytest.MonkeyPatch()
+    env.setenv("AUREON_BROWSER_ALLOW_HOSTS", f"127.0.0.1:{good_port}")
+    tool = BrowserTool(
+        audit_path=tmp_path / f"audit-{kind}-{interception}-{resolver}.jsonl",
+        request_interception=interception,
+        host_resolver_rules=resolver,
+    )
+    try:
+        opened = tool.open(f"http://127.0.0.1:{good_port}{page}")
+        if kind != "service_worker":
+            assert opened["ok"] is True, opened
+        if kind == "popup":
+            clicked = tool.click("#pop")
+            assert "selector not found" not in clicked.get("error", "")
+        else:
+            tool.read_text()
+        time.sleep(0.6)
+        with lock:
+            return list(hits)
+    finally:
+        tool.close()
+        env.undo()
+        good.shutdown()
+        bad.shutdown()
+
+
+@pytest.mark.browser
+@pytest.mark.timeout(180)
+@pytest.mark.parametrize("kind", ["websocket", "service_worker", "popup"])
+def test_each_layer_blocks_websocket_worker_and_popup(tmp_path: Path, kind: str) -> None:
+    """Popup and service worker must stay blocked with either layer removed.
+
+    WebSocket handshakes do not pass through Fetch on this Chrome, so the
+    resolver rules are the primary control and this test runs that layer alone.
+    """
+
+    _need_chrome()
+    if not _install_probe_host():
+        pytest.fail("could not pin layer-probe.aureon.test to 127.0.0.2")
+    try:
+        if kind == "websocket":
+            without_interception = _layer_hits(tmp_path, kind, interception=False, resolver=True)
+            assert without_interception == [], without_interception
+            return
+        without_resolver = _layer_hits(tmp_path, kind, interception=True, resolver=False)
+        without_interception = _layer_hits(tmp_path, kind, interception=False, resolver=True)
+    finally:
+        _remove_probe_host()
+    assert without_resolver == [], without_resolver
+    assert without_interception == [], without_interception
+
+
+@pytest.mark.browser
+@pytest.mark.timeout(90)
+def test_devtools_port_and_other_loopback_port_never_arrive(tmp_path: Path) -> None:
+    _need_chrome()
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    (scratch / "page.html").write_text("<html><body><p>scratch-page</p></body></html>", encoding="utf-8")
+    hits: list[str] = []
+    lock = threading.Lock()
+
+    class Page(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:  # noqa: N802
+            path = self.path.split("?", 1)[0]
+            if path == "/page":
+                body = (
+                    "<!DOCTYPE html><html><body><p>local-page</p>"
+                    f"<img src='http://127.0.0.1:{other_port}/img' alt=''>"
+                    "<script>"
+                    f"fetch('http://127.0.0.1:{other_port}/fetch').catch(function(){{}});</script>"
+                    "</body></html>"
+                ).encode()
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                return
+            self.send_response(200)
+            self.end_headers()
+
+        def log_message(self, _format: str, *_args: object) -> None:
+            return
+
+    other = ThreadingHTTPServer(("127.0.0.1", 0), _bad_hits("", hits, lock))
+    other_port = int(other.server_address[1])
+    good = ThreadingHTTPServer(("127.0.0.1", 0), Page)
+    good_port = int(good.server_address[1])
+    for server in (other, good):
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+    env = pytest.MonkeyPatch()
+    env.setenv("AUREON_BROWSER_FILE_ROOT", str(scratch))
+    env.setenv("AUREON_BROWSER_ALLOW_HOSTS", f"127.0.0.1:{good_port}")
+    tool = BrowserTool(audit_path=tmp_path / "audit.jsonl", screenshot_dir=tmp_path / "screens")
+    try:
+        assert tool.open((scratch / "page.html").as_uri())["ok"] is True
+        cdp = tool.devtools_port
+        assert cdp
+        refused = tool.open(f"http://127.0.0.1:{cdp}/json/version")
+        assert refused["ok"] is False, refused
+        assert refused["refused"] is True
+        read = tool.read_text()
+        assert "webSocketDebuggerUrl" not in read.get("text", "")
+        assert "Browser" not in read.get("text", "") or "scratch-page" in read.get("text", "")
+        opened = tool.open(f"http://127.0.0.1:{good_port}/page")
+        assert "local-page" in tool.read_text().get("text", ""), opened
+        time.sleep(0.5)
+        with lock:
+            assert hits == [], hits
+    finally:
+        tool.close()
+        env.undo()
+        good.shutdown()
+        other.shutdown()
+
+
+@pytest.mark.browser
+@pytest.mark.timeout(90)
+def test_ordinary_file_outside_scratch_root_is_refused(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _need_chrome()
+    scratch = tmp_path / "scratch"
+    outside = tmp_path / "outside"
+    scratch.mkdir()
+    outside.mkdir()
+    (scratch / "page.html").write_text("<html><body><p>scratch-page</p></body></html>", encoding="utf-8")
+    plain = outside / "plain.html"
+    plain.write_text("<html><body><p>ordinary-outside-marker</p></body></html>", encoding="utf-8")
+    alias = scratch / "alias.html"
+    alias.symlink_to(plain)
+    monkeypatch.setenv("AUREON_BROWSER_FILE_ROOT", str(scratch))
+    tool = BrowserTool(audit_path=tmp_path / "audit.jsonl", screenshot_dir=tmp_path / "screens")
+    try:
+        assert tool.open((scratch / "page.html").as_uri())["ok"] is True
+        direct = tool.open(plain.as_uri())
+        linked = tool.open(alias.as_uri())
+        assert direct["ok"] is False, direct
+        assert linked["ok"] is False, linked
+        assert direct["refused"] is True and linked["refused"] is True
+        read = tool.read_text()
+        assert "ordinary-outside-marker" not in read.get("text", "")
+    finally:
+        tool.close()

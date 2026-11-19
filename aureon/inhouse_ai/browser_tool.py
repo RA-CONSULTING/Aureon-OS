@@ -13,13 +13,21 @@ every network request before Chrome sends it:
   run folders (``aureon_run_*``, ``/workspace/aureon_run_*``, the live Chrome
   profile) are refused even when a symlink is used. The check uses the
   resolved real path.
-* ``http://127.0.0.1``, ``http://localhost``, and ``http://[::1]`` only.
-  ``127.0.0.2`` and every other host are refused unless named in
-  ``AUREON_BROWSER_ALLOW_HOSTS`` (comma-separated hostnames, not a pattern;
-  ``*`` is ignored).
-* CDP Fetch fails a non-allowed request before it is sent. Chrome is also
-  started with ``--host-resolver-rules`` mapping every other hostname to
-  ``~NOTFOUND``.
+* HTTP and WebSocket destinations are ``host:port`` pairs from
+  ``AUREON_BROWSER_ALLOW_HOSTS``. Loopback is not implicit: ``127.0.0.1``,
+  ``localhost``, and ``::1`` are refused until that exact port is listed.
+  The DevTools port is always refused. ``--remote-allow-origins=*`` is not
+  used.
+* Two layers block everything else. CDP ``Fetch`` is enabled on every page,
+  iframe, worker, and service worker. ``Target.setAutoAttach`` uses
+  ``flatten`` and ``waitForDebuggerOnStart`` so a popup or worker is paused
+  until interception is on. Service-worker registration is failed when Fetch
+  sees it. Chrome is also started with ``--host-resolver-rules`` mapping
+  every non-excluded hostname to ``~NOTFOUND``.
+* This Chrome build does not emit ``Fetch.requestPaused`` for a WebSocket
+  handshake, so interception cannot block ``ws://`` by itself. The resolver
+  rules are the primary control for WebSocket. They also do not see IP
+  literals or ports; a different loopback port is stopped by interception.
 
 Screenshots are written only inside ``state/browser_screens`` (or
 ``AUREON_BROWSER_SCREENSHOT_DIR``), with a generated name unless the caller
@@ -83,6 +91,11 @@ _CHROME_PATHS = (
     "/Applications/Chromium.app/Contents/MacOS/Chromium",
 )
 _MAX_FRAME_BYTES = 20_000_000
+_FETCH_PATTERNS = (
+    {"urlPattern": "*", "requestStage": "Request"},
+    {"urlPattern": "ws://*", "requestStage": "Request"},
+    {"urlPattern": "wss://*", "requestStage": "Request"},
+)
 _READ_TEXT_CAP = 100_000
 
 BROWSER_TOOL_DESCRIPTION = (
@@ -90,8 +103,9 @@ BROWSER_TOOL_DESCRIPTION = (
     "action is one of open, read_text, click, type, screenshot. "
     "open requires url. file:// is limited to AUREON_BROWSER_FILE_ROOT and refuses secret, "
     "state, and run paths, including symlink targets. "
-    "http is limited to 127.0.0.1, localhost, and [::1] unless AUREON_BROWSER_ALLOW_HOSTS "
-    "names the host. Non-allowed requests are failed before they are sent. "
+    "http is limited to host:port pairs in AUREON_BROWSER_ALLOW_HOSTS, including loopback. "
+    "The DevTools port is refused. Non-allowed requests, WebSockets, and service workers "
+    "are failed before they are sent. "
     "click and type require css_selector; type also requires text. "
     "screenshot writes a PNG inside the screenshot directory only. "
     "The audit log records text as length and sha256."
@@ -121,8 +135,8 @@ def browser_input_schema() -> dict[str, Any]:
             "url": {
                 "type": "string",
                 "description": (
-                    "Required for open. file://, or http on 127.0.0.1 / localhost / ::1, "
-                    "unless AUREON_BROWSER_ALLOW_HOSTS names the host."
+                    "Required for open. file:// under AUREON_BROWSER_FILE_ROOT, or http(s) "
+                    "whose host:port is listed in AUREON_BROWSER_ALLOW_HOSTS."
                 ),
             },
             "css_selector": {
@@ -159,10 +173,16 @@ def default_audit_path() -> Path:
 
 
 def allow_hosts_from_env() -> frozenset[str]:
-    """Hosts named by ``AUREON_BROWSER_ALLOW_HOSTS``. Empty when unset."""
+    """Host names named by ``AUREON_BROWSER_ALLOW_HOSTS``, without ports."""
+
+    return frozenset(host for host, _port in allow_endpoints_from_env())
+
+
+def allow_endpoints_from_env() -> frozenset[tuple[str, int]]:
+    """``host:port`` pairs from ``AUREON_BROWSER_ALLOW_HOSTS``. Bare hosts are ignored."""
 
     raw = os.environ.get(_ALLOW_ENV, "")
-    return _normalize_hosts(part for part in raw.split(","))
+    return _parse_endpoints(part for part in raw.split(","))
 
 
 def file_root_from_env() -> Path | None:
@@ -204,12 +224,15 @@ def url_refusal(
     allow_hosts: Iterable[str] | None = None,
     file_root: Path | None | str = None,
     run_dirs: Iterable[Path] | None = None,
+    denied_ports: Iterable[int] | None = None,
 ) -> str | None:
     """Return a refusal reason, or None when the URL is allowed.
 
-    ``allow_hosts`` replaces the environment host allowlist. None reads
-    ``AUREON_BROWSER_ALLOW_HOSTS``. ``file_root`` replaces
-    ``AUREON_BROWSER_FILE_ROOT``. Pass ``""`` to force no scratch root.
+    ``allow_hosts`` replaces the environment allowlist. Entries must be
+    ``host:port``. None reads ``AUREON_BROWSER_ALLOW_HOSTS``. ``file_root``
+    replaces ``AUREON_BROWSER_FILE_ROOT``. Pass ``""`` to force no scratch root.
+    ``denied_ports`` are loopback ports that stay refused even if listed. The
+    DevTools port is one of them.
     """
 
     raw = str(url or "").strip()
@@ -221,27 +244,32 @@ def url_refusal(
         return f"url refused: {exc}"
     scheme = parts.scheme.lower()
     host = (parts.hostname or "").lower()
-    extra = allow_hosts_from_env() if allow_hosts is None else _normalize_hosts(allow_hosts)
+    endpoints = allow_endpoints_from_env() if allow_hosts is None else _parse_endpoints(allow_hosts)
     if scheme == "file":
         if host and host not in _LOOPBACK_HOSTS:
             return f"file URL host refused: {host}"
         root = _coerce_file_root(file_root)
         return _file_path_refusal(_path_from_file_url(raw), file_root=root, run_dirs=run_dirs or ())
+    if scheme in {"ws", "wss"}:
+        return "websocket refused"
     if scheme not in {"http", "https"}:
         return f"scheme refused: {scheme or '(missing)'}"
     if not host:
         return "host refused: (missing)"
-    names = set(_LOOPBACK_HOSTS) | set(extra)
-    if host not in names:
-        return f"host refused: {host}"
-    if host in extra and host not in _LOOPBACK_HOSTS:
+    port = parts.port or (443 if scheme == "https" else 80)
+    blocked_ports = {int(item) for item in denied_ports or ()}
+    if port in blocked_ports and (host in _LOOPBACK_HOSTS or _is_exact_loopback_text(host)):
+        return "devtools port refused"
+    if (host, port) not in endpoints:
+        return f"host refused: {host}:{port}"
+    if host not in _LOOPBACK_HOSTS and not _is_exact_loopback_text(host):
         return None
     try:
         ips = _ips_for_host(host)
     except OSError as exc:
         return f"host refused: {host} ({exc.__class__.__name__})"
     if ips and all(_is_exact_loopback(ip) for ip in ips):
-        return None if scheme == "http" or host in extra else f"host refused: {host}"
+        return None
     return f"host refused: {host}"
 
 
@@ -294,12 +322,18 @@ class BrowserTool:
         chrome_binary: str | None = None,
         file_root: str | Path | None = None,
         screenshot_dir: str | Path | None = None,
+        request_interception: bool = True,
+        host_resolver_rules: bool = True,
     ) -> None:
         self._audit_path = None if audit_path is None else Path(audit_path)
-        self._allow_hosts = None if allow_hosts is None else _normalize_hosts(allow_hosts)
+        self._allow_hosts = None if allow_hosts is None else _parse_endpoints(allow_hosts)
         self._file_root = None if file_root is None else Path(file_root).expanduser()
         self._screenshot_dir = None if screenshot_dir is None else Path(screenshot_dir).expanduser()
+        self._request_interception = bool(request_interception)
+        self._host_resolver_rules = bool(host_resolver_rules)
         self._chrome_binary = chrome_binary
+        self._cdp_port: int | None = None
+        self._armed_sessions: set[str] = set()
         self._lock = threading.Lock()
         self._proc: subprocess.Popen[bytes] | None = None
         self._stderr: Any = None
@@ -320,6 +354,12 @@ class BrowserTool:
     @property
     def started(self) -> bool:
         return self._proc is not None
+
+    @property
+    def devtools_port(self) -> int | None:
+        """Loopback port of this session's DevTools endpoint. Always refused for open."""
+
+        return self._cdp_port
 
     def close(self) -> None:
         with self._lock:
@@ -623,43 +663,92 @@ class BrowserTool:
             return
 
     def _refusal(self, url: str) -> str | None:
+        endpoints = self._allow_hosts if self._allow_hosts is not None else None
         return url_refusal(
             url,
-            allow_hosts=self._current_allow_hosts(),
+            allow_hosts=_endpoints_as_text(endpoints) if endpoints is not None else None,
             file_root=self._current_file_root() if self._current_file_root() is not None else "",
             run_dirs=self._run_dirs(),
+            denied_ports=(self._cdp_port,) if self._cdp_port else (),
         )
 
-    def _request_reason(self, url: str) -> str | None:
+    def _request_reason(self, url: str, resource_type: str = "", headers: Mapping[str, str] | None = None) -> str | None:
         scheme = urllib.parse.urlsplit(str(url or "")).scheme.lower()
         if scheme in {"about", "data", "blob"}:
             return None
+        kind = resource_type.lower()
+        header_map = {str(key).lower(): str(value).lower() for key, value in (headers or {}).items()}
+        if kind == "websocket" or scheme in {"ws", "wss"} or header_map.get("upgrade") == "websocket":
+            return "websocket"
+        if kind == "serviceworker" or "service-worker" in header_map:
+            return "service_worker"
         reason = self._refusal(url)
         if reason:
-            return "off_host" if _is_off_host_reason(reason) else "blocked"
+            return "off_host" if _is_off_host_reason(reason) or reason == "devtools port refused" else "blocked"
         return None
 
     def _on_request_paused(self, params: Mapping[str, Any]) -> None:
         request = params.get("request") if isinstance(params.get("request"), dict) else {}
         url = str(request.get("url") or "")
         request_id = params.get("requestId")
+        session_id = str(params.get("_sessionId") or "") or None
         if not request_id or self._session is None:
             return
-        reason = self._request_reason(url)
+        if not self._request_interception:
+            self._session.send_ignored(
+                "Fetch.continueRequest",
+                {"requestId": request_id},
+                session_id=session_id,
+            )
+            return
+        headers = request.get("headers") if isinstance(request.get("headers"), dict) else {}
+        reason = self._request_reason(url, str(params.get("resourceType") or ""), headers)
         if reason:
             host = (urllib.parse.urlsplit(url).hostname or "").lower()
             self._blocked.append({"host": host, "reason": reason})
             self._session.send_ignored(
                 "Fetch.failRequest",
                 {"requestId": request_id, "errorReason": "BlockedByClient"},
+                session_id=session_id,
             )
             return
-        self._session.send_ignored("Fetch.continueRequest", {"requestId": request_id})
+        self._session.send_ignored(
+            "Fetch.continueRequest",
+            {"requestId": request_id},
+            session_id=session_id,
+        )
 
     def _current_allow_hosts(self) -> frozenset[str]:
-        if self._allow_hosts is not None:
-            return self._allow_hosts
-        return allow_hosts_from_env()
+        endpoints = self._allow_hosts if self._allow_hosts is not None else allow_endpoints_from_env()
+        return frozenset(host for host, _port in endpoints)
+
+    def _on_attached(self, params: Mapping[str, Any]) -> None:
+        session_id = str(params.get("sessionId") or "")
+        if not session_id or self._session is None or session_id in self._armed_sessions:
+            return
+        self._armed_sessions.add(session_id)
+        info = params.get("targetInfo") if isinstance(params.get("targetInfo"), dict) else {}
+        waiting = bool(params.get("waitingForDebugger"))
+        if info.get("type") == "page" and self._session.default_session is None:
+            self._session.default_session = session_id
+        if self._request_interception:
+            message_id = self._session.send_ignored(
+                "Fetch.enable",
+                {"patterns": list(_FETCH_PATTERNS)},
+                session_id=session_id,
+            )
+            if waiting:
+                self._session.release_after[message_id] = session_id
+        elif waiting:
+            self._session.send_ignored("Runtime.runIfWaitingForDebugger", {}, session_id=session_id)
+        if info.get("type") == "page" and self._session.default_session == session_id:
+            self._session.send_ignored("Page.enable", {}, session_id=session_id)
+            self._session.send_ignored("Runtime.enable", {}, session_id=session_id)
+            self._session.send_ignored(
+                "Emulation.setDeviceMetricsOverride",
+                {"width": 1280, "height": 800, "deviceScaleFactor": 1, "mobile": False},
+                session_id=session_id,
+            )
 
     def _current_file_root(self) -> Path | None:
         if self._file_root is not None:
@@ -692,6 +781,7 @@ class BrowserTool:
         if not binary:
             raise RuntimeError("no Chrome/Chromium binary found")
         port = _free_port()
+        self._cdp_port = port
         user_data = Path(tempfile.mkdtemp(prefix="aureon-browser-"))
         stderr_path = user_data / "chrome-stderr.log"
         stderr = stderr_path.open("ab")
@@ -710,9 +800,8 @@ class BrowserTool:
             "--mute-audio",
             "--disable-breakpad",
             "--allow-file-access-from-files",
-            f"--host-resolver-rules={_host_resolver_rules(self._current_allow_hosts())}",
+            *([f"--host-resolver-rules={_host_resolver_rules(self._current_allow_hosts())}"] if self._host_resolver_rules else []),
             f"--remote-debugging-port={port}",
-            "--remote-allow-origins=*",
             f"--user-data-dir={user_data}",
             "--window-size=1280,800",
             "about:blank",
@@ -734,28 +823,73 @@ class BrowserTool:
         self._proc = proc
         self._stderr = stderr
         self._user_data = user_data
-        self._wait_devtools(port)
-        target = self._page_target(port)
-        ws_url = str(target.get("webSocketDebuggerUrl") or "")
+        version = self._wait_devtools(port)
+        ws_url = str(version.get("webSocketDebuggerUrl") or "")
         if not ws_url.startswith("ws://"):
-            raise RuntimeError("page target has no loopback websocket")
+            raise RuntimeError("browser target has no loopback websocket")
         parsed = urllib.parse.urlsplit(ws_url)
         if (parsed.hostname or "").lower() not in _LOOPBACK_HOSTS:
             raise RuntimeError(f"devtools websocket host refused: {parsed.hostname}")
+        if parsed.port == port:
+            pass
         sock = _CdPSocket(ws_url, timeout=15.0)
         self._ws = sock
-        session = _PageSession(sock, on_request=self._on_request_paused)
+        session = _PageSession(sock, on_request=self._on_request_paused, on_attach=self._on_attached)
         self._session = session
-        session.call("Page.enable")
-        session.call("Runtime.enable")
         session.call(
-            "Fetch.enable",
-            {"patterns": [{"urlPattern": "*", "requestStage": "Request"}]},
+            "Target.setAutoAttach",
+            {
+                "autoAttach": True,
+                "waitForDebuggerOnStart": True,
+                "flatten": True,
+                "filter": [
+                    {"type": "page", "exclude": False},
+                    {"type": "iframe", "exclude": False},
+                    {"type": "worker", "exclude": False},
+                    {"type": "service_worker", "exclude": False},
+                ],
+            },
         )
+        targets = session.call("Target.getTargets")
+        for info in targets.get("targetInfos") or []:
+            if not isinstance(info, dict) or info.get("type") != "page":
+                continue
+            try:
+                attached = session.call(
+                    "Target.attachToTarget",
+                    {"targetId": info.get("targetId"), "flatten": True},
+                )
+            except RuntimeError:
+                session.pump(0.2)
+                continue
+            session.pump(0.2)
+            session_id = str(attached.get("sessionId") or "")
+            if session_id and session_id not in self._armed_sessions:
+                self._on_attached(
+                    {"sessionId": session_id, "targetInfo": info, "waitingForDebugger": True}
+                )
+        if session.default_session is None:
+            session.pump(2.0)
+        page_session = session.default_session
+        if page_session is None:
+            raise RuntimeError("chrome attached no page target")
+        if self._request_interception:
+            session.call(
+                "Fetch.enable",
+                {"patterns": list(_FETCH_PATTERNS)},
+                session_id=page_session,
+            )
+        session.call("Page.enable", session_id=page_session)
+        session.call("Runtime.enable", session_id=page_session)
         session.call(
             "Emulation.setDeviceMetricsOverride",
             {"width": 1280, "height": 800, "deviceScaleFactor": 1, "mobile": False},
+            session_id=page_session,
         )
+        try:
+            session.call("Runtime.runIfWaitingForDebugger", session_id=page_session, timeout=2)
+        except RuntimeError:
+            pass
 
     def _wait_devtools(self, port: int) -> None:
         deadline = time.monotonic() + 15.0
@@ -771,7 +905,7 @@ class BrowserTool:
                 time.sleep(0.1)
                 continue
             if isinstance(payload, dict) and payload.get("webSocketDebuggerUrl"):
-                return
+                return payload
             time.sleep(0.1)
         raise TimeoutError(f"devtools endpoint did not open: {last}; {self._stderr_tail()}")
 
@@ -1273,19 +1407,40 @@ class _CdPSocket:
 
 
 class _PageSession:
-    def __init__(self, sock: _CdPSocket, on_request: Callable[[Mapping[str, Any]], None] | None = None) -> None:
+    def __init__(
+        self,
+        sock: _CdPSocket,
+        on_request: Callable[[Mapping[str, Any]], None] | None = None,
+        on_attach: Callable[[Mapping[str, Any]], None] | None = None,
+    ) -> None:
         self._sock = sock
         self._next = 0
         self._events: list[dict[str, Any]] = []
         self._pending: set[int] = set()
         self._on_request = on_request
+        self._on_attach = on_attach
+        self.default_session: str | None = None
+        self.release_after: dict[int, str] = {}
 
-    def call(self, method: str, params: Mapping[str, Any] | None = None, timeout: float = 20.0) -> dict[str, Any]:
-        message_id = self._send(method, params)
+    def call(
+        self,
+        method: str,
+        params: Mapping[str, Any] | None = None,
+        timeout: float = 20.0,
+        session_id: str | None = None,
+    ) -> dict[str, Any]:
+        message_id = self._send(method, params, session_id=session_id)
         return self._wait(message_id, timeout, method)
 
-    def send_ignored(self, method: str, params: Mapping[str, Any]) -> None:
-        self._pending.add(self._send(method, params))
+    def send_ignored(
+        self,
+        method: str,
+        params: Mapping[str, Any],
+        session_id: str | None = None,
+    ) -> int:
+        message_id = self._send(method, params, session_id=session_id)
+        self._pending.add(message_id)
+        return message_id
 
     def pump(self, timeout: float) -> None:
         deadline = time.monotonic() + timeout
@@ -1299,10 +1454,14 @@ class _PageSession:
                 continue
             self._dispatch(message, waiting_for=None)
 
-    def _send(self, method: str, params: Mapping[str, Any] | None = None) -> int:
+    def _send(self, method: str, params: Mapping[str, Any] | None = None, session_id: str | None = None) -> int:
         self._next += 1
         message_id = self._next
-        body = {"id": message_id, "method": method, "params": dict(params or {})}
+        if session_id is None and not method.startswith("Target."):
+            session_id = self.default_session
+        body: dict[str, Any] = {"id": message_id, "method": method, "params": dict(params or {})}
+        if session_id:
+            body["sessionId"] = session_id
         self._sock.send_text(json.dumps(body, ensure_ascii=False))
         return message_id
 
@@ -1330,6 +1489,11 @@ class _PageSession:
 
     def _dispatch(self, message: Mapping[str, Any], waiting_for: int | None) -> dict[str, Any] | None:
         message_id = message.get("id")
+        if isinstance(message_id, int) and message_id in self.release_after:
+            session_id = self.release_after.pop(message_id)
+            self._pending.discard(message_id)
+            self._send("Runtime.runIfWaitingForDebugger", {}, session_id=session_id)
+            return None
         if isinstance(message_id, int) and message_id in self._pending:
             self._pending.discard(message_id)
             return None
@@ -1340,11 +1504,19 @@ class _PageSession:
                 raise RuntimeError(f"CDP failed: {detail}")
             result = message.get("result")
             return result if isinstance(result, dict) else {}
-        if message.get("method") == "Fetch.requestPaused" and self._on_request is not None:
+        method = message.get("method")
+        if method == "Target.attachedToTarget" and self._on_attach is not None:
             params = message.get("params")
-            self._on_request(params if isinstance(params, dict) else {})
+            self._on_attach(params if isinstance(params, dict) else {})
             return None
-        if message.get("method"):
+        if method == "Fetch.requestPaused" and self._on_request is not None:
+            params = dict(message.get("params") or {}) if isinstance(message.get("params"), dict) else {}
+            session_id = message.get("sessionId")
+            if session_id:
+                params["_sessionId"] = session_id
+            self._on_request(params)
+            return None
+        if method:
             self._events.append(dict(message))
         return None
 
@@ -1435,6 +1607,49 @@ def _is_exact_loopback(ip: ipaddress.IPv4Address | ipaddress.IPv6Address) -> boo
     if isinstance(ip, ipaddress.IPv6Address) and ip.ipv4_mapped is not None:
         ip = ip.ipv4_mapped
     return str(ip) in _EXACT_LOOPBACK_IPS
+
+
+def _parse_endpoints(items: Iterable[str]) -> frozenset[tuple[str, int]]:
+    found: set[tuple[str, int]] = set()
+    for item in items:
+        text = str(item).strip().lower()
+        if not text or text == "*":
+            continue
+        if "://" in text:
+            try:
+                parts = urllib.parse.urlsplit(text)
+            except ValueError:
+                continue
+            host = (parts.hostname or "").lower()
+            if not host:
+                continue
+            port = parts.port or (443 if parts.scheme == "https" else 80)
+            found.add((host, int(port)))
+            continue
+        if text.startswith("[") and "]" in text:
+            host = text[1:text.index("]")].lower()
+            rest = text[text.index("]") + 1 :]
+            if rest.startswith(":") and rest[1:].isdigit():
+                found.add((host, int(rest[1:])))
+            continue
+        if text.count(":") == 1:
+            host, _, port_text = text.rpartition(":")
+            if host and port_text.isdigit():
+                found.add((host, int(port_text)))
+    return frozenset(found)
+
+
+def _endpoints_as_text(endpoints: Iterable[tuple[str, int]] | None) -> list[str]:
+    if not endpoints:
+        return []
+    return [f"[{host}]:{port}" if ":" in host else f"{host}:{port}" for host, port in endpoints]
+
+
+def _is_exact_loopback_text(host: str) -> bool:
+    try:
+        return _is_exact_loopback(ipaddress.ip_address(host))
+    except ValueError:
+        return False
 
 
 def _host_resolver_rules(allow_hosts: Iterable[str]) -> str:
