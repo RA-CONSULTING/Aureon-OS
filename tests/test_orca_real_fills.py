@@ -207,6 +207,36 @@ def test_disagreeing_fill_quantities_are_not_a_fill():
     assert fills.confirmed_fill_record("binance", "ETHUSDT", "BUY", _response(**payload)) is None
 
 
+def test_a_single_nan_quantity_is_not_a_fill(isolated):
+    """A lone NaN quantity is not a fill and records nothing.
+
+    Two NaN fields fail the agree check because NaN != NaN. One vol_exec has
+    no second field, so only the finite check can return None. Removing that
+    check lets the closed reading through as Decimal('NaN').
+    """
+    assert fills._filled_qty({"executedQty": "NaN"}) is None
+    assert (
+        fills.confirmed_fill_record(
+            "binance", "ETHUSDT", "BUY", _response(executedQty="NaN", orderId="884241")
+        )
+        is None
+    )
+    assert (
+        fills.record_confirmed_fill(
+            "binance", "ETHUSDT", "BUY", _response(executedQty="NaN", orderId="884241")
+        )
+        is None
+    )
+
+    closed = {"status": "closed", "vol_exec": "NaN", "txid": KRAKEN_TXID}
+    assert fills._closed_query_fill(closed) is None
+    assert fills.record_kraken_acknowledged_fill(object(), "ETHUSD", "buy", closed) is None
+
+    assert not isolated.exists()
+    assert fills.aureon_owned_qty("binance", "ETHUSDT") == Decimal(0)
+    assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(0)
+
+
 def test_a_zero_fill_quantity_rejects_the_other_fields():
     """executedQty 1 with filled_qty 0 is not a fill.
 
