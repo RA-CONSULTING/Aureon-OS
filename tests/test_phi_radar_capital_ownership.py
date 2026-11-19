@@ -912,3 +912,51 @@ def test_scan_live_log_writes_reference_only_ack_without_deal_id(monkeypatch, tm
     assert rows[0]["dealReference"] == "o_LIVE1"
     # So the reader never treats the acknowledgement reference as an owned deal.
     assert phi._phi_capital_deal_owned("o_LIVE1", "capital") is False
+
+
+def test_capital_connector_place_order_keeps_reference_and_opened_deal_id():
+    """CapitalConnector.place_order must not copy dealReference into dealId."""
+    phi = _load_phi_radar()
+    connector = phi.CapitalConnector.__new__(phi.CapitalConnector)
+    seen = []
+
+    def place_market_order(**_k):
+        return {"dealReference": "o_CONN"}
+
+    def confirm_order(ref):
+        seen.append(ref)
+        return {
+            "dealReference": ref,
+            "dealStatus": "ACCEPTED",
+            "affectedDeals": [
+                {"dealId": "D-OPEN", "status": "OPENED"},
+                {"dealId": "D-OLD", "status": "CLOSED"},
+            ],
+        }
+
+    connector.client = SimpleNamespace(
+        place_market_order=place_market_order,
+        confirm_order=confirm_order,
+    )
+    receipt = connector.place_order("CN50", "BUY", SIZE)
+    assert seen == ["o_CONN"]
+    assert receipt["dealReference"] == "o_CONN"
+    assert receipt["dealId"] == "D-OPEN"
+    assert receipt["status"] == "submitted"
+
+    def rejected(_ref):
+        return {"dealReference": "o_CONN", "dealStatus": "REJECTED",
+                "dealId": "D-REJ", "affectedDeals": []}
+
+    connector.client.confirm_order = rejected
+    refused = connector.place_order("CN50", "LONG", SIZE)
+    assert refused["dealReference"] == "o_CONN"
+    assert refused["dealId"] is None
+
+    def missing(_ref):
+        return {"error": "404"}
+
+    connector.client.confirm_order = missing
+    absent = connector.place_order("CN50", "SHORT", SIZE)
+    assert absent["dealReference"] == "o_CONN"
+    assert absent["dealId"] is None

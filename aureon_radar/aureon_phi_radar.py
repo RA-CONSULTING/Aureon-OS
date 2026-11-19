@@ -657,13 +657,45 @@ class CapitalConnector:
             stop_level=stop_level,
             profit_level=profit_level,
         )
-        # Normalise unified-margin-trader receipt back to simple dict
+        # Normalise unified-margin-trader receipt back to simple dict.
+        # A dealReference is not a dealId. dealId is set only when
+        # GET /confirms/{ref} reports exactly one OPENED deal.
         if isinstance(result, dict):
             if "dealReference" in result:
-                return {"dealId": result["dealReference"], "status": "submitted"}
+                ref = result.get("dealReference")
+                return {
+                    "dealId": self._deal_id_from_confirm(ref),
+                    "dealReference": ref,
+                    "status": "submitted",
+                }
             if result.get("rejected"):
                 return {"error": result.get("reason", "rejected")}
         return result if isinstance(result, dict) else {}
+
+    def _deal_id_from_confirm(self, deal_reference):
+        """dealId from GET /confirms/{ref}, or None.
+
+        Same helper as the live loop: DualCapitalConnector
+        .get_live_deal_confirmation (CapitalClient.confirm_order).
+        Exactly one affectedDeals OPENED row, or the top-level dealId
+        when dealStatus is ACCEPTED. A reference is never copied into
+        dealId. Missing, errored, REJECTED, or several OPENED deals
+        leave dealId unset.
+        """
+        ref = str(deal_reference or "").strip()
+        if not ref or ref.lower() == "unknown":
+            return None
+        try:
+            from aureon_dual_capital import DualCapitalConnector
+            helper = DualCapitalConnector.__new__(DualCapitalConnector)
+            helper.live = self.client
+            opened = helper.get_live_deal_confirmation(ref)
+        except Exception as e:
+            logger.error(f"CapitalConnector confirm failed for {ref}: {e}")
+            return None
+        if isinstance(opened, (list, tuple)) and len(opened) == 1 and opened[0]:
+            return str(opened[0])
+        return None
 
     def close_position(self, deal_id: str) -> dict:
         """Close an open position."""
