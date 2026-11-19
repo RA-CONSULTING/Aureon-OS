@@ -40,10 +40,11 @@ class _GearVault:
         engaged = parsed is not None
         self.love_amplitude = 1.0 if engaged else 0.0
         self.gratitude_score = 1.0 if engaged else 0.0
-        # lambda_reading is the CoherenceDecision from assess_coherence; only an
-        # accepted reading reaches Auris.
+        # lambda_reading is the CoherenceDecision from assess_coherence. An
+        # accepted reading, including a real 0.0, reaches Auris. A held or
+        # absent reading is None, so it is not the same input as zero.
         accepted = lambda_reading is not None and getattr(lambda_reading, "accepted", False)
-        self.last_lambda_t = float(lambda_reading.value) if accepted else 0.0
+        self.last_lambda_t = float(lambda_reading.value) if accepted else None
         self.cortex_snapshot = (
             {"delta": 0.0, "alpha": 0.0, "gamma": 1.0}
             if engaged

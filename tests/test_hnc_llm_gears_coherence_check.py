@@ -8,7 +8,6 @@ the brain and the plumber use, and it holds those values.
 
 from __future__ import annotations
 
-import math
 from types import SimpleNamespace
 
 import pytest
@@ -49,8 +48,7 @@ def test_out_of_range_coherence_is_held_not_voted(monkeypatch, captured, value) 
 
     receipt = hnc_llm_gears.turn_gears("salad")
 
-    assert not math.isnan(captured["last_lambda_t"])
-    assert captured["last_lambda_t"] == 0.0
+    assert captured["last_lambda_t"] is None
     field_gear = receipt["gears"][1]
     assert field_gear["coherence"] is None
     assert field_gear["coherence_verdict"] == "HOLD"
@@ -72,5 +70,5 @@ def test_no_field_reading_is_held(monkeypatch, captured) -> None:
 
     receipt = hnc_llm_gears.turn_gears("salad")
 
-    assert captured["last_lambda_t"] == 0.0
+    assert captured["last_lambda_t"] is None
     assert receipt["gears"][1]["coherence"] is None
