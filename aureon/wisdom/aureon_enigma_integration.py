@@ -28,6 +28,10 @@
 """
 
 from __future__ import annotations
+
+import math
+import numbers
+
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 
 import os
@@ -1274,6 +1278,23 @@ class EnigmaIntegration:
             except:
                 pass
         
+        # Drop layer values that are not finite real numbers before mixing.
+        # EnhancedProbabilityNexus.get_signal() returns a prediction dict or
+        # None, never a number, so multiplying it raised TypeError here. A
+        # skipped layer is named in skipped_layers instead of being guessed at.
+        numeric_signals = []
+        skipped_layers = []
+        for name, value, weight in signals:
+            if (
+                isinstance(value, numbers.Real)
+                and not isinstance(value, bool)
+                and math.isfinite(float(value))
+            ):
+                numeric_signals.append((name, float(value), weight))
+            else:
+                skipped_layers.append(name)
+        signals = numeric_signals
+
         # Synthesize all signals
         if signals:
             total_weight = sum(s[2] for s in signals)
@@ -1311,6 +1332,7 @@ class EnigmaIntegration:
             "reasons": reasons,
             "layers": layer_contributions,
             "active_layers": len(signals),
+            "skipped_layers": skipped_layers,
             "timestamp": time.time()
         }
     
