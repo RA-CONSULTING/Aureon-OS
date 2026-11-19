@@ -503,3 +503,32 @@ def test_negative_owned_qty_sells_nothing(monkeypatch, kill_chain, ledger):
     target = {"exchange": "binance", "symbol": "ETHUSDT", "id": "ETH", "type": "SPOT", "qty": 5.0, "pnl": 1.0, "client": client}
     kill_chain.UnifiedKillChain.execute_kill_chain(SimpleNamespace(), target)
     assert client.orders == []
+
+
+class FakeVolExecKraken(FakeArbKraken):
+    """A real Kraken closed result: vol_exec, no executedQty, so actual_qty falls back to the request."""
+
+    def place_market_order(self, symbol, side, qty):
+        self.orders.append((symbol, side, qty))
+        return {"status": "FILLED", "txid": ["K-VOL-1"], "vol_exec": "0.01"}
+
+
+@pytest.mark.parametrize("owned,expected", [(None, []), (0.02, [("ETHUSDT", "SELL", 0.02)]), (0.5, [("ETHUSDT", "SELL", 0.04)])])
+def test_arbitrage_sell_after_vol_exec_only_kraken_fill_is_bounded_by_the_cap(monkeypatch, tmp_path, kill_chain, ledger, owned, expected):
+    """Buzz: the Binance leg is sized on the request (0.04) when Kraken returns only vol_exec.
+
+    The owned-qty cap still bounds it: nothing without Binance ownership, at most
+    the owned 0.02, and never more than the request.
+    """
+    monkeypatch.chdir(tmp_path)
+    if owned is not None:
+        ledger.owned[("binance", "ETHUSDT")] = owned
+    kraken = FakeVolExecKraken({"USD": 100.0})
+    binance = FakeBalanceVenue({"ETH": 5.0})
+    chain = SimpleNamespace(kraken=kraken, binance=binance, wins_executed=[],
+                            _refresh_portfolio_after_trade=lambda order_sent=True: True)
+    opportunity = {"exchange": "arbitrage", "symbol": "ETH/USD", "type": "arbitrage", "buy_exchange": "kraken",
+                   "sell_exchange": "binance", "kraken_price": 2000.0, "binance_price": 2010.0, "spread_pct": 0.5}
+    kill_chain.UnifiedKillChain._execute_trade(chain, opportunity)
+    assert kraken.orders == [("ETHUSD", "buy", pytest.approx(0.04))]
+    assert [(s, side, pytest.approx(q)) for s, side, q in binance.orders] == expected
