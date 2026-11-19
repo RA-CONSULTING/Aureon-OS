@@ -742,3 +742,155 @@ def test_scan_live_log_writes_reference_only_ack_without_deal_id(monkeypatch, tm
     assert rows[0]["dealReference"] == "o_LIVE1"
     # So the reader never treats the acknowledgement reference as an owned deal.
     assert phi._phi_capital_deal_owned("o_LIVE1", "capital") is False
+
+
+# ── panic() closes only an owned Capital deal, through the router ─────────
+
+class _PanicRouter:
+    def __init__(self):
+        self.calls = []
+
+    def close_position(self, **kwargs):
+        self.calls.append(kwargs)
+        return {"success": True}
+
+
+class _PanicDual:
+    def __init__(self, positions):
+        self.positions = positions
+        self.closed = []
+
+    def get_live_positions(self):
+        return list(self.positions)
+
+    def close_live_position(self, deal_id):
+        self.closed.append(deal_id)
+        return {"success": True}
+
+
+def _panic_radar(phi, positions):
+    radar = phi.AureonPhiRadar.__new__(phi.AureonPhiRadar)
+    radar._save_state = lambda: None
+    radar.capital_dual = _PanicDual(positions)
+    radar.router = _PanicRouter()
+    return radar
+
+
+def _live_pos(deal_id, epic="CN50"):
+    return {
+        "market": {"epic": epic},
+        "position": {"dealId": deal_id, "direction": "BUY", "size": 0.087},
+    }
+
+
+def test_panic_skips_gary_manual_cn50(monkeypatch, tmp_path):
+    phi = _load_phi_radar()
+    monkeypatch.delenv("AUREON_ORCA_CAPITAL_ADOPT_DEALS", raising=False)
+    monkeypatch.setattr(phi, "_PHI_ENTRY_LEDGER", tmp_path / "trade_ledger.jsonl", raising=False)
+    monkeypatch.setattr(phi, "LIVE_LOG", tmp_path / "live_trades.jsonl", raising=False)
+    radar = _panic_radar(phi, [_live_pos("GARY_MANUAL_CN50"), {"position": {}}])
+    radar.panic()
+    assert radar.router.calls == []
+    assert radar.capital_dual.closed == []
+    assert radar.state == phi.SystemState.PANIC
+
+
+def test_panic_ownership_error_closes_nothing(monkeypatch, tmp_path):
+    phi = _load_phi_radar()
+    monkeypatch.setattr(phi, "_PHI_ENTRY_LEDGER", tmp_path / "trade_ledger.jsonl", raising=False)
+    monkeypatch.setattr(phi, "LIVE_LOG", tmp_path / "live_trades.jsonl", raising=False)
+
+    def boom(*_args, **_kwargs):
+        raise RuntimeError("ownership source unavailable")
+
+    monkeypatch.setattr(phi, "_phi_capital_deal_owned", boom)
+    radar = _panic_radar(phi, [_live_pos("AUREON-OWN-1", "ETHUSD"), _live_pos("GARY_MANUAL_CN50")])
+    radar.panic()
+    assert radar.router.calls == []
+    assert radar.capital_dual.closed == []
+
+
+def test_panic_closes_owned_deal_through_router(monkeypatch, tmp_path):
+    phi = _load_phi_radar()
+    monkeypatch.delenv("AUREON_ORCA_CAPITAL_ADOPT_DEALS", raising=False)
+    ledger = tmp_path / "trade_ledger.jsonl"
+    _write_entry_record(ledger, "AUREON-OWN-1")
+    monkeypatch.setattr(phi, "_PHI_ENTRY_LEDGER", ledger, raising=False)
+    monkeypatch.setattr(phi, "LIVE_LOG", tmp_path / "live_trades.jsonl", raising=False)
+    radar = _panic_radar(
+        phi,
+        [_live_pos("GARY_MANUAL_CN50"), _live_pos("AUREON-OWN-1", "ETHUSD"), {"not": "a position"}],
+    )
+    radar.panic()
+    assert radar.capital_dual.closed == []
+    assert [call["deal_id"] for call in radar.router.calls] == ["AUREON-OWN-1"]
+    assert radar.router.calls[0]["venue"] == "capital"
+    assert radar.router.calls[0]["symbol"] == "ETHUSD"
+
+
+def test_panic_closes_every_owned_deal(monkeypatch, tmp_path):
+    """Several Aureon deals are all closed. A manual deal in the middle is not."""
+    phi = _load_phi_radar()
+    monkeypatch.delenv("AUREON_ORCA_CAPITAL_ADOPT_DEALS", raising=False)
+    ledger = tmp_path / "trade_ledger.jsonl"
+    ledger.write_text(
+        "".join(
+            json.dumps({"stage": "CAPITAL_CONFIRMED", "deal_id": deal, "symbol": "ETHUSD", "direction": "LONG"}) + "\n"
+            for deal in ("AUREON-OWN-1", "AUREON-OWN-2", "AUREON-OWN-3")
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(phi, "_PHI_ENTRY_LEDGER", ledger, raising=False)
+    monkeypatch.setattr(phi, "LIVE_LOG", tmp_path / "live_trades.jsonl", raising=False)
+    radar = _panic_radar(
+        phi,
+        [
+            _live_pos("AUREON-OWN-1", "ETHUSD"),
+            _live_pos("GARY_MANUAL_CN50"),
+            _live_pos("AUREON-OWN-2", "US100"),
+            {"position": {}},
+            _live_pos("AUREON-OWN-3", "GOLD"),
+        ],
+    )
+    radar.panic()
+    assert radar.capital_dual.closed == []
+    assert [call["deal_id"] for call in radar.router.calls] == [
+        "AUREON-OWN-1",
+        "AUREON-OWN-2",
+        "AUREON-OWN-3",
+    ]
+    assert [call["symbol"] for call in radar.router.calls] == ["ETHUSD", "US100", "GOLD"]
+
+
+def test_panic_source_checks_ownership_before_router_close():
+    """Removing the ownership call, or closing before it, fails this assert."""
+    import ast
+
+    path = ROOT / "aureon_radar" / "aureon_phi_radar.py"
+    tree = ast.parse(path.read_bytes().decode("utf-8"))
+    panic = next(
+        node for node in ast.walk(tree)
+        if isinstance(node, ast.FunctionDef) and node.name == "panic"
+    )
+    calls = [
+        node for node in ast.walk(panic)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+    ]
+    owned_lines = [
+        node.lineno for node in ast.walk(panic)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+        and node.func.id == "_phi_capital_deal_owned"
+    ]
+    close_lines = [node.lineno for node in calls if node.func.attr == "close_position"]
+    direct = [node.lineno for node in calls if node.func.attr == "close_live_position"]
+    returns_in_except = [
+        child for node in ast.walk(panic)
+        if isinstance(node, ast.ExceptHandler)
+        for child in ast.walk(node)
+        if isinstance(child, ast.Return)
+    ]
+    assert owned_lines, "panic() no longer asks _phi_capital_deal_owned"
+    assert close_lines, "panic() no longer closes through the router"
+    assert min(owned_lines) < min(close_lines)
+    assert direct == []
+    assert returns_in_except, "an ownership error no longer stops the close"

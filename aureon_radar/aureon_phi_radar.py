@@ -1143,32 +1143,60 @@ class AureonPhiRadar:
                 return
     
     def panic(self):
-        """PANIC mode — close everything, preserve capital.
+        """PANIC mode — halt trading and close only Aureon-owned Capital deals.
 
-        FAIL-CLOSED (bug-hunt #4): every close failure is logged loudly and
-        surfaces — the bare `except: pass` that used to swallow KeyErrors
-        (pos["dealId"] on the positions-API shape) and leave positions open
-        is gone.
+        Same rule as the other phi_radar closes: a deal is owned only when
+        ``_phi_capital_deal_owned`` says so (allowlist, or an exact dealId on
+        a confirm-OPENED / recorded receipt). A position with no dealId is
+        skipped. If ownership cannot be determined, nothing is closed.
         """
         self.state = SystemState.PANIC
         self._save_state()
         logger.error("🚨 PANIC MODE — ALL TRADING HALTED 🚨")
-        # Close all live positions
-        positions = []
         try:
             positions = self.capital_dual.get_live_positions()
         except Exception as e:
             logger.error(f"🚨 PANIC: could not list live positions: {e}")
+            return
+        owned = []
         for pos in positions or []:
             if not isinstance(pos, dict):
                 logger.error(f"🚨 PANIC: malformed position entry: {pos!r}")
                 continue
-            deal_id = pos.get("position", {}).get("dealId")
+            position = pos.get("position") if isinstance(pos.get("position"), dict) else {}
+            deal_id = position.get("dealId")
             if not deal_id:
-                logger.error(f"🚨 PANIC: position has no dealId: {pos!r}")
+                logger.error(f"🚨 PANIC: position has no dealId; skipping unattributable position: {pos!r}")
                 continue
             try:
-                result = self.capital_dual.close_live_position(deal_id)
+                is_owned = _phi_capital_deal_owned(deal_id, "capital")
+            except Exception as e:
+                logger.error(
+                    f"🚨 PANIC: ownership of {deal_id} could not be determined ({e}); closing nothing"
+                )
+                return
+            if not is_owned:
+                logger.error(
+                    f"🚨 PANIC: skipping {deal_id}: not an Aureon-owned Capital deal"
+                )
+                continue
+            market = pos.get("market") if isinstance(pos.get("market"), dict) else {}
+            owned.append({
+                "deal_id": str(deal_id),
+                "symbol": market.get("epic"),
+                "size": position.get("size", position.get("dealSize")),
+                "direction": position.get("direction"),
+            })
+        for deal in owned:
+            deal_id = deal["deal_id"]
+            try:
+                result = self.router.close_position(
+                    deal_id=deal_id,
+                    venue="capital",
+                    symbol=deal["symbol"],
+                    size=deal["size"],
+                    direction=deal["direction"],
+                )
                 if isinstance(result, dict) and result.get("success"):
                     logger.info(f"Closed position: {deal_id}")
                 else:
