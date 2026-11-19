@@ -16,7 +16,7 @@ import json
 import sys
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-
+from pathlib import Path
 
 MAX_POSITIONS = 8192
 

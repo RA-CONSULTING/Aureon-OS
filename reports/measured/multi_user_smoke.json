@@ -4,16 +4,16 @@
     "admin_pulse_status": 200,
     "boot": "create_app",
     "canary_sha256": {
-      "canary_control_sha256": "4afd408b46bfd331440956e97fa2c2b8ca540de4dc41c6ed49c36edb26a18aa4",
-      "canary_operator_sha256": "421bd1907ee797664909abb55ce78fc80534b95a2e6c53e98900702b350e2a22",
-      "canary_prompt_a_revoked_sha256": "961df7da823a670b0a511cf4b3ea346f4fe167d61cf9f697bce50434816cffa5",
-      "canary_prompt_a_sha256": "fd77d6f920888b521464f9ecf7b2823ac51fb8500997ae8cf7e7eb6e2d58f49a",
-      "canary_prompt_b_absent_sha256": "393acef4cf6213deca638632eb838415cecb43211ebc3faba3613ab1981c2176",
-      "canary_prompt_b_sha256": "29292b24834e69a8df7430aa6b650c612a65a053c4decede03666d18d0bb2b93",
-      "canary_prompt_b_still_sha256": "fa506e0f8b8a99d15ac52055c155d39ce998e02e0ce5406cd626e4538eeacc22",
-      "canary_signer_sha256": "f408fade2e63def45f3ba0e86c4d74a43e7c422576d5002677dcd28279fba74b",
-      "canary_tenant_a_sha256": "2bf3660e7d934fe46f5fea69ab155ae92d37638d477bde6d3f44eca7c043d510",
-      "canary_tenant_b_sha256": "e10c35462652cc470dc61fde620541431e4af6819eabc02aa8c18a43ae9023d0"
+      "canary_control_sha256": "4d7207295ba4e07297c50a8587919550b338e75eda8abe13af118d992fa9d145",
+      "canary_operator_sha256": "b2664972f62bb62c14ffee6f739e5215ef81dfaab8ce74e3e3d6fb1d90c21b88",
+      "canary_prompt_a_revoked_sha256": "a1476dd1727cc95724d495e8f8d152be24de3cabac9749a5b43227531fb564c4",
+      "canary_prompt_a_sha256": "3142ea6bc21d9cf4dc79b6f0da756ece13fa5f97c7ce0cd28a76e79af8b2755b",
+      "canary_prompt_b_absent_sha256": "a937122e1c39faa491b374f739efc59402c2ec94ce7a78f6392d12fe9dbad1b6",
+      "canary_prompt_b_sha256": "e39534beaf34ab4bca52936d4e0e27b9bb49c99ad56aa066706e004b0f260076",
+      "canary_prompt_b_still_sha256": "559e7d165207f2f14da3c85138718740d71cc21d4932baf9ec76d4cb95447487",
+      "canary_signer_sha256": "3cc535a312b2270ca743f267f6b0a560798fd61167bc7ba4855084da84fa00e5",
+      "canary_tenant_a_sha256": "3603d16dea03643543934a56ad570f3c22561495a33833f3c122a33f98eca480",
+      "canary_tenant_b_sha256": "70d9056787981fcb8b2604a46b535ca63e3e4133c4851980a73087bcddd6edf5"
     },
     "caps": {
       "CapAmb": "0000000000000000",
@@ -76,19 +76,8 @@
     ],
     "environ_has_tenant_key": false,
     "euid": 0,
-    "exchange_module_count": 10,
-    "exchange_modules_sample": [
-      "aureon.exchanges",
-      "aureon.exchanges.alpaca_client",
-      "aureon.exchanges.binance_client",
-      "aureon.exchanges.capital_client",
-      "aureon.exchanges.capital_shared_state",
-      "aureon.exchanges.coinapi_anomaly_detector",
-      "aureon.exchanges.coinbase_historical_feed",
-      "aureon.exchanges.glassnode_client",
-      "aureon.exchanges.kraken_client",
-      "aureon.exchanges.unusual_whales_client"
-    ],
+    "exchange_module_count": 0,
+    "exchange_modules_sample": [],
     "go_live_clear": false,
     "home_is_workdir": true,
     "keystore_under_home": true,
@@ -96,7 +85,7 @@
     "live_trading": false,
     "magic_star_release": false,
     "market_data_fetched": false,
-    "net_ns": "net:[4026532951]",
+    "net_ns": "net:[4026532416]",
     "ok": true,
     "orders_placed": false,
     "plaintext_key_in_store": false,
@@ -147,7 +136,7 @@
     "serving_entrypoint": false,
     "store_a_bytes": 100,
     "store_b_bytes": 268,
-    "subscriber_count_after": 4,
+    "subscriber_count_after": 2,
     "subscriber_count_before": 1,
     "subscriptions_after": [
       {
@@ -168,20 +157,6 @@
         "count": 0,
         "handlers": [],
         "topic": "symbolic.life.pulse"
-      },
-      {
-        "count": 1,
-        "handlers": [
-          "_on_predicted"
-        ],
-        "topic": "whale.behavior.predicted"
-      },
-      {
-        "count": 1,
-        "handlers": [
-          "_on_shape"
-        ],
-        "topic": "whale.shape.detected"
       }
     ],
     "subscriptions_before": [
@@ -207,10 +182,8 @@
           "canary_tenant_a": false,
           "canary_tenant_b": false
         },
-        "new_bytes_scanned": 4116,
-        "new_names": [
-          "aureon_chirp_bus"
-        ],
+        "new_bytes_scanned": 0,
+        "new_names": [],
         "preexisting_count": 0,
         "preexisting_read": false,
         "read_errors": 0,
@@ -219,8 +192,8 @@
         "truncated_segments": []
       },
       "home_files": {
-        "bytes": 7604126,
-        "files": 576,
+        "bytes": 1862,
+        "files": 6,
         "paths": {
           "canary_control": [
             "thoughts.jsonl"
@@ -331,15 +304,15 @@
     "PYTHONPATH",
     "PYTHONUNBUFFERED"
   ],
-  "child_net_ns": "net:[4026532951]",
+  "child_net_ns": "net:[4026532416]",
   "cold_boot_argv_has_net": true,
   "cold_boot_command": "python -m aureon.containment.multi_user_smoke",
   "containment_pin": "bb04503119681adcf832f3c3e9b0cbf09fc7a938",
   "containment_pin_is_public_pin": false,
   "failures": [],
-  "finished_at": "2026-11-12T21:21:40Z",
+  "finished_at": "2026-11-19T07:12:09Z",
   "gaps": [],
-  "git_head_at_measurement": "9d254c9ed8b0b9fdd3b3d15e455f067a8189fc29",
+  "git_head_at_measurement": "ae25ba2cd0513fd0c1781a8b03c2f6ef334c3429",
   "go_live_clear": false,
   "go_live_receipt": null,
   "holds": [],
@@ -365,7 +338,7 @@
       "status": "HOLD"
     }
   ],
-  "kernel": "Linux grok-bot-vm-419691732 6.12.94+ #1 SMP PREEMPT_DYNAMIC Mon Nov  2 21:34:19 UTC 2026 x86_64",
+  "kernel": "Linux grok-bot-vm-419691732 6.12.113+ #1 SMP PREEMPT_DYNAMIC Mon Nov 16 16:06:22 UTC 2026 x86_64",
   "listener_bound": false,
   "live_trading": false,
   "market_data_fetched": false,
@@ -373,7 +346,7 @@
   "orange_badge": "unchanged",
   "orders_placed": false,
   "parent_env_copied": false,
-  "parent_net_ns": "net:[4026532600]",
+  "parent_net_ns": "net:[4026532212]",
   "pin": "ac9fa3151b63bd4143dc1aa434ec79b382406b7e",
   "pin_changed": false,
   "python": "3.13.5",
@@ -391,7 +364,7 @@
       "os_environ_values",
       "dev_shm_new"
     ],
-    "subscriber_count_after": 4,
+    "subscriber_count_after": 2,
     "subscriber_count_before": 1,
     "subscriptions_after": [
       {
@@ -412,20 +385,6 @@
         "count": 0,
         "handlers": [],
         "topic": "symbolic.life.pulse"
-      },
-      {
-        "count": 1,
-        "handlers": [
-          "_on_predicted"
-        ],
-        "topic": "whale.behavior.predicted"
-      },
-      {
-        "count": 1,
-        "handlers": [
-          "_on_shape"
-        ],
-        "topic": "whale.shape.detected"
       }
     ],
     "subscriptions_before": [
@@ -440,15 +399,15 @@
   },
   "source_sha256": {
     "aureon/containment/_multi_user_child.py": "33a12bc07b8ec8246b5d7403004c7f77add471d8b4b880f24af173d354c7ea59",
-    "aureon/containment/multi_user_smoke.py": "e6fd326d5b178a793fdb41d33a3f8a5260b3895bcfb4098a144933d7466c5d90",
-    "tests/test_multi_user_smoke.py": "4ab79983909fe8a2070307dc01595107c01f32b67edd59bdb5e0a78456960081"
+    "aureon/containment/multi_user_smoke.py": "d7374b649a93022b3602295f85f44a30df12a5b197cee250a1d4f03f8397ab98",
+    "tests/test_multi_user_smoke.py": "f7b73ded31e0c403bea41d0ec38e6961f068e5d43651612666df797a83551715"
   },
   "stage": 9,
-  "started_at": "2026-11-12T21:21:31Z",
+  "started_at": "2026-11-19T07:12:06Z",
   "started_from": "c68a89d2a184d99582bb24310b91e024323a212c",
   "title": "contained multi-user tenant boundary",
   "unchanged_sha256": {
-    "README.md": "5c00a96896926ed2e722cc8a9059ef9f6dd28555056055e17e8c3242867c510c",
+    "README.md": "c2c7680465b50354e4047d06311b1e6e422c07bf7bcfb5f821e321ee9886fbb9",
     "aureon/operator/identity.py": "2df2e31eb48825541a1471c0cdfe6a80c48b37935dd60644a887e9924298ce23",
     "aureon/operator/operator_server.py": "759d713526ee728cecfc987e9133ddcfe83f2c76352f4dc39f909ec40d1bddc2",
     "docs/runbooks/GO_LIVE_HARDENING.md": "30f2cc49442a334e848d183e5dd86eb53b302b0e274625d17b2b872d338a2b10",
@@ -458,7 +417,7 @@
     "scripts/linux/install-linux.sh": "8ef7f0e60fbc78e97161a0ce3b585c43893fdcf9508c1aa217ec9963710ad505"
   },
   "verdict": "pass",
-  "worktree_dirty_at_measurement": null,
+  "worktree_dirty_at_measurement": false,
   "wrapper": {
     "cap_drop": {
       "dropped": 41,
@@ -491,15 +450,9 @@
       "lo"
     ],
     "sysfs_before": [
-      "br-7086a1cf480a",
       "docker0",
       "enp0s3",
-      "lo",
-      "veth383a288",
-      "vethd96f4a3",
-      "vethdbf3dfb",
-      "vethdc106ac",
-      "vethfd7083a"
+      "lo"
     ],
     "sysfs_remount": {
       "errno": null,
