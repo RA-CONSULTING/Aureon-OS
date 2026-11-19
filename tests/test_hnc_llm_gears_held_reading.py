@@ -77,6 +77,24 @@ def test_real_zero_reading_stays_zero(monkeypatch, captured) -> None:
     assert "flat" in captured["falcon"].reasoning
 
 
+def test_vault_without_last_lambda_t_defaults_to_zero() -> None:
+    auris = AurisMetacognition()
+    vault = SimpleNamespace()
+    assert not hasattr(vault, "last_lambda_t")
+
+    falcon = auris._falcon(vault)
+    explicit_zero = auris._falcon(SimpleNamespace(last_lambda_t=0.0))
+
+    assert falcon.verdict == "NEUTRAL"
+    assert falcon.reasoning == "Λ(t)=0.000 — flat"
+    assert falcon.reasoning == explicit_zero.reasoning
+
+    vote = auris.vote(vault)
+    node = next(item for item in vote.per_node_votes if item.node == "Falcon")
+    assert node.verdict == falcon.verdict
+    assert node.reasoning == falcon.reasoning
+
+
 def test_falcon_does_not_crash_or_read_none_as_zero() -> None:
     auris = AurisMetacognition()
     missing = auris._falcon(SimpleNamespace(last_lambda_t=None))
