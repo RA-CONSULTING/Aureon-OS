@@ -680,6 +680,18 @@ def test_operator_toolbelt_has_no_unknown_effects_and_stable_operations() -> Non
         "code_validate": ToolEffect.READ_ONLY,
         "write_repo_file": ToolEffect.LOCAL_MUTATION,
         "patch_repo_file": ToolEffect.LOCAL_MUTATION,
+        # Admin-plane ComputerUse actions registered with the operator toolbelt.
+        "screenshot": ToolEffect.READ_ONLY,
+        "move": ToolEffect.PRIVILEGED,
+        "click": ToolEffect.PRIVILEGED,
+        "double_click": ToolEffect.PRIVILEGED,
+        "drag": ToolEffect.PRIVILEGED,
+        "scroll": ToolEffect.PRIVILEGED,
+        "type_text": ToolEffect.PRIVILEGED,
+        "press_key": ToolEffect.PRIVILEGED,
+        "hotkey": ToolEffect.PRIVILEGED,
+        "run_shell": ToolEffect.PRIVILEGED,
+        "open_url": ToolEffect.PRIVILEGED,
     }
     assert set(registry.names()) == set(expected_effects)
     assert {

@@ -314,9 +314,12 @@ def test_tenant_toolbelt_is_an_allowlist_not_a_denylist():
 
     tenant = set(build_operator_tools(allow_writes=False, allow_shell=False,
                                       allowlist=TENANT_ALLOWED_TOOLS).names())
+    # Computer-use tools are admin-plane only; the allowlist must keep them off the tenant belt.
     forbidden = {"execute_shell", "write_repo_file", "patch_repo_file", "web_fetch", "web_search",
                  "publish_thought", "touch_module", "read_state", "read_positions", "read_prices",
-                 "repo_search", "read_repo_file", "list_repo", "sense_organism", "list_organism"}
+                 "repo_search", "read_repo_file", "list_repo", "sense_organism", "list_organism",
+                 "screenshot", "move", "click", "double_click", "drag", "scroll", "type_text",
+                 "press_key", "hotkey", "run_shell", "open_url"}
     assert not (tenant & forbidden), f"tenant belt must hold none of these: {sorted(tenant & forbidden)}"
     assert tenant, "the belt must still be a usable registry, not empty"
     # zero regression: the instance/admin belt keeps every capability

@@ -89,21 +89,35 @@ def test_agent_core_has_no_raw_laptop_fallback() -> None:
     assert "Unknown intent" in result["error"]
 
 
-def test_agent_core_holds_desktop_input_even_with_injected_gateway(tmp_path) -> None:
+def test_agent_core_desktop_input_does_not_use_the_injected_gateway(tmp_path) -> None:
+    """Desktop input is ComputerUse.
+
+    The previous assertion required HOLD even with a gateway injected. Owner
+    decision (19 Nov 2026) stopped routing agent-core through that gateway,
+    so a click must not come back as HOLD and must not touch the gateway backend.
+    """
+
     backend = _Backend()
     gateway = GovernedDesktopGateway(
         backend=backend,
         evidence_path=tmp_path / "gateway.jsonl",
         min_action_interval_seconds=0.0,
     )
-    core = AureonAgentCore()
+    calls: list[tuple] = []
+
+    class _Computer:
+        def click(self, x, y, button="left", clicks=1):
+            calls.append((x, y, button, clicks))
+            return {"success": True, "ok": True, "status": "ok", "action": "click"}
+
+    core = AureonAgentCore(computer_use=_Computer())
     core._desktop = gateway
     result = core.click(10, 20, target_binding_id="attacker-supplied-binding")
 
-    assert result["success"] is False
-    assert result["status"] == "hold"
-    assert result["magic_star_required"] is True
-    assert result["error"] == "production_magic_star_desktop_release_unavailable"
+    assert result["success"] is True
+    assert result.get("status") != "hold"
+    assert result.get("magic_star_required") is not True
+    assert calls == [(10, 20, "left", 1)]
     assert backend.actions == []
 
 
@@ -114,7 +128,14 @@ def test_agent_core_cannot_mint_live_desktop_lease(tmp_path) -> None:
         evidence_path=tmp_path / "gateway.jsonl",
         min_action_interval_seconds=0.0,
     )
-    core = AureonAgentCore()
+    calls: list[tuple] = []
+
+    class _Computer:
+        def click(self, x, y, button="left", clicks=1):
+            calls.append((x, y, button, clicks))
+            return {"success": True, "ok": True, "status": "ok", "action": "click"}
+
+    core = AureonAgentCore(computer_use=_Computer())
     core._desktop = gateway
     arm = core.desktop_arm_live(
         "a" * 32,
@@ -127,7 +148,8 @@ def test_agent_core_cannot_mint_live_desktop_lease(tmp_path) -> None:
     assert arm["success"] is False
     assert arm["status"] == "hold"
     assert arm["error"] == "production_magic_star_desktop_release_unavailable"
-    assert result["status"] == "hold"
+    assert result.get("status") != "hold"
+    assert calls == [(10, 20, "left", 1)]
     assert backend.actions == []
 
 
@@ -138,7 +160,14 @@ def test_agent_core_never_observes_or_dispatches_a_drifting_desktop_candidate(tm
         evidence_path=tmp_path / "gateway.jsonl",
         min_action_interval_seconds=0.0,
     )
-    core = AureonAgentCore()
+    calls: list[tuple] = []
+
+    class _Computer:
+        def click(self, x, y, button="left", clicks=1):
+            calls.append((x, y, button, clicks))
+            return {"success": True, "ok": True, "status": "ok", "action": "click"}
+
+    core = AureonAgentCore(computer_use=_Computer())
     core._desktop = gateway
     arm = core.desktop_arm_live(
         "b" * 32,
@@ -149,7 +178,8 @@ def test_agent_core_never_observes_or_dispatches_a_drifting_desktop_candidate(tm
     result = core.click(10, 20, target_binding_id="attacker-supplied-binding")
 
     assert arm["status"] == "hold"
-    assert result["status"] == "hold"
+    assert result.get("status") != "hold"
+    assert calls == [(10, 20, "left", 1)]
     assert backend.capture_count == 0
     assert backend.actions == []
 
