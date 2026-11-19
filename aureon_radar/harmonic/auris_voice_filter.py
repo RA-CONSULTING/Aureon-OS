@@ -53,6 +53,7 @@ Usage::
 from __future__ import annotations
 
 import logging
+import math
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
@@ -64,6 +65,20 @@ from aureon.harmonic.harmonic_text_alignment import (
 )
 
 logger = logging.getLogger("aureon.harmonic.auris_voice_filter")
+
+
+def _read_lambda_t(raw: Any) -> Optional[float]:
+    """A published Lambda(t), or None when there is no reading.
+
+    Missing and None stay None. A real 0.0 stays 0.0. A bool, a
+    non-number, or a non-finite value is not a reading.
+    """
+    if isinstance(raw, bool) or not isinstance(raw, (int, float)):
+        return None
+    number = float(raw)
+    if not math.isfinite(number):
+        return None
+    return number
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -89,7 +104,7 @@ class AurisCoherenceReport:
 
     field_gamma: float = 0.0
     field_love: float = 0.0
-    field_lambda_t: float = 0.0
+    field_lambda_t: Optional[float] = None
     field_weight: float = 0.0
 
     text_coherence: float = 0.0
@@ -119,7 +134,11 @@ class AurisCoherenceReport:
             "field": {
                 "gamma": round(self.field_gamma, 4),
                 "love": round(self.field_love, 4),
-                "lambda_t": round(self.field_lambda_t, 4),
+                "lambda_t": (
+                    None
+                    if self.field_lambda_t is None
+                    else round(self.field_lambda_t, 4)
+                ),
                 "weight": round(self.field_weight, 4),
             },
             "text": {
@@ -253,9 +272,9 @@ class AurisVoiceFilter:
         except Exception:
             grat = 0.0
         try:
-            lamb = float(getattr(vault, "last_lambda_t", 0.0) or 0.0)
+            lamb = _read_lambda_t(getattr(vault, "last_lambda_t", None))
         except Exception:
-            lamb = 0.0
+            lamb = None
         try:
             snap = getattr(vault, "cortex_snapshot", {}) or {}
             gamma = float(snap.get("gamma", 0.0) or 0.0)
