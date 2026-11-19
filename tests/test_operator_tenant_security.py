@@ -314,7 +314,7 @@ def test_tenant_toolbelt_is_an_allowlist_not_a_denylist():
 
     tenant = set(build_operator_tools(allow_writes=False, allow_shell=False,
                                       allowlist=TENANT_ALLOWED_TOOLS).names())
-    forbidden = {"execute_shell", "write_repo_file", "patch_repo_file", "web_fetch", "web_search",
+    forbidden = {"browser", "execute_shell", "write_repo_file", "patch_repo_file", "web_fetch", "web_search",
                  "publish_thought", "touch_module", "read_state", "read_positions", "read_prices",
                  "repo_search", "read_repo_file", "list_repo", "sense_organism", "list_organism"}
     assert not (tenant & forbidden), f"tenant belt must hold none of these: {sorted(tenant & forbidden)}"

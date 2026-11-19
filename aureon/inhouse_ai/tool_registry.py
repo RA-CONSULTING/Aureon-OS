@@ -3,13 +3,14 @@ Tool Registry — Sovereign Tool System
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Central registry for all tools available to in-house agents.
-Provides defineTool() for custom tools and ships 5 built-in tools:
+Provides defineTool() for custom tools and ships built-in tools:
 
   1. read_state       — read dashboard snapshot / system state
   2. read_positions   — read current trading positions + equity
   3. read_prices      — get live prices across all exchanges
   4. publish_thought  — publish a Thought to the ThoughtBus
   5. execute_shell    — run a shell command (sandboxed)
+  6. browser          — headless Chrome/Chromium over the DevTools Protocol
 """
 
 from __future__ import annotations
@@ -946,7 +947,7 @@ class ToolRegistry:
     # ─────────────────────────────────────────────────────────────────────────
 
     def _register_builtins(self):
-        """Register the 5 built-in tools."""
+        """Register the built-in tools."""
 
         # 1. read_state
         self.define_tool(
@@ -1130,6 +1131,21 @@ class ToolRegistry:
             handler=_builtin_skill_base_status,
             effect=ToolEffect.READ_ONLY,
             operation_id="aureon.inhouse.skill_base_status.v1",
+        )
+
+        from aureon.inhouse_ai.browser_tool import (
+            BROWSER_TOOL_DESCRIPTION,
+            browser_input_schema,
+            dispatch_browser_tool,
+        )
+
+        self.define_tool(
+            name="browser",
+            description=BROWSER_TOOL_DESCRIPTION,
+            input_schema=browser_input_schema(),
+            handler=dispatch_browser_tool,
+            effect=ToolEffect.PRIVILEGED,
+            operation_id="aureon.inhouse.browser.v1",
         )
 
 
