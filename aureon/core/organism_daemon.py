@@ -99,6 +99,16 @@ def boot() -> dict[str, Any]:
         except Exception as exc:  # noqa: BLE001
             logger.warning("Dr. Auris Throne not started: %s", exc)
 
+    try:
+        from aureon.core.organism_reasoning import AureonOrganismReasoner
+
+        reasoner = AureonOrganismReasoner(bus=organs["bus"])
+        organs["bus"].subscribe("organism.reasoning.request", reasoner.handle_request)
+        organs["organism_reasoner"] = reasoner
+        logger.info("🧠 Aureon own-model reasoner listening on organism.reasoning.request")
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Aureon own-model reasoner unavailable: %s", exc)
+
     # Bind the process-owned organism map without provisioning cloud brains,
     # creating governance receipts, or waking an exchange. The root is useful
     # even while incomplete because every consumer sees the same explicit HOLD
@@ -126,6 +136,8 @@ def boot() -> dict[str, Any]:
             present_subsystems["mycelium"] = "existing hive propagation mesh"
         if "auris_throne" in organs:
             present_subsystems["auris"] = "live Auris cosmic-state producer"
+        if "organism_reasoner" in organs:
+            present_subsystems["aureon_llm"] = "own-model grounded reasoning; report only"
         composition = get_canonical_organism_composition()
         if composition is None:
             composition = configure_canonical_organism_composition(

@@ -1,12 +1,14 @@
-"""Repo-wide external LLM fallback routing tests (offline and secret-safe)."""
+"""External LLM routes are disabled; same-origin proxy security stays audited."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 import aureon.ollama_config as ollama_config
 from aureon.inhouse_ai import llm_adapter
-from aureon.inhouse_ai.llm_adapter import AureonStubAdapter
+from aureon.inhouse_ai.llm_adapter import AureonUnavailableAdapter
 from aureon.integrations.ollama import ollama_bridge
 from aureon.operator import providers
 from scripts.validation.audit_external_llm_fallback import (
@@ -14,165 +16,89 @@ from scripts.validation.audit_external_llm_fallback import (
     static_inventory,
 )
 
-_OLLAMA_ENV = (
-    "OLLAMA_API_KEY",
-    "AUREON_OLLAMA_API_KEY",
-    "AUREON_LLM_API_KEY",
-    "AUREON_OLLAMA_BASE_URL",
-    "AUREON_LLM_BASE_URL",
-    "AUREON_LLM_MODEL",
-    "AUREON_OLLAMA_MODEL",
-    "AUREON_EXTERNAL_LLM_FALLBACK",
-    "AUREON_OLLAMA_REASONING_EFFORT",
-)
 
+@pytest.mark.parametrize("value", [None, "ollama", "ollama_cloud", "off", "none"])
+def test_external_fallback_policy_is_always_disabled(monkeypatch, value) -> None:
+    if value is None:
+        monkeypatch.delenv("AUREON_EXTERNAL_LLM_FALLBACK", raising=False)
+    else:
+        monkeypatch.setenv("AUREON_EXTERNAL_LLM_FALLBACK", value)
 
-def _clear(monkeypatch) -> None:
-    for name in _OLLAMA_ENV:
-        monkeypatch.delenv(name, raising=False)
-
-
-def test_external_fallback_policy_defaults_to_ollama(monkeypatch) -> None:
-    _clear(monkeypatch)
-    assert ollama_config.resolve_external_llm_fallback() == "ollama"
-
-    monkeypatch.setenv("AUREON_EXTERNAL_LLM_FALLBACK", "ollama_cloud")
-    assert ollama_config.resolve_external_llm_fallback() == "ollama"
-
-    monkeypatch.setenv("AUREON_EXTERNAL_LLM_FALLBACK", "off")
     assert ollama_config.resolve_external_llm_fallback() == "none"
 
 
-def test_cloud_reasoning_defaults_to_visible_output(monkeypatch) -> None:
-    _clear(monkeypatch)
-    monkeypatch.delenv("AUREON_OLLAMA_REASONING_EFFORT", raising=False)
-    assert ollama_config.resolve_ollama_reasoning_effort() == "none"
-
-    adapter = llm_adapter.AureonLocalAdapter(
-        base_url="https://ollama.com/v1",
-        model="cloud-model",
-        api_key="test-secret",
+def test_retired_runtime_bootstrap_never_loads_external_credentials(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(
+        "aureon.core.aureon_env.bootstrap_credentials",
+        lambda *_args: pytest.fail("external credential bootstrap must not run"),
     )
-    payload = adapter._build_payload(
-        [{"role": "user", "content": "Return one label"}],
-        "",
-        None,
-        8,
-        0.0,
-    )
-    assert payload["reasoning_effort"] == "none"
 
+    snapshot = ollama_config.ensure_ollama_runtime_config(force=True, repo_root=tmp_path)
+
+    assert snapshot["external_fallback"] == "none"
+
+
+def test_ollama_bridge_fails_closed_without_http(monkeypatch) -> None:
     bridge = ollama_bridge.OllamaBridge(
         base_url="https://ollama.com",
-        api_key="test-secret",
+        api_key="not-a-real-secret",
         chat_model="cloud-model",
     )
-    captured: dict = {}
-
-    def fake_post(path: str, body: dict, timeout=None):
-        captured.update({"path": path, "body": body})
-        return {"message": {"content": "OK"}, "done": True}
-
-    monkeypatch.setattr(bridge, "_post", fake_post)
-    result = bridge.chat([{"role": "user", "content": "Return OK"}])
-    assert result["message"]["content"] == "OK"
-    assert captured["body"]["think"] is False
-
-
-def test_forced_runtime_bootstrap_loads_cloud_profile(monkeypatch, tmp_path: Path) -> None:
-    _clear(monkeypatch)
-    monkeypatch.setattr(ollama_config, "_RUNTIME_BOOTSTRAP_ATTEMPTED", False)
-    calls: list[Path] = []
-
-    def fake_bootstrap(root: Path):
-        calls.append(Path(root))
-        monkeypatch.setenv("AUREON_LLM_BASE_URL", "https://ollama.com/v1")
-        monkeypatch.setenv("AUREON_LLM_MODEL", "cloud-model")
-        monkeypatch.setenv("OLLAMA_API_KEY", "test-secret")
-        return {"ok": True}
-
-    monkeypatch.setattr("aureon.core.aureon_env.bootstrap_credentials", fake_bootstrap)
-
-    snapshot = ollama_config.ensure_ollama_runtime_config(
-        force=True,
-        repo_root=tmp_path,
-    )
-
-    assert calls == [tmp_path]
-    assert snapshot["external_fallback"] == "ollama"
-    assert snapshot["cloud"] is True
-    assert snapshot["api_key_configured"] is True
-    assert snapshot["authorization_header_enabled"] is True
-    assert "test-secret" not in repr(snapshot)
-
-
-def test_shared_constructors_request_runtime_bootstrap(monkeypatch) -> None:
-    _clear(monkeypatch)
-    calls: list[str] = []
-
     monkeypatch.setattr(
-        llm_adapter,
-        "ensure_ollama_runtime_config",
-        lambda **_kwargs: calls.append("adapter") or {},
+        bridge._session,
+        "post",
+        lambda *_args, **_kwargs: pytest.fail("Ollama HTTP must not run"),
     )
     monkeypatch.setattr(
-        ollama_bridge,
-        "ensure_ollama_runtime_config",
-        lambda **_kwargs: calls.append("bridge") or {},
+        bridge._session,
+        "get",
+        lambda *_args, **_kwargs: pytest.fail("Ollama HTTP must not run"),
     )
 
-    llm_adapter.AureonLocalAdapter()
-    ollama_bridge.OllamaBridge()
+    result = bridge.chat([{"role": "user", "content": "ping"}])
 
-    assert calls == ["adapter", "bridge"]
+    assert result["done_reason"] == "error"
+    assert "aureon_own_model_required" in result["error"]
+    assert bridge.health_check() is False
+    assert bridge.api_key == ""
+    assert bridge._authorization_headers == {}
 
 
-def test_operator_registry_bootstraps_before_default_specs(monkeypatch) -> None:
-    _clear(monkeypatch)
-    calls: list[str] = []
-
-    def fake_ensure(**_kwargs):
-        calls.append("bootstrap")
-        monkeypatch.setenv("AUREON_LLM_BASE_URL", "https://ollama.com/v1")
-        monkeypatch.setenv("AUREON_LLM_MODEL", "cloud-model")
-        monkeypatch.setenv("OLLAMA_API_KEY", "test-secret")
-        return {}
-
-    monkeypatch.setattr(providers, "ensure_ollama_runtime_config", fake_ensure)
+def test_operator_registry_ignores_keyed_cloud_profiles(monkeypatch) -> None:
+    monkeypatch.setenv("AUREON_LLM_BASE_URL", "https://ollama.com/v1")
+    monkeypatch.setenv("AUREON_LLM_MODEL", "cloud-model")
+    monkeypatch.setenv("OLLAMA_API_KEY", "not-a-real-secret")
+    monkeypatch.setattr(
+        providers,
+        "_aureon_own_adapter",
+        lambda: AureonUnavailableAdapter("own model unavailable", model="aureon-own-unavailable"),
+    )
     monkeypatch.setattr(
         providers,
         "_build_from_spec",
-        lambda spec: AureonStubAdapter("ok", model=spec.model) if spec.kind == "local" else None,
+        lambda _spec: pytest.fail("external model specs must not be constructed"),
     )
 
     registry = providers.build_registry(force_offline=False)
 
-    assert calls == ["bootstrap"]
-    assert set(registry) == {"local"}
-    assert registry["local"]._model == "cloud-model"
+    assert set(registry) == {"aureon-own"}
+    assert registry["aureon-own"].health_check() is False
 
 
-def test_explicit_anthropic_voice_route_uses_ollama_fallback(monkeypatch) -> None:
-    _clear(monkeypatch)
+def test_explicit_anthropic_voice_route_has_no_ollama_fallback(monkeypatch) -> None:
     monkeypatch.setenv("AUREON_VOICE_BACKEND", "anthropic")
-    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
-
-    class _Healthy:
-        def health_check(self) -> bool:
-            return True
-
-    class _Fallback:
-        def __init__(self) -> None:
-            self.local = _Healthy()
-            self.model = "ollama-cloud-fallback"
-
-    monkeypatch.setattr(llm_adapter, "AureonHybridAdapter", _Fallback)
-    monkeypatch.setattr(llm_adapter, "_llm_http_disabled", lambda: False)
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "not-a-real-secret")
+    monkeypatch.setattr(
+        llm_adapter,
+        "AureonHybridAdapter",
+        lambda: pytest.fail("hybrid fallback must not be constructed"),
+    )
 
     adapter = llm_adapter.build_voice_adapter()
 
-    assert isinstance(adapter, _Fallback)
-    assert adapter.model == "ollama-cloud-fallback"
+    assert isinstance(adapter, AureonUnavailableAdapter)
+    assert adapter.model == "aureon_own_model_required"
+    assert adapter.health_check() is False
 
 
 def test_cloudflare_console_is_an_exact_authenticated_same_origin_worker_proxy() -> None:
@@ -191,10 +117,7 @@ def test_cloudflare_console_is_an_exact_authenticated_same_origin_worker_proxy()
 
     inventory = static_inventory()
     assert relative in inventory["trusted_same_origin_worker_proxies"]
-    # The unified tree does not carry the old dist-workers build artifact.
     assert "flameborn/dist-workers/app.js" not in inventory["trusted_same_origin_worker_proxies"]
-    # Merged snapshots still call providers directly. They stay unexpected,
-    # and a new path outside this set still fails the audit.
     assert set(inventory["unexpected_direct_llm_surfaces"]) == {
         "aureon-trading/deploy/cloudflare/aureon_murge_worker/index.mjs",
         "aureon_radar/aureon_phi_radar.py",

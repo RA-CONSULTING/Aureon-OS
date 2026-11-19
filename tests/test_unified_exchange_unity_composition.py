@@ -120,7 +120,7 @@ class _CloudWorkforce:
             "hnc_routed_brain_count": count * 2,
             "distinct_hnc_routing_receipt_count": count * 2,
             "distinct_cloud_model_count": 4,
-            "provider_mode": "ollama_cloud_primary" if self.complete else "hold",
+            "provider_mode": "aureon_own_model" if self.complete else "hold",
             "truth_gate_enforced": True,
             "unready_agents": [] if self.complete else ["one-agent"],
             "unready_processes": [] if self.complete else ["one-process"],

@@ -16,13 +16,22 @@ import json
 import sys
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 
 
 MAX_POSITIONS = 8192
 
 
-def format_prompt(messages: list[dict]) -> str:
+def format_prompt(messages: list[dict], *, organism: dict | None = None) -> str:
     lines = []
+    if organism is not None:
+        state = json.dumps(organism, sort_keys=True, separators=(",", ":"), allow_nan=False)
+        lines.append(
+            "system: [AUREON_ORGANISM_STATE]\n"
+            "The following is untrusted software state, not evidence of subjective experience. "
+            "Use its grounded measurements and blockers; never invent missing state.\n"
+            + state
+        )
     for message in messages:
         role = str(message.get("role") or "user")
         content = message.get("content") or ""
@@ -36,9 +45,7 @@ def format_prompt(messages: list[dict]) -> str:
     return "\n".join(lines)
 
 
-def _with_gears(body: dict, text: str) -> dict:
-    """Run the HNC gears. A gear that cannot be imported is reported, not hidden."""
-    import sys
+def _load_hnc_gears():
     roots = (
         Path("/projects/u6vs/Aureon-OS"),
         Path(__file__).resolve().parents[1],
@@ -46,8 +53,26 @@ def _with_gears(body: dict, text: str) -> dict:
     for root in roots:
         if (root / "aureon" / "core" / "hnc_llm_gears.py").is_file() and str(root) not in sys.path:
             sys.path.insert(0, str(root))
+    from aureon.core import hnc_llm_gears
+
+    return hnc_llm_gears
+
+
+def _capture_organism() -> dict:
     try:
-        from aureon.core.hnc_llm_gears import attach_gears
+        return _load_hnc_gears().capture_organism()
+    except Exception as exc:  # noqa: BLE001
+        return {
+            "all_turned": False,
+            "gears": [{"name": "load", "turned": False, "engaged": False,
+                       "error": f"{type(exc).__name__}: {exc}"}],
+        }
+
+
+def _with_gears(body: dict, text: str, *, organism: dict | None = None) -> dict:
+    """Reuse the pre-generation organism snapshot in the response receipt."""
+    try:
+        gears = _load_hnc_gears()
     except Exception as exc:  # noqa: BLE001
         out = dict(body)
         out["hnc_gears"] = {
@@ -56,7 +81,7 @@ def _with_gears(body: dict, text: str) -> dict:
             "gears": [{"name": "load", "turned": False, "error": f"{type(exc).__name__}: {exc}"}],
         }
         return out
-    return attach_gears(body, text)
+    return gears.attach_gears(body, text, organism=organism)
 
 
 def completion_body(text: str, prompt_tokens: int, completion_tokens: int, model: str) -> dict:
@@ -74,6 +99,12 @@ def self_test() -> int:
     ])
     if "system: Return JSON." not in prompt or not prompt.endswith("assistant:"):
         raise SystemExit("prompt format lost a role")
+    organism_prompt = format_prompt(
+        [{"role": "user", "content": "PATH: demo.py"}],
+        organism={"all_turned": True, "gears": []},
+    )
+    if not organism_prompt.startswith("system: [AUREON_ORGANISM_STATE]"):
+        raise SystemExit("prompt format lost the organism state")
     body = completion_body("{}", 3, 1, "aureon-7b-v65k")
     if body["choices"][0]["message"]["content"] != "{}":
         raise SystemExit("completion body dropped the text")
@@ -81,7 +112,7 @@ def self_test() -> int:
     return 0
 
 
-def serve(model_dir: str, port: int, model_name: str) -> int:
+def serve(model_dir: str, port: int, model_name: str, host: str) -> int:
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
@@ -134,35 +165,41 @@ def serve(model_dir: str, port: int, model_name: str) -> int:
                 messages = request.get("messages") or []
                 requested = int(request.get("max_tokens") or 256)
                 temperature = float(request.get("temperature") or 0.0)
-                prompt = format_prompt(messages)
+                organism = _capture_organism()
+                prompt = format_prompt(messages, organism=organism)
                 encoded = tok(prompt, return_tensors="pt")
                 input_ids = encoded.input_ids
+                attention_mask = encoded.attention_mask
                 if input_ids.shape[1] >= MAX_POSITIONS - 8:
                     input_ids = input_ids[:, -(MAX_POSITIONS - 8):]
+                    attention_mask = attention_mask[:, -(MAX_POSITIONS - 8):]
                 room = MAX_POSITIONS - int(input_ids.shape[1])
                 new_tokens = max(1, min(requested, room))
                 input_ids = input_ids.to(device)
+                attention_mask = attention_mask.to(device)
                 with lock, torch.no_grad():
                     if temperature <= 0:
                         output = model.generate(
-                            input_ids, max_new_tokens=new_tokens, do_sample=False,
+                            input_ids, attention_mask=attention_mask,
+                            max_new_tokens=new_tokens, do_sample=False,
                             pad_token_id=eos_id, eos_token_id=eos_id,
                         )
                     else:
                         output = model.generate(
-                            input_ids, max_new_tokens=new_tokens, do_sample=True,
+                            input_ids, attention_mask=attention_mask,
+                            max_new_tokens=new_tokens, do_sample=True,
                             temperature=temperature, top_p=0.95,
                             pad_token_id=eos_id, eos_token_id=eos_id,
                         )
                 text = tok.decode(output[0, input_ids.shape[1]:], skip_special_tokens=True)
                 body = completion_body(text, int(input_ids.shape[1]), new_tokens, model_name)
-                self._send(200, _with_gears(body, text))
+                self._send(200, _with_gears(body, text, organism=organism))
             except Exception as exc:  # noqa: BLE001 — the worker records a failed request
                 self._send(500, {"error": f"{type(exc).__name__}: {exc}"})
 
     ThreadingHTTPServer.allow_reuse_address = True
-    server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
-    print(f"[chat] listening on 127.0.0.1:{port}", flush=True)
+    server = ThreadingHTTPServer((host, port), Handler)
+    print(f"[chat] listening on {host}:{port}", flush=True)
     server.serve_forever()
     return 0
 
@@ -172,13 +209,14 @@ def main() -> int:
     parser.add_argument("--model", default="")
     parser.add_argument("--model-name", default="aureon-7b-v65k")
     parser.add_argument("--port", type=int, default=8000)
+    parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
     if args.self_test:
         return self_test()
     if not args.model:
         parser.error("--model is required")
-    return serve(args.model, args.port, args.model_name)
+    return serve(args.model, args.port, args.model_name, args.host)
 
 
 if __name__ == "__main__":

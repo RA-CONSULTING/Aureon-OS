@@ -270,7 +270,7 @@ class OrganismComposition:
             self.brain_fabric_report.get("ready") is True
             and self.brain_fabric_report.get("status") == "brain_fabric_ready"
             and self.brain_fabric_report.get("truth_gate_enforced") is True
-            and self.brain_fabric_report.get("provider_mode") == "ollama_cloud_primary"
+            and self.brain_fabric_report.get("provider_mode") == "aureon_own_model"
         )
         calibration_ready = self.calibration_status.get("status") == "complete"
         economic_ready = bool(
@@ -369,7 +369,7 @@ def load_latest_calibration_status(
             if (
                 payload.get("schema")
                 != "aureon.live-druidic-calibration-operation.v1"
-                or payload.get("provider_mode") != "ollama_cloud_primary"
+                or payload.get("provider_mode") != "aureon_own_model"
                 or payload.get("action_eligible") is not False
                 or payload.get("economic_mutation") is not False
                 or payload.get("exchange_call_count") != 0

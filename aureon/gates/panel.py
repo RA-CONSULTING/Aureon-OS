@@ -159,8 +159,8 @@ class PanelReading:
         }
 
 
-def build_vault(bus: Any = None) -> tuple[FieldVault, int]:
-    """Assemble the vault view from the live organism.
+def build_vault(bus: Any = None, *, canonical: Any = None) -> tuple[FieldVault, int]:
+    """Assemble the vault view from one canonical field and the live organism.
 
     Returns the vault and the count of :data:`PANEL_SLICES` that came from a
     real reading, so callers can tell a grounded consensus from one reached on
@@ -194,7 +194,8 @@ def build_vault(bus: Any = None) -> tuple[FieldVault, int]:
     try:
         from aureon.core.hnc_field import blend_field, read_canonical_field
 
-        canonical = read_canonical_field(bus)
+        if canonical is None:
+            canonical = read_canonical_field(bus)
         # getattr, not attribute access: every stand-in for the field in this
         # repo is duck-typed, and a fake without this attribute raised
         # AttributeError inside this guarded block — silently aborting the
@@ -302,14 +303,14 @@ def _read_subfields(bus: Any) -> dict[str, Any] | None:
         return None
 
 
-def auris_panel(bus: Any = None) -> PanelReading:
-    """Convene the nine nodes over the live organism. Never raises."""
+def auris_panel(bus: Any = None, *, canonical: Any = None) -> PanelReading:
+    """Convene the nine nodes over one canonical organism snapshot."""
     try:
         from aureon.vault.auris_metacognition import AurisMetacognition
     except Exception as exc:  # noqa: BLE001
         return PanelReading(available=False, blocker=f"panel unavailable: {type(exc).__name__}")
 
-    vault, grounded = build_vault(bus)
+    vault, grounded = build_vault(bus, canonical=canonical)
     try:
         result = AurisMetacognition().vote(vault)
     except Exception as exc:  # noqa: BLE001

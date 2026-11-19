@@ -138,14 +138,11 @@ class OllamaBridge:
         timeout_s: Optional[float] = None,
         api_key: Optional[str] = None,
     ):
-        ensure_ollama_runtime_config(
-            explicit_config=base_url is not None or api_key is not None,
-        )
         self.base_url = resolve_ollama_native_base_url(base_url)
-        self.api_key = resolve_ollama_api_key(api_key)
-        self._authorization_headers = ollama_authorization_headers(
-            base_url=self.base_url,
-            api_key=api_key,
+        self.api_key = ""
+        self._authorization_headers: Dict[str, str] = {}
+        self._disabled_error = (
+            "aureon_own_model_required: Ollama routes are disabled; use Aureon's own model"
         )
         self.chat_model = chat_model or os.environ.get(
             "AUREON_OLLAMA_MODEL", DEFAULT_CHAT_MODEL
@@ -178,15 +175,8 @@ class OllamaBridge:
     # ─────────────────────────────────────────────────────────────────────
 
     def _get(self, path: str, timeout: Optional[float] = None) -> Any:
-        if not self._requests_available:
-            raise OllamaBridgeError("requests library not available")
-        resp = self._session.get(
-            f"{self.base_url}{path}",
-            headers=self._authorization_headers,
-            timeout=timeout or self.timeout_s,
-        )
-        resp.raise_for_status()
-        return resp.json()
+        del path, timeout
+        raise OllamaBridgeError(self._disabled_error)
 
     def _post(
         self,
@@ -194,16 +184,8 @@ class OllamaBridge:
         body: Dict[str, Any],
         timeout: Optional[float] = None,
     ) -> Any:
-        if not self._requests_available:
-            raise OllamaBridgeError("requests library not available")
-        resp = self._session.post(
-            f"{self.base_url}{path}",
-            json=body,
-            headers=self._authorization_headers,
-            timeout=timeout or self.timeout_s,
-        )
-        resp.raise_for_status()
-        return resp.json()
+        del path, body, timeout
+        raise OllamaBridgeError(self._disabled_error)
 
     def _post_stream(
         self,
@@ -211,23 +193,8 @@ class OllamaBridge:
         body: Dict[str, Any],
         timeout: Optional[float] = None,
     ) -> Generator[Dict[str, Any], None, None]:
-        if not self._requests_available:
-            raise OllamaBridgeError("requests library not available")
-        resp = self._session.post(
-            f"{self.base_url}{path}",
-            json=body,
-            headers=self._authorization_headers,
-            stream=True,
-            timeout=timeout or self.timeout_s,
-        )
-        resp.raise_for_status()
-        for raw in resp.iter_lines():
-            if not raw:
-                continue
-            try:
-                yield json.loads(raw.decode("utf-8", errors="replace"))
-            except json.JSONDecodeError:
-                continue
+        del path, body, timeout
+        raise OllamaBridgeError(self._disabled_error)
 
     # ─────────────────────────────────────────────────────────────────────
     # Health + introspection

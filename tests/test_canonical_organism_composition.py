@@ -207,7 +207,7 @@ def test_complete_composition_reports_ready_but_remains_evidence_only():
             "ready": True,
             "status": "brain_fabric_ready",
             "truth_gate_enforced": True,
-            "provider_mode": "ollama_cloud_primary",
+            "provider_mode": "aureon_own_model",
         },
         calibration_status={"status": "complete", "receipt_id": "calibration:test"},
         economic_readiness=_ready_economic_receipt(),
@@ -221,6 +221,29 @@ def test_complete_composition_reports_ready_but_remains_evidence_only():
     assert status["brain_fabric_ready"] is True
     assert status["governance_ready"] is True
     assert status["queen_mind_ready"] is True
+    assert status["action_eligible"] is False
+    assert status["economic_mutation"] is False
+
+
+def test_legacy_ollama_brain_receipt_cannot_make_composition_ready():
+    composition = bind_canonical_organism_composition(
+        present_subsystems={name: f"test role for {name}" for name in REQUIRED_SUBSYSTEMS},
+        governance=_governance(_acquisition_payload),
+        brain_fabric_report={
+            "ready": True,
+            "status": "brain_fabric_ready",
+            "truth_gate_enforced": True,
+            "provider_mode": "ollama_cloud_primary",
+        },
+        calibration_status={"status": "complete", "receipt_id": "calibration:test"},
+        economic_readiness=_ready_economic_receipt(),
+        queen_mind_report=_seated_queen_mind_report(),
+    )
+
+    status = composition.status()
+
+    assert status["status"] == "hold"
+    assert status["brain_fabric_ready"] is False
     assert status["action_eligible"] is False
     assert status["economic_mutation"] is False
 
@@ -266,6 +289,50 @@ def test_daemon_boot_publishes_honest_composition_hold_without_cold_mesh(
     )
 
 
+def test_daemon_boot_wires_own_model_reasoner_to_shared_bus(monkeypatch, tmp_path):
+    import aureon.core.aureon_connectome as connectome_module
+    import aureon.core.aureon_consciousness_module as consciousness_module
+    import aureon.core.aureon_thought_bus as thought_bus_module
+    from aureon.core import organism_daemon, organism_reasoning
+    from aureon.core.aureon_thought_bus import Thought, ThoughtBus
+
+    class _Reasoner:
+        def __init__(self, *, bus):
+            self.bus = bus
+            self.requests = []
+
+        def handle_request(self, thought):
+            self.requests.append(thought)
+
+    monkeypatch.setenv("AUREON_CONNECTOME_SWEEP", "0")
+    monkeypatch.setenv("AUREON_AURIS_AUTOSTART", "0")
+    monkeypatch.setenv("AUREON_THOUGHT_BUS_PATH", str(tmp_path / "thoughts.jsonl"))
+    monkeypatch.setenv("AUREON_BUS_TRACE_DIR", str(tmp_path / "traces"))
+    bus = ThoughtBus(persist_path=str(tmp_path / "thoughts.jsonl"))
+    monkeypatch.setattr(thought_bus_module, "get_thought_bus", lambda: bus)
+    monkeypatch.setattr(connectome_module, "get_connectome", object)
+    monkeypatch.setattr(
+        consciousness_module,
+        "ConsciousnessModule",
+        lambda bus: SimpleNamespace(bus=bus),
+    )
+    monkeypatch.setattr(organism_reasoning, "AureonOrganismReasoner", _Reasoner)
+
+    organs = organism_daemon.boot()
+    reasoner = organs["organism_reasoner"]
+
+    assert reasoner.bus is bus
+    assert reasoner.requests == []
+    assert "aureon_llm" in organs["organism_composition_status"]["registered_subsystem_ids"]
+    request = Thought(
+        source="test",
+        topic="organism.reasoning.request",
+        payload={"task": "Assess the supplied evidence.", "sources": {}},
+    )
+    bus.publish(request)
+    assert reasoner.requests == [request]
+
+
 def test_daemon_boot_preserves_process_owned_canonical_composition(
     monkeypatch,
     tmp_path,
@@ -286,7 +353,7 @@ def test_daemon_boot_preserves_process_owned_canonical_composition(
                 "ready": True,
                 "status": "brain_fabric_ready",
                 "truth_gate_enforced": True,
-                "provider_mode": "ollama_cloud_primary",
+                "provider_mode": "aureon_own_model",
             },
             calibration_status={"status": "complete"},
             economic_readiness=_ready_economic_receipt(),
@@ -330,7 +397,7 @@ def test_cognition_adopts_global_composition_and_loads_each_provider_moment(monk
             "ready": True,
             "status": "brain_fabric_ready",
             "truth_gate_enforced": True,
-            "provider_mode": "ollama_cloud_primary",
+            "provider_mode": "aureon_own_model",
         },
         calibration_status={"status": "complete"},
     )
@@ -364,7 +431,7 @@ def test_explicit_cognition_inputs_are_not_completed_from_global_root(monkeypatc
             "ready": True,
             "status": "brain_fabric_ready",
             "truth_gate_enforced": True,
-            "provider_mode": "ollama_cloud_primary",
+            "provider_mode": "aureon_own_model",
         },
         calibration_status={"status": "complete"},
     )

@@ -84,8 +84,8 @@ class TokenStream:
         rows = [np.asarray(next(self._gen)) for _ in range(self.batch_size)]
         block = np.stack(rows).astype(np.int64)
         x = torch.from_numpy(block[:, :-1])
-        y = torch.from_numpy(block[:, 1:])
-        return x, y
+        # Transformers shifts causal-LM labels internally, so labels share x's timeline.
+        return x, x
 
 
 def lr_at(step: int, total: int, peak: float, warmup: int, floor_ratio: float) -> float:

@@ -23,7 +23,7 @@ SIF="$BASE/containers/pytorch-25.05-py3.sif"
 VENV="$BASE/venvs/aureon-sft"
 MODEL=${MODEL:-$BASE/runs/aureon-7b-sft/hf}
 DATA="$BASE/training/sft/eval.jsonl"
-OUT="$BASE/runs/eval-sft.json"
+OUT=${OUT:-$BASE/runs/eval-sft.json}
 
 test -f "$SIF"
 test -f "$MODEL/config.json"

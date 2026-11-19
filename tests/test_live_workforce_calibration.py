@@ -392,7 +392,7 @@ def test_composition_status_requires_fresh_receipt_nodes_and_real_quorum(tmp_pat
         "schema": "aureon.live-druidic-calibration-operation.v1",
         "status": "complete",
         "reason": None,
-        "provider_mode": "ollama_cloud_primary",
+        "provider_mode": "aureon_own_model",
         "calibration_receipt": calibration.report,
         "auris_nodes": nodes,
         "node_driver_count": driver_count,
@@ -413,6 +413,17 @@ def test_composition_status_requires_fresh_receipt_nodes_and_real_quorum(tmp_pat
     assert status["status"] == "complete"
     assert status["receipt_id"] == calibration.report["receipt_id"]
 
+    payload["provider_mode"] = "ollama_cloud_primary"
+    complete_path.write_text(_canonical(payload), encoding="utf-8")
+    legacy = load_latest_calibration_status(
+        complete_path=complete_path,
+        hold_path=hold_path,
+        now=NOW,
+    )
+    assert legacy["status"] == "hold"
+    assert legacy["reason"] == "valid_fresh_druidic_calibration_receipt_required"
+
+    payload["provider_mode"] = "aureon_own_model"
     payload["node_driver_count"] = driver_count + 1
     complete_path.write_text(_canonical(payload), encoding="utf-8")
     rejected = load_latest_calibration_status(

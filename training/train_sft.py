@@ -110,19 +110,19 @@ def make_batches(rows: list[dict], batch_size: int, rank: int, world: int,
     for idxs in mine:
         seqs = [rows[i]["prompt"] + rows[i]["target"] for i in idxs]
         n = min(max(len(s) for s in seqs), seq_len)
-        input_ids = torch.ones((len(idxs), n - 1), dtype=torch.int64) * eos_id
-        labels = torch.full((len(idxs), n - 1), -100, dtype=torch.int64)
-        attn = torch.zeros((len(idxs), n - 1), dtype=torch.int64)
+        input_ids = torch.ones((len(idxs), n), dtype=torch.int64) * eos_id
+        labels = torch.full((len(idxs), n), -100, dtype=torch.int64)
+        attn = torch.zeros((len(idxs), n), dtype=torch.int64)
         for r, i in enumerate(idxs):
             s = seqs[r]
             n_prompt = len(rows[i]["prompt"])
-            take = s[:-1]
-            input_ids[r, : len(take)] = torch.tensor(take)
+            input_ids[r, : len(s)] = torch.tensor(s)
             labels[r] = -100
-            # y[j] = s[j + 1]; targets start at s[n_prompt], so label positions
-            # j >= n_prompt - 1 are supervised, everything before stays masked.
-            labels[r, n_prompt - 1 : len(s) - 1] = torch.tensor(s[n_prompt:])
-            attn[r, : len(take)] = 1
+            # Transformers shifts causal-LM labels internally. Labels therefore
+            # share the input timeline, with the prompt masked and the first
+            # response token at index n_prompt.
+            labels[r, n_prompt : len(s)] = torch.tensor(s[n_prompt:])
+            attn[r, : len(s)] = 1
         tensors.append({"input_ids": input_ids, "labels": labels, "attention_mask": attn})
     return tensors, len(tensors), len(batches) // world
 

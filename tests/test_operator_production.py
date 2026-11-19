@@ -85,42 +85,38 @@ def _cfg(**over) -> OperatorConfig:
 
 # ── config / registry ─────────────────────────────────────────────────────────
 
-def test_registry_is_config_driven_and_degrades_offline(monkeypatch):
+def test_registry_reports_only_own_model_offline(monkeypatch):
     for spec in DEFAULT_REGISTRY:
         if spec.key_env:
             monkeypatch.delenv(spec.key_env, raising=False)
     providers = build_registry(force_offline=True)
-    assert list(providers) == ["offline"]
+    assert list(providers) == ["aureon-own"]
+    assert providers["aureon-own"].health_check() is False
 
 
-def test_registry_includes_keyed_flagship_models(monkeypatch):
+def test_registry_ignores_keyed_external_models(monkeypatch):
+    own = FixedAdapter("own", "aureon-7b-v65k")
+    monkeypatch.setattr("aureon.operator.providers._aureon_own_adapter", lambda: own)
     monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
     monkeypatch.setenv("XAI_API_KEY", "xai-test")
+
     providers = build_registry(force_offline=False)
-    assert "openai" in providers and "grok" in providers
+
+    assert providers == {"aureon-own": own}
 
 
-def test_flagship_adapter_key_paths(monkeypatch):
-    """With keys present, each flagship adapter carries the right endpoint + auth."""
+def test_direct_external_adapters_fail_before_transport(monkeypatch):
     from aureon.operator.providers import AureonGeminiAdapter, AureonGrokAdapter, AureonOpenAIAdapter
 
     monkeypatch.setenv("OPENAI_API_KEY", "sk-demo")
     monkeypatch.setenv("XAI_API_KEY", "xai-demo")
     monkeypatch.setenv("GEMINI_API_KEY", "g-demo")
 
-    o = AureonOpenAIAdapter()
-    assert o.base_url == "https://api.openai.com/v1"
-    assert o._headers()["Authorization"] == "Bearer sk-demo"
-    assert o._prefer_native is False                      # uses OpenAI /v1, not Ollama native
-
-    g = AureonGrokAdapter()
-    assert g.base_url == "https://api.x.ai/v1"
-    assert g._headers()["Authorization"] == "Bearer xai-demo"
-    assert g._prefer_native is False
-
-    m = AureonGeminiAdapter()
-    assert "generativelanguage.googleapis.com" in m.base_url
-    assert m.api_key == "g-demo"
+    for adapter in (AureonOpenAIAdapter(), AureonGrokAdapter(), AureonGeminiAdapter()):
+        response = adapter.prompt([{"role": "user", "content": "ping"}])
+        assert response.stop_reason == "error"
+        assert response.raw["error"] == "aureon_own_model_required"
+        assert adapter.health_check() is False
 
 
 # ── caching ─────────────────────────────────────────────────────────────────

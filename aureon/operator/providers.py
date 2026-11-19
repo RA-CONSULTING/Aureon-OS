@@ -29,12 +29,15 @@ from typing import Any, Dict, Generator, List
 from aureon.inhouse_ai.llm_adapter import (
     AureonLocalAdapter,
     AureonStubAdapter,
+    AureonUnavailableAdapter,
     LLMAdapter,
     LLMResponse,
     StreamChunk,
+    _aureon_own_adapter,
+    _aureon_own_route,
+    _is_aureon_own_route,
     _llm_http_disabled,
 )
-from aureon.ollama_config import ensure_ollama_runtime_config
 
 logger = logging.getLogger("aureon.operator.providers")
 
@@ -151,41 +154,11 @@ class AureonGeminiAdapter(LLMAdapter):
         temperature: float = 0.7,
         **kwargs,
     ) -> LLMResponse:
-        if not self._session:
-            return LLMResponse(text="[ERROR] requests library not available", stop_reason="error")
-        if _llm_http_disabled():
-            return LLMResponse(text="[ERROR] LLM HTTP disabled by audit/offline mode", stop_reason="error")
-
-        payload = self._to_gemini_contents(messages, system)
-        payload["generationConfig"] = {
-            "maxOutputTokens": int(max_tokens),
-            "temperature": float(temperature),
-        }
-        url = f"{self.base_url}/models/{self.model}:generateContent?key={self.api_key}"
-        try:
-            timeout = float(os.environ.get("AUREON_LLM_REQUEST_TIMEOUT_S", "30") or "30")
-            resp = self._session.post(url, json=payload, timeout=max(1.0, timeout))
-            resp.raise_for_status()
-            data = resp.json()
-        except Exception as e:  # noqa: BLE001 — normalise any transport failure
-            logger.error("Gemini request failed: %s", e)
-            return LLMResponse(text=f"[ERROR] {e}", stop_reason="error")
-
-        text_parts: List[str] = []
-        for cand in data.get("candidates", []) or []:
-            for part in (cand.get("content", {}) or {}).get("parts", []) or []:
-                if part.get("text"):
-                    text_parts.append(str(part["text"]))
-        usage_meta = data.get("usageMetadata", {}) or {}
         return LLMResponse(
-            text="\n".join(text_parts),
-            stop_reason="end_turn",
-            usage={
-                "input_tokens": int(usage_meta.get("promptTokenCount", 0) or 0),
-                "output_tokens": int(usage_meta.get("candidatesTokenCount", 0) or 0),
-            },
+            text="[ERROR] Aureon's own model is required; the external Gemini route is disabled.",
+            stop_reason="error",
             model=self.model,
-            raw=data,
+            raw={"error": "aureon_own_model_required"},
         )
 
     def stream(
@@ -204,7 +177,7 @@ class AureonGeminiAdapter(LLMAdapter):
         yield StreamChunk(done=True, stop_reason=response.stop_reason)
 
     def health_check(self) -> bool:
-        return bool(self.api_key) and self._session is not None and not _llm_http_disabled()
+        return False
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -219,40 +192,21 @@ _OFFLINE_STUB_ANSWER = (
 
 
 def _build_from_spec(spec) -> LLMAdapter | None:
-    """Resolve one ModelSpec into a live adapter, or None if it can't run."""
+    """Resolve only an own-model spec; external catalog rows stay disabled."""
     kind = spec.kind
+    if kind not in ("local", "aureon", "own", "aureon_own"):
+        return AureonUnavailableAdapter(
+            "Aureon's own model is required; this external provider is disabled.",
+            model="aureon_own_model_required",
+        )
     try:
-        if kind == "openai":
-            return AureonOpenAIAdapter(model=spec.model or None)
-        if kind == "openai_compat":
-            # Any OpenAI-compatible vendor (DeepSeek, Mistral, Groq, OpenRouter,
-            # Perplexity, …). Reuse the OpenAI adapter but bind it to THIS spec's
-            # own key/base-URL env vars, so each provider is independent.
-            api_key = os.environ.get(spec.key_env or "", "")
-            base_url = os.environ.get(spec.base_url_env or "", "") or None
-            adapter = AureonOpenAIAdapter(
-                api_key=api_key, base_url=base_url, model=spec.model or None
-            )
-            return adapter if adapter.health_check() else None
-        if kind == "grok":
-            return AureonGrokAdapter(model=spec.model or None)
-        if kind == "gemini":
-            return AureonGeminiAdapter(model=spec.model or None)
-        if kind == "anthropic":
-            from aureon.inhouse_ai.llm_adapter import AureonAnthropicAdapter
-
-            adapter = AureonAnthropicAdapter(model=spec.model or None)
-            return adapter if adapter.health_check() else None
-        if kind == "local":
-            from aureon.integrations.ollama import OllamaModelSwitchboard
-
-            adapter, _selection = OllamaModelSwitchboard().compatible_adapter_for(
-                "general",
-                preferred=spec.model or "",
-            )
-            return adapter if adapter.health_check() else None
-        if kind == "stub":
-            return AureonStubAdapter(spec.options.get("message", _OFFLINE_STUB_ANSWER), model=spec.model or "stub")
+        own_base, own_model = _aureon_own_route()
+        if spec.model and str(spec.model) != own_model:
+            return None
+        if not _is_aureon_own_route(own_base, own_model):
+            return None
+        adapter = _aureon_own_adapter()
+        return adapter if adapter.health_check() else None
     except Exception as exc:  # noqa: BLE001 — a bad line must never sink the board
         logger.warning("provider %s (%s) failed to initialise: %s", spec.name, kind, exc)
     return None
@@ -264,38 +218,27 @@ def build_registry(
     allow_local: bool = True,
     force_offline: bool | None = None,
 ) -> Dict[str, LLMAdapter]:
-    """
-    Assemble the switchboard from a list of ``ModelSpec`` (config-driven).
-
-    Only rows that are enabled, key-present, and successfully initialised are
-    included — so the registry can list every flagship model you *might* use and
-    the runtime dials only the ones actually configured. With none live (or under
-    the repo's offline/audit guards) it degrades to a local model or a single
-    offline stub, so the operator always has at least one working line.
-    """
-    from aureon.operator.config import default_registry
-
-    if specs is None:
-        if force_offline is not True:
-            ensure_ollama_runtime_config()
-        specs = default_registry()
-    offline = _llm_http_disabled() if force_offline is None else bool(force_offline)
-
-    providers: Dict[str, LLMAdapter] = {}
-    if not offline:
-        for spec in specs:
-            if not spec.enabled or not spec.key_present():
-                continue
-            if spec.kind == "local" and not allow_local:
-                continue
-            adapter = _build_from_spec(spec)
-            if adapter is not None:
-                providers[spec.name] = adapter
-
-    if providers:
-        return providers
-
-    return {"offline": AureonStubAdapter(_OFFLINE_STUB_ANSWER, model="aureon-operator-offline")}
+    """Return only Aureon's own model, or an explicitly unavailable line."""
+    del specs, allow_local
+    if force_offline is True or (force_offline is None and _llm_http_disabled()):
+        return {
+            "aureon-own": AureonUnavailableAdapter(
+                "Aureon's own model is unavailable while LLM HTTP is disabled.",
+                model="aureon-own-offline",
+            )
+        }
+    try:
+        own = _aureon_own_adapter()
+        if own.health_check():
+            return {"aureon-own": own}
+    except Exception as exc:  # noqa: BLE001 — failure must not enable another provider
+        logger.debug("Aureon own-model provider unavailable: %s", exc)
+    return {
+        "aureon-own": AureonUnavailableAdapter(
+            "Aureon's own model is unavailable; external provider fallback is disabled.",
+            model="aureon-own-unavailable",
+        )
+    }
 
 
 def build_provider_set(
@@ -308,25 +251,19 @@ def build_provider_set(
 
 
 def build_adapter(kind: str, *, api_key: str, base_url: Any = None, model: str = "") -> LLMAdapter:
-    """Construct one adapter of ``kind`` from an EXPLICIT key — no ``os.environ`` read or write.
-
-    The single source of truth for the catalog-kind → adapter-class mapping, shared by the live
-    ``/api/providers/<id>/test`` round-trip and the per-tenant provider-set builder below. Because it
-    never touches the process env, it is safe to call per-request with a tenant's own key.
-    """
-    if kind in ("openai", "openai_compat"):
-        return AureonOpenAIAdapter(api_key=api_key, base_url=base_url, model=model)
-    if kind == "grok":
-        return AureonGrokAdapter(api_key=api_key, base_url=base_url, model=model)
-    if kind == "gemini":
-        return AureonGeminiAdapter(api_key=api_key, model=model, base_url=base_url)
-    if kind == "anthropic":
-        from aureon.inhouse_ai.llm_adapter import AureonAnthropicAdapter
-
-        return AureonAnthropicAdapter(api_key=api_key, model=model)
-    from aureon.inhouse_ai.llm_adapter import AureonLocalAdapter  # local / self-hosted (Ollama)
-
-    return AureonLocalAdapter(api_key=api_key, base_url=base_url, model=model)
+    """Construct only the configured Aureon own-model route; reject all others."""
+    del api_key
+    own_base, own_model = _aureon_own_route()
+    candidate_base = str(base_url or own_base)
+    candidate_model = str(model or own_model)
+    if kind in ("local", "aureon", "own", "aureon_own") and _is_aureon_own_route(
+        candidate_base, candidate_model
+    ):
+        return _aureon_own_adapter()
+    return AureonUnavailableAdapter(
+        "Aureon's own model is required; this external or substitute provider is disabled.",
+        model="aureon_own_model_required",
+    )
 
 
 def build_provider_set_from_entries(entries: Dict[str, Dict[str, Any]]) -> Dict[str, LLMAdapter]:

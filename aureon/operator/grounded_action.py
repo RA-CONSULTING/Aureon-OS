@@ -169,27 +169,16 @@ class GroundedActionGate:
             logger.debug("Dr Auris read skipped: %s", exc)
         return out
 
-    # ── optional local-LLM rationale (Ollama-first, offline-safe) ──────
+    # ── optional own-model rationale (offline-safe) ────────────────────
     def _llm_reason(self, action: str, params: Dict[str, Any]) -> str | None:
         if not self._enable_llm:
             return None
         try:
-            from aureon.inhouse_ai.llm_adapter import _llm_http_disabled
+            from aureon.inhouse_ai.llm_adapter import _aureon_own_adapter, _llm_http_disabled
 
             if _llm_http_disabled():
                 return None  # offline — deterministic grounding only
-            from aureon.operator.providers import build_provider_set
-
-            providers = build_provider_set()
-            # Ollama-first: prefer the local line, else the first available.
-            adapter = None
-            for key, val in providers.items():
-                if "local" in key.lower() or "ollama" in key.lower():
-                    adapter = val
-                    break
-            adapter = adapter or next(iter(providers.values()), None)
-            if adapter is None:
-                return None
+            adapter = _aureon_own_adapter()
             q = (
                 "You advise an autonomous system before it touches its own "
                 "computer. In ONE sentence, say whether this local action is "
@@ -197,10 +186,12 @@ class GroundedActionGate:
                 f"{json.dumps(sorted(str(key) for key in params))[:300]}"
             )
             resp = adapter.prompt([{"role": "user", "content": q}], max_tokens=120)
+            if getattr(resp, "stop_reason", "") == "error":
+                return None
             text = getattr(resp, "text", None) or ""
             return text.strip()[:400] or None
         except Exception as exc:  # noqa: BLE001
-            logger.debug("local-LLM reasoning skipped: %s", exc)
+            logger.debug("own-model reasoning skipped: %s", exc)
             return None
 
     def _get_conscience(self) -> Any:

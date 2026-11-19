@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { sampleMetrics } from './metrics.js';
 import { findAndNeutralizeImbalance } from './latticeHarmonizer.js';
-import { generateContent } from './geminiClient.js'; // Import the new Gemini client
+import { generateContent } from './geminiClient.js';
 import { loadForecastSummary } from '../core/forecastAnalyzer.js';
 import anchorsDataset from '../data/nexus_anchors.json' assert { type: 'json' };
 import { extractRequestParameters } from './lib/requestParameters.js';
