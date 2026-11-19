@@ -725,7 +725,10 @@ class UnifiedKillChain:
     
     def _execute_trade(self, opportunity: Dict) -> Dict:
         """Actually execute the trade - BY THE ORCA RULES"""
-        from aureon.exchanges.orca_real_fills import record_confirmed_fill
+        from aureon.exchanges.orca_real_fills import (
+            record_confirmed_fill,
+            record_kraken_acknowledged_fill,
+        )
 
         exchange = opportunity.get('exchange', 'unknown')
         symbol = opportunity.get('symbol', 'UNKNOWN')
@@ -771,7 +774,11 @@ class UnifiedKillChain:
                     # EXECUTE THE TRADE
                     order_sent = True
                     order_result = self.kraken.place_market_order(kraken_pair, 'buy', volume)
-                    record_confirmed_fill('kraken', kraken_pair, 'buy', order_result)
+                    # AddOrder is an ack. The ledger row waits for QueryOrders
+                    # closed with vol_exec > 0. The attempt log below is unchanged.
+                    record_kraken_acknowledged_fill(
+                        self.kraken, kraken_pair, 'buy', order_result
+                    )
                     
                     if order_result and not order_result.get('error'):
                         log_sniper(f"💥 ORDER FILLED! {order_result}")
@@ -856,7 +863,9 @@ class UnifiedKillChain:
                             log_sniper(f"   Step 1: BUY {volume:.6f} {coin} on Kraken")
                             order_sent = True
                             buy_order = self.kraken.place_market_order(kraken_pair, 'buy', volume)
-                            record_confirmed_fill('kraken', kraken_pair, 'buy', buy_order)
+                            record_kraken_acknowledged_fill(
+                                self.kraken, kraken_pair, 'buy', buy_order
+                            )
                             
                             if buy_order and buy_order.get('status') == 'FILLED':
                                 actual_qty = float(buy_order.get('executedQty', volume))

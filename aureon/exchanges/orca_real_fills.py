@@ -9,6 +9,15 @@ PARTIALLY_FILLED, or Kraken's closed (stored as the venue status), with a
 filled quantity greater than zero and a real exchange order id. Requested
 quantity, dry-run, not-submitted, paper, and shadow responses write nothing.
 
+Kraken ``place_market_order`` returns an AddOrder acknowledgement: a txid,
+``executedQty`` null, and status ``pending_reconciliation``. That ack is not a
+fill. ``record_kraken_acknowledged_fill`` reads ``get_order_status`` (QueryOrders)
+with a short bounded retry, and a later call retries any txid still open. A
+row is written only when that read shows status ``closed`` and ``vol_exec``
+passes the same quantity check as every other fill. The filled quantity is
+``vol_exec`` and the order id is the txid. The same txid is not appended twice.
+``SUBMITTED`` and ``NEW`` write nothing.
+
 ``aureon_net_fill_qty`` is signed filled buys minus filled sells for one venue
 and symbol. ``aureon_owned_qty`` is that net clamped at zero, which is what an
 exit cap can sell. A missing, unreadable, corrupt, or partially written ledger
@@ -23,11 +32,13 @@ import json
 import logging
 import math
 import os
+import time
 from contextlib import contextmanager
 from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any, Iterator
+from weakref import WeakKeyDictionary
 
 try:
     import fcntl
@@ -42,6 +53,25 @@ except ImportError:  # pragma: no cover - Windows only
 logger = logging.getLogger("aureon.orca_real_fills")
 
 SOURCE = "orca_kill_chain"
+_KRAKEN_QUERY_ATTEMPTS = 4
+_KRAKEN_QUERY_BACKOFF_S = 0.25
+_KRAKEN_PENDING_LIMIT = 64
+_KRAKEN_PENDING: WeakKeyDictionary = WeakKeyDictionary()
+_KRAKEN_TERMINAL_MISS = frozenset(
+    {"canceled", "cancelled", "expired", "rejected", "failed"}
+)
+_KRAKEN_NO_QUERY = frozenset(
+    {
+        "filled",
+        "partially_filled",
+        "closed",
+        "rejected",
+        "canceled",
+        "cancelled",
+        "expired",
+        "failed",
+    }
+)
 CONFIRMED_FILL_STATUSES = frozenset({"FILLED", "PARTIALLY_FILLED", "CLOSED"})
 _PLACEHOLDER_IDS = frozenset({"", "none", "null", "unknown", "n/a", "na", "0", "-1"})
 _NON_FILL_TRUTH = frozenset(
@@ -358,6 +388,221 @@ def record_confirmed_fill(
         )
         return None
     return record
+
+
+def _kraken_status(payload: dict[str, Any]) -> str:
+    raw = payload.get("status")
+    if raw is None or str(raw).strip() == "":
+        raw = payload.get("provider_status")
+    return str(raw or "").strip().lower().replace(" ", "_").replace("-", "_")
+
+
+def _kraken_provider_status(payload: dict[str, Any]) -> str:
+    return str(payload.get("provider_status") or "").strip().lower().replace(" ", "_").replace("-", "_")
+
+
+def _ack_txid(payload: dict[str, Any]) -> str | None:
+    txid = payload.get("txid")
+    if isinstance(txid, (list, tuple)):
+        if len(txid) != 1:
+            return None
+        txid = txid[0]
+    return _text_id(txid) or _text_id(payload.get("orderId")) or _text_id(
+        payload.get("provider_order_id")
+    )
+
+
+def _closed_query_fill(
+    payload: Any,
+    expected_txid: str | None = None,
+) -> tuple[str, Decimal] | None:
+    """(txid, vol_exec) when this is a closed QueryOrders fill with a usable quantity.
+
+    ``vol_exec`` goes through ``_positive_decimal``. ``1e5000``, NaN, Infinity,
+    zero, and negatives are not fills. ``SUBMITTED`` and ``NEW`` are not closed.
+    """
+    if not isinstance(payload, dict) or payload.get("error"):
+        return None
+    if _not_a_live_fill(payload):
+        return None
+    body = payload
+    queried = _text_id(expected_txid)
+    if "status" not in payload and "provider_status" not in payload and len(payload) == 1:
+        key, value = next(iter(payload.items()))
+        if isinstance(value, dict):
+            body = value
+            queried = queried or _text_id(key)
+    status = _kraken_status(body)
+    provider = _kraken_provider_status(body)
+    closed = status == "closed" or provider == "closed"
+    if status in _KRAKEN_TERMINAL_MISS | {"submitted", "new", "pending", "open", "pending_reconciliation"}:
+        closed = False
+    if provider in _KRAKEN_TERMINAL_MISS:
+        closed = False
+    if not closed:
+        return None
+    filled = _positive_decimal(body.get("vol_exec"))
+    if filled is None:
+        return None
+    body_txid = _text_id(body.get("txid")) or _text_id(body.get("orderId"))
+    if body_txid and queried and body_txid != queried:
+        return None
+    txid = body_txid or queried
+    if txid is None:
+        return None
+    return txid, filled
+
+
+def _needs_kraken_query(payload: dict[str, Any]) -> bool:
+    if _kraken_status(payload) in _KRAKEN_NO_QUERY:
+        return False
+    if _kraken_provider_status(payload) == "closed":
+        return False
+    return _ack_txid(payload) is not None
+
+
+def _kraken_pending(client: Any) -> list[dict[str, str]]:
+    try:
+        found = _KRAKEN_PENDING.get(client)
+    except TypeError:
+        return []
+    if found is None:
+        found = []
+        try:
+            _KRAKEN_PENDING[client] = found
+        except TypeError:
+            return []
+    return found
+
+
+def _remember_kraken_txid(client: Any, txid: str, symbol: str, side: str) -> None:
+    pending = _kraken_pending(client)
+    if any(item["txid"] == txid for item in pending):
+        return
+    pending.append({"txid": txid, "symbol": symbol, "side": side})
+    if len(pending) > _KRAKEN_PENDING_LIMIT:
+        del pending[0]
+
+
+def _write_closed_kraken_fill(
+    symbol: str,
+    side: str,
+    observed: tuple[str, Decimal],
+    source: dict[str, Any],
+    *,
+    ledger_path: Path | None,
+) -> dict[str, Any] | None:
+    """Append one closed fill. ``observed`` is a txid and a quantity ``_positive_decimal`` accepted."""
+    txid, qty = observed
+    qty_text = format(qty, "f")
+    payload: dict[str, Any] = {
+        "status": "closed",
+        "vol_exec": qty_text,
+        "executedQty": qty_text,
+        "filled_qty": qty_text,
+        "orderId": txid,
+        "txid": txid,
+        "side": side,
+    }
+    price = _positive_decimal(source.get("avgPrice"))
+    if price is None:
+        price = _positive_decimal(source.get("price"))
+    if price is not None:
+        payload["avgPrice"] = format(price, "f")
+    return record_confirmed_fill("kraken", symbol, side, payload, ledger_path=ledger_path)
+
+
+def _query_until_closed(
+    client: Any,
+    txid: str,
+    attempts: int,
+) -> tuple[tuple[str, Decimal] | None, str, dict[str, Any]]:
+    """Return (fill, outcome, source). Outcome is closed, terminal, pending, or no_getter."""
+    getter = getattr(client, "get_order_status", None)
+    if not callable(getter):
+        return None, "no_getter", {}
+    for attempt in range(attempts):
+        if attempt:
+            time.sleep(_KRAKEN_QUERY_BACKOFF_S * attempt)
+        try:
+            queried = getter(txid)
+        except Exception as exc:
+            logger.error(
+                "kraken QueryOrders failed txid=%s: %s: %s",
+                txid,
+                type(exc).__name__,
+                exc,
+            )
+            continue
+        source = queried if isinstance(queried, dict) else {}
+        observed = _closed_query_fill(queried, expected_txid=txid)
+        if observed is not None:
+            return observed, "closed", source
+        if isinstance(queried, dict):
+            status = _kraken_status(queried)
+            provider = _kraken_provider_status(queried)
+            if status in _KRAKEN_TERMINAL_MISS or provider in _KRAKEN_TERMINAL_MISS:
+                return None, "terminal", source
+            if status == "closed" or provider == "closed":
+                return None, "terminal", source
+    return None, "pending", {}
+
+
+def _drain_kraken_pending(client: Any, ledger_path: Path | None) -> None:
+    pending = _kraken_pending(client)
+    if not pending:
+        return
+    queued = pending[:]
+    pending.clear()
+    for item in queued:
+        observed, outcome, source = _query_until_closed(
+            client, item["txid"], _KRAKEN_QUERY_ATTEMPTS
+        )
+        if observed is not None:
+            _write_closed_kraken_fill(
+                item["symbol"],
+                item["side"],
+                observed,
+                source,
+                ledger_path=ledger_path,
+            )
+        elif outcome == "pending":
+            pending.append(item)
+
+
+def record_kraken_acknowledged_fill(
+    client: Any,
+    symbol: str,
+    side: str,
+    response: Any,
+    *,
+    ledger_path: Path | None = None,
+) -> dict[str, Any] | None:
+    """Record a Kraken fill from QueryOrders, not from the AddOrder acknowledgement.
+
+    A closed read with ``vol_exec`` greater than zero is written once, keyed by
+    txid. Anything still open is kept and tried again on the next call. A
+    write failure follows ``record_confirmed_fill`` and is not raised.
+    """
+    _drain_kraken_pending(client, ledger_path)
+    if not isinstance(response, dict) or response.get("error") or _not_a_live_fill(response):
+        return None
+    observed = _closed_query_fill(response)
+    if observed is not None:
+        return _write_closed_kraken_fill(symbol, side, observed, response, ledger_path=ledger_path)
+    if not _needs_kraken_query(response):
+        return record_confirmed_fill("kraken", symbol, side, response, ledger_path=ledger_path)
+    txid = _ack_txid(response)
+    if txid is None:
+        return None
+    observed, outcome, source = _query_until_closed(client, txid, _KRAKEN_QUERY_ATTEMPTS)
+    if observed is not None:
+        return _write_closed_kraken_fill(
+            symbol, side, observed, source, ledger_path=ledger_path
+        )
+    if outcome == "pending":
+        _remember_kraken_txid(client, txid, symbol, side)
+    return None
 
 
 def _append(path: Path, record: dict[str, Any]) -> None:

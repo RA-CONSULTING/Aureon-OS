@@ -1754,6 +1754,19 @@ class KrakenClient:
 
         provider_timestamp = _fresh_provider_timestamp(order.get("closetm"), now=now)
         filled_quantity = _finite_decimal(order.get("vol_exec"), nonnegative=True)
+        # QueryOrders vol_exec stays on a closed order even when the rest of
+        # the receipt is not an accounting fill. The Orca ledger decides
+        # whether that quantity is recordable. Open and pending orders do not
+        # reach this line, so a partial still in the book is not copied out.
+        if (
+            provider_status == "closed"
+            and filled_quantity is not None
+            and filled_quantity > 0
+        ):
+            raw_vol = order.get("vol_exec")
+            receipt["vol_exec"] = (
+                raw_vol if isinstance(raw_vol, str) else format(filled_quantity, "f")
+            )
         if provider_timestamp is None:
             receipt.update({
                 "status": "no_data",

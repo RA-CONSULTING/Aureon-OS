@@ -20,6 +20,7 @@ from aureon_radar.bots import orca_unified_kill_chain as kc
 
 FILLED_QTY = "0.02"
 ORDER_ID = "884221"
+KRAKEN_TXID = "OQCLML-BW3P3-BUCMWZ"
 
 
 @pytest.fixture(autouse=True)
@@ -27,6 +28,7 @@ def isolated(monkeypatch, tmp_path):
     ledger = tmp_path / "state" / "aureon_real_fills.jsonl"
     monkeypatch.setattr(fills, "LEDGER_PATH", ledger)
     monkeypatch.setattr(kc.time, "sleep", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(fills.time, "sleep", lambda *_args, **_kwargs: None)
     monkeypatch.chdir(tmp_path)
     return ledger
 
@@ -58,10 +60,13 @@ class _Binance:
 class _Kraken:
     last_balance_source = "live"
 
-    def __init__(self, response=None, dry_run=False):
+    def __init__(self, response=None, dry_run=False, queries=None, repeat=None):
         self.response = response
         self.dry_run = dry_run
         self.orders = []
+        self.queries = list(queries or [])
+        self.repeat = repeat
+        self.queried = []
 
     def get_account_balance(self):
         return {"ZUSD": 100.0}
@@ -72,6 +77,15 @@ class _Kraken:
     def place_market_order(self, symbol, side, qty):
         self.orders.append((symbol, side, Decimal(str(qty))))
         return self.response
+
+    def get_order_status(self, order_id):
+        self.queried.append(order_id)
+        if self.queries:
+            nxt = self.queries.pop(0)
+            return nxt(order_id) if callable(nxt) else nxt
+        if self.repeat is not None:
+            return self.repeat
+        return {"status": "open", "vol_exec": "0", "txid": order_id}
 
 
 def _response(**overrides):
@@ -84,6 +98,48 @@ def _response(**overrides):
         "avgPrice": "100",
         "clientOrderId": "ck-884221",
         "side": "BUY",
+    }
+    payload.update(overrides)
+    return payload
+
+
+def _add_order_ack(txid=KRAKEN_TXID, **overrides):
+    """Kraken place_market_order: AddOrder ack, not a fill."""
+    payload = {
+        "provider": "kraken",
+        "venue": "kraken",
+        "orderId": txid,
+        "txid": [txid],
+        "symbol": "ETHUSD",
+        "side": "BUY",
+        "requestedQty": "0.8",
+        "origQty": "0.8",
+        "executedQty": None,
+        "filled_qty": None,
+        "status": "pending_reconciliation",
+        "data_status": "pending_reconciliation",
+        "truth_status": "real_observed",
+        "submitted": True,
+        "dryRun": False,
+        "reconciliation_required": True,
+        "provider_receipt_type": "AddOrder",
+        "reason": "terminal_provider_fill_receipt_required",
+    }
+    payload.update(overrides)
+    return payload
+
+
+def _query_closed(txid=KRAKEN_TXID, vol_exec=FILLED_QTY, **overrides):
+    """Inner QueryOrders order: status closed, vol_exec is the fill."""
+    payload = {
+        "status": "closed",
+        "vol": "0.8",
+        "vol_exec": vol_exec,
+        "cost": "2.0",
+        "fee": "0.0052",
+        "price": "100",
+        "txid": txid,
+        "descr": {"pair": "ETHUSD", "type": "buy", "ordertype": "market"},
     }
     payload.update(overrides)
     return payload
@@ -259,10 +315,15 @@ def test_other_statuses_contribute_zero_even_with_a_quantity(isolated):
 
 
 def test_completed_arbitrage_records_each_leg_on_its_venue(isolated):
-    buy = _response(orderId="K-884221", side="BUY", executedQty=FILLED_QTY, clientOrderId="ck-kraken-884221")
-    sell = _response(orderId="B-884221", side="SELL", executedQty=FILLED_QTY, clientOrderId="ck-binance-884221")
-    kraken = _Kraken(buy)
-    binance = _Binance(sell)
+    """Kraken answers with an AddOrder ack, then QueryOrders closed.
+
+    The sell still waits on the ack's own status being FILLED, so this buy
+    does not send the Binance sell. The ledger still takes vol_exec.
+    """
+    buy = _add_order_ack()
+    closed = _query_closed()
+    kraken = _Kraken(buy, queries=[closed])
+    binance = _Binance(_response(orderId="B-884221", side="SELL", executedQty=FILLED_QTY))
     chain = _chain()
     chain.kraken = kraken
     chain.binance = binance
@@ -275,27 +336,121 @@ def test_completed_arbitrage_records_each_leg_on_its_venue(isolated):
         "binance_price": 100,
     })
 
-    assert result["status"] == "ARBITRAGE_EXECUTED"
+    assert result["status"] == "BUY_FAILED"
     assert kraken.orders == [("ETHUSD", "buy", Decimal("0.8"))]
-    assert binance.orders == [("ETHUSDT", "SELL", Decimal(FILLED_QTY))]
+    assert kraken.queried == [KRAKEN_TXID]
+    assert binance.orders == []
     rows = _rows(isolated)
-    assert [(row["venue"], row["symbol"], row["side"], row["filled_qty"]) for row in rows] == [
-        ("kraken", "ETHUSD", "BUY", FILLED_QTY),
-        ("binance", "ETHUSDT", "SELL", FILLED_QTY),
-    ]
+    assert len(rows) == 1
+    assert rows[0]["venue"] == "kraken"
+    assert rows[0]["symbol"] == "ETHUSD"
+    assert rows[0]["side"] == "BUY"
+    assert rows[0]["status"] == "CLOSED"
+    assert rows[0]["filled_qty"] == FILLED_QTY
+    assert rows[0]["executedQty"] == FILLED_QTY
+    assert rows[0]["exchange_order_id"] == KRAKEN_TXID
     assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(FILLED_QTY)
     assert fills.aureon_net_fill_qty("kraken", "ETHUSD") == Decimal(FILLED_QTY)
-    # The Binance leg is a sell with no Binance buy. Owned qty clamps at zero;
-    # the signed net keeps the sell.
     assert fills.aureon_owned_qty("binance", "ETHUSDT") == Decimal(0)
-    assert fills.aureon_net_fill_qty("binance", "ETHUSDT") == -Decimal(FILLED_QTY)
-    assert (
-        fills.aureon_net_fill_qty("kraken", "ETHUSD")
-        + fills.aureon_net_fill_qty("binance", "ETHUSDT")
-        == Decimal(0)
+
+
+def test_kraken_buy_records_queryorders_vol_exec_and_not_the_ack(isolated):
+    ack = _add_order_ack()
+    kraken = _Kraken(ack, queries=[_query_closed(), _query_closed()])
+    chain = _chain()
+    chain.kraken = kraken
+    result = chain._execute_trade({"exchange": "kraken", "symbol": "ETHUSD", "price": 100})
+
+    # The attempt log still treats a body with no error key as FILLED.
+    assert result["status"] == "FILLED"
+    assert kraken.orders[0] == ("ETHUSD", "buy", Decimal("0.1"))
+    assert kraken.queried == [KRAKEN_TXID]
+    rows = _rows(isolated)
+    assert len(rows) == 1
+    assert rows[0]["filled_qty"] == FILLED_QTY
+    assert rows[0]["exchange_order_id"] == KRAKEN_TXID
+    assert rows[0]["status"] == "CLOSED"
+    assert Decimal(rows[0]["filled_qty"]) != kraken.orders[0][2]
+    assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(FILLED_QTY)
+
+    chain._execute_trade({"exchange": "kraken", "symbol": "ETHUSD", "price": 100})
+    assert len(_rows(isolated)) == 1
+    assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(FILLED_QTY)
+
+
+def test_normalized_kraken_receipt_records_vol_exec(isolated):
+    """get_order_status keeps provider status closed and copies vol_exec."""
+    ack = _add_order_ack()
+    normalized = {
+        "status": "no_data",
+        "provider_status": "closed",
+        "vol_exec": FILLED_QTY,
+        "executedQty": None,
+        "orderId": KRAKEN_TXID,
+        "reason": "missing_or_stale_provider_close_timestamp",
+    }
+    kraken = _Kraken(ack, repeat=normalized)
+    chain = _chain()
+    chain.kraken = kraken
+    chain._execute_trade({"exchange": "kraken", "symbol": "ETHUSD", "price": 100})
+
+    rows = _rows(isolated)
+    assert len(rows) == 1
+    assert rows[0]["filled_qty"] == FILLED_QTY
+    assert rows[0]["exchange_order_id"] == KRAKEN_TXID
+    assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(FILLED_QTY)
+
+
+@pytest.mark.parametrize("status", ["SUBMITTED", "NEW", "submitted", "new"])
+def test_kraken_submitted_or_new_writes_nothing(isolated, status):
+    ack = _add_order_ack()
+    kraken = _Kraken(
+        ack,
+        repeat={
+            "status": status,
+            "vol_exec": FILLED_QTY,
+            "executedQty": FILLED_QTY,
+            "txid": KRAKEN_TXID,
+            "orderId": KRAKEN_TXID,
+        },
     )
-    assert fills.aureon_owned_qty("kraken", "ETHUSDT") == Decimal(0)
-    assert fills.aureon_owned_qty("binance", "ETHUSD") == Decimal(0)
+    chain = _chain()
+    chain.kraken = kraken
+    result = chain._execute_trade({"exchange": "kraken", "symbol": "ETHUSD", "price": 100})
+
+    assert result["status"] == "FILLED"
+    assert kraken.queried == [KRAKEN_TXID] * fills._KRAKEN_QUERY_ATTEMPTS
+    assert not isolated.exists()
+    assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(0)
+
+
+@pytest.mark.parametrize("vol_exec", ["1e5000", "NaN", "-0.02", "0", "Infinity"])
+def test_kraken_bad_vol_exec_writes_nothing(isolated, vol_exec):
+    ack = _add_order_ack()
+    kraken = _Kraken(ack, repeat=_query_closed(vol_exec=vol_exec))
+    chain = _chain()
+    chain.kraken = kraken
+    chain._execute_trade({"exchange": "kraken", "symbol": "ETHUSD", "price": 100})
+
+    assert kraken.queried == [KRAKEN_TXID]
+    assert not isolated.exists()
+    assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(0)
+    assert fills.aureon_net_fill_qty("kraken", "ETHUSD") == Decimal(0)
+
+
+def test_open_kraken_order_is_recorded_when_a_later_query_closes(isolated):
+    ack = _add_order_ack()
+    opens = [{"status": "open", "vol_exec": "0", "txid": KRAKEN_TXID}] * fills._KRAKEN_QUERY_ATTEMPTS
+    kraken = _Kraken(ack, queries=[*opens, _query_closed()])
+    assert fills.record_kraken_acknowledged_fill(kraken, "ETHUSD", "buy", ack) is None
+    assert not isolated.exists()
+
+    fills.record_kraken_acknowledged_fill(kraken, "ETHUSD", "buy", ack)
+    rows = _rows(isolated)
+    assert len(rows) == 1
+    assert rows[0]["filled_qty"] == FILLED_QTY
+    assert rows[0]["exchange_order_id"] == KRAKEN_TXID
+    assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(FILLED_QTY)
 
 
 def test_missing_ledger_is_zero_and_does_not_create_a_file(isolated):
