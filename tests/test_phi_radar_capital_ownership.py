@@ -8,6 +8,8 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -218,6 +220,28 @@ def _setup_radar(phi, tl, cap):
     radar = _minimal_radar(phi)
     radar.capital_dual = cap
     return radar, tl.TradeLedger(cap)
+
+
+@pytest.mark.parametrize(
+    "value, expected",
+    [
+        ("yes", False),
+        (1, False),
+        ("true", False),
+        (1.0, False),
+        ([1], False),
+        (True, True),
+    ],
+)
+def test_ledger_only_strict_true_is_recorded_as_reconciled(monkeypatch, tmp_path, value, expected):
+    """Pin TradeLedger.capital_confirmed: only reconciled is True marks the row."""
+    _phi, tl, path = _ledger_setup(monkeypatch, tmp_path)
+    deal_id = "LEDGER-RECONCILED-PIN"
+    ledger = tl.TradeLedger(_FakeCapital([_cap_pos(deal_id)]))
+    ledger.capital_confirmed("AUD-T-RECONCILED", deal_id, {"reconciled": value})
+    rows = _confirmed_rows(path, deal_id)
+    assert len(rows) == 1
+    assert rows[0]["reconciled"] is expected
 
 
 def test_reconcile_does_not_adopt_manual_deal_open_before_order(monkeypatch, tmp_path):
