@@ -19,9 +19,12 @@ Size cap (opt-in, off unless set):
     AUREON_UNIFIED_BUS_MAX_BYTES — a positive integer. When the unified log is
     already at or over that size, the next append moves it to a new timestamped
     name and starts a fresh ``unified_bus.jsonl``. Every moved file is kept.
-    Unset, empty, 0, negative, or not an integer: append with no cap, as before.
-    There is no backup count and no delete. ``AUREON_UNIFIED_BUS_BACKUPS`` is
-    not read.
+    Linux uses ``renameat2(RENAME_NOREPLACE)``, macOS uses
+    ``renamex_np(RENAME_EXCL)``, and any other POSIX system hard-links the
+    file to the new name before dropping the old one. None of those replace
+    an existing file. Unset, empty, 0, negative, or not an integer: append
+    with no cap, as before. There is no backup count and no delete.
+    ``AUREON_UNIFIED_BUS_BACKUPS`` is not read.
 """
 
 from __future__ import annotations
@@ -234,23 +237,26 @@ def _unified_bus_lock(path: Path):
 
 _AT_FDCWD = -100
 _RENAME_NOREPLACE = 1
+# Apple renamex_np: fail if the destination already exists. Same promise as
+# Linux RENAME_NOREPLACE. macOS has no renameat2.
+_RENAME_EXCL = 0x00000004
 _rotate_nonce = 0
 
 
-def _rename_noreplace(src: Path, dst: Path) -> None:
-    """Move src onto a name that must not already exist.
+def _raise_rename_error(err: int, src: Path, dst: Path) -> None:
+    if err == errno.EEXIST:
+        raise FileExistsError(err, os.strerror(err), os.fspath(dst))
+    if err == errno.ENOENT:
+        raise FileNotFoundError(err, os.strerror(err), os.fspath(src))
+    raise OSError(err, os.strerror(err), os.fspath(src))
 
-    ``os.replace`` / ``os.rename`` on Linux unlink the destination. That would
-    drop an older log. ``renameat2(RENAME_NOREPLACE)`` refuses instead.
-    Windows ``os.rename`` already fails when the destination exists.
-    """
-    if sys.platform == "win32":
-        os.rename(os.fspath(src), os.fspath(dst))
-        return
+
+def _rename_noreplace_linux(src: Path, dst: Path) -> None:
+    """Atomic no-replace rename. ENOSYS when this libc has no renameat2."""
     libc = ctypes.CDLL(None, use_errno=True)
     renameat2 = getattr(libc, "renameat2", None)
     if renameat2 is None:
-        raise OSError(errno.ENOSYS, "renameat2 is required to rotate without replacing")
+        raise OSError(errno.ENOSYS, "renameat2 unavailable")
     renameat2.argtypes = [
         ctypes.c_int,
         ctypes.c_char_p,
@@ -268,12 +274,66 @@ def _rename_noreplace(src: Path, dst: Path) -> None:
     )
     if rc == 0:
         return
-    err = ctypes.get_errno()
-    if err == errno.EEXIST:
-        raise FileExistsError(err, os.strerror(err), os.fspath(dst))
-    if err == errno.ENOENT:
-        raise FileNotFoundError(err, os.strerror(err), os.fspath(src))
-    raise OSError(err, os.strerror(err), os.fspath(src))
+    _raise_rename_error(ctypes.get_errno(), src, dst)
+
+
+def _rename_noreplace_darwin(src: Path, dst: Path) -> None:
+    """Atomic no-replace rename on macOS. ENOSYS when renamex_np is absent."""
+    libc = ctypes.CDLL(None, use_errno=True)
+    renamex_np = getattr(libc, "renamex_np", None)
+    if renamex_np is None:
+        raise OSError(errno.ENOSYS, "renamex_np unavailable")
+    renamex_np.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_uint]
+    renamex_np.restype = ctypes.c_int
+    rc = renamex_np(os.fsencode(src), os.fsencode(dst), _RENAME_EXCL)
+    if rc == 0:
+        return
+    _raise_rename_error(ctypes.get_errno(), src, dst)
+
+
+def _rename_noreplace_link(src: Path, dst: Path) -> None:
+    """Move by a new hard link, then drop the old name.
+
+    ``os.link`` fails when dst exists, so an older log is never replaced.
+    The old name is removed only after the new name is in place. If that
+    removal fails, the new name is removed and src is left unchanged.
+    """
+    try:
+        os.link(os.fspath(src), os.fspath(dst))
+    except FileExistsError:
+        raise
+    except OSError as exc:
+        if exc.errno == errno.EEXIST:
+            raise FileExistsError(exc.errno, exc.strerror, os.fspath(dst)) from exc
+        raise
+    try:
+        os.unlink(os.fspath(src))
+    except OSError:
+        try:
+            os.unlink(os.fspath(dst))
+        except OSError:
+            pass
+        raise
+
+
+def _rename_noreplace(src: Path, dst: Path) -> None:
+    """Move src onto a name that must not already exist.
+
+    ``os.replace`` / ``os.rename`` on POSIX unlink the destination. That would
+    drop an older log. Windows ``os.rename`` already fails when the
+    destination exists. Everywhere else, a missing atomic primitive falls
+    through to :func:`_rename_noreplace_link` instead of skipping the cap.
+    """
+    if sys.platform == "win32":
+        os.rename(os.fspath(src), os.fspath(dst))
+        return
+    native = _rename_noreplace_darwin if sys.platform == "darwin" else _rename_noreplace_linux
+    try:
+        native(src, dst)
+    except OSError as exc:
+        if exc.errno != errno.ENOSYS:
+            raise
+        _rename_noreplace_link(src, dst)
 
 
 def _archive_path(path: Path) -> Path:

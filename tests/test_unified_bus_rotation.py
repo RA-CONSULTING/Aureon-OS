@@ -282,6 +282,79 @@ def test_tail_reader_finds_current_file(tmp_path, monkeypatch):
     assert moved[0].stat().st_size > 0
 
 
+def test_missing_renameat2_still_rotates_without_replacing(tmp_path, monkeypatch):
+    """macOS and other POSIX hosts have no renameat2. The cap still applies."""
+    import errno
+
+    import aureon_fusion.bus_bridge as bridge
+
+    def _missing(src, dst):
+        raise OSError(errno.ENOSYS, "renameat2 unavailable")
+
+    monkeypatch.setattr(bridge, "_rename_noreplace_linux", _missing)
+    monkeypatch.setattr(bridge, "_rename_noreplace_darwin", _missing)
+    used = {"link": 0}
+    real_link = bridge._rename_noreplace_link
+
+    def _count_link(src, dst):
+        used["link"] += 1
+        real_link(src, dst)
+
+    monkeypatch.setattr(bridge, "_rename_noreplace_link", _count_link)
+
+    src = tmp_path / "src.jsonl"
+    taken = tmp_path / "taken.jsonl"
+    src.write_bytes(b"live-bytes\n")
+    taken.write_bytes(b"already-there\n")
+    try:
+        bridge._rename_noreplace(src, taken)
+    except FileExistsError:
+        pass
+    else:
+        raise AssertionError("an existing file was replaced")
+    assert src.read_bytes() == b"live-bytes\n"
+    assert taken.read_bytes() == b"already-there\n"
+    used["link"] = 0
+
+    planted = tmp_path / "unified_bus.jsonl.1"
+    planted.write_bytes(b'{"i":"kept"}\n')
+    path = tmp_path / _BUS_NAME
+    monkeypatch.setenv("AUREON_UNIFIED_BUS_MAX_BYTES", "80")
+    for i in range(6):
+        _append(path, {"i": i, "pad": "m" * 40})
+    fresh = [item for item in _archives(tmp_path) if item.name != planted.name]
+    assert fresh
+    assert used["link"] >= 1
+    assert planted.read_bytes() == b'{"i":"kept"}\n'
+    assert sorted(_int_ids(tmp_path)) == list(range(6))
+    assert path.is_file()
+    assert max(_int_ids(tmp_path)) in [row["i"] for row in _records(path)]
+
+
+def test_link_rename_rolls_back_if_the_old_name_cannot_be_dropped(tmp_path, monkeypatch):
+    import aureon_fusion.bus_bridge as bridge
+
+    src = tmp_path / "src.jsonl"
+    dst = tmp_path / "dst.jsonl"
+    src.write_bytes(b"same-bytes\n")
+    real_unlink = os.unlink
+
+    def _unlink(path, *args, **kwargs):
+        if os.fspath(path) == os.fspath(src):
+            raise PermissionError("busy")
+        return real_unlink(path, *args, **kwargs)
+
+    monkeypatch.setattr(os, "unlink", _unlink)
+    try:
+        bridge._rename_noreplace_link(src, dst)
+    except PermissionError:
+        pass
+    else:
+        raise AssertionError("the source name was dropped")
+    assert src.read_bytes() == b"same-bytes\n"
+    assert not dst.exists()
+
+
 _WRITER = r"""
 import os
 import sys
