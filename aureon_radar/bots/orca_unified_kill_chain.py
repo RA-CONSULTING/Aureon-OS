@@ -484,7 +484,11 @@ class UnifiedKillChain:
             except Exception as e:
                 log_system(f"Capital Scan Error: {e}")
 
-        # 2. Crypto (Spot - requires Cost Basis calculation)
+        # 2. Crypto (Spot - requires Aureon-owned qty AND a cost basis).
+        # A balance, a cost_basis_history.json row or a paper/shadow book alone is
+        # not Aureon's (owner rule 9 Nov 2026); qty is capped at Aureon's owned
+        # qty (confirmed real fills), see aureon.exchanges.orca_spot_ownership.
+        from aureon.exchanges.orca_spot_ownership import capped_qty as _capped_qty
         # Check Binance
         if self.binance:
             log_queen("Scanning Binance liquidity pools...")
@@ -497,6 +501,9 @@ class UnifiedKillChain:
                     locked = float(b['locked'])
                     total = free + locked
                     if total > 0 and asset not in ['USDT', 'USDC', 'USD', 'EUR', 'GBP']:
+                        total = _capped_qty('binance', asset, total)
+                        if total <= 0:
+                            continue  # not Aureon-owned: Gary's own holding, skip
                         # Found non-stable asset. Check cost basis.
                         basis_key = f"{asset}USDT" # Assumption for lookup
                         basis = self.cost_basis.get(basis_key, {})
@@ -529,6 +536,9 @@ class UnifiedKillChain:
                 balances = self.kraken.get_account_balance()
                 for asset, total in balances.items():
                     if total > 0 and asset not in ['USDT', 'USDC', 'USD', 'EUR', 'GBP', 'ZUSD', 'ZEUR']:
+                        total = _capped_qty('kraken', asset, total)
+                        if total <= 0:
+                            continue  # not Aureon-owned: Gary's own holding, skip
                          # Look for cost basis
                         basis_key = f"{asset}USD" # Standard Kraken
                         basis = self.cost_basis.get(basis_key, {})
@@ -645,22 +655,38 @@ class UnifiedKillChain:
                     self._governance_hold(target, reason or 'close_not_submitted')
         
         elif exchange in ['binance', 'kraken']:
-            # Spot Kill (Sell)
-            confirm = queen_answer(f"\n🔴 [{exchange.upper()}] SELL {target['qty']} {symbol}? [y/N]: ", target['pnl'] > 0)
+            from aureon.exchanges.orca_spot_ownership import capped_qty as _capped_qty
+            asset_key = target.get('id') or symbol
+            sell_qty = _capped_qty(exchange, asset_key, target['qty'])
+            if sell_qty <= 0:
+                log_system(f"{exchange}: refusing to sell {symbol}: not Aureon-owned")
+                return
+            # Spot Kill (Sell) - never more than Aureon's owned qty.
+            confirm = queen_answer(f"\n🔴 [{exchange.upper()}] SELL {sell_qty} {symbol}? [y/N]: ", target['pnl'] > 0)
             if confirm.lower() == 'y':
                 log_sniper("Firing...")
                 # Assuming execute_trade signature: symbol, side, qty
                 # Kraken/Binance clients both try to follow this standard
+                exit_status = 'error'
                 try:
-                    res = client.place_market_order(symbol, 'SELL', target['qty'])
+                    res = client.place_market_order(symbol, 'SELL', sell_qty)
                     if res and (res.get('status') == 'FILLED' or res.get('orderId')):
+                        exit_status = 'filled'
                         log_sniper(f"💥 Sold. Cash secured. OrderID: {res.get('orderId')}")
                     else:
+                        exit_status = 'failed'
                         log_sniper(f"❌ Sell Failed: {res}")
                 except EconomicGovernanceBlocked as e:
+                    exit_status = 'refused'  # boundary refused before the venue
                     self._governance_hold(target, e)
                 except Exception as e:
                     log_sniper(f"❌ Execution Exception: {e}")
+                finally:
+                    try:
+                        from aureon.exchanges.orca_spot_ownership import record_spot_exit
+                        record_spot_exit(exchange, symbol, sell_qty, exit_status)
+                    except Exception as e:
+                        log_system(f"⚠️ could not record {exchange} exit of {sell_qty} {symbol}: {e}")
 
     def redeploy_energy(self):
         """Simulate identifying a buying opportunity."""
@@ -862,12 +888,19 @@ class UnifiedKillChain:
                                 actual_qty = float(buy_order.get('executedQty', volume))
                                 log_sniper(f"   ✅ Bought {actual_qty} {coin}")
                                 
-                                # Now sell on Binance
+                                # Now sell on Binance - only coins Aureon owns THERE. The
+                                # Kraken buy does not make Binance coins Aureon's; never
+                                # sell more than Aureon's owned Binance qty (owner rule 9 Nov).
+                                from aureon.exchanges.orca_spot_ownership import capped_qty as _capped_qty
                                 binance_symbol = f"{coin}USDT"
-                                log_sniper(f"   Step 2: SELL {actual_qty} {coin} on Binance")
-                                
-                                sell_order = self.binance.place_market_order(binance_symbol, 'SELL', actual_qty)
-                                record_confirmed_fill('binance', binance_symbol, 'SELL', sell_order)
+                                sell_qty = _capped_qty('binance', binance_symbol, actual_qty)
+                                if sell_qty <= 0:
+                                    log_sniper(f"   ⛔ Not selling {coin} on Binance: not Aureon-owned there; holding {actual_qty} {coin} on Kraken")
+                                    sell_order = {'status': 'REFUSED', 'reason': 'binance_qty_not_aureon_owned'}
+                                else:
+                                    log_sniper(f"   Step 2: SELL {sell_qty} {coin} on Binance")
+                                    sell_order = self.binance.place_market_order(binance_symbol, 'SELL', sell_qty)
+                                    record_confirmed_fill('binance', binance_symbol, 'SELL', sell_order)
                                 
                                 if sell_order and sell_order.get('status') == 'FILLED':
                                     log_sniper(f"   ✅ ARBITRAGE COMPLETE!")

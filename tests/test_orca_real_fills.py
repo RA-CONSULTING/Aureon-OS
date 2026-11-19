@@ -258,7 +258,12 @@ def test_other_statuses_contribute_zero_even_with_a_quantity(isolated):
     assert fills.aureon_owned_qty("binance", "ETHUSDT") == Decimal(FILLED_QTY)
 
 
-def test_completed_arbitrage_records_each_leg_on_its_venue(isolated):
+def test_completed_arbitrage_records_each_leg_on_its_venue(isolated, monkeypatch, tmp_path):
+    # #370 only sells Binance coins Aureon owns there, so seed a prior confirmed
+    # Binance buy of the same qty; the arbitrage legs themselves still net to zero.
+    monkeypatch.setenv("AUREON_ORCA_RECORDS_ROOT", str(tmp_path))  # #370's exits record stays in tmp
+    seed = _response(orderId="B-SEED-1", side="BUY", executedQty=FILLED_QTY, clientOrderId="ck-binance-seed")
+    assert fills.record_confirmed_fill("binance", "ETHUSDT", "BUY", seed) is not None
     buy = _response(orderId="K-884221", side="BUY", executedQty=FILLED_QTY, clientOrderId="ck-kraken-884221")
     sell = _response(orderId="B-884221", side="SELL", executedQty=FILLED_QTY, clientOrderId="ck-binance-884221")
     kraken = _Kraken(buy)
@@ -280,18 +285,19 @@ def test_completed_arbitrage_records_each_leg_on_its_venue(isolated):
     assert binance.orders == [("ETHUSDT", "SELL", Decimal(FILLED_QTY))]
     rows = _rows(isolated)
     assert [(row["venue"], row["symbol"], row["side"], row["filled_qty"]) for row in rows] == [
+        ("binance", "ETHUSDT", "BUY", FILLED_QTY),
         ("kraken", "ETHUSD", "BUY", FILLED_QTY),
         ("binance", "ETHUSDT", "SELL", FILLED_QTY),
     ]
     assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal(FILLED_QTY)
     assert fills.aureon_net_fill_qty("kraken", "ETHUSD") == Decimal(FILLED_QTY)
-    # The Binance leg is a sell with no Binance buy. Owned qty clamps at zero;
-    # the signed net keeps the sell.
+    # The seeded Binance buy is used up by the arbitrage sell.
     assert fills.aureon_owned_qty("binance", "ETHUSDT") == Decimal(0)
-    assert fills.aureon_net_fill_qty("binance", "ETHUSDT") == -Decimal(FILLED_QTY)
+    assert fills.aureon_net_fill_qty("binance", "ETHUSDT") == Decimal(0)
+    # The two arbitrage legs net to zero (Binance net moved by -FILLED_QTY from the seed).
     assert (
         fills.aureon_net_fill_qty("kraken", "ETHUSD")
-        + fills.aureon_net_fill_qty("binance", "ETHUSDT")
+        + (fills.aureon_net_fill_qty("binance", "ETHUSDT") - Decimal(FILLED_QTY))
         == Decimal(0)
     )
     assert fills.aureon_owned_qty("kraken", "ETHUSDT") == Decimal(0)
@@ -389,13 +395,17 @@ def test_owned_qty_clamps_at_zero_and_net_keeps_the_signed_total(isolated):
     assert fills.aureon_owned_qty("binance", "ETHUSDT") == Decimal(0)
 
 
-def test_arbitrage_sell_larger_than_the_buy_clamps_that_venue(isolated):
+def test_arbitrage_sell_larger_than_the_buy_clamps_that_venue(isolated, monkeypatch, tmp_path):
     """Kill-chain keys: Kraken pair ETHUSD, Binance symbol ETHUSDT.
 
-    The sell request stays the buy's filled 0.02. The Binance response filled
-    0.5, which is more than the Kraken buy. Owned qty on Binance is 0; the
-    signed net is -0.5.
+    #370 only sells Binance coins Aureon owns there, so a prior confirmed
+    Binance buy of 0.02 is seeded. The sell request stays the buy's filled
+    0.02. The Binance response filled 0.5, more than Aureon owned. Owned qty
+    on Binance is 0; the signed net is 0.02 - 0.5 = -0.48.
     """
+    monkeypatch.setenv("AUREON_ORCA_RECORDS_ROOT", str(tmp_path))  # #370's exits record stays in tmp
+    seed = _response(orderId="B-SEED-2", side="BUY", executedQty="0.02", clientOrderId="ck-binance-seed")
+    assert fills.record_confirmed_fill("binance", "ETHUSDT", "BUY", seed) is not None
     buy = _response(orderId="K-884221", side="BUY", executedQty="0.02", clientOrderId="ck-kraken-884221")
     sell = _response(orderId="B-884221", side="SELL", executedQty="0.5", clientOrderId="ck-binance-884221")
     kraken = _Kraken(buy)
@@ -416,13 +426,14 @@ def test_arbitrage_sell_larger_than_the_buy_clamps_that_venue(isolated):
     assert kraken.orders == [("ETHUSD", "buy", Decimal("0.8"))]
     assert binance.orders == [("ETHUSDT", "SELL", Decimal("0.02"))]
     assert [(row["venue"], row["symbol"], row["filled_qty"]) for row in _rows(isolated)] == [
+        ("binance", "ETHUSDT", "0.02"),
         ("kraken", "ETHUSD", "0.02"),
         ("binance", "ETHUSDT", "0.5"),
     ]
     assert fills.aureon_owned_qty("kraken", "ETHUSD") == Decimal("0.02")
     assert fills.aureon_net_fill_qty("kraken", "ETHUSD") == Decimal("0.02")
     assert fills.aureon_owned_qty("binance", "ETHUSDT") == Decimal(0)
-    assert fills.aureon_net_fill_qty("binance", "ETHUSDT") == Decimal("-0.5")
+    assert fills.aureon_net_fill_qty("binance", "ETHUSDT") == Decimal("-0.48")
 
 
 @pytest.mark.parametrize("qty", ["1e5000", "1e999999999", "NaN", "Infinity", "-0.02"])
