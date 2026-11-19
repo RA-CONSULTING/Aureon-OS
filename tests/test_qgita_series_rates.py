@@ -130,3 +130,24 @@ def test_qgita_benchmark_renders_legacy_reports_without_a_harness() -> None:
         assert "synthetic_planted harness, not scored" in rendered
         assert "not included in this report" in rendered
         assert "Release boundary stays HOLD" in rendered
+
+
+def test_qgita_benchmark_renders_only_the_labelled_synthetic_block() -> None:
+    from aureon.evaluation.qgita_snr_benchmark import render_qgita_markdown
+
+    synthetic = {
+        "harness_status": "not_scored",
+        "rates_reason": "no public series loaded",
+        "detection_rate": None,
+        "false_alarm_rate": None,
+    }
+    rendered = render_qgita_markdown(
+        {
+            "derived_series": {"evidence_tag": "cited-unverified"},
+            "on_hnc_series": {},
+            "on_market_series": {},
+            "test_only_synthetic": synthetic,
+        }
+    )
+    assert "synthetic_planted harness, not scored" in rendered
+    assert "measured market rate" in rendered
