@@ -140,6 +140,18 @@ def test_lambda_reading_rejects_bool_and_non_finite():
     assert lambda_reading(0.0) is not None
 
 
+def test_lambda_reading_bool_true_is_none():
+    assert lambda_reading(True) is None
+
+
+def test_lambda_reading_nan_is_none():
+    assert lambda_reading(float("nan")) is None
+
+
+def test_lambda_reading_numeric_string_zero_is_zero():
+    assert lambda_reading("0.0") == 0.0
+
+
 def test_dashboard_lambda_text_distinguishes_gap_from_zero():
     assert source_lambda_text({}) == "no reading"
     assert source_lambda_text({"lambda_t": None}) == "no reading"
