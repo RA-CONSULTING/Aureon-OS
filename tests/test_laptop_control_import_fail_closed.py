@@ -64,10 +64,12 @@ def test_laptop_control_uses_safe_pyautogui_loader(tmp_path: Path) -> None:
         """
         import json, sys
         from aureon.autonomous import aureon_laptop_control as m
+        # The GUI load is lazy. Reading the flag is what imports pyautogui.
+        available = m.HAS_PYAUTOGUI
         mouseinfo = sys.modules["mouseinfo"]
         print(json.dumps({
             "alive": True,
-            "has_pyautogui": m.HAS_PYAUTOGUI,
+            "has_pyautogui": available,
             "shim": bool(getattr(mouseinfo, "__aureon_shim__", False)),
         }))
         """,

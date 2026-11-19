@@ -1,7 +1,7 @@
 # One-command self-host. Live trading stays off.
 # `make up` does not use Docker. `make compose` does.
 
-.PHONY: up down compose smoke plug plug-smoke plug-compose evidence remeasure-go-live-receipts
+.PHONY: up down compose smoke plug plug-smoke plug-compose evidence remeasure-go-live-receipts check
 
 up:
 	PYTHONPATH=. python3 scripts/selfhost_up.py
@@ -26,6 +26,19 @@ plug:
 
 plug-smoke:
 	./install.sh --smoke
+
+# Local verification. Does not call GitHub Actions.
+# ruff is the files this change owns. The rest of aureon/operator still has
+# pre-existing findings on ruff 0.15.21, so a repo-wide ruff is not the gate.
+# pytest is the suite in pyproject.toml (live and windows markers excluded).
+check:
+	@test -x .venv/bin/python || { echo "No .venv yet. Run ./install.sh first." >&2; exit 1; }
+	.venv/bin/python -m pip install -r requirements-check.lock
+	# The suite imports PyYAML, aiohttp, Pillow, matplotlib, scipy, and
+	# websockets. Those live in the dev extra, not in the runtime lock.
+	.venv/bin/python -m pip install -e '.[dev]'
+	.venv/bin/python -m ruff check aureon/operator/computer_use_stop.py aureon/operator/local_action_bridge.py aureon/operator/feature_switchboard.py aureon/core/aureon_lattice_simulation.py aureon/core/pursuit.py tests/test_plug_and_play_operational.py tests/test_feature_switchboard.py tests/test_grounded_action.py tests/test_pursuit.py tests/test_soul.py
+	.venv/bin/python -m pytest
 
 plug-compose:
 	python3 scripts/stage_plug_image.py

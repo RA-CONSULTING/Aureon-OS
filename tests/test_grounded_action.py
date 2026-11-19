@@ -194,10 +194,13 @@ def test_action_endpoint_and_bearer_gate(monkeypatch):
     pytest.importorskip("flask", reason="operator HTTP surface requires the [operator] extra")
     # this test asserts the DISARMED (dry-run) posture — pin it explicitly so a
     # leaked process-wide ARMED flag from an earlier test cannot flip it
-    monkeypatch.delenv("AUREON_LOCAL_ACTIONS_ARMED", raising=False)
+    monkeypatch.setenv("AUREON_LOCAL_ACTIONS_ARMED", "0")
     import importlib
 
+    import aureon.operator.local_action_bridge as local_action_bridge
     import aureon.operator.operator_server as srv
+
+    local_action_bridge._bridge_singleton = None
 
     importlib.reload(srv)
     c = srv.create_app(

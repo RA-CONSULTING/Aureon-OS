@@ -1,0 +1,8 @@
+# Pinned local verification tools for `make check`. Not a GitHub Actions runner.
+# pytest-timeout is required because pyproject.toml addopts passes --timeout.
+iniconfig==2.3.1
+packaging==24.0
+pluggy==1.7.0
+pytest==8.4.2
+pytest-timeout==2.4.0
+ruff==0.15.21

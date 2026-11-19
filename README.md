@@ -25,11 +25,23 @@ Start here. Clone `main`, leave exchange keys unset, and run the guarded smoke. 
 
 Python 3.11 or newer, and Node.js 20 or newer, with `python3`, `node`, and `npm` on `PATH`. On Debian or Ubuntu, install `python3-venv` first. `./install.sh` checks that Python is 3.11 or newer and that `node` and `npm` exist. The clean-checkout workflow uses Node 20. A `.env` file is not required. `./install.sh` does not read `.env`.
 
+A full git history of this checkout is large. `git clone --depth 1` is the quick start. Gary decides any later slim-down. Nothing in this command deletes or moves a tracked file.
+
 ```bash
-git clone https://github.com/RA-CONSULTING/Aureon-OS.git
+git clone --depth 1 https://github.com/RA-CONSULTING/Aureon-OS.git
 cd Aureon-OS
-./install.sh --smoke
+./install.sh
 ```
+
+`./install.sh` creates `.venv`, installs the pinned `requirements-plug.lock`, and on Linux also installs the pinned desktop backend in `requirements-desktop.lock` (`python-xlib` and `pyautogui`, which the governed gateway imports). It does not read `.env`. It then starts the operator API, the public MCP server, and the dashboard, and leaves them up. `./install.sh --smoke` is that same installer and stops after the health check. `./install.sh --stop` stops the stack.
+
+Local verification does not use GitHub Actions:
+
+```bash
+make check
+```
+
+`make check` installs the pinned `requirements-check.lock` (ruff and pytest) and the `dev` extra (PyYAML, aiohttp, Pillow, matplotlib, scipy, websockets, and the rest of the test imports) into `.venv`, then runs ruff and the repo pytest suite from `pyproject.toml`.
 
 The single evaluator guide for this path is [`EVALUATE.md`](EVALUATE.md). A measured walkthrough of this path, including the order-safety defaults and the ports that must be free, is in [`INSTALL.md`](INSTALL.md).
 

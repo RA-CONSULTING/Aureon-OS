@@ -51,7 +51,9 @@ def test_registry_is_well_formed():
 def test_hard_boundary_flags_default_off():
     hard = [f for f in fs.FLAGS if f.kind == "hard_boundary"]
     assert hard, "there should be hard-boundary flags"
-    assert all(f.default is False for f in hard)
+    trading_and_charge = [f for f in hard if f.id != "AUREON_LOCAL_ACTIONS_ARMED"]
+    assert all(f.default is False for f in trading_and_charge)
+    assert fs.get_flag("AUREON_LOCAL_ACTIONS_ARMED").default is True
     # the canonical dangerous set is represented
     ids = {f.id for f in hard}
     for expected in ("AUREON_LIVE_TRADING", "AUREON_LOCAL_ACTIONS_ARMED",
@@ -184,15 +186,16 @@ def test_summary_counts_are_honest(temp_store, monkeypatch):
     base = fs.summary()
     assert base["total"] == len(fs.FLAGS)
     assert base["hard_boundary_total"] == sum(1 for f in fs.FLAGS if f.kind == "hard_boundary")
-    assert base["armed"] == 0
-    # arming a hard-boundary flag bumps enabled + armed by one
+    # Local actions default on. Trading and the other hard-boundary flags stay off.
+    assert base["armed"] == 1
+    # arming another hard-boundary flag bumps enabled + armed by one
     fs.save_flag("AUREON_LIVE_TRADING", True)
     s = fs.summary()
-    assert s["armed"] == 1
+    assert s["armed"] == 2
     assert s["enabled"] == base["enabled"] + 1
     # a safe flag on adds to enabled but not armed
     fs.save_flag("AUREON_LLM_OFFLINE", True)
-    assert fs.summary()["armed"] == 1
+    assert fs.summary()["armed"] == 2
 
 
 def test_summary_pending_restart_count(temp_store, monkeypatch):

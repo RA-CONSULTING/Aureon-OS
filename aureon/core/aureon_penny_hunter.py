@@ -103,8 +103,7 @@ HUNT_LIST = [
 # Kraken crypto pairs (24/7)
 KRAKEN_PAIRS = ["XBTUSD", "ETHUSD", "XRPUSD", "SOLUSD"]
 
-# Alpaca stocks (US market hours only)
-ALPACA_STOCKS = ["SPY", "AAPL", "TSLA", "QQQ"]
+# Named US symbols. Not a signal and not an order list.
 
 BASE_URL = "https://api-capital.backend-capital.com"
 MAX_POSITIONS = 3
@@ -448,18 +447,14 @@ class PennyHunter:
                 acct = self._alpaca.get_account()
                 cash = float(acct.get("cash", 0) if isinstance(acct, dict) else getattr(acct, "cash", 0) or 0)
                 if cash > 1:
-                    import random
-                    stock = random.choice(ALPACA_STOCKS)
-                    try:
-                        order = self._alpaca.place_market_order(
-                            symbol=stock, side="buy", qty=None, notional=min(cash * 0.5, 5.0)
-                        )
-                        if order:
-                            self._trades_total += 1
-                            log.info(f"[PENNY-ALPACA] BUY {stock} with ${min(cash*0.5, 5):.2f}")
-                            result["opened"].append({"epic": stock, "direction": "BUY", "exchange": "alpaca"})
-                    except Exception as e:
-                        log.debug(f"Alpaca trade: {e}")
+                    # A random ticker is not a measured price. Do not invent one
+                    # and do not send an order from it.
+                    result.setdefault("no_data", []).append({
+                        "exchange": "alpaca",
+                        "status": "no_data",
+                        "reason": "no measured alpaca signal; a random symbol is not a price",
+                    })
+                    log.info("[PENNY-ALPACA] no data — not choosing a symbol and not placing an order")
                 else:
                     log.debug(f"[PENNY-ALPACA] US market open but cash too low: ${cash:.2f}")
             except Exception as e:
