@@ -29,14 +29,25 @@ _PLAN_INTERVAL = PHI * PHI * 60.0   # ≈ 157s between autonomous goal submissio
 NO_READING = "no reading"
 
 
-def published_lambda(payload: Any) -> float | None:
-    """Finite Λ(t) on this input, or None.
+def _hnc_max_age_s() -> float:
+    """Age limit for a stored Λ(t) or Γ. Same window as the canonical field.
 
-    The planner keeps no freshness timestamp. An input that does not
-    carry ``lambda_t`` is stale: the previous reading must not be reused.
-    A present value is accepted only through ``lambda_reading``, the same
-    finite check the HNC live daemon uses before it publishes Λ(t).
-    A real ``0.0`` stays ``0.0``.
+    Default 300 s (``aureon.core.hnc_field.FIELD_MAX_AGE_S``). Override is
+    ``AUREON_HNC_FIELD_MAX_AGE_S``. The planner does not keep a second
+    clock. A stored reading older than this is None.
+    """
+    from aureon.core.hnc_field import _max_age_s
+
+    return _max_age_s()
+
+
+def published_lambda(payload: Any) -> float | None:
+    """Finite Λ(t) on a payload that actually carries the key, or None.
+
+    The live planner does not take Λ(t) from ``ics.source_law.cognition``.
+    That event omits it. ``read_canonical_field`` is the one published
+    reading. This helper remains the finite check for a mapping that
+    does include ``lambda_t``. A missing key is None. A real ``0.0`` stays.
     """
     if not isinstance(payload, dict) or "lambda_t" not in payload:
         return None
@@ -54,6 +65,12 @@ def lambda_phase_for(lam: float | None) -> str:
         return "COHERENCE"
     return "UNITY"
 
+
+def _reading_or_clear(payload: Any, key: str) -> float | None:
+    """Urgency has no max-age. Omission clears it. A present 0.0 stays 0.0."""
+    if not isinstance(payload, dict) or key not in payload:
+        return None
+    return lambda_reading(payload[key])
 
 
 class QueenCognitiveActionPlanner:
@@ -85,11 +102,13 @@ class QueenCognitiveActionPlanner:
         self._dialogues: Deque[str] = deque(maxlen=12)
         self._insights: Deque[Dict[str, Any]] = deque(maxlen=8)
         self._last_mood: str = "UNKNOWN"
-        self._last_urgency: float = 0.0
-        self._last_coherence: float = 0.0
+        self._last_urgency: float | None = None
+        self._last_coherence: float | None = None
+        self._last_coherence_ts: float | None = None
         self._last_consciousness: str = "DORMANT"
         self._last_lambda_phase: str = NO_READING
         self._last_lambda_t: float | None = None
+        self._last_lambda_ts: float | None = None
 
         self._last_plan_ts: float = 0.0
         self._plan_count: int = 0
@@ -152,24 +171,88 @@ class QueenCognitiveActionPlanner:
             if text:
                 with self._lock:
                     self._dialogues.append(str(text)[:120])
-                    self._last_mood = payload.get("mood", self._last_mood)
-                    self._last_urgency = float(payload.get("urgency", self._last_urgency))
-                    self._last_coherence = float(payload.get("coherence", self._last_coherence))
-                    self._last_consciousness = payload.get("consciousness", self._last_consciousness)
+                    if "mood" in payload:
+                        self._last_mood = str(payload.get("mood") or self._last_mood)
+                    self._last_urgency = _reading_or_clear(payload, "urgency")
+                    # A missing coherence key is not the previous number.
+                    # The finite check rejects bool, NaN, and non-numeric.
+                    if "coherence" in payload:
+                        self._last_coherence = lambda_reading(payload.get("coherence"))
+                        self._last_coherence_ts = (
+                            time.time() if self._last_coherence is not None else None
+                        )
+                    else:
+                        self._last_coherence = None
+                        self._last_coherence_ts = None
+                    if "consciousness" in payload:
+                        self._last_consciousness = payload.get("consciousness", self._last_consciousness)
         elif subtopic in ("insight", "dream") or topic.startswith("queen.metacognition.insight"):
             with self._lock:
                 self._insights.append({"type": subtopic, "data": payload, "ts": time.time()})
 
     def _on_source_law(self, topic: str, payload: Dict[str, Any], **_) -> None:
+        """Refresh Λ(t) and Γ from the canonical HNC field.
+
+        ``ics.source_law.cognition`` does not carry ``lambda_t`` or
+        ``coherence_gamma``. The one published reading is
+        ``read_canonical_field``: the live daemon on the thought bus,
+        then ``state/hnc_live_trace.jsonl``. That reader already drops
+        a row older than its max age (300 s, ``AUREON_HNC_FIELD_MAX_AGE_S``).
+        Copying the same numbers onto the cognition payload would be a
+        second source that can disagree with the field.
+        """
+        try:
+            from aureon.core.hnc_field import read_canonical_field
+            field = read_canonical_field(self._thought_bus)
+        except Exception:
+            field = None
         with self._lock:
-            if isinstance(payload, dict) and "coherence_gamma" in payload:
-                measured_gamma = lambda_reading(payload.get("coherence_gamma"))
-                if measured_gamma is not None:
-                    self._last_coherence = measured_gamma
-            # No lambda_t on this input: the stored Λ(t) is stale.
-            measured = published_lambda(payload)
-            self._last_lambda_t = measured
-            self._last_lambda_phase = lambda_phase_for(measured)
+            self._adopt_canonical_field(field)
+
+    def _adopt_canonical_field(self, field: Any, *, now: float | None = None) -> None:
+        """Store Λ(t) and Γ only when the canonical field is finite and fresh.
+
+        Stale, missing, or non-finite becomes None. A measured 0.0 stays.
+        The age limit is the field's own ``_max_age_s`` (default 300 s).
+        """
+        now = time.time() if now is None else now
+        limit = _hnc_max_age_s()
+        stamp = getattr(field, "source_timestamp", None) if field is not None else None
+        if isinstance(stamp, bool) or not isinstance(stamp, (int, float)):
+            stamp = None
+        fresh = (
+            field is not None
+            and bool(getattr(field, "available", False))
+            and getattr(field, "freshness_status", None) == "fresh"
+            and stamp is not None
+            and now - float(stamp) <= limit
+        )
+        if not fresh:
+            self._last_lambda_t = None
+            self._last_lambda_ts = None
+            self._last_coherence = None
+            self._last_coherence_ts = None
+            self._last_lambda_phase = NO_READING
+            return
+        lam = lambda_reading(getattr(field, "lambda_t", None))
+        gamma = lambda_reading(getattr(field, "coherence_gamma", None))
+        self._last_lambda_t = lam
+        self._last_lambda_ts = None if lam is None else float(stamp)
+        self._last_coherence = gamma
+        self._last_coherence_ts = None if gamma is None else float(stamp)
+        self._last_lambda_phase = lambda_phase_for(lam)
+
+    def _expire_hnc(self, now: float | None = None) -> None:
+        """Drop a stored Λ(t) or Γ once it is older than the field max age."""
+        now = time.time() if now is None else now
+        limit = _hnc_max_age_s()
+        if self._last_lambda_ts is None or now - self._last_lambda_ts > limit:
+            self._last_lambda_t = None
+            self._last_lambda_ts = None
+            self._last_lambda_phase = NO_READING
+        if self._last_coherence_ts is None or now - self._last_coherence_ts > limit:
+            self._last_coherence = None
+            self._last_coherence_ts = None
 
     # ─────────────────────────────────────────────────────────────────────
     # Planning loop
@@ -188,6 +271,9 @@ class QueenCognitiveActionPlanner:
 
     def _synthesise_and_submit(self) -> None:
         with self._lock:
+            self._expire_hnc()
+            if not self._dialogues and not self._insights:
+                return
             dialogues = list(self._dialogues)
             insights = list(self._insights)
             mood = self._last_mood
@@ -196,6 +282,13 @@ class QueenCognitiveActionPlanner:
             consciousness = self._last_consciousness
             lambda_phase = self._last_lambda_phase
             lambda_t = self._last_lambda_t
+
+        if lambda_t is None:
+            logger.info("Cognitive planner skipped: Lambda(t) no reading")
+            return
+        if coherence is None:
+            logger.info("Cognitive planner skipped: coherence no reading")
+            return
 
         try:
             from aureon.queen.queen_mind import get_canonical_queen_mind
@@ -210,8 +303,8 @@ class QueenCognitiveActionPlanner:
                     "dialogues": [str(item)[:500] for item in dialogues[-6:]],
                     "insights": [str(item)[:500] for item in insights[-4:]],
                     "mood": str(mood),
-                    "urgency": str(urgency),
-                    "coherence": str(coherence),
+                    "urgency": format_lambda(urgency, ".2f"),
+                    "coherence": format_lambda(coherence, ".3f"),
                     "consciousness": str(consciousness),
                     "lambda_phase": lambda_phase if lambda_t is not None else NO_READING,
                     "lambda_t": format_lambda(lambda_t),
@@ -252,13 +345,17 @@ class QueenCognitiveActionPlanner:
         lambda_phase: str,
         lambda_t: float | None,
     ) -> str:
+        if lambda_t is None or coherence is None:
+            return ""
         recent_dialogue = "\n".join(f"  - {d}" for d in dialogues[-6:]) or "  (none yet)"
         recent_insights = "\n".join(
             f"  - [{i['type']}] {str(i['data'])[:80]}" for i in insights[-4:]
         ) or "  (none yet)"
 
         lambda_text = format_lambda(lambda_t, ".2f")
-        phase_text = NO_READING if lambda_t is None else lambda_phase
+        phase_text = lambda_phase
+        urgency_text = format_lambda(urgency, ".2f")
+        coherence_text = format_lambda(coherence, ".3f")
 
         system_prompt = (
             "You are the goal-synthesis mind of Aureon, an autonomous AI trading organism. "
@@ -272,8 +369,8 @@ class QueenCognitiveActionPlanner:
         user_prompt = (
             f"COGNITIVE STATE SNAPSHOT\n"
             f"  Mood            : {mood}\n"
-            f"  Urgency         : {urgency:.2f}\n"
-            f"  Coherence γ     : {coherence:.3f}\n"
+            f"  Urgency         : {urgency_text}\n"
+            f"  Coherence γ     : {coherence_text}\n"
             f"  Consciousness   : {consciousness}\n"
             f"  Λ(t) field      : {lambda_text} ({phase_text})\n\n"
             f"RECENT INTERNAL DIALOGUE\n{recent_dialogue}\n\n"

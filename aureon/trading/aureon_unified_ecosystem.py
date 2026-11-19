@@ -25622,9 +25622,11 @@ class AureonKrakenEcosystem:
         # Lambda / Gamma / Psi
         from aureon.core.lambda_reading import format_lambda, lambda_from_mapping
         lam = lambda_from_mapping(report)
-        gam = report.get("coherence_gamma", 0.0)
-        psi = report.get("consciousness_psi", 0.0)
-        parts.append(f"L={format_lambda(lam, '.3f')} G={gam:.3f} P={psi:.3f}")
+        gam = lambda_from_mapping(report, "coherence_gamma")
+        psi = lambda_from_mapping(report, "consciousness_psi")
+        parts.append(
+            f"L={format_lambda(lam, '.3f')} G={format_lambda(gam, '.3f')} P={format_lambda(psi, '.3f')}"
+        )
 
         # Temporal Ground
         tg = report.get("temporal_ground", {})

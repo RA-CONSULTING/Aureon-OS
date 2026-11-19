@@ -63,6 +63,29 @@ def engine_lambda_trace(snaps: List[Any]) -> List[float]:
         values.append(number)
     return values
 
+
+def measured_trace(snaps: List[Any], *path: str) -> List[float]:
+    """Numeric points along ``path``. Missing and non-finite points are skipped.
+
+    A measured ``0.0`` stays in the series. ``or 0.0`` is not used.
+    """
+    values: List[float] = []
+    for snap in snaps:
+        current: Any = snap
+        present = True
+        for key in path:
+            if not isinstance(current, dict) or key not in current:
+                present = False
+                break
+            current = current[key]
+        if not present:
+            continue
+        number = lambda_reading(current)
+        if number is None:
+            continue
+        values.append(number)
+    return values
+
 logger = logging.getLogger("aureon.observer.benchmark")
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -237,9 +260,9 @@ def _aggregate(capture: _BenchCapture, daemon) -> Dict[str, Any]:
             "periodic_reads": len(reads),
             "n_rocks_final": 0,
             "regime_histogram": {},
-            "coherence_mean": 0.0,
-            "coherence_min": 0.0,
-            "coherence_max": 0.0,
+        "coherence_mean": None,
+        "coherence_min": None,
+        "coherence_max": None,
             "rock_event_kinds": {},
             "predictor_consensus_directions": {},
             "kelly_buffer_multiplier_mean": 1.0,
@@ -251,7 +274,7 @@ def _aggregate(capture: _BenchCapture, daemon) -> Dict[str, Any]:
     regime_hist = dict(Counter(regimes))
 
     # Coherence trace
-    cohs = [float(s["snapshot"].get("coherence_score", 0.0) or 0.0) for s in snaps]
+    cohs = measured_trace(snaps, "snapshot", "coherence_score")
 
     # Rock event kinds
     event_kinds = Counter(
@@ -284,9 +307,9 @@ def _aggregate(capture: _BenchCapture, daemon) -> Dict[str, Any]:
         "periodic_reads": len(reads),
         "n_rocks_final": n_rocks_final,
         "regime_histogram": regime_hist,
-        "coherence_mean": (sum(cohs) / len(cohs)) if cohs else 0.0,
-        "coherence_min": min(cohs) if cohs else 0.0,
-        "coherence_max": max(cohs) if cohs else 0.0,
+        "coherence_mean": (sum(cohs) / len(cohs)) if cohs else None,
+        "coherence_min": min(cohs) if cohs else None,
+        "coherence_max": max(cohs) if cohs else None,
         "rock_event_kinds": dict(event_kinds),
         "predictor_consensus_directions": dict(consensus_dirs),
         "kelly_buffer_multiplier_mean": mult_mean,
@@ -297,6 +320,12 @@ def _aggregate(capture: _BenchCapture, daemon) -> Dict[str, Any]:
 # ─── report writers ────────────────────────────────────────────────
 
 _BENCH_HEADER = "# HNC Observer — Unified Field Benchmark"
+
+
+def _stat_text(value: Any, spec: str) -> str:
+    if value is None:
+        return "no reading"
+    return format(value, spec)
 
 
 # ─── text sparkline ────────────────────────────────────────────────
@@ -394,17 +423,17 @@ def _write_markdown(report_path: Path, agg: Dict[str, Any], capture: _BenchCaptu
     add("")
     if last_engine:
         add(f"- **Λ_full:** {format_lambda(last_engine.get('lambda_t'), '.6f')}")
-        add(f"- **ψ (consciousness_psi):** {last_engine.get('consciousness_psi', 0):.4f}")
+        add(f"- **ψ (consciousness_psi):** {format_lambda(last_engine.get('consciousness_psi') if 'consciousness_psi' in last_engine else None)}")
         add(f"- **Level:** {last_engine.get('consciousness_level', 'n/a')}")
-        add(f"- **Γ (coherence_gamma):** {last_engine.get('coherence_gamma', 0):.4f}")
-        add(f"- **Symbolic life score:** {last_engine.get('symbolic_life_score', 0):.4f}")
+        add(f"- **Γ (coherence_gamma):** {format_lambda(last_engine.get('coherence_gamma') if 'coherence_gamma' in last_engine else None)}")
+        add(f"- **Symbolic life score:** {format_lambda(last_engine.get('symbolic_life_score') if 'symbolic_life_score' in last_engine else None)}")
         add(f"- **Effective gain (α+β):** {last_engine.get('effective_gain', 0):.3f}")
     add("")
     add("## Observer signal")
     add("")
     add(f"- **Final regime:** {last_snap.get('regime', 'n/a')}")
     add(f"- **Coherence mean / min / max:** "
-        f"{agg['coherence_mean']:.3f} / {agg['coherence_min']:.3f} / {agg['coherence_max']:.3f}")
+        f"{_stat_text(agg['coherence_mean'], '.3f')} / {_stat_text(agg['coherence_min'], '.3f')} / {_stat_text(agg['coherence_max'], '.3f')}")
     add(f"- **Active rocks at end:** {agg['n_rocks_final']}")
     add("")
     add("**Regime histogram (over snapshot samples):**")
@@ -427,7 +456,7 @@ def _write_markdown(report_path: Path, agg: Dict[str, Any], capture: _BenchCaptu
     add("## Time series")
     add("")
     # Coherence trace
-    cohs = [float(s["snapshot"].get("coherence_score", 0.0) or 0.0) for s in snaps]
+    cohs = measured_trace(snaps, "snapshot", "coherence_score")
     if cohs:
         add(f"**Coherence score** ({min(cohs):.3f} → {max(cohs):.3f}, "
             f"mean {sum(cohs)/len(cohs):.3f}):")
@@ -445,16 +474,14 @@ def _write_markdown(report_path: Path, agg: Dict[str, Any], capture: _BenchCaptu
         add("**Λ_full:** no reading")
         add("")
     # ψ trace
-    psis = [float(s["engine_state"].get("consciousness_psi", 0.0) or 0.0)
-            for s in snaps]
+    psis = measured_trace(snaps, "engine_state", "consciousness_psi")
     if psis:
         add(f"**ψ (consciousness)** ({min(psis):.3f} → {max(psis):.3f}):")
         add("")
         add(f"```\n{_sparkline(psis, width=min(len(psis), 60))}\n```")
         add("")
     # Symbolic life score
-    sls = [float(s["engine_state"].get("symbolic_life_score", 0.0) or 0.0)
-           for s in snaps]
+    sls = measured_trace(snaps, "engine_state", "symbolic_life_score")
     if sls:
         add(f"**Symbolic life score** ({min(sls):.3f} → {max(sls):.3f}):")
         add("")
@@ -681,7 +708,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     print(f"Rock events:   {agg['rock_events']}")
     print(f"Periodic rds:  {agg['periodic_reads']}")
     print(f"Final regime:  {capture.engine_snapshots[-1]['snapshot'].get('regime') if capture.engine_snapshots else 'n/a'}")
-    print(f"Coherence avg: {agg['coherence_mean']:.3f}")
+    print(f"Coherence avg: {_stat_text(agg['coherence_mean'], '.3f')}")
     print()
     print(f"Report:        {md_path if not args.json_only else '(skipped)'}")
     print(f"JSON:          {json_path}")

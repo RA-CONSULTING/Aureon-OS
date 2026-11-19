@@ -28,6 +28,12 @@ _COGNITIVE_ENTRY_COHERENCE = 0.938
 _COGNITIVE_EXIT_COHERENCE = 0.934
 
 
+def _finite(value: Any) -> float | None:
+    from aureon.core.lambda_reading import lambda_reading
+
+    return lambda_reading(value)
+
+
 def _ics_lambda(source_state: Any) -> float | None:
     """Lambda(t) from a tick state. A missing key is not 0.0."""
     from aureon.core.lambda_reading import lambda_reading
@@ -982,7 +988,7 @@ class IntegratedCognitiveSystem:
 
         # SOURCE: Lambda engine step
         source_state: Dict[str, Any] = {
-            "lambda_t": None, "coherence_gamma": 0.0, "consciousness_psi": 0.0,
+            "lambda_t": None, "coherence_gamma": None, "consciousness_psi": None,
             "consciousness_level": "DORMANT", "symbolic_life_score": 0.0,
         }
         if self.lambda_engine is not None:
@@ -1148,11 +1154,11 @@ class IntegratedCognitiveSystem:
 
         # HNC COMBUSTION: Composite coherence + auris
         hnc_state: Dict[str, Any] = {
-            "auris_consensus": "NEUTRAL", "auris_confidence": 0.0,
+            "auris_consensus": "NEUTRAL", "auris_confidence": None,
             "auris_agreeing": 0, "auris_total": 9,
             "lighthouse_cleared": False,
             "cells_deployed": 0, "cells_success": 0,
-            "composite_coherence": 0.0,
+            "composite_coherence": None,
         }
         if self.auris is not None and self.vault is not None:
             try:
@@ -1166,12 +1172,19 @@ class IntegratedCognitiveSystem:
                 pass
 
         # Composite coherence: 0.4*lambda_gamma + 0.3*cortex_psi + 0.3*auris_confidence
-        lambda_gamma = source_state.get("coherence_gamma", 0.0)
-        cortex_psi = source_state.get("consciousness_psi", 0.0)
-        auris_conf = hnc_state.get("auris_confidence", 0.0)
-        hnc_state["composite_coherence"] = (
-            0.4 * lambda_gamma + 0.3 * cortex_psi + 0.3 * auris_conf
-        )
+        lambda_gamma = _finite(source_state.get("coherence_gamma")) if "coherence_gamma" in source_state else None
+        cortex_psi = _finite(source_state.get("consciousness_psi")) if "consciousness_psi" in source_state else None
+        if lambda_gamma is None or cortex_psi is None:
+            hnc_state["composite_coherence"] = None
+        else:
+            auris_conf = hnc_state.get("auris_confidence")
+            auris_number = _finite(auris_conf)
+            if auris_number is None:
+                hnc_state["composite_coherence"] = None
+            else:
+                hnc_state["composite_coherence"] = (
+                    0.4 * lambda_gamma + 0.3 * cortex_psi + 0.3 * auris_number
+                )
 
         if self.feedback_loop is not None:
             try:
@@ -1204,11 +1217,13 @@ class IntegratedCognitiveSystem:
         if self.temporal_ground is not None:
             try:
                 lam = _ics_lambda(source_state)
-                if lam is not None:
+                gamma = _finite(source_state.get("coherence_gamma")) if "coherence_gamma" in source_state else None
+                psi = _finite(source_state.get("consciousness_psi")) if "consciousness_psi" in source_state else None
+                if lam is not None and gamma is not None and psi is not None:
                     self.temporal_ground.tick(
                         lambda_t=lam,
-                        coherence_gamma=source_state.get("coherence_gamma", 0.0),
-                        consciousness_psi=source_state.get("consciousness_psi", 0.0),
+                        coherence_gamma=gamma,
+                        consciousness_psi=psi,
                         auris_consensus=hnc_state.get("auris_consensus", "NEUTRAL"),
                     )
             except Exception:
@@ -1219,7 +1234,7 @@ class IntegratedCognitiveSystem:
             try:
                 self.vault.ingest("ics.tick", {
                     "lambda_t": _ics_lambda(source_state),
-                    "coherence": source_state.get("coherence_gamma", 0.0),
+                    "coherence": _finite(source_state.get("coherence_gamma")) if "coherence_gamma" in source_state else None,
                     "consciousness": source_state.get("consciousness_level", ""),
                     "auris": hnc_state.get("auris_consensus", "NEUTRAL"),
                     "tick": self._tick_count,
@@ -1237,26 +1252,27 @@ class IntegratedCognitiveSystem:
                 # Map gamma [0..1] to a frequency on the love-Schumann lattice:
                 #   gamma=0 -> 7.83 Hz (Schumann)
                 #   gamma=1 -> 528 Hz (Love)
-                gamma = source_state.get("coherence_gamma", 0.5)
-                target_hz = 7.83 + (528.0 - 7.83) * gamma
-                resonance = self.temporal_dialer.tune_frequency(
-                    frequency_hz=target_hz,
-                    bandwidth=10.0,
-                )
-                packet = self.temporal_dialer.pull_quantum_data()
-                if packet is not None:
-                    try:
-                        bus.publish("temporal.dialer.packet", {
-                            "frequency_hz": packet.frequency,
-                            "intensity": packet.intensity,
-                            "coherence": packet.coherence,
-                            "resonance": resonance,
-                            "source_layer": packet.source_layer,
-                            "lambda_gamma": gamma,
-                            "tick": self._tick_count,
-                        }, source="ics.dialer")
-                    except Exception:
-                        pass
+                gamma = _finite(source_state.get("coherence_gamma")) if "coherence_gamma" in source_state else None
+                if gamma is not None:
+                    target_hz = 7.83 + (528.0 - 7.83) * gamma
+                    resonance = self.temporal_dialer.tune_frequency(
+                        frequency_hz=target_hz,
+                        bandwidth=10.0,
+                    )
+                    packet = self.temporal_dialer.pull_quantum_data()
+                    if packet is not None:
+                        try:
+                            bus.publish("temporal.dialer.packet", {
+                                "frequency_hz": packet.frequency,
+                                "intensity": packet.intensity,
+                                "coherence": packet.coherence,
+                                "resonance": resonance,
+                                "source_layer": packet.source_layer,
+                                "lambda_gamma": gamma,
+                                "tick": self._tick_count,
+                            }, source="ics.dialer")
+                        except Exception:
+                            pass
             except Exception:
                 pass
 
@@ -1289,14 +1305,14 @@ class IntegratedCognitiveSystem:
                 bridge_state.update({
                     # Lambda field + consciousness level from source_state
                     "lambda_t":            _ics_lambda(source_state),
-                    "coherence_gamma":     source_state.get("coherence_gamma", 0.0),
-                    "consciousness_psi":   source_state.get("consciousness_psi", 0.0),
-                    "consciousness_level": source_state.get("consciousness_level", "DORMANT"),
-                    "symbolic_life_score": source_state.get("symbolic_life_score", 0.0),
+                    "coherence_gamma":     _finite(source_state.get("coherence_gamma")) if "coherence_gamma" in source_state else None,
+                    "consciousness_psi":   _finite(source_state.get("consciousness_psi")) if "consciousness_psi" in source_state else None,
+                    "consciousness_level": source_state.get("consciousness_level") if source_state.get("consciousness_level") else None,
+                    "symbolic_life_score": _finite(source_state.get("symbolic_life_score")) if "symbolic_life_score" in source_state else None,
                     # Auris 9-node consensus + composite coherence from hnc_state
                     "auris_consensus":     hnc_state.get("auris_consensus", "NEUTRAL"),
                     "auris_confidence":    hnc_state.get("auris_confidence", 0.0),
-                    "composite_coherence": hnc_state.get("composite_coherence", 0.0),
+                    "composite_coherence": hnc_state.get("composite_coherence"),
                     # Recent ThoughtBus events (last 8) for HNC-OS documentary
                     "tb_events":           self._recent_tb_events(),
                 })

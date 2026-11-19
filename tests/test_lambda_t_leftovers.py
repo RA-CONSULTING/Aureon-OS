@@ -12,12 +12,16 @@ from types import SimpleNamespace
 
 import pytest
 
-from aureon.core.cognitive_dashboard import source_lambda_text
+from aureon.core.cognitive_dashboard import source_field_text, source_lambda_text
 from aureon.core.lambda_reading import lambda_reading
 from aureon.gates.panel import FieldVault
-from aureon.observer.benchmark import engine_lambda_trace
-from aureon.observer.historical_backtest import snapshot_lambda_cell, snapshot_lambda_trace
-from aureon.queen.hnc_human_loop import _NullVault, read_engine_lambda
+from aureon.observer.benchmark import engine_lambda_trace, measured_trace
+from aureon.observer.historical_backtest import (
+    measured_snapshot_series,
+    snapshot_lambda_cell,
+    snapshot_lambda_trace,
+)
+from aureon.queen.hnc_human_loop import _NullVault, read_engine_gamma, read_engine_lambda
 from aureon.trading.aureon_unified_ecosystem import AureonKrakenEcosystem
 from aureon.vault.aureon_vault import AureonVault
 from aureon.vault.casimir_quantifier import CasimirQuantifier
@@ -187,6 +191,17 @@ def test_watch_line_says_no_reading_until_lambda_is_present():
     })
     assert "L=no reading" in missing
     assert "L=0.000" in zero
+    blank = eco._cognitive_telemetry_line({"valid": True})
+    assert "G=no reading" in blank
+    assert "P=no reading" in blank
+    zeros = eco._cognitive_telemetry_line({
+        "valid": True,
+        "lambda_t": 0.0,
+        "coherence_gamma": 0.0,
+        "consciousness_psi": 0.0,
+    })
+    assert "G=0.000" in zeros
+    assert "P=0.000" in zeros
 
 
 def _ics_lambda():
@@ -212,6 +227,9 @@ def test_dashboard_starts_with_no_lambda_reading():
 
     state = _DashboardState()
     assert source_lambda_text(state.source) == "no reading"
+    assert source_field_text(state.source, "coherence_gamma") == "no reading"
+    assert source_field_text(state.source, "consciousness_psi") == "no reading"
+    assert source_field_text(state.soul, "consciousness_psi") == "no reading"
     state.update("source", {"consciousness_level": "AWAKE"})
     assert source_lambda_text(state.source) == "no reading"
     state.update("source", {"lambda_t": 0.0})
@@ -226,19 +244,50 @@ def test_human_loop_without_a_tick_does_not_ground_zero():
     loop._tick_lambda = lambda text, intent: None
     result = loop.process("hello")
     assert result["hnc"]["lambda_t"] is None
+    assert result["hnc"]["coherence_gamma"] is None
     assert result["temporal_ground"]["status"] == "no reading"
     assert result["temporal_ground"]["lambda_t"] is None
+    assert read_engine_gamma(SimpleNamespace()) is None
+    assert read_engine_gamma(SimpleNamespace(coherence_gamma=0.0)) == 0.0
+    assert read_engine_gamma(SimpleNamespace(coherence_gamma=0.0)) is not None
 
 
 def test_unreleased_ics_fallback_lambda_is_unread():
     text = (ROOT / "aureon/core/integrated_cognitive_system_unreleased.py").read_text(encoding="utf-8")
-    assert '"lambda_t": None, "coherence_gamma": 0.0' in text
+    assert '"lambda_t": None, "coherence_gamma": None, "consciousness_psi": None' in text
     assert '"lambda_t": 0.0, "coherence_gamma": 0.0' not in text
+    for fake in (
+        'source_state.get("coherence_gamma", 0.0)',
+        'source_state.get("coherence_gamma", 0.5)',
+        'source_state.get("consciousness_psi", 0.0)',
+        'source_state.get("symbolic_life_score", 0.0)',
+        '"composite_coherence": 0.0',
+    ):
+        assert fake not in text, fake
     read = _ics_lambda()
     assert read({}) is None
     assert read({"lambda_t": None}) is None
     assert read({"lambda_t": 0.0}) == 0.0
     assert read({"lambda_t": 0.0}) is not None
+
+
+def test_benchmark_and_replay_keep_a_measured_zero_and_skip_a_gap():
+    snaps = [
+        {"snapshot": {"coherence_score": 0.0}, "engine_state": {"consciousness_psi": None}},
+        {"snapshot": {}, "engine_state": {"consciousness_psi": 0.0}},
+        {"snapshot": {"coherence_score": 0.4}, "engine_state": {}},
+    ]
+    assert measured_trace(snaps, "snapshot", "coherence_score") == [0.0, 0.4]
+    assert measured_trace(snaps, "engine_state", "consciousness_psi") == [0.0]
+    replay = [
+        {"kp": 0.0},
+        {},
+        {"consciousness_psi": 0.0, "coherence_score": None, "symbolic_life_score": 1.0},
+    ]
+    assert measured_snapshot_series(replay, "kp") == [0.0]
+    assert measured_snapshot_series(replay, "consciousness_psi") == [0.0]
+    assert measured_snapshot_series(replay, "coherence_score") == []
+    assert measured_snapshot_series(replay, "symbolic_life_score") == [1.0]
 
 
 @pytest.mark.parametrize("relpath,snippets", list(_FORBIDDEN.items()))
