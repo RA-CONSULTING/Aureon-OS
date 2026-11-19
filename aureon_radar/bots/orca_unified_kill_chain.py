@@ -484,7 +484,10 @@ class UnifiedKillChain:
             except Exception as e:
                 log_system(f"Capital Scan Error: {e}")
 
-        # 2. Crypto (Spot - requires Cost Basis calculation)
+        # 2. Crypto (Spot - requires a recorded Aureon entry AND a cost basis).
+        # A balance or a cost_basis_history.json row alone is not Aureon's:
+        # owner rule 9 Nov 2026, see aureon.exchanges.orca_spot_ownership.
+        from aureon.exchanges.orca_spot_ownership import is_owned as _spot_owned
         # Check Binance
         if self.binance:
             log_queen("Scanning Binance liquidity pools...")
@@ -497,6 +500,8 @@ class UnifiedKillChain:
                     locked = float(b['locked'])
                     total = free + locked
                     if total > 0 and asset not in ['USDT', 'USDC', 'USD', 'EUR', 'GBP']:
+                        if not _spot_owned('binance', asset):
+                            continue  # no Aureon entry: Gary's own holding, skip
                         # Found non-stable asset. Check cost basis.
                         basis_key = f"{asset}USDT" # Assumption for lookup
                         basis = self.cost_basis.get(basis_key, {})
@@ -529,6 +534,8 @@ class UnifiedKillChain:
                 balances = self.kraken.get_account_balance()
                 for asset, total in balances.items():
                     if total > 0 and asset not in ['USDT', 'USDC', 'USD', 'EUR', 'GBP', 'ZUSD', 'ZEUR']:
+                        if not _spot_owned('kraken', asset):
+                            continue  # no Aureon entry: Gary's own holding, skip
                          # Look for cost basis
                         basis_key = f"{asset}USD" # Standard Kraken
                         basis = self.cost_basis.get(basis_key, {})
@@ -645,6 +652,10 @@ class UnifiedKillChain:
                     self._governance_hold(target, reason or 'close_not_submitted')
         
         elif exchange in ['binance', 'kraken']:
+            from aureon.exchanges.orca_spot_ownership import is_owned as _spot_owned
+            if not _spot_owned(exchange, target.get('id') or symbol):
+                log_system(f"{exchange}: refusing to sell {symbol}: no recorded Aureon entry")
+                return
             # Spot Kill (Sell)
             confirm = queen_answer(f"\n🔴 [{exchange.upper()}] SELL {target['qty']} {symbol}? [y/N]: ", target['pnl'] > 0)
             if confirm.lower() == 'y':
