@@ -246,3 +246,116 @@ def test_binance_rejected_keeps_real_status(module_name, monkeypatch, tmp_path):
     )
     assert status == "REJECTED"
     assert status != "FILLED"
+
+
+@pytest.mark.parametrize("module_name", MODULES)
+@pytest.mark.parametrize("error", ["FILLED", ["FILLED"]])
+def test_error_text_filled_is_not_filled(module_name, error, monkeypatch, tmp_path):
+    module = _load(module_name)
+    kraken = _kraken_buy(module, monkeypatch, tmp_path, {"error": error})
+    assert kraken == "FAILED"
+    assert kraken != "FILLED"
+    binance = _binance_buy(
+        module,
+        monkeypatch,
+        tmp_path,
+        {"status": "FILLED", "executedQty": "1.0", "error": error},
+    )
+    assert binance == "FAILED"
+    assert binance != "FILLED"
+
+
+@pytest.mark.parametrize("module_name", MODULES)
+@pytest.mark.parametrize("provider_status", ["open", "canceled"])
+def test_kraken_non_closed_with_fill_qty_is_not_filled(
+    module_name, provider_status, monkeypatch, tmp_path
+):
+    status = _kraken_buy(
+        _load(module_name),
+        monkeypatch,
+        tmp_path,
+        {"status": provider_status, "vol_exec": "1.50000000", "txid": TXID},
+    )
+    assert status == provider_status.upper()
+    assert status != "FILLED"
+
+
+@pytest.mark.parametrize("module_name", MODULES)
+@pytest.mark.parametrize("vol_exec", ["inf", "nan"])
+def test_kraken_non_finite_vol_exec_is_not_filled(
+    module_name, vol_exec, monkeypatch, tmp_path
+):
+    status = _kraken_buy(
+        _load(module_name),
+        monkeypatch,
+        tmp_path,
+        {"status": "closed", "vol_exec": vol_exec, "txid": TXID},
+    )
+    assert status == "CLOSED"
+    assert status != "FILLED"
+
+
+@pytest.mark.parametrize("module_name", MODULES)
+@pytest.mark.parametrize("txid", ["dry_run", "mock_1"])
+def test_kraken_sentinel_txid_is_not_filled(module_name, txid, monkeypatch, tmp_path):
+    status = _kraken_buy(
+        _load(module_name),
+        monkeypatch,
+        tmp_path,
+        {"status": "closed", "vol_exec": "0.20000000", "txid": txid},
+    )
+    assert status == "CLOSED"
+    assert status != "FILLED"
+
+
+@pytest.mark.parametrize("module_name", MODULES)
+def test_dry_run_flag_without_not_submitted_is_not_submitted(
+    module_name, monkeypatch, tmp_path
+):
+    status = _kraken_buy(
+        _load(module_name),
+        monkeypatch,
+        tmp_path,
+        {
+            "dryRun": True,
+            "status": "closed",
+            "vol_exec": "0.20000000",
+            "txid": TXID,
+        },
+    )
+    assert status == "NOT_SUBMITTED"
+    assert status != "FILLED"
+
+
+@pytest.mark.parametrize("module_name", MODULES)
+def test_kraken_status_filled_with_positive_qty_is_unconfirmed(
+    module_name, monkeypatch, tmp_path
+):
+    status = _kraken_buy(
+        _load(module_name),
+        monkeypatch,
+        tmp_path,
+        {"status": "FILLED", "vol_exec": "0.20000000", "txid": TXID},
+    )
+    assert status == "UNCONFIRMED"
+    assert status != "FILLED"
+    assert status != "ZERO_FILL"
+
+
+@pytest.mark.parametrize("module_name", MODULES)
+def test_kraken_submission_receipt_is_not_filled(module_name, monkeypatch, tmp_path):
+    from aureon.exchanges.kraken_client import KrakenClient
+
+    client = KrakenClient.__new__(KrakenClient)
+    receipt = client._submission_order_receipt(
+        {"descr": {"order": "buy 0.20000000 XBTUSD @ market"}, "txid": [TXID]},
+        symbol="XBTUSD",
+        side="buy",
+        order_type="market",
+        requested_quantity="0.2",
+    )
+    assert receipt["status"] == "pending_reconciliation"
+    assert "executedQty" in receipt
+    status = _kraken_buy(_load(module_name), monkeypatch, tmp_path, receipt)
+    assert status == "PENDING_RECONCILIATION"
+    assert status != "FILLED"

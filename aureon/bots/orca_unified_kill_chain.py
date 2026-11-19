@@ -18,6 +18,7 @@ BY ANY MEANS NECESSARY - ONLY WINS COUNT
 Refactored from `orca_complete_kill_cycle.py` and `live_kill_chain_demo.py`.
 ═══════════════════════════════════════════════════════════════════════════════
 """
+from aureon.exchanges.orca_attempt_fill import confirmed_exchange_fill, kraken_order_txids
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import os
 from aureon.exchanges.orca_capital_ownership import split_owned_positions  # CN50 guard: skip Capital deals ORCA did not open
@@ -1220,54 +1221,6 @@ def log_killer(msg):
     time.sleep(0.2)
 
 
-_ATTEMPT_LOG_SENTINEL_TXIDS = frozenset({
-    'unknown', 'none', 'null', '0', 'dry_run', 'dry-run', 'dryrun',
-    'not_submitted', 'mock', 'mock_order', 'test', 'test_order',
-})
-
-
-def _positive_fill_amount(value):
-    """True when a provider quantity is a finite number greater than zero."""
-    if isinstance(value, bool) or value is None:
-        return False
-    if isinstance(value, str):
-        value = value.strip()
-        if not value:
-            return False
-    try:
-        amount = float(value)
-    except (TypeError, ValueError):
-        return False
-    if amount != amount or amount in (float('inf'), float('-inf')):
-        return False
-    return amount > 0
-
-
-def _real_txids(raw):
-    """Kraken txid string or txid list, with sentinels rejected."""
-    if isinstance(raw, str):
-        items = [raw]
-    elif isinstance(raw, (list, tuple)):
-        items = list(raw)
-    else:
-        return []
-    found = []
-    for item in items:
-        if not isinstance(item, str):
-            return []
-        token = item.strip()
-        if not token:
-            return []
-        normalized = token.lower().replace('-', '_').replace(' ', '_')
-        if (
-            normalized in _ATTEMPT_LOG_SENTINEL_TXIDS
-            or normalized.startswith(('dry_run', 'mock_', 'test_'))
-        ):
-            return []
-        found.append(token)
-    return found
-
-
 def _attempt_not_submitted(order_result):
     for key in ('status', 'data_status', 'truth_status'):
         if str(order_result.get(key) or '').strip().lower() == 'not_submitted':
@@ -1279,33 +1232,24 @@ def _attempt_not_submitted(order_result):
 
 
 def _attempt_error_status(order_result, error):
-    """Keep the provider's own status or error text. Never call it FILLED."""
+    """Keep the provider's own status or error text. Never return FILLED."""
     status = order_result.get('status')
     if isinstance(status, str) and status.strip():
         token = status.strip().upper()
         if token != 'FILLED':
             return token
-    if isinstance(error, str) and error.strip():
-        return error.strip()
-    if isinstance(error, (list, tuple)):
+    candidate = ''
+    if isinstance(error, str):
+        candidate = error.strip()
+    elif isinstance(error, (list, tuple)):
         texts = [str(item).strip() for item in error if str(item).strip()]
-        if texts:
-            return texts[0] if len(texts) == 1 else '; '.join(texts)
+        if len(texts) == 1:
+            candidate = texts[0]
+        elif texts:
+            candidate = '; '.join(texts)
+    if candidate and candidate.upper() != 'FILLED':
+        return candidate
     return 'FAILED'
-
-
-def _kraken_attempt_filled(order_result):
-    status = str(order_result.get('status') or '').strip().lower()
-    return (
-        status == 'closed'
-        and _positive_fill_amount(order_result.get('vol_exec'))
-        and bool(_real_txids(order_result.get('txid')))
-    )
-
-
-def _binance_attempt_filled(order_result):
-    status = str(order_result.get('status') or '').strip().upper()
-    return status == 'FILLED' and _positive_fill_amount(order_result.get('executedQty'))
 
 
 def _plain_kraken_addorder_ack(order_result):
@@ -1320,15 +1264,15 @@ def _plain_kraken_addorder_ack(order_result):
         return False
     if not isinstance(txids, (list, tuple)) or not txids:
         return False
-    return bool(_real_txids(txids))
+    return bool(kraken_order_txids(txids))
 
 
 def _attempt_log_status(order_result, exchange):
     """Status string written to orca_executions.json.
 
-    Does not place, size, or exit an order. FILLED means the exchange
-    confirmed a fill: Kraken closed with vol_exec > 0 and a txid, or
-    Binance FILLED with executedQty > 0.
+    Does not place, size, or exit an order. FILLED is only
+    confirmed_exchange_fill: Kraken closed with vol_exec > 0 and a txid,
+    or Binance FILLED with executedQty > 0.
     """
     if not isinstance(order_result, dict):
         return 'FAILED'
@@ -1338,9 +1282,7 @@ def _attempt_log_status(order_result, exchange):
     if error:
         return _attempt_error_status(order_result, error)
     venue = str(exchange or '').strip().lower()
-    if venue == 'kraken' and _kraken_attempt_filled(order_result):
-        return 'FILLED'
-    if venue == 'binance' and _binance_attempt_filled(order_result):
+    if confirmed_exchange_fill(order_result, venue):
         return 'FILLED'
     if venue == 'kraken' and _plain_kraken_addorder_ack(order_result):
         return 'SUBMITTED/UNCONFIRMED'
@@ -1348,6 +1290,8 @@ def _attempt_log_status(order_result, exchange):
     if isinstance(status, str) and status.strip():
         token = status.strip().upper()
         if token == 'FILLED':
+            if venue == 'kraken':
+                return 'UNCONFIRMED'
             return 'ZERO_FILL'
         return token
     return 'FAILED'
