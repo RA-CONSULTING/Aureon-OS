@@ -592,6 +592,134 @@ def test_exception_path_uses_reference_and_real_size(monkeypatch, tmp_path):
     assert phi._phi_capital_deal_owned("GARY_NEW_CN50", "capital") is False
 
 
+# ── Charlie's #383 HOLD: pin the writer and the confirm/snapshot edges ─────
+
+
+def test_unknown_reference_reconciles_nothing_even_if_something_answers_to_it(monkeypatch, tmp_path):
+    phi, tl, path = _ledger_setup(monkeypatch, tmp_path)
+    # Worst case: a confirm and a new position both answer to "unknown".
+    cap = _FakeCapital([], confirms={"unknown": ["NEW-U"], "UNKNOWN": ["NEW-U"]})
+    radar, ledger = _setup_radar(phi, tl, cap)
+    snapshot = radar._capital_deal_id_snapshot()
+    cap.positions.append(_cap_pos("NEW-U", deal_reference="unknown"))
+    for ref in ("unknown", "UNKNOWN", " Unknown "):
+        got = radar._reconcile_live_position(_cn50_shadow(), "AUD-T-U", SIZE, ledger,
+                                             pre_order_deal_ids=snapshot, order_ref=ref)
+        assert got is None, ref
+    assert _confirmed_rows(path) == []
+    assert phi._phi_capital_deal_owned("NEW-U", "capital") is False
+
+
+def test_snapshot_entry_without_deal_id_makes_snapshot_unknown(monkeypatch, tmp_path):
+    phi, tl, _path = _ledger_setup(monkeypatch, tmp_path)
+    blank = {"position": {"direction": "BUY", "size": SIZE}, "market": {"epic": "CN50"}}
+    for bad in (blank, _cap_pos(""), {"market": {"epic": "CN50"}}, "not-a-dict"):
+        cap = _FakeCapital([_cap_pos(GARY), bad])
+        radar, _ledger = _setup_radar(phi, tl, cap)
+        # An unreadable entry could be Gary's deal; never treat it as absent.
+        assert radar._capital_deal_id_snapshot() is None, bad
+
+
+def test_dual_deal_confirmation_rejected_with_deal_id_opens_nothing():
+    _load_phi_radar()
+    import aureon_dual_capital as dual
+
+    c = dual.DualCapitalConnector.__new__(dual.DualCapitalConnector)
+    for status in ("REJECTED", "rejected", "", None):
+        reply = {"dealReference": "o_R", "dealStatus": status, "dealId": "D-REJ",
+                 "affectedDeals": []}
+        c.live = SimpleNamespace(confirm_order=lambda _r, reply=reply: reply)
+        assert c.get_live_deal_confirmation("o_R") == [], status
+
+
+def _scan_radar(phi, tmp_path, place_order):
+    radar = _minimal_radar(phi)
+    radar.state = phi.SystemState.ARMED
+    radar.symbol_keys = ["CN50"]
+    radar.live_trades_today = 0
+    radar.price_history = {}
+    radar.current_play_plan = None
+    shadows = []
+    radar.honey_ladder = SimpleNamespace(
+        max_hold_seconds=60, shadow_runs=shadows, honey_pot=None,
+        get_sector_heat=lambda: {}, update_shadow=lambda *_a: None,
+        add_shadow=lambda **kw: shadows.append(SimpleNamespace(**kw)))
+    radar.scanner = SimpleNamespace(
+        feed_price=lambda *_a: None, calculate_volatility=lambda _s: 0.01,
+        money_flow_score=lambda _s: 0.5, detect_breakout=lambda _s: (True, "LONG", 0.9))
+    radar.play_board = SimpleNamespace(build_plan=lambda *_a, **_k: None)
+    radar.capital_dual = SimpleNamespace(calculate_micro_tp=lambda **_k: 102.0,
+                                         get_live_balance=lambda: 0.0)
+    radar.capital_live = SimpleNamespace()
+    for name in ("_reconcile_existing_live_positions", "_reconcile_persisted_honey_pot",
+                 "_check_honey_pot", "_check_demo_shadows", "_try_auto_arm",
+                 "_promote_to_honey_pot"):
+        setattr(radar, name, lambda: None)
+    radar._read_fused_signals = lambda: {}
+    radar._get_price = lambda *_a, **_k: 100.0
+    radar._generate_signal = lambda *_a, **_k: None
+    radar._probability_threshold = lambda: 0.0
+    radar._compute_stop_level = lambda *_a: 98.5
+    radar._compute_live_size = lambda *_a: SIZE
+    radar._expectancy_gate_verdict = lambda *_a: {"allowed": True}
+    radar._floor_clamp_tp = lambda _d, _p, t: t
+    radar._max_hold_seconds = lambda _s: 60
+    radar.router = SimpleNamespace(
+        aggregate_exposure=lambda: {"position_exposure": 0.0, "limit": 1.0, "utilization_pct": 0.0},
+        place_order=place_order)
+    return radar
+
+
+def test_scan_live_log_writes_reference_only_ack_without_deal_id(monkeypatch, tmp_path):
+    """The main LIVE loop's live_trades.jsonl writer, not just the reader."""
+    phi, _tl, _path = _ledger_setup(monkeypatch, tmp_path)
+    import aureon_dual_capital as dual
+    import multi_exchange_router as mer
+
+    # Capital's POST /positions answers with only a dealReference.
+    class _Resp:
+        status_code = 200
+
+        def json(self):
+            return {"dealReference": "o_LIVE1"}
+
+    conn = dual.DualCapitalConnector.__new__(dual.DualCapitalConnector)
+    conn._symbol_to_epic = lambda _client, sym: sym
+    conn._get_symbol_category = lambda _sym: "indices"
+    conn._get_dealing_rules = lambda _sym: {"minDealSize": 0.01}
+    client = SimpleNamespace(demo_mode=False, _request=lambda *_a, **_k: _Resp())
+    router = mer.MultiExchangeRouter.__new__(mer.MultiExchangeRouter)
+    router._capital_connector = lambda: SimpleNamespace(
+        place_live_order=lambda **_k: conn._place_order(client, "CN50", "BUY", SIZE))
+    sent = []
+
+    def place_order(**kw):
+        sent.append(kw)
+        routed = router._route_capital(kw["symbol"], kw["direction"], kw["size"],
+                                       kw["stop_level"], kw["profit_level"])
+        return {**routed, "venue": "capital"}
+
+    intel = SimpleNamespace(adjusted_probability=0.9, action="TRADE", risk_flags=[])
+    pm = SimpleNamespace(evaluate_signal=lambda **_k: intel, should_trade=lambda *_a, **_k: True,
+                         get_matrix=lambda: SimpleNamespace(explain=lambda *_a: ""))
+    monkeypatch.setitem(sys.modules, "radar_probability_matrix", pm)
+    monkeypatch.setitem(sys.modules, "aureon_capital_momentum_bridge", None)
+    monkeypatch.setenv("HOMING_ENABLED", "0")
+    monkeypatch.setenv("LIVE", "1")
+    live = tmp_path / "live_trades.jsonl"
+    monkeypatch.setattr(phi, "LIVE_LOG", live)
+
+    radar = _scan_radar(phi, tmp_path, place_order)
+    radar.scan()
+    assert len(sent) == 1
+    rows = [json.loads(line) for line in live.read_text(encoding="utf-8").splitlines() if line.strip()]
+    assert len(rows) == 1
+    assert rows[0]["dealId"] is None
+    assert rows[0]["dealReference"] == "o_LIVE1"
+    # So the reader never treats the acknowledgement reference as an owned deal.
+    assert phi._phi_capital_deal_owned("o_LIVE1", "capital") is False
+
+
 # ── panic() closes only an owned Capital deal, through the router ─────────
 
 class _PanicRouter:
@@ -674,6 +802,40 @@ def test_panic_closes_owned_deal_through_router(monkeypatch, tmp_path):
     assert [call["deal_id"] for call in radar.router.calls] == ["AUREON-OWN-1"]
     assert radar.router.calls[0]["venue"] == "capital"
     assert radar.router.calls[0]["symbol"] == "ETHUSD"
+
+
+def test_panic_closes_every_owned_deal(monkeypatch, tmp_path):
+    """Several Aureon deals are all closed. A manual deal in the middle is not."""
+    phi = _load_phi_radar()
+    monkeypatch.delenv("AUREON_ORCA_CAPITAL_ADOPT_DEALS", raising=False)
+    ledger = tmp_path / "trade_ledger.jsonl"
+    ledger.write_text(
+        "".join(
+            json.dumps({"stage": "CAPITAL_CONFIRMED", "deal_id": deal, "symbol": "ETHUSD", "direction": "LONG"}) + "\n"
+            for deal in ("AUREON-OWN-1", "AUREON-OWN-2", "AUREON-OWN-3")
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(phi, "_PHI_ENTRY_LEDGER", ledger, raising=False)
+    monkeypatch.setattr(phi, "LIVE_LOG", tmp_path / "live_trades.jsonl", raising=False)
+    radar = _panic_radar(
+        phi,
+        [
+            _live_pos("AUREON-OWN-1", "ETHUSD"),
+            _live_pos("GARY_MANUAL_CN50"),
+            _live_pos("AUREON-OWN-2", "US100"),
+            {"position": {}},
+            _live_pos("AUREON-OWN-3", "GOLD"),
+        ],
+    )
+    radar.panic()
+    assert radar.capital_dual.closed == []
+    assert [call["deal_id"] for call in radar.router.calls] == [
+        "AUREON-OWN-1",
+        "AUREON-OWN-2",
+        "AUREON-OWN-3",
+    ]
+    assert [call["symbol"] for call in radar.router.calls] == ["ETHUSD", "US100", "GOLD"]
 
 
 def test_panic_source_checks_ownership_before_router_close():
