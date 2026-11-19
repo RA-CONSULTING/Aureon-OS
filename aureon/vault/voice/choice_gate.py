@@ -26,10 +26,25 @@ The gate chooses. The voice writes. The system hears itself.
 
 from __future__ import annotations
 
+import math
 import random
 import time
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
+
+
+def _read_lambda_t(raw: Any) -> Optional[float]:
+    """A published Lambda(t), or None when there is no reading.
+
+    Missing and None stay None. A real 0.0 stays 0.0. A bool, a
+    non-number, or a non-finite value is not a reading.
+    """
+    if isinstance(raw, bool) or not isinstance(raw, (int, float)):
+        return None
+    number = float(raw)
+    if not math.isfinite(number):
+        return None
+    return number
 
 
 @dataclass
@@ -99,7 +114,10 @@ class ChoiceGate:
 
         # ── Pull factors from vault state ────────────────────────────────
         force = float(getattr(vault, "last_casimir_force", 0.0) or 0.0)
-        lambda_t = float(getattr(vault, "last_lambda_t", 0.0) or 0.0)
+        try:
+            lambda_t = _read_lambda_t(getattr(vault, "last_lambda_t", None))
+        except Exception:
+            lambda_t = None
         love = float(getattr(vault, "love_amplitude", 0.0) or 0.0)
         gratitude = float(getattr(vault, "gratitude_score", 0.5) or 0.5)
         rally = bool(getattr(vault, "rally_active", False))
@@ -139,7 +157,7 @@ class ChoiceGate:
             urgency += f
             decision.factors["high_love"] = round(f, 4)
 
-        if abs(lambda_t) > 0.5:
+        if lambda_t is not None and abs(lambda_t) > 0.5:
             f = min(0.2, abs(lambda_t) * 0.2)
             urgency += f
             decision.factors["lambda_t"] = round(f, 4)
@@ -183,6 +201,8 @@ class ChoiceGate:
             decision.reasoning = (
                 f"quiet (urgency={urgency:.3f} < {self.urgency_threshold:.2f})"
             )
+        if lambda_t is None:
+            decision.reasoning = f"{decision.reasoning} | Λ(t) no reading"
 
         self._last_decision = decision
         return decision
