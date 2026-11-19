@@ -3,7 +3,8 @@
 ``assess_coherence`` already refuses NaN, inf, bools, and values outside
 [0, 1]. The gear used to hand Auris ``last_lambda_t = 0.0`` for every
 refusal, the same input as an accepted 0.0. A refusal is no reading:
-``None`` reaches Auris, and a real 0.0 stays 0.0.
+``None`` reaches Auris. An accepted gamma of 0.0 stays on the gamma
+input and does not fill the lambda slot when the field has no ``lambda_t``.
 """
 
 from __future__ import annotations
@@ -69,12 +70,11 @@ def test_real_zero_reading_stays_zero(monkeypatch, captured) -> None:
 
     receipt = hnc_llm_gears.turn_gears("salad")
 
-    assert captured["last_lambda_t"] == 0.0
-    assert captured["last_lambda_t"] is not None
     field_gear = receipt["gears"][1]
     assert field_gear["coherence"] == 0.0
     assert field_gear["coherence_verdict"] == "ACCEPTED"
-    assert "flat" in captured["falcon"].reasoning
+    assert captured["last_lambda_t"] is None
+    assert field_gear.get("lambda_t") is None
 
 
 def test_falcon_does_not_crash_or_read_none_as_zero() -> None:
