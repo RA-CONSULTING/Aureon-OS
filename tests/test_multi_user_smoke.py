@@ -12,6 +12,8 @@ import pytest
 from aureon.containment.multi_user_smoke import (
     _RECEIPT_LABEL,
     _SHM_READ_CAP,
+    _SOURCE_FILES,
+    _UNCHANGED_FILES,
     PIN,
     STARTED_FROM,
     _scan_new_shm,
@@ -365,28 +367,17 @@ def test_committed_receipt_keeps_the_release_hold() -> None:
     memory = receipt["shared_memory"]
     assert memory["dev_shm_preexisting_read"] is False
     assert "No universal shared-memory-leak claim" in memory["claim"]
+    assert receipt["holds"] == []
+    assert receipt["child"]["exchange_module_count"] == 0
+    assert receipt["worktree_dirty_at_measurement"] is False
+    # The receipt is bound to the bytes it measured, not to a commit id, so a
+    # squash merge keeps it valid and any edit to a measured file breaks it.
+    assert set(receipt["source_sha256"]) == set(_SOURCE_FILES)
+    assert set(receipt["unchanged_sha256"]) == set(_UNCHANGED_FILES)
     for name, digest in receipt["source_sha256"].items():
-        assert _sha256(ROOT / name) == digest
+        assert _sha256(ROOT / name) == digest, f"{name} changed since the receipt was measured"
     for name, digest in receipt["unchanged_sha256"].items():
-        assert _sha256(ROOT / name) == digest
-    head = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout.strip()
-    parent = subprocess.run(
-        ["git", "rev-parse", "HEAD^"],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    allowed = {head}
-    if parent.returncode == 0:
-        allowed.add(parent.stdout.strip())
-    assert receipt["git_head_at_measurement"] in allowed
+        assert _sha256(ROOT / name) == digest, f"{name} changed since the receipt was measured"
     markdown = RECEIPT_MD.read_text(encoding="utf-8")
     assert f"**{receipt['verdict']}**" in markdown
     assert "not a supported public runtime" in markdown
