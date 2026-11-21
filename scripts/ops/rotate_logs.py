@@ -50,6 +50,32 @@ def targets() -> list[Target]:
     return items
 
 
+def prune_unified_bus_archives(*, keep: int = 2, dry_run: bool = False) -> int:
+    """Keep only the newest unified-bus archives.
+
+    The in-process unified-bus rotation deliberately keeps every archive. On a
+    small disk that grows without bound, so the launcher calls this before it
+    starts a cycle. A missing directory or a failed unlink is not fatal.
+    """
+    if not FUSION_STATE.is_dir():
+        return 0
+    archives = [path for path in FUSION_STATE.glob("unified_bus.jsonl.*") if path.is_file()]
+    archives.sort(key=lambda path: path.stat().st_mtime, reverse=True)
+    removed = 0
+    for path in archives[keep:]:
+        if dry_run:
+            print(f"would prune {path.name}")
+            continue
+        try:
+            path.unlink()
+        except OSError as exc:
+            print(f"skip prune {path.name}: {exc.__class__.__name__}: {exc}")
+            continue
+        print(f"pruned {path.name}")
+        removed += 1
+    return removed
+
+
 def rotate(target: Target, *, dry_run: bool = False) -> int:
     path = target.path
     try:
@@ -79,8 +105,9 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true", help="report without moving files")
     args = parser.parse_args(argv)
+    pruned = prune_unified_bus_archives(dry_run=args.dry_run)
     rotated = sum(rotate(item, dry_run=args.dry_run) for item in targets())
-    if not rotated and not args.dry_run:
+    if not rotated and not pruned and not args.dry_run:
         print("no log exceeded its cap")
     return 0
 

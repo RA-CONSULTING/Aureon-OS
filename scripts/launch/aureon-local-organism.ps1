@@ -8,7 +8,8 @@ param(
     [switch]$Monitor,
     [switch]$Watch,
     [switch]$RefreshRegistry,
-    [switch]$NoMonitor
+    [switch]$NoMonitor,
+    [switch]$CoreOnly
 )
 
 $ErrorActionPreference = "Stop"
@@ -34,9 +35,9 @@ $env:AUREON_LLM_OFFLINE = "0"
 
 # Bounded logs. The ThoughtBus rotates its active log on write; the unified
 # bus keeps timestamped archives and never deletes one by itself.
-$env:AUREON_THOUGHT_BUS_MAX_BYTES = "33554432"
-$env:AUREON_THOUGHT_BUS_BACKUPS = "3"
-$env:AUREON_UNIFIED_BUS_MAX_BYTES = "33554432"
+$env:AUREON_THOUGHT_BUS_MAX_BYTES = "8388608"
+$env:AUREON_THOUGHT_BUS_BACKUPS = "2"
+$env:AUREON_UNIFIED_BUS_MAX_BYTES = "8388608"
 
 $MonitorDir = Join-Path $Root "state\monitor"
 $MonitorPid = Join-Path $MonitorDir "monitor.pid"
@@ -220,10 +221,13 @@ Remove-Item -LiteralPath $ServiceStop -Force -ErrorAction SilentlyContinue
 Invoke-RotateLogs
 Invoke-EnsureRegistry -Force:$RefreshRegistry
 $env:AUREON_AUTONOMY_MODE = "full"
+$CoreOnlyList = "organ/hnc_core,organ/hnc_live_daemon,organ/organism_circulation,organ/operator_gateway,organ/unified_market_status,organ/bus_bridge"
+$FullOnlyList = "organ/hnc_core,organ/hnc_live_daemon,organ/organism_circulation,organ/operator_gateway,organ/frontend_vite,organ/unified_market_status,organ/mind_thought_action_hub,organ/bus_bridge"
+$Only = if ($CoreOnly) { $CoreOnlyList } else { $FullOnlyList }
 $Arguments = @(
     "-B", "-m", "aureon.launch.master",
     "--only",
-    "organ/hnc_core,organ/hnc_live_daemon,organ/organism_circulation,organ/operator_gateway,organ/frontend_vite,organ/unified_market_status,organ/mind_thought_action_hub,organ/bus_bridge"
+    $Only
 )
 & $Python @Arguments
 $code = $LASTEXITCODE

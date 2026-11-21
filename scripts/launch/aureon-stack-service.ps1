@@ -13,6 +13,7 @@ $StateDir = Join-Path $Root "state\launcher"
 $LogDir = Join-Path $StateDir "logs"
 $PidFile = Join-Path $StateDir "service.pid"
 $StopFlag = Join-Path $StateDir "service.stop"
+$CoreOnlyFlag = Join-Path $StateDir "core-only"
 $LogFile = Join-Path $LogDir "stack_service.log"
 $Launcher = Join-Path $PSScriptRoot "aureon-local-organism.ps1"
 
@@ -61,7 +62,11 @@ try {
         Rotate-ServiceLog
         Add-Content -LiteralPath $LogFile -Value "[$(Get-Date -Format o)] launcher cycle"
         try {
-            & $Launcher *>> $LogFile
+            $LauncherArgs = @()
+            if (Test-Path -LiteralPath $CoreOnlyFlag) {
+                $LauncherArgs += "-CoreOnly"
+            }
+            & $Launcher @LauncherArgs *>> $LogFile
         } catch {
             Add-Content -LiteralPath $LogFile -Value "[$(Get-Date -Format o)] launcher failed: $($_.Exception.Message)"
         }

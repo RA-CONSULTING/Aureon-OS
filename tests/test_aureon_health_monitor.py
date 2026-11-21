@@ -94,3 +94,36 @@ def test_mind_ready_is_ok() -> None:
         200,
         {"status": "ready", "initialized": True, "thoughts": [1, 2]},
     ) == ("ok", "ready, 2 recent thoughts")
+
+
+def test_overall_warning_is_degraded() -> None:
+    assert monitor._overall_status(
+        "ok",
+        {"status": "ok"},
+        {"status": "ok"},
+        {"status": "ok"},
+        {"status": "degraded"},
+        ["disk: 1.0 GB free"],
+    ) == "degraded"
+
+
+def test_overall_disk_down_is_down() -> None:
+    assert monitor._overall_status(
+        "ok",
+        {"status": "ok"},
+        {"status": "ok"},
+        {"status": "ok"},
+        {"status": "down"},
+        ["disk: 0.1 GB free"],
+    ) == "down"
+
+
+def test_overall_connectivity_down_is_down() -> None:
+    assert monitor._overall_status(
+        "down",
+        {"status": "ok"},
+        {"status": "ok"},
+        {"status": "ok"},
+        {"status": "ok"},
+        [],
+    ) == "down"

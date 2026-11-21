@@ -44,6 +44,7 @@ HNC_TRACE = STATE / "hnc_live_trace.jsonl"
 HEALTH_JSON = MONITOR_DIR / "health.json"
 HISTORY_JSONL = MONITOR_DIR / "monitor.jsonl"
 PID_FILE = MONITOR_DIR / "monitor.pid"
+CORE_ONLY_FLAG = LAUNCHER_DIR / "core-only"
 
 BUS_WINDOW_SECONDS = 300
 TAIL_BYTES = 512 * 1024
@@ -58,9 +59,9 @@ PAPER_ENV = {
     "AUREON_UNIFIED_ORDER_EXECUTOR": "0",
     "AUREON_DRY_RUN": "1",
     "AUREON_PLUG_AND_PLAY": "0",
-    "AUREON_THOUGHT_BUS_MAX_BYTES": "33554432",
-    "AUREON_THOUGHT_BUS_BACKUPS": "3",
-    "AUREON_UNIFIED_BUS_MAX_BYTES": "33554432",
+    "AUREON_THOUGHT_BUS_MAX_BYTES": "8388608",
+    "AUREON_THOUGHT_BUS_BACKUPS": "2",
+    "AUREON_UNIFIED_BUS_MAX_BYTES": "8388608",
 }
 
 # name -> (module fragment, URL, log freshness seconds or None)
@@ -82,6 +83,8 @@ COMPONENTS: dict[str, tuple[str, str | None, int | None]] = {
     "organ/hnc_live_daemon": ("aureon.core.hnc_live_daemon", None, 900),
     "organ/bus_bridge": ("aureon_fusion.bus_bridge", None, 120),
 }
+
+OPTIONAL_COMPONENTS = {"organ/frontend_vite", "organ/mind_thought_action_hub"}
 
 
 @dataclass
@@ -477,12 +480,42 @@ def _write_report(report: Report) -> None:
     )
 
 
+def _overall_status(
+    connectivity: str,
+    bus: dict[str, Any],
+    registry: dict[str, Any],
+    hnc: dict[str, Any],
+    disk: dict[str, Any],
+    warnings: list[str],
+) -> str:
+    critical = connectivity == "down" or any(
+        item.get("status") == "down" for item in (bus, registry, hnc, disk)
+    )
+    if critical:
+        return "down"
+    return "degraded" if warnings else "ok"
+
+
 def _collect() -> Report:
     now = time.time()
     pids = _load_pids().get("pids") or {}
     components: list[ComponentCheck] = []
     warnings: list[str] = []
+    core_only = CORE_ONLY_FLAG.exists()
     for name, (module, url, max_log_age) in COMPONENTS.items():
+        if core_only and name in OPTIONAL_COMPONENTS:
+            components.append(
+                ComponentCheck(
+                    name=name,
+                    process="skip",
+                    http="skip",
+                    log="skip",
+                    status="skipped",
+                    detail="not in core-only profile",
+                    pid=None,
+                )
+            )
+            continue
         record = pids.get(name) or {}
         process_state, process_detail, pid = _check_process(name, module, record)
         http_state, http_detail = ("skip", "-")
@@ -538,8 +571,9 @@ def _collect() -> Report:
     if disk["status"] != "ok":
         warnings.append(f"disk: {disk['free_gb']} GB free")
 
-    connectivity = "down" if any(item.process != "up" or item.http == "down" for item in components) else "ok"
-    overall = "down" if connectivity == "down" else "degraded" if warnings else "ok"
+    active = [item for item in components if item.process != "skip"]
+    connectivity = "down" if any(item.process != "up" or item.http == "down" for item in active) else "ok"
+    overall = _overall_status(connectivity, bus, registry, hnc, disk, warnings)
     return Report(
         generated_at=_utc_now(),
         overall=overall,
@@ -559,12 +593,16 @@ def _short(text: str, width: int) -> str:
 
 
 def _print_report(report: Report, compact: bool = False) -> None:
-    up = sum(1 for item in report.components if item.process == "up")
+    active = [item for item in report.components if item.process != "skip"]
+    up = sum(1 for item in active if item.process == "up")
     print(f"AUREON HEALTH {report.generated_at}")
     print(
         f"overall={report.overall} connectivity={report.connectivity} "
-        f"processes={up}/{len(report.components)} disk={report.disk.get('free_gb')}GB free"
+        f"processes={up}/{len(active)} active disk={report.disk.get('free_gb')}GB free"
     )
+    skipped = len(report.components) - len(active)
+    if skipped:
+        print(f"optional components not selected: {skipped}")
     if not compact:
         print(f"{'component':38s} {'proc':5s} {'http':6s} {'log':7s} {'status':9s} detail")
         print("-" * 112)

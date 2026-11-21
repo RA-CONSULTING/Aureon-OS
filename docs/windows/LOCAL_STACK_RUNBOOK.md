@@ -22,9 +22,12 @@ entries. Do not start a second stack from them. See
 Run PowerShell from the checkout root:
 
 ```powershell
-# Start the eight selected components, rotate bounded logs, refresh the
+# Start the selected components, rotate bounded logs, refresh the
 # generated registry when requested, and start the health monitor.
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\launch\aureon-local-organism.ps1
+
+# Start only the core runtime: no Vite dashboard and no mind hub.
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\launch\aureon-local-organism.ps1 -CoreOnly
 
 # Read-only status: service, launcher process table, and one monitor report.
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\launch\aureon-local-organism.ps1 -Status
@@ -75,8 +78,10 @@ runtime stays paper/public-data and reports `stale=true`.
 | `organ/mind_thought_action_hub` | `http://127.0.0.1:13002/api/thoughts` | degraded while warming up |
 | `organ/bus_bridge` | `aureon_fusion/state/bus_bridge.log` | fresh |
 
-The mind hub serves thoughts and health while `status=initializing`. Treat that
-as degraded, not down. It does not block the other components.
+`organ/frontend_vite` and `organ/mind_thought_action_hub` are optional dashboard
+components. The core-only profile skips them and the monitor marks them
+`skipped`, not down. The mind hub serves thoughts and health while
+`status=initializing`; treat that as degraded, not down.
 
 ## Watchdog service
 
@@ -94,6 +99,15 @@ started directly from a terminal or agent session can be killed when that
 session ends, so use the Task Scheduler task or the launcher for anything that
 must stay up.
 
+When `state\launcher\core-only` exists, the watchdog passes `-CoreOnly` to the
+launcher. Create the marker with:
+
+```powershell
+New-Item -ItemType File -Force -Path .\state\launcher\core-only
+```
+
+Remove it to let the watchdog start the full eight-component stack again.
+
 `-Stop` writes the stop flag and stops the service. Delete
 `state\launcher\service.stop`, or start with the launcher, before expecting the
 logon task to run again.
@@ -104,8 +118,8 @@ Active files:
 
 | File | Cap |
 |---|---:|
-| `thoughts.jsonl` | 32 MiB |
-| `aureon_fusion/state/unified_bus.jsonl` | 32 MiB |
+| `thoughts.jsonl` | 8 MiB |
+| `aureon_fusion/state/unified_bus.jsonl` | 8 MiB |
 | `state/hnc_live_trace.jsonl` | 16 MiB |
 | `state/launcher/logs/*.log` | 8 MiB |
 | `aureon_fusion/state/*.log` | 8 MiB |
@@ -113,9 +127,11 @@ Active files:
 | `state/monitor/monitor.out.log` | quiet watch mode; not used for the report |
 | `state/monitor/monitor.err.log` | stderr only |
 
-The launcher sets `AUREON_THOUGHT_BUS_MAX_BYTES=33554432`,
-`AUREON_THOUGHT_BUS_BACKUPS=3`, and
-`AUREON_UNIFIED_BUS_MAX_BYTES=33554432`.
+The launcher sets `AUREON_THOUGHT_BUS_MAX_BYTES=8388608`,
+`AUREON_THOUGHT_BUS_BACKUPS=2`, and
+`AUREON_UNIFIED_BUS_MAX_BYTES=8388608`. The rotation helper also keeps only the
+two newest timestamped unified-bus archives, because the in-process rotation
+does not delete old archives.
 
 Manual rotation and registry helpers:
 
@@ -148,8 +164,8 @@ Outputs:
 - `state\monitor\monitor.jsonl` - bounded history
 - `state\monitor\monitor.pid` - watch singleton
 
-Exit code is `0` for `ok` or `degraded`, and `1` only when connectivity is
-`down`.
+Exit code is `0` for `ok` or `degraded`, and `1` when connectivity or a checked
+subsystem (bus, HNC, registry, or disk) is `down`.
 
 The monitor distinguishes these cases:
 
@@ -160,6 +176,8 @@ The monitor distinguishes these cases:
 - A quiet operator log is `idle` while HTTP is responsive; the gateway does not
   write a line for every health probe.
 - Market `stale=true` and mind `initializing=true` are expected degraded states.
+- In the core-only profile, the frontend and mind hub are `skipped` and are not
+  counted as down.
 
 ## System registry
 
@@ -189,6 +207,28 @@ These are observations from this host, not guarantees:
 
 The monitor reported `overall=degraded` because of the expected market and mind
 warnings plus low disk. Connectivity stayed `ok` with all eight processes up.
+
+### Disk emergency and core-only recovery
+
+At about 11:47 the system-managed pagefile reached 10.78 GiB and the volume
+reported 0 bytes free. The full stack was stopped to avoid corrupt writes. Only
+generated runtime logs were deleted; no source, other checkout, `node_modules`,
+package cache, or application data was removed. The deleted logs regenerate.
+
+The core-only profile is the current recovery state:
+
+- Active: HNC core, HNC live daemon, organism circulation, operator gateway,
+  unified market status, and bus bridge.
+- Skipped: Vite frontend and mind thought/action hub.
+- Monitor: `overall=down` because disk is below the 512 MiB critical threshold;
+  `connectivity=ok` and all six active processes are up.
+
+The marker is `state\launcher\core-only`. To restore the full stack, free at
+least 1.5 GiB first, remove the marker, and restart the task. Options include
+closing memory-heavy applications, moving data off the volume, or setting a
+smaller fixed pagefile with administrator rights and a reboot. Hibernation is
+enabled and `hiberfil.sys` is about 1.6 GiB; disabling it would free that file
+but changes a system power setting and needs the owner's approval.
 
 ## Host pressure and frontend warm-up
 

@@ -21,8 +21,9 @@ These older names are thin wrappers around the same entry. They do not arm live 
 
 For the selected Windows non-model consolidation, use
 `scripts\launch\aureon-local-organism.ps1` with `-Status`, `-Stop`, `-Monitor`,
-or `-Watch`. Its watchdog is `scripts\launch\aureon-stack-service.ps1`, run by
-the `AureonOS-LocalStack` Task Scheduler task. Start/stop/status, bounded logs,
+`-Watch`, or `-CoreOnly`. Its watchdog is
+`scripts\launch\aureon-stack-service.ps1`, run by the `AureonOS-LocalStack`
+Task Scheduler task. Start/stop/status, bounded logs,
 the health monitor, and the generated registry are documented in
 [`docs/windows/LOCAL_STACK_RUNBOOK.md`](docs/windows/LOCAL_STACK_RUNBOOK.md).
 
