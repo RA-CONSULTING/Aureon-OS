@@ -47,14 +47,16 @@ def apply_space_guard() -> None:
     real_chdir = os.chdir
     os.chdir = lambda *_args, **_kwargs: None  # type: ignore[method-assign]
     try:
-        from aureon_public.pin_blob import _SameBytesLoader, git_blob_sha1
+        from aureon_public.pin_blob import _SameBytesLoader, matching_pin_bytes
 
         try:
             data = guard_path.read_bytes()
         except OSError as exc:
             raise ImportError(f"{guard_path.name} is not in this checkout") from exc
-        if git_blob_sha1(data) != GUARD_BLOB:
+        matched = matching_pin_bytes(data, GUARD_BLOB)
+        if matched is None:
             raise ImportError(GUARD_MISMATCH)
+        data = matched
         from aureon_public.pin_blob import install_pinned_aureon_finder
 
         install_pinned_aureon_finder(root)

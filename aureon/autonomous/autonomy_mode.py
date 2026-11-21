@@ -170,7 +170,10 @@ def exchange_keys_present(
     elif environ is None:
         roots.append(Path.cwd())
     for root in roots:
-        present.update(_dotenv_values(root / ".env"))
+        from aureon.core.aureon_env import candidate_env_paths
+
+        for path in candidate_env_paths(root):
+            present.update(_dotenv_values(path))
         present.update(_dotenv_values(root / "aureon_radar" / ".env"))
     return any(all(present.get(key) for key in group) for group in _EXCHANGE_GROUPS)
 

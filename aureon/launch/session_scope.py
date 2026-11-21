@@ -31,6 +31,10 @@ PROBE_ENV = "AUREON_LAUNCHER_SETSID_PROBE"
 PROBE_PID_ENV = "AUREON_LAUNCHER_SETSID_PIDFILE"
 PROBE_STARTED_ENV = "AUREON_LAUNCHER_PROBE_STARTED"
 
+# Windows has no SIGKILL. os.kill(pid, SIGTERM) maps to TerminateProcess
+# there, which is the same forceful stop the pid-tree fallback needs.
+KILL_SIGNAL = getattr(signal, "SIGKILL", signal.SIGTERM)
+
 # A launcher started from inside another launcher's session (for example a
 # self-repair pytest spawned by a running organ) must not inherit that
 # session's scope, cgroup, root pid or workspace. If it did, it would think it
@@ -622,9 +626,9 @@ def _cgroup_kill(path: Path) -> None:
             kill_file.write_text("1\n", encoding="ascii")
         except OSError:
             for pid in members:
-                _signal(pid, signal.SIGKILL)
+                _signal(pid, KILL_SIGNAL)
         for pid in list(members):
-            _signal(pid, signal.SIGKILL)
+            _signal(pid, KILL_SIGNAL)
         time.sleep(0.05)
     if not _cgroup_pids(path):
         try:
@@ -680,5 +684,5 @@ def kill_session(state: dict) -> dict[str, object]:
     elif pids:
         methods.append("pid-tree")
     for pid in pids:
-        _signal(pid, signal.SIGKILL)
+        _signal(pid, KILL_SIGNAL)
     return {"methods": methods, "root_pid": root, "cgroup": cgroup}

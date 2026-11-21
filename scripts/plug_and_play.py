@@ -34,7 +34,6 @@ PIDFILE = RUNTIME / "supervisor.pid"
 PIDS = RUNTIME / "pids.json"
 
 
-
 def _port(name: str, default: int) -> int:
     """Port from AUREON_PLUG_*_PORT, else the default. Bad values stop the run."""
 
@@ -112,9 +111,10 @@ def process_env(extra: dict[str, str] | None = None) -> dict[str, str]:
             "VITE_OPERATOR_PORT": str(OPERATOR_PORT),
             "AUREON_PUBLIC_OPEN": "1",
             "PYTHONUNBUFFERED": "1",
-            "PYTHONPATH": os.pathsep.join(
-                [str(ROOT), str(ROOT / "mcp"), env.get("PYTHONPATH", "")]
-            ).rstrip(os.pathsep),
+            "PYTHONIOENCODING": "utf-8",
+            "PYTHONPATH": os.pathsep.join([str(ROOT), str(ROOT / "mcp"), env.get("PYTHONPATH", "")]).rstrip(
+                os.pathsep
+            ),
         }
     )
     if extra:
@@ -184,7 +184,7 @@ def probe_services() -> dict[str, Any]:
         status, body = _http_get(OPERATOR_URL + "/healthz")
         payload = json.loads(body.decode("utf-8"))
         names = [item.get("name") for item in payload.get("providers") or []]
-        ready_status, ready_body = _http_get(OPERATOR_URL + "/readyz", timeout=10)
+        ready_status, ready_body = _http_get(OPERATOR_URL + "/readyz", timeout=2)
         ready_payload = json.loads(ready_body.decode("utf-8"))
         services["operator"] = {
             "ok": (
@@ -193,7 +193,7 @@ def probe_services() -> dict[str, Any]:
                 and payload.get("service") == "aureon-operator"
                 and ready_status == 200
                 and ready_payload.get("ready") is True
-                and names == ["offline"]
+                and names == ["aureon-own"]
             ),
             "status": status,
             "ready": ready_payload.get("ready"),
@@ -269,9 +269,7 @@ def _cognition_trade_failure(readiness: object) -> str | None:
         if "no market series and no trade-outcome labels" in reason:
             return "cognition auris trade_readiness"
         return None
-    if verdict != "HOLD" or (
-        "no market series" not in reason and "no trade-outcome labels" not in reason
-    ):
+    if verdict != "HOLD" or ("no market series" not in reason and "no trade-outcome labels" not in reason):
         return "cognition auris trade_readiness"
     return None
 
@@ -398,11 +396,19 @@ def _frontend_argv(platform: str | None = None) -> list[str]:
             "127.0.0.1",
             "--port",
             str(FRONTEND_PORT),
+            "--strictPort",
         ]
     vite = ROOT / "frontend" / "node_modules" / ".bin" / "vite"
     if not vite.is_file():
         raise SystemExit(f"dashboard binary missing: {vite}")
-    return [str(vite), "--host", "127.0.0.1", "--port", str(FRONTEND_PORT)]
+    return [
+        str(vite),
+        "--host",
+        "127.0.0.1",
+        "--port",
+        str(FRONTEND_PORT),
+        "--strictPort",
+    ]
 
 
 def _tasklist_lists_pid(stdout: str, number: int) -> bool:
@@ -609,7 +615,7 @@ def smoke() -> int:
     providers = operator.get("providers") or []
     if op_status != 200 or operator.get("service") != "aureon-operator":
         failures.append("operator healthz")
-    if not providers or any(item.get("name") != "offline" for item in providers):
+    if not providers or any(item.get("name") != "aureon-own" for item in providers):
         failures.append(f"operator providers {providers}")
 
     ready_status, ready_body = _http_get(OPERATOR_URL + "/readyz", timeout=20)

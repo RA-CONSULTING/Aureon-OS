@@ -32,7 +32,11 @@ Wait until the log prints `SMOKE PASSED`. The script then stops the stack.
 
 `SMOKE PASSED` means the local guarded stack answered. QGITA detection rate stays **HOLD**. No order is placed. Exchange keys stay unset for this process. A `.env` file in the checkout stays unread and is left as it is.
 
-The supervisor sets `AUREON_AUTONOMY_MODE=guarded`, `AUREON_LIVE_TRADING=0`, and `AUREON_LLM_OFFLINE=1`, and drops credential-shaped variables from the child environment.
+The supervisor sets `AUREON_AUTONOMY_MODE=guarded`, `AUREON_LIVE_TRADING=0`, and `AUREON_LLM_OFFLINE=1`, and drops credential-shaped variables from the child environment. The own-model-only branch exposes the provider name `aureon-own` with model `aureon-own-offline` during this smoke; that is an unavailable offline adapter, not a language-model result.
+
+On 20 November 2026, a direct run of `scripts/plug_and_play.py --smoke` on Windows ended `SMOKE PASSED` with the documented port overrides. It exercised the operator, readiness, frontend, MCP initialization and tools, HNC, QGITA, Auris evidence and cognition. The Auris MCP call still reported its existing old-source pin mismatch; the smoke does not clear that pin or the release HOLD. No external model or order was used.
+
+For the selected non-model full-autonomy runtime, use `scripts\launch\aureon-local-organism.ps1`, `-Status`, or `-Stop`. It fixes real orders and exchange mutations off and does not start model-dependent self-questioning. `-EnvStatus` reports loaded env files, credential-group presence, model HTTP posture, and model reachability without printing values. The local runtime reads the canonical env files; the guarded smoke does not. Its current component boundary and measured blockers are in `state/local-operational-status.md` on the local checkout.
 
 ## Leave the stack up
 

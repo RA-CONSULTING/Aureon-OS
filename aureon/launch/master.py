@@ -177,7 +177,18 @@ class Runner:
             return False, "docker compose plugin not installed"
         # Wait for health so the rows below read healthy containers, not "starting".
         wait_s = seat_port("AUREON_COMPOSE_WAIT_S", 180)
-        cmd = [*base, "-f", str(compose_file), "up", "-d", "--no-build", "--wait", "--wait-timeout", str(wait_s), *services]
+        cmd = [
+            *base,
+            "-f",
+            str(compose_file),
+            "up",
+            "-d",
+            "--no-build",
+            "--wait",
+            "--wait-timeout",
+            str(wait_s),
+            *services,
+        ]
         try:
             proc = subprocess.run(
                 cmd,
@@ -237,7 +248,9 @@ class Runner:
         except (OSError, subprocess.TimeoutExpired):
             return
 
-    def spawn(self, name: str, cmd: list[str], cwd: Path, env: dict[str, str], log_path: Path) -> tuple[int, int]:
+    def spawn(
+        self, name: str, cmd: list[str], cwd: Path, env: dict[str, str], log_path: Path
+    ) -> tuple[int, int]:
         log_path.parent.mkdir(parents=True, exist_ok=True)
         handle = log_path.open("ab")
         kwargs = {
@@ -262,6 +275,22 @@ class Runner:
 
     def alive(self, pid: int) -> bool:
         if pid <= 0:
+            return False
+        if os.name == "nt":
+            try:
+                proc = subprocess.run(
+                    ["tasklist", "/FI", f"PID eq {pid}", "/FO", "CSV", "/NH"],
+                    capture_output=True,
+                    text=True,
+                    timeout=2,
+                    check=False,
+                )
+            except (OSError, subprocess.TimeoutExpired):
+                return False
+            for line in (proc.stdout or "").splitlines():
+                fields = line.split('","')
+                if len(fields) >= 2 and fields[1] == str(pid):
+                    return True
             return False
         try:
             os.kill(pid, 0)
@@ -552,7 +581,9 @@ def _install_python(repo: Path) -> tuple[bool, str]:
     if not ok:
         filtered = state_dir(repo) / "requirements-launcher.txt"
         filtered.parent.mkdir(parents=True, exist_ok=True)
-        filtered.write_text(_without_desktop_extras(requirements.read_text(encoding="utf-8")), encoding="utf-8")
+        filtered.write_text(
+            _without_desktop_extras(requirements.read_text(encoding="utf-8")), encoding="utf-8"
+        )
         ok, detail = _pip_install(repo, python, filtered)
         if ok:
             detail = f"{detail}; PyAudio and other desktop-only packages skipped"
@@ -622,7 +653,9 @@ def _install_docker(runner: Runner) -> tuple[bool, str]:
         staged, stage_detail = _run_install([project_python(runner.repo), str(stage)], runner.repo)
         if not staged:
             return False, f"stage_selfhost_image failed: {stage_detail}"
-    pull_ok, pull_detail = _run_install([*base, "-f", str(compose), "pull", "--ignore-buildable"], runner.repo)
+    pull_ok, pull_detail = _run_install(
+        [*base, "-f", str(compose), "pull", "--ignore-buildable"], runner.repo
+    )
     pull_note = "pull ok" if pull_ok else f"pull failed: {pull_detail}"
     build_ok, build_detail = _run_install([*base, "-f", str(compose), "build"], runner.repo)
     if not build_ok:
@@ -683,27 +716,45 @@ def redact(text: str) -> str:
 
 
 def dotenv_values(path: Path) -> dict[str, str]:
+    """Read one explicit dotenv file without importing or mutating os.environ."""
     found: dict[str, str] = {}
     from aureon.launch.session_scope import dotenv_disabled
 
-    if dotenv_disabled():
-        return found
-    if not path.is_file():
+    if dotenv_disabled() or not path.is_file():
         return found
     try:
-        lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
-    except OSError:
+        from aureon.core.aureon_env import _fallback_load_env_file
+
+        _fallback_load_env_file(path, found, override=False)
+    except Exception:
         return found
-    for line in lines:
-        stripped = line.strip()
-        if not stripped or stripped.startswith("#") or "=" not in stripped:
-            continue
-        key, value = stripped.split("=", 1)
-        key = key.strip()
-        value = value.strip().strip('"').strip("'")
-        if key and value:
-            found[key] = value
-    return found
+    return {key: value for key, value in found.items() if value}
+
+
+def env_file_paths(repo: Path) -> list[Path]:
+    """The canonical loader's paths, including explicit and local overlays."""
+    from aureon.core.aureon_env import candidate_env_paths
+
+    # ``repo`` is already the resolved launcher root. Do not rediscover it from
+    # marker directories: an explicitly supplied root must remain authoritative.
+    paths: list[Path] = []
+    for name in ("AUREON_ENV_FILE", "DOTENV_PATH"):
+        value = os.environ.get(name, "").strip()
+        if value:
+            paths.append(Path(value).expanduser())
+    paths.extend((repo / ".env", repo / ".env.local", repo / ".env.production"))
+    unique: list[Path] = []
+    seen: set[str] = set()
+    for path in paths:
+        key = str(path.resolve())
+        if key not in seen:
+            seen.add(key)
+            unique.append(path)
+    paths = unique
+    radar_env = repo / "aureon_radar" / ".env"
+    if radar_env not in paths:
+        paths.append(radar_env)
+    return paths
 
 
 def credential_sources(repo: Path) -> dict[str, str]:
@@ -711,7 +762,7 @@ def credential_sources(repo: Path) -> dict[str, str]:
     for name, value in os.environ.items():
         if value:
             found[name] = value
-    for path in (repo / ".env", repo / "aureon_radar" / ".env"):
+    for path in env_file_paths(repo):
         found.update(dotenv_values(path))
     return found
 
@@ -776,16 +827,17 @@ def _ensure_local_env(repo: Path) -> tuple[bool, str]:
         return False, f".env.example unreadable: {exc.__class__.__name__}"
     rendered = _apply_safe_overlay(text)
     # A checkout that moves must not keep chasing an absolute workspace path.
-    rendered = "\n".join(
-        line
-        for line in rendered.splitlines()
-        if not line.startswith("SERO_WORKSPACE=")
-    ) + "\n"
+    rendered = (
+        "\n".join(line for line in rendered.splitlines() if not line.startswith("SERO_WORKSPACE=")) + "\n"
+    )
     try:
         target.write_text(rendered, encoding="utf-8")
     except OSError as exc:
         return False, f".env not written: {exc.__class__.__name__}"
-    return True, "wrote .env from .env.example; empty keys left empty; trading stays paper until exchange keys are present"
+    return (
+        True,
+        "wrote .env from .env.example; empty keys left empty; trading stays paper until exchange keys are present",
+    )
 
 
 def _live_lock() -> dict[str, str]:
@@ -808,10 +860,13 @@ def _live_lock() -> dict[str, str]:
 def _overlay_repo_env(env: dict[str, str], repo: Path) -> None:
     """Copy non-empty ``.env`` assignments into a child. Do not log the values."""
 
-    for path in (repo / ".env", repo / "aureon_radar" / ".env"):
-        for key, value in dotenv_values(path).items():
-            if value and not env.get(key):
-                env[key] = value
+    from aureon.core.aureon_env import load_aureon_environment
+
+    load_aureon_environment(repo, override=False, environ=env)
+    radar_env = repo / "aureon_radar" / ".env"
+    for key, value in dotenv_values(radar_env).items():
+        if value and not env.get(key):
+            env[key] = value
 
 
 _EXCHANGE_KEY_PREFIXES = ("ALPACA_", "APCA_", "KRAKEN_", "BINANCE_", "CAPITAL_", "COINAPI_")
@@ -873,6 +928,29 @@ def stamp_boot(env: dict[str, str], repo: Path) -> tuple[str, bool]:
     env["AUREON_MAY_ACT"] = _ON if mode == "full" else _OFF
     env.update(_live_lock() if armed else PAPER_LOCK)
     return label, armed
+
+
+def env_status(repo: Path) -> dict[str, object]:
+    """A secret-safe account of configuration reachability, never its values."""
+    env = dict(os.environ)
+    _overlay_repo_env(env, repo)
+    from aureon.autonomous.autonomy_mode import exchange_keys_present
+    from aureon.inhouse_ai.llm_adapter import _aureon_own_adapter
+
+    model = _aureon_own_adapter()
+    try:
+        reachable = bool(model.health_check())
+    except Exception:
+        reachable = False
+    return {
+        "loaded_files": [path.name for path in env_file_paths(repo) if dotenv_values(path)],
+        "exchange_credential_group_present": exchange_keys_present(repo, env),
+        "model": model.model,
+        "model_http_enabled": env.get("AUREON_LLM_OFFLINE", "0").strip().lower()
+        not in {"1", "true", "yes", "on"},
+        "model_reachable": reachable,
+        "orders_enabled": False,
+    }
 
 
 def paper_env(base: dict[str, str] | None, repo: Path) -> dict[str, str]:
@@ -1157,9 +1235,7 @@ def format_report(
     ]
     for index, row in enumerate(rows, start=1):
         reason = redact(row.reason) or "no detail"
-        lines.append(
-            f"{index:<5}  {row.name:<{name_w}}  {row.status:<8}  {row.health:<7}  {reason}"
-        )
+        lines.append(f"{index:<5}  {row.name:<{name_w}}  {row.status:<8}  {row.health:<7}  {reason}")
     started = sum(row.status == "started" for row in rows)
     blocked = sum(row.status == "blocked" for row in rows)
     lines.append("")
@@ -1252,17 +1328,54 @@ def child_env(repo: Path, spec: dict, extra: dict[str, str] | None = None) -> di
     return env
 
 
-def remember(repo: Path, state: dict, name: str, pid: int, pgid: int) -> None:
-    state.setdefault("pids", {})[name] = {"pid": pid, "pgid": pgid}
+def _normalized_command(cmd: list[str] | tuple[str, ...]) -> str:
+    return subprocess.list2cmdline([str(part) for part in cmd]).casefold().replace("/", "\\")
+
+
+def _process_owns_checkout(repo: Path, name: str, pid: int, info: dict) -> bool:
+    """Reject reused PIDs before reporting or stopping a launcher-owned child."""
+    expected = _normalized_command(info.get("cmd") or [])
+    if not expected:
+        return False
+    if os.name == "nt":
+        import psutil
+
+        try:
+            process = psutil.Process(pid)
+            actual = _normalized_command(process.cmdline())
+            actual_repo = str(Path(process.cwd()).resolve()).casefold()
+            recorded_repo = str(Path(str(info.get("repo") or repo)).resolve()).casefold()
+            recorded_cwd = str(Path(str(info.get("cwd") or repo)).resolve()).casefold()
+        except (psutil.Error, OSError):
+            return False
+        return (
+            actual == expected
+            and actual_repo == recorded_cwd
+            and recorded_repo == str(repo.resolve()).casefold()
+        )
+    return True
+
+
+def remember(repo: Path, state: dict, name: str, spawn: Spawn) -> None:
+    state.setdefault("pids", {})[name] = {
+        "pid": spawn.pid,
+        "pgid": spawn.pgid,
+        "repo": str(repo.resolve()),
+        "component": name,
+        "cmd": list(spawn.cmd),
+        "cwd": str(Path(spawn.cwd).resolve()),
+    }
     save_state(repo, state)
 
 
-def existing_pid(state: dict, name: str, runner: Runner) -> int | None:
+def existing_pid(state: dict, name: str, runner: Runner, repo: Path | None = None) -> int | None:
     info = (state.get("pids") or {}).get(name) or {}
     pid = int(info.get("pid") or 0)
-    if pid and runner.alive(pid):
-        return pid
-    return None
+    if not pid or not runner.alive(pid):
+        return None
+    if repo is not None and not _process_owns_checkout(repo, name, pid, info):
+        return None
+    return pid
 
 
 def spawn_owned(
@@ -1274,7 +1387,7 @@ def spawn_owned(
     cwd: Path,
     env: dict[str, str],
 ) -> tuple[str, str, str]:
-    prior = existing_pid(state, name, runner)
+    prior = existing_pid(state, name, runner, repo)
     if prior:
         return "started", "ok", f"already running as pid {prior}"
     log_path = state_dir(repo) / "logs" / f"{name.replace('/', '_')}.log"
@@ -1282,7 +1395,7 @@ def spawn_owned(
         pid, pgid = runner.spawn(name, cmd, cwd, env, log_path)
     except OSError as exc:
         return "blocked", "down", f"spawn failed: {exc.__class__.__name__}"
-    remember(repo, state, name, pid, pgid)
+    remember(repo, state, name, Spawn(name, list(cmd), str(cwd), dict(env), str(log_path), pid, pgid))
     return "started", "ok", f"pid {pid}"
 
 
@@ -1328,18 +1441,35 @@ def launch_compose_service(
         return Row(name, "blocked", "down", detail or docker_note)
     if service == "postgres":
         if runner.command_ok(["pg_isready", "-d", "aureon"]):
-            return Row(name, "started", "ok", "pg_isready accepted database aureon; launcher did not start postgres and will not stop it")
+            return Row(
+                name,
+                "started",
+                "ok",
+                "pg_isready accepted database aureon; launcher did not start postgres and will not stop it",
+            )
         if shutil.which("pg_isready"):
-            return Row(name, "blocked", "down", f"{docker_note}; pg_isready did not accept database aureon; launcher will not use sudo")
+            return Row(
+                name,
+                "blocked",
+                "down",
+                f"{docker_note}; pg_isready did not accept database aureon; launcher will not use sudo",
+            )
         return Row(name, "blocked", "down", f"{docker_note}; pg_isready not installed")
     if service == "redis":
         if runner.redis_pong():
-            return Row(name, "started", "ok", "redis answered PONG; launcher did not start redis and will not stop it")
+            return Row(
+                name,
+                "started",
+                "ok",
+                "redis answered PONG; launcher did not start redis and will not stop it",
+            )
         server = shutil.which("redis-server")
         if not server:
             return Row(name, "blocked", "down", f"{docker_note}; redis-server not installed")
         if runner.port_busy(6379):
-            return Row(name, "blocked", "down", f"{docker_note}; port 6379 is taken and redis did not answer PONG")
+            return Row(
+                name, "blocked", "down", f"{docker_note}; port 6379 is taken and redis did not answer PONG"
+            )
         status, health, reason = spawn_owned(
             repo,
             state,
@@ -1387,7 +1517,10 @@ def launch_compose_service(
         )
         return Row(name, status, health, f"{docker_note}; host api_b {reason}")
     if service == "frontend":
-        if shutil.which("node") and (repo / "frontend" / "node_modules" / "vite" / "bin" / "vite.js").is_file():
+        if (
+            shutil.which("node")
+            and (repo / "frontend" / "node_modules" / "vite" / "bin" / "vite.js").is_file()
+        ):
             return Row(name, "blocked", "down", f"{docker_note}; organ/frontend_vite owns port 5173")
         if runner.http_ok("http://127.0.0.1:5173/"):
             return Row(name, "started", "ok", "frontend already answering on 127.0.0.1:5173")
@@ -1420,7 +1553,12 @@ def launch_compose_service(
             note += "; an existing listener was left in place and was not stopped"
         return Row(name, "skipped", "skipped", note)
     if service == "api_a":
-        return Row(name, "blocked", "down", f"{docker_note}; host seat is seat/trading_world_v5b on 127.0.0.1:{v5b_port()}")
+        return Row(
+            name,
+            "blocked",
+            "down",
+            f"{docker_note}; host seat is seat/trading_world_v5b on 127.0.0.1:{v5b_port()}",
+        )
     if service == "hnc_core":
         return Row(name, "blocked", "down", f"{docker_note}; local Master-Equation seat is organ/hnc_core")
     return Row(name, "blocked", "down", docker_note)
@@ -1465,7 +1603,9 @@ def launch_trading_world(repo: Path, state: dict, runner: Runner) -> Row:
     name = "seat/trading_world_v5b"
     url = f"http://127.0.0.1:{v5b_port()}/healthz"
     if runner.http_ok(url):
-        return Row(name, "started", "ok", f"127.0.0.1:{v5b_port()}/healthz answered; no second listener was started")
+        return Row(
+            name, "started", "ok", f"127.0.0.1:{v5b_port()}/healthz answered; no second listener was started"
+        )
     if not _module_path(repo, "aureon_fusion.http_service").is_file():
         return Row(name, "blocked", "down", "module not present: aureon_fusion.http_service")
     env = paper_env(None, repo)
@@ -1491,7 +1631,7 @@ def launch_trading_world(repo: Path, state: dict, runner: Runner) -> Row:
 
 def launch_organ(repo: Path, state: dict, runner: Runner, name: str, spec: dict) -> Row:
     organ = name.split("/", 1)[1]
-    prior = existing_pid(state, name, runner)
+    prior = existing_pid(state, name, runner, repo)
     if prior:
         return Row(name, "started", "ok", f"already running as pid {prior}")
     reason = organ_block_reason(repo, organ, spec, runner)
@@ -1500,6 +1640,11 @@ def launch_organ(repo: Path, state: dict, runner: Runner, name: str, spec: dict)
     cmd = organ_command(repo, organ, spec)
     cwd = Path(str(spec.get("cwd") or repo))
     env = child_env(repo, spec)
+    if organ == "hnc_live_daemon":
+        # This is a supervised runtime producer, not an import probe. Its
+        # canonical history commits must remain writable for a live HNC field.
+        env.pop("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS", None)
+        env.pop("AUREON_AUDIT_MODE", None)
     note = ""
     if CREDENTIAL_ORGANS.get(organ) == "exchange":
         label, armed = boot_decision(repo, env)
@@ -1513,6 +1658,21 @@ def _faculty_producer(faculty: dict) -> str:
     source = str(faculty.get("source_id") or faculty.get("name") or "unregistered")
     organ = FACULTY_ORGAN_ALIAS.get(source, source)
     return f"organ/{organ}" if organ else "no producer registered"
+
+
+def faculty_status(faculty: dict) -> Row:
+    """Inspect a faculty sample without creating state or claiming a measurement."""
+    path = Path(str(faculty.get("path") or ""))
+    producer = _faculty_producer(faculty)
+    name = f"faculty/{faculty.get('name')}"
+    if path.is_file():
+        return Row(name, "started", "ok", f"state file present: {path.name}; no measurement is inferred")
+    return Row(
+        name,
+        "skipped",
+        "skipped",
+        f"no sample yet: {path.name or 'missing'} is written by {producer}; status does not create state",
+    )
 
 
 def launch_faculty(repo: Path, faculty: dict) -> Row:
@@ -1584,10 +1744,16 @@ def _self_repair_reason(repo: Path) -> tuple[str, str]:
         return "blocked", f"self-repair import failed: {exc.__class__.__name__}"
     mode = autonomy_mode()
     if not explicitly_enabled():
-        return "blocked", "self-repair not enabled: AUREON_SELF_REPAIR_ENABLE is unset; launcher does not enable it"
+        return (
+            "blocked",
+            "self-repair not enabled: AUREON_SELF_REPAIR_ENABLE is unset; launcher does not enable it",
+        )
     path = config_path(repo)
     if not path.is_file():
-        return "blocked", "self-repair not enabled: state/self_repair_config.json is missing; launcher does not enable it"
+        return (
+            "blocked",
+            "self-repair not enabled: state/self_repair_config.json is missing; launcher does not enable it",
+        )
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
@@ -1607,9 +1773,16 @@ def launch_self_coder(repo: Path) -> Row:
     try:
         from aureon.autonomous.autonomy_mode import autonomy_mode
     except Exception as exc:
-        return Row("loop/self_coder", "blocked", "down", f"self-coder import failed: {exc.__class__.__name__}")
+        return Row(
+            "loop/self_coder", "blocked", "down", f"self-coder import failed: {exc.__class__.__name__}"
+        )
     if not (repo / "aureon" / "autonomous" / "aureon_internal_self_coder.py").is_file():
-        return Row("loop/self_coder", "blocked", "down", "module not present: aureon.autonomous.aureon_internal_self_coder")
+        return Row(
+            "loop/self_coder",
+            "blocked",
+            "down",
+            "module not present: aureon.autonomous.aureon_internal_self_coder",
+        )
     mode = autonomy_mode()
     return Row(
         "loop/self_coder",
@@ -1680,7 +1853,9 @@ def _refresh_http(repo: Path, runner: Runner, rows: list[Row]) -> list[Row]:
                     )
                 )
             else:
-                refreshed.append(Row(row.name, "blocked", "down", f"{row.reason}; {urls[row.name]} did not answer"))
+                refreshed.append(
+                    Row(row.name, "blocked", "down", f"{row.reason}; {urls[row.name]} did not answer")
+                )
             continue
         if row.status == "started" and row.name.startswith("organ/"):
             info = (load_state(repo).get("pids") or {}).get(row.name) or {}
@@ -1745,7 +1920,7 @@ def status_rows(repo: Path, runner: Runner, components: list[Component]) -> list
             rows.append(_dependency_status(repo, runner, component))
             continue
         if component.kind == "stdio":
-            rows.append(launch_stdio())
+            rows.append(Row("stdio/windows", "started", "ok", "stdio available; status makes no changes"))
             continue
         if component.kind == "compose":
             service = component.name.split("/", 1)[1]
@@ -1754,7 +1929,7 @@ def status_rows(repo: Path, runner: Runner, components: list[Component]) -> list
                 if healthy:
                     rows.append(Row(component.name, "started", "ok", detail))
                     continue
-            pid = existing_pid(state, component.name, runner)
+            pid = existing_pid(state, component.name, runner, repo)
             if pid:
                 rows.append(Row(component.name, "started", "ok", f"pid {pid}"))
                 continue
@@ -1770,7 +1945,7 @@ def status_rows(repo: Path, runner: Runner, components: list[Component]) -> list
             organ = component.organ or ""
             spec = organ_specs.get(organ) or {}
             reason = organ_block_reason(repo, organ, spec, runner)
-            pid = existing_pid(state, component.name, runner)
+            pid = existing_pid(state, component.name, runner, repo)
             if pid:
                 # Our own live child holds its port; "port already bound" is not a block.
                 rows.append(Row(component.name, "started", "ok", f"pid {pid}"))
@@ -1781,7 +1956,7 @@ def status_rows(repo: Path, runner: Runner, components: list[Component]) -> list
             continue
         if component.kind == "faculty":
             faculty = faculty_by_name.get(component.faculty or "")
-            rows.append(launch_faculty(repo, faculty or {"name": component.faculty, "path": ""}))
+            rows.append(faculty_status(faculty or {"name": component.faculty, "path": ""}))
             continue
         if component.kind == "repair":
             rows.append(launch_self_repair(repo))
@@ -1901,8 +2076,13 @@ def stop_rows(repo: Path, runner: Runner) -> list[Row]:
     for name, info in list((state.get("pids") or {}).items()):
         pid = int(info.get("pid") or 0)
         pgid = int(info.get("pgid") or pid or 0)
-        runner.stop_pid(pid, pgid)
-        rows.append(Row(name, "blocked", "down", "stopped"))
+        if existing_pid(state, name, runner, repo):
+            runner.stop_pid(pid, pgid)
+            rows.append(Row(name, "blocked", "down", "stopped"))
+        else:
+            rows.append(
+                Row(name, "skipped", "skipped", "stale or foreign process record; no process stopped")
+            )
     save_state(repo, {"pids": {}, "compose_started": False, "compose_services": []})
     _unlink_idle_chirp_bus()
     if not rows:
@@ -1913,6 +2093,11 @@ def stop_rows(repo: Path, runner: Runner) -> list[Row]:
 def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog="aureon.launch.master")
     parser.add_argument("--status", action="store_true", help="health-check only; start nothing")
+    parser.add_argument(
+        "--env-status",
+        action="store_true",
+        help="report loaded env files and service reachability without values",
+    )
     parser.add_argument("--stop", action="store_true", help="stop processes this launcher started")
     parser.add_argument("--only", default="", help="comma-separated component names")
     parser.add_argument("--root", default="", help="repository root (defaults to this checkout)")
@@ -1926,6 +2111,9 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
 
 
 def execute(args: argparse.Namespace, repo: Path, runner: Runner) -> int:
+    if args.env_status:
+        sys.stdout.write(json.dumps(env_status(repo), indent=2, sort_keys=True) + "\n")
+        return 0
     if args.status and args.stop:
         print("choose one of --status or --stop", file=sys.stderr)
         return 2
@@ -1962,6 +2150,8 @@ def main(argv: list[str] | None = None) -> int:
     from aureon.launch.session_scope import enter_session, publish_session
 
     args = parse_args(argv)
+    if os.name == "nt":
+        repair_stdio()
     root = Path(args.root).resolve() if args.root else repo_root()
     if not args.status and not args.stop:
         forwarded = list(sys.argv[1:] if argv is None else argv)

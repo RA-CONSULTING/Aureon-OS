@@ -109,7 +109,9 @@ def test_lambda_engine_step_is_unavailable_without_enough_readings() -> None:
         assert body["status"] == "unavailable"
         assert body["lambda_t"] is None
         assert body["auris_to_lambda"] == "HOLD"
-        assert not any(isinstance(value, (int, float)) and not isinstance(value, bool) for value in body.values())
+        assert not any(
+            isinstance(value, (int, float)) and not isinstance(value, bool) for value in body.values()
+        )
 
 
 def test_lambda_engine_step_runs_only_when_readings_and_volatility_are_supplied() -> None:
@@ -170,9 +172,7 @@ def test_qgita_analyze_drops_signals_and_organism_fault_is_synthetic() -> None:
     qgita = _load(tools.qgita_analyze())
     assert "signals" not in qgita
     assert qgita["detection_rate"] == "HOLD"
-    committed = json.loads(
-        (ROOT / "huggingface" / "qgita-snr" / "replay" / "qgita_snr.json").read_text()
-    )
+    committed = json.loads((ROOT / "huggingface" / "qgita-snr" / "replay" / "qgita_snr.json").read_text())
     derived = committed["derived_series"]
     assert qgita["ftcp_count"] == derived["ftcp_count"]
     assert qgita["lhe_count"] == derived["lhe_count"]
@@ -194,9 +194,7 @@ def test_canonical_and_blend_omit_consciousness_keys() -> None:
     from aureon.core.hnc_field import CanonicalField
 
     public = {
-        key: value
-        for key, value in canonical.items()
-        if key not in {"label", "status", "aureon_source"}
+        key: value for key, value in canonical.items() if key not in {"label", "status", "aureon_source"}
     }
     rebuilt = CanonicalField(**public)
     assert rebuilt.consciousness_level is None
@@ -310,9 +308,7 @@ def test_pinned_install_is_preferred_over_a_matching_checkout(tmp_path: Path) ->
         encoding="utf-8",
     )
     saved_modules = {
-        name: module
-        for name, module in sys.modules.items()
-        if name == "aureon" or name.startswith("aureon.")
+        name: module for name, module in sys.modules.items() if name == "aureon" or name.startswith("aureon.")
     }
     saved_path = list(sys.path)
     for name in saved_modules:
@@ -472,7 +468,9 @@ def test_source_names_refuses_blocked_packages_and_guard_still_blocks_import() -
         import_blocked_in_fresh_guarded_process(module)
 
 
-def test_operator_server_stays_off_without_the_flag_and_is_stdio_only(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_operator_server_stays_off_without_the_flag_and_is_stdio_only(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     from aureon_operator.server import main as operator_main
     from aureon_operator.server import refuse_live_order
 
@@ -512,7 +510,9 @@ def test_new_package_tools_and_membrane_paths(monkeypatch: pytest.MonkeyPatch) -
     assert live["provenance"] == "cited"
     assert "loaded from checkout" in live["label"]
     assert "blob check" in live["label"]
-    monkeypatch.setattr(layers, "_load_phenolic_fingerprint", lambda: "phenolic_fingerprint.py is not in this checkout")
+    monkeypatch.setattr(
+        layers, "_load_phenolic_fingerprint", lambda: "phenolic_fingerprint.py is not in this checkout"
+    )
     sys.modules.pop("aureon.bio.mcp_membrane", None)
     blocked = _load(layers.membrane_screen("hello"))
     assert blocked["status"] == "unavailable"
@@ -527,9 +527,11 @@ def test_new_package_tools_and_membrane_paths(monkeypatch: pytest.MonkeyPatch) -
     assert kinds["gates"] == "gates_reading"
     assert kinds["atn"] == "excluded"
     assert kinds["identity"] == "excluded"
-    assert all(row["reason"].startswith("Helper only.") for row in rows if row["package"] in {
-        "alignment", "atn", "cognition", "queen", "vault"
-    })
+    assert all(
+        row["reason"].startswith("Helper only.")
+        for row in rows
+        if row["package"] in {"alignment", "atn", "cognition", "queen", "vault"}
+    )
 
 
 def test_phenolic_blob_matches_pin_and_a_changed_copy_is_refused(
@@ -556,7 +558,9 @@ def test_phenolic_blob_matches_pin_and_a_changed_copy_is_refused(
     assert refused["reason"] == "checkout phenolic_fingerprint differs from pin ac9fa315"
 
 
-def test_pinned_source_reads_once_and_executes_those_bytes(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_pinned_source_reads_once_and_executes_those_bytes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     import sys
 
     from aureon_public.pin_blob import git_blob_sha1, load_pinned_source
@@ -584,10 +588,35 @@ def test_pinned_source_reads_once_and_executes_those_bytes(tmp_path: Path, monke
     changed = tmp_path / "pinned_bytes_changed.py"
     changed.write_bytes(path.read_bytes())
     sys.modules.pop("pinned_bytes_changed", None)
+    assert load_pinned_source("pinned_bytes_changed", changed, "", "mismatch") == "expected blob is required"
     refusal = load_pinned_source("pinned_bytes_changed", changed, expected, "mismatch")
     assert refusal == "mismatch"
     assert "pinned_bytes_changed" not in sys.modules
-    assert load_pinned_source("pinned_bytes_changed", changed, "", "mismatch") == "expected blob is required"
+
+
+def test_crlf_checkout_executes_the_canonical_bytes_that_match_the_pin(tmp_path: Path) -> None:
+    from aureon_public.pin_blob import git_blob_sha1, load_pinned_source, matching_pin_bytes
+
+    path = tmp_path / "pinned_crlf_probe.py"
+    canonical = b"VALUE = 'from canonical LF bytes'\r\n"
+    path.write_bytes(canonical)
+    expected = git_blob_sha1(canonical.replace(b"\r\n", b"\n"))
+    sys.modules.pop("pinned_crlf_probe", None)
+    assert load_pinned_source("pinned_crlf_probe", path, expected, "mismatch") is None
+    assert sys.modules["pinned_crlf_probe"].VALUE == "from canonical LF bytes"
+    sys.modules.pop("pinned_crlf_probe", None)
+
+    path.write_bytes(canonical + b"# real source drift\r\n")
+    assert matching_pin_bytes(path.read_bytes(), expected) is None
+    assert load_pinned_source("pinned_crlf_probe", path, expected, "mismatch") == "mismatch"
+    assert "pinned_crlf_probe" not in sys.modules
+
+    raw_crlf = b"VALUE = 'pinned raw CRLF bytes'\r\n"
+    path.write_bytes(raw_crlf)
+    expected_raw = git_blob_sha1(raw_crlf)
+    assert load_pinned_source("pinned_crlf_probe", path, expected_raw, "mismatch") is None
+    assert sys.modules["pinned_crlf_probe"].VALUE == "pinned raw CRLF bytes"
+    sys.modules.pop("pinned_crlf_probe", None)
 
 
 def test_spec_from_file_location_is_not_used_under_mcp() -> None:
@@ -635,9 +664,7 @@ def test_subprocess_body_call_ignores_stray_module_in_repo_root() -> None:
     finally:
         shadow.unlink(missing_ok=True)
         for name in list(sys.modules):
-            if name not in modules_before and (
-                name == "aureon" or name.startswith("aureon.")
-            ):
+            if name not in modules_before and (name == "aureon" or name.startswith("aureon.")):
                 sys.modules.pop(name, None)
         importlib.invalidate_caches()
 
@@ -683,11 +710,7 @@ def _is_launch_call(node: ast.AST) -> bool:
     receiver is, so chains such as ``demo.queue().launch()`` and
     ``gr.Blocks().launch()`` count too.  Not covered: dynamic lookups such as
     ``getattr(demo, "launch")()``."""
-    return (
-        isinstance(node, ast.Call)
-        and isinstance(node.func, ast.Attribute)
-        and node.func.attr == "launch"
-    )
+    return isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == "launch"
 
 
 def _is_main_guard(node: ast.stmt) -> bool:
@@ -736,6 +759,7 @@ def test_space_entry_points_call_enforce_public_pin() -> None:
     for name in ("hnc-field", "auris-coherence", "qgita-snr", "organism-replay"):
         copy = (ROOT / "huggingface" / name / "space_bind.py").read_text(encoding="utf-8")
         assert copy == bind_text, f"{name}/space_bind.py differs from huggingface/space_bind.py"
+
 
 def test_pinned_finder_not_on_meta_path_after_teardown() -> None:
     from tests.support import mcp_isolation

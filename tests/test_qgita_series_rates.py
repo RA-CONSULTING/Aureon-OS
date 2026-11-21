@@ -101,7 +101,9 @@ def test_market_record_does_not_receive_the_harness() -> None:
     assert "lighthouse_detection_rate" not in market
     assert market["rates_receipt"]["planted_rates_copied"] is False
     assert market["rates_receipt"]["rates_count_as_market_rate"] is False
-    assert "exogenous signal-present versus noise-only labels" in market["rates_receipt"]["missing_ingredient"]
+    assert (
+        "exogenous signal-present versus noise-only labels" in market["rates_receipt"]["missing_ingredient"]
+    )
     closes = [float(bar["close"]) for bar in pack["bars"]]
     harness = measure_signal_in_noise(closes)
     _assert_synthetic_planted(harness)
@@ -112,3 +114,19 @@ def test_market_record_does_not_receive_the_harness() -> None:
     assert isinstance(harness["detection_rate"], float)
     assert market["detection_rate"] != harness["detection_rate"]
     assert market["false_alarm_rate"] != harness["false_alarm_rate"]
+
+
+def test_qgita_benchmark_renders_legacy_reports_without_a_harness() -> None:
+    import json
+    from pathlib import Path
+
+    from aureon.evaluation.qgita_snr_benchmark import render_qgita_markdown
+
+    root = Path(__file__).resolve().parents[1]
+    report = json.loads((root / "reports" / "measured" / "qgita_snr.json").read_text(encoding="utf-8"))
+    assert "test_only_synthetic" not in report
+    for payload in (report, {}):
+        rendered = render_qgita_markdown(payload)
+        assert "synthetic_planted harness, not scored" in rendered
+        assert "not included in this report" in rendered
+        assert "Release boundary stays HOLD" in rendered

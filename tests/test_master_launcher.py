@@ -88,6 +88,7 @@ def _clear_trading_env(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("AUREON_SELF_REPAIR_KILL", raising=False)
     monkeypatch.delenv("AUREON_CODE_AUTO_APPROVE", raising=False)
 
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -136,10 +137,14 @@ class FakeRunner(Runner):
     def compose_stop(self, compose_file: Path, services: list[str]) -> None:
         self.stopped_compose = list(services)
 
-    def spawn(self, name: str, cmd: list[str], cwd: Path, env: dict[str, str], log_path: Path) -> tuple[int, int]:
+    def spawn(
+        self, name: str, cmd: list[str], cwd: Path, env: dict[str, str], log_path: Path
+    ) -> tuple[int, int]:
         self._next += 1
         log_path.parent.mkdir(parents=True, exist_ok=True)
-        self.spawned.append(Spawn(name, list(cmd), str(cwd), dict(env), str(log_path), self._next, self._next))
+        self.spawned.append(
+            Spawn(name, list(cmd), str(cwd), dict(env), str(log_path), self._next, self._next)
+        )
         return self._next, self._next
 
     def alive(self, pid: int) -> bool:
@@ -173,7 +178,9 @@ def launcher_state(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     return state
 
 
-def _run(argv: list[str], runner: FakeRunner, monkeypatch: pytest.MonkeyPatch | None = None) -> tuple[int, str]:
+def _run(
+    argv: list[str], runner: FakeRunner, monkeypatch: pytest.MonkeyPatch | None = None
+) -> tuple[int, str]:
     args = parse_args(argv)
     if monkeypatch is not None:
         pass
@@ -284,7 +291,9 @@ def test_only_stdio_does_not_spawn_or_arm(launcher_state: Path, monkeypatch: pyt
     assert os.environ["AUREON_LIVE_TRADING"] == "0"
 
 
-def test_child_env_stays_paper_when_the_parent_switch_is_on(launcher_state: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_child_env_stays_paper_when_the_parent_switch_is_on(
+    launcher_state: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     _clear_trading_env(monkeypatch)
     monkeypatch.setenv("AUREON_LIVE_TRADING", "1")
     runner = FakeRunner(ROOT)
@@ -322,7 +331,11 @@ def test_status_and_stop_do_not_start_new_processes(launcher_state: Path) -> Non
     assert "nothing recorded" in output
 
 
-def test_stop_kills_only_recorded_pids(launcher_state: Path) -> None:
+def test_stop_kills_only_recorded_pids(launcher_state: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import aureon.launch.master as master
+
+    monkeypatch.setattr(master, "_process_owns_checkout", lambda *_args: True)
+    monkeypatch.setattr("aureon.launch.session_scope.kill_session", lambda _state: None)
     runner = FakeRunner(ROOT)
     code, _output = _run(["--only", "seat/trading_world_v5b"], runner)
     assert code == 0
@@ -334,11 +347,131 @@ def test_stop_kills_only_recorded_pids(launcher_state: Path) -> None:
     assert "stopped" in output
 
 
+def test_status_faculty_does_not_create_a_missing_sample(
+    tmp_path: Path, launcher_state: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import aureon.launch.master as master
+
+    sample = tmp_path / "missing-sample.json"
+    monkeypatch.setattr(
+        master,
+        "_faculties",
+        lambda: ([{"name": "absent", "path": sample, "source_id": "unregistered"}], None),
+    )
+    runner = FakeRunner(ROOT)
+    rows = master.status_rows(ROOT, runner, [Component("faculty/absent", "faculty", faculty="absent")])
+    assert rows[0].status == "skipped"
+    assert "no sample yet" in rows[0].reason
+    assert not sample.exists()
+    assert runner.spawned == []
+
+
+def test_windows_reused_pid_is_not_reported_or_stopped(
+    launcher_state: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import aureon.launch.master as master
+
+    if os.name != "nt":
+        pytest.skip("Windows process identity regression")
+    pid = os.getpid()
+    monkeypatch.setattr("aureon.launch.session_scope.kill_session", lambda _state: None)
+    state = {
+        "pids": {
+            "organ/mind_thought_action_hub": {
+                "pid": pid,
+                "pgid": pid,
+                "cmd": [project_python(ROOT), "-u", "-m", "aureon_fusion.mind_hub"],
+                "cwd": str(ROOT),
+            }
+        }
+    }
+    monkeypatch.setattr(master, "load_state", lambda _repo: state)
+    runner = FakeRunner(ROOT)
+    runner.spawned = [Spawn("other", ["not-aureon"], str(ROOT), {}, "", pid, pid)]
+    rows = master.stop_rows(ROOT, runner)
+    assert runner.stopped == []
+    assert rows[0].status == "skipped"
+    assert "foreign process record" in rows[0].reason
+
+
 def test_unknown_only_exits_before_spawn(launcher_state: Path) -> None:
     runner = FakeRunner(ROOT)
     code, _output = _run(["--only", "not-a-component"], runner)
     assert code == 2
     assert runner.spawned == []
+
+
+def test_live_hnc_daemon_can_commit_its_canonical_history(
+    launcher_state: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import aureon.launch.master as master
+
+    _clear_trading_env(monkeypatch)
+    monkeypatch.setenv("AUREON_AUDIT_MODE", "1")
+    monkeypatch.setenv("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS", "1")
+    monkeypatch.setattr(master, "organ_block_reason", lambda *_args: None)
+    runner = FakeRunner(ROOT)
+    master.launch_organ(
+        ROOT,
+        {"pids": {}},
+        runner,
+        "organ/hnc_live_daemon",
+        {"module": "aureon.core.hnc_live_daemon"},
+    )
+    env = runner.spawned[0].env
+    assert "AUREON_AUDIT_MODE" not in env
+    assert "AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS" not in env
+    assert env["AUREON_LIVE_TRADING"] == "0"
+    assert env["AUREON_DISABLE_REAL_ORDERS"] == "1"
+
+
+def test_frontend_identity_accepts_its_documented_working_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import aureon.launch.master as master
+
+    monkeypatch.setattr(master.os, "name", "nt")
+
+    class Process:
+        def cmdline(self):
+            return ["node", str(tmp_path / "frontend/node_modules/vite/bin/vite.js")]
+
+        def cwd(self):
+            return str(tmp_path / "frontend")
+
+    import psutil
+
+    monkeypatch.setattr(psutil, "Process", lambda _pid: Process())
+    info = {
+        "repo": str(tmp_path),
+        "cwd": str(tmp_path / "frontend"),
+        "cmd": ["node", str(tmp_path / "frontend/node_modules/vite/bin/vite.js")],
+    }
+    assert master._process_owns_checkout(tmp_path, "organ/frontend_vite", 1234, info) is True
+
+
+
+def test_local_env_overlay_and_aliases_reach_a_child(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import aureon.launch.master as master
+
+    monkeypatch.delenv("PYTHON_DOTENV_DISABLED", raising=False)
+    monkeypatch.delenv("AUREON_ENV_FILE", raising=False)
+    monkeypatch.delenv("DOTENV_PATH", raising=False)
+    (tmp_path / ".env").write_text("ROOT_SETTING=root\n", encoding="utf-8")
+    (tmp_path / ".env.local").write_text(
+        "LOCAL_SETTING=local\nALPACA_API_KEY=alias-test-key\nALPACA_SECRET_KEY=alias-test-secret\n",
+        encoding="utf-8",
+    )
+    (tmp_path / ".env.production").write_text("ROOT_SETTING=production\n", encoding="utf-8")
+    env = master.paper_env({"AUREON_LIVE_TRADING": "0"}, tmp_path)
+    assert env["ROOT_SETTING"] == "root"
+    assert env["LOCAL_SETTING"] == "local"
+    assert env["APCA_API_KEY_ID"] == "alias-test-key"
+    assert env["APCA_API_SECRET_KEY"] == "alias-test-secret"
+    assert "LOCAL_SETTING" not in os.environ
+    assert env["AUREON_DISABLE_REAL_ORDERS"] == "1"
 
 
 def test_live_suite_starts_without_creating_the_release_flag(
@@ -359,7 +492,9 @@ def test_live_suite_starts_without_creating_the_release_flag(
     assert "trading_mode=paper/public-data (no exchange keys)" in output
 
 
-def test_ignored_live_flag_does_not_change_the_environment(launcher_state: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+def test_ignored_live_flag_does_not_change_the_environment(
+    launcher_state: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
     monkeypatch.setenv("AUREON_LIVE_TRADING", "0")
     runner = FakeRunner(ROOT)
     code, _output = _run(["--only", "stdio/windows", "--live"], runner)
@@ -374,7 +509,9 @@ def test_organ_command_is_a_list_and_supervisor_is_not_forced_dry_run(
     _clear_trading_env(monkeypatch)
     command = organ_command(ROOT, "hnc_core", {"module": "aureon_fusion.hnc_core", "args": ["run"]})
     assert command == [project_python(ROOT), "-u", "-m", "aureon_fusion.hnc_core", "run"]
-    supervisor = organ_command(ROOT, "unity_supervisor", {"module": "aureon_fusion.unity_supervisor", "args": []})
+    supervisor = organ_command(
+        ROOT, "unity_supervisor", {"module": "aureon_fusion.unity_supervisor", "args": []}
+    )
     assert "--dry-run" not in supervisor
     env = paper_env(
         {"AUREON_LIVE_TRADING": "1", "PYTHONPATH": "", "SERO_WORKSPACE": "/tmp/other-checkout"},
@@ -416,8 +553,7 @@ def test_radar_env_keys_override_disable_flags_when_root_env_is_blank(
 ) -> None:
     _clear_trading_env(monkeypatch)
     (tmp_path / ".env").write_text(
-        "KRAKEN_API_KEY=\nKRAKEN_API_SECRET=\n"
-        "AUREON_DISABLE_REAL_ORDERS=1\nAUREON_DRY_RUN=1\nDRY_RUN=1\n",
+        "KRAKEN_API_KEY=\nKRAKEN_API_SECRET=\n" "AUREON_DISABLE_REAL_ORDERS=1\nAUREON_DRY_RUN=1\nDRY_RUN=1\n",
         encoding="utf-8",
     )
     radar = tmp_path / "aureon_radar"
@@ -447,8 +583,7 @@ def test_inherited_shell_keys_override_disable_flags_when_root_env_is_blank(
 ) -> None:
     _clear_trading_env(monkeypatch)
     (tmp_path / ".env").write_text(
-        "KRAKEN_API_KEY=\nKRAKEN_API_SECRET=\n"
-        "AUREON_DISABLE_REAL_ORDERS=1\nAUREON_DRY_RUN=1\nDRY_RUN=1\n",
+        "KRAKEN_API_KEY=\nKRAKEN_API_SECRET=\n" "AUREON_DISABLE_REAL_ORDERS=1\nAUREON_DRY_RUN=1\nDRY_RUN=1\n",
         encoding="utf-8",
     )
     env = paper_env(
@@ -468,7 +603,9 @@ def test_inherited_shell_keys_override_disable_flags_when_root_env_is_blank(
     assert env["DRY_RUN"] == "0"
 
 
-def test_kill_file_does_not_force_a_keyed_child_onto_paper(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_kill_file_does_not_force_a_keyed_child_onto_paper(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     _clear_trading_env(monkeypatch)
     monkeypatch.setenv("AUREON_SELF_REPAIR_KILL", "1")
     (tmp_path / ".env").write_text(

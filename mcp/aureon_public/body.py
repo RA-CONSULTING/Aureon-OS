@@ -24,7 +24,11 @@ from typing import Any
 
 from aureon_public.guard_loader import PINNED_COMMIT, apply_space_guard, aureon_source
 from aureon_public.paths import repo_root
-from aureon_public.pin_blob import checkout_blob_refusal, load_checkout_module
+from aureon_public.pin_blob import (
+    canonical_text_bytes,
+    checkout_blob_refusal,
+    load_checkout_module,
+)
 from aureon_public.quiet import quiet
 from aureon_public.tools import _dumps
 
@@ -99,9 +103,7 @@ _OPERATOR_ALLOWLIST = {
 # the in-house adapter through the accounting package.
 _UNTESTED_STAGE2 = "untested stage-2 entry point is not called"
 _ENTRY_REFUSAL = {
-    ("organism/repository_layers.py", "compose_repository_layers"): (
-        "stage 4 entry point is not called"
-    ),
+    ("organism/repository_layers.py", "compose_repository_layers"): ("stage 4 entry point is not called"),
     ("swarm/capability_grid.py", "build_lane"): "stage 4 entry point is not called",
     # Reachable through body_call, and not a tested tool. The real argument
     # is an object the constructor allowlist does not include.
@@ -113,18 +115,10 @@ _ENTRY_REFUSAL = {
     ("observer/live_data_policy.py", "log_blocked_fallback"): (
         "fallback log is not emitted for an event that did not happen"
     ),
-    ("swarm/agent.py", "SwarmAgent.purity"): (
-        "property is not called; the worker calls methods"
-    ),
-    ("swarm/coherence.py", "ClusterCoherence.warm"): (
-        "property is not called; the worker calls methods"
-    ),
-    ("swarm/memory_bus.py", "CausalEchoBus.possibilities"): (
-        "one call cannot park an ensemble and read it"
-    ),
-    ("swarm/auris_node_receipts.py", "issue_auris_node_receipt"): (
-        "trusted resolver is not built from JSON"
-    ),
+    ("swarm/agent.py", "SwarmAgent.purity"): ("property is not called; the worker calls methods"),
+    ("swarm/coherence.py", "ClusterCoherence.warm"): ("property is not called; the worker calls methods"),
+    ("swarm/memory_bus.py", "CausalEchoBus.possibilities"): ("one call cannot park an ensemble and read it"),
+    ("swarm/auris_node_receipts.py", "issue_auris_node_receipt"): ("trusted resolver is not built from JSON"),
     ("swarm/auris_node_receipts.py", "validate_auris_node_receipt"): (
         "receipt is assembled by the test harness; the public result cap would drop its fields"
     ),
@@ -175,6 +169,11 @@ def _inventory() -> tuple[list[dict[str, Any]], dict[tuple[str, str], dict[str, 
     path = repo_root() / "docs" / "mcp" / "inventory.json"
     data = path.read_bytes()
     digest = hashlib.sha256(data).hexdigest()
+    if digest != INVENTORY_SHA256:
+        normalized = canonical_text_bytes(data)
+        if normalized != data and hashlib.sha256(normalized).hexdigest() == INVENTORY_SHA256:
+            data = normalized
+            digest = hashlib.sha256(data).hexdigest()
     if digest != INVENTORY_SHA256:
         _INVENTORY_REFUSAL = "inventory hash mismatch"
         _ROWS = []
@@ -397,7 +396,9 @@ def _coerce(fn: Any, kwargs: dict[str, Any]) -> dict[str, Any]:
         annotation = param.annotation
         origin = getattr(annotation, "__origin__", None)
         name_of = annotation if isinstance(annotation, str) else getattr(annotation, "__name__", "")
-        if (annotation is date or name_of == "date" or str(name_of).endswith("date")) and isinstance(value, str):
+        if (annotation is date or name_of == "date" or str(name_of).endswith("date")) and isinstance(
+            value, str
+        ):
             coerced[name] = date.fromisoformat(value)
         elif (annotation is frozenset or origin is frozenset) and isinstance(value, list):
             coerced[name] = frozenset(value)
@@ -514,7 +515,9 @@ def _release_worker() -> None:
     _WORKER_SLOTS.release()
 
 
-def _call_in_subprocess(module: str, symbol: str, arguments: dict[str, Any], timeout: float) -> tuple[str, Any]:
+def _call_in_subprocess(
+    module: str, symbol: str, arguments: dict[str, Any], timeout: float
+) -> tuple[str, Any]:
     """Run the entry point in a child process. A timeout kills the process group."""
 
     if symbol.lower().endswith(".__init__") or symbol.split(".")[-1].startswith("_"):
@@ -674,9 +677,7 @@ def _plan_stage(package: str) -> int:
         categories: dict[str, set[str]] = defaultdict(set)
         for row in rows:
             categories[str(row["package"])].add(safety_category(str(row.get("safety") or "")))
-        _PLAN_STAGE = {
-            name: stage_for(name, marks) for name, marks in categories.items()
-        }
+        _PLAN_STAGE = {name: stage_for(name, marks) for name, marks in categories.items()}
     return _PLAN_STAGE.get(package, 4)
 
 
@@ -1258,7 +1259,10 @@ def probes_for(stage: int) -> list[dict[str, Any]]:
             {
                 "module": "search/online_research_cinema.py",
                 "symbol": "summarize_text",
-                "arguments": {"text": "The field is a reading. The reading is not an order.", "topic": "field"},
+                "arguments": {
+                    "text": "The field is a reading. The reading is not an order.",
+                    "topic": "field",
+                },
             },
             {
                 "module": "portals/ifs.py",

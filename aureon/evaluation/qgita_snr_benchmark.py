@@ -21,6 +21,17 @@ def render_qgita_markdown(report: dict[str, Any]) -> str:
     public = report.get("derived_series") or {}
     on_lambda = report.get("on_hnc_series") or {}
     on_market = report.get("on_market_series") or {}
+    from aureon.evaluation.qgita_series_rates import rate_phrase
+
+    synthetic = rate_phrase(
+        report.get("test_only_synthetic")
+        or {
+            "harness_status": "no_data",
+            "rates_reason": "not included in this report",
+            "detection_rate": None,
+            "false_alarm_rate": None,
+        }
+    )
     lines = [
         "# QGITA analyzer",
         "",
@@ -46,6 +57,7 @@ def render_qgita_markdown(report: dict[str, Any]) -> str:
             f"{on_market.get('rates_reason', on_market.get('reason', ''))} "
             f"Clock: {on_market.get('timestamps', '')}"
         ),
+        f"Test-only synthetic planted harness: {synthetic} These are not measured market rates.",
         "The public series is not an order. Release boundary stays HOLD.",
         "",
     ]

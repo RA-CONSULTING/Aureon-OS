@@ -496,6 +496,11 @@ def unlink_chirp_bus(name: str = "aureon_chirp_bus") -> bool:
     if not name or "/" in name or name in {".", ".."}:
         logger.warning("unlink_chirp_bus refused an invalid name")
         return False
+    if os.name == "nt":
+        # Windows has no /dev/shm segment to unlink. Its shared-memory
+        # lifetime is handled by the OS when the last handle closes, so
+        # there is nothing to do here and no warning to emit.
+        return True
     if not os.path.isdir("/proc"):
         logger.warning("unlink_chirp_bus refused %r: cannot scan process mappings", name)
         return False
