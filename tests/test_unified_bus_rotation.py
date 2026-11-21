@@ -241,7 +241,11 @@ def test_concurrent_writers_keep_every_line(tmp_path, monkeypatch):
     archives = _archives(tmp_path)
     assert len(archives) >= 3
     assert path.exists()
-    assert path.stat().st_size < cap + 8000
+    # Each writer appends one ~5 KB line after taking the lock. The live file
+    # is therefore bounded by the cap plus one line per concurrent writer, not
+    # by the cap plus a fixed small slack.
+    line_bytes = len(json.dumps({"i": 0, "w": 0, "pad": "c" * 5000})) + 1
+    assert path.stat().st_size < cap + writers * line_bytes
 
     # A tailer that opens the canonical path still sees the live file.
     _append(path, {"i": 100000, "pad": "c" * 5000})
