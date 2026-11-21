@@ -140,6 +140,11 @@ sim_mission_out.txt
 state/*_thoughts.jsonl
 state/*_thoughts.json
 
+# Generated operator inventory and local health reports
+/aureon_system_registry.json
+/thoughts.jsonl.lock
+state/monitor/
+
 # Integration audit trail (regenerated on each run)
 integrations_audit.jsonl
 
