@@ -653,6 +653,7 @@ def _new_receipt(arguments: argparse.Namespace) -> dict[str, Any]:
         "success": False,
         "status": "running",
         "job_id": os.environ.get("SLURM_JOB_ID", "local"),
+        "source_revision": arguments.source_revision,
         "started_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "paths": {
             "source_export": str(arguments.source),
@@ -702,6 +703,12 @@ def validate(arguments: argparse.Namespace) -> dict[str, Any]:
     phase = "initialization"
     phase_started = overall_started
     try:
+        require(
+            isinstance(arguments.source_revision, str)
+            and len(arguments.source_revision) == 40
+            and all(character in "0123456789abcdef" for character in arguments.source_revision),
+            "a full lowercase consolidated source revision is required",
+        )
         phase = "weight_integrity"
         receipt["hashes"] = verify_weights(arguments.model, arguments.source, arguments.overlay)
         receipt["requirements"]["weight_integrity"] = True
@@ -758,6 +765,9 @@ def _argument_parser() -> argparse.ArgumentParser:
     parser.add_argument("--source", type=Path, default=SOURCE_EXPORT)
     parser.add_argument("--overlay", type=Path, default=OVERLAY)
     parser.add_argument("--source-tree", type=Path, default=CONSOLIDATED_SOURCE)
+    parser.add_argument(
+        "--source-revision", default=os.environ.get("AUREON_SOURCE_REVISION")
+    )
     parser.add_argument(
         "--receipt", type=Path, default=RELEASE_ROOT / "validation-receipt.json"
     )

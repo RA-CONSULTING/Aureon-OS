@@ -36,6 +36,9 @@ test -f "$VALIDATOR"
 test -f "$CONSOLIDATED/training/aureon_chat_server.py"
 test -f "$EXPORT/model.safetensors"
 test -f "$SIF"
+test -f "$RELEASE/source-revision"
+read -r SOURCE_REVISION < "$RELEASE/source-revision"
+[[ "$SOURCE_REVISION" =~ ^[0-9a-f]{40}$ ]]
 mkdir -p "$COMBINED" "$RELEASE/logs"
 
 # Only small metadata files are copied. The 14 GB weight remains in place and
@@ -70,4 +73,5 @@ exec apptainer exec --nv --cleanenv \
         --source "$EXPORT" \
         --overlay "$OVERLAY" \
         --source-tree "$CONSOLIDATED" \
+        --source-revision "$SOURCE_REVISION" \
         --receipt "$RELEASE/validation-receipt-$SLURM_JOB_ID.json"

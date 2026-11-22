@@ -507,6 +507,8 @@ class ValidatorTests(unittest.TestCase):
                     str(self.root / "missing-overlay"),
                     "--source-tree",
                     str(self.root / "missing-tree"),
+                    "--source-revision",
+                    "0" * 40,
                     "--receipt",
                     str(receipt_path),
                 ]
@@ -528,6 +530,8 @@ class ValidatorTests(unittest.TestCase):
         self.assertIn("#SBATCH --account=brics.u6vs", script)
         self.assertIn("#SBATCH --partition=workq", script)
         self.assertIn("ln -sfn", script)
+        self.assertIn("source-revision", script)
+        self.assertIn("--source-revision", script)
         self.assertIn("apptainer exec --nv --cleanenv", script)
         self.assertIn("HF_HUB_OFFLINE=1", script)
         self.assertIn("TRANSFORMERS_OFFLINE=1", script)
