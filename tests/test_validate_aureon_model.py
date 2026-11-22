@@ -446,6 +446,124 @@ class ValidatorTests(unittest.TestCase):
         self.assertTrue(direct_record["cleanup"]["cuda_synchronized"])
         self.assertEqual(direct_record["cleanup"]["errors"], [])
 
+        ResidualTorch.cuda.released = False
+        deferred_record = {}
+        deferred, _ = validation.run_direct_validation(
+            self.root,
+            max_new_tokens=8,
+            torch_module=ResidualTorch,
+            transformers_module=FAKE_TRANSFORMERS,
+            direct_record=deferred_record,
+            require_zero_allocation=False,
+        )
+        self.assertIs(deferred, deferred_record)
+        self.assertTrue(deferred["deterministic"])
+        self.assertFalse(deferred["model_released_before_server"])
+        self.assertTrue(deferred["zero_allocation_deferred_to_process_exit"])
+        self.assertEqual(deferred["memory_after_release"]["allocated_bytes"], 4096)
+
+    def test_isolated_direct_validation_uses_worker_exit_and_zero_parent_memory(self) -> None:
+        class CompletedProcess:
+            def __init__(self, *args: object, **kwargs: object) -> None:
+                self.kwargs = kwargs
+                self.exitcode = None
+                self.closed = False
+
+            def start(self) -> None:
+                result_path = self.kwargs["kwargs"]["result_path"]
+                validation.write_receipt(
+                    result_path,
+                    {
+                        "direct": {
+                            "deterministic": True,
+                            "model_released_before_server": False,
+                            "memory_after_release": {
+                                "allocated_bytes": 33_554_432,
+                                "reserved_bytes": 33_554_432,
+                                "peak_allocated_bytes": 14_076_548_096,
+                                "peak_reserved_bytes": 14_212_399_104,
+                            },
+                        },
+                        "versions": {"torch": "worker-torch"},
+                        "error": None,
+                    },
+                )
+                self.exitcode = 0
+
+            def join(self, timeout: float | None = None) -> None:
+                assert timeout is not None
+
+            def close(self) -> None:
+                self.closed = True
+
+        class CompletedContext:
+            process = None
+
+            def Process(self, *args: object, **kwargs: object) -> CompletedProcess:
+                self.process = CompletedProcess(*args, **kwargs)
+                return self.process
+
+        context = CompletedContext()
+        direct_record = {}
+        with (
+            mock.patch.object(validation.multiprocessing, "get_context", return_value=context) as get_context,
+            mock.patch.dict(sys.modules, {"torch": FakeTorch}),
+        ):
+            direct, versions = validation.run_direct_validation_isolated(
+                self.root, max_new_tokens=8, timeout=12, direct_record=direct_record
+            )
+
+        process = context.process
+        get_context.assert_called_once_with("spawn")
+        self.assertIs(direct, direct_record)
+        self.assertTrue(process.closed)
+        self.assertEqual(versions["torch"], "worker-torch")
+        self.assertEqual(direct["worker_memory_before_exit"]["allocated_bytes"], 33_554_432)
+        self.assertEqual(direct["parent_memory_before_server"]["allocated_bytes"], 0)
+        self.assertEqual(direct["memory_after_release"]["allocated_bytes"], 0)
+        self.assertEqual(direct["release_mechanism"], "spawned_worker_exit")
+        self.assertEqual(
+            direct["worker_process"], {"started": True, "joined": True, "exit_code": 0}
+        )
+        self.assertTrue(direct["model_released_before_server"])
+
+    def test_isolated_direct_validation_terminates_a_timed_out_worker(self) -> None:
+        class HangingProcess:
+            def __init__(self, *args: object, **kwargs: object) -> None:
+                self.exitcode = None
+                self.terminated = False
+                self.killed = False
+                self.closed = False
+
+            def start(self) -> None:
+                pass
+
+            def join(self, timeout: float | None = None) -> None:
+                pass
+
+            def terminate(self) -> None:
+                self.terminated = True
+                self.exitcode = -15
+
+            def kill(self) -> None:
+                self.killed = True
+                self.exitcode = -9
+
+            def close(self) -> None:
+                self.closed = True
+
+        process = HangingProcess()
+        context = mock.Mock()
+        context.Process.return_value = process
+        with (
+            mock.patch.object(validation.multiprocessing, "get_context", return_value=context),
+            self.assertRaisesRegex(validation.ValidationError, "exceeded 0.1s"),
+        ):
+            validation.run_direct_validation_isolated(self.root, timeout=0.1)
+        self.assertTrue(process.terminated)
+        self.assertFalse(process.killed)
+        self.assertTrue(process.closed)
+
     def test_direct_validation_cleanup_does_not_mask_generation_error(self) -> None:
         class CleanupFailureCuda(FakeCuda):
             def empty_cache(self) -> None:
@@ -509,7 +627,7 @@ class ValidatorTests(unittest.TestCase):
         )
 
         def fail_direct(
-            model_directory: Path, *, max_new_tokens: int, direct_record: dict
+            model_directory: Path, *, max_new_tokens: int, timeout: float, direct_record: dict
         ) -> None:
             direct_record.update(
                 deterministic=False,
@@ -527,7 +645,7 @@ class ValidatorTests(unittest.TestCase):
 
         with (
             mock.patch.object(validation, "verify_weights", return_value={}),
-            mock.patch.object(validation, "run_direct_validation", side_effect=fail_direct),
+            mock.patch.object(validation, "run_direct_validation_isolated", side_effect=fail_direct),
             mock.patch.object(validation, "run_http_validation") as http_validation,
         ):
             receipt = validation.validate(arguments)

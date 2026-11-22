@@ -19,7 +19,7 @@ No publisher accepts a token as a command-line argument. Set only `HF_TOKEN` or 
 
 Create a clean commit only after reviewing the complete diff. Run the targeted source, routing, HNC, SFT, packaging, archive, shell, and Space tests. Syntax-check shell and Slurm files. Record the source commit and stream that exact commit to Isambard; do not edit the streamed tree in place.
 
-Run the bounded validator in `huggingface/validate_aureon_model.sbatch`. It performs no training and no checkpoint writes. A failed receipt remains evidence and is never overwritten. Do not continue to publication until the actual weight hash, tokenizer round trips, deterministic CUDA generation, HTTP chat path, HNC gears, and model cleanup pass.
+Run the bounded validator in `huggingface/validate_aureon_model.sbatch`. It performs no training and no checkpoint writes. Direct CUDA checks run in a spawned worker; the parent requires a clean worker exit and zero parent-side CUDA allocation before starting the HTTP server, while retaining the worker's pre-exit memory diagnostics. A failed receipt remains evidence and is never overwritten. Do not continue to publication until the actual weight hash, tokenizer round trips, deterministic CUDA generation, HTTP chat path, HNC gears, and model cleanup pass.
 
 ## 2. Dry-run the canonical model release
 
@@ -27,6 +27,8 @@ The model publisher reads the original Isambard export and the reviewed overlay 
 
 ```bash
 python huggingface/publish_aureon_model.py \
+  --source /projects/u6vs/hnc-organism/runs/aureon-7b-sft-label-fix/hf \
+  --overlay /projects/u6vs/aureon-hf-release/model-overlay \
   --manifest /projects/u6vs/aureon-hf-release/model-publication-dry-run.json
 ```
 
@@ -40,6 +42,8 @@ Only after the real source-model GPU receipt passes:
 
 ```bash
 transfer_python huggingface/publish_aureon_model.py \
+  --source /projects/u6vs/hnc-organism/runs/aureon-7b-sft-label-fix/hf \
+  --overlay /projects/u6vs/aureon-hf-release/model-overlay \
   --execute \
   --acknowledge-execution PUBLISH_AUREON_7B_TO_PRIVATE_STAGING \
   --receipt /projects/u6vs/aureon-hf-release/model-private-receipt.json
@@ -55,6 +59,8 @@ This is a separate, deliberate operation requiring complete reconciliation of th
 
 ```bash
 transfer_python huggingface/publish_aureon_model.py \
+  --source /projects/u6vs/hnc-organism/runs/aureon-7b-sft-label-fix/hf \
+  --overlay /projects/u6vs/aureon-hf-release/model-overlay \
   --execute \
   --make-public \
   --acknowledge-execution PUBLISH_AUREON_7B_TO_PRIVATE_STAGING \

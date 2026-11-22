@@ -14,6 +14,7 @@ import copy
 import gc
 import hashlib
 import json
+import multiprocessing
 import os
 import platform
 import subprocess
@@ -185,8 +186,14 @@ def run_direct_validation(
     torch_module: Any = None,
     transformers_module: Any = None,
     direct_record: dict[str, Any] | None = None,
+    require_zero_allocation: bool = True,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    """Load the local model on CUDA and run all direct acceptance checks."""
+    """Load the local model on CUDA and run all direct acceptance checks.
+
+    ``require_zero_allocation=False`` is reserved for the spawned worker below.
+    Its parent still requires worker termination and zero parent-side CUDA
+    allocation before the HTTP server starts.
+    """
 
     if torch_module is None or transformers_module is None:
         import torch
@@ -377,15 +384,116 @@ def run_direct_validation(
         ),
     )
     memory_after_release = record["memory_after_release"]
-    require(
-        memory_after_release["allocated_bytes"] == 0,
-        "CUDA allocations remain after releasing the direct-validation model: "
-        f"allocated_bytes={memory_after_release['allocated_bytes']}, "
-        f"reserved_bytes={memory_after_release['reserved_bytes']}, "
-        f"gc_collected={cleanup['gc_collected']}",
-    )
-    record["model_released_before_server"] = True
+    if require_zero_allocation:
+        require(
+            memory_after_release["allocated_bytes"] == 0,
+            "CUDA allocations remain after releasing the direct-validation model: "
+            f"allocated_bytes={memory_after_release['allocated_bytes']}, "
+            f"reserved_bytes={memory_after_release['reserved_bytes']}, "
+            f"gc_collected={cleanup['gc_collected']}",
+        )
+        record["model_released_before_server"] = True
+    else:
+        record["zero_allocation_deferred_to_process_exit"] = True
     return record, versions
+
+
+def _direct_validation_worker(
+    model_directory: Path,
+    *,
+    max_new_tokens: int,
+    result_path: Path,
+) -> None:
+    """Run direct checks in a disposable process and preserve partial results."""
+
+    direct: dict[str, Any] = {}
+    payload: dict[str, Any] = {"direct": direct, "versions": {}, "error": None}
+    try:
+        direct_result, versions = run_direct_validation(
+            model_directory,
+            max_new_tokens=max_new_tokens,
+            direct_record=direct,
+            require_zero_allocation=False,
+        )
+        payload["versions"] = versions
+        require(direct_result["deterministic"], "direct worker was not deterministic")
+    except Exception as exc:  # noqa: BLE001 - the parent turns this into a failed receipt
+        payload["error"] = {"type": type(exc).__name__, "message": str(exc)}
+    write_receipt(result_path, payload)
+
+
+def _read_worker_result(path: Path) -> dict[str, Any]:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ValidationError(f"cannot read direct-worker result: {exc}") from exc
+    require(isinstance(value, dict), "direct-worker result is not an object")
+    require(isinstance(value.get("direct"), dict), "direct-worker result lacks direct evidence")
+    require(isinstance(value.get("versions"), dict), "direct-worker result lacks versions")
+    return value
+
+
+def run_direct_validation_isolated(
+    model_directory: Path,
+    *,
+    max_new_tokens: int = 64,
+    timeout: float = 900.0,
+    direct_record: dict[str, Any] | None = None,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Release all direct CUDA state through a joined subprocess before HTTP."""
+
+    require(timeout > 0, "direct-worker timeout must be positive")
+    record = direct_record if direct_record is not None else {}
+    with tempfile.TemporaryDirectory(prefix="aureon-direct-validation-") as temporary:
+        result_path = Path(temporary) / "result.json"
+        process = multiprocessing.get_context("spawn").Process(
+            target=_direct_validation_worker,
+            args=(Path(model_directory),),
+            kwargs={"max_new_tokens": max_new_tokens, "result_path": result_path},
+            name="aureon-direct-validation",
+        )
+        process.start()
+        try:
+            process.join(timeout)
+            if process.exitcode is None:
+                process.terminate()
+                process.join(30)
+                if process.exitcode is None:
+                    process.kill()
+                    process.join(30)
+                raise ValidationError(f"direct CUDA worker exceeded {timeout}s and was terminated")
+        finally:
+            if process.exitcode is None:
+                process.kill()
+                process.join(30)
+            exit_code = process.exitcode
+            process.close()
+        result = _read_worker_result(result_path)
+        record.update(result["direct"])
+        require(exit_code == 0, f"direct CUDA worker exited with {exit_code}")
+        if result.get("error"):
+            error = result["error"]
+            raise ValidationError(
+                f"direct CUDA worker failed: {error.get('type')}: {error.get('message')}"
+            )
+
+    record["worker_process"] = {"started": True, "joined": True, "exit_code": 0}
+    record["worker_memory_before_exit"] = copy.deepcopy(record.get("memory_after_release"))
+    # Importing Torch here does not load a model or initialize a CUDA context.
+    # The direct worker has exited, so the parent must own no CUDA allocation.
+    import torch
+
+    parent_memory = _memory_stats(torch)
+    record["parent_memory_before_server"] = parent_memory
+    require(
+        parent_memory["allocated_bytes"] == 0,
+        "validator parent owns CUDA memory after the direct worker exited: "
+        f"allocated_bytes={parent_memory['allocated_bytes']}",
+    )
+    record["memory_after_release"] = parent_memory
+    record["release_mechanism"] = "spawned_worker_exit"
+    record["model_released_before_server"] = True
+    return record, result["versions"]
 
 
 def http_json(
@@ -763,9 +871,10 @@ def validate(arguments: argparse.Namespace) -> dict[str, Any]:
         phase_started = time.perf_counter()
         direct_record: dict[str, Any] = {}
         receipt["direct"] = direct_record
-        direct, versions = run_direct_validation(
+        direct, versions = run_direct_validation_isolated(
             arguments.model,
             max_new_tokens=arguments.max_new_tokens,
+            timeout=arguments.startup_timeout,
             direct_record=direct_record,
         )
         receipt["versions"].update(versions)

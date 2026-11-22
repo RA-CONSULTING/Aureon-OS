@@ -28,7 +28,7 @@ MODEL_REPOSITORY = "GaryLeckey/aureon-7b"
 CANONICAL_SOURCE = Path(
     "/projects/u6vs/hnc-organism/runs/aureon-7b-sft-label-fix/hf"
 )
-DEFAULT_OVERLAY = Path(__file__).with_name("aureon-7b")
+DEFAULT_OVERLAY = Path("/projects/u6vs/aureon-hf-release/model-overlay")
 EXPECTED_WEIGHT_SIZE = 13_990_806_664
 EXPECTED_WEIGHT_SHA256 = "48487f800623474ab99371d71b369694cae64f8ebc4ef038019c7e60da3d45bb"
 OVERLAY_FILES = (

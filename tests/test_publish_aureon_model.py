@@ -16,6 +16,17 @@ WEIGHT = b"canonical-weight"
 REVISION_ZERO = "0" * 40
 
 
+def test_isambard_defaults_select_the_complete_reviewed_overlay() -> None:
+    assert Path(
+        "/projects/u6vs/hnc-organism/runs/aureon-7b-sft-label-fix/hf"
+    ) == publisher.CANONICAL_SOURCE
+    assert Path("/projects/u6vs/aureon-hf-release/model-overlay") == publisher.DEFAULT_OVERLAY
+    document = (Path(__file__).parents[1] / "huggingface" / "PUBLISH.md").read_text(encoding="utf-8")
+    assert document.count(
+        "--overlay /projects/u6vs/aureon-hf-release/model-overlay"
+    ) == 3
+
+
 def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
