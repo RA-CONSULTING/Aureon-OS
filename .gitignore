@@ -32,6 +32,9 @@ dist-ssr
 scripts/binanceKeys.json
 .venv/
 
+# Isolated local test scratch
+.test-tmp/
+
 # Python bytecode
 __pycache__/
 *.pyc
