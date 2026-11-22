@@ -1,0 +1,25 @@
+{
+  "aggregate": {
+    "explain_line_f1": 0.19042254384675905,
+    "explain_rows": 66,
+    "explain_symbol_recall": 0.061392267344648296,
+    "implement_line_f1": 0.016413346611668555,
+    "implement_rows": 638,
+    "implement_symbol_recall": 0.30049261083743845,
+    "line_f1": 0.035554558485818205,
+    "parse_rate": 0.4624183006535948,
+    "parse_scored": 612,
+    "rows": 1125,
+    "symbol_recall": 0.2411196294744682,
+    "symbol_scored": 775
+  },
+  "evaluation_data": "training/sft/eval.jsonl",
+  "evaluation_job_id": "8602611",
+  "max_new_tokens": 1024,
+  "model": "GaryLeckey/aureon-7b",
+  "rows": 1125,
+  "schema": "aureon.evaluation-summary.v1",
+  "source_file": "runs/eval-sft-label-fix.json",
+  "source_sha256": "e5c5614348d4ffb8facbeb6e347aad81343de03170d7a08f38ee5a3c74e12ac4",
+  "training_run": "aureon-7b-sft-label-fix"
+}
