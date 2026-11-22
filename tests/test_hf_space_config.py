@@ -188,6 +188,8 @@ def test_build_context_excludes_credentials_and_does_not_reinclude_json_wholesal
     assert "!**/*.json" not in DOCKERIGNORE
     assert "!huggingface/hnc-field/replay/brain.json" in DOCKERIGNORE
     assert "!huggingface/organism-replay/replay/organism.json" in DOCKERIGNORE
+    assert "!training/aureon_chat_server.py" in DOCKERIGNORE
+    assert "!training/**" not in DOCKERIGNORE
 
 
 def test_fusion_state_override_isolated_from_checkout(tmp_path: Path) -> None:

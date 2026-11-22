@@ -45,8 +45,8 @@ ALLOWED_ROOTS = (
     "huggingface/hnc-field/",
     "huggingface/organism-replay/",
     "supabase/migrations/",
-    "training/",
 )
+ALLOWED_FILES = frozenset({"training/aureon_chat_server.py"})
 CODE_ONLY_ROOTS = (
     "api/",
     "aureon_launcher/",
@@ -219,7 +219,7 @@ def _excluded(path: str) -> bool:
 
 
 def _allowed(path: str) -> bool:
-    if path in ROOT_FILES or path.startswith(ALLOWED_ROOTS):
+    if path in ROOT_FILES or path in ALLOWED_FILES or path.startswith(ALLOWED_ROOTS):
         return True
     pure = PurePosixPath(path)
     source_suffix = pure.suffix.casefold() in {".py", ".sql"}

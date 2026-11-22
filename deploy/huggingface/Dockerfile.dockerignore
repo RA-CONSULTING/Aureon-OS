@@ -53,7 +53,7 @@ dist
 !mcp/**
 !organism/**
 !server/**
-!training/**
+!training/aureon_chat_server.py
 !deploy/huggingface/**
 !deploy/selfhost/**
 !supabase/migrations/**

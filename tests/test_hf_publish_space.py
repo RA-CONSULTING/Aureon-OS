@@ -172,6 +172,8 @@ def test_staging_allowlist_overrides_and_per_file_hashes(
         "frontend/model.safetensors": b"not staged",
         "training/checkpoint.pt": b"not staged",
         "training/archive.zip": b"not staged",
+        "training/corpus/files.jsonl": b"not staged",
+        "training/other.py": b"not staged",
         "docs/not_needed.md": b"not staged",
         "docs/not_needed.py": b"not staged",
         "aureon-trading/aureon/duplicate.py": b"not staged",
@@ -198,6 +200,8 @@ def test_staging_allowlist_overrides_and_per_file_hashes(
     assert "frontend/model.safetensors" not in paths
     assert "training/checkpoint.pt" not in paths
     assert "training/archive.zip" not in paths
+    assert "training/corpus/files.jsonl" not in paths
+    assert "training/other.py" not in paths
     assert "docs/not_needed.md" not in paths
     assert "docs/not_needed.py" not in paths
     assert "aureon-trading/aureon/duplicate.py" not in paths
