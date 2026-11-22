@@ -16,7 +16,9 @@ call is held and nothing is written.
 from __future__ import annotations
 
 import json
+import os
 import shlex
+import subprocess
 import sys
 from typing import Any, Dict, Generator, List
 
@@ -29,15 +31,21 @@ MARKER_TEXT = "aureon-loop-ok"
 FINAL_TEXT = "shell step finished"
 
 
+def _command(*argv: str) -> str:
+    return subprocess.list2cmdline(argv) if os.name == "nt" else shlex.join(argv)
+
+
 def _write_marker_command(path) -> str:
-    script = "import pathlib,sys; pathlib.Path(sys.argv[1]).write_text(sys.argv[2]); print(sys.argv[2])"
-    return " ".join([
-        shlex.quote(sys.executable),
-        "-c",
-        shlex.quote(script),
-        shlex.quote(str(path)),
-        shlex.quote(MARKER_TEXT),
-    ])
+    # Inline ``python -c`` is refused. The child is a script file, and the
+    # assertions below still require that process to write the marker.
+    script_path = path.parent / "write_marker.py"
+    script_path.write_text(
+        "import pathlib, sys\n"
+        "pathlib.Path(sys.argv[1]).write_text(sys.argv[2])\n"
+        "print(sys.argv[2])\n",
+        encoding="utf-8",
+    )
+    return _command(sys.executable, str(script_path), str(path), MARKER_TEXT)
 
 
 class _ScriptedShellModel(LLMAdapter):
