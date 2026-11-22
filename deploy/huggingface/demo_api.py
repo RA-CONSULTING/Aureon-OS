@@ -277,8 +277,11 @@ class AdapterGateway:
                 finished.set()
                 self._slots.release()
 
+        # Thread creation and scheduler delay are part of the request deadline.
+        deadline = time.monotonic() + self.timeout
         threading.Thread(target=call, name="aureon-demo-generate", daemon=True).start()
-        if not finished.wait(self.timeout):
+        remaining = deadline - time.monotonic()
+        if remaining <= 0 or not finished.wait(remaining):
             raise GenerationTimeout("own-model generation exceeded its deadline")
         if "exception" in result:
             raise RuntimeError("own-model adapter failed") from result["exception"]

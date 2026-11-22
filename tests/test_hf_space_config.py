@@ -182,6 +182,12 @@ def test_frontend_is_rebuilt_with_pinned_node_and_no_stale_dist() -> None:
     assert "!frontend/dist" not in DOCKERIGNORE
 
 
+def test_ngc_existing_uid_does_not_block_the_nonroot_runtime() -> None:
+    match = re.search(r"^RUN useradd --create-home --uid ([0-9]+) aureon$", DOCKERFILE, re.MULTILINE)
+    assert match is not None
+    assert int(match.group(1)) > 1000
+
+
 def test_build_context_excludes_credentials_and_does_not_reinclude_json_wholesale() -> None:
     for pattern in ("**/.env", "**/.env.*", "**/*.pem", "**/*.key", ".git", "runtime", "state"):
         assert pattern in DOCKERIGNORE

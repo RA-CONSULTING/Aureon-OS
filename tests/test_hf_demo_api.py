@@ -228,6 +228,20 @@ def test_generation_wait_is_bounded() -> None:
     assert time.monotonic() - started < 0.19
 
 
+def test_generation_deadline_includes_thread_startup(monkeypatch) -> None:
+    gateway = demo_api.AdapterGateway(FakeAdapter, timeout=0.1)
+    original_start = demo_api.threading.Thread.start
+
+    def delayed_start(thread) -> None:
+        time.sleep(0.2)
+        original_start(thread)
+
+    monkeypatch.setattr(demo_api.threading.Thread, "start", delayed_start)
+
+    with pytest.raises(demo_api.GenerationTimeout):
+        gateway.prompt("ping", 32)
+
+
 @pytest.mark.parametrize(
     ("payload", "code"),
     [

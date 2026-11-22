@@ -24,7 +24,8 @@ RUN apt-get update \
       bash nginx redis-server supervisor postgresql postgresql-client git ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
-RUN useradd --create-home --uid 1000 aureon
+# NGC already provides an unprivileged user at UID 1000.
+RUN useradd --create-home --uid 10001 aureon
 WORKDIR /app/aureon-os
 COPY --chown=aureon:aureon . /app/aureon-os
 COPY --from=frontend-build --chown=aureon:aureon /build/frontend/dist /app/aureon-os/frontend/dist
