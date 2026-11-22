@@ -23,17 +23,22 @@ def test_browser_bundle_contains_no_direct_provider_secret_route():
     assert "supabase.functions.invoke('auris-classify'" in utils
 
 
-def test_active_worker_surfaces_have_ollama_fallback():
-    surfaces = (
-        "deploy/cloudflare/aureon_murge_worker/index.mjs",
-        "flameborn/workers/index.mjs",
-    )
-    for relative in surfaces:
-        source = _read(relative)
-        assert "callOllamaCloud" in source
-        assert "AUREON_EXTERNAL_LLM_FALLBACK" in source
-        assert "OLLAMA_API_KEY" in source
-        assert "reasoning_effort" in source
+def test_cloudflare_worker_surface_uses_only_aureon_own_model():
+    source = _read("deploy/cloudflare/aureon_murge_worker/index.mjs")
+    assert 'AUREON_OWN_DEFAULT_MODEL = "aureon-7b-v65k"' in source
+    assert 'ALLOWED_PROVIDERS = new Set(["aureon"])' in source
+    assert "callOllamaCloud" not in source
+    assert "AUREON_EXTERNAL_LLM_FALLBACK" not in source
+    assert "OLLAMA_API_KEY" not in source
+
+
+def test_legacy_flameborn_worker_retains_explicit_external_fallback():
+    # This legacy worker is not the Hugging Face own-model serving route.
+    source = _read("flameborn/workers/index.mjs")
+    assert "callOllamaCloud" in source
+    assert "AUREON_EXTERNAL_LLM_FALLBACK" in source
+    assert "OLLAMA_API_KEY" in source
+    assert "reasoning_effort" in source
 
 
 def test_node_servers_are_held_and_archives_retain_fallback_source():

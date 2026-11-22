@@ -118,11 +118,5 @@ def test_cloudflare_console_is_an_exact_authenticated_same_origin_worker_proxy()
     inventory = static_inventory()
     assert relative in inventory["trusted_same_origin_worker_proxies"]
     assert "flameborn/dist-workers/app.js" not in inventory["trusted_same_origin_worker_proxies"]
-    assert set(inventory["unexpected_direct_llm_surfaces"]) == {
-        "aureon-trading/deploy/cloudflare/aureon_murge_worker/index.mjs",
-        "aureon_radar/aureon_phi_radar.py",
-        "aureon_radar/test_freshness.py",
-        "sources/NEXUS-LIVE-FEED-/nexusAgent.js",
-        "sources/NEXUS-LIVE-FEED-/src/geminiClient.js",
-    }
-    assert inventory["all_discovered_calls_centralized"] is False
+    assert inventory["unexpected_direct_llm_surfaces"] == []
+    assert inventory["all_discovered_calls_centralized"] is True
