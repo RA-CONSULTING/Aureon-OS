@@ -412,6 +412,139 @@ class ValidatorTests(unittest.TestCase):
         self.assertIsNone(references["model"]())
         self.assertIsNone(references["parameter"]())
 
+    def test_direct_validation_fails_on_residual_cuda_allocation(self) -> None:
+        class ResidualCuda(FakeCuda):
+            released = False
+
+            def memory_allocated(self) -> int:
+                return 4096 if self.released else 0
+
+            def empty_cache(self) -> None:
+                self.released = True
+
+        class ResidualTorch(FakeTorch):
+            cuda = ResidualCuda()
+
+        direct_record = {}
+        with self.assertRaisesRegex(
+            validation.ValidationError, r"allocated_bytes=4096, reserved_bytes=0"
+        ):
+            validation.run_direct_validation(
+                self.root,
+                max_new_tokens=8,
+                torch_module=ResidualTorch,
+                transformers_module=FAKE_TRANSFORMERS,
+                direct_record=direct_record,
+            )
+
+        self.assertTrue(direct_record["deterministic"])
+        self.assertEqual(len(direct_record["generations"]), 2)
+        self.assertFalse(direct_record["model_released_before_server"])
+        self.assertEqual(direct_record["memory_after_release"]["allocated_bytes"], 4096)
+        self.assertTrue(direct_record["cleanup"]["generation_scope_exited"])
+        self.assertTrue(direct_record["cleanup"]["cuda_cache_emptied"])
+        self.assertTrue(direct_record["cleanup"]["cuda_synchronized"])
+        self.assertEqual(direct_record["cleanup"]["errors"], [])
+
+    def test_direct_validation_cleanup_does_not_mask_generation_error(self) -> None:
+        class CleanupFailureCuda(FakeCuda):
+            def empty_cache(self) -> None:
+                raise RuntimeError("cleanup sentinel")
+
+        class CleanupFailureTorch(FakeTorch):
+            cuda = CleanupFailureCuda()
+
+        class ExplodingModel(FakeModel):
+            def generate(self, **kwargs: object) -> FakeTensor:
+                output = super().generate(**kwargs)
+                if len(self.generate_calls) == 2:
+                    raise LookupError("generation sentinel")
+                return output
+
+        def load_model(path: str, **kwargs: object) -> FakeModel:
+            return ExplodingModel(FakeTorch)
+
+        direct_record = {}
+        with (
+            mock.patch.object(FakeAutoModel, "from_pretrained", side_effect=load_model),
+            self.assertRaisesRegex(LookupError, "generation sentinel"),
+        ):
+            validation.run_direct_validation(
+                self.root,
+                max_new_tokens=8,
+                torch_module=CleanupFailureTorch,
+                transformers_module=FAKE_TRANSFORMERS,
+                direct_record=direct_record,
+            )
+
+        self.assertEqual(len(direct_record["generations"]), 1)
+        self.assertFalse(direct_record["deterministic"])
+        self.assertFalse(direct_record["model_released_before_server"])
+        self.assertFalse(direct_record["cleanup"]["generation_scope_exited"])
+        self.assertFalse(direct_record["cleanup"]["cuda_cache_emptied"])
+        self.assertTrue(direct_record["cleanup"]["cuda_synchronized"])
+        self.assertEqual(
+            direct_record["cleanup"]["errors"],
+            [
+                {
+                    "step": "cuda.empty_cache",
+                    "type": "RuntimeError",
+                    "message": "cleanup sentinel",
+                }
+            ],
+        )
+        self.assertIn("memory_after_release", direct_record)
+
+    def test_failed_receipt_retains_partial_direct_record(self) -> None:
+        receipt_path = self.root / "direct-failure-receipt.json"
+        arguments = validation._argument_parser().parse_args(
+            [
+                "--model",
+                str(self.root),
+                "--source-revision",
+                "0" * 40,
+                "--receipt",
+                str(receipt_path),
+            ]
+        )
+
+        def fail_direct(
+            model_directory: Path, *, max_new_tokens: int, direct_record: dict
+        ) -> None:
+            direct_record.update(
+                deterministic=False,
+                generations=[{"run": 1, "token_ids": [10, 11]}],
+                memory_after_release={"allocated_bytes": 4096, "reserved_bytes": 8192},
+                cleanup={
+                    "generation_scope_exited": True,
+                    "gc_collected": 3,
+                    "cuda_cache_emptied": True,
+                    "cuda_synchronized": True,
+                    "errors": [],
+                },
+            )
+            raise validation.ValidationError("direct validation sentinel")
+
+        with (
+            mock.patch.object(validation, "verify_weights", return_value={}),
+            mock.patch.object(validation, "run_direct_validation", side_effect=fail_direct),
+            mock.patch.object(validation, "run_http_validation") as http_validation,
+        ):
+            receipt = validation.validate(arguments)
+
+        self.assertFalse(receipt["success"])
+        self.assertEqual(receipt["errors"][0]["phase"], "direct_cuda_bf16_determinism")
+        self.assertEqual(receipt["errors"][0]["message"], "direct validation sentinel")
+        self.assertFalse(receipt["requirements"]["direct_cuda_bf16_determinism"])
+        self.assertEqual(receipt["direct"]["generations"][0]["token_ids"], [10, 11])
+        self.assertEqual(receipt["direct"]["memory_after_release"]["allocated_bytes"], 4096)
+        self.assertEqual(receipt["direct"]["cleanup"]["gc_collected"], 3)
+        self.assertEqual(
+            json.loads(receipt_path.read_text(encoding="utf-8"))["direct"],
+            receipt["direct"],
+        )
+        http_validation.assert_not_called()
+
     def test_hnc_allows_unavailable_field_and_records_blockers(self) -> None:
         response = {
             "hnc_gears": hnc_receipt(),

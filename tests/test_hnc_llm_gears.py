@@ -137,6 +137,31 @@ class GearTrainTests(unittest.TestCase):
         self.assertEqual(receipt["gears"][1]["receipt_id"], "field-before")
         self.assertEqual(receipt["gears"][3]["receipt_id"], "history-before")
 
+    def test_http_receipt_exposes_an_independent_preinference_snapshot(self):
+        organism = {
+            "all_turned": True,
+            "nested": {"receipt_ids": ["before"]},
+            "gears": [
+                {"name": "field", "turned": True, "engaged": True, "receipt_id": "field-before"},
+                {"name": "auris", "turned": True, "engaged": True, "grounded_inputs": 3},
+                {"name": "qgita", "turned": True, "engaged": True, "receipt_id": "history-before"},
+            ],
+        }
+        body = {"choices": [{"message": {"content": '{"verdict":"supported"}'}}]}
+        with patch(
+            "aureon.core.hnc_llm_gears.capture_organism",
+            side_effect=AssertionError("HTTP receipt must not resample the organism"),
+        ):
+            result = attach_gears(body, '{"verdict":"supported"}', organism=organism)
+        snapshot = result["hnc_gears"]["pre_inference_organism_snapshot"]
+        self.assertEqual(snapshot, organism)
+        self.assertIsNot(snapshot, organism)
+        self.assertIsNot(snapshot["nested"], organism["nested"])
+        organism["nested"]["receipt_ids"].append("after")
+        self.assertEqual(snapshot["nested"]["receipt_ids"], ["before"])
+        self.assertEqual(snapshot["gears"][0]["receipt_id"], "field-before")
+        self.assertEqual(result["choices"], body["choices"])
+
     def test_qgita_uses_matching_validated_hnc_history(self):
         history = self._history_receipt()
         receipt = self._turn_with_field(self._field(history), history)

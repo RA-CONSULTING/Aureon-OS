@@ -8,7 +8,9 @@ envelope (bearer auth, rate limiting, error shapes). Offline, no network.
 from __future__ import annotations
 
 import importlib
+import time
 from types import SimpleNamespace
+from unittest import mock
 
 import pytest
 
@@ -314,3 +316,46 @@ def test_veto_flags_contained_reply_without_forcing_block():
     assert resp.reply_contained is True
     assert "untrusted data" in resp.conscience_message
     assert resp.to_dict()["reply_contained"] is True
+
+
+def test_required_own_model_waits_for_real_probe_before_operator_construction(monkeypatch):
+    import aureon.operator.operator_server as srv
+
+    adapter = SimpleNamespace(health_check=mock.Mock(side_effect=[False, True]))
+    monkeypatch.setenv("AUREON_OPERATOR_WAIT_OWN_MODEL", "1")
+    monkeypatch.setenv("AUREON_OWN_MODEL_STARTUP_TIMEOUT_S", "1")
+    monkeypatch.setattr("aureon.inhouse_ai.llm_adapter._aureon_own_adapter", lambda: adapter)
+    monkeypatch.setattr(time, "monotonic", mock.Mock(side_effect=[0.0, 0.0]))
+    monkeypatch.setattr(time, "sleep", lambda _seconds: None)
+
+    srv._wait_for_required_own_model()
+
+    assert adapter.health_check.call_count == 2
+
+
+def test_required_own_model_times_out_without_accepting_unavailable_adapter(monkeypatch):
+    import aureon.operator.operator_server as srv
+
+    adapter = SimpleNamespace(health_check=mock.Mock(return_value=False))
+    monkeypatch.setenv("AUREON_OPERATOR_WAIT_OWN_MODEL", "1")
+    monkeypatch.setenv("AUREON_OWN_MODEL_STARTUP_TIMEOUT_S", "1")
+    monkeypatch.setattr("aureon.inhouse_ai.llm_adapter._aureon_own_adapter", lambda: adapter)
+    monkeypatch.setattr(time, "monotonic", mock.Mock(side_effect=[0.0, 0.0, 2.0]))
+    monkeypatch.setattr(time, "sleep", lambda _seconds: None)
+
+    with pytest.raises(RuntimeError, match="required_aureon_own_model_not_ready"):
+        srv._wait_for_required_own_model()
+
+    assert adapter.health_check.call_count == 2
+
+
+def test_own_model_wait_is_opt_in_outside_public_space(monkeypatch):
+    import aureon.operator.operator_server as srv
+
+    monkeypatch.delenv("AUREON_OPERATOR_WAIT_OWN_MODEL", raising=False)
+    factory = mock.Mock()
+    monkeypatch.setattr("aureon.inhouse_ai.llm_adapter._aureon_own_adapter", factory)
+
+    srv._wait_for_required_own_model()
+
+    factory.assert_not_called()

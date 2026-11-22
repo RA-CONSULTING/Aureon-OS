@@ -1482,6 +1482,36 @@ def create_app(
     return app
 
 
+def _wait_for_required_own_model() -> None:
+    """Hold full-operator construction until the pinned model passes inference.
+
+    The early seat continues to answer liveness while this wait runs. A timeout
+    leaves readiness failed; it never substitutes an unavailable or cloud line.
+    """
+    if str(os.environ.get("AUREON_OPERATOR_WAIT_OWN_MODEL", "")).strip() != "1":
+        return
+    import time
+
+    from aureon.inhouse_ai.llm_adapter import _aureon_own_adapter
+
+    timeout = float(os.environ.get("AUREON_OWN_MODEL_STARTUP_TIMEOUT_S", "1800"))
+    if not 0 < timeout <= 3600:
+        raise ValueError("AUREON_OWN_MODEL_STARTUP_TIMEOUT_S must be in (0, 3600]")
+    deadline = time.monotonic() + timeout
+    while True:
+        try:
+            if _aureon_own_adapter().health_check():
+                logger.info("Aureon own model passed its readiness inference probe")
+                return
+        except Exception as exc:  # noqa: BLE001 - retry only the pinned route
+            logger.debug("Aureon own-model readiness probe failed: %s", type(exc).__name__)
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            break
+        time.sleep(min(2.0, remaining))
+    raise RuntimeError("required_aureon_own_model_not_ready")
+
+
 def build_boot_app():
     """Construct the fully-wired Flask app for production serving.
 
@@ -1493,6 +1523,7 @@ def build_boot_app():
     from aureon.operator.config import OperatorConfig
 
     OperatorConfig.from_env().validate()  # fail-fast on a bad deploy
+    _wait_for_required_own_model()
 
     boot_cognition = None
     try:

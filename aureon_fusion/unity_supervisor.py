@@ -70,6 +70,19 @@ def _queen_restart_approved() -> bool:
         return False
 
 
+def _allowed_organs() -> set[str] | None:
+    """Optional explicit supervision boundary for public/minimal deployments.
+
+    An unset variable preserves the full owner-controlled fleet. An empty or
+    comma-only value allows none. This gate is independent of capital/autonomy
+    state and therefore cannot be bypassed by switching to full autonomy.
+    """
+    raw = os.environ.get("AUREON_FUSION_ORGAN_ALLOWLIST")
+    if raw is None:
+        return None
+    return {item.strip() for item in raw.split(",") if item.strip()}
+
+
 def _supervise_cycle(dry_run: bool = False) -> dict:
     """Run one supervision cycle.
 
@@ -86,6 +99,7 @@ def _supervise_cycle(dry_run: bool = False) -> dict:
     ts = _utcnow()
     status = organ_registry.status_data()
     release_granted = organ_registry._release_granted()
+    allowed_organs = _allowed_organs()
 
     fleet = []
     restarts = []
@@ -106,6 +120,14 @@ def _supervise_cycle(dry_run: bool = False) -> dict:
         # Never restart the supervisor from inside itself.
         if name == "unity_supervisor":
             decisions.append({"organ": name, "action": "skip_self"})
+            continue
+
+        # A public/minimal deployment may supervise only an explicit set. This
+        # check precedes autonomy, release, and queen-approval logic so none of
+        # those mechanisms can expand the configured process boundary.
+        if allowed_organs is not None and name not in allowed_organs:
+            entry["gate_state"] = "outside_organ_allowlist"
+            decisions.append({"organ": name, "action": "skip_not_allowlisted"})
             continue
 
         # Dormant organs are intentionally offline.

@@ -184,6 +184,7 @@ def run_direct_validation(
     max_new_tokens: int = 64,
     torch_module: Any = None,
     transformers_module: Any = None,
+    direct_record: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Load the local model on CUDA and run all direct acceptance checks."""
 
@@ -204,16 +205,19 @@ def run_direct_validation(
     require(torch.cuda.is_available(), "CUDA is required; CPU fallback is not accepted")
     require(max_new_tokens > 0, "max_new_tokens must be positive")
 
-    record: dict[str, Any] = {
-        "model_path": str(Path(model_directory)),
-        "local_files_only": True,
-        "prompt": FIXED_PROMPT,
-        "max_new_tokens": max_new_tokens,
-        "round_trips": [],
-        "generations": [],
-        "deterministic": False,
-        "model_released_before_server": False,
-    }
+    record = direct_record if direct_record is not None else {}
+    record.update(
+        {
+            "model_path": str(Path(model_directory)),
+            "local_files_only": True,
+            "prompt": FIXED_PROMPT,
+            "max_new_tokens": max_new_tokens,
+            "round_trips": [],
+            "generations": [],
+            "deterministic": False,
+            "model_released_before_server": False,
+        }
+    )
     versions = {
         "python": platform.python_version(),
         "torch": str(getattr(torch, "__version__", "unknown")),
@@ -221,16 +225,20 @@ def run_direct_validation(
         "cuda": str(getattr(getattr(torch, "version", None), "cuda", None)),
         "gpu": str(torch.cuda.get_device_name(0)),
     }
-    model = None
-    parameter = None
-    parameter_list = None
-    tokenizer = None
-    encoded = None
-    input_ids = None
-    attention_mask = None
-    output = None
+    cleanup: dict[str, Any] = {
+        "generation_scope_exited": False,
+        "gc_collected": None,
+        "cuda_cache_emptied": False,
+        "cuda_synchronized": False,
+        "errors": [],
+    }
+    record["cleanup"] = cleanup
     started = time.perf_counter()
-    try:
+
+    def load_and_generate() -> None:
+        # Keep every CUDA-owning temporary in this scope. In particular, model
+        # parameters, encoded inputs, generate outputs, and generator frames
+        # must all be unreachable before the outer cleanup checks the allocator.
         torch.cuda.reset_peak_memory_stats()
         record["memory_before_load"] = _memory_stats(torch)
         load_started = time.perf_counter()
@@ -325,21 +333,58 @@ def run_direct_validation(
         require(first["text"] == second["text"], "direct greedy text differs")
         record["deterministic"] = True
         record["total_seconds_before_release"] = time.perf_counter() - started
+
+    try:
+        load_and_generate()
+        cleanup["generation_scope_exited"] = True
     finally:
-        # Drop every local that can own CUDA storage, including the last loop
-        # variable and encoded inputs, before the server loads its own copy.
-        del model, parameter, parameter_list, tokenizer
-        del encoded, input_ids, attention_mask, output
-        gc.collect()
-        torch.cuda.empty_cache()
-        torch.cuda.synchronize()
-        record["memory_after_release"] = _memory_stats(torch)
-        record["model_released_before_server"] = True
+        # Cleanup is diagnostic and best-effort so it cannot replace an
+        # exception from loading, generation, or deterministic comparison.
+        cleanup_started = time.perf_counter()
+        try:
+            cleanup["gc_collected"] = gc.collect()
+        except Exception as exc:  # noqa: BLE001 - preserve the validation error
+            cleanup["errors"].append(
+                {"step": "gc.collect", "type": type(exc).__name__, "message": str(exc)}
+            )
+        try:
+            torch.cuda.empty_cache()
+            cleanup["cuda_cache_emptied"] = True
+        except Exception as exc:  # noqa: BLE001 - preserve the validation error
+            cleanup["errors"].append(
+                {"step": "cuda.empty_cache", "type": type(exc).__name__, "message": str(exc)}
+            )
+        try:
+            torch.cuda.synchronize()
+            cleanup["cuda_synchronized"] = True
+        except Exception as exc:  # noqa: BLE001 - preserve the validation error
+            cleanup["errors"].append(
+                {"step": "cuda.synchronize", "type": type(exc).__name__, "message": str(exc)}
+            )
+        try:
+            record["memory_after_release"] = _memory_stats(torch)
+        except Exception as exc:  # noqa: BLE001 - preserve the validation error
+            cleanup["errors"].append(
+                {"step": "memory_stats", "type": type(exc).__name__, "message": str(exc)}
+            )
+        cleanup["seconds"] = time.perf_counter() - cleanup_started
+        record["total_seconds_after_release"] = time.perf_counter() - started
 
     require(
-        record["memory_after_release"]["allocated_bytes"] == 0,
-        "CUDA allocations remain after releasing the direct-validation model",
+        not cleanup["errors"],
+        "CUDA cleanup failed: " + "; ".join(
+            f"{error['step']}: {error['message']}" for error in cleanup["errors"]
+        ),
     )
+    memory_after_release = record["memory_after_release"]
+    require(
+        memory_after_release["allocated_bytes"] == 0,
+        "CUDA allocations remain after releasing the direct-validation model: "
+        f"allocated_bytes={memory_after_release['allocated_bytes']}, "
+        f"reserved_bytes={memory_after_release['reserved_bytes']}, "
+        f"gc_collected={cleanup['gc_collected']}",
+    )
+    record["model_released_before_server"] = True
     return record, versions
 
 
@@ -716,10 +761,13 @@ def validate(arguments: argparse.Namespace) -> dict[str, Any]:
 
         phase = "direct_cuda_bf16_determinism"
         phase_started = time.perf_counter()
+        direct_record: dict[str, Any] = {}
+        receipt["direct"] = direct_record
         direct, versions = run_direct_validation(
-            arguments.model, max_new_tokens=arguments.max_new_tokens
+            arguments.model,
+            max_new_tokens=arguments.max_new_tokens,
+            direct_record=direct_record,
         )
-        receipt["direct"] = direct
         receipt["versions"].update(versions)
         require(direct["model_released_before_server"], "direct model was not released")
         receipt["requirements"][phase] = True

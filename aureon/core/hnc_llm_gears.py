@@ -12,6 +12,7 @@ captured before inference and reused by the reply.
 
 from __future__ import annotations
 
+import copy
 import json
 import math
 from typing import Any
@@ -300,7 +301,13 @@ def attach_gears(
     *,
     organism: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Add the gear receipt beside the reply. The reply text stays unchanged."""
+    """Add the gear receipt beside the reply. The reply text stays unchanged.
+
+    Expose an immutable copy of the pre-inference snapshot so HTTP acceptance
+    checks can prove that the post-inference receipt retained its identities.
+    """
     out = dict(body)
-    out["hnc_gears"] = turn_gears(text, bus=bus, organism=organism)
+    snapshot = capture_organism(bus) if organism is None else organism
+    out["hnc_gears"] = turn_gears(text, bus=bus, organism=snapshot)
+    out["hnc_gears"]["pre_inference_organism_snapshot"] = copy.deepcopy(snapshot)
     return out
