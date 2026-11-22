@@ -70,6 +70,8 @@ transfer_python huggingface/publish_aureon_model.py \
 
 Use the exact `revision` from this receipt as `AUREON_MODEL_REVISION`; never use `main`. The Space publisher independently resolves that revision with an anonymous Hub client before any Space write.
 
+Before Space publication, submit the bounded `huggingface/validate_aureon_hub.sbatch` validation job. It anonymously requires the public, ungated model at the exact pinned revision, downloads only the nine allowlisted files into a new job-specific directory as regular files, and verifies every path, size, and SHA-256 against `model-public-receipt.json`. It then runs the same direct CUDA, cleanup, HTTP, and HNC validation entirely offline. This path uses no Hub token, original export, metadata overlay, training command, or checkpoint write. Preserve its fresh-download receipt and do not treat a local fake-based test as a substitute.
+
 ## 5. Publish the approved Isambard archive
 
 Follow `huggingface/ISAMBARD_TRANSFER.md`. Inventory and hashing may run as a bounded migration job; Hub uploads must use the login-node path because compute nodes have no outbound network. Do not stage the archive on this PC.

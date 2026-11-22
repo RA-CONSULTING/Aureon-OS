@@ -17,6 +17,7 @@ import json
 import multiprocessing
 import os
 import platform
+import stat
 import subprocess
 import sys
 import tempfile
@@ -33,6 +34,8 @@ CONSOLIDATED_SOURCE = RELEASE_ROOT / "source"
 COMBINED_MODEL = RELEASE_ROOT / "combined-model"
 EXPECTED_WEIGHT_SHA256 = "48487f800623474ab99371d71b369694cae64f8ebc4ef038019c7e60da3d45bb"
 EXPECTED_WEIGHT_SIZE = 13_990_806_664
+HUB_REPOSITORY = "GaryLeckey/aureon-7b"
+HUB_REVISION = "0757a7bdc36b190e9641a4cf421f89b9c66fab05"
 EXPECTED_PARAMETERS = 6_995_383_808
 EXPECTED_VOCAB_SIZE = 65_536
 EXPECTED_EOS_ID = 1
@@ -167,6 +170,64 @@ def verify_weights(
         "hash_matches": True,
         "size_matches": True,
         "same_file_as_source": True,
+    }
+
+
+def verify_fresh_hub_weights(
+    model_directory: Path,
+    *,
+    hub_repository: str,
+    hub_revision: str,
+    expected_sha256: str = EXPECTED_WEIGHT_SHA256,
+    expected_size: int = EXPECTED_WEIGHT_SIZE,
+) -> dict[str, Any]:
+    """Verify only freshly downloaded Hub files, never a source or overlay."""
+
+    require(hub_repository == HUB_REPOSITORY, f"Hub repository must be {HUB_REPOSITORY}")
+    require(
+        hub_revision == HUB_REVISION,
+        f"fresh Hub validation requires exact revision {HUB_REVISION}",
+    )
+    model_directory = Path(model_directory)
+    weight_path = model_directory / "model.safetensors"
+    receipt_path = model_directory / "preparation_receipt.json"
+    try:
+        weight_stat = weight_path.lstat()
+    except OSError as exc:
+        raise ValidationError(f"missing downloaded weight: {weight_path}") from exc
+    require(
+        stat.S_ISREG(weight_stat.st_mode),
+        "downloaded model.safetensors must be a regular non-symlink file",
+    )
+
+    receipt_bytes = receipt_path.read_bytes()
+    preparation_receipt = _load_json(receipt_path)
+    receipt_hash = _expected_receipt_hash(preparation_receipt)
+    require(
+        receipt_hash == expected_sha256.lower(),
+        f"preparation weight hash {receipt_hash} differs from the known real hash",
+    )
+    actual_hash, actual_size = sha256_file(weight_path)
+    require(actual_size == expected_size, f"weight size {actual_size} != {expected_size}")
+    require(
+        actual_hash == receipt_hash,
+        f"independent weight hash {actual_hash} != preparation hash {receipt_hash}",
+    )
+    return {
+        "algorithm": "sha256",
+        "fresh_hub_download": True,
+        "hub_repository": hub_repository,
+        "hub_revision": hub_revision,
+        "weight_path": str(weight_path),
+        "preparation_receipt_path": str(receipt_path),
+        "preparation_receipt_sha256": hashlib.sha256(receipt_bytes).hexdigest(),
+        "expected_preparation_hash": receipt_hash,
+        "expected_handoff_hash": expected_sha256.lower(),
+        "actual_hash": actual_hash,
+        "expected_size": expected_size,
+        "actual_size": actual_size,
+        "hash_matches": True,
+        "size_matches": True,
     }
 
 
@@ -801,17 +862,25 @@ def run_http_validation(
 
 
 def _new_receipt(arguments: argparse.Namespace) -> dict[str, Any]:
-    return {
+    fresh_hub_download = arguments.fresh_hub_download
+    if fresh_hub_download:
+        model_paths = {"downloaded_model": str(arguments.model)}
+    else:
+        model_paths = {
+            "source_export": str(arguments.source),
+            "metadata_overlay": str(arguments.overlay),
+            "combined_model": str(arguments.model),
+        }
+    receipt = {
         "schema_version": 1,
         "success": False,
         "status": "running",
         "job_id": os.environ.get("SLURM_JOB_ID", "local"),
         "source_revision": arguments.source_revision,
+        "fresh_hub_download": fresh_hub_download,
         "started_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "paths": {
-            "source_export": str(arguments.source),
-            "metadata_overlay": str(arguments.overlay),
-            "combined_model": str(arguments.model),
+            **model_paths,
             "consolidated_source": str(arguments.source_tree),
             "chat_server": str(arguments.source_tree / "training" / "aureon_chat_server.py"),
             "receipt": str(arguments.receipt),
@@ -826,6 +895,12 @@ def _new_receipt(arguments: argparse.Namespace) -> dict[str, Any]:
         "errors": [],
         "timings": {},
     }
+    if fresh_hub_download:
+        receipt["hub"] = {
+            "repository": arguments.hub_repository,
+            "revision": arguments.hub_revision,
+        }
+    return receipt
 
 
 def write_receipt(path: Path, receipt: Mapping[str, Any]) -> None:
@@ -863,7 +938,16 @@ def validate(arguments: argparse.Namespace) -> dict[str, Any]:
             "a full lowercase consolidated source revision is required",
         )
         phase = "weight_integrity"
-        receipt["hashes"] = verify_weights(arguments.model, arguments.source, arguments.overlay)
+        if arguments.fresh_hub_download:
+            receipt["hashes"] = verify_fresh_hub_weights(
+                arguments.model,
+                hub_repository=arguments.hub_repository,
+                hub_revision=arguments.hub_revision,
+            )
+        else:
+            receipt["hashes"] = verify_weights(
+                arguments.model, arguments.source, arguments.overlay
+            )
         receipt["requirements"]["weight_integrity"] = True
         receipt["timings"][phase] = time.perf_counter() - phase_started
 
@@ -921,6 +1005,13 @@ def _argument_parser() -> argparse.ArgumentParser:
     parser.add_argument("--model", type=Path, default=COMBINED_MODEL)
     parser.add_argument("--source", type=Path, default=SOURCE_EXPORT)
     parser.add_argument("--overlay", type=Path, default=OVERLAY)
+    parser.add_argument(
+        "--fresh-hub-download",
+        action="store_true",
+        help="validate regular files freshly downloaded from the fixed public Hub revision",
+    )
+    parser.add_argument("--hub-repository", default=HUB_REPOSITORY)
+    parser.add_argument("--hub-revision", default=HUB_REVISION)
     parser.add_argument("--source-tree", type=Path, default=CONSOLIDATED_SOURCE)
     parser.add_argument(
         "--source-revision", default=os.environ.get("AUREON_SOURCE_REVISION")

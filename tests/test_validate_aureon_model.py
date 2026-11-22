@@ -364,6 +364,59 @@ class ValidatorTests(unittest.TestCase):
                 combined, source, overlay, expected_sha256=expected, expected_size=6
             )
 
+    def test_fresh_hub_weight_uses_only_downloaded_regular_files(self) -> None:
+        downloaded = self.root / "downloaded"
+        downloaded.mkdir()
+        payload = b"fresh lightweight fake weights"
+        (downloaded / "model.safetensors").write_bytes(payload)
+        digest = hashlib.sha256(payload).hexdigest()
+        (downloaded / "preparation_receipt.json").write_text(
+            json.dumps({"source_hashes": {"model.safetensors": digest}}),
+            encoding="utf-8",
+        )
+
+        result = validation.verify_fresh_hub_weights(
+            downloaded,
+            hub_repository=validation.HUB_REPOSITORY,
+            hub_revision=validation.HUB_REVISION,
+            expected_sha256=digest,
+            expected_size=len(payload),
+        )
+
+        self.assertTrue(result["fresh_hub_download"])
+        self.assertTrue(result["hash_matches"])
+        self.assertNotIn("source_weight_path", result)
+        self.assertNotIn("same_file_as_source", result)
+
+    def test_fresh_hub_weight_rejects_non_regular_weight(self) -> None:
+        downloaded = self.root / "downloaded"
+        downloaded.mkdir()
+        (downloaded / "model.safetensors").write_bytes(b"fake")
+        with (
+            mock.patch.object(validation.stat, "S_ISREG", return_value=False),
+            self.assertRaisesRegex(validation.ValidationError, "regular non-symlink"),
+        ):
+            validation.verify_fresh_hub_weights(
+                downloaded,
+                hub_repository=validation.HUB_REPOSITORY,
+                hub_revision=validation.HUB_REVISION,
+            )
+
+    def test_fresh_hub_identity_is_fixed_to_public_release(self) -> None:
+        for repository, revision, message in (
+            ("other/repository", validation.HUB_REVISION, "Hub repository"),
+            (validation.HUB_REPOSITORY, "0" * 40, "exact revision"),
+            (validation.HUB_REPOSITORY, "MAIN", "exact revision"),
+        ):
+            with self.subTest(repository=repository, revision=revision), self.assertRaisesRegex(
+                validation.ValidationError, message
+            ):
+                validation.verify_fresh_hub_weights(
+                    self.root / "missing",
+                    hub_repository=repository,
+                    hub_revision=revision,
+                )
+
     def test_direct_validation_uses_cuda_bf16_and_equal_greedy_runs(self) -> None:
         FakeModel.load_calls.clear()
         FakeTokenizer.load_calls.clear()
@@ -613,6 +666,48 @@ class ValidatorTests(unittest.TestCase):
         )
         self.assertIn("memory_after_release", direct_record)
 
+    def test_fresh_hub_receipt_retains_direct_http_and_hnc_checks(self) -> None:
+        receipt_path = self.root / "fresh-receipt.json"
+        arguments = validation._argument_parser().parse_args(
+            [
+                "--model",
+                str(self.root / "downloaded"),
+                "--fresh-hub-download",
+                "--source-revision",
+                "0" * 40,
+                "--receipt",
+                str(receipt_path),
+            ]
+        )
+        direct = {"model_released_before_server": True}
+        with (
+            mock.patch.object(validation, "verify_weights") as source_weights,
+            mock.patch.object(
+                validation, "verify_fresh_hub_weights", return_value={"fresh_hub_download": True}
+            ) as fresh_weights,
+            mock.patch.object(
+                validation,
+                "run_direct_validation_isolated",
+                return_value=(direct, {"torch": "fake"}),
+            ) as direct_validation,
+            mock.patch.object(validation, "run_http_validation") as http_validation,
+        ):
+            receipt = validation.validate(arguments)
+
+        self.assertTrue(receipt["success"])
+        self.assertTrue(receipt["fresh_hub_download"])
+        self.assertEqual(receipt["hub"]["repository"], validation.HUB_REPOSITORY)
+        self.assertEqual(receipt["hub"]["revision"], validation.HUB_REVISION)
+        self.assertNotIn("source_export", receipt["paths"])
+        self.assertNotIn("metadata_overlay", receipt["paths"])
+        self.assertEqual(receipt["paths"]["downloaded_model"], str(self.root / "downloaded"))
+        self.assertTrue(receipt["requirements"]["direct_cuda_bf16_determinism"])
+        self.assertTrue(receipt["requirements"]["http_determinism_and_hnc"])
+        source_weights.assert_not_called()
+        fresh_weights.assert_called_once()
+        direct_validation.assert_called_once()
+        http_validation.assert_called_once()
+
     def test_failed_receipt_retains_partial_direct_record(self) -> None:
         receipt_path = self.root / "direct-failure-receipt.json"
         arguments = validation._argument_parser().parse_args(
@@ -788,6 +883,27 @@ class ValidatorTests(unittest.TestCase):
         self.assertIn("TRANSFORMERS_OFFLINE=1", script)
         self.assertNotIn("train_lora.py", script)
         self.assertNotIn("pretrain.py", script)
+
+    def test_hub_sbatch_is_bounded_anonymous_fresh_download(self) -> None:
+        script = (REPOSITORY / "huggingface" / "validate_aureon_hub.sbatch").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("#SBATCH --gpus-per-node=1", script)
+        self.assertIn("#SBATCH --time=01:00:00", script)
+        self.assertIn("#SBATCH --no-requeue", script)
+        self.assertIn("source-revision", script)
+        self.assertIn("--fresh-hub-download", script)
+        self.assertIn(validation.HUB_REPOSITORY, script)
+        self.assertIn(validation.HUB_REVISION, script)
+        self.assertIn("HF_VENV=$RELEASE/private/hf-venv", script)
+        self.assertIn("HF_HUB_OFFLINE=0", script)
+        self.assertIn("HF_HUB_OFFLINE=1", script)
+        self.assertIn("model-public-receipt.json", script)
+        self.assertIn("refusing to reuse download path", script)
+        self.assertNotIn("--source ", script)
+        self.assertNotIn("--overlay ", script)
+        self.assertNotIn("HF_TOKEN", script)
+        self.assertNotIn("HUGGING_FACE_HUB_TOKEN", script)
 
 
 if __name__ == "__main__":

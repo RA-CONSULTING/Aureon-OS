@@ -20,6 +20,7 @@ Run from the consolidated repository root. Use a fresh temp path if the system p
 ```powershell
 py -3 -m pytest -q -o addopts='' `
   tests/test_validate_aureon_model.py `
+  tests/test_download_aureon_hub.py `
   tests/test_aureon_chat_server.py `
   tests/test_hf_model_bootstrap.py `
   tests/test_hf_demo_api.py `
