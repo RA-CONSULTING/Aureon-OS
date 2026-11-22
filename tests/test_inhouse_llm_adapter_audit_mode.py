@@ -6,6 +6,7 @@ from aureon.inhouse_ai.llm_adapter import (
     AureonBrainAdapter,
     AureonHybridAdapter,
     AureonLocalAdapter,
+    AureonStubAdapter,
     AureonUnavailableAdapter,
     LLMResponse,
     build_voice_adapter,
@@ -47,18 +48,73 @@ def test_voice_adapter_rejects_retired_ollama_hybrid(monkeypatch):
     assert adapter.health_check() is False
 
 
-def test_default_voice_adapter_selects_own_model_when_available(monkeypatch):
+def _auto_lane_env(monkeypatch):
     monkeypatch.delenv("AUREON_VOICE_BACKEND", raising=False)
-    monkeypatch.delenv("AUREON_AUDIT_MODE", raising=False)
+    monkeypatch.delenv("AUREON_OWN_LLM_BASE_URL", raising=False)
+    monkeypatch.delenv("AUREON_OWN_LLM_MODEL", raising=False)
+    monkeypatch.setenv("AUREON_AUDIT_MODE", "1")
+    monkeypatch.setenv("AUREON_LLM_ALLOW_HTTP_IN_AUDIT", "1")
+    # The suite exports AUREON_LLM_OFFLINE=1, which correctly trumps the
+    # audit-allow flag. These tests patch every HTTP seam, so clear it here.
     monkeypatch.delenv("AUREON_LLM_OFFLINE", raising=False)
     monkeypatch.delenv("AUREON_DISABLE_LLM_HTTP", raising=False)
+
+    # The auto lane never consults the Ollama switchboard, so a borrowed model
+    # cannot be picked even when one would be reachable.
+    from aureon.integrations.ollama import model_switchboard
+
+    def _no_borrowed_model(*_args, **_kwargs):
+        raise AssertionError("auto voice lane consulted the Ollama switchboard")
+
+    monkeypatch.setattr(model_switchboard.OllamaModelSwitchboard, "__init__", _no_borrowed_model)
+
+
+def test_default_voice_adapter_uses_own_model_when_reachable(monkeypatch):
+    _auto_lane_env(monkeypatch)
     monkeypatch.setattr(AureonLocalAdapter, "health_check", lambda self: True)
 
     adapter = build_voice_adapter()
 
-    assert isinstance(adapter, AureonLocalAdapter)
+    assert type(adapter) is AureonLocalAdapter
+    assert not isinstance(adapter, AureonHybridAdapter)
     assert adapter.base_url == "http://127.0.0.1:11435/v1"
     assert adapter.model == "aureon-7b-v65k"
+    assert not adapter.model.startswith("aureon-ollama-hybrid")
+
+
+def test_default_voice_adapter_is_unavailable_when_own_model_unreachable(monkeypatch):
+    _auto_lane_env(monkeypatch)
+    monkeypatch.setattr(AureonLocalAdapter, "health_check", lambda self: False)
+
+    adapter = build_voice_adapter()
+    response = adapter.prompt([{"role": "user", "content": "ping"}])
+
+    assert isinstance(adapter, AureonStubAdapter)
+    assert isinstance(adapter, AureonUnavailableAdapter)
+    assert not isinstance(adapter, (AureonHybridAdapter, AureonLocalAdapter))
+    assert adapter.health_check() is False
+    assert response.model == "aureon-own-unavailable"
+    assert response.stop_reason == "error"
+    assert "no borrowed or cloud fallback" in response.text
+
+
+@pytest.mark.parametrize("backend", ["plain_local", "local_only", "no-such-backend"])
+def test_unserved_voice_backend_is_unavailable_not_none(monkeypatch, backend):
+    _auto_lane_env(monkeypatch)
+    monkeypatch.setenv("AUREON_VOICE_BACKEND", backend)
+    # Even with every local endpoint reachable, these names must not pick one.
+    monkeypatch.setattr(AureonLocalAdapter, "health_check", lambda self: True)
+
+    adapter = build_voice_adapter()
+
+    assert adapter is not None
+    assert isinstance(adapter, AureonUnavailableAdapter)
+    assert not isinstance(adapter, (AureonHybridAdapter, AureonLocalAdapter))
+    assert adapter.health_check() is False
+    response = adapter.prompt([{"role": "user", "content": "ping"}])
+    assert response.model == "aureon_own_model_required"
+    assert response.stop_reason == "error"
+    assert backend in response.text
 
 
 class _OwnAdapter:

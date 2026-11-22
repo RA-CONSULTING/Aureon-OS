@@ -29,7 +29,9 @@ logger = logging.getLogger(__name__)
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 try:
-    import pyautogui  # type: ignore
+    from aureon.autonomous.pyautogui_loader import import_pyautogui
+
+    pyautogui = import_pyautogui()  # type: ignore
 
     HAS_PYAUTOGUI = True
     try:
@@ -302,6 +304,13 @@ class SafeDesktopControl:
 
     def _should_auto_execute(self, req: DesktopAction) -> bool:
         if not self.armed:
+            return False
+        # press_key sits in both AUTO_EXECUTE_ACTIONS and HIGH_RISK_ACTIONS.
+        # Auto-executing a high-risk action from propose() can never carry a
+        # confirmation token, so execute() rejected it with
+        # confirmation_required and the request was dropped instead of queued
+        # for approve_next().  Queue anything that still needs confirmation.
+        if self.require_confirmation and req.action in HIGH_RISK_ACTIONS:
             return False
         if req.action in AUTO_EXECUTE_ACTIONS and (self.dry_run or req.approved):
             return True

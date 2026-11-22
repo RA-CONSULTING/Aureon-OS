@@ -613,6 +613,26 @@ class UnifiedKillChain:
                 log_system("Capital.com: No active threads.")
                 return
 
+            # Gary's 9 Nov rule: never close or amend a Capital deal he opened.
+            # Fail closed through the same adopt list ORCA already uses.
+            try:
+                from aureon.exchanges.orca_capital_ownership import split_owned_positions
+                positions, foreign = split_owned_positions(positions)
+            except Exception as exc:
+                log_warn(
+                    f"Capital: ownership could not be determined ({exc}); closing nothing"
+                )
+                return
+            for skipped in foreign:
+                meta = skipped.get("position", {}) if isinstance(skipped, dict) else {}
+                market = skipped.get("market", {}) if isinstance(skipped, dict) else {}
+                deal = meta.get("dealId") if isinstance(meta, dict) else None
+                epic = market.get("epic") if isinstance(market, dict) else None
+                log_system(
+                    f"Capital: skipping {epic or 'unknown'} deal {deal or 'unknown'}: "
+                    "not adopted; not closing or amending"
+                )
+
             for p in positions:
                 market = p.get('market', {})
                 pos_data = p.get('position', {})
@@ -1566,6 +1586,38 @@ class UnifiedKillChain:
     
     # --- Close Functions ---
     def _close_capital(self, deal_id, qty, symbol):
+        try:
+            from aureon.exchanges.orca_capital_ownership import adopted_deal_ids
+            adopted = adopted_deal_ids()
+            deal_text = "" if deal_id is None else str(deal_id)
+            # A blank id, a missing id, or the sentinel "unknown" is not ownership.
+            owned = (
+                bool(deal_id)
+                and bool(deal_text.strip())
+                and deal_text.strip().casefold() != "unknown"
+                and deal_text in adopted
+            )
+        except Exception as exc:
+            log_warn(
+                f"Capital: ownership of {symbol} deal {deal_id} could not be determined ({exc}); not closing"
+            )
+            return {
+                "submitted": False,
+                "status": "not_submitted",
+                "reason": "capital_ownership_undetermined",
+                "generated_values": False,
+            }
+        if not owned:
+            log_system(
+                f"Capital: refusing to close {symbol} deal {deal_id}: not adopted; "
+                "not closing a position Aureon did not open"
+            )
+            return {
+                "submitted": False,
+                "status": "not_submitted",
+                "reason": "capital_deal_not_adopted",
+                "generated_values": False,
+            }
         close_position = getattr(self.capital, "close_position", None)
         if callable(close_position):
             return close_position(deal_id)

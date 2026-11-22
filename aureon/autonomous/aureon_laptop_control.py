@@ -40,7 +40,9 @@ for _d in (_SCREENSHOT_DIR, _CAMERA_DIR):
 # Optional library imports with availability flags
 # ---------------------------------------------------------------------------
 try:
-    import pyautogui
+    from aureon.autonomous.pyautogui_loader import import_pyautogui
+
+    pyautogui = import_pyautogui()
     # Keep the physical corner failsafe enabled even for this legacy HAL.  New
     # autonomous mutation paths must route through the governed desktop gateway.
     pyautogui.FAILSAFE = True
@@ -152,7 +154,10 @@ except ImportError:
 try:
     import sounddevice
     HAS_SOUNDDEVICE = True
-except ImportError:
+except (ImportError, OSError):
+    # sounddevice raises OSError('PortAudio library not found') at import
+    # when the host has no PortAudio. That is not an ImportError. Fail closed
+    # the same way a missing pyautogui does: audio stays unavailable.
     sounddevice = None
     HAS_SOUNDDEVICE = False
 

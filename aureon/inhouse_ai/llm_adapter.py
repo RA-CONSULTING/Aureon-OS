@@ -2207,6 +2207,8 @@ def build_voice_adapter(lane: str = "general") -> LLMAdapter:
         "unified_cognitive",
     ):
         return _own_voice_adapter()
+    # Retired and unknown backends still return a concrete adapter, but it
+    # fails closed and reports itself unhealthy instead of borrowing a model.
     return AureonUnavailableAdapter(
         "Aureon's own model is required; requested backend "
         f"{backend!r} is disabled rather than routed to another model.",
