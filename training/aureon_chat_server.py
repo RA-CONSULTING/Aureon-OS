@@ -90,15 +90,20 @@ def format_prompt(messages: list[dict], *, organism: dict | None = None) -> str:
 
 
 def _load_hnc_gears():
-    roots = (
-        Path("/projects/u6vs/Aureon-OS"),
-        Path(__file__).resolve().parents[1],
-    )
-    for root in roots:
-        if (root / "aureon" / "core" / "hnc_llm_gears.py").is_file() and str(root) not in sys.path:
-            sys.path.insert(0, str(root))
+    """Load HNC only from the same consolidated checkout as this server."""
+
+    root = Path(__file__).resolve().parents[1]
+    expected = (root / "aureon" / "core" / "hnc_llm_gears.py").resolve()
+    if not expected.is_file():
+        raise RuntimeError("the consolidated checkout lacks aureon.core.hnc_llm_gears")
+    root_text = str(root)
+    sys.path[:] = [entry for entry in sys.path if Path(entry or ".").resolve() != root]
+    sys.path.insert(0, root_text)
     from aureon.core import hnc_llm_gears
 
+    actual = Path(hnc_llm_gears.__file__).resolve()
+    if actual != expected:
+        raise RuntimeError("HNC gears resolved outside the consolidated checkout")
     return hnc_llm_gears
 
 

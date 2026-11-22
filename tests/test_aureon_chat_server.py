@@ -11,6 +11,7 @@ import io
 import json
 import sys
 import types
+from pathlib import Path
 from unittest import mock
 
 import pytest
@@ -339,6 +340,13 @@ def test_request_body_limit_rejects_before_read_or_generation(fake_runtime, monk
     assert handler.responses[0][0] == 413
     handler.rfile.read.assert_not_called()
     assert len(fake_runtime.model.generate_calls) == calls_before
+
+
+def test_hnc_gears_resolve_inside_the_server_checkout() -> None:
+    gears = server_module._load_hnc_gears()
+    root = Path(server_module.__file__).resolve().parents[1]
+    expected = root / "aureon" / "core" / "hnc_llm_gears.py"
+    assert Path(gears.__file__).resolve() == expected.resolve()
 
 
 def test_generation_is_capped_and_usage_counts_actual_tokens(fake_runtime, monkeypatch) -> None:
