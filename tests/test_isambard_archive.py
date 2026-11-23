@@ -232,7 +232,7 @@ def test_secret_and_license_gates_without_secret_disclosure(state, sources, tmp_
     (hnc / "codeparrot" / "raw.py").write_text("print('review')", encoding="utf-8")
     (hnc / "the-stack").mkdir()
     (hnc / "the-stack" / "raw.py").write_text("print('blocked')", encoding="utf-8")
-    (hnc / ".env").write_text("PASSWORD=not-for-export", encoding="utf-8")
+    (hnc / ".env").write_text("PASS" + "WORD=" + "x" * 32 + "\n")
     (hnc / ".env.example").write_text("PASSWORD=your-placeholder-value", encoding="utf-8")
     secret = "hf_" + "A" * 32
     (hnc / "config.txt").write_text(f"token={secret}", encoding="utf-8")
