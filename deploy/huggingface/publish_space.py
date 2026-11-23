@@ -449,10 +449,37 @@ def _safe_unknown_remote(remote_files: list[str], staged_paths: set[str]) -> lis
     return sorted(unknown)
 
 
-def _literal_glob(path: str) -> str:
-    """Prevent a reviewed filename from becoming a broader delete pattern."""
+def _commit_exact_snapshot(
+    api: Any,
+    destination: Path,
+    staged: Mapping[str, Any],
+    *,
+    legacy_files: list[str],
+    parent_commit: str,
+) -> Any:
+    """Commit exact reviewed paths without an O(remote x legacy) glob scan."""
 
-    return path.replace("[", "[[]").replace("*", "[*]").replace("?", "[?]")
+    from huggingface_hub import CommitOperationAdd, CommitOperationDelete
+
+    operations: list[Any] = [
+        CommitOperationDelete(path_in_repo=path, is_folder=False)
+        for path in legacy_files
+    ]
+    for row in staged["files"]:
+        relative = row["path"]
+        source = destination.joinpath(*PurePosixPath(relative).parts)
+        if not source.is_file() or source.is_symlink():
+            raise PublishError(f"staged file is unavailable for commit: {relative}")
+        if source.stat().st_size != row["size_bytes"]:
+            raise PublishError(f"staged file size changed before commit: {relative}")
+        operations.append(CommitOperationAdd(path_or_fileobj=str(source), path_in_repo=relative))
+    return api.create_commit(
+        repo_id=SPACE_REPOSITORY,
+        repo_type="space",
+        commit_message=f"Publish Aureon OS from source {staged['source_commit']}",
+        operations=operations,
+        parent_commit=parent_commit,
+    )
 
 
 def _base_receipt(
@@ -544,7 +571,12 @@ def publish_space(
         remote_id = getattr(space_info, "id", None)
         if remote_id is not None and remote_id != SPACE_REPOSITORY:
             raise PublishError("Hub returned a different Space repository; refusing publication")
-        remote_files = api.list_repo_files(repo_id=SPACE_REPOSITORY, repo_type="space")
+        remote_revision = require_commit(str(getattr(space_info, "sha", "")), "remote Space revision")
+        remote_files = api.list_repo_files(
+            repo_id=SPACE_REPOSITORY,
+            repo_type="space",
+            revision=remote_revision,
+        )
         unknown = _safe_unknown_remote(remote_files, {row["path"] for row in staged["files"]})
         if unknown and not reviewed_legacy_deletion:
             raise PublishError(
@@ -552,15 +584,13 @@ def publish_space(
                 + json.dumps(unknown)
             )
 
-        upload_arguments: dict[str, Any] = {
-            "folder_path": str(destination),
-            "repo_id": SPACE_REPOSITORY,
-            "repo_type": "space",
-            "commit_message": f"Publish Aureon OS from source {staged['source_commit']}",
-        }
-        if unknown:
-            upload_arguments["delete_patterns"] = [_literal_glob(path) for path in unknown]
-        uploaded = api.upload_folder(**upload_arguments)
+        uploaded = _commit_exact_snapshot(
+            api,
+            destination,
+            staged,
+            legacy_files=unknown,
+            parent_commit=remote_revision,
+        )
         space_commit = getattr(uploaded, "oid", None) or getattr(uploaded, "sha", None)
         receipt["space_commit"] = require_commit(str(space_commit or ""), "published Space commit")
         receipt["legacy_files_deleted"] = unknown

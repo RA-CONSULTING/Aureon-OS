@@ -94,13 +94,13 @@ class FakeApi:
 
     def repo_info(self, **kwargs) -> SimpleNamespace:
         self.hub.repo_info_calls.append(kwargs)
-        return SimpleNamespace(id=self.hub.remote_id)
+        return SimpleNamespace(id=self.hub.remote_id, sha=self.hub.remote_sha)
 
     def list_repo_files(self, **kwargs) -> list[str]:
         self.hub.list_calls.append(kwargs)
         return list(self.hub.remote_files)
 
-    def upload_folder(self, **kwargs) -> SimpleNamespace:
+    def create_commit(self, **kwargs) -> SimpleNamespace:
         assert self.token == TOKEN
         self.uploads.append(kwargs)
         return SimpleNamespace(oid=SPACE_COMMIT)
@@ -123,6 +123,7 @@ class FakeHub:
     def __init__(self) -> None:
         self.username = "GaryLeckey"
         self.remote_id = publisher.SPACE_REPOSITORY
+        self.remote_sha = "d" * 40
         self.remote_files = [".gitattributes"]
         self.model_sha = MODEL_COMMIT
         self.model_private = False
@@ -366,8 +367,21 @@ def test_reviewed_legacy_deletion_is_exact_and_preserves_gitattributes(
     upload = hub.authenticated.uploads[0]
     assert upload["repo_id"] == "GaryLeckey/aureon-os"
     assert upload["repo_type"] == "space"
-    assert upload["delete_patterns"] == ["legacy/data[?].txt", "legacy/old.py"]
-    assert ".gitattributes" not in upload["delete_patterns"]
+    assert upload["parent_commit"] == "d" * 40
+    deletions = [
+        operation.path_in_repo
+        for operation in upload["operations"]
+        if operation.__class__.__name__ == "CommitOperationDelete"
+    ]
+    additions = [
+        operation.path_in_repo
+        for operation in upload["operations"]
+        if operation.__class__.__name__ == "CommitOperationAdd"
+    ]
+    assert deletions == ["legacy/data?.txt", "legacy/old.py"]
+    assert ".gitattributes" not in deletions
+    assert len(additions) == receipt["file_count"]
+    assert hub.list_calls[0]["revision"] == "d" * 40
     assert receipt["legacy_files_deleted"] == ["legacy/data?.txt", "legacy/old.py"]
     assert hub.authenticated.variables == [{
         "repo_id": publisher.SPACE_REPOSITORY,

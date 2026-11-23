@@ -94,7 +94,7 @@ python deploy/huggingface/publish_space.py \
 
 Review the staged file manifest. Against the existing Space, first run publication without legacy deletion or paid activation. Unknown remote files are listed and refused before upload. After reviewing those paths and confirming that history must remain intact, rerun with `--reviewed-legacy-deletion`.
 
-The model must already be public. The publisher validates the token identity as `GaryLeckey`, writes only `GaryLeckey/aureon-os`, sets the nonsecret `AUREON_MODEL_REVISION` variable, and preserves `.gitattributes`.
+The model must already be public. The publisher validates the token identity as `GaryLeckey`, writes only `GaryLeckey/aureon-os`, sets the nonsecret `AUREON_MODEL_REVISION` variable, and preserves `.gitattributes`. Reviewed legacy paths become exact delete operations rather than thousands of glob patterns. The single commit is pinned to the audited remote `parent_commit`, so a concurrent remote change fails instead of being overwritten.
 
 Activate the approved paid hardware only in the deliberate launch command:
 
