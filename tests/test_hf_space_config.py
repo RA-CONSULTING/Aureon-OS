@@ -57,6 +57,7 @@ def _export(name: str) -> str | None:
     "AUREON_OWN_LLM_BASE_URL": "http://127.0.0.1:11435/v1",
     "AUREON_LLM_BASE_URL": "$AUREON_OWN_LLM_BASE_URL",
     "AUREON_OPERATOR_WAIT_OWN_MODEL": "1",
+    "SERO_STATE_ROOT": "$RT/state",
     "SERO_FUSION_STATE": "$RT/fusion-state",
     "AUREON_FUSION_ORGAN_ALLOWLIST": "hnc_core",
 }.items())
@@ -222,6 +223,56 @@ print(json.dumps({
     assert payload["state"] == str(runtime)
     assert payload["capital"] == str(runtime / "capital_release.flag")
     assert payload["queen"] == str(runtime / "queen_mind_restart_approved.json")
+
+
+def test_public_state_root_separates_all_fusion_writes_from_source(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    source.mkdir()
+    runtime = tmp_path / "runtime"
+    state = runtime / "state"
+    mutable_names = (
+        "SERO_MIND", "SERO_CONSCIENCE", "SERO_FEEL", "SERO_MEMORY_WEB",
+        "SERO_THOUGHTBUS", "SERO_MYCELIUM", "SERO_CHIRP", "SERO_AUTONOMOUS",
+        "TEMPORAL_STATE", "SHARED_STATE", "PIDS", "LOGS", "UNIFIED_LOGS",
+        "PLANETARY_MONITOR", "HNC_LOGS",
+    )
+    script = f"""
+import json
+from aureon_fusion import paths
+paths.ensure_dirs()
+print(json.dumps({{
+  'workspace': str(paths.WORKSPACE),
+  'upstream': str(paths.AUREON_UPSTREAM),
+  'state_root': str(paths.STATE_ROOT),
+  'mutable': {{name: str(getattr(paths, name)) for name in {mutable_names!r}}},
+  'source_entries': [path.name for path in paths.WORKSPACE.iterdir()],
+  'runtime_home': str(paths.RUNTIME_HOME),
+  'fusion_state': str(paths.FUSION_STATE),
+}}))
+"""
+    env = os.environ.copy()
+    env.update({
+        "PYTHONPATH": str(ROOT),
+        "SERO_WORKSPACE": str(source),
+        "SERO_STATE_ROOT": str(state),
+        "SERO_RUNTIME_HOME": str(runtime / "home"),
+        "SERO_FUSION_STATE": str(runtime / "fusion-state"),
+        "AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS": "1",
+        "AUREON_AUDIT_MODE": "1",
+    })
+    result = subprocess.run([sys.executable, "-c", script], capture_output=True, text=True, env=env, check=True)
+    payload = json.loads(result.stdout)
+    assert payload["workspace"] == str(source)
+    assert payload["upstream"] == str(source)
+    assert payload["state_root"] == str(state)
+    assert payload["source_entries"] == []
+    assert payload["runtime_home"] == str(runtime / "home")
+    assert payload["fusion_state"] == str(runtime / "fusion-state")
+    for value in payload["mutable"].values():
+        path = Path(value)
+        path.relative_to(state)
+        assert path.is_dir()
+    assert '"$ROOT/$d"' not in ENTRYPOINT
 
 
 def test_supervisor_allowlist_precedes_full_autonomy_and_release(monkeypatch, tmp_path: Path) -> None:

@@ -7,7 +7,7 @@ ROOT=/app/aureon-os
 RT=$ROOT/runtime
 mkdir -p \
   "$RT/logs" "$RT/nginx" "$RT/pgsock" "$RT/pgdata" "$RT/home" \
-  "$RT/fusion-state" "$RT/sero-home" "$RT/model" "$RT/hf-home"
+  "$RT/fusion-state" "$RT/sero-home" "$RT/state" "$RT/model" "$RT/hf-home"
 chmod -R u+rwX "$RT"
 
 export SERO_WORKSPACE=$ROOT
@@ -137,6 +137,7 @@ export AUREON_ERROR_SINK_PATH=$RT/logs/errors.jsonl
 export AUREON_RUNTIME_DIR=$RT
 export AUREON_PGSOCK=$RT/pgsock
 export SERO_RUNTIME_HOME=$RT/sero-home
+export SERO_STATE_ROOT=$RT/state
 export SERO_FUSION_STATE=$RT/fusion-state
 export AUREON_FUSION_ORGAN_ALLOWLIST=hnc_core
 
@@ -181,8 +182,8 @@ fi
 ) &
 
 for d in logs unified_logs hnc_daemon_logs; do
-  mkdir -p "$ROOT/$d"
-  chmod -R u+rwX "$ROOT/$d"
+  mkdir -p "$SERO_STATE_ROOT/$d"
+  chmod -R u+rwX "$SERO_STATE_ROOT/$d"
 done
 
 # Render only random per-boot internal bearer values. No value is logged.

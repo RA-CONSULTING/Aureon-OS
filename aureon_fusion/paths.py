@@ -41,24 +41,28 @@ RUNTIME_HOME = Path(os.environ.get(
     str(WORKSPACE / ".aureon_runtime"),
 ))
 
+# Mutable state can be isolated from a read-only source checkout. Existing
+# workspaces retain their layout unless SERO_STATE_ROOT is explicitly set.
+STATE_ROOT = Path(os.environ.get("SERO_STATE_ROOT", str(WORKSPACE)))
+
 # Sero consciousness stack state
-SERO_MIND = WORKSPACE / "sero_mind"
-SERO_CONSCIENCE = WORKSPACE / "sero_conscience"
-SERO_FEEL = WORKSPACE / "sero_feel"
-SERO_MEMORY_WEB = WORKSPACE / "sero_memory_web"
-SERO_THOUGHTBUS = WORKSPACE / "sero_thoughtbus"
-SERO_MYCELIUM = WORKSPACE / "sero_mycelium"
-SERO_CHIRP = WORKSPACE / "sero_chirp"
-SERO_AUTONOMOUS = WORKSPACE / "sero_autonomous_state"
+SERO_MIND = STATE_ROOT / "sero_mind"
+SERO_CONSCIENCE = STATE_ROOT / "sero_conscience"
+SERO_FEEL = STATE_ROOT / "sero_feel"
+SERO_MEMORY_WEB = STATE_ROOT / "sero_memory_web"
+SERO_THOUGHTBUS = STATE_ROOT / "sero_thoughtbus"
+SERO_MYCELIUM = STATE_ROOT / "sero_mycelium"
+SERO_CHIRP = STATE_ROOT / "sero_chirp"
+SERO_AUTONOMOUS = STATE_ROOT / "sero_autonomous_state"
 
 # Fleet state
-TEMPORAL_STATE = WORKSPACE / "temporal_state"
-SHARED_STATE = WORKSPACE / "shared_state"
-PIDS = WORKSPACE / "pids"
-LOGS = WORKSPACE / "logs"
-UNIFIED_LOGS = WORKSPACE / "unified_logs"
-PLANETARY_MONITOR = WORKSPACE / "planetary_monitor"
-HNC_LOGS = WORKSPACE / "hnc_daemon_logs"
+TEMPORAL_STATE = STATE_ROOT / "temporal_state"
+SHARED_STATE = STATE_ROOT / "shared_state"
+PIDS = STATE_ROOT / "pids"
+LOGS = STATE_ROOT / "logs"
+UNIFIED_LOGS = STATE_ROOT / "unified_logs"
+PLANETARY_MONITOR = STATE_ROOT / "planetary_monitor"
+HNC_LOGS = STATE_ROOT / "hnc_daemon_logs"
 
 # Identity / instruction files (loaded by the agent loop)
 IDENTITY_MD = WORKSPACE / "IDENTITY.md"
