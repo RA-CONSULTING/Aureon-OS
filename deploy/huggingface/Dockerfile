@@ -42,6 +42,14 @@ RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel \
       huggingface_hub==0.36.2 \
       httpx jsonschema waitress
 
+# NGC 25.05 provides Python outside /usr/local/bin. Keep one verified absolute
+# interpreter path for supervisord and the model launcher without replacing the
+# NGC Torch/CUDA installation.
+RUN PYTHON_BIN="$(command -v python)" \
+ && test -x "$PYTHON_BIN" \
+ && ln -s "$PYTHON_BIN" /usr/local/bin/python \
+ && /usr/local/bin/python -c "import torch, transformers; assert torch.__version__ and transformers.__version__"
+
 RUN mkdir -p /app/aureon-os/runtime /app/aureon-os/runtime/home \
  && chown -R aureon:aureon /app/aureon-os/runtime \
  && chmod +x \

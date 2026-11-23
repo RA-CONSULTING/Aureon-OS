@@ -189,6 +189,15 @@ def test_ngc_existing_uid_does_not_block_the_nonroot_runtime() -> None:
     assert int(match.group(1)) > 1000
 
 
+def test_ngc_python_has_a_build_verified_supervisor_interpreter() -> None:
+    assert 'PYTHON_BIN="$(command -v python)"' in DOCKERFILE
+    assert 'ln -s "$PYTHON_BIN" /usr/local/bin/python' in DOCKERFILE
+    assert '/usr/local/bin/python -c "import torch, transformers;' in DOCKERFILE
+    assert MODEL_SERVICE.startswith("#!/usr/bin/env bash")
+    assert 'PYTHON=/usr/local/bin/python' in MODEL_SERVICE
+    assert "command=/usr/local/bin/python" in SUPERVISOR
+
+
 def test_build_context_excludes_credentials_and_does_not_reinclude_json_wholesale() -> None:
     for pattern in ("**/.env", "**/.env.*", "**/*.pem", "**/*.key", ".git", "runtime", "state"):
         assert pattern in DOCKERIGNORE
