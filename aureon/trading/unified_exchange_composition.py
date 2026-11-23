@@ -141,7 +141,7 @@ class WorkforceCelticUnityComposition:
             and report.get("distinct_hnc_routing_receipt_count") == expected * 2
             and report.get("all_brains_hnc_routed") is True
             and report.get("truth_gate_enforced") is True
-            and report.get("provider_mode") == "ollama_cloud_primary"
+            and report.get("provider_mode") == "aureon_own_model"
             and report.get("decision_authority") == "aureon_internal"
             and report.get("codex_role") == "senior_review_and_veto_only"
             and report.get("codex_implementation_allowed") is False
@@ -322,7 +322,7 @@ def build_workforce_celtic_unified_exchange_unity_composition(
         and report.get("distinct_hnc_routing_receipt_count") == expected * 2
         and report.get("all_brains_hnc_routed") is True
         and report.get("truth_gate_enforced") is True
-        and report.get("provider_mode") == "ollama_cloud_primary"
+        and report.get("provider_mode") == "aureon_own_model"
         and report.get("action_eligible") is False
         and report.get("economic_eligible") is False
     ):

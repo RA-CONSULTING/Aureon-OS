@@ -27,6 +27,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable
 
 from aureon.inhouse_ai.llm_adapter import _llm_http_disabled
+from aureon.inhouse_ai.shell_guard import shell_command_refusal
 from aureon.inhouse_ai.tool_registry import (
     ToolAuthorizationVerifier,
     ToolDispatchAuthorization,
@@ -204,8 +205,13 @@ class GuardedToolRegistry(ToolRegistry):
                 return f"write to sensitive path refused: {path}"
             if _resolve_in_repo(path) is None:
                 return f"path escapes the repository: {path}"
-        if name == "execute_shell" and _DESTRUCTIVE_SHELL_RE.search(str(args.get("command", ""))):
-            return "destructive shell command refused"
+        if name == "execute_shell":
+            command = args.get("command", "")
+            # The regex stays so a previously refused spelling (any ``chmod -R``,
+            # a bare ``dd`` / ``shutdown`` word) is not re-opened. The parser
+            # closes the spellings that regex and the old substring list miss.
+            if _DESTRUCTIVE_SHELL_RE.search(str(command)) or shell_command_refusal(command):
+                return "destructive shell command refused"
         return None
 
 

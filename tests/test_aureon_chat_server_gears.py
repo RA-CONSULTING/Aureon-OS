@@ -34,7 +34,7 @@ def test_with_gears_attaches_a_receipt_and_keeps_the_reply(chat_server) -> None:
 
     assert out["choices"][0]["message"]["content"] == '{"claim_class": "C5"}'
     gears = out["hnc_gears"]
-    assert [gear["name"] for gear in gears["gears"]] == ["parse", "field", "auris"]
+    assert [gear["name"] for gear in gears["gears"]] == ["parse", "field", "auris", "qgita"]
     assert gears["parsed"] is True
 
 

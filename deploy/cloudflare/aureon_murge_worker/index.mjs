@@ -1,49 +1,9 @@
-const OPENROUTER_FALLBACK_MODELS = [
-  "openrouter/free",
-  "google/gemma-4-31b-it:free",
-  "google/gemma-4-26b-a4b-it:free",
-  "meta-llama/llama-3.1-8b-instruct:free",
-  "mistralai/mistral-7b-instruct:free",
-];
-
-const HF_FREE_MODELS = [
-  "Qwen/Qwen2.5-7B-Instruct",
-  "HuggingFaceH4/zephyr-7b-beta",
-  "microsoft/Phi-3-mini-4k-instruct",
-];
-
-const FREE_MODE_PROVIDERS = new Set(["gemini", "openrouter", "aureon"]);
-const ALLOWED_PROVIDERS = new Set([
-  "gemini",
-  "openrouter",
-  "aureon",
-  "ollama",
-  "huggingface",
-  "grok",
-  "openai",
-]);
-const PROVIDER_MODEL_DEFAULTS = {
-  gemini: "gemini-2.5-flash",
-  openrouter: "openrouter/free",
-  aureon: "aureon-brain",
-  ollama: "kimi-k2.7-code",
-  huggingface: HF_FREE_MODELS[0],
-  grok: "grok-3-mini",
-  openai: "gpt-4o-mini",
-};
+const AUREON_OWN_DEFAULT_BASE_URL = "http://127.0.0.1:11435/v1";
+const AUREON_OWN_DEFAULT_MODEL = "aureon-7b-v65k";
+const FREE_MODE_PROVIDERS = new Set(["aureon"]);
+const ALLOWED_PROVIDERS = new Set(["aureon"]);
 const PROVIDER_MODEL_ALLOWLISTS = new Map([
-  ["gemini", new Set(["gemini-1.5-flash", "gemini-2.0-flash-exp", "gemini-2.5-flash"])],
-  ["openrouter", new Set(OPENROUTER_FALLBACK_MODELS)],
-  ["aureon", new Set([
-    "aureon-brain",
-    "aureon-queen",
-    "aureon-council",
-    "aureon-architect",
-    "aureon-vault",
-  ])],
-  ["huggingface", new Set(HF_FREE_MODELS)],
-  ["grok", new Set(["grok-2-latest", "grok-3-mini"])],
-  ["openai", new Set(["gpt-4o-mini", "gpt-4o"])],
+  ["aureon", new Set([AUREON_OWN_DEFAULT_MODEL])],
 ]);
 const MAX_MESSAGE_BYTES = 8 * 1024;
 const MAX_ROLE_PROMPT_BYTES = 2 * 1024;
@@ -331,50 +291,26 @@ function commonMessages(parsed) {
   ];
 }
 
-async function callOllamaCloud(parsed, env, fallbackFor = null) {
-  const route = String(env.AUREON_EXTERNAL_LLM_FALLBACK || "ollama").toLowerCase();
-  if (["none", "off", "disabled", "false", "0"].includes(route)) {
-    throw new Error("Ollama fallback is disabled.");
+function aureonOwnRoute(env = {}) {
+  const baseUrl = String(env.AUREON_OWN_LLM_BASE_URL || AUREON_OWN_DEFAULT_BASE_URL)
+    .trim()
+    .replace(/\/+$/, "");
+  const model = String(env.AUREON_OWN_LLM_MODEL || AUREON_OWN_DEFAULT_MODEL).trim();
+  if (baseUrl !== AUREON_OWN_DEFAULT_BASE_URL || model !== AUREON_OWN_DEFAULT_MODEL) {
+    throw new Error("aureon_own_model_route_invalid");
   }
-  const apiKey = env.OLLAMA_API_KEY || env.AUREON_OLLAMA_API_KEY || env.AUREON_LLM_API_KEY;
-  if (!apiKey) throw new Error("OLLAMA_API_KEY is not configured.");
-  const base = String(env.AUREON_LLM_BASE_URL || "https://ollama.com/v1").replace(/\/+$/, "");
-  const endpoint = /\/chat\/completions$/i.test(base) ? base : `${base}/chat/completions`;
-  const model = env.AUREON_LLM_MODEL || env.AUREON_OLLAMA_MODEL || "kimi-k2.7-code";
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      messages: commonMessages(parsed),
-      temperature: Number(parsed.temperature ?? 0.7),
-      max_tokens: Number(parsed.max_tokens ?? 2000),
-      reasoning_effort: env.AUREON_OLLAMA_REASONING_EFFORT || "none",
-    }),
-  });
-  const data = await parseJsonResponse(response);
-  if (!response.ok) throw new Error(data?.error?.message || `Ollama Cloud HTTP ${response.status}.`);
-  const reply = data?.choices?.[0]?.message?.content;
-  if (!reply) throw new Error("Ollama Cloud returned no visible response.");
-  return { provider: "ollama", model, reply, fallbackFor };
+  return { model, endpoint: `${baseUrl}/chat/completions` };
 }
 
-function paidProvidersEnabled(env) {
-  return env?.AUREON_ALLOW_PAID_PROVIDERS === "true";
+function paidProvidersEnabled(_env) {
+  return false;
 }
 
-function providerDefaultModel(provider, env) {
-  if (provider === "ollama") {
-    return String(env.AUREON_LLM_MODEL || env.AUREON_OLLAMA_MODEL || PROVIDER_MODEL_DEFAULTS.ollama);
-  }
-  return PROVIDER_MODEL_DEFAULTS[provider];
+function providerDefaultModel(_provider, _env) {
+  return AUREON_OWN_DEFAULT_MODEL;
 }
 
-function providerModelAllowed(provider, model, env) {
-  if (provider === "ollama") return model === providerDefaultModel(provider, env);
+function providerModelAllowed(provider, model, _env) {
   return PROVIDER_MODEL_ALLOWLISTS.get(provider)?.has(model) === true;
 }
 
@@ -409,9 +345,9 @@ function boundedNumber(value, field, fallback, minimum, maximum, integer = false
 function normalizeChatRequest(parsed, env) {
   const provider = typeof parsed.provider === "string"
     ? parsed.provider.trim().toLowerCase()
-    : "gemini";
+    : "aureon";
   if (!ALLOWED_PROVIDERS.has(provider)) {
-    throw new ClientRequestError(400, "provider_not_allowed", "Requested provider is not allowed.");
+    throw new ClientRequestError(400, "provider_not_allowed", "Only Aureon's own model is allowed.");
   }
 
   const accessMode = typeof parsed.accessMode === "string"
@@ -433,9 +369,6 @@ function normalizeChatRequest(parsed, env) {
   if (!providerModelAllowed(provider, model, env)) {
     throw new ClientRequestError(400, "model_not_allowed", "Requested model is not allowed.");
   }
-  if (accessMode === "free" && provider === "openrouter" && model !== "openrouter/free" && !model.endsWith(":free")) {
-    throw new ClientRequestError(403, "model_not_free", "Requested model is unavailable in free-only mode.");
-  }
 
   return {
     ...parsed,
@@ -454,327 +387,57 @@ function normalizeChatRequest(parsed, env) {
   };
 }
 
-function shouldRetryOpenRouter(message) {
-  const normalized = String(message || "").toLowerCase();
-  return (
-    normalized.includes("at capacity") ||
-    normalized.includes("capacity") ||
-    normalized.includes("please try a different model") ||
-    normalized.includes("rate limit") ||
-    normalized.includes("temporarily unavailable") ||
-    normalized.includes("over capacity")
-  );
-}
-
-async function callOpenRouter(parsed, env) {
-  const apiKey = env.OPENROUTER_API_KEY;
-  if (!apiKey) throw new Error("Brak klucza OpenRouter API.");
-
-  const requestedModel = parsed.model || "openrouter/free";
-  const modelQueue = [
-    requestedModel,
-    ...OPENROUTER_FALLBACK_MODELS.filter((model) => model !== requestedModel),
-  ];
-  const tried = [];
-  let lastError = "Błąd OpenRouter API.";
-
-  for (const model of modelQueue) {
-    tried.push(model);
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "http://localhost",
-        "X-Title": "flAmeBornLLC LLM Academy",
-      },
-      body: JSON.stringify({
-        model,
-        messages: commonMessages(parsed),
-        temperature: Number(parsed.temperature ?? 0.7),
-        max_tokens: Number(parsed.max_tokens ?? 2000),
-      }),
-    });
-
-    const data = await parseJsonResponse(response);
-    if (!response.ok) {
-      lastError = data?.error?.message || "Błąd OpenRouter API.";
-      if (shouldRetryOpenRouter(lastError)) continue;
-      throw new Error(lastError);
-    }
-
-    const reply = data?.choices?.[0]?.message?.content;
-    if (!reply) {
-      lastError = "Brak odpowiedzi modelu OpenRouter.";
-      continue;
-    }
-
-    return {
-      provider: "openrouter",
-      model,
-      reply,
-      requestedModel,
-      fallbackUsed: model !== requestedModel,
-      triedModels: tried,
-    };
-  }
-
-  throw new Error(`${lastError} Przetestowane modele: ${tried.join(", ")}`);
-}
-
-async function callGemini(parsed, env) {
-  const apiKey = env.GEMINI_API_KEY || env.GOOGLE_API_KEY;
-  if (!apiKey) throw new Error("Brak klucza GEMINI_API_KEY.");
-
-  const model = String(parsed.model || "gemini-2.5-flash").replace(/^models\//, "");
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction: {
-          parts: [{ text: parsed.rolePrompt || "Jesteś pomocnym asystentem." }],
-        },
-        contents: [
-          {
-            role: "user",
-            parts: [{ text: parsed.message || "" }],
-          },
-        ],
-        generationConfig: {
-          temperature: Number(parsed.temperature ?? 0.7),
-          maxOutputTokens: Number(parsed.max_tokens ?? 2000),
-        },
-      }),
-    },
-  );
-
-  const data = await parseJsonResponse(response);
-  if (!response.ok) throw new Error(data?.error?.message || "Błąd Gemini API.");
-
-  const parts = data?.candidates?.[0]?.content?.parts || [];
-  const reply = parts.map((part) => part.text || "").join("").trim();
-  if (!reply) throw new Error("Brak odpowiedzi modelu Gemini.");
-  return { provider: "gemini", model, reply };
-}
-
-async function callOpenAI(parsed, env) {
-  const apiKey = env.OPENAI_API_KEY;
-  if (!apiKey) throw new Error("Brak klucza OPENAI_API_KEY.");
-
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: parsed.model || "gpt-4o-mini",
-      messages: commonMessages(parsed),
-      temperature: Number(parsed.temperature ?? 0.7),
-      max_tokens: Number(parsed.max_tokens ?? 2000),
-    }),
-  });
-
-  const data = await parseJsonResponse(response);
-  if (!response.ok) throw new Error(data?.error?.message || "Błąd OpenAI API.");
-  const reply = data?.choices?.[0]?.message?.content;
-  if (!reply) throw new Error("Brak odpowiedzi modelu OpenAI.");
-  return { provider: "openai", model: parsed.model, reply };
-}
-
-async function callHuggingFace(parsed, env) {
-  const token = env.HF_TOKEN || env.HUGGINGFACE_API_KEY;
-  if (!token) throw new Error("Brak klucza HF_TOKEN / HUGGINGFACE_API_KEY.");
-
-  const model = parsed.model || HF_FREE_MODELS[0];
-  if (!HF_FREE_MODELS.includes(model)) {
-    throw new Error("Model Hugging Face poza listą free-only w tej aplikacji.");
-  }
-
-  const response = await fetch("https://router.huggingface.co/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      messages: commonMessages(parsed),
-      temperature: Number(parsed.temperature ?? 0.7),
-      max_tokens: Number(parsed.max_tokens ?? 1200),
-    }),
-  });
-
-  const data = await parseJsonResponse(response);
-  if (!response.ok) throw new Error(data?.error?.message || "Błąd Hugging Face API.");
-  const reply = data?.choices?.[0]?.message?.content;
-  if (!reply) throw new Error("Brak odpowiedzi modelu Hugging Face.");
-  return { provider: "huggingface", model, reply };
-}
-
-async function callGrok(parsed, env) {
-  const allowPaid = String(env.XAI_ALLOW_PAID || "false").toLowerCase() === "true";
-  const apiKey = env.XAI_API_KEY;
-  if (!apiKey) throw new Error("Brak klucza XAI_API_KEY.");
-  if (!allowPaid) {
-    throw new Error(
-      "Grok API: brak darmowych modeli API. Tryb free-only jest aktywny (XAI_ALLOW_PAID=false).",
-    );
-  }
-
-  const response = await fetch("https://api.x.ai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: parsed.model || "grok-3-mini",
-      messages: commonMessages(parsed),
-      temperature: Number(parsed.temperature ?? 0.7),
-      max_tokens: Number(parsed.max_tokens ?? 2000),
-    }),
-  });
-
-  const data = await parseJsonResponse(response);
-  if (!response.ok) throw new Error(data?.error?.message || "Błąd Grok/xAI API.");
-  const reply = data?.choices?.[0]?.message?.content;
-  if (!reply) throw new Error("Brak odpowiedzi modelu Grok.");
-  return { provider: "grok", model: parsed.model, reply };
-}
-
-function aureonArchitectureStatus(env = {}) {
+function aureonArchitectureStatus(_env = {}) {
   return {
     obsidianBridge: {
-      mode: env.AUREON_API_BASE_URL ? "external-aureon" : "disabled-until-tenant-storage",
+      mode: "disabled-until-tenant-storage",
       note: "Cross-request memory is disabled until tenant-bound durable storage is configured.",
     },
-    ollamaFallback: {
-      mode: (env.OLLAMA_API_KEY || env.AUREON_OLLAMA_API_KEY || env.AUREON_LLM_API_KEY)
-        ? "ollama-cloud-ready"
-        : "waiting-for-worker-secret",
-      expectedEndpoint: "Ollama Cloud OpenAI-compatible API",
+    ownModel: {
+      mode: "aureon-own-only",
+      model: AUREON_OWN_DEFAULT_MODEL,
+      endpoint: `${AUREON_OWN_DEFAULT_BASE_URL}/chat/completions`,
+      externalFallback: false,
     },
     queenLayer: {
-      mode: env.AUREON_API_BASE_URL ? "remote-available" : "waiting-for-aureon-bridge",
+      mode: "own-model-reasoning-only",
       safeDefault: "observer/status only; no autonomous actions enabled",
     },
   };
 }
 
-function extractAureonReply(data) {
-  if (!data || typeof data !== "object") return "";
-  if (typeof data.reply === "string") return data.reply;
-  if (typeof data.response === "string") return data.response;
-  if (typeof data.text === "string") return data.text;
-  if (typeof data.message === "string") return data.message;
-  if (typeof data.message?.content === "string") return data.message.content;
-  if (typeof data.utterance?.response?.text === "string") return data.utterance.response.text;
-  if (typeof data.utterance?.statement?.text === "string") return data.utterance.statement.text;
-  if (typeof data.statement?.text === "string") return data.statement.text;
-  if (typeof data.result?.text === "string") return data.result.text;
-  if (typeof data.result === "string") return data.result;
-  return "";
-}
-
 async function callAureonBrain(parsed, env) {
-  const model = parsed.model || "aureon-brain";
-  const baseUrl = String(env.AUREON_API_BASE_URL || "").replace(/\/+$/, "");
-  const chatPath = env.AUREON_CHAT_PATH || "/api/message";
-  const apiKey = env.AUREON_API_KEY || "";
-  const voice = aureonVoiceForModel(model);
-  const userMessage = parsed.message || "";
-  const includeConnectionFact = /connected|connection|bridge|status|połącz|polacz|połączenie|polaczenie/i.test(userMessage);
-  const routedMessage = [
-    "Context: this request is routed from flAmeBorn LLM Academy through the Aureon Phi Bridge.",
-    includeConnectionFact
-      ? "Connection fact: if asked whether Aureon is connected to flAmeBorn LLM Academy, the correct technical answer is yes."
-      : "",
-    `Human asks: ${userMessage}`,
-    "Answer directly in natural language. No trading signals, no JSON, no status report unless asked.",
-  ].filter(Boolean).join("\n");
-
-  if (!baseUrl) {
-    return {
-      provider: "aureon",
-      model,
-      reply: [
-        "Aureon Brain bridge is prepared but not connected to a live Aureon endpoint yet.",
-        "Cloud mode is waiting for AUREON_API_BASE_URL.",
-        "Use this provider after Gary exposes the Aureon bridge/vault server.",
-      ].join(" "),
-      bridgeConnected: false,
-      architecture: aureonArchitectureStatus(env),
-    };
-  }
-
-  const response = await fetch(`${baseUrl}${chatPath}`, {
+  const route = aureonOwnRoute(env);
+  const response = await fetch(route.endpoint, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
-    },
+    headers: { "Content-Type": "application/json" },
+    redirect: "error",
     body: JSON.stringify({
-      text: routedMessage,
-      message: routedMessage,
-      voice,
-      fast: true,
-      peer_id: "flameborn-academy",
-      model,
-      provider: "aureon",
-      rolePrompt: parsed.rolePrompt || "You are Aureon Brain inside flAmeBornLLC LLM Academy.",
-      context: {
-        app: "flAmeBornLLC LLM Academy",
-        mode: "aureon-vault-voice",
-        voice,
-        classroom: "observer-compatible",
-      },
+      model: route.model,
+      messages: commonMessages(parsed),
+      temperature: parsed.temperature,
+      max_tokens: parsed.max_tokens,
+      stream: false,
     }),
   });
 
   const data = await parseJsonResponse(response);
-  if (!response.ok) throw new Error(data?.error?.message || data?.error || "Błąd Aureon Brain API.");
-  const reply = extractAureonReply(data);
-  if (!reply) throw new Error("Aureon Brain nie zwrócił tekstowej odpowiedzi.");
+  if (!response.ok) throw new Error("aureon_own_model_request_failed");
+  const reply = data?.choices?.[0]?.message?.content;
+  if (data?.model !== route.model || typeof reply !== "string" || !reply.trim()) {
+    throw new Error("aureon_own_model_response_invalid");
+  }
   return {
-    provider: "aureon",
-    model,
+    provider: "aureon_own_model",
+    model: route.model,
     reply,
     bridgeConnected: true,
-    rawStatus: data.status || data.mode || null,
   };
 }
 
-function aureonVoiceForModel(model = "") {
-  const normalized = String(model || "").toLowerCase();
-  if (normalized.includes("council")) return "council";
-  if (normalized.includes("architect")) return "architect";
-  if (normalized.includes("lover")) return "lover";
-  if (normalized.includes("miner")) return "miner";
-  if (normalized.includes("scout")) return "scout";
-  if (normalized.includes("vault")) return "vault";
-  return "queen";
-}
-
 async function callProvider(provider, parsed, env) {
-  try {
-    if (provider === "gemini") return await callGemini(parsed, env);
-    if (provider === "huggingface") return await callHuggingFace(parsed, env);
-    if (provider === "grok") return await callGrok(parsed, env);
-    if (provider === "openai") return await callOpenAI(parsed, env);
-    if (provider === "aureon") return await callAureonBrain(parsed, env);
-    if (provider === "ollama") return await callOllamaCloud(parsed, env, provider);
-    return await callOpenRouter(parsed, env);
-  } catch (primaryError) {
-    if (provider === "ollama" || !paidProvidersEnabled(env)) throw primaryError;
-    try {
-      return await callOllamaCloud(parsed, env, provider);
-    } catch (fallbackError) {
-      throw new Error(`${primaryError.message} Ollama fallback: ${fallbackError.message}`);
-    }
-  }
+  if (provider !== "aureon") throw new Error("aureon_own_model_required");
+  return callAureonBrain(parsed, env);
 }
 
 async function handleChat(request, env) {
@@ -787,11 +450,10 @@ async function handleChat(request, env) {
   }
 
   try {
-    const provider = parsed.provider || "gemini";
-    const result = await callProvider(provider, parsed, env);
+    const result = await callProvider(parsed.provider, parsed, env);
     return jsonResponse(200, result);
   } catch {
-    return apiError(502, "upstream_request_failed", "Upstream provider request failed.");
+    return apiError(503, "aureon_own_model_unavailable", "Aureon's own model is unavailable.");
   }
 }
 
@@ -878,11 +540,11 @@ async function handleAuthenticatedApi(request, env, url, secret) {
     response = await handleChat(request, env);
   } else if (request.method === "GET" && url.pathname === "/api/aureon/status") {
     response = jsonResponse(200, {
-      provider: "aureon",
-      paidProvidersEnabled: paidProvidersEnabled(env),
-      configured: Boolean(env.AUREON_API_BASE_URL),
-      baseUrlConfigured: Boolean(env.AUREON_API_BASE_URL),
-      chatPath: env.AUREON_CHAT_PATH || "/api/message",
+      provider: "aureon_own_model",
+      paidProvidersEnabled: false,
+      configured: true,
+      baseUrlConfigured: true,
+      chatPath: "/v1/chat/completions",
       architecture: aureonArchitectureStatus(env),
     });
   } else {

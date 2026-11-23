@@ -7,9 +7,12 @@ import sys
 import threading
 import time
 import uuid
-from dataclasses import dataclass, asdict, field
-from typing import Any, Callable, Deque, Dict, List, Optional
 from collections import deque
+from contextlib import contextmanager
+from dataclasses import asdict, dataclass, field
+from typing import Any, Callable, Deque, Dict, List, Optional
+
+from filelock import FileLock
 
 # Cross-platform file locking
 if sys.platform == 'win32':
@@ -27,6 +30,19 @@ else:
         fcntl.flock(f.fileno(), fcntl.LOCK_EX)
     def _unlock_file(f):
         fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+
+_PERSISTENCE_THREAD_LOCKS: Dict[str, threading.RLock] = {}
+_PERSISTENCE_THREAD_LOCKS_GUARD = threading.Lock()
+
+
+@contextmanager
+def _persistence_thread_lock(path: str):
+    key = os.path.normcase(os.path.abspath(path))
+    with _PERSISTENCE_THREAD_LOCKS_GUARD:
+        lock = _PERSISTENCE_THREAD_LOCKS.setdefault(key, threading.RLock())
+    with lock:
+        yield
+
 
 Json = Dict[str, Any]
 
@@ -537,40 +553,37 @@ class ThoughtBus:
         return count
 
     def _persist(self, thought: Thought) -> None:
-        """Persist thought to JSONL with file locking for crash safety.
-
-        When ``AUREON_THOUGHT_BUS_MAX_BYTES`` is set to a positive integer the
-        log is rotated before a write that finds it at or over that size: the
-        file moves to ``<path>.1`` (older copies shift up, up to
-        ``AUREON_THOUGHT_BUS_BACKUPS``, default 1) and a fresh file is started.
-        Unset or 0 keeps the old behaviour of appending without limit.
-        A failed rotation never skips the write.  Caveat: with one backup, two
-        rotations in quick succession can replace the ``.1`` a waiting writer
-        still holds open, so a line can be lost in that narrow case; use a
-        limit large enough that rotations are far apart.
-        """
+        """Serialize rotation and writes without holding the log inode."""
         if not self._persist_path:
             return
         line = json.dumps(thought.to_json(), ensure_ascii=False) + "\n"
         try:
-            self._rotate_if_needed()
-        except (OSError, IOError):
-            # A failed rotation (e.g. Windows refusing to rename a file another
-            # process holds open) must never cost the write; append instead.
-            pass
-        try:
-            with open(self._persist_path, "a", encoding="utf-8") as f:
-                # Acquire exclusive lock to prevent concurrent writes (cross-platform)
-                _lock_file(f)
+            with self._persistence_lock():
                 try:
+                    self._rotate_if_needed_locked()
+                except (OSError, IOError):
+                    # A failed rotation never skips the pending write.
+                    pass
+                with open(self._persist_path, "a", encoding="utf-8") as f:
                     f.write(line)
                     f.flush()
-                    os.fsync(f.fileno())  # Ensure data hits disk
-                finally:
-                    _unlock_file(f)
+                    os.fsync(f.fileno())
         except (OSError, IOError):
             # Log but don't crash on persistence failure
             pass
+
+    @contextmanager
+    def _persistence_lock(self):
+        """Lock a stable sidecar, never the active log being rotated."""
+        if not self._persist_path:
+            yield
+            return
+        lock_path = f"{self._persist_path}.lock"
+        # Pool workers can reuse a thread across bus instances. The keyed RLock
+        # prevents cross-instance thread re-entry; FileLock excludes processes.
+        with _persistence_thread_lock(lock_path):
+            with FileLock(lock_path, timeout=5):
+                yield
 
     def _rotate_if_needed(self) -> None:
         limit = _env_int("AUREON_THOUGHT_BUS_MAX_BYTES", 0)
@@ -582,29 +595,24 @@ class ThoughtBus:
                 return
         except OSError:
             return
+        with self._persistence_lock():
+            self._rotate_if_needed_locked()
+
+    def _rotate_if_needed_locked(self) -> None:
+        limit = _env_int("AUREON_THOUGHT_BUS_MAX_BYTES", 0)
+        if limit <= 0 or not self._persist_path:
+            return
+        path = self._persist_path
         backups = max(1, _env_int("AUREON_THOUGHT_BUS_BACKUPS", 1))
-        with open(path, "a", encoding="utf-8") as f:
-            _lock_file(f)
-            try:
-                # Another process may have rotated while we waited for the
-                # lock; only rotate if the path still names the file we hold
-                # and it is still over the limit.
-                held = os.fstat(f.fileno())
-                try:
-                    current = os.stat(path)
-                except OSError:
-                    return
-                if (current.st_ino, current.st_dev) != (held.st_ino, held.st_dev):
-                    return
-                if held.st_size < limit:
-                    return
-                for n in range(backups - 1, 0, -1):
-                    src = f"{path}.{n}"
-                    if os.path.exists(src):
-                        os.replace(src, f"{path}.{n + 1}")
-                os.replace(path, f"{path}.1")
-            finally:
-                _unlock_file(f)
+        # The sibling lock excludes all cooperating writers. No active-log
+        # handle is held while os.replace renames it on Windows.
+        if os.path.getsize(path) < limit:
+            return
+        for n in range(backups - 1, 0, -1):
+            src = f"{path}.{n}"
+            if os.path.exists(src):
+                os.replace(src, f"{path}.{n + 1}")
+        os.replace(path, f"{path}.1")
 
     def _match_handlers(self, topic: str) -> List[Subscriber]:
         with self._lock:

@@ -187,12 +187,14 @@ def test_no_usable_answer_is_reported_honestly():
     assert "no ai line" in resp.text.lower()
 
 
-def test_build_provider_set_degrades_to_stub_offline(monkeypatch):
+def test_build_provider_set_reports_own_model_unavailable_offline(monkeypatch):
     for key in ("OPENAI_API_KEY", "XAI_API_KEY", "GEMINI_API_KEY", "AUREON_LLM_BASE_URL"):
         monkeypatch.delenv(key, raising=False)
     providers = build_provider_set(force_offline=True)
-    assert list(providers.keys()) == ["offline"]
-    assert isinstance(providers["offline"], AureonStubAdapter)
+    assert list(providers.keys()) == ["aureon-own"]
+    assert isinstance(providers["aureon-own"], AureonStubAdapter)
+    assert providers["aureon-own"].model == "aureon-own-offline"
+    assert providers["aureon-own"].health_check() is False
 
 
 def test_stream_events_yields_tokens_and_complete():

@@ -26,8 +26,17 @@ from pathlib import Path
 from typing import Any, Dict, Generator, List, Optional
 from urllib.parse import urlsplit
 
+from aureon.inhouse_ai.own_model_config import (
+    AUREON_OWN_DEFAULT_BASE_URL,
+    AUREON_OWN_DEFAULT_MODEL,
+)
+from aureon.inhouse_ai.own_model_config import (
+    aureon_own_route as _aureon_own_route,
+)
+from aureon.inhouse_ai.own_model_config import (
+    is_aureon_own_route as _is_aureon_own_route,
+)
 from aureon.ollama_config import (
-    ensure_ollama_runtime_config,
     is_ollama_cloud_url,
     looks_like_ollama_url,
     ollama_authorization_headers,
@@ -256,36 +265,35 @@ class AureonLocalAdapter(LLMAdapter):
         model: Optional[str] = None,
         api_key: Optional[str] = None,
         *,
-        strict_loopback_no_redirects: bool = False,
+        strict_loopback_no_redirects: bool = True,
     ):
-        if base_url is None and not str(
-            os.environ.get("AUREON_LLM_BASE_URL", "") or ""
-        ).strip():
-            ensure_ollama_runtime_config(explicit_config=api_key is not None)
         configured_base_url = (
             base_url
-            or os.environ.get("AUREON_LLM_BASE_URL", "http://localhost:11434/v1")
+            or os.environ.get("AUREON_OWN_LLM_BASE_URL")
+            or AUREON_OWN_DEFAULT_BASE_URL
         )
         self.base_url = (
             resolve_ollama_openai_base_url(configured_base_url)
             if looks_like_ollama_url(configured_base_url)
             else configured_base_url.rstrip("/")
         )
-        # Track whether the caller pinned a specific model. If they didn't,
-        # the health check is allowed to substitute a working installed model
-        # so the voice layer doesn't silently 404 / 500 against a name that
-        # isn't actually loadable on this machine.
-        env_model = os.environ.get("AUREON_LLM_MODEL")
-        self._model_pinned = bool(model or env_model)
-        self.model = model or env_model or "llama3"
+        # Model substitution could silently replace Aureon's weights with a
+        # borrowed model, so the own-model route is always pinned.
+        self._model_pinned = True
+        self.model = (
+            model
+            or os.environ.get("AUREON_OWN_LLM_MODEL")
+            or AUREON_OWN_DEFAULT_MODEL
+        )
         self._api_key_explicit = api_key is not None
         self.api_key = (
             resolve_ollama_api_key(api_key)
             if looks_like_ollama_url(self.base_url)
-            else (api_key or os.environ.get("AUREON_LLM_API_KEY", ""))
+            else (api_key or os.environ.get("AUREON_OWN_LLM_API_KEY", ""))
         )
         self._model_verified: bool = False
         self.strict_loopback_no_redirects = False
+        own_route = _is_aureon_own_route(self.base_url, self.model)
 
         # Ollama detection. The OpenAI /v1 shim Ollama ships with silently
         # drops the ``keep_alive`` payload field, so the model unloads every
@@ -314,11 +322,22 @@ class AureonLocalAdapter(LLMAdapter):
             import requests
 
             self._session = requests.Session()
-            if strict_loopback_no_redirects:
+            if strict_loopback_no_redirects and own_route:
                 self.enable_strict_loopback_transport()
         except ImportError:
             self._session = None
             logger.warning("requests not installed — HTTP adapter degraded")
+
+    def _own_route_required(self) -> LLMResponse:
+        return LLMResponse(
+            text=(
+                "[ERROR] Aureon's own model is required; external, borrowed, "
+                "and substitute model routes are disabled."
+            ),
+            stop_reason="error",
+            model=self.model,
+            raw={"error": "aureon_own_model_required"},
+        )
 
     @staticmethod
     def _literal_loopback_origin(url: str) -> tuple[str, str, int]:
@@ -634,6 +653,8 @@ class AureonLocalAdapter(LLMAdapter):
         temperature: float = 0.7,
         **kwargs,
     ) -> LLMResponse:
+        if not _is_aureon_own_route(self.base_url, self.model):
+            return self._own_route_required()
         if not self._session:
             return LLMResponse(text="[ERROR] requests library not available", stop_reason="error")
         if _llm_http_disabled():
@@ -695,7 +716,20 @@ class AureonLocalAdapter(LLMAdapter):
                 )
             return LLMResponse(text=text, stop_reason="error")
 
-        choice = data.get("choices", [{}])[0]
+        choices = data.get("choices")
+        if (
+            data.get("model") != self.model
+            or not isinstance(choices, list)
+            or len(choices) != 1
+            or not isinstance(choices[0], dict)
+        ):
+            return LLMResponse(
+                text="[ERROR] Aureon own-model response identity mismatch",
+                stop_reason="error",
+                model=self.model,
+                raw={"error": "aureon_own_model_response_invalid"},
+            )
+        choice = choices[0]
         message = choice.get("message", {})
 
         tool_calls = []
@@ -735,6 +769,14 @@ class AureonLocalAdapter(LLMAdapter):
         temperature: float = 0.7,
         **kwargs,
     ) -> Generator[StreamChunk, None, None]:
+        if not _is_aureon_own_route(self.base_url, self.model):
+            response = self._own_route_required()
+            yield StreamChunk(
+                text=response.text,
+                done=True,
+                stop_reason="error",
+            )
+            return
         if not self._session:
             yield StreamChunk(text="[ERROR] requests library not available", done=True)
             return
@@ -795,6 +837,13 @@ class AureonLocalAdapter(LLMAdapter):
             except json.JSONDecodeError:
                 continue
 
+            if chunk_data.get("model") != self.model:
+                yield StreamChunk(
+                    text="[ERROR] Aureon own-model response identity mismatch",
+                    done=True,
+                    stop_reason="error",
+                )
+                return
             delta = chunk_data.get("choices", [{}])[0].get("delta", {})
             finish = chunk_data.get("choices", [{}])[0].get("finish_reason")
 
@@ -867,6 +916,8 @@ class AureonLocalAdapter(LLMAdapter):
              it 500s (typically OOM), drop it and try the next candidate.
           4. Cache the verified model and return True; otherwise False.
         """
+        if not _is_aureon_own_route(self.base_url, self.model):
+            return False
         if _llm_http_disabled():
             return False
         if not self._session:
@@ -914,7 +965,8 @@ class AureonLocalAdapter(LLMAdapter):
         # If the requested model is present, trust the listing by default and
         # let the real small-packet request be the proof. Operators can set
         # AUREON_LLM_SKIP_PROBE=0 to restore strict probe-before-use behavior.
-        skip_probe_raw = os.environ.get("AUREON_LLM_SKIP_PROBE", "1" if self._prefer_native else "0")
+        # An own-model readiness claim always requires an actual inference probe.
+        skip_probe_raw = os.environ.get("AUREON_LLM_SKIP_PROBE", "")
         if candidates and skip_probe_raw.strip().lower() in {"1", "true", "yes", "on"}:
             self.model = candidates[0]
             self._model_verified = True
@@ -977,7 +1029,11 @@ class AureonLocalAdapter(LLMAdapter):
         if resp.status_code != 200:
             logger.debug("LLM probe %s rejected: %s %s", model_id, resp.status_code, resp.text[:200])
             return False
-        return True
+        try:
+            data = resp.json()
+        except (TypeError, ValueError):
+            return False
+        return data.get("model") == model_id
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1377,9 +1433,10 @@ class AureonHybridAdapter(LLMAdapter):
         model: Optional[str] = None,
         api_key: Optional[str] = None,
     ):
-        self.local = AureonLocalAdapter(base_url=base_url, model=model, api_key=api_key)
+        del base_url, model, api_key
+        self.local = _aureon_own_adapter()
         self.brain = AureonBrainAdapter()
-        self.model = f"aureon-ollama-hybrid:{self.local.model}"
+        self.model = self.local.model
         self.last_weaver_trace: Dict[str, Any] = {}
         self.last_dynamic_prompt_filter: Dict[str, Any] = {}
 
@@ -1435,16 +1492,8 @@ class AureonHybridAdapter(LLMAdapter):
         max_tokens: int,
         kwargs: Dict[str, Any],
     ) -> bool:
-        if tools:
-            return False
-        if bool(kwargs.get("disable_context_weaver")):
-            return False
-        raw = os.environ.get("AUREON_OLLAMA_CONTEXT_WEAVER")
-        if raw is not None:
-            return raw.strip().lower() not in {"0", "false", "no", "off"}
-        # Default the weaver for short operator chat. Longer authoring calls can
-        # still use the normal local model unless the env var explicitly opts in.
-        return max_tokens <= 800
+        del tools, max_tokens, kwargs
+        return False
 
     def _build_dynamic_filter(
         self,
@@ -1829,21 +1878,8 @@ class AureonHybridAdapter(LLMAdapter):
 
         enriched_system = self._enrich_system(filtered_system, messages)
 
-        # Try local LLM first
         if not _llm_http_disabled() and self.local.health_check():
-            self.model = f"aureon-ollama-hybrid:{self.local.model}"
-            if self._context_weaver_enabled(tools, max_tokens, kwargs):
-                try:
-                    shard_results = self._run_weaver_shards(messages, enriched_system, temperature, dynamic_filter)
-                    if any(item.get("ok") for item in shard_results):
-                        response = self._compose_weaver_response(messages, shard_results, dynamic_filter)
-                        return self._finalize_dynamic_response(
-                            response,
-                            dynamic_filter,
-                            reply_source="ollama_cognitive_weaver",
-                        )
-                except Exception as exc:
-                    logger.warning("Ollama context weaver failed; falling back to single local prompt: %s", exc)
+            self.model = self.local.model
             response = self.local.prompt(
                 messages, enriched_system, tools, max_tokens, temperature, **kwargs
             )
@@ -1851,16 +1887,14 @@ class AureonHybridAdapter(LLMAdapter):
                 return self._finalize_dynamic_response(
                     response,
                     dynamic_filter,
-                    reply_source="ollama_cognitive_hybrid",
+                    reply_source="aureon_own_model",
                 )
 
-        # Fallback to brain-only
-        logger.info("Local LLM unavailable — falling back to AureonBrain")
-        response = self.brain.prompt(messages, filtered_system, tools, max_tokens, temperature, **kwargs)
-        return self._finalize_dynamic_response(
-            response,
-            dynamic_filter,
-            reply_source="aureon_brain_fallback",
+        return LLMResponse(
+            text="[ERROR] Aureon's own model is unavailable; no substitute model fallback is permitted.",
+            stop_reason="error",
+            model=self.local.model,
+            raw={"error": "aureon-own-unavailable"},
         )
 
     def stream(
@@ -1877,19 +1911,19 @@ class AureonHybridAdapter(LLMAdapter):
         enriched_system = self._enrich_system(filtered_system, messages)
 
         if not _llm_http_disabled() and self.local.health_check():
-            self.model = f"aureon-ollama-hybrid:{self.local.model}"
+            self.model = self.local.model
             yield from self.local.stream(
                 messages, enriched_system, tools, max_tokens, temperature, **kwargs
             )
         else:
-            yield from self.brain.stream(
-                messages, filtered_system, tools, max_tokens, temperature, **kwargs
+            yield StreamChunk(
+                text="[ERROR] Aureon's own model is unavailable; no substitute model fallback is permitted.",
+                done=True,
+                stop_reason="error",
             )
 
     def health_check(self) -> bool:
-        if _llm_http_disabled():
-            return self.brain.health_check()
-        return self.local.health_check() or self.brain.health_check()
+        return not _llm_http_disabled() and self.local.health_check()
 
 
 # -----------------------------------------------------------------------------
@@ -1908,6 +1942,7 @@ class AureonStubAdapter(LLMAdapter):
     def __init__(self, message: str, *, model: str = "aureon-stub"):
         self._message = str(message or "").strip() or "[AUREON] No backend configured."
         self._model = model
+        self.model = model
 
     def prompt(
         self,
@@ -1942,28 +1977,47 @@ class AureonStubAdapter(LLMAdapter):
         return True
 
 
-class AureonAnthropicAdapter(LLMAdapter):
-    """
-    Optional external adapter (Anthropic Messages API).
+class AureonUnavailableAdapter(AureonStubAdapter):
+    """An unavailable own-model route that cannot masquerade as a healthy LLM."""
 
-    Only used when ANTHROPIC_API_KEY is present. This keeps the default path
-    "in-house", but allows the Vault UI to actually converse when the local LLM
-    server is not running.
-    """
+    def prompt(
+        self,
+        messages: List[Dict[str, Any]],
+        system: str = "",
+        tools: Optional[List[Dict[str, Any]]] = None,
+        max_tokens: int = 4096,
+        temperature: float = 0.7,
+        **kwargs,
+    ) -> LLMResponse:
+        return LLMResponse(
+            text=self._message,
+            stop_reason="error",
+            model=self._model,
+            raw={"error": self._model},
+        )
+
+    def stream(
+        self,
+        messages: List[Dict[str, Any]],
+        system: str = "",
+        tools: Optional[List[Dict[str, Any]]] = None,
+        max_tokens: int = 4096,
+        temperature: float = 0.7,
+        **kwargs,
+    ) -> Generator[StreamChunk, None, None]:
+        yield StreamChunk(text=self._message, done=True, stop_reason="error")
+
+    def health_check(self) -> bool:
+        return False
+
+
+class AureonAnthropicAdapter(LLMAdapter):
+    """Disabled compatibility boundary for the retired external Anthropic route."""
 
     def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
-        self.api_key = api_key or os.environ.get("ANTHROPIC_API_KEY", "")
-        self.model = model or os.environ.get("AUREON_ANTHROPIC_MODEL", "claude-3-5-sonnet-latest")
+        self.api_key = ""
+        self.model = model or "aureon-own-model-required"
         self._client = None
-
-        if not self.api_key:
-            return
-        try:
-            from anthropic import Anthropic  # type: ignore
-            self._client = Anthropic(api_key=self.api_key)
-        except Exception as e:
-            logger.debug("Anthropic SDK unavailable: %s", e)
-            self._client = None
 
     @staticmethod
     def _coerce_text(content: Any) -> str:
@@ -1997,9 +2051,13 @@ class AureonAnthropicAdapter(LLMAdapter):
     ) -> LLMResponse:
         if not self._client:
             return LLMResponse(
-                text="[ERROR] Anthropic adapter not configured (missing ANTHROPIC_API_KEY or SDK).",
+                text=(
+                    "[ERROR] Aureon's own model is required; the external "
+                    "Anthropic route is disabled."
+                ),
                 stop_reason="error",
-                model="anthropic",
+                model=self.model,
+                raw={"error": "aureon_own_model_required"},
             )
 
         # Anthropic supports system as a top-level param and messages as role/content.
@@ -2093,19 +2151,16 @@ def _aureon_own_adapter() -> AureonLocalAdapter:
     Override with AUREON_OWN_LLM_BASE_URL / AUREON_OWN_LLM_MODEL, or drop the
     tunnel entirely when Aureon-OS runs on the same node as the server.
     """
-    base = (
-        os.environ.get("AUREON_OWN_LLM_BASE_URL", "") or "http://127.0.0.1:11435/v1"
-    ).strip()
-    model = (
-        os.environ.get("AUREON_OWN_LLM_MODEL", "") or "aureon-7b-v65k"
-    ).strip()
+    base, model = _aureon_own_route()
     api_key = os.environ.get("AUREON_OWN_LLM_API_KEY") or None
-    return AureonLocalAdapter(
+    adapter = AureonLocalAdapter(
         base_url=base,
         model=model,
         api_key=api_key,
-        strict_loopback_no_redirects=base.startswith("http://127.0.0.1"),
+        strict_loopback_no_redirects=_is_aureon_own_route(base, model),
     )
+    adapter._prefer_native = False
+    return adapter
 
 
 def _own_model_reachable() -> bool:
@@ -2116,118 +2171,46 @@ def _own_model_reachable() -> bool:
         return False
 
 
+def _own_voice_adapter() -> LLMAdapter:
+    if _llm_http_disabled():
+        return AureonUnavailableAdapter(
+            "Aureon's own model is unavailable while LLM HTTP is disabled by audit/offline mode.",
+            model="aureon-own-offline",
+        )
+    try:
+        own = _aureon_own_adapter()
+        if own.health_check():
+            return own
+    except Exception as exc:  # noqa: BLE001 — unavailable must not open a fallback route
+        logger.debug("aureon own-model voice probe failed: %s", exc)
+    return AureonUnavailableAdapter(
+        "Aureon's own model endpoint is not reachable; no borrowed or cloud fallback is permitted.\n"
+        "Serve the corrected Aureon model and open the documented local tunnel, or set\n"
+        "AUREON_OWN_LLM_BASE_URL / AUREON_OWN_LLM_MODEL for its in-house endpoint.",
+        model="aureon-own-unavailable",
+    )
+
+
 def build_voice_adapter(lane: str = "general") -> LLMAdapter:
-    """
-    Build a safe default adapter for the Vault Voice layer.
-
-    Priority:
-      1. AureonHybridAdapter (configured Ollama local/cloud plus AureonBrain) if reachable
-      2. Explicit external backends only when requested
-      3. Stub adapter with actionable configuration instructions
-
-    Override with AUREON_VOICE_BACKEND:
-      - local | ollama | ollama_hybrid | anthropic | brain
-    """
+    """Build Aureon's own voice model; every other backend fails closed."""
+    del lane  # Lane-specific external model selection is intentionally retired.
     backend = (os.environ.get("AUREON_VOICE_BACKEND", "") or "").strip().lower()
-
-    if backend in ("brain", "aureonbrain", "rule", "rules"):
-        return AureonBrainAdapter()
-
-    if backend in ("aureon", "own", "own_model", "aureon_own_model"):
-        if _llm_http_disabled():
-            return AureonStubAdapter(
-                "AUREON_LLM_OFFLINE=1 blocks the Aureon own-model endpoint.\n"
-                "Unset it for self-hosted inference.",
-                model="aureon-own-offline",
-            )
-        local_own = _aureon_own_adapter()
-        if local_own.health_check():
-            return local_own
-        return AureonStubAdapter(
-            "Aureon's own model endpoint is not reachable.\n"
-            "Serve it from Isambard with:\n"
-            "  sbatch training/chat_server_now.sbatch\n"
-            "then tunnel from this machine:\n"
-            "  ssh -L 11435:<node-ip>:8000 u6vs.aip2.isambard\n"
-            "(the node-ip is printed in the chat-server job log), or set\n"
-            "AUREON_OWN_LLM_BASE_URL if the server lives elsewhere.",
-            model="aureon-own-unavailable",
-        )
-
-    if backend in ("hybrid", "ollama_hybrid", "cognitive", "cognitive_ollama", "aureon_hybrid"):
-        try:
-            from aureon.integrations.ollama import OllamaModelSwitchboard
-
-            adapter, _selection = OllamaModelSwitchboard().hybrid_adapter_for(lane)
-            return adapter
-        except Exception:
-            return AureonHybridAdapter()
-
-    if backend in ("ollama", "native_ollama", "ollama_native"):
-        try:
-            from aureon.integrations.ollama import OllamaModelSwitchboard
-
-            adapter, _selection = OllamaModelSwitchboard().adapter_for(lane)
-            if adapter.health_check():
-                return adapter
-        except Exception as exc:
-            return AureonStubAdapter(
-                "Ollama backend could not be initialized.\n"
-                f"Reason: {exc}\n"
-                "Start Ollama, install a model, then set AUREON_VOICE_BACKEND=ollama_hybrid for Aureon cognitive chat.",
-                model="ollama-unavailable",
-            )
-        return AureonStubAdapter(
-            "Ollama is not reachable or has no usable chat model.\n"
-            "Run: ollama serve\n"
-            "Then: ollama pull qwen2.5:0.5b\n"
-            "Then set: AUREON_VOICE_BACKEND=ollama_hybrid and AUREON_LLM_MODEL=qwen2.5:0.5b",
-            model="ollama-unavailable",
-        )
-
-    if backend in ("anthropic", "claude"):
-        if os.environ.get("ANTHROPIC_API_KEY"):
-            a = AureonAnthropicAdapter()
-            if a.health_check():
-                return a
-        fallback = AureonHybridAdapter()
-        if not _llm_http_disabled() and fallback.local.health_check():
-            return fallback
-        return AureonStubAdapter(
-            "No Anthropic or configured Ollama fallback backend is reachable.",
-            model="anthropic-unconfigured",
-        )
-
-    if backend in ("", "auto", "local", "aureon_ollama", "unified_cognitive"):
-        # Uncaged, self-sufficient: the org's voice is OUR OWN trained model or
-        # it has no voice. No borrowed open weights (Ollama switchboard) and no
-        # cloud API take over when it is unreachable — an explicit
-        # AUREON_VOICE_BACKEND=ollama_hybrid / anthropic / brain remains the
-        # operator's deliberate override, but never the silent default.
-        if not _llm_http_disabled():
-            try:
-                own_candidate = _aureon_own_adapter()
-                if own_candidate.health_check():
-                    return own_candidate
-            except Exception as exc:  # noqa: BLE001
-                logger.debug("aureon own-model auto-probe failed: %s", exc)
-        return AureonStubAdapter(
-            "Aureon's own model endpoint is not reachable — uncaged mode declines\n"
-            "borrowed or cloud fallbacks. Serve it from Isambard with:\n"
-            "  sbatch training/chat_server_now.sbatch\n"
-            "then tunnel from this machine:\n"
-            "  ssh -L 11435:<node-ip>:8000 u6vs.aip2.isambard\n"
-            "(the node-ip is printed in the chat-server job log), or set\n"
-            "AUREON_OWN_LLM_BASE_URL if the server lives elsewhere.",
-            model="aureon-own-unavailable",
-        )
-
-    # Any other AUREON_VOICE_BACKEND value (including the plain_local and
-    # local_only lanes 703cf9bd removed) gets a stub, never None and never a
-    # borrowed model.
-    return AureonStubAdapter(
-        f"AUREON_VOICE_BACKEND={backend!r} is not a voice backend this build serves.\n"
-        "Leave it unset for Aureon's own model, or set it to one of:\n"
-        "  own | brain | ollama_hybrid | ollama | anthropic",
-        model="voice-backend-unavailable",
+    if backend in (
+        "",
+        "auto",
+        "local",
+        "aureon",
+        "own",
+        "own_model",
+        "aureon_own_model",
+        "aureon_ollama",
+        "unified_cognitive",
+    ):
+        return _own_voice_adapter()
+    # Retired and unknown backends still return a concrete adapter, but it
+    # fails closed and reports itself unhealthy instead of borrowing a model.
+    return AureonUnavailableAdapter(
+        "Aureon's own model is required; requested backend "
+        f"{backend!r} is disabled rather than routed to another model.",
+        model="aureon_own_model_required",
     )

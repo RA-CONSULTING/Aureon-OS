@@ -20,8 +20,8 @@ umask 007
 BASE=/projects/u6vs/hnc-organism
 SIF=$BASE/containers/pytorch-25.05-py3.sif
 VENV=$BASE/venvs/aureon-sft
-MODEL=$BASE/runs/aureon-7b-v65k/hf
-MODEL_NAME=aureon-7b-v65k
+MODEL=${MODEL:-$BASE/runs/aureon-7b-v65k/hf}
+MODEL_NAME=${MODEL_NAME:-aureon-7b-v65k}
 PACK=$BASE/kimi-validation/hnc-5000/pack-v2
 PIN=f5fb1916c07ac26eb7fc38c34ff2dc9bd029e21d
 REPO=$BASE/jobs/aureon-whole-organism/pinned/$PIN

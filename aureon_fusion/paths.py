@@ -74,8 +74,12 @@ HEARTBEAT_STATE = RUNTIME_HOME / "memory" / "heartbeat-state.json"
 # Radar / trading bridge (signal mode only; live capital pinned HOLD)
 AUREON_RADAR = WORKSPACE / "aureon_radar"
 
-# Fusion-owned state. Created by ensure_dirs(), not at import.
-FUSION_STATE = WORKSPACE / "aureon_fusion" / "state"
+# Fusion-owned state. Created by ensure_dirs(), not at import. Public containers
+# can isolate all authority files from the checkout and its persisted state.
+FUSION_STATE = Path(os.environ.get(
+    "SERO_FUSION_STATE",
+    str(WORKSPACE / "aureon_fusion" / "state"),
+))
 
 # Engine scripts (workspace root)
 SERO_CONSCIENCE_ENGINE = WORKSPACE / "sero_conscience_engine.py"

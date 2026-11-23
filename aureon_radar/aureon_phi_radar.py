@@ -43,7 +43,8 @@ from datetime import datetime, timezone, timedelta
 from dataclasses import dataclass, field, asdict
 from typing import Dict, List, Optional, Tuple, Any
 from enum import Enum
-import requests
+
+from aureon_radar.aureon_own_model import AureonOwnModelInterface
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SACRED CONSTANTS
@@ -282,110 +283,6 @@ class LiveTrade:
     
     def to_dict(self):
         return asdict(self)
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# OLLAMA CLOUD API INTERFACE
-# ═══════════════════════════════════════════════════════════════════════════════
-
-class OllamaCloudInterface:
-    """
-    Interfaces with cloud Ollama API for 24/7 data analysis.
-    Caches responses to avoid redundant calls.
-    """
-    
-    def __init__(self, base_url: str = None, model: str = "llama3.1:8b"):
-        self.base_url = base_url or os.getenv("OLLAMA_API_URL", "http://localhost:11434")
-        self.model = model
-        self.cache_dir = OLLAMA_CACHE
-        self.session = requests.Session()
-        self.session.timeout = 30
-        
-    def _cache_key(self, prompt: str) -> str:
-        import hashlib
-        return hashlib.sha256(prompt.encode()).hexdigest()[:16]
-    
-    def _get_cached(self, key: str) -> Optional[dict]:
-        cache_file = self.cache_dir / f"{key}.json"
-        if cache_file.exists():
-            age = time.time() - cache_file.stat().st_mtime
-            if age < 300:  # 5 minute cache
-                try:
-                    with open(cache_file) as f:
-                        return json.load(f)
-                except:
-                    pass
-        return None
-    
-    def _save_cache(self, key: str, data: dict):
-        with open(self.cache_dir / f"{key}.json", 'w') as f:
-            json.dump(data, f)
-    
-    def analyze_market_data(self, data: dict, prompt_type: str = "signal_extraction") -> dict:
-        """
-        Send market data to Ollama for analysis.
-        Returns structured signal assessment.
-        """
-        prompt = self._build_prompt(data, prompt_type)
-        cache_key = self._cache_key(prompt)
-        
-        cached = self._get_cached(cache_key)
-        if cached:
-            return cached
-        
-        try:
-            response = self.session.post(
-                f"{self.base_url}/api/generate",
-                json={
-                    "model": self.model,
-                    "prompt": prompt,
-                    "stream": False,
-                    "format": "json"
-                }
-            )
-            response.raise_for_status()
-            result = response.json()
-            
-            # Parse the response
-            try:
-                analysis = json.loads(result.get("response", "{}"))
-            except json.JSONDecodeError:
-                analysis = {"raw": result.get("response", ""), "parsed": False}
-            
-            self._save_cache(cache_key, analysis)
-            return analysis
-            
-        except Exception as e:
-            logger.error(f"Ollama API error: {e}")
-            return {"error": str(e), "fallback": True}
-    
-    def _build_prompt(self, data: dict, prompt_type: str) -> str:
-        if prompt_type == "signal_extraction":
-            return f"""Analyze this market data and extract trading signals.
-Return ONLY valid JSON with this structure:
-{{
-    "direction": "LONG|SHORT|NEUTRAL",
-    "confidence": 0.0-1.0,
-    "target_price": float,
-    "stop_loss": float,
-    "reasoning": "brief explanation"
-}}
-
-Market Data: {json.dumps(data)}
-"""
-        elif prompt_type == "volatility_scan":
-            return f"""Scan this data for volatility anomalies.
-Return ONLY valid JSON:
-{{
-    "volatility_score": 0.0-1.0,
-    "anomaly_detected": true|false,
-    "direction_bias": "LONG|SHORT|NEUTRAL",
-    "urgency": "LOW|MEDIUM|HIGH"
-}}
-
-Data: {json.dumps(data)}
-"""
-        else:
-            return f"Analyze: {json.dumps(data)}"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # VOLATILITY & MONEY FLOW SCANNER
@@ -830,7 +727,7 @@ class AureonPhiRadar:
     
     def __init__(self):
         self.state = SystemState.DISARMED
-        self.ollama = OllamaCloudInterface()
+        self.aureon_llm = AureonOwnModelInterface()
         self.scanner = VolatilityScanner()
         self.honey_ladder = HoneyLadder()
 

@@ -22,6 +22,10 @@ from dataclasses import asdict, dataclass
 from typing import Any, Dict, Mapping, Protocol, Sequence
 from urllib.parse import urlsplit
 
+from aureon.autonomous.aureon_own_model_resolver import (
+    OWN_MODEL_ROUTE_PREFIX,
+    AureonOwnModelBrainResolver,
+)
 from aureon.autonomous.aureon_ten_nine_one_thought_path import (
     SELF_CODER_CONFIDENTIAL_PREFLIGHT_SCHEMA,
     TenNineOneHold,
@@ -42,8 +46,10 @@ MIN_INTERNAL_SHARE_PERCENT = 99
 INTERNAL_BRAIN_MAX_TOKENS = 512
 INTERNAL_AUTHOR_MAX_TOKENS = 4_096
 LOCAL_SELF_CODER_PROVIDER_MODE = "ollama_local_hnc_protected"
+AUREON_OWN_HNC_PROVIDER_MODE = "aureon_own_model"
+HNC_ROUTE_PREFIXES = ("ollama:hnc-route:", OWN_MODEL_ROUTE_PREFIX)
 SUPPORTED_HNC_PROVIDER_MODES = frozenset(
-    {"ollama_cloud_primary", LOCAL_SELF_CODER_PROVIDER_MODE}
+    {"ollama_cloud_primary", LOCAL_SELF_CODER_PROVIDER_MODE, AUREON_OWN_HNC_PROVIDER_MODE}
 )
 SELF_CODER_TRANSPORT_PREFLIGHT_SCHEMA = "aureon-self-coder-transport-preflight-v1"
 
@@ -190,7 +196,7 @@ class BrainResolver(Protocol):
 
 
 class OllamaSwitchboardBrainResolver:
-    """Production resolver backed by the existing live Ollama switchboard."""
+    """Legacy explicit resolver for existing Ollama evidence-contract tests."""
 
     def __init__(self, switchboard: Any = None) -> None:
         if switchboard is None:
@@ -395,11 +401,19 @@ def validate_brain_passport(passport: BrainPassport) -> bool:
             passport.status != "ready"
             or not passport.model
             or not passport.endpoint_reachable
-            or not passport.routing_receipt_id.startswith("ollama:hnc-route:")
+            or not passport.routing_receipt_id.startswith(HNC_ROUTE_PREFIXES)
             or not passport.hnc_receipt_id.startswith("hnc:live_field:")
             or passport.hnc_coherence_band not in {"lighthouse", "active", "organizing", "low"}
             or passport.provider_mode not in SUPPORTED_HNC_PROVIDER_MODES
             or not _valid_hnc_gamma(passport.hnc_gamma)
+            or (
+                passport.provider_mode == AUREON_OWN_HNC_PROVIDER_MODE
+                and (
+                    passport.model != "aureon-7b-v65k"
+                    or not passport.routing_receipt_id.startswith(OWN_MODEL_ROUTE_PREFIX)
+                    or passport.catalog_size != 1
+                )
+            )
         ):
             return False
         if not passport.selection_source.startswith("live_probe_passed:hnc_"):
@@ -475,11 +489,19 @@ def _issue_brain_passport(
         and resolved.model
         and resolved.lane == lane
         and resolved.source.startswith("live_probe_passed:")
-        and resolved.routing_receipt_id.startswith("ollama:hnc-route:")
+        and resolved.routing_receipt_id.startswith(HNC_ROUTE_PREFIXES)
         and resolved.hnc_receipt_id.startswith("hnc:live_field:")
         and resolved.hnc_coherence_band in {"lighthouse", "active", "organizing", "low"}
         and resolved.provider_mode in SUPPORTED_HNC_PROVIDER_MODES
         and _valid_hnc_gamma(resolved.hnc_gamma)
+        and (
+            resolved.provider_mode != AUREON_OWN_HNC_PROVIDER_MODE
+            or (
+                resolved.model == "aureon-7b-v65k"
+                and resolved.routing_receipt_id.startswith(OWN_MODEL_ROUTE_PREFIX)
+                and resolved.catalog_size == 1
+            )
+        )
     )
     if ready:
         assert resolved is not None
@@ -995,7 +1017,7 @@ class InternalCodingWorkforce:
         hnc_routed_brain_count = sum(
             item.brain_ready
             and item.provider_mode in SUPPORTED_HNC_PROVIDER_MODES
-            and item.routing_receipt_id.startswith("ollama:hnc-route:")
+            and item.routing_receipt_id.startswith(HNC_ROUTE_PREFIXES)
             and item.hnc_receipt_id.startswith("hnc:live_field:")
             for item in self._passports
         )
@@ -1115,7 +1137,7 @@ def provision_brain_bound_workforce(
     if len(agent_suffix) > 2_048 or len(process_suffix) > 2_048:
         raise WorkforceHold("bounded_system_prompt_suffix_required")
 
-    resolver = resolver or OllamaSwitchboardBrainResolver()
+    resolver = resolver or AureonOwnModelBrainResolver()
     resolved_by_nerve: Dict[tuple[str, str], ResolvedBrain | None] = {}
 
     def resolved(lane: str, nerve_id: str) -> ResolvedBrain | None:
@@ -1243,8 +1265,9 @@ __all__ = [
     "SUPPORTED_HNC_PROVIDER_MODES",
     "TRUTH_GATED_THOUGHT_RECEIPT_PREFIX",
     "WORK_SCHEMA_VERSION",
-    "BrainPassport",
     "BrainResolver",
+    "AureonOwnModelBrainResolver",
+    "BrainPassport",
     "InternalCodingWorkforce",
     "OllamaSwitchboardBrainResolver",
     "ResolvedBrain",

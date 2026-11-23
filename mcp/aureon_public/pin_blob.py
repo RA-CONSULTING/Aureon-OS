@@ -26,13 +26,27 @@ def git_blob_sha1(data: bytes) -> str:
     return hashlib.sha1(header + data).hexdigest()
 
 
+def canonical_text_bytes(data: bytes) -> bytes:
+    """Return the LF form Git stores when a text file is checked out as CRLF."""
+    return data.replace(b"\r\n", b"\n")
+
+
+def matching_pin_bytes(data: bytes, expected: str) -> bytes | None:
+    """Return the raw or canonical-LF bytes matching ``expected``, else ``None``."""
+    if git_blob_sha1(data) == expected:
+        return data
+    normalized = canonical_text_bytes(data)
+    if normalized != data and git_blob_sha1(normalized) == expected:
+        return normalized
+    return None
+
+
 def pinned_blob_refusal(path: Path, expected: str, mismatch: str) -> str | None:
     """Return mismatch text when path is not the pinned blob. None when it matches."""
 
     if not path.is_file():
         return f"{path.name} is not in this checkout"
-    digest = git_blob_sha1(path.read_bytes())
-    if digest != expected:
+    if matching_pin_bytes(path.read_bytes(), expected) is None:
         return mismatch
     return None
 
@@ -138,9 +152,10 @@ class PinnedAureonFinder:
                 data = candidate.read_bytes()
             except OSError:
                 continue
-            if git_blob_sha1(data) != expected:
+            matched = matching_pin_bytes(data, expected)
+            if matched is None:
                 continue
-            return self._spec(fullname, data, candidate)
+            return self._spec(fullname, matched, candidate)
         raise ImportError(f"checkout {relative} differs from pin {self.commit[:12]}")
 
     def _relative(self, fullname: str) -> str | None:
@@ -300,8 +315,10 @@ def load_pinned_source(module_name: str, path: Path, expected_blob: str, mismatc
         data = path.read_bytes()
     except OSError:
         return f"{path.name} is not in this checkout"
-    if git_blob_sha1(data) != expected_blob:
+    matched = matching_pin_bytes(data, expected_blob)
+    if matched is None:
         return mismatch
+    data = matched
     if module_name in sys.modules:
         return None
     loader = _SameBytesLoader(data, str(path))
@@ -329,7 +346,9 @@ def load_pinned_source(module_name: str, path: Path, expected_blob: str, mismatc
     return None
 
 
-def load_checkout_module(module_name: str, path: Path, root: Path, commit: str) -> tuple[ModuleType | None, str | None]:
+def load_checkout_module(
+    module_name: str, path: Path, root: Path, commit: str
+) -> tuple[ModuleType | None, str | None]:
     """Load a checkout module and its checkout parents through ``load_pinned_source``."""
 
     parts = module_name.split(".")
@@ -393,6 +412,6 @@ def checkout_blob_refusal(path: Path, root: Path, commit: str) -> str | None:
         data = path.read_bytes()
     except OSError:
         return f"{path.name} is not in this checkout"
-    if git_blob_sha1(data) != expected:
+    if matching_pin_bytes(data, expected) is None:
         return f"checkout {relative} differs from pin {commit[:12]}"
     return None

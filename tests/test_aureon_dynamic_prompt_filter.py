@@ -142,7 +142,7 @@ def test_hybrid_adapter_attaches_dynamic_filter_trace(monkeypatch):
         "prompt",
         lambda self, messages, system="", tools=None, max_tokens=4096, temperature=0.7, **kwargs: LLMResponse(
             text="single local answer",
-            model="llama3:latest",
+            model="aureon-7b-v65k",
         ),
     )
 
@@ -151,7 +151,7 @@ def test_hybrid_adapter_attaches_dynamic_filter_trace(monkeypatch):
 
     assert response.text == "single local answer"
     assert response.raw["dynamic_prompt_filter"]["filter_mode"] == "clear_operator"
-    assert response.raw["dynamic_prompt_filter"]["final_reply_source"] == "ollama_cognitive_hybrid"
+    assert response.raw["dynamic_prompt_filter"]["final_reply_source"] == "aureon_own_model"
 
 
 def test_brain_adapter_keeps_operator_chat_out_of_trading_json():

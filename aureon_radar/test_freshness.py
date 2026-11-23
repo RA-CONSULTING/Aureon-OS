@@ -4,7 +4,7 @@ AUREON META DATA FRESHNESS TEST - Full Pipeline Audit
 
 Tests ALL data sources and verifies freshness:
   1. Capital.com API connectivity + live prices
-  2. Ollama Cloud API connectivity + response time
+  2. Aureon's own LLM connectivity + response time
   3. Aureon OS trace file freshness
   4. Signal pipeline (fused_signals.jsonl)
   5. Shadow trade log freshness
@@ -22,6 +22,11 @@ from datetime import datetime, timezone, timedelta
 
 RADAR_DIR = Path(__file__).resolve().parent
 AUREON_DIR = Path(os.environ.get("SERO_WORKSPACE") or Path(__file__).resolve().parents[1])
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from aureon.inhouse_ai.llm_adapter import _aureon_own_adapter
 
 # Load .env files from repo root and radar directory if available.
 try:
@@ -101,38 +106,31 @@ else:
         test("Capital.com API", False, str(e))
 
 # =============================================================================
-# TEST 2: Ollama Cloud API - Connectivity & Response
+# TEST 2: Aureon's own LLM - Connectivity & Response
 # =============================================================================
-print("\n[TEST 2] Ollama Cloud API - Cognitive Pipeline")
+print("\n[TEST 2] Aureon Own LLM - Cognitive Pipeline")
 print("-" * 70)
 
-OLLAMA_KEY = os.getenv("OLLAMA_API_KEY")
-if not OLLAMA_KEY:
-    test("Ollama Cloud CREDENTIALS", False, "OLLAMA_API_KEY not set")
-else:
-    try:
+try:
+    adapter = _aureon_own_adapter()
+    healthy = adapter.health_check()
+    test("Aureon Own LLM HEALTH", healthy, f"model={adapter.model} route={adapter.base_url}")
+    if healthy:
         t0 = time.time()
-        resp = requests.post(
-            "https://ollama.com/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {OLLAMA_KEY}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": "kimi-k2.7-code",
-                "messages": [{"role": "user", "content": "Return JSON: {\"status\": \"ok\"}"}],
-                "max_tokens": 20
-            },
-            timeout=30
+        response = adapter.prompt(
+            [{"role": "user", "content": "Return JSON: {\"status\": \"ok\"}"}],
+            max_tokens=32,
+            temperature=0,
         )
-        resp.raise_for_status()
         elapsed = time.time() - t0
-
-        test("Ollama Cloud AUTH", True, "API key valid, model: kimi-k2.7-code")
-        test("Ollama Cloud LATENCY", elapsed < 15, f"Response time: {elapsed:.1f}s")
-
-    except Exception as e:
-        test("Ollama Cloud API", False, str(e))
+        visible = bool(str(response.text or "").strip()) and response.stop_reason != "error"
+        test(
+            "Aureon Own LLM COMPLETION",
+            visible and response.model == adapter.model,
+            f"model={response.model} response_time={elapsed:.1f}s",
+        )
+except Exception as e:
+    test("Aureon Own LLM", False, f"{type(e).__name__}: {e}")
 
 # =============================================================================
 # TEST 3: Aureon OS Trace File - Freshness

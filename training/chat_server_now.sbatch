@@ -21,13 +21,13 @@ SIF=$BASE/containers/pytorch-25.05-py3.sif
 VENV=$BASE/venvs/aureon-sft
 MODEL=${MODEL:-$BASE/runs/aureon-7b-sft-now/hf}
 PORT=${PORT:-8000}
+HOST=${HOST:-$(hostname -i | awk '{print $1}')}
 
 test -f "$SIF"
 test -f "$MODEL/config.json"
 
-echo "[chat] node=$(hostname) port=$PORT model=$MODEL"
-ipaddr=$(hostname -i | awk '{print $1}')
-echo "[chat] tunnel: ssh -L 11435:${ipaddr}:${PORT} u6vs.aip2.isambard"
+echo "[chat] node=$(hostname) host=$HOST port=$PORT model=$MODEL"
+echo "[chat] tunnel: ssh -L 11435:${HOST}:${PORT} u6vs.aip2.isambard"
 
 exec apptainer exec --nv --cleanenv \
     --bind /projects/u6vs:/projects/u6vs \
@@ -36,4 +36,4 @@ exec apptainer exec --nv --cleanenv \
     --env HF_HUB_OFFLINE=1 \
     "$SIF" \
     "$VENV/bin/python" -u "$BASE/training/aureon_chat_server.py" \
-        --model "$MODEL" --port "$PORT"
+        --model "$MODEL" --host "$HOST" --port "$PORT"

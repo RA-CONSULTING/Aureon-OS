@@ -20,3 +20,11 @@ aureon/operator/website_operator.defaults.json text eol=lf
 # and every recursively sealed CourseOps suite asset identical to their blobs.
 tests/fixtures/local_course_benchmark/benchmark_manifest.json text eol=lf
 tests/fixtures/courseops_21/** text eol=lf
+
+# Pinned source and inventory checks compare canonical Git blobs. Keep fresh
+# checkouts on LF; the loaders also accept equivalent CRLF working trees.
+aureon/**/*.py text eol=lf
+huggingface/**/*.py text eol=lf
+mcp/aureon_public/**/*.py text eol=lf
+phenolic_fingerprint.py text eol=lf
+docs/mcp/inventory.json text eol=lf

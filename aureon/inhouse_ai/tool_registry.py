@@ -9,7 +9,7 @@ Provides defineTool() for custom tools and ships 5 built-in tools:
   2. read_positions   — read current trading positions + equity
   3. read_prices      — get live prices across all exchanges
   4. publish_thought  — publish a Thought to the ThoughtBus
-  5. execute_shell    — run a shell command (sandboxed)
+  5. execute_shell    — run a denylist-guarded direct command (shell=False)
 """
 
 from __future__ import annotations
@@ -26,6 +26,8 @@ from contextvars import ContextVar
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any, Callable, Dict, List, Mapping, Protocol
+
+from aureon.inhouse_ai.shell_guard import prepare_shell_argv
 
 logger = logging.getLogger("aureon.inhouse_ai.tools")
 
@@ -1044,13 +1046,16 @@ class ToolRegistry:
         # 5. execute_shell
         self.define_tool(
             name="execute_shell",
-            description="Execute a shell command and return its output. Sandboxed to safe read-only commands.",
+            description=(
+                "Execute one parsed program directly with shell=False. "
+                "A denylist refuses destructive commands; this is not OS sandboxing."
+            ),
             input_schema={
                 "type": "object",
                 "properties": {
                     "command": {
                         "type": "string",
-                        "description": "Shell command to execute (read-only commands only)",
+                        "description": "Direct program invocation to classify and execute",
                     },
                     "timeout": {
                         "type": "integer",
@@ -1244,17 +1249,16 @@ def _builtin_execute_shell(args: Dict[str, Any]) -> str:
     command = args.get("command", "")
     timeout = min(int(args.get("timeout", 30)), 60)
 
-    # Sandbox: block destructive commands
-    blocked = ["rm ", "del ", "format ", "mkfs", "dd ", "shutdown", "reboot", "> /dev/", ":(){ ", "fork"]
-    cmd_lower = command.lower()
-    for b in blocked:
-        if b in cmd_lower:
-            return json.dumps({"error": f"Blocked: command contains '{b.strip()}'"})
+    # Tokenize, then decide. A shell is not asked to interpret the string:
+    # metacharacters, wrappers, and destructive argv are refused first.
+    argv, refusal = prepare_shell_argv(command)
+    if refusal or not argv:
+        return json.dumps({"error": f"Blocked: {refusal or 'shell command refused'}"})
 
     try:
         result = subprocess.run(
-            command,
-            shell=True,
+            argv,
+            shell=False,
             capture_output=True,
             text=True,
             timeout=timeout,

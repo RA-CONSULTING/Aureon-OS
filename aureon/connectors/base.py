@@ -229,6 +229,66 @@ def missing_dependency() -> str | None:
     return f"google client library not installed ({', '.join(absent)}) — install with: {INSTALL_HINT}"
 
 
+OAUTH_TOKEN_ENV_VAR = "AUREON_GOOGLE_OAUTH_TOKEN"
+
+
+def oauth_token_path(env: Mapping[str, str] | None = None) -> Path:
+    source = os.environ if env is None else env
+    configured = str(source.get(OAUTH_TOKEN_ENV_VAR) or "").strip()
+    return (
+        Path(configured).expanduser() if configured else Path.home() / ".aureon" / "google_drive_token.dpapi"
+    )
+
+
+def _load_oauth_credentials(path: Path, scopes: Iterable[str]) -> Any:
+    """Load only a DPAPI token written by Aureon's installed-app setup."""
+    import json
+    from google.oauth2.credentials import Credentials
+    from google_auth_oauthlib.flow import InstalledAppFlow
+
+    try:
+        protected = path.read_bytes()
+        if os.name != "nt":
+            raise ValueError("DPAPI tokens require the Windows account that created them")
+        import ctypes
+        from ctypes import wintypes
+
+        class DataBlob(ctypes.Structure):
+            _fields_ = [("cbData", wintypes.DWORD), ("pbData", ctypes.POINTER(ctypes.c_byte))]
+
+        def blob(raw: bytes) -> tuple[DataBlob, Any]:
+            buf = ctypes.create_string_buffer(raw)
+            return DataBlob(len(raw), ctypes.cast(buf, ctypes.POINTER(ctypes.c_byte))), buf
+
+        source, source_buf = blob(protected)
+        target = DataBlob()
+        if not ctypes.windll.crypt32.CryptUnprotectData(
+            ctypes.byref(source), None, None, None, None, 0, ctypes.byref(target)
+        ):
+            raise OSError("Windows could not decrypt this user's Drive token")
+        try:
+            raw = ctypes.string_at(target.pbData, target.cbData)
+        finally:
+            ctypes.windll.kernel32.LocalFree(target.pbData)
+        payload = json.loads(raw.decode("utf-8"))
+        del source_buf
+    except Exception as exc:
+        raise ValueError(f"stored OAuth token is unreadable ({type(exc).__name__})") from None
+    if not isinstance(payload, dict):
+        raise ValueError("stored OAuth token has an invalid format")
+    client_path = Path(str(payload.get("client_file") or ""))
+    flow = InstalledAppFlow.from_client_secrets_file(str(client_path), list(scopes))
+    credentials = Credentials(
+        token=payload.get("token"),
+        refresh_token=payload.get("refresh_token"),
+        token_uri=flow.client_config.get("token_uri"),
+        client_id=flow.client_config.get("client_id"),
+        client_secret=flow.client_config.get("client_secret"),
+        scopes=list(scopes),
+    )
+    return credentials
+
+
 def build_google_service(
     api: str,
     version: str,
@@ -253,17 +313,25 @@ def build_google_service(
         return None, ConnectorStatus.blocked(blocker)
 
     credential = resolve_credential(env)
-    if not credential.found or credential.path is None:
+    oauth_path = oauth_token_path(env)
+    if credential.found and credential.path is not None:
+        source = f"env:{credential.env_var}"
+    elif oauth_path.is_file():
+        credential = CredentialSource(path=oauth_path, env_var=OAUTH_TOKEN_ENV_VAR)
+        source = f"env:{OAUTH_TOKEN_ENV_VAR}"
+    else:
         return None, ConnectorStatus.blocked(credential.blocker or "no credential resolved")
 
-    source = f"env:{credential.env_var}"
     try:
         from google.oauth2 import service_account  # noqa: PLC0415  (optional dependency)
         from googleapiclient.discovery import build  # noqa: PLC0415
 
-        creds = service_account.Credentials.from_service_account_file(
-            str(credential.path), scopes=list(scopes)
-        )
+        if credential.env_var == OAUTH_TOKEN_ENV_VAR:
+            creds = _load_oauth_credentials(oauth_path, scopes)
+        else:
+            creds = service_account.Credentials.from_service_account_file(
+                str(credential.path), scopes=list(scopes)
+            )
         if subject:
             creds = creds.with_subject(subject)
         # cache_discovery=False: the default on-disk discovery cache warns and
@@ -331,6 +399,8 @@ __all__ = [
     "describe_api_failure",
     "env_subject",
     "missing_dependency",
+    "OAUTH_TOKEN_ENV_VAR",
+    "oauth_token_path",
     "resolve_credential",
     "result_from_status",
 ]

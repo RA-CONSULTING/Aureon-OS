@@ -19,6 +19,14 @@ These older names are thin wrappers around the same entry. They do not arm live 
 - `aureon_radar/start_radar.bat`
 - `aureon_radar/start_radar.sh`
 
+For the selected Windows non-model consolidation, use
+`scripts\launch\aureon-local-organism.ps1` with `-Status`, `-Stop`, `-Monitor`,
+`-Watch`, or `-CoreOnly`. Its watchdog is
+`scripts\launch\aureon-stack-service.ps1`, run by the `AureonOS-LocalStack`
+Task Scheduler task. Start/stop/status, bounded logs,
+the health monitor, and the generated registry are documented in
+[`docs/windows/LOCAL_STACK_RUNBOOK.md`](docs/windows/LOCAL_STACK_RUNBOOK.md).
+
 The terminal-hold scripts stay holds. `deploy/start_master_launcher.sh`, `scripts/linux/aureon-up.sh`, `scripts/shell/start/*.sh`, the Windows bootstrap `.ps1`/`.cmd` files, and the root `docker-compose.yml` files still enter the isolated bootstrap and do not start this stack. The compose file this launcher uses is `deploy/selfhost/docker-compose.yml`.
 
 ## Flags

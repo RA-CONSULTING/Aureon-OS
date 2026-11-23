@@ -122,9 +122,12 @@ class EnvLoadReport:
 
 
 def resolve_repo_root(start: Path | None = None) -> Path:
-    current = Path(start or Path.cwd()).resolve()
-    if current.is_file():
-        current = current.parent
+    # A caller that supplies a checkout or isolated workspace owns that root.
+    # Falling back to this source tree would read a different machine's .env.
+    if start is not None:
+        explicit = Path(start).resolve()
+        return explicit.parent if explicit.is_file() else explicit
+    current = Path.cwd().resolve()
     for candidate in (current, *current.parents):
         if (candidate / "aureon").is_dir() and (candidate / "scripts").is_dir():
             return candidate

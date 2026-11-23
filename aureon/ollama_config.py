@@ -442,22 +442,9 @@ def looks_like_ollama_url(base_url: str) -> bool:
 
 
 def resolve_external_llm_fallback() -> str:
-    """Return the configured repo-wide external LLM fallback provider."""
+    """External fallback is permanently disabled for the unified organism."""
 
-    value = str(
-        os.environ.get(EXTERNAL_LLM_FALLBACK_ENV, DEFAULT_EXTERNAL_LLM_FALLBACK)
-        or DEFAULT_EXTERNAL_LLM_FALLBACK
-    ).strip().lower()
-    aliases = {
-        "ollama_cloud": "ollama",
-        "ollama-cloud": "ollama",
-        "cloud_ollama": "ollama",
-        "disabled": "none",
-        "off": "none",
-        "false": "none",
-        "0": "none",
-    }
-    return aliases.get(value, value)
+    return "none"
 
 
 def resolve_ollama_reasoning_effort() -> str:
@@ -484,38 +471,9 @@ def ensure_ollama_runtime_config(
     force: bool = False,
     repo_root: Optional[Path] = None,
 ) -> Dict[str, object]:
-    """Load Aureon's credentials once before an implicit Ollama build.
+    """Retired compatibility shim: never bootstrap an external model profile."""
 
-    Launchers already bootstrap credentials, but standalone library consumers
-    historically could construct an adapter first and silently land on
-    localhost. This guarded, idempotent bootstrap aligns those consumers with
-    the encrypted provider profile. Explicit settings, an already configured
-    environment, pytest isolation, or ``AUREON_LLM_AUTO_BOOTSTRAP=0`` retain
-    caller control.
-    """
-
-    global _RUNTIME_BOOTSTRAP_ATTEMPTED
-
-    if explicit_config or _ollama_runtime_env_present():
-        return ollama_config_snapshot()
-    auto = str(os.environ.get("AUREON_LLM_AUTO_BOOTSTRAP", "1") or "1").strip().lower()
-    if not force and auto in {"0", "false", "no", "off"}:
-        return ollama_config_snapshot()
-    if not force and os.environ.get("PYTEST_CURRENT_TEST"):
-        return ollama_config_snapshot()
-    if not force and resolve_external_llm_fallback() != "ollama":
-        return ollama_config_snapshot()
-
-    with _RUNTIME_BOOTSTRAP_LOCK:
-        if not _RUNTIME_BOOTSTRAP_ATTEMPTED or force:
-            _RUNTIME_BOOTSTRAP_ATTEMPTED = True
-            try:
-                from aureon.core.aureon_env import bootstrap_credentials
-
-                root = Path(repo_root) if repo_root is not None else Path(__file__).resolve().parents[1]
-                bootstrap_credentials(root)
-            except Exception as exc:  # fail-soft: local/default behaviour remains available
-                logger.warning("Ollama runtime credential bootstrap failed: %s", type(exc).__name__)
+    del explicit_config, force, repo_root
     return ollama_config_snapshot()
 
 
