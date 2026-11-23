@@ -22,10 +22,13 @@ from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+import yaml
+
 SPACE_REPOSITORY = "GaryLeckey/aureon-os"
 MODEL_REPOSITORY = "GaryLeckey/aureon-7b"
 SPACE_OWNER = "GaryLeckey"
 MODEL_VARIABLE = "AUREON_MODEL_REVISION"
+L40S_HARDWARE = "l40sx1"
 COMMIT_RE = re.compile(r"[0-9a-f]{40}\Z")
 
 ROOT_FILES = frozenset({
@@ -241,6 +244,27 @@ def _refuse_secret_content(path: str, content: bytes) -> None:
             raise PublishError(f"refusing possible {label} in staged source path: {path}")
 
 
+def _validate_space_card(content: bytes) -> None:
+    """Reject known Hub metadata errors before any authenticated write."""
+
+    try:
+        text = content.decode("utf-8")
+        match = re.match(r"\A---[ \t]*\r?\n(.*?)\r?\n---[ \t]*\r?\n", text, re.DOTALL)
+        metadata = yaml.safe_load(match.group(1)) if match else None
+    except (UnicodeError, yaml.YAMLError) as exc:
+        raise PublishError("Space README has invalid YAML front matter") from exc
+    if not isinstance(metadata, dict):
+        raise PublishError("Space README must start with YAML front matter")
+    description = metadata.get("short_description")
+    if description is not None and (
+        not isinstance(description, str) or not 1 <= len(description.strip()) <= 60
+    ):
+        raise PublishError("Space README short_description must contain 1 to 60 characters")
+    hardware = metadata.get("suggested_hardware")
+    if hardware is not None and hardware != L40S_HARDWARE:
+        raise PublishError(f"Space README suggested_hardware must be {L40S_HARDWARE} for one L40S")
+
+
 def _tree_entries(repo: Path, commit: str) -> list[_TreeEntry]:
     raw = _git_output(repo, ["ls-tree", "-r", "-z", "--full-tree", commit])
     entries: list[_TreeEntry] = []
@@ -375,6 +399,7 @@ def stage_space(
             raise PublishError(f"required Space override is absent: {source}")
         manifest.append(_write_new_file(destination, target, source_path.read_bytes()))
 
+    _validate_space_card((destination / "README.md").read_bytes())
     paths = {row["path"] for row in manifest}
     missing = sorted(REQUIRED_PATHS - paths)
     if not any(path.startswith("frontend/src/") for path in paths):
@@ -449,7 +474,7 @@ def _base_receipt(
         "files": staged["files"],
         "legacy_files_deleted": [],
         "hardware": {
-            "requested": "l40s" if activate_l40s else None,
+            "requested": L40S_HARDWARE if activate_l40s else None,
             "request_accepted": False,
             "activated": False,
             "running_verified": False,
@@ -550,13 +575,13 @@ def publish_space(
         if activate_l40s:
             api.request_space_hardware(
                 repo_id=SPACE_REPOSITORY,
-                hardware="l40s",
+                hardware=L40S_HARDWARE,
                 sleep_time=-1,
             )
             # The API accepted a paid hardware request. Only a subsequent real
             # runtime/readiness probe can establish that the L40S is running.
             receipt["hardware"] = {
-                "requested": "l40s",
+                "requested": L40S_HARDWARE,
                 "request_accepted": True,
                 "activated": False,
                 "running_verified": False,

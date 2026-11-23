@@ -212,6 +212,25 @@ def test_staging_allowlist_overrides_and_per_file_hashes(
         assert row["size_bytes"] == len(content)
 
 
+def test_staging_refuses_invalid_space_card_metadata(
+    checkout: FakeCheckout,
+    tmp_path: Path,
+) -> None:
+    card = b"---\nsdk: docker\nshort_description: " + b"x" * 61 + b"\nsuggested_hardware: l40s\n---\n"
+    checkout.files["deploy/huggingface/README.md"] = card
+    with pytest.raises(publisher.PublishError, match="short_description"):
+        checkout.stage(tmp_path / "long-description")
+
+    checkout.files["deploy/huggingface/README.md"] = card.replace(b"x" * 61, b"Aureon OS")
+    with pytest.raises(publisher.PublishError, match=r"suggested_hardware.*l40sx1"):
+        checkout.stage(tmp_path / "wrong-hardware")
+
+
+def test_shipped_space_card_metadata_is_valid() -> None:
+    card = Path(publisher.__file__).with_name("README.md").read_bytes()
+    publisher._validate_space_card(card)
+
+
 def test_staging_refuses_symlink(checkout: FakeCheckout, tmp_path: Path) -> None:
     checkout.files["aureon/link.py"] = b"../outside.py"
     checkout.modes["aureon/link.py"] = "120000"
@@ -396,11 +415,11 @@ def test_activation_uses_anonymous_exact_public_model_then_l40s_no_sleep(
     }]
     assert hub.authenticated.hardware_calls == [{
         "repo_id": "GaryLeckey/aureon-os",
-        "hardware": "l40s",
+        "hardware": "l40sx1",
         "sleep_time": -1,
     }]
     assert receipt["hardware"] == {
-        "requested": "l40s",
+        "requested": "l40sx1",
         "request_accepted": True,
         "activated": False,
         "running_verified": False,

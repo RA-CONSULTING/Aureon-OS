@@ -5,9 +5,9 @@ colorFrom: indigo
 colorTo: yellow
 sdk: docker
 app_port: 7860
-suggested_hardware: l40s
+suggested_hardware: l40sx1
 license: mit
-short_description: Aureon OS, HNC evidence, and the canonical Aureon 7B own-model demo
+short_description: Aureon OS with HNC evidence and native Aureon 7B
 models:
   - GaryLeckey/aureon-7b
 ---

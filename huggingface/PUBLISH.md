@@ -110,7 +110,7 @@ python deploy/huggingface/publish_space.py \
   --receipt /path/to/space-publication-receipt.json
 ```
 
-This requests one L40S with `sleep_time=-1`. The listed price at approval was $1.80/hour while running; confirm the current price first. A successful API request is recorded only as **request accepted**, not as a running or validated Space. Real runtime evidence comes afterward.
+This requests one L40S with the Hub hardware identifier `l40sx1` and `sleep_time=-1`. The CLI keeps the explicit `--activate-l40s` and `--acknowledge-paid-l40s` gates. The listed price at approval was $1.80/hour while running; confirm the current price first. A successful API request is recorded only as **request accepted**, not as a running or validated Space. Real runtime evidence comes afterward.
 
 ## 7. Verify the real public release
 
