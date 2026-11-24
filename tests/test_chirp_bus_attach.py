@@ -686,3 +686,22 @@ def test_retry_attach_on_empty_segment_does_not_raise(monkeypatch) -> None:
     assert bus.ring._initialized is False
     assert bus.publish("hello") is False
     assert calls["n"] > 3  # it re-read for the bound before refusing
+
+
+def test_suite_get_chirp_bus_never_uses_the_live_name() -> None:
+    """The suite renames the default bus. get_chirp_bus must not map the live one."""
+    import aureon.core.aureon_chirp_bus as chirp_bus
+
+    chirp_bus._chirp_bus = None
+    bus = chirp_bus.get_chirp_bus(True)
+    try:
+        assert bus is not None
+        assert bus.name.startswith("aureon_test_")
+        assert bus.name != _LIVE_BUS_NAME
+        assert not os.path.exists(f"/dev/shm/{_LIVE_BUS_NAME}")
+        assert bus.ring._initialized is True
+    finally:
+        if bus is not None:
+            bus.ring.close()
+            chirp_bus._chirp_bus = None
+            chirp_bus.unlink_chirp_bus(bus.name)

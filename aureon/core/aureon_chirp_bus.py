@@ -62,6 +62,31 @@ def ring_segment_size(slots: int = 512) -> int:
     return HEADER_SIZE + (slots * CHIRP_SIZE) + VERSION_SIZE
 
 
+_LIVE_CHIRP_BUS_NAME = "aureon_chirp_bus"
+
+
+def default_chirp_bus_name() -> str:
+    """Name opened when a caller does not pass one.
+
+    Production leaves this as ``aureon_chirp_bus``. A test process sets
+    ``AUREON_CHIRP_BUS_NAME`` to a private ``aureon_test_*`` segment so the
+    suite never attaches the live bus and one test cannot read another's
+    chirps. A name with a slash, a dot, or a NUL is ignored.
+    """
+
+    raw = os.environ.get("AUREON_CHIRP_BUS_NAME", "").strip()
+    if (
+        raw
+        and raw != _LIVE_CHIRP_BUS_NAME
+        and "/" not in raw
+        and raw not in {".", ".."}
+        and "\x00" not in raw
+        and len(raw) <= 200
+    ):
+        return raw
+    return _LIVE_CHIRP_BUS_NAME
+
+
 class ChirpType(IntEnum):
     PING = 0
     OPPORTUNITY = 1
@@ -365,7 +390,7 @@ except Exception:
 
 @dataclass
 class ChirpBus:
-    name: str = "aureon_chirp_bus"
+    name: str = field(default_factory=default_chirp_bus_name)
     create: bool = False
     ring: ChirpRingBuffer = field(init=False)
     _undelivered: int = field(init=False, default=0)
@@ -486,13 +511,16 @@ def _mapping_pids(name: str) -> list[int]:
     return pids
 
 
-def unlink_chirp_bus(name: str = "aureon_chirp_bus") -> bool:
+def unlink_chirp_bus(name: str | None = None) -> bool:
     """Unlink a chirp bus segment. This is the only unlink path.
 
     Returns False and logs a warning if any live process still maps
     /dev/shm/<name>, including this process. A missing segment is
-    treated as already gone (returns True).
+    treated as already gone (returns True). ``name`` omitted uses
+    ``default_chirp_bus_name()`` (the live bus, unless a test renamed it).
     """
+    if name is None:
+        name = default_chirp_bus_name()
     if not name or "/" in name or name in {".", ".."}:
         logger.warning("unlink_chirp_bus refused an invalid name")
         return False
