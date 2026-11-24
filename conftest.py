@@ -13,7 +13,9 @@ the JWT verifier is stdlib) while making the tests actually run.
 import asyncio
 import inspect
 import os
+import site
 import sys
+import sysconfig
 import tempfile
 import threading
 from pathlib import Path
@@ -117,6 +119,52 @@ for dirpath, dirnames, _filenames in os.walk(AUREON):
 
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
+
+# aureon_public lives in mcp/ and is the `pip install -e mcp` package.
+# In-process tests see that directory here. Child interpreters that strip
+# PYTHONPATH (python -m aureon_public) do not. A session .pth in the user
+# or interpreter site points at mcp/, the same directory the editable
+# install publishes, and is removed when the session ends.
+_MCP_DIR = os.path.join(ROOT, "mcp")
+_AUREON_PUBLIC_PTH: Path | None = None
+
+
+def _publish_aureon_public_checkout() -> None:
+    """Publish mcp/ for child interpreters that import aureon_public with no PYTHONPATH."""
+
+    global _AUREON_PUBLIC_PTH
+    if _AUREON_PUBLIC_PTH is not None:
+        return
+    line = _MCP_DIR + "\n"
+    candidates: list[Path] = []
+    if site.ENABLE_USER_SITE:
+        candidates.append(Path(site.getusersitepackages()))
+    candidates.append(Path(sysconfig.get_path("purelib")))
+    for directory in candidates:
+        try:
+            directory.mkdir(parents=True, exist_ok=True)
+            path = directory / "aureon-public-checkout.pth"
+            current = path.read_text(encoding="utf-8") if path.is_file() else ""
+            if current != line:
+                path.write_text(line, encoding="utf-8")
+            _AUREON_PUBLIC_PTH = path
+            return
+        except OSError:
+            continue
+
+
+def _retract_aureon_public_checkout() -> None:
+    global _AUREON_PUBLIC_PTH
+    path = _AUREON_PUBLIC_PTH
+    _AUREON_PUBLIC_PTH = None
+    if path is not None:
+        try:
+            path.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
+_publish_aureon_public_checkout()
 
 # Bind the two singleton-bearing legacy names to their PACKAGE modules eagerly.
 # The path entries above make bare names importable, but a bare import creates
@@ -345,6 +393,13 @@ def pytest_runtest_teardown(item, nextitem):
         loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
     loop.run_until_complete(loop.shutdown_asyncgens())
     loop.close()
+
+
+def pytest_sessionfinish(session, exitstatus):
+    """Drop the checkout .pth so later interpreters are not pinned to this tree."""
+
+    del session, exitstatus
+    _retract_aureon_public_checkout()
 
 
 def pytest_collection_finish(session):

@@ -1092,6 +1092,14 @@ class PythonCallVisitor(ast.NodeVisitor):
             return None
         if tail in {"post", "put", "patch", "delete"}:
             return DetectedOperation(provider, "dynamic-provider-mutation", "dynamic", method or tail.upper())
+        # ``requests.Request`` prepares a URL and does not send. Casefolding
+        # would treat that class like the HTTP ``request`` method.
+        # ``urllib.request.Request`` stays in the census: it is the object
+        # handed to urlopen.
+        raw_tail = callee.rsplit(".", 1)[-1]
+        receiver = callee.rsplit(".", 1)[0]
+        if raw_tail == "Request" and receiver in {"requests", "requests.models"}:
+            return None
         if tail in {"request", "_request", "_signed_request", "fetch"}:
             folded = canonical.casefold()
             has_dynamic_method = (

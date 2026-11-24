@@ -13,8 +13,16 @@ _MCP_PATH = str(_REPO_ROOT / "mcp")
 
 
 def ensure_mcp_path() -> None:
-    if _MCP_PATH not in sys.path:
-        sys.path.insert(0, _MCP_PATH)
+    """Put ``mcp/`` first so ``aureon_public`` and ``aureon_operator`` win.
+
+    ``aureon/operator`` is also on ``sys.path`` for bare imports, and it
+    contains ``aureon_operator.py``. A buried ``mcp/`` entry would make that
+    module shadow the operator package.
+    """
+
+    while _MCP_PATH in sys.path:
+        sys.path.remove(_MCP_PATH)
+    sys.path.insert(0, _MCP_PATH)
 
 
 def pinned_finders_on_meta_path() -> list[Any]:
@@ -119,6 +127,7 @@ def load_public_test_bindings(module: ModuleType) -> None:
         module.PINNED_COMMIT = PINNED_COMMIT
         module.repo_root = repo_root
         module.checkout_blob_refusal = checkout_blob_refusal
+    ensure_mcp_path()
 
 
 def is_mcp_test_module(module_name: str) -> bool:

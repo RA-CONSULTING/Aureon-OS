@@ -92,10 +92,20 @@ def test_compose_injects_no_secret_port_or_environment() -> None:
     service = compose["services"]["protection-preflight"]
     assert service["image"] == "aureon-protection-preflight:local"
     assert service["network_mode"] == "none"
-    for forbidden in ("environment", "env_file", "ports", "volumes", "secrets"):
+    for forbidden in ("env_file", "ports", "volumes", "secrets"):
         assert forbidden not in service
+    assert service.get("environment") == {
+        "AUREON_LIVE_TRADING": "0",
+        "AUREON_DISABLE_REAL_ORDERS": "1",
+        "AUREON_DISABLE_EXCHANGE_MUTATIONS": "1",
+    }
     assert "ghcr.io" not in source.lower()
-    assert "AUREON_" not in source
+    aureon_lines = [line for line in source.splitlines() if "AUREON_" in line]
+    assert aureon_lines == [
+        '      AUREON_LIVE_TRADING: "0"',
+        '      AUREON_DISABLE_REAL_ORDERS: "1"',
+        '      AUREON_DISABLE_EXCHANGE_MUTATIONS: "1"',
+    ]
 
 
 def test_workflow_builds_locally_and_does_not_publish() -> None:
@@ -204,13 +214,16 @@ def test_measured_receipt_matches_the_hold_build() -> None:
     assert receipt["compose"]["ports_injected"] is False
     assert receipt["compose"]["secrets_injected"] is False
     assert judge_preflight(receipt["preflight"]) == []
-    # README.md moved on main after the local build. The image was not rebuilt
-    # and was not pushed. The receipt keeps the measurement-time digest.
-    # scripts/linux/install-linux.sh asks the stage 11 gate before the isolated
-    # bootstrap, so it is no longer the measured bytes. The hardening runbook
-    # stays out of this set; another change owns that digest.
+    # These files moved on main after the local build. The image was not
+    # rebuilt and was not pushed, so the receipt keeps the measurement-time
+    # digests. docker-compose.yml gained the three order-safety pins.
+    # scripts/linux/install-linux.sh asks the stage 11 gate before the
+    # isolated bootstrap. The hardening runbook moved with the container
+    # HOLD notes. Equality would rewrite the receipt without a new measurement.
     drifted = {
         "README.md",
+        "docker-compose.yml",
+        "docs/runbooks/GO_LIVE_HARDENING.md",
         "scripts/linux/install-linux.sh",
     }
     for name, digest in receipt["source_sha256"].items():
