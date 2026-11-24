@@ -107,8 +107,8 @@ def test_binance_http_451_is_region_blocked() -> None:
 
 
 def test_seat_ports_follow_the_environment(monkeypatch: pytest.MonkeyPatch) -> None:
-    from aureon.launch.seat_tabs import _env
     import aureon.operator.seat_proxy as seat_proxy
+    from aureon.launch.seat_tabs import _env
 
     monkeypatch.setenv("AUREON_SEAT_GATEWAY_PORT", "18790")
     monkeypatch.setenv("AUREON_SEAT_MARKET_PORT", "18791")
@@ -209,8 +209,12 @@ def test_fresh_box_preflight_and_offline_benchmark(tmp_path: Path, monkeypatch: 
 
 
 def test_benchmark_scores_a_configured_model_and_dataset(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from tests.support.loopback import require_loopback
+
+    require_loopback()
     import json
     from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
     from aureon.autonomous.self_coder_benchmark import run_harness
 
     class Handler(BaseHTTPRequestHandler):
