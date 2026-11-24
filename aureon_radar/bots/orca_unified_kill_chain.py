@@ -18,6 +18,7 @@ BY ANY MEANS NECESSARY - ONLY WINS COUNT
 Refactored from `orca_complete_kill_cycle.py` and `live_kill_chain_demo.py`.
 ═══════════════════════════════════════════════════════════════════════════════
 """
+from aureon.exchanges.orca_attempt_fill import _attempt_log_status, confirmed_exchange_fill
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
 import os
 import time
@@ -653,7 +654,7 @@ class UnifiedKillChain:
                 # Kraken/Binance clients both try to follow this standard
                 try:
                     res = client.place_market_order(symbol, 'SELL', target['qty'])
-                    if res and (res.get('status') == 'FILLED' or res.get('orderId')):
+                    if isinstance(res, dict) and confirmed_exchange_fill(res, exchange):
                         log_sniper(f"💥 Sold. Cash secured. OrderID: {res.get('orderId')}")
                     else:
                         log_sniper(f"❌ Sell Failed: {res}")
@@ -774,12 +775,20 @@ class UnifiedKillChain:
                     record_confirmed_fill('kraken', kraken_pair, 'buy', order_result)
                     
                     if order_result and not order_result.get('error'):
-                        log_sniper(f"💥 ORDER FILLED! {order_result}")
-                        result = {'status': 'FILLED', 'pair': kraken_pair, 'exchange': 'kraken', 
+                        label = _attempt_log_status(order_result, 'kraken')
+                        if label == 'FILLED':
+                            log_sniper(f"💥 ORDER FILLED! {order_result}")
+                        else:
+                            log_sniper(f"❌ Order {label}: {order_result}")
+                        result = {'status': label, 'pair': kraken_pair, 'exchange': 'kraken',
                                   'volume': volume, 'order': order_result}
                     else:
+                        label = (
+                            _attempt_log_status(order_result, 'kraken')
+                            if isinstance(order_result, dict) else 'FAILED'
+                        )
                         log_sniper(f"❌ Order failed: {order_result}")
-                        result = {'status': 'FAILED', 'error': order_result}
+                        result = {'status': label, 'error': order_result}
                 else:
                     result = {'status': 'NO_PRICE', 'exchange': 'kraken'}
                 
@@ -811,12 +820,20 @@ class UnifiedKillChain:
                     record_confirmed_fill('binance', symbol, 'BUY', order_result)
                     
                     if order_result and order_result.get('status') == 'FILLED':
-                        log_sniper(f"💥 ORDER FILLED! {order_result}")
-                        result = {'status': 'FILLED', 'pair': symbol, 'exchange': 'binance',
+                        label = _attempt_log_status(order_result, 'binance')
+                        if label == 'FILLED':
+                            log_sniper(f"💥 ORDER FILLED! {order_result}")
+                        else:
+                            log_sniper(f"❌ Order {label}: {order_result}")
+                        result = {'status': label, 'pair': symbol, 'exchange': 'binance',
                                   'volume': volume, 'order': order_result}
                     else:
+                        label = (
+                            _attempt_log_status(order_result, 'binance')
+                            if isinstance(order_result, dict) else 'FAILED'
+                        )
                         log_sniper(f"❌ Order failed: {order_result}")
-                        result = {'status': 'FAILED', 'error': order_result}
+                        result = {'status': label, 'error': order_result}
                 else:
                     result = {'status': 'NO_PRICE', 'exchange': 'binance'}
                 
@@ -858,7 +875,7 @@ class UnifiedKillChain:
                             buy_order = self.kraken.place_market_order(kraken_pair, 'buy', volume)
                             record_confirmed_fill('kraken', kraken_pair, 'buy', buy_order)
                             
-                            if buy_order and buy_order.get('status') == 'FILLED':
+                            if buy_order and _attempt_log_status(buy_order, 'kraken') == 'FILLED':
                                 actual_qty = float(buy_order.get('executedQty', volume))
                                 log_sniper(f"   ✅ Bought {actual_qty} {coin}")
                                 
@@ -869,7 +886,7 @@ class UnifiedKillChain:
                                 sell_order = self.binance.place_market_order(binance_symbol, 'SELL', actual_qty)
                                 record_confirmed_fill('binance', binance_symbol, 'SELL', sell_order)
                                 
-                                if sell_order and sell_order.get('status') == 'FILLED':
+                                if sell_order and _attempt_log_status(sell_order, 'binance') == 'FILLED':
                                     log_sniper(f"   ✅ ARBITRAGE COMPLETE!")
                                     result = {'status': 'ARBITRAGE_EXECUTED', 'buy_order': buy_order, 'sell_order': sell_order}
                                 else:

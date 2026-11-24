@@ -73,6 +73,43 @@ def test_negative_pnl_queen_declines_headless():
     c.close_position.assert_not_called()
 
 
+@pytest.mark.parametrize(
+    "exchange,receipt",
+    [
+        ("binance", {"status": "NEW", "orderId": "884221", "executedQty": "0.087"}),
+        ("kraken", {
+            "status": "not_submitted",
+            "orderId": "OQCLML-BW3P3-BUCMWZ",
+            "dryRun": True,
+            "data_status": "not_submitted",
+        }),
+    ],
+)
+def test_spot_sell_order_id_without_confirmed_fill_is_not_sold(exchange, receipt, capsys):
+    """execute_kill_chain must not call an orderId-only receipt sold.
+
+    Reverting the spot-sell check to ``status == 'FILLED' or orderId`` logs
+    'Sold' for both of these receipts. confirmed_exchange_fill does not.
+    """
+    from aureon.exchanges.orca_attempt_fill import confirmed_exchange_fill
+
+    assert confirmed_exchange_fill(receipt, exchange) is False
+    client = _client()
+    client.place_market_order.return_value = receipt
+    target = _target(client, exchange)
+    target["symbol"] = "ETHUSDT" if exchange == "binance" else "ETHUSD"
+    target["qty"] = 0.087
+    _chain().execute_kill_chain(target)
+
+    client.place_market_order.assert_called_once_with(target["symbol"], "SELL", target["qty"])
+    output = capsys.readouterr().out
+    sold = "Sold. Cash secured" in output
+    assert sold is confirmed_exchange_fill(receipt, exchange)
+    assert sold is False
+    assert "Sell Failed" in output
+    assert "FILLED" not in output
+
+
 def test_rejected_close_receipt_is_held_not_refired():
     c = _client()
     c.close_position.return_value = {"status": "rejected", "reason": "submission_request_failed"}

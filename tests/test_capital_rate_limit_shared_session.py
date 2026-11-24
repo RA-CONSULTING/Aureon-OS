@@ -370,7 +370,12 @@ class _Kraken:
         return {"USD": 100.0}
 
     def place_market_order(self, pair, side, qty):
-        return {"status": "FILLED", "executedQty": qty}
+        return {
+            "status": "closed",
+            "vol_exec": qty,
+            "txid": "OQCLML-BW3P3-BUCMWZ",
+            "executedQty": qty,
+        }
 
 
 def _chain_after_truth(orca, binance=None, kraken=None):
