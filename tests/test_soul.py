@@ -65,6 +65,10 @@ def _isolate(tmp_path, monkeypatch):
     monkeypatch.setattr(mm, "_monitor", None, raising=False)
     monkeypatch.setattr(soulmod, "_soul", None, raising=False)
     monkeypatch.setattr(scmod, "_company", None, raising=False)
+    import aureon.operator.local_action_bridge as local_action_bridge
+
+    monkeypatch.setattr(local_action_bridge, "_bridge_singleton", None, raising=False)
+    monkeypatch.setenv("AUREON_COMPUTER_USE_STOP_FILE", str(tmp_path / "absent.stop"))
     # test_armed_soul_routes_through_guarded_bridge builds LocalActionBridge.
     # join_organism calls get_mycelium() and the mesh stays up for the rest of
     # the module: the leaky-singleton restore in conftest runs only at module
@@ -156,16 +160,18 @@ def test_disarmed_soul_proposes_but_never_acts(tmp_path):
 
 
 def test_armed_soul_routes_through_guarded_bridge(tmp_path, monkeypatch):
-    monkeypatch.setenv("AUREON_SOUL_ACT", "1")  # soul armed, but bridge still dry-run (ACTIONS_ARMED unset)
+    monkeypatch.setenv("AUREON_SOUL_ACT", "1")
+    monkeypatch.delenv("AUREON_LOCAL_ACTIONS_ARMED", raising=False)
     _coherent_field(tmp_path)
     (tmp_path / "inbox.jsonl").write_text(
         json.dumps({"text": "read README", "source": "email",
                     "action": "read_repo_file", "params": {"path": "README.md"}}) + "\n", encoding="utf-8")
     d = _soul().deliberate()
     assert d.resolved and d.executed and d.executed.get("carried_out") is True
-    # it went through the guarded hand — which is DRY-RUN by default (not executed)
+    # Unset AUREON_LOCAL_ACTIONS_ARMED executes. The toolbelt may still refuse
+    # the proposal. That refusal is not the old dry-run default.
     result = d.executed.get("result", {})
-    assert result.get("executed") is False and result.get("dry_run") is True
+    assert result.get("dry_run") is False
 
 
 def test_high_stakes_deliberation_surfaces_to_the_approval_desk(tmp_path):

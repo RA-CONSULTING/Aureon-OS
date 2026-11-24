@@ -216,6 +216,54 @@ def evidence_rows(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
 
 
+def test_stop_file_blocks_the_next_action_and_never_calls_the_backend(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The stop file is the same helper the other callers use. Writing it
+    refuses the next execute() before any backend method runs."""
+
+    stop = tmp_path / "computer_use.stop"
+    monkeypatch.setenv("AUREON_COMPUTER_USE_STOP_FILE", str(stop))
+    gateway, backend, _clock, _evidence = make_gateway(tmp_path)
+    binding = gateway.bind_target_window("Course Browser", expected_process_id=4242)
+    calls: list[str] = []
+    for name in (
+        "capture_screen",
+        "screen_size",
+        "foreground_window",
+        "pointer_position",
+        "window_dpi",
+        "move",
+        "click",
+        "scroll",
+        "type_text",
+        "press",
+        "hotkey",
+    ):
+        original = getattr(backend, name)
+
+        def wrapped(*args, _name=name, _original=original, **kwargs):
+            calls.append(_name)
+            return _original(*args, **kwargs)
+
+        setattr(backend, name, wrapped)
+
+    calls.clear()
+    backend.actions.clear()
+    stop.write_text("human\n", encoding="utf-8")
+    result = gateway.execute(
+        "click",
+        {"x": 100, "y": 120},
+        target_binding_id=binding.binding_id,
+    )
+
+    assert result.ok is False
+    assert result.reason == "computer_use_stop_file"
+    assert calls == []
+    assert backend.actions == []
+    assert stop.read_text(encoding="utf-8") == "human\n"
+
+
 def test_dry_run_is_default_and_never_dispatches(tmp_path: Path) -> None:
     gateway, backend, _clock, evidence = make_gateway(tmp_path)
     assert gateway.status()["dry_run"] is True

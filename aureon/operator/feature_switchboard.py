@@ -123,7 +123,10 @@ FLAGS: List[FeatureFlag] = [
         "safe", "restart", "The approval-email loop reads at boot.",
         "Email the owner each prepared big play and read replies as decisions (records, never executes).",
     ),
-    # ── Hard boundary (armed toggle + warning; gates stay in force; default OFF) ──
+    # ── Hard boundary (armed toggle + warning; gates stay in force) ──
+    # Live trading, soul-act, billing, and sovereign mode default OFF.
+    # Local actions default ON: unset AUREON_LOCAL_ACTIONS_ARMED executes.
+    # The human stop file state/computer_use.stop forces dry-run.
     FeatureFlag(
         "AUREON_LIVE_TRADING", "Live trading", "Hard Boundary",
         "hard_boundary", "restart", "Trading swarm re-reads on restart; the runtime gate still applies.",
@@ -133,6 +136,7 @@ FLAGS: List[FeatureFlag] = [
         "AUREON_LOCAL_ACTIONS_ARMED", "Local actions armed", "Hard Boundary",
         "hard_boundary", "restart", "The local-action bridge re-reads at boot.",
         "Let grounded local-machine actions execute (else dry-run). Grounding gate stays in force.",
+        default=True,
     ),
     FeatureFlag(
         "AUREON_SOUL_ACT", "Soul act", "Hard Boundary",

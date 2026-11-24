@@ -21,9 +21,12 @@ and desktop moves to the ``vm_control`` dispatcher (simulated backend by
 default). Anything without a live executor degrades honestly to
 ``executor unavailable`` — it never fabricates success.
 
-Arming: dry-run unless ``AUREON_LOCAL_ACTIONS_ARMED=1``. The gate runs either
-way, so a dry-run still produces a full grounded verdict and bus trace — the
-organism senses the move whether or not it executes.
+Arming: when ``AUREON_LOCAL_ACTIONS_ARMED`` is unset, the bridge executes.
+Set it to ``0`` to force dry-run. The human stop file
+``state/computer_use.stop`` (override ``AUREON_COMPUTER_USE_STOP_FILE``)
+forces dry-run and is never created here. The gate runs either way, so a
+dry-run still produces a full grounded verdict and bus trace — the organism
+senses the move whether or not it executes.
 
 Gary Leckey · Aureon Institute
 """
@@ -37,6 +40,7 @@ from collections import deque
 from typing import Any, Callable, Deque, Dict
 
 from aureon.operator.aureon_operator import join_organism
+from aureon.operator.computer_use_stop import is_stopped
 from aureon.operator.grounded_action import ActionVerdict, GroundedActionGate
 
 logger = logging.getLogger("aureon.operator.local_action_bridge")
@@ -60,8 +64,18 @@ _DESKTOP_ACTIONS = {
 }
 
 
-def _truthy(name: str, default: str = "0") -> bool:
-    return str(os.environ.get(name, default) or default).strip().lower() in {"1", "true", "yes", "on"}
+def _truthy(value: str) -> bool:
+    return str(value or "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _default_armed() -> bool:
+    """Unset means execute. An explicit 0, or the human stop file, stays dry-run."""
+
+    if is_stopped():
+        return False
+    if "AUREON_LOCAL_ACTIONS_ARMED" not in os.environ:
+        return True
+    return _truthy(os.environ.get("AUREON_LOCAL_ACTIONS_ARMED", ""))
 
 
 class LocalActionBridge:
@@ -79,7 +93,7 @@ class LocalActionBridge:
         self.gate = gate or GroundedActionGate()
         self._executor = executor  # None → lazy default router
         self._bus = bus if bus is not None else (get_thought_bus() if get_thought_bus else None)
-        self.armed = _truthy("AUREON_LOCAL_ACTIONS_ARMED") if armed is None else armed
+        self.armed = _default_armed() if armed is None else armed
         # rolling record of recent verdicts — feeds the Λ(t) local-action source
         self._recent: Deque[Dict[str, Any]] = deque(maxlen=100)
         if join:
@@ -200,6 +214,11 @@ class LocalActionBridge:
         if not verdict.approved:
             self._publish("local.action.abandoned", verdict.trace_id, base)
             return {**base, "ok": False, "blocked": True, "executed": False, "dry_run": False}
+
+        if is_stopped():
+            note = "stopped: state/computer_use.stop is present; Aureon does not create that file"
+            self._publish("local.action.result", verdict.trace_id, {**base, "dry_run": True})
+            return {**base, "ok": True, "blocked": False, "executed": False, "dry_run": True, "note": note}
 
         if not self.armed and action not in _DESKTOP_ACTIONS:
             self._publish("local.action.result", verdict.trace_id, {**base, "dry_run": True})

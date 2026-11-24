@@ -29,6 +29,8 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Deque, Dict, Mapping, Protocol, Sequence, Tuple
 
+from aureon.operator.computer_use_stop import is_stopped
+
 if TYPE_CHECKING:
     from aureon.operator.governed_window_session import GatewayWindowBinding
 
@@ -1041,6 +1043,18 @@ class GovernedDesktopGateway:
 
         with self._state_lock:
             current_dry_run = self._dry_run
+
+        # Same file and rules as the local-action bridge, the queen chat
+        # bridge, and the pursuit hand. The in-memory emergency stop stays.
+        # This check does not create the file and does not touch the backend.
+        if is_stopped():
+            return self._reject(
+                action_name,
+                action_id,
+                "computer_use_stop_file",
+                current_dry_run,
+                {},
+            )
 
         if action_name not in ALLOWED_ACTIONS:
             return self._reject(action_name, action_id, "action_not_allowed", current_dry_run, {})

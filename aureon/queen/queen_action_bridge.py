@@ -27,8 +27,9 @@ This module is that wire. It is dual-path:
 
 Both paths hit the same gate:
 
-  • The bridge starts in ``dry_run=True``. Actions simulate only.
-  • ``arm(live=True)`` flips to real execution.
+  • The bridge starts live. Non-destructive tools run.
+  • ``arm(live=False)`` returns to dry-run.
+  • ``state/computer_use.stop`` forces dry-run. Aureon does not create that file.
   • Even when armed, **destructive tools** (shell, vm_execute_*) require
     the Auris filter to report ``lighthouse_cleared=True`` on the current
     reply context. If the council isn't unanimous enough, the action
@@ -47,6 +48,8 @@ import time
 import uuid
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
+
+from aureon.operator.computer_use_stop import is_stopped
 
 logger = logging.getLogger("aureon.queen.action_bridge")
 
@@ -101,6 +104,8 @@ class ActionRecord:
                 out["result_summary"] = repr(r)[:300]
         else:
             out["error"] = self.error[:500]
+            if isinstance(self.result, dict) and self.result.get("blocked") is True:
+                out["blocked"] = True
         return out
 
 
@@ -140,6 +145,11 @@ DESTRUCTIVE_TOOLS = {
     "vm_triple_click",
     "vm_left_click_drag",
     "vm_scroll",
+    # Pointer motion and focus changes are desktop mutations, same class as
+    # click and scroll. The router already labels them destructive. A missing
+    # lighthouse report must not run them live.
+    "vm_mouse_move",
+    "vm_focus_window",
 }
 
 
@@ -275,7 +285,7 @@ class QueenActionBridge:
         dispatcher: Optional[Any] = None,
         skill_library: Optional[Any] = None,
         auris_filter: Optional[Any] = None,
-        live_default: bool = False,
+        live_default: bool = True,
         max_history: int = 256,
     ):
         self._registry = registry
@@ -386,10 +396,11 @@ class QueenActionBridge:
                 skill_count = len(self._skill_library.by_level(0))
             except Exception:
                 pass
+        live = self._live and not is_stopped()
         return {
             "initialized": self._initialized,
-            "live": self._live,
-            "mode": "live" if self._live else "dry_run",
+            "live": live,
+            "mode": "live" if live else "dry_run",
             "session_id": self._session_id,
             "tool_count": tool_count,
             "skill_count": skill_count,
@@ -538,11 +549,13 @@ class QueenActionBridge:
                 reply.actions.append(record)
                 continue
 
-            # Destructive tools forced to dry-run unless armed AND lighthouse
-            # cleared (or the caller didn't provide a coherence report).
+            # Destructive tools stay dry-run unless the bridge is live and a
+            # coherence report clears the lighthouse. A missing report is not
+            # a pass: chat and /api/queen/execute both omit it.
             destructive = tool_name in DESTRUCTIVE_TOOLS
-            gate_failed = destructive and coherence_report is not None and not lighthouse
-            mode = "live" if (self._live and not gate_failed) else "dry_run"
+            gate_failed = bool(destructive and not lighthouse)
+            stopped = is_stopped()
+            mode = "live" if (self._live and not gate_failed and not stopped) else "dry_run"
 
             record = ActionRecord(
                 tool=tool_name,
@@ -567,7 +580,19 @@ class QueenActionBridge:
                     }
                 else:
                     record.result = self._registry.execute(tool_name, params)
-                    record.ok = True
+                    blocked = (
+                        isinstance(record.result, dict)
+                        and record.result.get("blocked") is True
+                    )
+                    if blocked:
+                        record.ok = False
+                        record.error = str(
+                            record.result.get("reason")
+                            or record.result.get("error")
+                            or "blocked"
+                        )
+                    else:
+                        record.ok = True
             except Exception as e:
                 record.ok = False
                 record.error = str(e)
