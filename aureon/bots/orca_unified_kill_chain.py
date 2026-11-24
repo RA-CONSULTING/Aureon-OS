@@ -1787,6 +1787,7 @@ class UnifiedKillChain:
                         'exchange': 'capital',
                         'symbol': epic,
                         'id': pos_data.get('dealId'),
+                        'deal_reference': pos_data.get('dealReference') or pos_data.get('deal_reference'),
                         'type': 'CFD',
                         'qty': qty,
                         'pnl': upl,
@@ -1991,6 +1992,32 @@ class UnifiedKillChain:
         log_queen("Harvest complete.")
         return committed
 
+    def _read_capital_confirm(self, client, deal_reference: str):
+        """GET /confirms/{ref} via CapitalClient.confirm_order, or None."""
+        ref = str(deal_reference or "").strip()
+        if not ref or client is None:
+            return None
+        confirm = getattr(client, "confirm_order", None)
+        if not callable(confirm):
+            return None
+        try:
+            return confirm(ref)
+        except Exception as exc:
+            log_system(f"Capital confirm failed for {ref}: {exc}")
+            return None
+
+    def _capital_close_deal_id(self, target) -> str | None:
+        """Adopted dealId to close. A reference is resolved, never sent as the id."""
+        from aureon.exchanges.orca_capital_ownership import (
+            adopted_deal_ids,
+            resolve_capital_close_id,
+        )
+        return resolve_capital_close_id(
+            target,
+            adopted_deal_ids(),
+            lambda ref: self._read_capital_confirm(target.get("client"), ref),
+        )
+
     def execute_kill_chain(self, target):
         if self.execution_state_path is None:
             return _no_data_decision("execution_state_path_required")
@@ -2076,7 +2103,7 @@ class UnifiedKillChain:
                     f"HNC/Auris receipt gates complete for "
                     f"{action['symbol']} SELL"
                 )
-                if not self.execution_enabled:
+                if self.execution_enabled is not True:
                     return _execution_result(
                         venue=action["venue"],
                         status="not_submitted",
