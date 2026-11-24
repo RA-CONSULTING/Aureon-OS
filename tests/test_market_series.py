@@ -295,7 +295,9 @@ def test_committed_pack_is_public_and_the_pin_stays() -> None:
     assert clock["first_print_minus_last_labelled_close_seconds"] > 0
     assert diagnosis["labelled_bars_with_coherence"] == 0
     assert diagnosis["labelled_bars_no_data"] == trade["paper_labels"]
-    assert diagnosis["window_matches_final_else"] is True
+    # PR 343 made the 0.40 LOW COHERENCE band reachable. This window sits in
+    # that band, so the final else (COHERENCE BREAK) does not run.
+    assert diagnosis["window_matches_final_else"] is False
     assert diagnosis["ready_mark_below_sweep"] is True
     assert diagnosis["orders_placed"] is False
     assert diagnosis["live_trading"] is False
@@ -307,9 +309,15 @@ def test_committed_pack_is_public_and_the_pin_stays() -> None:
     assert "does not invent outcome labels" in diagnosis["next_stage"]
     assert "later spread print" in diagnosis["next_stage"]
     ready = next(item for item in ladder["compares"] if item["ready_mark"])
-    buried = next(item for item in ladder["compares"] if item["op"] == ">" and item["threshold"] > 0.9)
-    assert ready["threshold"] > buried["threshold"]
-    assert ladder["compares"].index(ready) < ladder["compares"].index(buried)
+    low = next(item for item in ladder["compares"] if "LOW COHERENCE" in item["status"])
+    moderate = next(item for item in ladder["compares"] if "MODERATE COHERENCE" in item["status"])
+    assert low["ready_mark"] is False
+    assert low["op"] == ">="
+    assert low["threshold"] < ready["threshold"]
+    assert ladder["compares"].index(ready) < ladder["compares"].index(low)
+    assert ladder["later_compare_buried_under_a_lower_band"] is False
+    assert "LOW COHERENCE" in report["coherence_status"]
+    assert low["threshold"] <= report["coherence"] < moderate["threshold"]
     assert PIN in (ROOT / "mcp" / "pyproject.toml").read_text(encoding="utf-8")
     assert PIN in (ROOT / "mcp" / "aureon_public" / "guard_loader.py").read_text(encoding="utf-8")
 
