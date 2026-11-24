@@ -34,6 +34,7 @@ from aureon.core.simulated_boot import (
     take_simulated,
 )
 from aureon.data_feeds.unified_market_cache import ensure_public_prices
+from tests.support.loopback import require_loopback
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -65,6 +66,7 @@ def test_unset_live_trading_defaults_off(monkeypatch: pytest.MonkeyPatch) -> Non
 
 
 def test_thought_bus_organs_publish_and_subscribe(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    require_loopback()
     monkeypatch.setenv("AUREON_ORGANISM_STATE", str(tmp_path / "state"))
     monkeypatch.setenv("AUREON_ORGANISM_HTTP_PORT", "0")
     monkeypatch.setenv("AUREON_THOUGHT_BUS_PATH", str(tmp_path / "thoughts.jsonl"))
@@ -158,6 +160,7 @@ def test_master_ui_has_dashboard_and_command_center_tabs() -> None:
     assert 'data-tab="dashboard"' in html
     assert 'data-tab="command-center"' in html
     assert "Dashboard" in html and "Command Center" in html
+    require_loopback()
     started = start_master_ui(0, dashboard_url="http://127.0.0.1:18080/", command_center_url="http://127.0.0.1:18800/")
     try:
         import urllib.request

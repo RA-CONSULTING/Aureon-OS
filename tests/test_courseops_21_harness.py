@@ -15,6 +15,7 @@ from aureon.operator.courseops_21_harness import (
     CourseOps21HarnessError,
 )
 from aureon.operator.synthetic_assessment_grant import build_asset_manifest
+from tests.support.loopback import require_loopback
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "courseops_21"
 
@@ -54,6 +55,7 @@ def test_loopback_server_exposes_hash_bound_context_and_only_course_assets() -> 
         assert context.asset_manifest == expected_manifest
         assert context.to_dict()["served_assets"] == list(SERVED_ASSETS)
         assert context.to_dict()["asset_manifest"] == expected_manifest.to_dict()
+        require_loopback()
 
         for route, asset_name in (
             ("/", "index.html"),
@@ -96,6 +98,7 @@ def test_loopback_server_exposes_hash_bound_context_and_only_course_assets() -> 
     ],
 )
 def test_server_rejects_unlisted_nonliteral_and_traversal_routes(path: str) -> None:
+    require_loopback()
     with CourseOps21Harness(FIXTURE_ROOT) as harness:
         status, headers, body = _request(harness, path)
 
@@ -106,6 +109,7 @@ def test_server_rejects_unlisted_nonliteral_and_traversal_routes(path: str) -> N
 
 
 def test_server_rejects_mutating_http_methods() -> None:
+    require_loopback()
     with CourseOps21Harness(FIXTURE_ROOT) as harness:
         status, headers, body = _request(harness, "/index.html", method="POST")
 
@@ -115,6 +119,7 @@ def test_server_rejects_mutating_http_methods() -> None:
 
 
 def test_server_fails_closed_if_a_frozen_asset_changes(tmp_path: Path) -> None:
+    require_loopback()
     root = _copy_fixture(tmp_path / "suite")
     harness = CourseOps21Harness(root)
     with harness:
