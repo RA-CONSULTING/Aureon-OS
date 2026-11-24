@@ -569,6 +569,11 @@ def build_operator_tools(
             operation_id="aureon.operator.patch_repo_file.v1",
         )
 
+    if allow_shell:
+        from aureon.autonomy.computer_use import register_computer_use_tools
+
+        register_computer_use_tools(reg)
+
     if not allow_shell and "execute_shell" in reg:
         reg._tools.pop("execute_shell", None)
 

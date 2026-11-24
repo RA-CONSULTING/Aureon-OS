@@ -8,7 +8,9 @@ action is requested.
 
 The gateway never persists arming state or capability-token plaintext.  Live
 authorization expires after at most 24 hours and an emergency-stop epoch
-invalidates every lease and window binding issued before it.
+invalidates every lease and window binding issued before it.  ``execute`` also
+refuses when a human has created ``state/computer_use.stop`` (Aureon never
+creates that file).
 """
 
 from __future__ import annotations
@@ -28,6 +30,8 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Deque, Dict, Mapping, Protocol, Sequence, Tuple
+
+from aureon.autonomy.computer_use import computer_use_stop_file_active
 
 if TYPE_CHECKING:
     from aureon.operator.governed_window_session import GatewayWindowBinding
@@ -1041,6 +1045,17 @@ class GovernedDesktopGateway:
 
         with self._state_lock:
             current_dry_run = self._dry_run
+
+        # Human stop file shared with ComputerUse. Aureon never creates it.
+        # Delete this branch together with computer_use_stop_file_active.
+        if computer_use_stop_file_active():
+            return self._reject(
+                action_name or "unspecified",
+                action_id,
+                "computer_use_stop_file",
+                current_dry_run,
+                {},
+            )
 
         if action_name not in ALLOWED_ACTIONS:
             return self._reject(action_name, action_id, "action_not_allowed", current_dry_run, {})

@@ -79,11 +79,12 @@ def test_process_file_browser_and_dynamic_code_effects_hold_without_mutation(tmp
     created_dir = workspace / "created"
     core = AureonAgentCore(workspace_roots=[workspace])
 
+    # execute_shell and open_url now run through ComputerUse (owner decision
+    # 19 Nov 2026). They are covered by tests/test_computer_use_autonomy.py.
+    # File, process-launch, and dynamic-code effects stay on HOLD.
     receipts = [
-        core.execute_shell("echo unsafe"),
         core.open_app("notepad"),
         core.kill_process("123"),
-        core.open_url("https://example.com"),
         core.open_file(str(sentinel)),
         core.write_file(str(sentinel), "changed"),
         core.copy_file(str(sentinel), str(destination)),
