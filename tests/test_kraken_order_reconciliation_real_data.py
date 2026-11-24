@@ -181,6 +181,8 @@ def test_fresh_terminal_query_orders_receipt_exposes_only_observed_fill() -> Non
     receipt = client.get_order_status(ORDER_ID)
 
     assert receipt["status"] == "FILLED"
+    assert receipt["provider_status"] == "closed"
+    assert receipt["vol_exec"] == "1.25"
     assert receipt["data_status"] == "live"
     assert receipt["truth_status"] == "real_observed"
     assert receipt["executedQty"] == "1.25"
@@ -343,6 +345,8 @@ def test_stale_terminal_receipt_is_no_data_with_no_fill_values() -> None:
     assert receipt["status"] == "no_data"
     assert receipt["data_status"] == "no_data"
     assert receipt["reason"] == "missing_or_stale_provider_close_timestamp"
+    assert receipt["provider_status"] == "closed"
+    assert receipt["vol_exec"] == "1.25"
     _assert_no_fill(receipt)
     client._pair_base_quote.assert_not_called()
 

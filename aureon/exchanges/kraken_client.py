@@ -150,6 +150,17 @@ def _finite_decimal(
     return observed
 
 
+def _fill_cost_disagrees(filled: Decimal, price: Decimal, cost: Decimal) -> bool:
+    """True when cost is not vol_exec * price within the provider's tolerance.
+
+    The same tolerance is used by the ledger, so an early return cannot hide
+    a disagreement the later check would have caught.
+    """
+    expected = filled * price
+    tolerance = max(Decimal("0.00000001"), cost * Decimal("0.001"))
+    return abs(expected - cost) > tolerance
+
+
 def _decimal_text(value: Any) -> str | None:
     """Return the provider numeric value as a validated decimal string."""
     observed = _finite_decimal(value)
@@ -1754,6 +1765,59 @@ class KrakenClient:
 
         provider_timestamp = _fresh_provider_timestamp(order.get("closetm"), now=now)
         filled_quantity = _finite_decimal(order.get("vol_exec"), nonnegative=True)
+        average_price = _finite_decimal(order.get("price"), positive=True)
+        filled_cost = _finite_decimal(order.get("cost"), positive=True)
+        requested = _finite_decimal(requested_quantity, positive=True)
+        # Quantity and cost are checked before any return that would keep
+        # vol_exec. A stale close or a missing fee must not hide a cost that
+        # does not match vol_exec * price, or a fill larger than the order.
+        if (
+            provider_status == "closed"
+            and filled_quantity is not None
+            and filled_quantity > 0
+            and (
+                (
+                    average_price is not None
+                    and filled_cost is not None
+                    and _fill_cost_disagrees(filled_quantity, average_price, filled_cost)
+                )
+                or (requested is not None and filled_quantity > requested)
+            )
+        ):
+            raw_vol = order.get("vol_exec")
+            receipt["vol_exec"] = (
+                raw_vol if isinstance(raw_vol, str) else format(filled_quantity, "f")
+            )
+            cost_bad = (
+                average_price is not None
+                and filled_cost is not None
+                and _fill_cost_disagrees(filled_quantity, average_price, filled_cost)
+            )
+            receipt.update({
+                "status": "no_data",
+                "data_status": "no_data",
+                "truth_status": "no_data",
+                "consistency_failure": True,
+                "reason": (
+                    "inconsistent_provider_fill_cost_and_average_price"
+                    if cost_bad
+                    else "provider_filled_quantity_exceeds_order_quantity"
+                ),
+            })
+            return receipt
+        # QueryOrders vol_exec stays on a closed order even when the rest of
+        # the receipt is not an accounting fill. The Orca ledger decides
+        # whether that quantity is recordable. Open and pending orders do not
+        # reach this line, so a partial still in the book is not copied out.
+        if (
+            provider_status == "closed"
+            and filled_quantity is not None
+            and filled_quantity > 0
+        ):
+            raw_vol = order.get("vol_exec")
+            receipt["vol_exec"] = (
+                raw_vol if isinstance(raw_vol, str) else format(filled_quantity, "f")
+            )
         if provider_timestamp is None:
             receipt.update({
                 "status": "no_data",
@@ -1831,6 +1895,7 @@ class KrakenClient:
                 "status": "no_data",
                 "data_status": "no_data",
                 "truth_status": "no_data",
+                "consistency_failure": True,
                 "reason": "inconsistent_provider_fill_cost_and_average_price",
             })
             return receipt
@@ -1849,6 +1914,7 @@ class KrakenClient:
                 "status": "no_data",
                 "data_status": "no_data",
                 "truth_status": "no_data",
+                "consistency_failure": True,
                 "reason": "provider_filled_quantity_exceeds_order_quantity",
             })
             return receipt
