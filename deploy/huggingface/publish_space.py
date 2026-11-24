@@ -31,75 +31,7 @@ MODEL_VARIABLE = "AUREON_MODEL_REVISION"
 L40S_HARDWARE = "l40sx1"
 COMMIT_RE = re.compile(r"[0-9a-f]{40}\Z")
 
-ROOT_FILES = frozenset({
-    ".env.example",
-    "LICENSE",
-    "README.md",
-    "pyproject.toml",
-    "requirements-linux.txt",
-})
-ALLOWED_ROOTS = (
-    "aureon/",
-    "aureon_fusion/",
-    "aureon_radar/",
-    "deploy/huggingface/",
-    "deploy/selfhost/",
-    "frontend/",
-    "huggingface/hnc-field/",
-    "huggingface/organism-replay/",
-    "supabase/migrations/",
-)
-ALLOWED_FILES = frozenset({"training/aureon_chat_server.py"})
-CODE_ONLY_ROOTS = (
-    "api/",
-    "aureon_launcher/",
-    "mcp/",
-    "organism/",
-    "server/",
-)
-EXCLUDED_PARTS = frozenset({
-    ".git",
-    ".mypy_cache",
-    ".pytest_cache",
-    ".ruff_cache",
-    ".test-tmp",
-    "__pycache__",
-    "__tests__",
-    "dist",
-    "logs",
-    "node_modules",
-    "runtime",
-    "state",
-    "test",
-    "tests",
-})
-BINARY_SUFFIXES = frozenset({
-    ".7z",
-    ".bin",
-    ".bundle",
-    ".bz2",
-    ".ckpt",
-    ".docx",
-    ".gguf",
-    ".gz",
-    ".h5",
-    ".hdf5",
-    ".lockb",
-    ".npy",
-    ".npz",
-    ".onnx",
-    ".pb",
-    ".pdf",
-    ".pptx",
-    ".pt",
-    ".pth",
-    ".rar",
-    ".safetensors",
-    ".tar",
-    ".tgz",
-    ".xz",
-    ".zip",
-})
+
 KEY_SUFFIXES = frozenset({".jks", ".key", ".keystore", ".p12", ".pem", ".pfx"})
 SECRET_NAMES = frozenset({
     "credentials.json",
@@ -112,11 +44,18 @@ SECRET_NAMES = frozenset({
     "secrets.yml",
 })
 SECRET_PATTERNS = (
-    ("private key", re.compile(br"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----")),
+    ("private key", re.compile(
+        br"-----BEGIN (?:RSA |EC |OPENSSH |ENCRYPTED )?PRIVATE KEY-----"
+        br"[ \t]*\r?\n(?:(?:Proc-Type|DEK-Info):[^\r\n]+\r?\n)*"
+        br"[ \t]*[A-Za-z0-9+/]{48,}={0,2}"
+    )),
     ("Hugging Face token", re.compile(br"(?<![A-Za-z0-9])hf_[A-Za-z0-9]{24,}(?![A-Za-z0-9])")),
     ("GitHub token", re.compile(br"(?<![A-Za-z0-9])(?:ghp|github_pat)_[A-Za-z0-9_]{24,}")),
     ("AWS access key", re.compile(br"(?<![A-Z0-9])(?:AKIA|ASIA)[A-Z0-9]{16}(?![A-Z0-9])")),
 )
+# Exact public test sentinel, not a credential. Keep its test and corpus rows
+# without weakening detection of realistic GitHub tokens.
+SYNTHETIC_CREDENTIAL_SENTINELS = (b"ghp_abcdefghijklmnopqrstuvwxy",)
 OVERRIDES = {
     "deploy/huggingface/Dockerfile": "Dockerfile",
     "deploy/huggingface/Dockerfile.dockerignore": ".dockerignore",
@@ -210,36 +149,22 @@ def _validate_path(path: str) -> str:
     return pure.as_posix()
 
 
-def _excluded(path: str) -> bool:
-    parts = PurePosixPath(path).parts
-    lowered = {part.casefold() for part in parts}
-    if lowered & EXCLUDED_PARTS or any(part.casefold().endswith("_logs") for part in parts):
-        return True
-    name = parts[-1].casefold()
-    if (name == ".env" or name.startswith(".env.")) and name != ".env.example":
-        return True
-    return PurePosixPath(path).suffix.casefold() in BINARY_SUFFIXES
-
-
-def _allowed(path: str) -> bool:
-    if path in ROOT_FILES or path in ALLOWED_FILES or path.startswith(ALLOWED_ROOTS):
-        return True
-    pure = PurePosixPath(path)
-    source_suffix = pure.suffix.casefold() in {".py", ".sql"}
-    # Do not sweep nested historical/source copies such as aureon-trading into
-    # the image just because they contain Python. Additional roots are explicit.
-    return source_suffix and (len(pure.parts) == 1 or path.startswith(CODE_ONLY_ROOTS))
-
 
 def _refuse_secret_path(path: str) -> None:
     pure = PurePosixPath(path)
-    if pure.name.casefold() in SECRET_NAMES or pure.suffix.casefold() in KEY_SUFFIXES:
+    name = pure.name.casefold()
+    if (name == ".env" or name.startswith(".env.")) and name != ".env.example":
+        raise PublishError(f"refusing environment credential path: {path}")
+    if name in SECRET_NAMES or pure.suffix.casefold() in KEY_SUFFIXES:
         raise PublishError(f"refusing secret or key-material path: {path}")
 
 
 def _refuse_secret_content(path: str, content: bytes) -> None:
+    scanned = content
+    for sentinel in SYNTHETIC_CREDENTIAL_SENTINELS:
+        scanned = scanned.replace(sentinel, b"synthetic-credential-fixture")
     for label, pattern in SECRET_PATTERNS:
-        if pattern.search(content):
+        if pattern.search(scanned):
             # Never include the matched value in an exception or receipt.
             raise PublishError(f"refusing possible {label} in staged source path: {path}")
 
@@ -282,24 +207,39 @@ def _tree_entries(repo: Path, commit: str) -> list[_TreeEntry]:
 
 
 def _selected_entries(entries: list[_TreeEntry]) -> list[_TreeEntry]:
+    """Return the complete tracked tree; never curate paths by perceived relevance."""
+
     selected: list[_TreeEntry] = []
     seen: set[str] = set()
     for entry in entries:
         path = entry.path
-        # The Space card replaces, rather than merges with, the source card.
-        if path == "README.md" or not _allowed(path) or _excluded(path):
-            continue
         _refuse_secret_path(path)
         if entry.mode == "120000":
             raise PublishError(f"refusing symbolic link in Space source: {path}")
         if entry.kind != "blob" or entry.mode not in {"100644", "100755"}:
             raise PublishError(f"refusing unsupported Git entry in Space source: {path}")
-        folded = path.casefold()
-        if folded in seen:
-            raise PublishError(f"refusing case-insensitive path collision: {path}")
-        seen.add(folded)
+        if path in seen:
+            raise PublishError(f"refusing duplicate Git path in Space source: {path}")
+        seen.add(path)
         selected.append(entry)
     return sorted(selected, key=lambda item: item.path)
+
+
+def _refuse_windows_case_collisions(entries: list[_TreeEntry]) -> None:
+    """Keep case-distinct tracked files intact by requiring a case-sensitive stager."""
+
+    if os.name != "nt":
+        return
+    seen: dict[str, str] = {}
+    for entry in entries:
+        folded = entry.path.casefold()
+        previous = seen.get(folded)
+        if previous is not None and previous != entry.path:
+            raise PublishError(
+                "case-distinct tracked paths require staging on a case-sensitive Linux filesystem: "
+                + json.dumps([previous, entry.path])
+            )
+        seen[folded] = entry.path
 
 
 @contextmanager
@@ -377,7 +317,7 @@ def stage_space(
     *,
     expected_source: str | None = None,
 ) -> dict[str, Any]:
-    """Stage tracked, allowlisted files from one exact clean Git commit."""
+    """Stage every tracked file from one exact clean Git commit."""
 
     repo = Path(repo).resolve()
     destination = Path(destination)
@@ -385,6 +325,7 @@ def stage_space(
         raise PublishError("staging destination must be a fresh, nonexistent path")
     head = _clean_head(repo, expected_source)
     selected = _selected_entries(_tree_entries(repo, head))
+    _refuse_windows_case_collisions(selected)
     destination.mkdir()
     manifest: list[dict[str, Any]] = []
     with _blob_reader(repo) as read_blob:
@@ -393,10 +334,18 @@ def stage_space(
             _refuse_secret_content(entry.path, content)
             manifest.append(_write_new_file(destination, entry.path, content))
 
+    # Keep every tracked path. Space-required root metadata replaces the content
+    # at the same three paths rather than dropping or renaming any source path.
     for source, target in OVERRIDES.items():
         source_path = destination.joinpath(*PurePosixPath(source).parts)
         if not source_path.is_file() or source_path.is_symlink():
             raise PublishError(f"required Space override is absent: {source}")
+        target_path = destination.joinpath(*PurePosixPath(target).parts)
+        if target_path.exists():
+            if not target_path.is_file() or target_path.is_symlink():
+                raise PublishError(f"Space override target is not a regular file: {target}")
+            target_path.unlink()
+            manifest = [row for row in manifest if row["path"] != target]
         manifest.append(_write_new_file(destination, target, source_path.read_bytes()))
 
     _validate_space_card((destination / "README.md").read_bytes())
@@ -406,8 +355,6 @@ def stage_space(
         missing.append("frontend/src/ (at least one source file)")
     if missing:
         raise PublishError(f"Space source is incomplete: {json.dumps(missing)}")
-    if any(PurePosixPath(path).parts[:2] == ("frontend", "dist") for path in paths):
-        raise PublishError("stale frontend/dist content is not publishable")
 
     # A checkout change during staging cannot alter the blobs already selected,
     # but refusing it here keeps the recorded clean-HEAD contract explicit.

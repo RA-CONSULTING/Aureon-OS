@@ -157,27 +157,34 @@ def _publish(checkout: FakeCheckout, hub: FakeHub, **overrides) -> dict:
     return publisher.publish_space(checkout.root, **arguments)
 
 
-def test_staging_allowlist_overrides_and_per_file_hashes(
+def test_staging_complete_tree_overrides_and_per_file_hashes(
     checkout: FakeCheckout,
     tmp_path: Path,
 ) -> None:
     checkout.files.update({
-        ".git/config.py": b"not staged",
-        "tests/test_example.py": b"not staged",
-        ".test-tmp/cache.py": b"not staged",
-        "aureon/.env": b"SECRET=not-staged",
-        "aureon/runtime/state.py": b"not staged",
-        "aureon/logs/old.py": b"not staged",
-        "frontend/node_modules/pkg/index.js": b"not staged",
-        "frontend/dist/stale.js": b"not staged",
-        "frontend/model.safetensors": b"not staged",
-        "training/checkpoint.pt": b"not staged",
-        "training/archive.zip": b"not staged",
-        "training/corpus/files.jsonl": b"not staged",
-        "training/other.py": b"not staged",
-        "docs/not_needed.md": b"not staged",
-        "docs/not_needed.py": b"not staged",
-        "aureon-trading/aureon/duplicate.py": b"not staged",
+        "README.md": b"# Original source card\n",
+        "Dockerfile": b"FROM original-guarded-image\n",
+        ".dockerignore": b"original-ignore\n",
+        ".git/config.py": b"tracked fixture\n",
+        "tests/test_example.py": (
+            b'synthetic = "-----BEGIN PRIVATE KEY-----\nsynthetic-only\n-----END PRIVATE KEY-----"\n'
+        ),
+        "tests/test_tokens.py": b"token = \"ghp_abcdefghijklmnopqrstuvwxy\"\n",
+        ".test-tmp/cache.py": b"tracked fixture\n",
+        "aureon/runtime/state.py": b"tracked fixture\n",
+        "aureon/logs/old.py": b"tracked fixture\n",
+        "frontend/node_modules/pkg/index.js": b"tracked fixture\n",
+        "frontend/dist/stale.js": b"tracked fixture\n",
+        "frontend/model.safetensors": b"tracked fixture\n",
+        "training/checkpoint.pt": b"tracked fixture\n",
+        "training/archive.zip": b"tracked fixture\n",
+        "training/corpus/files.jsonl": (
+            b'{"text":"-----BEGIN PRIVATE KEY-----\\nsynthetic-only\\n-----END PRIVATE KEY-----"}\n'
+        ),
+        "training/other.py": b"tracked fixture\n",
+        "docs/not_needed.md": b"tracked fixture\n",
+        "docs/not_needed.py": b"tracked fixture\n",
+        "aureon-trading/aureon/duplicate.py": b"tracked fixture\n",
     })
 
     staged = checkout.stage(tmp_path / "space")
@@ -193,24 +200,37 @@ def test_staging_allowlist_overrides_and_per_file_hashes(
     assert (root / "frontend/src/App.tsx").is_file()
     assert (root / "aureon/.env.example").is_file()
     paths = {row["path"] for row in staged["files"]}
-    assert not any(
-        path.startswith((".git/", "tests/", ".test-tmp/", "frontend/dist/", "frontend/node_modules/"))
-        for path in paths
-    )
-    assert "aureon/.env" not in paths
-    assert "frontend/model.safetensors" not in paths
-    assert "training/checkpoint.pt" not in paths
-    assert "training/archive.zip" not in paths
-    assert "training/corpus/files.jsonl" not in paths
-    assert "training/other.py" not in paths
-    assert "docs/not_needed.md" not in paths
-    assert "docs/not_needed.py" not in paths
-    assert "aureon-trading/aureon/duplicate.py" not in paths
-    assert staged["file_count"] == len(paths)
+    assert paths == set(checkout.files)
+    assert staged["file_count"] == len(checkout.files) == len(paths)
+    for path, expected in checkout.files.items():
+        if path not in publisher.OVERRIDES.values():
+            assert root.joinpath(*path.split("/")).read_bytes() == expected
     for row in staged["files"]:
         content = root.joinpath(*row["path"].split("/")).read_bytes()
         assert row["sha256"] == hashlib.sha256(content).hexdigest()
         assert row["size_bytes"] == len(content)
+
+
+def test_staging_refuses_environment_credential_paths(
+    checkout: FakeCheckout,
+    tmp_path: Path,
+) -> None:
+    checkout.files["aureon/.env"] = b"SECRET=must-not-be-published"
+
+    with pytest.raises(publisher.PublishError, match="environment credential path"):
+        checkout.stage(tmp_path / "space")
+
+
+def test_staging_refuses_realistic_private_key_material(
+    checkout: FakeCheckout,
+    tmp_path: Path,
+) -> None:
+    checkout.files["aureon/config.py"] = (
+        b"-----BEGIN PRIVATE KEY-----\n" + b"A" * 64 + b"\n-----END PRIVATE KEY-----\n"
+    )
+
+    with pytest.raises(publisher.PublishError, match="possible private key"):
+        checkout.stage(tmp_path / "space")
 
 
 def test_staging_refuses_invalid_space_card_metadata(

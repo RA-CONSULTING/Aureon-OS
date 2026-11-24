@@ -39,7 +39,7 @@ The local model tests use fakes. They do not prove CUDA, Transformers, or real g
 
 ## Frontend and image
 
-The Docker build uses a pinned Node 22 builder and runs `npm ci --ignore-scripts --no-audit --no-fund`, typechecking, shell lint, and `npm run build`. Only that build's `dist` is copied into the runtime. Existing `frontend/dist`, `node_modules`, local credentials, runtime state, and approval artifacts are excluded.
+The publisher stages **every tracked file**, including research, documentation, data, tests, binary documents, archives, and historical source copies. The Docker build context preserves that complete staged tree. A pinned Node 22 builder runs `npm ci --ignore-scripts --no-audit --no-fund`, typechecking, shell lint, and `npm run build`; its fresh `dist` replaces any tracked `frontend/dist` in the runtime image. Local credentials and untracked state are never staged. Mutable public runtime state is redirected outside the source tree.
 
 Build from the repository root:
 

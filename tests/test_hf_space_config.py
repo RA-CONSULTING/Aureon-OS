@@ -170,7 +170,7 @@ def test_supervisor_retains_required_services_and_fails_model_or_smoke_cleanly()
         assert "startretries=0" in block
 
 
-def test_frontend_is_rebuilt_with_pinned_node_and_no_stale_dist() -> None:
+def test_frontend_is_rebuilt_with_pinned_node_and_tracked_dist_replaced() -> None:
     assert "FROM node:22-bookworm-slim AS frontend-build" in DOCKERFILE
     assert "npm ci --ignore-scripts --no-audit --no-fund" in DOCKERFILE
     assert "npm run typecheck && npm run lint:shell && npm run build" in DOCKERFILE
@@ -179,8 +179,7 @@ def test_frontend_is_rebuilt_with_pinned_node_and_no_stale_dist() -> None:
     assert "FROM nvcr.io/nvidia/pytorch:25.05-py3" in DOCKERFILE
     assert "USER aureon" in DOCKERFILE
     assert "VITE_OPERATOR_TOKEN" not in DOCKERFILE
-    assert "frontend/dist" in DOCKERIGNORE
-    assert "!frontend/dist" not in DOCKERIGNORE
+    assert "frontend/dist" not in DOCKERIGNORE
 
 
 def test_ngc_existing_uid_does_not_block_the_nonroot_runtime() -> None:
@@ -198,14 +197,21 @@ def test_ngc_python_has_a_build_verified_supervisor_interpreter() -> None:
     assert "command=/usr/local/bin/python" in SUPERVISOR
 
 
-def test_build_context_excludes_credentials_and_does_not_reinclude_json_wholesale() -> None:
-    for pattern in ("**/.env", "**/.env.*", "**/*.pem", "**/*.key", ".git", "runtime", "state"):
+def test_build_context_preserves_the_complete_tree_and_excludes_credentials() -> None:
+    for pattern in ("**/.env", "**/.env.*", "**/*.pem", "**/*.key", ".git"):
         assert pattern in DOCKERIGNORE
-    assert "!**/*.json" not in DOCKERIGNORE
-    assert "!huggingface/hnc-field/replay/brain.json" in DOCKERIGNORE
-    assert "!huggingface/organism-replay/replay/organism.json" in DOCKERIGNORE
-    assert "!training/aureon_chat_server.py" in DOCKERIGNORE
-    assert "!training/**" not in DOCKERIGNORE
+    for filtered_path in ("runtime", "state", "logs", "frontend/dist", "frontend/node_modules"):
+        assert filtered_path not in DOCKERIGNORE
+    for formerly_excluded_pattern in (
+        "**/*.json",
+        "**/*.pdf",
+        "**/*.docx",
+        "**/*.zip",
+        "**/*.safetensors",
+        "**/*.pt",
+    ):
+        assert formerly_excluded_pattern not in DOCKERIGNORE
+    assert "!**/.env.example" in DOCKERIGNORE
 
 
 def test_fusion_state_override_isolated_from_checkout(tmp_path: Path) -> None:
