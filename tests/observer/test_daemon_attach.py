@@ -39,32 +39,32 @@ def _offline_receipt_daemon(tmp_path: Path) -> HNCLiveDaemon:
     daemon._sources.clear()
     daemon._fetchers.clear()
 
-    async def fetch_fixture() -> SourceObservation:
-        observed_at = time.time()
-        return SourceObservation(
-            reading=SubsystemReading(
-                name="fixture",
-                value=0.62,
-                confidence=0.9,
-                state="live",
-            ),
-            receipt=SourceReceipt(
-                source_id="test.fixture",
-                source_timestamp=observed_at,
-                received_at=observed_at,
-                receipt_id=f"test:fixture:{time.time_ns()}",
-                receipt_type="test_provider_measurement",
-                truth_status="real_observed",
-                generated_values=False,
-            ),
-        )
+    def fetch_named(name: str, value: float):
+        async def fetch_fixture() -> SourceObservation:
+            observed_at = time.time()
+            return SourceObservation(
+                reading=SubsystemReading(
+                    name=name,
+                    value=value,
+                    confidence=0.9,
+                    state="live",
+                ),
+                receipt=SourceReceipt(
+                    source_id=f"test.{name}",
+                    source_timestamp=observed_at,
+                    received_at=observed_at,
+                    receipt_id=f"test:{name}:{time.time_ns()}",
+                    receipt_type="test_provider_measurement",
+                    truth_status="real_observed",
+                    generated_values=False,
+                ),
+            )
 
-    daemon.register_source(
-        "fixture",
-        0.05,
-        fetch_fixture,
-        max_age_s=60.0,
-    )
+        return fetch_fixture
+
+    # Γ needs two fresh sources. One source is no_data, not a field step.
+    daemon.register_source("fixture", 0.05, fetch_named("fixture", 0.62), max_age_s=60.0)
+    daemon.register_source("fixture_b", 0.05, fetch_named("fixture_b", 0.41), max_age_s=60.0)
     return daemon
 
 
@@ -101,10 +101,10 @@ def test_compute_loop_feeds_observer_ingest_state(tmp_path: Path):
     assert snap["n_ingested"] >= 1
     latest = snap["latest_field"]
     assert latest["lambda_t"] is not None
-    # ingest_state must have populated psi/level — these only flow from
-    # ingest_state, never from plain ingest().
-    assert latest["consciousness_psi"] is not None
-    assert latest["consciousness_level"] is not None
+    # One tick is still inside the echo window, so ψ is no reading.
+    # The keys are present because ingest_state copied the engine state.
+    assert latest["consciousness_psi"] is None
+    assert latest["consciousness_level"] is None
 
 
 def test_predictionbus_auto_picks_up_observer(tmp_path: Path):

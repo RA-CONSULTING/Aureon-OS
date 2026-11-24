@@ -194,6 +194,46 @@ def _without_inherited_suppression(base) -> dict:
     return env
 
 
+def _recorded_launcher_value(name: str) -> str | None:
+    """The launcher's own value for ``name``, not the activation-wave pin.
+
+    Outside a ``_launch_env`` process this is the current environment.
+    Inside one (the supervisor re-imports this module every cycle) it is
+    the parent record, which is absent when the launcher never set it.
+    """
+    if LAUNCH_ENV_MARKER in os.environ:
+        return os.environ.get(PARENT_ENV_PREFIX + name)
+    return os.environ.get(name)
+
+
+def _hnc_live_daemon_env() -> dict:
+    """Child environment for the live Λ(t) daemon.
+
+    ``_launch_env`` pins both ``AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS`` and
+    ``AUREON_AUDIT_MODE``. Import suppression stays: importing aureon must
+    not fire side effects. Audit mode does not. A pinned audit flag makes
+    LambdaEngine refuse the shared history commit, and the daemon then
+    writes ``truth_status=no_data`` on every tick. A launcher that itself
+    turned audit on keeps that value, including across a supervisor reload.
+    The daemon's own ``main`` opts into publishing real Lambda(t).
+    """
+    env = _launch_env({
+        "AUREON_DISABLE_REAL_ORDERS": "1",
+        "AUREON_DISABLE_EXCHANGE_MUTATIONS": "1",
+        "AUREON_ORDER_INTENT_PUBLISH": "0",
+        "AUREON_LIVE_TRADING": "0",
+        "AUREON_UNIFIED_ORDER_EXECUTOR": "0",
+        "PYTHONUTF8": "1",
+    })
+    env["AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS"] = "1"
+    recorded_audit = _recorded_launcher_value("AUREON_AUDIT_MODE")
+    if recorded_audit is None:
+        env.pop("AUREON_AUDIT_MODE", None)
+    else:
+        env["AUREON_AUDIT_MODE"] = recorded_audit
+    return env
+
+
 def _launch_env(extra: dict = None) -> dict:
     """Child environment for activation-wave organs: suppression env vars
     pinned, plus PYTHONPATH pinned to the upstream repo root so upstream
@@ -745,14 +785,9 @@ ORGANS = {
         "cwd": str(AUREON_UPSTREAM),
         "mode": "continuous (HNC live Λ(t) field)",
         "log": str(LOGS / "organ_hnc_live_daemon.log"),
-        "env": _launch_env({
-            "AUREON_DISABLE_REAL_ORDERS": "1",
-            "AUREON_DISABLE_EXCHANGE_MUTATIONS": "1",
-            "AUREON_ORDER_INTENT_PUBLISH": "0",
-            "AUREON_LIVE_TRADING": "0",
-            "AUREON_UNIFIED_ORDER_EXECUTOR": "0",
-            "PYTHONUTF8": "1",
-        }),
+        # Import suppression stays. Audit mode is the launcher's own
+        # choice, not the activation-wave pin. See _hnc_live_daemon_env.
+        "env": _hnc_live_daemon_env(),
     },
 }
 

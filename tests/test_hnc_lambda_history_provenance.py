@@ -267,6 +267,7 @@ def test_default_audit_or_suppress_neither_loads_nor_writes_shared_state(
     monkeypatch.setattr(lambda_module, "DEFAULT_HISTORY_STATE_PATH", state_path)
     monkeypatch.setenv("AUREON_AUDIT_MODE", "0")
     monkeypatch.setenv("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS", "0")
+    monkeypatch.delenv(lambda_module.LIVE_DAEMON_ENV, raising=False)
     monkeypatch.setenv(flag, "1")
 
     engine = lambda_module.LambdaEngine()
@@ -421,7 +422,8 @@ def test_daemon_commits_memory_before_live_envelope_and_preserves_provider_time(
     )
     assert envelope["step"] == memory["step_count"]
     assert envelope["lambda_t"] == memory["history"][-1]
-    assert envelope["consciousness_psi"] == memory["psi_history"][-1]
+    assert envelope["consciousness_psi"] is None
+    assert memory["psi_history"] == []
     assert len(readings) == 2
     disk = json.loads(
         (tmp_path / "lambda_history.json").read_text(encoding="utf-8")
