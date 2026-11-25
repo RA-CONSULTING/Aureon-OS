@@ -263,6 +263,9 @@ Kings_Accounting_Suite/tests/*
 build/
 dist/
 
+# Local HNC diagnostic receipts; durable training evidence uses its own manifests.
+/receipts/
+
 # Runtime artifacts written when modules are imported/touched (connectome sweep,
 # test imports). Generated, not source.
 /wisdom_cache/

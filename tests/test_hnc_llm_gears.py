@@ -2,15 +2,24 @@
 
 import json
 import os
-from pathlib import Path
 import tempfile
 import unittest
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
 from aureon.core.aureon_lambda_engine import LambdaEngine, SubsystemReading
 from aureon.core.aureon_thought_bus import ThoughtBus
-from aureon.core.hnc_llm_gears import attach_gears, parse_hnc_object, turn_gears
+from aureon.core.hnc_llm_gears import (
+    attach_gears,
+    capture_request_organism,
+    observe_model_response,
+    parse_hnc_object,
+    request_context_for_prompt,
+    turn_gears,
+    unavailable_organism,
+    validate_organism_snapshot,
+)
 from aureon.gates.panel import PanelReading
 
 
@@ -29,8 +38,8 @@ class ParseGearTests(unittest.TestCase):
 
 class GearTrainTests(unittest.TestCase):
     def setUp(self):
-        self._trace = tempfile.NamedTemporaryFile(delete=False)
-        self._trace.close()
+        with tempfile.NamedTemporaryFile(delete=False) as trace:
+            self._trace = trace
         os.environ["AUREON_HNC_TRACE_PATH"] = self._trace.name
         self._history_dir = tempfile.TemporaryDirectory()
         self.addCleanup(self._history_dir.cleanup)
@@ -121,7 +130,11 @@ class GearTrainTests(unittest.TestCase):
 
     def test_reply_reuses_precaptured_organism_snapshot(self):
         organism = {
+            "schema": "aureon.hnc-llm-organism.v1",
             "all_turned": True,
+            "all_engaged": True,
+            "phase": "pre_inference",
+            "authority": "evidence_only",
             "gears": [
                 {"name": "field", "turned": True, "engaged": True, "receipt_id": "field-before"},
                 {"name": "auris", "turned": True, "engaged": True, "grounded_inputs": 3},
@@ -236,6 +249,81 @@ class GearTrainTests(unittest.TestCase):
             )
         self.assertEqual(body["choices"][0]["message"]["content"], "salad")
         self.assertTrue(body["hnc_gears"]["all_turned"])
+
+
+class RequestEnvelopeTests(unittest.TestCase):
+    def _snapshot(self):
+        return {
+            "schema": "aureon.hnc-llm-organism.v1",
+            "all_turned": True,
+            "all_engaged": True,
+            "phase": "pre_inference",
+            "authority": "evidence_only",
+            "gears": [
+                {"name": "field", "turned": True, "engaged": True,
+                 "receipt_id": "hnc:live_field:test", "coherence_gamma": 0.96,
+                 "lambda_t": 0.72},
+                {"name": "auris", "turned": True, "engaged": True,
+                 "grounded_inputs": 5, "total_inputs": 7},
+                {"name": "qgita", "turned": True, "engaged": True,
+                 "receipt_id": "hnc:lambda_history:test"},
+            ],
+        }
+
+    def test_request_context_is_strict_json_with_no_action_authority(self):
+        context = request_context_for_prompt(self._snapshot())
+        self.assertIn("[AUREON_ORGANISM_STATE]", context)
+        self.assertIn("hnc:lambda_history:test", context)
+        self.assertIn("evidence_only_no_external_action_authority", context)
+        json.loads(context.splitlines()[-1], parse_constant=lambda value: self.fail(value))
+
+    def test_capture_failure_is_explicit(self):
+        with patch("aureon.core.hnc_llm_gears.capture_organism", side_effect=RuntimeError("no bus")):
+            captured = capture_request_organism()
+        self.assertFalse(captured["all_turned"])
+        self.assertEqual([g["name"] for g in captured["gears"]], ["field", "auris", "qgita"])
+        self.assertTrue(all(g["blocker"] == "organism_capture_failed" for g in captured["gears"]))
+        self.assertIn("capture: RuntimeError", captured["error"])
+        json.loads(request_context_for_prompt(captured).splitlines()[-1])
+
+    def test_disabled_capture_does_not_call_the_host_reader(self):
+        with patch(
+            "aureon.core.hnc_llm_gears.capture_organism",
+            side_effect=AssertionError("tenant request touched host evidence"),
+        ):
+            captured = capture_request_organism(enabled=False)
+        self.assertEqual(captured, unavailable_organism())
+        self.assertEqual([g["name"] for g in captured["gears"]], ["field", "auris", "qgita"])
+        self.assertTrue(all(g["blocker"] == "organism_context_isolated" for g in captured["gears"]))
+        json.dumps(captured, allow_nan=False)
+
+    def test_snapshot_rejects_authority_flags_and_summary_forgery(self):
+        invalid = self._snapshot()
+        invalid["gears"][0]["action_eligible"] = True
+        with self.assertRaisesRegex(ValueError, "field_invalid"):
+            validate_organism_snapshot(invalid)
+        forged = self._snapshot()
+        forged["all_turned"] = False
+        with self.assertRaisesRegex(ValueError, "turned_summary_mismatch"):
+            validate_organism_snapshot(forged)
+
+    def test_response_reuses_the_supplied_snapshot(self):
+        response = SimpleNamespace(text='{"verdict":"supported"}', raw={})
+        with patch("aureon.core.hnc_llm_gears.capture_organism") as capture:
+            gears = observe_model_response(response, self._snapshot())
+        capture.assert_not_called()
+        self.assertIs(response.raw["hnc_gears"], gears)
+        self.assertTrue(gears["parsed"])
+        self.assertTrue(gears["all_engaged"])
+        self.assertNotIn("action_eligible", gears)
+        self.assertEqual(gears["gears"][1]["receipt_id"], "hnc:live_field:test")
+
+    def test_plain_response_still_has_unengaged_gear_evidence(self):
+        response = SimpleNamespace(text="a plain coding answer", raw={})
+        gears = observe_model_response(response, self._snapshot())
+        self.assertFalse(gears["parsed"])
+        self.assertTrue(gears["all_engaged"], "prose is not a missing HNC/Auris/QGITA reading")
+        self.assertEqual(gears["gears"][1]["receipt_id"], "hnc:live_field:test")
 
 
 if __name__ == "__main__":

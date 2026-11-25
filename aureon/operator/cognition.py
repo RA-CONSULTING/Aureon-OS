@@ -462,6 +462,11 @@ class AureonCognition:
         self._gate_aperture(res)
         system_prompt = self._ground(prompt, res)
         system_prompt += self._coherence_system_instruction(prompt, res)
+        from aureon.core.hnc_llm_gears import request_context_for_prompt, unavailable_organism
+
+        organism = res.organism or unavailable_organism("organism_context_unavailable")
+        res.organism = organism
+        system_prompt += "\n\n" + request_context_for_prompt(organism)
         self._run_loop(
             prompt,
             system_prompt,
@@ -489,6 +494,7 @@ class AureonCognition:
         yield {"type": "grounding", "detail": res.grounding.to_dict() if res.grounding else {}}
         for t in res.tool_calls:
             yield {"type": "tool", "detail": t.to_dict()}
+        yield {"type": "organism", "detail": res.organism}
         yield {"type": "veto", "detail": {"verdict": res.conscience_verdict, "blocked": res.blocked}}
         for word in (res.text or "").split(" "):
             yield {"type": "token", "text": word + " "}
@@ -911,6 +917,7 @@ class AureonCognition:
             governance_required=True,
             authorize_tool_dispatch=_authorize,
             dispatch_context_provider=_dispatch_context,
+            organism=res.organism,
         )
 
         def _on_tool_call(name: str, args: Dict[str, Any]) -> None:
@@ -1031,26 +1038,36 @@ class AureonCognition:
         """
         try:
             from aureon.core.hnc_field import CanonicalField, read_canonical_field
-            from aureon.operator.coherence_gate import compute_aperture
-
-            org = self._read_organism_state()
-            gamma = org.get("coherence_gamma")
-            gate = compute_aperture(
-                float(gamma) if isinstance(gamma, (int, float)) else None,
-                org.get("gate_open"),
-                org.get("lighthouse_severity"),
+            from aureon.core.hnc_llm_gears import (
+                capture_request_organism,
+                unavailable_organism,
             )
-            if not self._allow_organism_context:
-                # Per-tenant cognition is intentionally isolated from the host
-                # organism.  Never let ``read_canonical_field`` fall back to the
-                # host's persisted trace for an isolated request.
-                field = CanonicalField()
-            else:
+
+            if self._allow_organism_context:
                 try:
                     field = read_canonical_field(self.bus)
                 except Exception as exc:  # noqa: BLE001 - missing evidence enters repair
                     logger.debug("canonical HNC capture unavailable: %s", exc)
                     field = CanonicalField()
+                res.organism = capture_request_organism(self.bus, field=field)
+            else:
+                # An isolated tenant request never reads the host's persisted trace.
+                field = CanonicalField()
+                res.organism = unavailable_organism()
+            self._publish(res, "organism", res.organism)
+            from aureon.operator.coherence_gate import compute_aperture
+
+            # ``field`` is the exact canonical object captured for the prompt.
+            org = dict(self._organism)
+            if self._allow_organism_context and field.available:
+                org["symbolic_life_score"] = field.symbolic_life_score
+                org["coherence_gamma"] = field.coherence_gamma
+            gamma = field.coherence_gamma
+            gate = compute_aperture(
+                float(gamma) if isinstance(gamma, (int, float)) else None,
+                org.get("gate_open"),
+                org.get("lighthouse_severity"),
+            )
             request = build_hnc_coherence_request(
                 proposal_digest=(
                     "sha256:" + hashlib.sha256(res.prompt.encode("utf-8")).hexdigest()
@@ -1075,6 +1092,9 @@ class AureonCognition:
             self._publish(res, "gate", res.coherence_gate)
         except Exception as exc:  # noqa: BLE001 - gate failure still allows repair reasoning
             logger.warning("HNC coherence gate unavailable: %s", exc)
+            from aureon.core.hnc_llm_gears import unavailable_organism
+
+            res.organism = unavailable_organism("organism_capture_failed")
             self.tools.set_hnc_coherence_context(None)
             res.coherence_gate = {
                 "authority": "hnc_coherence_decision",

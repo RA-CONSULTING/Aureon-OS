@@ -26,6 +26,10 @@ from pathlib import Path
 from typing import Any, Dict, Generator, List, Optional
 from urllib.parse import urlsplit
 
+from aureon.core.hnc_llm_gears import (
+    observe_model_response,
+    request_organism_context,
+)
 from aureon.inhouse_ai.own_model_config import (
     AUREON_OWN_DEFAULT_BASE_URL,
     AUREON_OWN_DEFAULT_MODEL,
@@ -96,11 +100,13 @@ def _training_system_prompt() -> str:
         return _SYSTEM_PROMPT_CACHE
     try:
         import importlib.util
+        import sys
 
         spec = importlib.util.spec_from_file_location("_aureon_prompt_contract", contract)
         if spec is None or spec.loader is None:
             return _SYSTEM_PROMPT_CACHE
         module = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = module
         spec.loader.exec_module(module)
         _SYSTEM_PROMPT_CACHE = str(getattr(module, "SYSTEM", "") or "").strip()
     except Exception as exc:  # a broken contract must not take the adapter down
@@ -682,6 +688,23 @@ class AureonLocalAdapter(LLMAdapter):
                 stop,
             )
 
+        organism = kwargs.get("organism")
+        if organism is not None:
+            if not isinstance(organism, dict):
+                return LLMResponse(
+                    text="[ERROR] Aureon organism evidence must be a mapping",
+                    stop_reason="error",
+                    model=self.model,
+                )
+            try:
+                context = request_organism_context(organism)
+            except (TypeError, ValueError) as exc:
+                return LLMResponse(
+                    text=f"[ERROR] Aureon organism evidence invalid: {exc}",
+                    stop_reason="error",
+                    model=self.model,
+                )
+            system = f"{system}\n\n{context}".strip()
         payload = self._build_payload(
             messages,
             system,
@@ -751,7 +774,7 @@ class AureonLocalAdapter(LLMAdapter):
         if choice.get("finish_reason") == "length":
             stop_reason = "max_tokens"
 
-        return LLMResponse(
+        response = LLMResponse(
             text=message.get("content", "") or "",
             tool_calls=tool_calls,
             stop_reason=stop_reason,
@@ -759,6 +782,8 @@ class AureonLocalAdapter(LLMAdapter):
             model=data.get("model", self.model),
             raw=data,
         )
+        observe_model_response(response, organism)
+        return response
 
     def stream(
         self,
@@ -788,6 +813,20 @@ class AureonLocalAdapter(LLMAdapter):
             )
             return
 
+        organism = kwargs.get("organism")
+        if organism is not None:
+            try:
+                system = (
+                    f"{system or self.system_prompt}\n\n"
+                    f"{request_organism_context(organism)}"
+                ).strip()
+            except (TypeError, ValueError) as exc:
+                yield StreamChunk(
+                    text=f"[ERROR] Aureon organism evidence invalid: {exc}",
+                    done=True,
+                    stop_reason="error",
+                )
+                return
         payload = self._build_payload(messages, system, tools, max_tokens, temperature, stream=True)
         url = f"{self.base_url}/chat/completions"
 
@@ -835,7 +874,12 @@ class AureonLocalAdapter(LLMAdapter):
             try:
                 chunk_data = json.loads(data_str)
             except json.JSONDecodeError:
-                continue
+                yield StreamChunk(
+                    text="[ERROR] Aureon own-model stream contains invalid JSON",
+                    done=True,
+                    stop_reason="error",
+                )
+                return
 
             if chunk_data.get("model") != self.model:
                 yield StreamChunk(

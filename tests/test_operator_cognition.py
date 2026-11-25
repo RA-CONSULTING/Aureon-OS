@@ -112,9 +112,11 @@ class ScriptedAdapter(LLMAdapter):
     def __init__(self, tool=None, tool_args=None, final="final answer"):
         self.tool, self.tool_args, self.final = tool, tool_args or {}, final
         self.calls = 0
+        self.last_kwargs = {}
 
     def prompt(self, messages, system="", tools=None, max_tokens=4096, temperature=0.7, **k):
         self.calls += 1
+        self.last_kwargs = k
         if self.tool and self.calls == 1 and tools:
             return LLMResponse(text="", tool_calls=[ToolCall(name=self.tool, arguments=self.tool_args)],
                                stop_reason="tool_use", model=self.model)
@@ -195,6 +197,32 @@ def test_repo_index_ingests_python_source(isolated_repo_index):
 
 
 # ── agentic loop ──────────────────────────────────────────────────────────────
+
+
+def test_cognition_carries_one_organism_snapshot_to_every_model_turn(isolated_repo_index):
+    from unittest.mock import patch
+
+    from aureon.core.hnc_llm_gears import unavailable_organism
+
+    adapter = ScriptedAdapter(final="Evidence remains explicitly available.")
+    with patch(
+        "aureon.core.hnc_llm_gears.capture_organism",
+        side_effect=lambda _bus, **kwargs: unavailable_organism(
+            "organism_context_isolated" if kwargs.get("enabled") is False else "test_no_field"
+        ),
+    ) as capture:
+        result = _cog(adapter).reason("What is the measured state?")
+        events = list(_cog(adapter).stream_events("What is the measured state?"))
+    assert capture.call_count == 2
+    assert result.organism["gears"][0]["blocker"] == "test_no_field"
+    assert adapter.last_kwargs["organism"] == result.organism
+    assert result.to_dict()["organism"] == result.organism
+    assert result.envelope()["organism"] == result.organism
+    organism_event = next(event for event in events if event["type"] == "organism")
+    assert organism_event["detail"]["schema"] == "aureon.hnc-llm-organism.v1"
+    assert events.index(organism_event) < next(
+        index for index, event in enumerate(events) if event["type"] == "token"
+    )
 
 
 def test_agentic_loop_dispatches_repair_safe_tool_and_returns_final(isolated_repo_index):

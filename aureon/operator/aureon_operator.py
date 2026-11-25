@@ -273,6 +273,12 @@ class AureonOperator:
             structured_logs=self.config.structured_logs,
             trace_id=resp.trace_id,
         )
+        from aureon.core.hnc_llm_gears import capture_request_organism
+
+        resp.organism = capture_request_organism(
+            self.bus,
+            enabled=self._allow_repo_grounding,
+        )
         self._publish(
             resp,
             "boot",
@@ -281,6 +287,9 @@ class AureonOperator:
 
         with self._metrics.phase("ground"):
             system_prompt = self._ground(prompt, resp)
+        from aureon.core.hnc_llm_gears import request_context_for_prompt
+
+        system_prompt += "\n\n" + request_context_for_prompt(resp.organism)
 
         # Cache is keyed by the FULL determinants of an answer: prompt + grounding
         # signature + the exact model set. Grounding is cheap/local so we always
@@ -343,7 +352,12 @@ class AureonOperator:
         resp.conscience_verdict = payload.get("conscience_verdict", "APPROVED")
         resp.conscience_message = payload.get("conscience_message", "")
         resp.blocked = payload.get("blocked", False)
-        resp.errors.append({"phase": "cache", "note": "served from cache"})
+        resp.organism = payload.get("organism")
+        resp.errors.append({
+            "phase": "cache",
+            "note": "served from cache",
+            "organism_evidence": "original_inference",
+        })
         return resp
 
     def _cache_set(self, resp: OperatorResponse) -> None:
@@ -359,6 +373,7 @@ class AureonOperator:
                 "conscience_verdict": resp.conscience_verdict,
                 "conscience_message": resp.conscience_message,
                 "blocked": resp.blocked,
+                "organism": resp.organism,
             },
         )
 
@@ -380,6 +395,7 @@ class AureonOperator:
           {"type": "complete", "response": {...}}            the full OperatorResponse
         """
         resp = self.respond(prompt, session_id=session_id)
+        yield {"type": "organism", "detail": resp.organism}
         # Replay the resolved phases as events (order preserved by insertion).
         for phase in ("ground", "fan_out", "consensus", "veto"):
             yield {"type": "phase", "phase": phase, "detail": self._phase_summary(phase, resp)}
@@ -462,7 +478,14 @@ class AureonOperator:
             workers = min(self.config.max_workers, len(lines))
             with ThreadPoolExecutor(max_workers=workers) as pool:
                 futures = {
-                    pool.submit(self._call_line, name, adapter, messages, system_prompt): name
+                    pool.submit(
+                        self._call_line,
+                        name,
+                        adapter,
+                        messages,
+                        system_prompt,
+                        resp.organism,
+                    ): name
                     for name, adapter in lines
                 }
                 # gather in submission order for deterministic output
@@ -478,7 +501,9 @@ class AureonOperator:
                         resp.answers.append(answer)
         else:
             for name, adapter in lines:
-                resp.answers.append(self._call_line(name, adapter, messages, system_prompt))
+                resp.answers.append(
+                    self._call_line(name, adapter, messages, system_prompt, resp.organism)
+                )
 
         for a in resp.answers:
             self._metrics_provider_call(a)
@@ -496,7 +521,7 @@ class AureonOperator:
             },
         )
 
-    def _call_line(self, name, adapter, messages, system_prompt) -> ProviderAnswer:
+    def _call_line(self, name, adapter, messages, system_prompt, organism=None) -> ProviderAnswer:
         """One switchboard line, with circuit-breaker + retry + hard timeout."""
         if self._breaker.is_open(name):
             return self._error_answer(name, adapter, 0.0, "circuit_open")
@@ -506,7 +531,7 @@ class AureonOperator:
         attempts = max(1, self.config.max_retries + 1)
         for attempt in range(attempts):
             try:
-                out = self._call_with_timeout(adapter, messages, system_prompt)
+                out = self._call_with_timeout(adapter, messages, system_prompt, organism)
                 text = (out.text or "").strip()
                 ok = out.stop_reason != "error" and bool(text)
                 if ok:
@@ -535,7 +560,7 @@ class AureonOperator:
         self._breaker.record(name, False)
         return self._error_answer(name, adapter, (time.time() - t0) * 1000.0, last_err)
 
-    def _call_with_timeout(self, adapter, messages, system_prompt):
+    def _call_with_timeout(self, adapter, messages, system_prompt, organism=None):
         """Enforce a hard wall-clock timeout around any adapter, even blocking ones."""
         with ThreadPoolExecutor(max_workers=1) as pool:
             fut = pool.submit(
@@ -544,6 +569,7 @@ class AureonOperator:
                 system=system_prompt,
                 max_tokens=self.config.max_tokens,
                 temperature=self.config.temperature,
+                organism=organism,
             )
             return fut.result(timeout=self.config.request_timeout_s)
 

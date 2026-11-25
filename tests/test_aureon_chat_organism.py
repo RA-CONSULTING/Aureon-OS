@@ -3,7 +3,11 @@ from training.aureon_chat_server import _with_gears, completion_body, format_pro
 
 def _snapshot():
     return {
+        "schema": "aureon.hnc-llm-organism.v1",
         "all_turned": True,
+        "all_engaged": True,
+        "phase": "pre_inference",
+        "authority": "evidence_only",
         "gears": [
             {
                 "name": "field",

@@ -2,6 +2,7 @@ import logging
 
 import pytest
 
+from aureon.core.hnc_llm_gears import unavailable_organism
 from aureon.inhouse_ai.llm_adapter import (
     AureonBrainAdapter,
     AureonHybridAdapter,
@@ -11,6 +12,101 @@ from aureon.inhouse_ai.llm_adapter import (
     LLMResponse,
     build_voice_adapter,
 )
+
+
+def test_own_model_prompt_binds_organism_snapshot_to_request_and_response(monkeypatch):
+    monkeypatch.delenv("AUREON_LLM_OFFLINE", raising=False)
+    monkeypatch.delenv("AUREON_DISABLE_LLM_HTTP", raising=False)
+    monkeypatch.delenv("AUREON_AUDIT_MODE", raising=False)
+    adapter = AureonLocalAdapter()
+    observed = {}
+
+    class _Response:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {
+                "model": "aureon-7b-v65k",
+                "choices": [{"message": {"content": "private coding answer"}}],
+            }
+
+    def post(_url, **kwargs):
+        observed.update(kwargs)
+        return _Response()
+
+    monkeypatch.setattr(adapter, "_http_post", post)
+    organism = unavailable_organism("test_no_field")
+    response = adapter.prompt(
+        [{"role": "user", "content": "Write a safe function."}],
+        system="test system",
+        organism=organism,
+    )
+
+    assert observed["json"]["model"] == "aureon-7b-v65k"
+    context = observed["json"]["messages"][0]["content"]
+    assert "[AUREON_ORGANISM_STATE]" in context
+    assert '"receipt_id"' not in context  # this fixture is explicitly unavailable
+    assert response.text == "private coding answer"
+    assert response.raw["hnc_gears"]["parsed"] is False
+    assert response.raw["hnc_gears"]["gears"][1]["blocker"] == "test_no_field"
+    assert response.raw["hnc_gears"]["authority"] == "evidence_only"
+
+
+def test_own_model_stream_sends_snapshot_and_rejects_invalid_json(monkeypatch):
+    monkeypatch.delenv("AUREON_LLM_OFFLINE", raising=False)
+    monkeypatch.delenv("AUREON_DISABLE_LLM_HTTP", raising=False)
+    monkeypatch.delenv("AUREON_AUDIT_MODE", raising=False)
+    adapter = AureonLocalAdapter()
+    observed = {}
+
+    class _Response:
+        def raise_for_status(self):
+            return None
+
+        def iter_lines(self):
+            return [b'data: {"model":"aureon-7b-v65k","choices":[{"delta":{}}]}', b"data: broken"]
+
+    def post(_url, **kwargs):
+        observed.update(kwargs)
+        return _Response()
+
+    monkeypatch.setattr(adapter, "_http_post", post)
+    chunks = list(adapter.stream(
+        [{"role": "user", "content": "test"}],
+        system="test system",
+        organism=unavailable_organism("test_no_field"),
+    ))
+    assert "[AUREON_ORGANISM_STATE]" in observed["json"]["messages"][0]["content"]
+    assert observed["json"]["stream"] is True
+    assert chunks[-1].stop_reason == "error"
+    assert "invalid JSON" in chunks[-1].text
+
+
+def test_own_model_stream_rejects_invalid_organism_before_transport(monkeypatch):
+    adapter = AureonLocalAdapter()
+    monkeypatch.setattr(
+        adapter, "_http_post",
+        lambda *_args, **_kwargs: pytest.fail("invalid evidence reached transport"),
+    )
+    chunks = list(adapter.stream(
+        [{"role": "user", "content": "test"}], organism={"all_turned": True},
+    ))
+    assert chunks[-1].stop_reason == "error"
+    assert "organism_snapshot_schema_invalid" in chunks[-1].text
+
+
+def test_own_model_invalid_organism_never_calls_transport(monkeypatch):
+    adapter = AureonLocalAdapter()
+    monkeypatch.setattr(
+        adapter, "_http_post",
+        lambda *_args, **_kwargs: pytest.fail("invalid evidence reached transport"),
+    )
+    response = adapter.prompt(
+        [{"role": "user", "content": "test"}], organism={"all_turned": True},
+    )
+    assert response.stop_reason == "error"
+    assert "organism_snapshot_schema_invalid" in response.text
 
 
 def test_audit_mode_disables_own_model_http(monkeypatch):

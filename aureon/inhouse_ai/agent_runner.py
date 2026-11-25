@@ -93,8 +93,10 @@ class AgentRunner:
             Callable[[ToolDispatchProposal], ToolDispatchAuthorization | None] | None
         ) = None,
         dispatch_context_provider: Callable[[], Mapping[str, Any]] | None = None,
+        organism: Mapping[str, Any] | None = None,
     ):
         self.adapter = adapter
+        self.organism = dict(organism) if organism is not None else None
         # `is not None`, NOT `or`: ToolRegistry defines __len__, so an intentionally empty registry is
         # falsy and `or` would substitute the full built-in belt — a fail-open for any caller that
         # passes a deliberately narrowed toolbelt.
@@ -290,6 +292,7 @@ class AgentRunner:
                 system=self.system_prompt,
                 tools=tool_defs,
                 max_tokens=4096,
+                organism=self.organism,
             )
 
             # Build assistant content
@@ -349,6 +352,7 @@ class AgentRunner:
                 system=self.system_prompt,
                 tools=tool_defs,
                 max_tokens=4096,
+                organism=self.organism,
             ):
                 if chunk.text:
                     collected_text += chunk.text

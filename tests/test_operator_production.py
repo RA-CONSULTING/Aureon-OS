@@ -13,9 +13,11 @@ import time
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, List, Tuple
+from unittest.mock import patch
 
 import pytest
 
+from aureon.core.hnc_llm_gears import unavailable_organism
 from aureon.inhouse_ai.llm_adapter import LLMAdapter, LLMResponse, StreamChunk
 from aureon.operator.aureon_operator import AureonOperator, _CircuitBreaker, _hard_boundary_violation
 from aureon.operator.cache import ResponseCache, cache_key
@@ -44,9 +46,11 @@ class StubBus:
 class FixedAdapter(LLMAdapter):
     def __init__(self, text="ok", model="fixed"):
         self._text, self.model, self.calls = text, model, 0
+        self.kwargs = []
 
     def prompt(self, messages, system="", tools=None, max_tokens=4096, temperature=0.7, **k):
         self.calls += 1
+        self.kwargs.append(k)
         return LLMResponse(text=self._text, model=self.model, stop_reason="end_turn")
 
     def stream(self, *a, **k):
@@ -145,6 +149,46 @@ def test_operator_second_call_is_served_from_cache():
     r2 = op.respond("How does Aureon integrate data across systems?")
     assert adapter.calls == 1  # not called again
     assert any(e.get("note") == "served from cache" for e in r2.errors)
+
+
+def test_operator_binds_one_organism_snapshot_to_prompt_result_and_stream():
+    adapter = FixedAdapter("grounded answer", "aureon-7b-v65k")
+    op = AureonOperator(
+        providers={"aureon-own": adapter},
+        bus=StubBus(),
+        conscience=None,
+        config=_cfg(),
+    )
+    with patch(
+        "aureon.core.hnc_llm_gears.capture_organism",
+        return_value=unavailable_organism("test_no_field"),
+    ) as capture:
+        result = op.respond("Explain the measured organism evidence.")
+        events = list(op.stream_events("Explain the measured organism evidence."))
+    assert capture.call_count == 2
+    assert adapter.kwargs[0]["organism"] == result.organism
+    assert result.to_dict()["organism"] == result.organism
+    assert result.envelope()["organism"] == result.organism
+    assert events[0] == {"type": "organism", "detail": result.organism}
+    assert adapter.kwargs[1]["organism"] == result.organism
+
+
+def test_operator_cache_retains_original_evidence_label(monkeypatch):
+    monkeypatch.setattr(AureonOperator, "_ground", lambda self, prompt, result: "test system")
+    adapter = FixedAdapter("cached answer")
+    op = AureonOperator(
+        providers={"aureon-own": adapter}, bus=StubBus(), conscience=None,
+        config=_cfg(cache_enabled=True),
+    )
+    with patch(
+        "aureon.core.hnc_llm_gears.capture_organism",
+        return_value=unavailable_organism("test_no_field"),
+    ):
+        op.respond("cache this")
+        result = op.respond("cache this")
+    assert adapter.calls == 1
+    assert result.organism["gears"][0]["blocker"] == "test_no_field"
+    assert result.errors[-1]["organism_evidence"] == "original_inference"
 
 
 # ── circuit breaker ───────────────────────────────────────────────────────────

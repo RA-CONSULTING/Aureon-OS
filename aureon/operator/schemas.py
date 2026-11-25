@@ -96,6 +96,7 @@ class OperatorResponse:
     phase_thought_ids: Dict[str, str] = field(default_factory=dict)
     elapsed_ms: float = 0.0
     errors: List[Dict[str, Any]] = field(default_factory=list)
+    organism: Dict[str, Any] | None = None  # request-scoped HNC/Auris/QGITA evidence
 
     def status(self) -> str:
         """Honest turn classification: ``ok`` | ``honest_unavailable`` | ``fault``.
@@ -120,6 +121,7 @@ class OperatorResponse:
             "sources_statement": (f"{len(sources)} repo packet(s) cited" if sources
                                   else "general knowledge, no repo hit"),
             "conscience": {"verdict": self.conscience_verdict, "blocked": self.blocked},
+            "organism": dict(self.organism) if self.organism else None,
         }
 
     def to_dict(self) -> Dict[str, Any]:
@@ -139,6 +141,7 @@ class OperatorResponse:
             "phase_thought_ids": dict(self.phase_thought_ids),
             "elapsed_ms": round(float(self.elapsed_ms), 2),
             "errors": list(self.errors),
+            "organism": dict(self.organism) if self.organism else None,
             "envelope": self.envelope(),
         }
 
@@ -227,6 +230,7 @@ class CognitionResult:
     assimilation: Dict[str, Any] | None = None   # controlled write-back verdict
     coherence_gate: Dict[str, Any] | None = None  # the field's capability aperture
     heart: Dict[str, Any] | None = None           # heart charter: alive / love / power
+    organism: Dict[str, Any] | None = None         # request-scoped HNC/Auris/QGITA evidence
 
     def knowledge_reach(self) -> List[str]:
         """The knowledge classes this answer MEASURABLY rested on — derived
@@ -317,6 +321,7 @@ class CognitionResult:
                              if self.assimilation else None),
             "coherence_gate": dict(self.coherence_gate) if self.coherence_gate else None,
             "heart": dict(self.heart) if self.heart else None,
+            "organism": dict(self.organism) if self.organism else None,
         }
 
     def to_dict(self) -> Dict[str, Any]:
@@ -346,6 +351,7 @@ class CognitionResult:
             "assimilation": dict(self.assimilation) if self.assimilation else None,
             "coherence_gate": dict(self.coherence_gate) if self.coherence_gate else None,
             "heart": dict(self.heart) if self.heart else None,
+            "organism": dict(self.organism) if self.organism else None,
             "envelope": self.envelope(),
         }
 

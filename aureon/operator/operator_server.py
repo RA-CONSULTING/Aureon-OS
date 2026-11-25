@@ -247,7 +247,7 @@ function ask(){
   const cognition = document.getElementById('mode').checked;
   const chips = el('phases');
   const chipEls = {};
-  const steps = cognition ? ['grounding','tool','veto'] : PHASES;
+  const steps = cognition ? ['HNC','Auris','QGITA','grounding','tool','veto'] : ['HNC','Auris','QGITA',...PHASES];
   steps.forEach(p=>{ const c=document.createElement('span'); c.className='chip'; c.textContent=p; chips.appendChild(c); chipEls[p]=c; });
   const bubble = el('ai msg', '');
   let answer = '';
@@ -265,6 +265,21 @@ function ask(){
   es.addEventListener('grounding', e=>{ const d=JSON.parse(e.data).detail||{}; if(chipEls.grounding){chipEls.grounding.classList.add('on'); chipEls.grounding.textContent='grounding '+(d.source_count||0)+' src';} });
   es.addEventListener('tool', e=>{ const d=JSON.parse(e.data).detail||{}; if(chipEls.tool){chipEls.tool.classList.add('on'); chipEls.tool.textContent='🔧 '+(d.tool||'tool');} });
   es.addEventListener('veto', e=>{ const d=JSON.parse(e.data).detail||{}; if(chipEls.veto){chipEls.veto.classList.add('on'); chipEls.veto.textContent='veto '+(d.verdict||'');} });
+  function showOrganism(org){
+    (org&&org.gears||[]).forEach(g=>{
+      const name=String(g.name||'').toUpperCase();
+      if(!chipEls[name])return;
+      chipEls[name].classList.toggle('on',g.turned===true);
+      chipEls[name].textContent=name+' '+(g.engaged===true?'engaged':'no data');
+      const details=[];
+      if(name==='HNC'&&g.coherence_gamma!==null&&g.coherence_gamma!==undefined)details.push('Γ '+g.coherence_gamma);
+      if(name==='HNC'&&g.lambda_t!==null&&g.lambda_t!==undefined)details.push('Λ '+g.lambda_t);
+      if(name==='AURIS')details.push((g.grounded_inputs||0)+'/'+(g.total_inputs||0)+' grounded');
+      if(g.blocker)details.push(g.blocker);
+      if(details.length)chipEls[name].title=details.join(' · ');
+    });
+  }
+  es.addEventListener('organism',e=>showOrganism(JSON.parse(e.data).detail));
   es.addEventListener('token', e=>{ answer += JSON.parse(e.data).text; bubble.textContent = answer; log.scrollTop=log.scrollHeight; });
   es.addEventListener('complete', e=>{
     const d = JSON.parse(e.data).response||{};
@@ -273,6 +288,8 @@ function ask(){
     v.textContent = '🦗 conscience: '+(d.conscience_verdict||'—') +
       (d.consensus? '  ·  agreement '+Math.round((d.consensus.agreement||0)*100)+'%':'') +
       (d.grounding? '  ·  '+(d.grounding.source_count||0)+' sources':'');
+    const org=d.organism||d.envelope&&d.envelope.organism;
+    showOrganism(org);
     bubble.appendChild(v);
     es.close(); send.disabled=false; input.disabled=false; input.focus();
   });
