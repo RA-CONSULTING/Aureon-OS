@@ -94,7 +94,11 @@ class FakeApi:
 
     def repo_info(self, **kwargs) -> SimpleNamespace:
         self.hub.repo_info_calls.append(kwargs)
-        return SimpleNamespace(id=self.hub.remote_id, sha=self.hub.remote_sha)
+        return SimpleNamespace(
+            id=self.hub.remote_id,
+            sha=self.hub.remote_sha,
+            cardData={"sdk": self.hub.remote_sdk},
+        )
 
     def list_repo_files(self, **kwargs) -> list[str]:
         self.hub.list_calls.append(kwargs)
@@ -124,6 +128,7 @@ class FakeHub:
         self.username = "GaryLeckey"
         self.remote_id = publisher.SPACE_REPOSITORY
         self.remote_sha = "d" * 40
+        self.remote_sdk = "docker"
         self.remote_files = [".gitattributes"]
         self.model_sha = MODEL_COMMIT
         self.model_private = False
@@ -427,6 +432,29 @@ def test_public_model_is_checked_without_paid_activation_by_default(checkout: Fa
         "running_verified": False,
         "sleep_time": None,
     }
+
+
+def test_activation_refuses_a_drifted_card_that_would_not_serve_the_image(
+    checkout: FakeCheckout,
+) -> None:
+    hub = FakeHub()
+    # The committed drift: the live card declares sdk: gradio, so the Hub runtime
+    # substitutes a notebook server and ignores the published Docker image. A GPU
+    # request against it buys idle hardware, so the publisher must refuse first.
+    hub.remote_sdk = "gradio"
+
+    with pytest.raises(publisher.PublishError, match="requires a Space card with sdk: docker") as caught:
+        _publish(
+            checkout,
+            hub,
+            activate_l40s=True,
+            paid_l40s_acknowledged=True,
+        )
+
+    assert "gradio" in str(caught.value)
+    assert hub.authenticated.uploads == []
+    assert hub.authenticated.variables == []
+    assert hub.authenticated.hardware_calls == []
 
 
 def test_activation_uses_anonymous_exact_public_model_then_l40s_no_sleep(

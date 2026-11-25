@@ -243,6 +243,12 @@ bussiness accounts/
 data/exchange_account_archives/
 loveavblr/
 uploads/
+# Runtime receipts and staging written by scripts/space_runtime_probe.py and
+# deploy/huggingface/publish_space.py. Evidence, never source: keep them local.
+artifacts/space-runtime/
+# Local source bundles assembled for manual Space uploads.
+space-source.bundle
+space-source.zip
 
 # Keep the reviewed QuickBooks control-plane source trackable while continuing
 # to ignore other untracked copies/artifacts under the duplicate root pattern.

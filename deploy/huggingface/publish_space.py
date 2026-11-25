@@ -29,6 +29,10 @@ MODEL_REPOSITORY = "GaryLeckey/aureon-7b"
 SPACE_OWNER = "GaryLeckey"
 MODEL_VARIABLE = "AUREON_MODEL_REVISION"
 L40S_HARDWARE = "l40sx1"
+# Paid hardware is only meaningful when the published Space still runs the
+# Docker image that serves it. A Gradio-only card leaves the Hub runtime free to
+# substitute a notebook server, which ignores this image and its GPU work.
+EXPECTED_SPACE_SDK = "docker"
 COMMIT_RE = re.compile(r"[0-9a-f]{40}\Z")
 
 
@@ -525,6 +529,17 @@ def publish_space(
             repo_type="space",
             revision=remote_revision,
         )
+        if activate_l40s:
+            # The image is only served when the live card still declares the
+            # Docker SDK. Refuse paid activation against a drifted card instead
+            # of requesting a GPU that the deployed process cannot use.
+            card = getattr(space_info, "cardData", None)
+            card = card if isinstance(card, Mapping) else {}
+            if card.get("sdk") != EXPECTED_SPACE_SDK:
+                raise PublishError(
+                    "paid L40S activation requires a Space card with sdk: "
+                    f"{EXPECTED_SPACE_SDK}; remote card declares sdk: {card.get('sdk')!r}"
+                )
         unknown = _safe_unknown_remote(remote_files, {row["path"] for row in staged["files"]})
         if unknown and not reviewed_legacy_deletion:
             raise PublishError(
