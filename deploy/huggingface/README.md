@@ -32,7 +32,8 @@ This is the public, paper-only Aureon OS console and HNC evidence deployment. It
 - `/api/hnc/status` reads the current HNC organ and canonical field state.
 - `/api/hnc/replay` compares a fresh rerun with the committed HNC record, with multiverse off and on.
 - `/api/hnc/organism-replay` labels recorded circulation separately from the seed `20261024` synthetic fault block.
-- `/healthz` is process liveness only. `/readyz` is strict aggregate readiness and remains `503` until the operator, exact model revision, weight identity, CUDA startup generation, and public posture all pass.
+- `/healthz` is process liveness only. An independent stdlib listener answers before GPU/model startup; the public `/` and `/api/console/status` views show actual operator, model, HNC, Auris, and QGITA blockers while the rest of the system starts.
+- `/readyz` is strict aggregate readiness and remains `503` until the operator, exact model revision, weight identity, CUDA startup generation, engaged HNC/Auris/QGITA evidence, and public posture all pass.
 
 ### Bounded own-model generation
 

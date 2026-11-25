@@ -75,6 +75,7 @@ def make_app(
     readiness_probe=None,
     hnc_status_provider=None,
     field_factory=None,
+    organism_provider=None,
     clock=None,
 ):
     kwargs = {
@@ -88,6 +89,8 @@ def make_app(
         kwargs["hnc_status_provider"] = hnc_status_provider
     if field_factory is not None:
         kwargs["field_factory"] = field_factory
+    if organism_provider is not None:
+        kwargs["organism_provider"] = organism_provider
     if clock is not None:
         kwargs["clock"] = clock
     return demo_api.DemoApplication(**kwargs)
@@ -131,6 +134,16 @@ def ready_probe(*, operator=None, model=None):
         return ready_result(operator if url == demo_api.OPERATOR_READY_URL else model)
 
     return probe
+
+
+def engaged_organism():
+    return {
+        "all_turned": True, "all_engaged": True,
+        "gears": [
+            {"name": name, "turned": True, "engaged": True}
+            for name in ("field", "auris", "qgita")
+        ],
+    }
 
 
 def test_health_is_live_even_when_dependencies_are_not_ready() -> None:
@@ -311,7 +324,7 @@ def test_token_bucket_is_per_client_and_has_retry_after() -> None:
 
 
 def test_readiness_requires_operator_model_identity_hash_and_startup() -> None:
-    response = make_app(readiness_probe=ready_probe()).readiness()
+    response = make_app(readiness_probe=ready_probe(), organism_provider=engaged_organism).readiness()
 
     assert response.status == 200
     assert response.payload["ready"] is True

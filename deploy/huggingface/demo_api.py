@@ -363,6 +363,19 @@ def _default_hnc_status() -> dict[str, Any]:
     return {"organ": organ, "organ_running": running_body, "canonical_field": canonical}
 
 
+def public_organism_status() -> dict[str, Any]:
+    """Return the real pre-inference HNC/Auris/QGITA evidence, or named no-data.
+
+    No fallback measurements are fabricated. A failed capture holds full-system
+    readiness, while process liveness and replay endpoints remain available.
+    """
+    from aureon.core.hnc_llm_gears import capture_request_organism
+
+    snapshot = capture_request_organism()
+    # Strict-JSON normalization also rejects non-finite or exotic host values.
+    return json.loads(json.dumps(snapshot, allow_nan=False))
+
+
 class DemoApplication:
     """Framework-free application, separated from its HTTP transport for tests."""
 
@@ -375,6 +388,7 @@ class DemoApplication:
         readiness_probe: Callable[[str, float], dict[str, Any]] = probe_ready,
         hnc_status_provider: Callable[[], dict[str, Any]] = _default_hnc_status,
         field_factory: Callable[..., Any] | None = None,
+        organism_provider: Callable[[], dict[str, Any]] = public_organism_status,
         clock: Callable[[], float] = time.monotonic,
     ) -> None:
         self.env = os.environ if env is None else env
@@ -384,6 +398,7 @@ class DemoApplication:
         self.readiness_probe = readiness_probe
         self.hnc_status_provider = hnc_status_provider
         self.field_factory = field_factory
+        self.organism_provider = organism_provider
         self.ready_timeout = _finite_setting(env=self.env, name="AUREON_DEMO_READY_TIMEOUT_S", default=0.5, low=0.05, high=2.0)
         generate_timeout = _finite_setting(
             self.env, "AUREON_DEMO_GENERATE_TIMEOUT_S", 120.0, 0.1, 120.0
@@ -452,7 +467,46 @@ class DemoApplication:
             and model_result.get("http_status") == 200
             and all(model_checks.values())
         )
-        ready = posture["ok"] and operator_ok and model_ok
+        try:
+            organism = self.organism_provider()
+            _normalized(organism)
+            gears = organism.get("gears") if isinstance(organism, dict) else None
+            if not isinstance(gears, list) or len(gears) != 3:
+                raise ValueError("three_organism_gears_required")
+            gears = [
+                {
+                    key: value for key, value in gear.items()
+                    if key in {
+                        "name", "turned", "engaged", "available", "freshness_status",
+                        "coherence_gamma", "lambda_t", "symbolic_life_score", "step",
+                        "grounded_inputs", "total_inputs", "evidence_ratio", "ungrounded_nodes",
+                        "samples", "structural_event", "global_R", "blocker",
+                    }
+                }
+                if isinstance(gear, dict) else {}
+                for gear in gears
+            ]
+            organism = {
+                "all_turned": organism.get("all_turned") is True,
+                "all_engaged": organism.get("all_engaged") is True,
+                "gears": gears,
+            }
+            organism_ok = (
+                isinstance(gears, list)
+                and len(gears) == 3
+                and all(isinstance(gear, dict) and gear.get("engaged") is True for gear in gears)
+                and organism["all_turned"]
+            )
+        except Exception:  # noqa: BLE001 - readiness reports only named evidence failure
+            organism = {
+                "all_turned": False, "all_engaged": False,
+                "gears": [
+                    {"name": name, "turned": False, "engaged": False, "blocker": "capture_failed"}
+                    for name in ("field", "auris", "qgita")
+                ],
+            }
+            organism_ok = False
+        ready = posture["ok"] and operator_ok and model_ok and organism_ok
         body = {
             "ok": ready,
             "ready": ready,
@@ -460,8 +514,10 @@ class DemoApplication:
             "orders_placed": 0,
             "provider_mode": PROVIDER_MODE,
             "model": MODEL,
+            "organism": organism,
             "checks": {
                 "public_posture": posture,
+                "organism": {"ok": organism_ok, "evidence": organism},
                 "operator": {
                     "ok": operator_ok,
                     "ready": operator_ready,

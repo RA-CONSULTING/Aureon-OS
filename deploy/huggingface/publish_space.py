@@ -70,6 +70,7 @@ REQUIRED_PATHS = frozenset({
     "deploy/huggingface/Dockerfile.dockerignore",
     "deploy/huggingface/README.md",
     "deploy/huggingface/demo_api.py",
+    "deploy/huggingface/early_console.py",
     "deploy/huggingface/entrypoint.sh",
     "deploy/huggingface/model_bootstrap.py",
     "deploy/huggingface/model_service.sh",

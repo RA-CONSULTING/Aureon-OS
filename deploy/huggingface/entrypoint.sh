@@ -199,5 +199,8 @@ dst.write_text(text, encoding="utf-8")
 print("[entrypoint] rendered runtime/nginx.conf with per-boot internal credentials")
 PY
 
+echo "[entrypoint] starting the read-only early console before model loading"
+/usr/local/bin/python -u "$ROOT/deploy/huggingface/early_console.py"
+
 echo "[entrypoint] handing off to supervisord; /healthz is liveness and /readyz is strict"
 exec /usr/bin/supervisord -c "$ROOT/deploy/huggingface/supervisord.conf"
