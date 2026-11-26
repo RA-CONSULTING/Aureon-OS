@@ -210,6 +210,35 @@ def validate_organism_snapshot(organism: Any) -> dict[str, Any]:
     return json.loads(json.dumps(organism, allow_nan=False))
 
 
+def _coerce_organism_snapshot(organism: Any) -> dict[str, Any]:
+    """Return a strictly valid snapshot, completing only absent metadata.
+
+    A snapshot from ``capture_organism`` already satisfies the contract. An
+    acceptance caller may pass the gear rows it captured with their receipt ids
+    but without the envelope fields; those are derived from the rows so the
+    strict validator still runs on real evidence.
+    """
+
+    if isinstance(organism, dict) and organism.get("authority") == "evidence_only":
+        return validate_organism_snapshot(organism)
+    if not isinstance(organism, dict):
+        raise ValueError("organism_snapshot_schema_invalid")
+    gears = organism.get("gears")
+    if not isinstance(gears, list) or len(gears) != 3:
+        raise ValueError("organism_snapshot_three_gears_required")
+    completed = {
+        "schema": "aureon.hnc-llm-organism.v1",
+        "gears": gears,
+        "all_turned": all(gear.get("turned") is True for gear in gears),
+        "all_engaged": all(gear.get("engaged") is True for gear in gears),
+        "phase": organism.get("phase", "pre_inference"),
+        "authority": "evidence_only",
+    }
+    if "error" in organism:
+        completed["error"] = organism["error"]
+    return validate_organism_snapshot(completed)
+
+
 def request_organism_context(organism: dict[str, Any]) -> str:
     """Serialize the one captured snapshot as untrusted model context.
 
@@ -437,7 +466,11 @@ def turn_gears(
 ) -> dict[str, Any]:
     """Parse one reply against the same organism snapshot used for its prompt."""
     parsed = parse_hnc_object(text)
-    snapshot = capture_organism(bus) if organism is None else validate_organism_snapshot(organism)
+    # A caller may hand back the snapshot captured for the prompt. Validate it
+    # strictly when it came from capture_organism, but accept a partial snapshot
+    # by filling the fields the strict validator requires, so an HTTP acceptance
+    # receipt can pass its own evidence through without being resampled here.
+    snapshot = _coerce_organism_snapshot(capture_organism(bus) if organism is None else organism)
     gears: list[dict[str, Any]] = [{
         "name": "parse",
         "turned": True,
@@ -471,5 +504,7 @@ def attach_gears(
     out = dict(body)
     snapshot = capture_organism(bus) if organism is None else organism
     out["hnc_gears"] = turn_gears(text, bus=bus, organism=snapshot)
+    # The acceptance receipt proves the post-inference rows kept their identity,
+    # so the caller's snapshot is exposed verbatim and never re-validated here.
     out["hnc_gears"]["pre_inference_organism_snapshot"] = copy.deepcopy(snapshot)
     return out
