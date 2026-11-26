@@ -113,7 +113,10 @@ def test_random_internal_bearers_are_not_fixed_or_logged() -> None:
 
 
 def test_model_bootstrap_and_server_are_pinned_and_loopback_only() -> None:
-    assert "--require-cuda" in MODEL_SERVICE
+    # CUDA is demanded only when a GPU is actually present, so a CPU Space serves
+    # the console instead of failing the required-program contract.
+    assert "nvidia-smi" in MODEL_SERVICE
+    assert "DEVICE_ARGS+=(--require-cuda)" in MODEL_SERVICE
     assert "--strict-startup" in MODEL_SERVICE
     assert "--host 127.0.0.1" in MODEL_SERVICE
     assert "--port 11435" in MODEL_SERVICE
@@ -176,7 +179,12 @@ def test_frontend_is_rebuilt_with_pinned_node_and_tracked_dist_replaced() -> Non
     assert "npm run typecheck && npm run lint:shell && npm run build" in DOCKERFILE
     assert "COPY --from=frontend-build" in DOCKERFILE
     assert "/build/frontend/dist" in DOCKERFILE
-    assert "FROM nvcr.io/nvidia/pytorch:25.05-py3" in DOCKERFILE
+    # CPU-first base: the console must be servable without a GPU, and no CUDA
+    # runtime may be pulled for it. A CUDA image would re-introduce the gate that
+    # left every GPU-less Space unhealthy.
+    assert "FROM python:3.12-slim" in DOCKERFILE
+    assert "nvcr.io" not in DOCKERFILE
+    assert "download.pytorch.org/whl/cpu" in DOCKERFILE
     assert "USER aureon" in DOCKERFILE
     assert "VITE_OPERATOR_TOKEN" not in DOCKERFILE
     assert "frontend/dist" not in DOCKERIGNORE
@@ -188,13 +196,30 @@ def test_ngc_existing_uid_does_not_block_the_nonroot_runtime() -> None:
     assert int(match.group(1)) > 1000
 
 
-def test_ngc_python_has_a_build_verified_supervisor_interpreter() -> None:
-    assert 'PYTHON_BIN="$(command -v python)"' in DOCKERFILE
-    assert 'ln -s "$PYTHON_BIN" /usr/local/bin/python' in DOCKERFILE
-    assert '/usr/local/bin/python -c "import torch, transformers;' in DOCKERFILE
+def test_slim_base_provides_a_verified_supervisor_interpreter() -> None:
+    # The slim base ships /usr/local/bin/python; the build still proves it runs
+    # so a broken image fails at build time rather than at boot.
+    assert "RUN test -x /usr/local/bin/python" in DOCKERFILE
     assert MODEL_SERVICE.startswith("#!/usr/bin/env bash")
     assert 'PYTHON=/usr/local/bin/python' in MODEL_SERVICE
     assert "command=/usr/local/bin/python" in SUPERVISOR
+
+
+def test_supervisor_owns_the_console_so_the_entrypoint_can_hand_off() -> None:
+    """A foreground console in the entrypoint blocks supervisord forever."""
+
+    assert "[program:early_console]" in SUPERVISOR
+    # The entrypoint must not run the console itself; supervisor does, and can
+    # restart it. Running it inline was what left nginx and the operator never
+    # started on every previous deployment.
+    assert "early_console.py" not in ENTRYPOINT
+    assert 'exec /usr/bin/supervisord' in ENTRYPOINT
+
+
+def test_a_missing_model_revision_does_not_kill_the_console() -> None:
+    assert "AUREON_MODEL_DISABLED=1" in ENTRYPOINT
+    assert "AUREON_MODEL_DISABLED" in MODEL_SERVICE
+    assert "sleep infinity" in MODEL_SERVICE
 
 
 def test_build_context_preserves_the_complete_tree_and_excludes_credentials() -> None:

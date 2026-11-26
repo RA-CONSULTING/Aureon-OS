@@ -10,9 +10,12 @@ RUN npm ci --ignore-scripts --no-audit --no-fund
 COPY frontend/ ./
 RUN npm run typecheck && npm run lint:shell && npm run build
 
-# The validated Isambard runtime used the same NGC 25.05 Torch/CUDA generation.
-# Transformers and the Hub client are pinned independently below.
-FROM nvcr.io/nvidia/pytorch:25.05-py3
+# CPU-first by default so the public console, HNC evidence, and the repository
+# tree are served on free cpu-basic hardware with no GPU dependency. The GPU
+# image remains available for inference: build with
+#   docker build -f deploy/huggingface/Dockerfile.gpu .
+# or set AUREON_SPACE_TORCH to a CUDA wheel index and install torch afterwards.
+FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -30,10 +33,13 @@ WORKDIR /app/aureon-os
 COPY --chown=aureon:aureon . /app/aureon-os
 COPY --from=frontend-build --chown=aureon:aureon /build/frontend/dist /app/aureon-os/frontend/dist
 
-# Do not reinstall or downgrade the NGC CUDA/Torch build. The remaining set is
-# the repository's headless-Linux runtime plus the exact model-loading versions
-# observed in the real Isambard validation container.
+# The CPU wheel index keeps this image small: no CUDA runtime is pulled for a
+# Space that serves the console without a GPU. The pinned model-loading versions
+# match the validated Isambard container.
 RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel \
+ && python -m pip install --no-cache-dir \
+      --index-url https://download.pytorch.org/whl/cpu \
+      torch==2.6.0 \
  && python -m pip install --no-cache-dir \
       -r requirements-linux.txt \
       transformers==4.57.6 \
@@ -42,13 +48,11 @@ RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel \
       huggingface_hub==0.36.2 \
       httpx jsonschema waitress
 
-# NGC 25.05 provides Python outside /usr/local/bin. Keep one verified absolute
-# interpreter path for supervisord and the model launcher without replacing the
-# NGC Torch/CUDA installation.
-RUN PYTHON_BIN="$(command -v python)" \
- && test -x "$PYTHON_BIN" \
- && ln -s "$PYTHON_BIN" /usr/local/bin/python \
- && /usr/local/bin/python -c "import torch, transformers; assert torch.__version__ and transformers.__version__"
+# python:3.12-slim already provides /usr/local/bin/python, which supervisord and
+# the model launcher both call by absolute path. Proving the interpreter works is
+# still required, so a broken image fails at build time rather than at boot.
+RUN test -x /usr/local/bin/python \
+ && /usr/local/bin/python -c "import sys; print('python', sys.version.split()[0])"
 
 RUN mkdir -p /app/aureon-os/runtime /app/aureon-os/runtime/home \
  && chown -R aureon:aureon /app/aureon-os/runtime \

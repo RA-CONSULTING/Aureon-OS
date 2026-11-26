@@ -95,9 +95,13 @@ export AUREON_OWN_MODEL_STARTUP_TIMEOUT_S=1800
 export HF_HOME=$RT/hf-home
 export TOKENIZERS_PARALLELISM=false
 
+# A missing model revision disables inference; it must not take the public
+# console down with it. The pinned revision is still required before the model
+# server will load anything, so this cannot silently serve the wrong weights.
 if [[ ! "${AUREON_MODEL_REVISION:-}" =~ ^[0-9a-f]{40}$ ]]; then
-  echo "[entrypoint] AUREON_MODEL_REVISION must be the full lowercase GaryLeckey/aureon-7b Hub commit" >&2
-  exit 1
+  echo "[entrypoint] AUREON_MODEL_REVISION is not a full Hub commit: inference is disabled," \
+       "the console and evidence tree stay live" >&2
+  export AUREON_MODEL_DISABLED=1
 fi
 
 # Operator gateway: production authentication remains in force behind nginx.
@@ -200,7 +204,8 @@ print("[entrypoint] rendered runtime/nginx.conf with per-boot internal credentia
 PY
 
 echo "[entrypoint] starting the read-only early console before model loading"
-/usr/local/bin/python -u "$ROOT/deploy/huggingface/early_console.py"
-
+# supervisor owns the console (priority 5) and restarts it on failure. Running it
+# here in the foreground would block this script forever and supervisord would
+# never start, leaving nginx, the operator, and the model unstarted.
 echo "[entrypoint] handing off to supervisord; /healthz is liveness and /readyz is strict"
 exec /usr/bin/supervisord -c "$ROOT/deploy/huggingface/supervisord.conf"
