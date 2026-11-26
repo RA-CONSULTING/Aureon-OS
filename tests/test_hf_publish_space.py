@@ -169,6 +169,51 @@ def _publish(checkout: FakeCheckout, hub: FakeHub, **overrides) -> dict:
     return publisher.publish_space(checkout.root, **arguments)
 
 
+def test_content_mode_matches_a_real_staging(
+    checkout: FakeCheckout,
+    tmp_path: Path,
+) -> None:
+    """A client that cannot build the tree must still upload exactly these bytes."""
+
+    root = tmp_path / "space"
+    staged = checkout.stage(root)
+
+    content_root = tmp_path / "content"
+    manifest = publisher.stage_space(
+        checkout.root,
+        tmp_path / "unused-tree",
+        content_dir=content_root,
+    )
+
+    # Identical path set and identical per-path digest.
+    tree_rows = {row["path"]: row for row in staged["files"]}
+    content_rows = {row["path"]: row for row in manifest["files"]}
+    assert set(content_rows) == set(tree_rows)
+    for path, row in tree_rows.items():
+        assert content_rows[path]["sha256"] == row["sha256"]
+        assert content_rows[path]["size_bytes"] == row["size_bytes"]
+
+    # The captured bytes are usable directly, and neutralization still applied.
+    assert (content_root / "requirements.txt").read_bytes() == (
+        publisher.NEUTRAL_SDK_METADATA["requirements.txt"]
+    )
+    assert b"gradio" not in (content_root / "app.py").read_bytes().lower()
+    assert (content_root / "README.md").read_bytes() == (
+        checkout.files["deploy/huggingface/README.md"]
+    )
+
+
+def test_content_mode_refuses_an_existing_directory(
+    checkout: FakeCheckout,
+    tmp_path: Path,
+) -> None:
+    existing = tmp_path / "content"
+    existing.mkdir()
+
+    with pytest.raises(publisher.PublishError, match="must be a fresh"):
+        publisher.stage_space(checkout.root, tmp_path / "tree", content_dir=existing)
+
+
 def test_staged_root_metadata_cannot_resolve_a_non_docker_sdk(
     checkout: FakeCheckout,
     tmp_path: Path,

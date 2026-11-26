@@ -232,6 +232,12 @@ def _validate_space_card(content: bytes) -> None:
         raise PublishError("Space README has invalid YAML front matter") from exc
     if not isinstance(metadata, dict):
         raise PublishError("Space README must start with YAML front matter")
+    _validate_space_metadata(metadata)
+
+
+def _validate_space_metadata(metadata: dict[str, Any]) -> None:
+    """Validate the Hub metadata the card is about to publish."""
+
     if metadata.get("sdk") != EXPECTED_SPACE_SDK:
         raise PublishError(
             f"Space README must declare sdk: {EXPECTED_SPACE_SDK}; this card declares "
@@ -354,13 +360,19 @@ def _blob_reader(repo: Path) -> Iterator[Callable[[str], bytes]]:
             raise PublishError(f"git cat-file failed: {diagnostic}")
 
 
-def _write_new_file(root: Path, relative: str, content: bytes) -> dict[str, Any]:
+def _write_new_file(
+    root: Path,
+    relative: str,
+    content: bytes,
+    *,
+    replace: bool = False,
+) -> dict[str, Any]:
     relative = _validate_path(relative)
     destination = root.joinpath(*PurePosixPath(relative).parts)
     destination.parent.mkdir(parents=True, exist_ok=True)
     if not destination.parent.resolve().is_relative_to(root.resolve()):
         raise PublishError("staged file escapes the fresh staging directory")
-    with destination.open("xb") as handle:
+    with destination.open("wb" if replace else "xb") as handle:
         handle.write(content)
     return {
         "path": relative,
@@ -374,17 +386,31 @@ def stage_space(
     destination: Path,
     *,
     expected_source: str | None = None,
+    content_dir: Path | None = None,
 ) -> dict[str, Any]:
-    """Stage every tracked file from one exact clean Git commit."""
+    """Stage every tracked file from one exact clean Git commit.
+
+    ``content_dir`` writes the exact final bytes of every staged file as an
+    additive manifest, so a client that cannot create the tree itself (a
+    Windows filesystem with case-distinct paths) can still upload precisely what
+    staging would have produced. The manifest is built from Git objects only, so
+    it is identical to a byte-for-byte staging on a case-sensitive filesystem.
+    """
 
     repo = Path(repo).resolve()
     destination = Path(destination)
-    if destination.exists() or destination.is_symlink():
-        raise PublishError("staging destination must be a fresh, nonexistent path")
+    if content_dir is not None:
+        destination = Path(content_dir).resolve()
+        if destination.exists():
+            raise PublishError("content directory must be a fresh, nonexistent path")
+        destination.mkdir(parents=True)
     head = _clean_head(repo, expected_source)
     selected = _selected_entries(_tree_entries(repo, head))
     _refuse_windows_case_collisions(selected)
-    destination.mkdir()
+    if content_dir is None:
+        if destination.exists() or destination.is_symlink():
+            raise PublishError("staging destination must be a fresh, nonexistent path")
+        destination.mkdir()
     manifest: list[dict[str, Any]] = []
     with _blob_reader(repo) as read_blob:
         for entry in selected:
@@ -411,12 +437,28 @@ def stage_space(
     # the Docker build context still receives a file at every tracked location.
     for name in SPACE_SDK_METADATA:
         target_path = destination.joinpath(*PurePosixPath(name).parts)
-        if not target_path.is_file() or target_path.is_symlink():
+        if target_path.is_symlink():
+            raise PublishError(f"staged path must not be a symlink: {name}")
+        if content_dir is not None:
+            # Content mode never wrote the raw files; they exist only in the
+            # manifest, so neutralize by replacing that entry.
+            if not any(row["path"] == name for row in manifest):
+                continue
+        elif target_path.is_file():
+            target_path.unlink()
+        else:
             # Absent is fine: nothing can mislead the Hub.
             continue
-        target_path.unlink()
         manifest = [row for row in manifest if row["path"] != name]
-        manifest.append(_write_new_file(destination, name, NEUTRAL_SDK_METADATA[name]))
+        manifest.append(
+            _write_new_file(
+                destination,
+                name,
+                NEUTRAL_SDK_METADATA[name],
+                # Content mode already wrote the raw file; overwrite in place.
+                replace=content_dir is not None,
+            )
+        )
 
     _validate_space_card((destination / "README.md").read_bytes())
     paths = {row["path"] for row in manifest}
@@ -537,6 +579,7 @@ def publish_space(
     activate_l40s: bool = False,
     paid_l40s_acknowledged: bool = False,
     staging_dir: Path | None = None,
+    content_dir: Path | None = None,
     env: Mapping[str, str] | None = None,
     api_factory: Callable[[str | bool], Any] | None = None,
 ) -> dict[str, Any]:
@@ -558,7 +601,12 @@ def publish_space(
             yield Path(temporary) / "space"
 
     with staging() as destination:
-        staged = stage_space(repo, destination, expected_source=expected_source)
+        staged = stage_space(
+            repo,
+            destination,
+            expected_source=expected_source,
+            content_dir=content_dir,
+        )
         receipt = _base_receipt(
             staged,
             model_revision,
@@ -676,6 +724,14 @@ def _parser() -> argparse.ArgumentParser:
         help="full lowercase GaryLeckey/aureon-7b commit (or AUREON_MODEL_REVISION)",
     )
     parser.add_argument("--staging-dir", type=Path, help="fresh path to retain; otherwise a temp path is used")
+    parser.add_argument(
+        "--content-dir",
+        type=Path,
+        help=(
+            "write the exact staged bytes to this fresh path instead of creating the "
+            "staged tree, for filesystems that cannot hold case-distinct paths"
+        ),
+    )
     parser.add_argument("--publish", action="store_true", help="perform Hub writes; omitted means dry-run")
     parser.add_argument("--reviewed-legacy-deletion", action="store_true")
     parser.add_argument("--activate-l40s", action="store_true")
@@ -696,6 +752,7 @@ def main(argv: list[str] | None = None) -> int:
             activate_l40s=arguments.activate_l40s,
             paid_l40s_acknowledged=arguments.acknowledge_paid_l40s,
             staging_dir=arguments.staging_dir,
+            content_dir=arguments.content_dir,
         )
         if arguments.receipt is not None:
             write_receipt(arguments.receipt, receipt)
