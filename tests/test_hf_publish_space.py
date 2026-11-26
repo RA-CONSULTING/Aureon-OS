@@ -10,6 +10,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import yaml
 
 from deploy.huggingface import publish_space as publisher
 
@@ -36,6 +37,12 @@ class FakeCheckout:
             "deploy/huggingface/Dockerfile": b"FROM scratch\n",
             "deploy/huggingface/Dockerfile.dockerignore": b".git\n",
             "deploy/huggingface/README.md": b"---\nsdk: docker\n---\nSpace card\n",
+            # The real repository tracks these at the root. Staged verbatim they
+            # make the Hub deploy the Space as a Gradio app.
+            "app.py": b"import gradio as gr\n\ngr.Interface(fn=None).launch()\n",
+            "app.yaml": b"name: aureon-protection-hold\nservices: []\n",
+            "requirements.txt": b"gradio==5.49.1\n",
+            "docker-compose.yml": b"services:\n  edge:\n    image: nginx\n",
             "frontend/package.json": b'{"scripts":{"build":"vite build"}}\n',
             "frontend/package-lock.json": b'{"lockfileVersion":3}\n',
             "frontend/src/App.tsx": b"export default function App() { return null; }\n",
@@ -162,6 +169,62 @@ def _publish(checkout: FakeCheckout, hub: FakeHub, **overrides) -> dict:
     return publisher.publish_space(checkout.root, **arguments)
 
 
+def test_staged_root_metadata_cannot_resolve_a_non_docker_sdk(
+    checkout: FakeCheckout,
+    tmp_path: Path,
+) -> None:
+    """The 2026-11-25 failure: a Docker card deployed as Gradio via root metadata."""
+
+    root = tmp_path / "space"
+    staged = checkout.stage(root)
+
+    # Every source path survives: nothing is dropped from the path set.
+    staged_paths = {row["path"] for row in staged["files"]}
+    for name in ("app.py", "app.yaml", "requirements.txt", "docker-compose.yml"):
+        assert name in staged_paths
+        assert name in checkout.files  # the repository source is untouched
+    # But no SDK marker or compose project is resolvable from the staged root.
+    requirements = (root / "requirements.txt").read_text(encoding="utf-8")
+    assert "gradio" not in requirements
+    assert "streamlit" not in requirements
+    assert requirements.startswith("#")
+
+    app_py = (root / "app.py").read_bytes()
+    assert b"import gradio" not in app_py
+    assert b"gradio" not in app_py.lower()
+
+    assert "services:" not in (root / "app.yaml").read_text(encoding="utf-8")
+    assert yaml.safe_load(
+        (root / "docker-compose.yml").read_text(encoding="utf-8")
+    ) == {"services": {}}
+
+    # The Dockerfile and card the Hub needs are the deploy ones, verbatim.
+    assert (root / "Dockerfile").read_bytes() == checkout.files["deploy/huggingface/Dockerfile"]
+    assert yaml.safe_load(
+        (root / "README.md").read_text(encoding="utf-8").split("---\n")[1]
+    )["sdk"] == "docker"
+
+
+def test_staging_keeps_every_tracked_path(checkout: FakeCheckout, tmp_path: Path) -> None:
+    root = tmp_path / "space"
+    staged = checkout.stage(root)
+
+    # Every tracked path survives, plus only the three overlay targets that the
+    # Hub requires at the root. Neutralizing metadata never removes a path.
+    staged_paths = {row["path"] for row in staged["files"]}
+    assert staged_paths == set(checkout.files) | set(publisher.OVERRIDES.values())
+
+
+def test_card_that_declares_a_non_docker_sdk_is_refused(
+    checkout: FakeCheckout,
+    tmp_path: Path,
+) -> None:
+    checkout.files["deploy/huggingface/README.md"] = b"---\nsdk: gradio\n---\nSpace card\n"
+
+    with pytest.raises(publisher.PublishError, match="must declare sdk: docker"):
+        checkout.stage(tmp_path / "space")
+
+
 def test_staging_complete_tree_overrides_and_per_file_hashes(
     checkout: FakeCheckout,
     tmp_path: Path,
@@ -205,11 +268,18 @@ def test_staging_complete_tree_overrides_and_per_file_hashes(
     assert (root / "frontend/src/App.tsx").is_file()
     assert (root / "aureon/.env.example").is_file()
     paths = {row["path"] for row in staged["files"]}
-    assert paths == set(checkout.files)
-    assert staged["file_count"] == len(checkout.files) == len(paths)
+    assert paths == set(checkout.files) | set(publisher.OVERRIDES.values())
+    assert staged["file_count"] == len(paths)
     for path, expected in checkout.files.items():
-        if path not in publisher.OVERRIDES.values():
-            assert root.joinpath(*path.split("/")).read_bytes() == expected
+        if path in publisher.OVERRIDES.values():
+            continue
+        if path in publisher.SPACE_SDK_METADATA:
+            # Hub SDK metadata is replaced with neutral content at the same path.
+            assert root.joinpath(*path.split("/")).read_bytes() == (
+                publisher.NEUTRAL_SDK_METADATA[path]
+            )
+            continue
+        assert root.joinpath(*path.split("/")).read_bytes() == expected
     for row in staged["files"]:
         content = root.joinpath(*row["path"].split("/")).read_bytes()
         assert row["sha256"] == hashlib.sha256(content).hexdigest()

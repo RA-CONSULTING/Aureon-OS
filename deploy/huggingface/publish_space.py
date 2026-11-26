@@ -65,6 +65,53 @@ OVERRIDES = {
     "deploy/huggingface/Dockerfile.dockerignore": ".dockerignore",
     "deploy/huggingface/README.md": "README.md",
 }
+# The Hub reads these root files to choose and configure an SDK. This repository
+# tracks them for non-Space purposes (a DigitalOcean hold manifest and the full
+# desktop runtime requirements), and root app.py is the local entrypoint. Staged
+# verbatim they make the Hub treat a Docker Space as a Gradio app, which is what
+# happened on 2026-11-25: the card said sdk: docker, the launch served app.py,
+# the Dockerfile never built, and no GPU was ever attached.
+#
+# These are replaced only in the staged copy. Repository sources keep their
+# content, and the Docker image still receives every one of them through
+# COPY . /app/aureon-os, because the image is built from the Space root where
+# the neutral replacements below also apply.
+SPACE_SDK_METADATA = (
+    "app.py",
+    "app.yaml",
+    "requirements.txt",
+    "docker-compose.yml",
+)
+# Neutral content for each. No SDK marker and no compose services means the Hub
+# cannot resolve any SDK other than the Dockerfile declared by the card.
+NEUTRAL_SDK_METADATA: dict[str, bytes] = {
+    "requirements.txt": (
+        b"# Intentionally empty in the Space staging root.\n"
+        b"# The image installs from requirements-linux.txt (see Dockerfile).\n"
+        b"# A Gradio/Streamlit requirements or app.py here makes the Hub deploy the\n"
+        b"# repository as that SDK instead of building the Dockerfile.\n"
+    ),
+    "docker-compose.yml": (
+        b"# Intentionally empty in the Space staging root: a Docker Space builds the\n"
+        b"# Dockerfile, not a compose project.\n"
+        b"services: {}\n"
+    ),
+    "app.yaml": b"# Intentionally empty in the Space staging root (no SDK markers).\n",
+    "app.py": (
+        b'"""Intentionally inert in the Space staging root.\n'
+        b"\n"
+        b"The public Space is the Docker image (see Dockerfile, entrypoint.sh, and\n"
+        b"supervisord.conf). The Hub serves this path only when no Dockerfile applies,\n"
+        b"so any interactive UI app here would mask the real organism console.\n"
+        b'"""\n\n'
+        b"def main() -> None:\n"
+        b"    raise SystemExit(\n"
+        b"        'This Space runs the Docker image; see deploy/huggingface/README.md.'\n"
+        b"    )\n\n\n"
+        b'if __name__ == "__main__":\n'
+        b"    main()\n"
+    ),
+}
 REQUIRED_PATHS = frozenset({
     ".dockerignore",
     "Dockerfile",
@@ -185,6 +232,12 @@ def _validate_space_card(content: bytes) -> None:
         raise PublishError("Space README has invalid YAML front matter") from exc
     if not isinstance(metadata, dict):
         raise PublishError("Space README must start with YAML front matter")
+    if metadata.get("sdk") != EXPECTED_SPACE_SDK:
+        raise PublishError(
+            f"Space README must declare sdk: {EXPECTED_SPACE_SDK}; this card declares "
+            f"{metadata.get('sdk')!r}. Any other SDK makes the Hub deploy the repository "
+            "as that SDK and never build the Dockerfile."
+        )
     description = metadata.get("short_description")
     if description is not None and (
         not isinstance(description, str) or not 1 <= len(description.strip()) <= 60
@@ -352,6 +405,18 @@ def stage_space(
             target_path.unlink()
             manifest = [row for row in manifest if row["path"] != target]
         manifest.append(_write_new_file(destination, target, source_path.read_bytes()))
+
+    # Neutralize every root file the Hub reads to pick an SDK. Each path is
+    # rewritten in place in the staged tree, so the path set never shrinks and
+    # the Docker build context still receives a file at every tracked location.
+    for name in SPACE_SDK_METADATA:
+        target_path = destination.joinpath(*PurePosixPath(name).parts)
+        if not target_path.is_file() or target_path.is_symlink():
+            # Absent is fine: nothing can mislead the Hub.
+            continue
+        target_path.unlink()
+        manifest = [row for row in manifest if row["path"] != name]
+        manifest.append(_write_new_file(destination, name, NEUTRAL_SDK_METADATA[name]))
 
     _validate_space_card((destination / "README.md").read_bytes())
     paths = {row["path"] for row in manifest}
