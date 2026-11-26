@@ -406,7 +406,10 @@ def stage_space(
         destination.mkdir(parents=True)
     head = _clean_head(repo, expected_source)
     selected = _selected_entries(_tree_entries(repo, head))
-    _refuse_windows_case_collisions(selected)
+    if content_dir is None:
+        # A materialized tree cannot hold case-distinct paths on NTFS without
+        # silently merging them. Content capture never creates those names.
+        _refuse_windows_case_collisions(selected)
     if content_dir is None:
         if destination.exists() or destination.is_symlink():
             raise PublishError("staging destination must be a fresh, nonexistent path")
