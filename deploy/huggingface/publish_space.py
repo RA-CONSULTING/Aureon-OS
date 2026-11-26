@@ -29,6 +29,11 @@ MODEL_REPOSITORY = "GaryLeckey/aureon-7b"
 SPACE_OWNER = "GaryLeckey"
 MODEL_VARIABLE = "AUREON_MODEL_REVISION"
 L40S_HARDWARE = "l40sx1"
+# The served model is a Qwen2 28-layer, 65k-vocab checkpoint: ~1.17B parameters,
+# ~2.3 GB in bf16. L4 (24 GB) carries it with wide headroom, and the earlier
+# l40sx1 requests never scheduled. Hardware is an explicit, validated choice.
+SUPPORTED_GPU_HARDWARE = ("l40sx1", "l4x1", "a10g-small", "a10g-large")
+
 # Paid hardware is only meaningful when the published Space still runs the
 # Docker image that serves it. A Gradio-only card leaves the Hub runtime free to
 # substitute a notebook server, which ignores this image and its GPU work.
@@ -250,8 +255,11 @@ def _validate_space_metadata(metadata: dict[str, Any]) -> None:
     ):
         raise PublishError("Space README short_description must contain 1 to 60 characters")
     hardware = metadata.get("suggested_hardware")
-    if hardware is not None and hardware != L40S_HARDWARE:
-        raise PublishError(f"Space README suggested_hardware must be {L40S_HARDWARE} for one L40S")
+    if hardware is not None and hardware not in SUPPORTED_GPU_HARDWARE:
+        raise PublishError(
+            f"Space README suggested_hardware must be one of {SUPPORTED_GPU_HARDWARE}, "
+            f"got {hardware!r}"
+        )
 
 
 def _tree_entries(repo: Path, commit: str) -> list[_TreeEntry]:
