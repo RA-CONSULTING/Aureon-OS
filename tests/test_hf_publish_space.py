@@ -169,6 +169,43 @@ def _publish(checkout: FakeCheckout, hub: FakeHub, **overrides) -> dict:
     return publisher.publish_space(checkout.root, **arguments)
 
 
+def test_content_mode_keeps_paths_that_differ_only_by_case(
+    checkout: FakeCheckout,
+    tmp_path: Path,
+) -> None:
+    """NTFS collapses CALANAIS/calanais; the capture must not lose either file."""
+
+    checkout.files["docs/NODE.md"] = b"upper\n"
+    checkout.files["docs/node.md"] = b"lower\n"
+    content_root = tmp_path / "content"
+
+    manifest = publisher.stage_space(
+        checkout.root,
+        tmp_path / "unused-tree",
+        content_dir=content_root,
+    )
+
+    # Both tracked paths reach the manifest with their own distinct content.
+    rows = {row["path"]: row for row in manifest["files"]}
+    assert "docs/NODE.md" in rows
+    assert "docs/node.md" in rows
+    assert rows["docs/NODE.md"]["sha256"] != rows["docs/node.md"]["sha256"]
+
+    # Both colliding paths are stored under distinct escaped names, so neither
+    # is lost and neither can overwrite the other on a case-insensitive disk.
+    assert (content_root / "docs" / f".case-collision-{b'NODE.md'.hex()}").read_bytes() == b"upper\n"
+    assert (content_root / "docs" / f".case-collision-{b'node.md'.hex()}").read_bytes() == b"lower\n"
+
+    # Every manifest digest for the pair is present on disk: nothing was lost.
+    on_disk = {
+        hashlib.sha256(p.read_bytes()).hexdigest()
+        for p in content_root.joinpath("docs").iterdir()
+        if p.is_file()
+    }
+    assert rows["docs/NODE.md"]["sha256"] in on_disk
+    assert rows["docs/node.md"]["sha256"] in on_disk
+
+
 def test_content_mode_matches_a_real_staging(
     checkout: FakeCheckout,
     tmp_path: Path,

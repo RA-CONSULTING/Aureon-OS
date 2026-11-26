@@ -360,6 +360,34 @@ def _blob_reader(repo: Path) -> Iterator[Callable[[str], bytes]]:
             raise PublishError(f"git cat-file failed: {diagnostic}")
 
 
+def _case_collision_safe_name(relative: str) -> str:
+    """Return a unique on-disk name for a path that collides only by case.
+
+    Content capture runs on case-insensitive filesystems, where two tracked
+    paths differing only by case would overwrite each other. The uploaded path
+    is always the manifest ``path``; this name is local bookkeeping only.
+    """
+
+    prefix, _, name = relative.rpartition("/")
+    encoded = name.encode("utf-8").hex()
+    return f"{prefix}/.case-collision-{encoded}" if prefix else f".case-collision-{encoded}"
+
+
+def _collisions(selected: list[_TreeEntry]) -> set[str]:
+    """Return the paths whose casefolded form is shared with another path."""
+
+    seen: dict[str, str] = {}
+    colliding: set[str] = set()
+    for entry in selected:
+        folded = entry.path.casefold()
+        if folded in seen:
+            colliding.add(seen[folded])
+            colliding.add(entry.path)
+        else:
+            seen[folded] = entry.path
+    return colliding
+
+
 def _write_new_file(
     root: Path,
     relative: str,
@@ -415,11 +443,18 @@ def stage_space(
             raise PublishError("staging destination must be a fresh, nonexistent path")
         destination.mkdir()
     manifest: list[dict[str, Any]] = []
+    on_disk = _collisions(selected) if content_dir is not None else set()
     with _blob_reader(repo) as read_blob:
         for entry in selected:
             content = read_blob(entry.oid)
             _refuse_secret_content(entry.path, content)
-            manifest.append(_write_new_file(destination, entry.path, content))
+            # Content capture keeps both colliding paths by storing one of them
+            # under an escaped name; the uploaded path stays the manifest path.
+            disk_path = (
+                _case_collision_safe_name(entry.path) if entry.path in on_disk else entry.path
+            )
+            manifest.append(_write_new_file(destination, disk_path, content))
+            manifest[-1]["path"] = entry.path
 
     # Keep every tracked path. Space-required root metadata replaces the content
     # at the same three paths rather than dropping or renaming any source path.
